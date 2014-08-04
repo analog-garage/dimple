@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.transform.JunctionTreeTransform;
 import com.analog.lyric.dimple.model.transform.JunctionTreeTransformMap;
+import com.analog.lyric.dimple.model.transform.OptionVariableEliminatorCostList;
 import com.analog.lyric.dimple.model.transform.VariableEliminator;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.CostFunction;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.VariableCost;
@@ -240,6 +241,19 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	@Override
 	public void initialize()
 	{
+		// Configure settings from options.
+		_transformer.useConditioning(getOptionOrDefault(JunctionTreeOptions.useConditioning));
+		_transformer.maxTransformationAttempts(getOptionOrDefault(JunctionTreeOptions.maxTransformationAttempts));
+		OptionVariableEliminatorCostList costFunctions =
+			getOptionOrDefault(JunctionTreeOptions.variableEliminatorCostFunctions);
+		_transformer.variableEliminatorCostFunctions(costFunctions.toArray(new CostFunction[costFunctions.size()]));
+		
+		Long seed = getOption(JunctionTreeOptions.randomSeed);
+		if (seed != null)
+		{
+			_transformer.random().setSeed(seed);
+		}
+		
 		if (isTransformValid())
 		{
 			final JunctionTreeTransformMap transformMap = requireNonNull(_transformMap);
@@ -346,6 +360,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	public JunctionTreeSolverGraphBase<Delegate> useConditioning(boolean yes)
 	{
 		_transformer.useConditioning(yes);
+		setOption(JunctionTreeOptions.useConditioning, yes);
 		return this;
 	}
 	
@@ -370,9 +385,11 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	public JunctionTreeSolverGraphBase<Delegate> variableEliminatorCostFunctions(CostFunction ... costFunctions)
 	{
 		 _transformer.variableEliminatorCostFunctions(costFunctions);
+		 setOption(JunctionTreeOptions.variableEliminatorCostFunctions,
+			 new OptionVariableEliminatorCostList(costFunctions));
 		return this;
 	}
-
+	
 	/**
 	 * Sets {@link #variableEliminatorCostFunctions()} to specified value.
 	 * @return this
@@ -380,21 +397,19 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	 */
 	public JunctionTreeSolverGraphBase<Delegate> variableEliminatorCostFunctions(VariableCost ... costFunctions)
 	{
-		 _transformer.variableEliminatorCostFunctions(costFunctions);
-		return this;
+		return variableEliminatorCostFunctions(VariableCost.toFunctions(costFunctions));
 	}
 
 	@Matlab
 	public JunctionTreeSolverGraphBase<Delegate> variableEliminatorCostFunctions(String ... costFunctionNames)
 	{
 		final int n = costFunctionNames.length;
-		VariableCost[] costFunctions = new VariableCost[n];
+		CostFunction[] costFunctions = new CostFunction[n];
 		for (int i = 0; i < n; ++i)
 		{
-			costFunctions[i] = VariableCost.valueOf(costFunctionNames[i]);
+			costFunctions[i] = VariableCost.valueOf(costFunctionNames[i]).function();
 		}
-		 _transformer.variableEliminatorCostFunctions(costFunctions);
-		return this;
+		return variableEliminatorCostFunctions(costFunctions);
 	}
 	
 	/**
@@ -426,6 +441,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	public JunctionTreeSolverGraphBase<Delegate> maxTransformationAttempts(int iterations)
 	{
 		_transformer.maxTransformationAttempts(iterations);
+		setOption(JunctionTreeOptions.maxTransformationAttempts, iterations);
 		return this;
 	}
 

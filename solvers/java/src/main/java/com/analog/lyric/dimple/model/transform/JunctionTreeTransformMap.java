@@ -300,6 +300,10 @@ public class JunctionTreeTransformMap
 	 */
 	public Map<Factor,Factor> sourceToTargetFactors()
 	{
+		if (_sourceToTargetFactors == null)
+		{
+			return Collections.emptyMap();
+		}
 		return Collections.unmodifiableMap(_sourceToTargetFactors);
 	}
 	
@@ -329,6 +333,10 @@ public class JunctionTreeTransformMap
 	 */
 	public Map<VariableBase,VariableBase> sourceToTargetVariables()
 	{
+		if (_sourceToTargetVariables == null)
+		{
+			return Collections.emptyMap();
+		}
 		return Collections.unmodifiableMap(_sourceToTargetVariables);
 	}
 	

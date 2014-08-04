@@ -27,14 +27,17 @@ import com.analog.lyric.dimple.factorfunctions.SumOfInputs;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.transform.OptionVariableEliminatorCostList;
 import com.analog.lyric.dimple.model.transform.VariableEliminator;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.OrderIterator;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.Ordering;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.Stats;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.VariableCost;
+import com.analog.lyric.dimple.model.transform.VariableEliminatorCostListOptionKey;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.options.LocalOptionHolder;
 
 /**
  * Test cases for {@link VariableEliminator}
@@ -510,6 +513,75 @@ public class TestVariableEliminator
 			.alreadyGoodForFastExactInference());
 		assertFalse(new Stats().addedEdges(0).conditionedVariables(0).factorsWithDuplicateVariables(1)
 			.alreadyGoodForFastExactInference());
+	}
+	
+	/**
+	 * Test {@link OptionVariableEliminatorCostList} and {@link VariableEliminatorCostListOptionKey}.
+	 * 
+	 * @since 0.07
+	 */
+	@Test
+	public void testCostListOptionKey()
+	{
+		assertTrue(OptionVariableEliminatorCostList.EMPTY.isEmpty());
+		
+		// Test list type
+		OptionVariableEliminatorCostList list = new OptionVariableEliminatorCostList();
+		assertTrue(list.isEmpty());
+		list = new OptionVariableEliminatorCostList(VariableCost.WEIGHTED_MIN_FILL.function());
+		assertArrayEquals(new Object[] { VariableCost.WEIGHTED_MIN_FILL.function() }, list.toArray());
+		list = new OptionVariableEliminatorCostList(VariableCost.WEIGHTED_MIN_NEIGHBORS);
+		assertArrayEquals(new Object[] { VariableCost.WEIGHTED_MIN_NEIGHBORS.function() }, list.toArray());
+	
+		// Test key construction
+		VariableEliminatorCostListOptionKey key = new VariableEliminatorCostListOptionKey(getClass(), "key");
+		assertSame(OptionVariableEliminatorCostList.class, key.type());
+		assertTrue(key.defaultValue().isEmpty());
+		assertSame(getClass(), key.getDeclaringClass());
+		assertEquals("key", key.name());
+		
+		key = new VariableEliminatorCostListOptionKey(getClass(), "x", VariableCost.MIN_FILL);
+		assertEquals("x", key.name());
+		assertArrayEquals(new Object[] { VariableCost.MIN_FILL.function() }, key.defaultValue().toArray());
+		
+		key = new VariableEliminatorCostListOptionKey(getClass(), "x",
+			VariableCost.MIN_NEIGHBORS.function(), VariableCost.MIN_FILL.function());
+		assertArrayEquals(new Object[] { VariableCost.MIN_NEIGHBORS.function(), VariableCost.MIN_FILL.function() },
+			key.defaultValue().toArray());
+		
+		// Test convertValue
+		assertSame(list, key.convertValue(list));
+		assertArrayEquals(
+			new Object[] { VariableCost.MIN_FILL.function() },
+			key.convertValue(VariableCost.MIN_FILL).toArray());
+		assertArrayEquals(
+			new Object[] { VariableCost.MIN_FILL.function() },
+			key.convertValue(VariableCost.MIN_FILL.function()).toArray());
+		assertArrayEquals(
+			new Object[] { VariableCost.MIN_FILL.function() },
+			key.convertValue("MIN_FILL").toArray());
+		assertArrayEquals(
+			new Object[] { VariableCost.MIN_FILL.function() },
+			key.convertValue(new VariableCost[] { VariableCost.MIN_FILL }).toArray());
+		assertArrayEquals(
+			new Object[] { VariableCost.MIN_FILL.function() },
+			key.convertValue(new VariableEliminator.CostFunction[] { VariableCost.MIN_FILL.function() }).toArray());
+		assertArrayEquals(
+			new Object[] { VariableCost.MIN_FILL.function(), VariableCost.MIN_NEIGHBORS.function() },
+			key.convertValue(new Object[] { "MIN_FILL", VariableCost.MIN_NEIGHBORS } ).toArray());
+		
+		expectThrow(ClassCastException.class, key, "convertValue", new double[] { 2.3 });
+		
+		// Test set methods
+		LocalOptionHolder holder = new LocalOptionHolder();
+		key.set(holder, VariableCost.MIN_FILL);
+		assertArrayEquals(
+			new Object[] { VariableCost.MIN_FILL.function() },
+			requireNonNull(holder.getOption(key)).toArray());
+		key.set(holder, VariableCost.MIN_NEIGHBORS.function());
+		assertArrayEquals(
+			new Object[] { VariableCost.MIN_NEIGHBORS.function() },
+			requireNonNull(holder.getOption(key)).toArray());
 	}
 	
 	/*----------------

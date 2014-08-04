@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.model.transform;
 
 import static java.util.Objects.*;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -1283,12 +1284,24 @@ public class VariableEliminator
 	 * Cost function implementations
 	 */
 	
-	public static abstract class CostFunction
+	public static abstract class CostFunction implements Serializable
 	{
+		private static final long serialVersionUID = 1L;
+
 		private @Nullable VariableCost _type = null;
 		
 		protected CostFunction()
 		{
+		}
+		
+		/**
+		 * Replace with canonical instance if there is one when deserializing.
+		 * @since 0.07
+		 */
+		protected Object readResolve()
+		{
+			VariableCost type = _type;
+			return type != null ?  type.function() : this;
 		}
 		
 		final double cost(Var var)
@@ -1342,6 +1355,8 @@ public class VariableEliminator
 	 */
 	public static class MinNeighbors extends CostFunction
 	{
+		private static final long serialVersionUID = 1L;
+
 		private MinNeighbors()
 		{
 		}
@@ -1367,6 +1382,8 @@ public class VariableEliminator
 	 */
 	public static class MinWeight extends CostFunction
 	{
+		private static final long serialVersionUID = 1L;
+
 		private MinWeight()
 		{
 		}
@@ -1400,6 +1417,8 @@ public class VariableEliminator
 	 */
 	public static class MinFill extends CostFunction
 	{
+		private static final long serialVersionUID = 1L;
+
 		private MinFill()
 		{
 		}
@@ -1441,6 +1460,8 @@ public class VariableEliminator
 	 */
 	public static class WeightedMinFill extends CostFunction
 	{
+		private static final long serialVersionUID = 1L;
+
 		private WeightedMinFill()
 		{
 		}
