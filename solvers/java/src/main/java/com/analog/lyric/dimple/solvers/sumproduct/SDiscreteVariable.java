@@ -52,6 +52,14 @@ public class SDiscreteVariable extends SDiscreteVariableDoubleArray
 			throw new DimpleException("only discrete variables supported");
 	}
 		
+	@Override
+	public void initialize()
+	{
+		super.initialize();
+
+		configureDampingFromOptions();
+	}
+
 	public VariableBase getVariable()
 	{
 		return _var;
@@ -74,30 +82,21 @@ public class SDiscreteVariable extends SDiscreteVariableDoubleArray
 			return 0;	// If the value is fixed, ignore the guess
 	}
 	
+	@Deprecated
 	public void setDamping(int portIndex,double dampingVal)
 	{
-		if (portIndex >= _dampingParams.length)
+		double[] params  = SumProductOptions.nodeSpecificDamping.getOrDefault(this).toPrimitiveArray();
+		if (params.length == 0 && dampingVal != 0.0)
 		{
-			double [] tmp = new double [portIndex+1];
-			for (int i = 0; i < _dampingParams.length; i++)
-				tmp[i] = _dampingParams[i];
-			
-			_dampingParams = tmp;
+			params = new double[getSiblingCount()];
 		}
-
-		_dampingParams[portIndex] = dampingVal;
-		
-		if (dampingVal != 0)
-			_dampingInUse = true;
-		
-		
-		_savedOutMsgArray = new double[_dampingParams.length][];
-		for (int i = 0; i < _inputMessages.length; i++)
+		if (params.length != 0)
 		{
-			int length = _inputMessages[i].length;
-			_savedOutMsgArray[i] = new double[length];
+			params[portIndex] = dampingVal;
 		}
-
+		
+		SumProductOptions.nodeSpecificDamping.set(this, params);
+		configureDampingFromOptions();
 	}
 	
 	public double getDamping(int portIndex)
@@ -582,13 +581,13 @@ public class SDiscreteVariable extends SDiscreteVariableDoubleArray
 		_logInPortMsgs = Arrays.copyOf(_logInPortMsgs, newArraySize);
 		_logInPortMsgs[portNum] = new double[_inputMessages[portNum].length];
 		
-		if (_dampingInUse)
-		{
-			_savedOutMsgArray = Arrays.copyOf(_savedOutMsgArray,newArraySize);
-			_savedOutMsgArray[portNum] = new double[_inputMessages[portNum].length];
-		}
-
-		_dampingParams = Arrays.copyOf(_dampingParams, newArraySize);
+//		if (_dampingInUse)
+//		{
+//			_savedOutMsgArray = Arrays.copyOf(_savedOutMsgArray,newArraySize);
+//			_savedOutMsgArray[portNum] = new double[_inputMessages[portNum].length];
+//		}
+//
+//		_dampingParams = Arrays.copyOf(_dampingParams, newArraySize);
 		
 		return retval;
 	}
@@ -633,4 +632,40 @@ public class SDiscreteVariable extends SDiscreteVariableDoubleArray
 	{
 		return true;
 	}
+	
+	/*-----------------
+	 * Private methods
+	 */
+	
+    private void configureDampingFromOptions()
+    {
+     	final int size = getSiblingCount();
+    	
+    	_dampingParams =
+    		getReplicatedNonZeroListFromOptions(SumProductOptions.nodeSpecificDamping, SumProductOptions.damping,
+    			size, _dampingParams);
+ 
+    	if (_dampingParams.length > 0 && _dampingParams.length != size)
+    	{
+			// TODO: use a logging API instead?
+			System.err.format("ERROR: %s has wrong number of parameters for %s\n",
+				SumProductOptions.nodeSpecificDamping, this);
+    		_dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+    	}
+    	
+    	_dampingInUse = _dampingParams.length > 0;
+    	
+    	if (!_dampingInUse)
+    	{
+    		_savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+    	}
+    	else if (_savedOutMsgArray.length != size)
+    	{
+    		_savedOutMsgArray = new double[size][];
+    		for (int i = 0; i < size; i++)
+    	    {
+    			_savedOutMsgArray[i] = new double[_inputMessages[i].length];
+    	    }
+    	}
+    }
 }

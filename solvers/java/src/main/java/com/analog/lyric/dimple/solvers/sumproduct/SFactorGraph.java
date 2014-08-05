@@ -16,7 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
-import java.util.Objects;
 import java.util.Random;
 
 import com.analog.lyric.dimple.factorfunctions.ComplexNegate;
@@ -41,7 +40,6 @@ import com.analog.lyric.dimple.factorfunctions.core.CustomFactorFunctionWrapper;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
@@ -71,7 +69,6 @@ import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultivaria
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomNormalConstantParameters;
 import com.analog.lyric.dimple.solvers.sumproduct.sampledfactor.SampledFactor;
 import com.analog.lyric.math.DimpleRandomGenerator;
-import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Nullable;
 
 public class SFactorGraph extends SFactorGraphBase
@@ -85,7 +82,7 @@ public class SFactorGraph extends SFactorGraphBase
 	private boolean _defaultOptimizedUpdateEnabled;
 
 
-	public SFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph)
+	public SFactorGraph(FactorGraph factorGraph)
 	{
 		super(factorGraph);
 		setMultithreadingManager(new MultiThreadingManager(getModelObject()));
@@ -134,10 +131,7 @@ public class SFactorGraph extends SFactorGraphBase
 			else	// No custom factor exists, so create a generic one
 			{
 				// For discrete case, create a table factor
-				STableFactor tf = new STableFactor(factor);
-				if (_damping != 0)
-					setDampingForTableFactor(tf);
-				return tf;
+				return new STableFactor(factor);
 			}
 		}
 		else	// Factor includes at least one continuous variable
@@ -253,16 +247,7 @@ public class SFactorGraph extends SFactorGraphBase
 	public void setDamping(double damping)
 	{
 		_damping = damping;
-		for (Factor f : _factorGraph.getNonGraphFactors())
-		{
-			final ISolverFactor sf = f.getSolver();
-			if (sf instanceof STableFactor)
-			{
-				// TODO: Damping currently works only on table factors, should work on all cases
-				STableFactor tf = (STableFactor)Objects.requireNonNull(sf);
-				setDampingForTableFactor(tf);
-			}
-		}
+		setOption(SumProductOptions.damping, damping);
 	}
 	
 	public double getDamping()
@@ -270,30 +255,6 @@ public class SFactorGraph extends SFactorGraphBase
 		return _damping;
 	}
 
-	/*
-	 * This method applies the global damping parameter to all of the table factor's ports
-	 * and all of the variable ports connected to it.  This might cause problems in the future
-	 * when we support different damping parameters per edge.
-	 */
-	@SuppressWarnings("null")
-	protected void setDampingForTableFactor(STableFactor tf)
-	{
-		Factor factor = tf.getFactor();
-		IMapList<INode> nodes = factor.getConnectedNodesFlat();
-		
-		for (int i = 0, endi = factor.getSiblingCount(); i < endi; i++)
-		{
-			tf.setDamping(i,_damping);
-			VariableBase var = (VariableBase)nodes.getByIndex(i);
-			for (int j = 0, endj = var.getSiblingCount(); j < endj;j++)
-			{
-				SDiscreteVariable svar = (SDiscreteVariable)var.getSolver();
-				svar.setDamping(j,_damping);
-			}
-		}
-
-	}
-	
 	/**
 	 * Indicates if this solver supports the optimized update algorithm.
 	 * 
@@ -323,11 +284,13 @@ public class SFactorGraph extends SFactorGraphBase
 	public void setDefaultOptimizedUpdateEnabled(boolean value)
 	{
 		_defaultOptimizedUpdateEnabled = value;
+		setOption(SumProductOptions.enableOptimizedUpdate, value);
 	}
 	
 	public void setSampledFactorSamplesPerUpdate(int samplesPerUpdate)
 	{
 		_sampledFactorSamplesPerUpdate = samplesPerUpdate;
+		setOption(SumProductOptions.sampledFactorSamplesPerUpdate, samplesPerUpdate);
 		for (Factor f : _factorGraph.getNonGraphFactors())
 		{
 			ISolverFactor s = f.getSolver();
@@ -340,14 +303,15 @@ public class SFactorGraph extends SFactorGraphBase
 		return _sampledFactorSamplesPerUpdate;
 	}
 	
-	public void setSampledFactorBurnInScansPerUpdate(int burnInSamples)
+	public void setSampledFactorBurnInScansPerUpdate(int burnInScans)
 	{
-		_sampledFactorBurnInScansPerUpdate = burnInSamples;
+		_sampledFactorBurnInScansPerUpdate = burnInScans;
+		setOption(SumProductOptions.sampledFactorBurnInScansPerUpdate, burnInScans);
 		for (Factor f : _factorGraph.getNonGraphFactors())
 		{
 			ISolverFactor s = f.getSolver();
 			if (s instanceof SampledFactor)
-				((SampledFactor)s).setSamplesPerUpdate(burnInSamples);
+				((SampledFactor)s).setSamplesPerUpdate(burnInScans);
 		}
 	}
 	public int getSampledFactorBurnInScansPerUpdate()
@@ -358,6 +322,7 @@ public class SFactorGraph extends SFactorGraphBase
 	public void setSampledFactorScansPerSample(int scansPerSample)
 	{
 		_sampledFactorScansPerSample = scansPerSample;
+		setOption(SumProductOptions.sampledFactorScansPerSample, scansPerSample);
 		for (Factor f : _factorGraph.getNonGraphFactors())
 		{
 			ISolverFactor s = f.getSolver();
@@ -514,6 +479,7 @@ public class SFactorGraph extends SFactorGraphBase
 	public void initialize()
 	{
 		TableFactorEngineOptimized.clearUpdatePlans(this);
+		
 		super.initialize();
 		for (Factor f : getModelObject().getFactors())
 		{
@@ -526,6 +492,23 @@ public class SFactorGraph extends SFactorGraphBase
 			}
 		}
 		
+		//
+		// Update options
+		//
+		
+		Long seed = getOption(SumProductOptions.randomSeed);
+		if (seed != null)
+		{
+			setSeed(seed);
+		}
+		
+		_damping = getOptionOrDefault(SumProductOptions.damping);
+		
+		_sampledFactorBurnInScansPerUpdate = getOptionOrDefault(SumProductOptions.sampledFactorBurnInScansPerUpdate);
+		_sampledFactorSamplesPerUpdate = getOptionOrDefault(SumProductOptions.sampledFactorSamplesPerUpdate);
+		_sampledFactorScansPerSample = getOptionOrDefault(SumProductOptions.sampledFactorScansPerSample);
+		
+		_defaultOptimizedUpdateEnabled = getOptionOrDefault(SumProductOptions.enableOptimizedUpdate);
 	}
 
 

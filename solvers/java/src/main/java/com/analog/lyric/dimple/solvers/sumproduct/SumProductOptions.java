@@ -14,34 +14,39 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.minsum;
+package com.analog.lyric.dimple.solvers.sumproduct;
 
 import com.analog.lyric.dimple.options.SolverOptions;
 import com.analog.lyric.dimple.solvers.core.SNode;
+import com.analog.lyric.dimple.solvers.sumproduct.sampledfactor.SampledFactor;
+import com.analog.lyric.options.BooleanOptionKey;
 import com.analog.lyric.options.DoubleListOptionKey;
 import com.analog.lyric.options.DoubleOptionKey;
 import com.analog.lyric.options.IntegerOptionKey;
+import com.analog.lyric.options.LongOptionKey;
 
 /**
- * Options for {@link MinSumSolver}.
+ * Options for sum-product solver.
+ * <p>
+ * Unless otherwise noted, options are configured during initialization phase.
  * <p>
  * @since 0.07
  * @author Christopher Barber
  */
-public class MinSumOptions extends SolverOptions
+public class SumProductOptions extends SolverOptions
 {
 	/**
 	 * Global damping factor
 	 * <p>
 	 * This option may be set on entire graph or on individual discrete variables or factors.
 	 * <p>
-	 * Option is looked up on message creation and when {@linkplain SNode#initialize initialize}
-	 * is called.
-	 * <p>
 	 * @since 0.07
 	 */
 	public static final DoubleOptionKey damping =
-		new DoubleOptionKey(MinSumOptions.class, "damping", 0.0);
+		new DoubleOptionKey(SumProductOptions.class, "damping", 0.0);
+	
+	public static final BooleanOptionKey enableOptimizedUpdate =
+		new BooleanOptionKey(SumProductOptions.class, "enableOptimizedUpdate", false);
 	
 	/**
 	 * Maximum size of discrete belief messages.
@@ -52,8 +57,8 @@ public class MinSumOptions extends SolverOptions
 	 * @since 0.07
 	 */
 	public static final IntegerOptionKey maxMessageSize =
-		new IntegerOptionKey(MinSumOptions.class, "maxMessageSize", Integer.MAX_VALUE);
-
+		new IntegerOptionKey(SumProductOptions.class, "maxMessageSize", Integer.MAX_VALUE);
+	
 	/**
 	 * Node specific damping values.
 	 * <p>
@@ -67,5 +72,21 @@ public class MinSumOptions extends SolverOptions
 	 * @since 0.07
 	 */
 	public static final DoubleListOptionKey nodeSpecificDamping =
-		new DoubleListOptionKey(MinSumOptions.class, "nodeSpecificDamping");
+		new DoubleListOptionKey(SumProductOptions.class, "nodeSpecificDamping");
+	
+	public static final LongOptionKey randomSeed =
+		new LongOptionKey(SumProductOptions.class, "randomSeed");
+
+	public static final IntegerOptionKey sampledFactorBurnInScansPerUpdate =
+		new IntegerOptionKey(SumProductOptions.class, "sampledFactorBurnInScansPerUpdate",
+			SampledFactor.DEFAULT_BURN_IN_SCANS_PER_UPDATE);
+	
+	public static final IntegerOptionKey sampledFactorSamplesPerUpdate =
+		new IntegerOptionKey(SumProductOptions.class, "sampledFactorSamplesPerUpdate",
+			SampledFactor.DEFAULT_SAMPLES_PER_UPDATE);
+	
+	public static final IntegerOptionKey sampledFactorScansPerSample =
+		new IntegerOptionKey(SumProductOptions.class, "sampledFactorScansPerSample",
+			SampledFactor.DEFAULT_SCANS_PER_SAMPLE);
+	
 }

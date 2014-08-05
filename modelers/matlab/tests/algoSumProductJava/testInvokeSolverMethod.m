@@ -22,6 +22,7 @@ function testInvokeSolverMethod
        assert(fs(i).Solver.getK()==5);
     end
     fg.invokeSolverMethod('setDamping',.4);
+    fg.initialize();
     for i = 1:length(b)
        assert(b(i).Solver.getDamping(0)==.4);
     end

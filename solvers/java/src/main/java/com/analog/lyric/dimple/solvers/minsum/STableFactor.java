@@ -59,8 +59,6 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 			_kbestFactorEngine = new KBestFactorTableEngine(this);
 		else
 			_kbestFactorEngine = new KBestFactorEngine(this);
-		
-		//setK(Integer.MAX_VALUE);
 	}
     
     /*---------------------

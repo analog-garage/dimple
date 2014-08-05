@@ -578,14 +578,11 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		{
 			final double[] outputMsg = tableFactor.getOutPortMsgs()[_outPortNum];
 
-			final double damping = tableFactor._dampingParams[_outPortNum];
-			if (tableFactor._dampingInUse)
+			final double damping = tableFactor.getDamping(_outPortNum);
+			if (damping != 0)
 			{
-				if (damping != 0)
-				{
-					final double[] saved = tableFactor._savedOutMsgArray[_outPortNum];
-					System.arraycopy(outputMsg, 0, saved, 0, outputMsg.length);
-				}
+				final double[] saved = tableFactor._savedOutMsgArray[_outPortNum];
+				System.arraycopy(outputMsg, 0, saved, 0, outputMsg.length);
 			}
 
 			double sum = 0.0;
@@ -610,15 +607,12 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 				outputMsg[i] /= sum;
 			}
 
-			if (tableFactor._dampingInUse)
+			if (damping != 0)
 			{
-				if (damping != 0)
+				final double[] saved = tableFactor._savedOutMsgArray[_outPortNum];
+				for (int i = 0; i < outputMsgLength; i++)
 				{
-					final double[] saved = tableFactor._savedOutMsgArray[_outPortNum];
-					for (int i = 0; i < outputMsgLength; i++)
-					{
-						outputMsg[i] = (1 - damping) * outputMsg[i] + damping * saved[i];
-					}
+					outputMsg[i] = (1 - damping) * outputMsg[i] + damping * saved[i];
 				}
 			}
 		}
@@ -648,8 +642,8 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		{
 			final double[] outputMsg = tableFactor.getOutPortMsgs()[_outPortNum];
 
-			final double damping = tableFactor._dampingParams[_outPortNum];
-			if (tableFactor._dampingInUse && damping != 0)
+			final double damping = tableFactor.getDamping(_outPortNum);
+			if (damping != 0)
 			{
 				final double[] saved = tableFactor._savedOutMsgArray[_outPortNum];
 				System.arraycopy(outputMsg, 0, saved, 0, outputMsg.length);
@@ -679,7 +673,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 				outputMsg[i] /= sum;
 			}
 
-			if (tableFactor._dampingInUse && damping != 0)
+			if (damping != 0)
 			{
 				final double[] saved = tableFactor._savedOutMsgArray[_outPortNum];
 				for (int i = 0; i < outputMsgLength; i++)
