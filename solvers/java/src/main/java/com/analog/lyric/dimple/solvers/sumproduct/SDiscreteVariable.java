@@ -580,15 +580,7 @@ public class SDiscreteVariable extends SDiscreteVariableDoubleArray
 		int newArraySize = _inputMessages.length;
 		_logInPortMsgs = Arrays.copyOf(_logInPortMsgs, newArraySize);
 		_logInPortMsgs[portNum] = new double[_inputMessages[portNum].length];
-		
-//		if (_dampingInUse)
-//		{
-//			_savedOutMsgArray = Arrays.copyOf(_savedOutMsgArray,newArraySize);
-//			_savedOutMsgArray[portNum] = new double[_inputMessages[portNum].length];
-//		}
-//
-//		_dampingParams = Arrays.copyOf(_dampingParams, newArraySize);
-		
+
 		return retval;
 	}
 	

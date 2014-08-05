@@ -158,20 +158,6 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	public void createMessages()
 	{
 		super.createMessages();
-		
-//		int numPorts = _factor.getSiblingCount();
-//
-//
-//	    if (_dampingInUse)
-//	    {
-//	    	_savedOutMsgArray = new double[numPorts][];
-//
-//    		for (int port = 0; port < numPorts; port++)
-//    				_savedOutMsgArray[port] = new double[_inputMsgs[port].length];
-//	    }
-//
-//		setK(getOptionOrDefault(SumProductOptions.maxMessageSize));
-
 	}
 
 	/*
