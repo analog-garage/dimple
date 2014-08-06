@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.minsum;
 import java.util.Arrays;
 
 import com.analog.lyric.collect.ArrayUtil;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
@@ -307,8 +308,7 @@ public class SVariable extends SDiscreteVariableDoubleArray
  
     	if (_dampingParams.length > 0 && _dampingParams.length != size)
     	{
-			// TODO: use a logging API instead?
-			System.err.format("ERROR: %s has wrong number of parameters for %s\n",
+			DimpleEnvironment.logWarning("%s has wrong number of parameters for %s\n",
 				MinSumOptions.nodeSpecificDamping, this);
     		_dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
     	}

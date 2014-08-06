@@ -20,6 +20,7 @@ import java.util.Arrays;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.Selection;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
@@ -292,8 +293,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
  
     	if (_dampingParams.length > 0 && _dampingParams.length != size)
     	{
-			// TODO: use a logging API instead?
-			System.err.format("ERROR: %s has wrong number of parameters for %s\n",
+			DimpleEnvironment.logWarning("%s has wrong number of parameters for %s\n",
 				MinSumOptions.nodeSpecificDamping, this);
     		_dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
     	}

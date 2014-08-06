@@ -110,6 +110,7 @@ public class TestDimpleEnvironment
 		
 		Logger defaultLogger = env.logger();
 		assertSame(defaultLogger, Logger.getLogger("com.analog.lyric.dimple"));
+		assertSame(defaultLogger, DimpleEnvironment.getDefaultLogger());
 		
 		TestLogger testLogger = new TestLogger("com.analog.lyric.dimple");
 		env.setLogger(testLogger);
@@ -121,7 +122,7 @@ public class TestDimpleEnvironment
 		assertEquals("'hi there'", record.getMessage());
 		assertTrue(testLogger.loggedRecords().isEmpty());
 
-		DimpleEnvironment.logSevere("'%s'","whoops");
+		DimpleEnvironment.logError("'%s'","whoops");
 		record = testLogger.loggedRecords().remove();
 		assertEquals(Level.SEVERE, record.getLevel());
 		assertEquals("'whoops'", record.getMessage());

@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import com.analog.lyric.collect.ArrayUtil;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -639,8 +640,7 @@ public class SDiscreteVariable extends SDiscreteVariableDoubleArray
  
     	if (_dampingParams.length > 0 && _dampingParams.length != size)
     	{
-			// TODO: use a logging API instead?
-			System.err.format("ERROR: %s has wrong number of parameters for %s\n",
+			DimpleEnvironment.logWarning("%s has wrong number of parameters for %s\n",
 				SumProductOptions.nodeSpecificDamping, this);
     		_dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
     	}

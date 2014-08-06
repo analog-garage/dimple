@@ -29,6 +29,7 @@ import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.collect.ReleasableIterator;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 
@@ -201,7 +202,8 @@ public final class OptionKeys extends AbstractList<IOptionKey<?>>
 						}
 						else
 						{
-							System.err.format("WARNING: option key name mismatch '%s' vs '%s' in class '%s'\n",
+							DimpleEnvironment.logWarning(
+								"option key name mismatch '%s' vs '%s' in class '%s'\n",
 								field.getName(), option.name(), declaringClass.getName());
 						}
 					}

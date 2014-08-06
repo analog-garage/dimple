@@ -75,8 +75,7 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 */
 	public DimpleEnvironment()
 	{
-		final Logger logger = Logger.getLogger("com.analog.lyric.dimple");
-		_logger.set(logger);
+		_logger.set(getDefaultLogger());
 	}
 	
 	/*----------------
@@ -178,9 +177,22 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	{
 	}
 	
-	/*---------------------------
-	 * DimpleEnvironment methods
+	/*-----------------
+	 * Logging methods
 	 */
+	
+	/**
+	 * Returns default logger instance.
+	 * <p>
+	 * This is obtained by invoking
+	 * {@linkplain Logger#getLogger(String) Logger.getLogger("com.analog.lyric.dimple")}.
+	 * <p>
+	 * @since 0.07
+	 */
+	public static Logger getDefaultLogger()
+	{
+		return Logger.getLogger("com.analog.lyric.dimple");
+	}
 	
 	/**
 	 * Logs a warning message using the thread-specific Dimple logger.
@@ -196,7 +208,22 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 */
 	public static void logWarning(String format, Object ... args)
 	{
-		local().logger().warning(String.format(format, args));
+		logWarning(String.format(format, args));
+	}
+	
+	/**
+	 * Logs a warning message using the thread-specific Dimple logger.
+	 * <p>
+	 * This is simply shorthand for:
+	 * <blockquote>
+     *   local().logger().warning(message);
+	 * </blockquote>
+	 * <p>
+	 * @since 0.07
+	 */
+	public static void logWarning(String message)
+	{
+		local().logger().warning(message);
 	}
 	
 	/**
@@ -211,17 +238,30 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 * @param args zero or more format arguments.
 	 * @since 0.07
 	 */
-	public static void logSevere(String format, Object ... args)
+	public static void logError(String format, Object ... args)
 	{
-		local().logger().severe(String.format(format, args));
+		logError(String.format(format, args));
+	}
+	
+	/**
+	 * Logs a warning message using the thread-specific Dimple logger.
+	 * <p>
+	 * This is simply shorthand for:
+	 * <blockquote>
+     *   local().logger().severe(message);
+	 * </blockquote>
+	 * <p>
+	 * @since 0.07
+	 */
+	public static void logError(String message)
+	{
+		local().logger().severe(message);
 	}
 	
 	/**
 	 * The environment-specific logger instance.
 	 * <p>
-	 * By default this is obtained by invoking
-	 * {@linkplain Logger#getLogger(String) Logger.getLogger("com.analog.lyric.dimple")}
-	 * when the environment is first initialized.
+	 * By default this is set to {@link #getDefaultLogger()} when the environment is initialized.
 	 * <p>
 	 * Logging is typically configured using Java system properties, which is described
 	 * in the documentation for {@link java.util.logging.LogManager}. You can also configure
@@ -229,7 +269,7 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 * <p>
 	 * @see #setLogger
 	 * @see #logWarning
-	 * @see #logSevere
+	 * @see #logError
 	 * @see java.util.logging.Logger
 	 * @see java.util.logging.LogManager
 	 * @since 0.07

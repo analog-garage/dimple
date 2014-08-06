@@ -255,4 +255,8 @@ public class ModelFactory
 		return ThreadPool.getNumThreads();
 	}
 	
+	public PLogger getLogger()
+	{
+		return PLogger.INSTANCE;
+	}
 }
