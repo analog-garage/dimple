@@ -56,7 +56,7 @@ public class SumProductOptions extends SolverOptions
 	 * If less than the full domain size of the message, then messages will be truncated
 	 * to this number of dimensions with the lowest weight dimensions omitted.
 	 * <p>
-	 * Must be a postive number.
+	 * Must be a positive number.
 	 * <p>
 	 * @since 0.07
 	 */
