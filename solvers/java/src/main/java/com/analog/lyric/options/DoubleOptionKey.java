@@ -103,7 +103,8 @@ public class DoubleOptionKey extends OptionKey<Double>
 	public Double validate(Double value)
 	{
 		value = super.validate(value);
-		if (value < _lowerBound || value > _upperBound)
+		// This is written in this fashion to correctly handle NaN values.
+		if (!(value >= _lowerBound && value <= _upperBound))
 		{
 			throw new OptionValidationException("Value %f is not in range [%f,%f].",
 				value, _lowerBound, _upperBound);
