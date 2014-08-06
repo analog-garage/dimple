@@ -114,6 +114,11 @@ public class TestParameters
 		public void unset(IOptionHolder holder) { holder.unsetOption(this); }
 		 @Override
 		 public RealDomain domain() { return _domain; }
+			@Override
+			public Double validate(Double value)
+			{
+				return type().cast(value);
+			}
 	}
 	
 	public static class Param1 extends ParameterList1<Alpha>
