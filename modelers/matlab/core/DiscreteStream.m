@@ -28,7 +28,7 @@ classdef DiscreteStream < VariableStreamBase
                 numStreams);
             
             obj@VariableStreamBase(IDiscreteStream,varargin{:});
-
+            obj.Domain = domain;
         end
     end
     methods(Access=protected)

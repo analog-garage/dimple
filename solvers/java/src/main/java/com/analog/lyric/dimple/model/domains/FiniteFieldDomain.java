@@ -38,6 +38,11 @@ public class FiniteFieldDomain extends TypedDiscreteDomain<FiniteFieldNumber>
 	 * Construction
 	 */
 	
+	public static FiniteFieldDomain create(int primitivePolynomial)
+	{
+		return new FiniteFieldDomain(primitivePolynomial);
+	}
+	
 	FiniteFieldDomain(int primitivePolynomial)
 	{
 		super(computeHashCode(primitivePolynomial));

@@ -17,7 +17,11 @@
 classdef Complex < RealJoint
    methods
        function obj = Complex(varargin)
-           obj@RealJoint(2,varargin{:});
+           % If the first argument isn't already a ComplexDomain, make one
+           if (isempty(varargin) || ~isa(varargin{1}, 'ComplexDomain'))
+               varargin = [{ComplexDomain()}, varargin];
+           end
+           obj@RealJoint(varargin{:});
        end
    end
    

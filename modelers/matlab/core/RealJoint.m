@@ -35,24 +35,15 @@ classdef RealJoint < VariableBase
                 % the number of dimensions in the joint varaible
                 if (isa(varargin{1}, 'RealJointDomain'));
                     domain = varargin{1};
-                    nextArg = 2;
-                elseif (isnumeric(varargin{1}) && (nargin > 1) && isa(varargin{2}, 'RealJointDomain'))
-                    % This case is for Complex, where size 2 is always
-                    % passed as the first argument
-                    domain = varargin{2};
-                    if (varargin{1} ~= domain.NumElements);
-                        error('Number of domain elements must match the number of joint variable elements');
-                    end
-                    nextArg = 3;
                 else
                     domain = RealJointDomain(varargin{1});
-                    nextArg = 2;
                 end
+                nextArg = 2;
                 obj.Domain = domain;
                
                 % Determine the size of the array of RealJoint variables
                 if nargin < nextArg
-                    dims = 1;
+                    dims = [1 1];
                 else
                     dimArgs = varargin(nextArg:end);
                     dims = [dimArgs{:}];
@@ -67,9 +58,6 @@ classdef RealJoint < VariableBase
                 varMat = modeler.createRealJointVariableVector(class(obj),domain.IDomain,numEls);
                 obj.VectorObject = varMat;
                 obj.VectorIndices = 0:(numEls-1);
-                if length(dims)==1
-                    dims = [dims 1];
-                end
                 obj.VectorIndices = reshape(obj.VectorIndices,dims);
             end
             

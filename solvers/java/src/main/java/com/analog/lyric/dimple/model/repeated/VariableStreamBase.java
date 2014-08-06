@@ -130,6 +130,12 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 		}
 	}
 	
+	public Domain getDomain()
+	{
+		return _domain;
+	}
+
+	
 	abstract protected VariableBase instantiateVariable(Domain domain) ;
 	
 	protected VariableBase createVariable()

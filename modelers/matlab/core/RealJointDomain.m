@@ -18,13 +18,16 @@ classdef RealJointDomain < Domain
     
     properties
         NumElements;
+        RealDomains;
     end
     
     methods
         function obj = RealJointDomain(varargin)
             
-            %should allow either a number or a vector of RealDomains
-            if length(varargin) == 1
+            % Either a number or a vector of RealDomains
+            if isempty(varargin)
+                error('Constructor is missing arguments');
+            elseif length(varargin) == 1
                 arg = varargin{1};
                 if isa(arg, 'com.analog.lyric.dimple.matlabproxy.PRealJointDomain')
                     obj.IDomain = arg;
@@ -34,11 +37,19 @@ classdef RealJointDomain < Domain
                     for i = 1:length(domains)
                         domains{i} = RealDomain();
                     end
+                else
+                    domains = arg;
                 end
             else
                 if isnumeric(varargin{1})
+                    dimension = varargin{1};
                     domains = varargin(2:end);
-                    if (numel(domains) ~= varargin{1});
+                    if (numel(domains) == 1)
+                        domains = cell(1,dimension);
+                        for i=1:dimension
+                            domains{i} = varargin{2};
+                        end
+                    elseif (numel(domains) ~= dimension);
                         error('Number of domain elements must match the number of joint variable elements');
                     end
                 else
@@ -53,6 +64,7 @@ classdef RealJointDomain < Domain
             
             modeler = getModeler();
             obj.IDomain = modeler.createRealJointDomain(idomains);
+            obj.RealDomains = domains;
         end
         
         function retval = isDiscrete(obj)
