@@ -64,7 +64,7 @@ public class GibbsOptions extends SolverOptions
 	 * <description>
 	 */
 	public static final IntegerOptionKey numRandomRestarts =
-		new IntegerOptionKey(GibbsOptions.class, "numRandomRestarts", 0);
+		new IntegerOptionKey(GibbsOptions.class, "numRandomRestarts", 0, 0, Integer.MAX_VALUE);
 	
 	/**
 	 * <description>

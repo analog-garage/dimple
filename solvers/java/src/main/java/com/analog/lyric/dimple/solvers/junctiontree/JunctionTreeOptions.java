@@ -59,14 +59,14 @@ public class JunctionTreeOptions extends SolverOptions
 	 * variables that have equivalent costs. A higher number of iterations may produce a better
 	 * ordering.
 	 * <p>
-	 * Default value is specified by
+	 * Must be a positive value. Default value is specified by
 	 * {@link JunctionTreeTransform#DEFAULT_MAX_TRANSFORMATION_ATTEMPTS}.
 	 * <p>
 	 * @since 0.07
 	 */
 	public static final IntegerOptionKey maxTransformationAttempts =
 		new IntegerOptionKey(JunctionTreeOptions.class, "maxTransformationAttempts",
-			JunctionTreeTransform.DEFAULT_MAX_TRANSFORMATION_ATTEMPTS);
+			JunctionTreeTransform.DEFAULT_MAX_TRANSFORMATION_ATTEMPTS, 1, Integer.MAX_VALUE);
 	
 	/**
 	 * If set, specifies the random seed to be used by the variable elimination algorithm.
