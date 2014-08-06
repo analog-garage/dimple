@@ -59,6 +59,23 @@ var.setLabel('string');
 \fi
 
 
+\subpara{Domain}
+
+Read-only.  Returns the domain in a form that depends on the variable type, as summarized in the following table:
+
+\begin{longtable} {l | p{7cm}}
+Variable Type & Domain Data Type \\
+\hline
+\endhead
+Discrete & DiscreteDomain (see section~\ref{sec:DiscreteDomain}) \\
+Bit & DiscreteDomain (see section~\ref{sec:DiscreteDomain}) \\
+Real & RealDomain (see section~\ref{sec:RealDomain}) \\
+RealJoint & RealJointDomain (see section~\ref{sec:RealJointDomain}) \\ 
+Complex & ComplexDomain (see section~\ref{sec:ComplexDomain}) \\
+FiniteFieldVariable & FiniteFieldDomain (see section~\ref{sec:FiniteFieldDomain}) \\
+\end{longtable} 
+
+
 \subpara{Solver}
 
 Read-only.  Returns the solver-object associated with the variable, to which solver-specific methods can be called.  See section~\ref{sec:SolversAPI}, which describes the solvers, including the solver-specific methods for each solver.
@@ -343,11 +360,6 @@ With k dimensions specified, n1, n2, ..., nk, a multidimensional variable array 
 
 \para{Properties}
 
-\subpara{Domain}
-\label{sec:Discrete.Domain}
-
-Read-only.  The Domain property returns the domain of that variable in the form of a DiscreteDomain object.
-
 \subpara{Belief}
 \label{sec:Discrete.Belief}
 
@@ -436,10 +448,6 @@ Bit()
 
 \para{Properties}
 
-\subpara{Domain}
-
-See section~\ref{sec:Discrete.Domain}.
-
 \subpara{Belief}
 
 Read-only.  For a single Bit variable, the Belief property is a single number that represents the estimated marginal probability of the value one.
@@ -484,7 +492,7 @@ Real([domain], [dimensions])
 \begin{lstlisting}
 Real()
 Real(RealDomain domain)
-Real(lowerBound, upperBound)
+Real(double lowerBound, double upperBound)
 \end{lstlisting}
 \fi
 
@@ -499,7 +507,7 @@ All arguments are optional and can be used in any combination.
 
 \ifjava
 \begin{itemize}
-\item domain specifies a bound on the domain of the variable. It can either be specified as two elements or a RealDomain object (see section~\ref{sec:RealDomain}).  If specified as two values, the first element is the lower bound and the second element is the upper bound. -Inf and Inf are allowed values for the lower or upper bound, respectively.  If no domain is specified, then a domain from $-\infty$ to $\infty$ is assumed.
+\item domain specifies a bound on the domain of the variable. It can either be specified as two elements or a RealDomain object (see section~\ref{sec:RealDomain}).  If specified as two values, the first element is the lower bound and the second element is the upper bound. Negative infinity and positive infinity are allowed values for the lower or upper bound, respectively.  If no domain is specified, then a domain from $-\infty$ to $\infty$ is assumed.
 \end{itemize}
 \fi
 
@@ -526,10 +534,6 @@ Examples:
 
 
 \para{Properties}
-
-\subpara{Domain}
-
-Read-only.  The Domain property returns the domain of that variable in the form of a RealDomain object (see section~\ref{sec:RealDomain}).
 
 \subpara{Belief}
 
@@ -621,14 +625,15 @@ Like other variables, the RealJoint class can represent either a single RealJoin
 
 \ifmatlab
 \begin{lstlisting}
-RealJoint([domain], numElements, [dimensions])
+RealJoint(domain, [dimensions])
+RealJoint(numElements, [dimensions])
 \end{lstlisting}
 
 The arguments are defined as follows:
 
 \begin{itemize}
-\item domain specifies a bound on the domain of the variable.  It is specified by a RealJointDomain object (see section~\ref{sec:RealJointDomain}).  If no domain is specified, then an unbounded domain is assumed.
-\item numElements specifies the number of joint real-valued elements.
+\item domain specifies a bound on the domain of the variable.  It is specified by a RealJointDomain object (see section~\ref{sec:RealJointDomain}).  If no domain is specified, then an unbounded domain is assumed and numElements must be specified instead.
+\item numElements specifies the number of joint real-valued elements. This argument is present only if the domain argument is not specified.
 \item dimensions specify the array dimensions (the array of individual RealJoint variables).  The behavior of the list of dimensions is identical to that for Discrete variables as described in section~\ref{sec:VariableMatrixDimensions}.
 \end{itemize}
 \fi
@@ -649,15 +654,10 @@ The arguments are defined as follows:
 
 \para{Properties}
 
-\subpara{Domain}
-\label{sec:RealJoint.Domain}
-
-Read-only.  The Domain property returns the domain of that variable in the form of a RealJointDomain object (see section~\ref{sec:RealJointDomain}).
-
 \subpara{Belief}
 \label{sec:RealJoint.Belief}
 
-Read-only.  The behavior of this property for Real variables is solver specific.  Some solvers do not support this property at all and will return an error when read.  See section~\ref{sec:SolversAPI} for more detail on each of the supported solvers.
+Read-only.  The behavior of this property for RealJoint variables is solver specific.  Some solvers do not support this property at all and will return an error when read.  See section~\ref{sec:SolversAPI} for more detail on each of the supported solvers.
 
 For the SumProduct solver, this property returns the estimated marginal distribution of the variable in the form of a MultivariateNormalParameters object (see section~\ref{sec:MultivariateNormalParameters}), which includes a mean vector and covariance matrix.  \ifmatlab For an array of RealJoint variables, this property returns a cell array of MultivariateNormalParameters objects, each corresponding to the estimated marginal distribution of the corresponding variable. \fi The results are undefined if called prior to running a solver.
 
@@ -796,13 +796,9 @@ The arguments are defined as follows:
 
 \para{Properties}
 
-\subpara{Domain}
-
-Read-only.  See section~\ref{sec:RealJoint.Domain}.
-
 \subpara{Belief}
 
-Read-only.  See section~\ref{sec:RealJoint.Domain}.
+Read-only.  See section~\ref{sec:RealJoint.Belief}.
 
 \subpara{Value}
 
@@ -879,16 +875,23 @@ by Discrete variables. DiscreteDomain objects are immutable.
 
 \para{Construction}
 
+
+\ifmatlab
 \begin{lstlisting}
 DiscreteDomain(elementList)
 \end{lstlisting}
 
-\ifmatlab
 The elementList argument is either a cell array or array of domain elements.  Every entry of the array or cell array is considered an element of the domain, regardless of the number of dimensions it has.  For a cell array, each object in the cell array is considered an element of the domain regardless of the object type.  For a numeric array, every entry in the array must be numeric.
 \fi
 
 \ifjava
-The elementList argument is either an array or array of domain elements.  Every entry of the array is considered an element of the domain, regardless of the number of dimensions it has.  For an array of Objects, each object in the array is considered an element of the domain regardless of the object type.  For a numeric array, every entry in the array must be numeric.
+Construction of a DiscreteDomain object is done using the static create method.
+
+\begin{lstlisting}
+DiscreteDomain.create(Object[] elementList)
+\end{lstlisting}
+
+The elementList argument is an array of domain elements.  Every entry of the array is considered an element of the domain, regardless of the number of dimensions it has.  For an array of Objects, each object in the array is considered an element of the domain regardless of the object type.  For a numeric array, every entry in the array must be numeric.
 \fi
 
 \para{Properties}
@@ -919,15 +922,16 @@ RealDomain([lowerBound, [upperBound] ])
 \fi
 
 \ifjava
+Construction of a RealDomain object is done using the static create method.
+
 \begin{lstlisting}
-RealDomain(lowerBound,upperBound)
-RealDomain()
-RealDomain(double [] bounds)
+RealDomain.create()
+RealDomain.create(lowerBound,upperBound)
 \end{lstlisting}
 
 \begin{itemize}
-\item lowerBound indicates the lower bound of the domain.  The value must be a scalar numeric value.  It may be set to -Inf to indicate that there is no lower bound.  The default value is -Inf.
-\item upperBound indicates the upper bound of the domain.  The value must be a scalar numeric value.  It may be set to Inf to indicate that there is no upper bound.  The default value is Inf.
+\item lowerBound indicates the lower bound of the domain.  The value must be a scalar numeric value.  It may be set to negative infinity to indicate that there is no lower bound.  If the create method with no arguments is used, the default lower bound is negative infinity.
+\item upperBound indicates the upper bound of the domain.  The value must be a scalar numeric value.  It may be set to positive infinity to indicate that there is no upper bound.  If the create method with no arguments is used, the default upper bound is positive infinity.
 \end{itemize}
 
 \fi
@@ -941,7 +945,7 @@ RealDomain(double [] bounds)
 \subpara{LowerBound}
 \fi
 
-Read-only.  This property returns the value of the lower bound.  The default value is -Inf.
+Read-only.  This property returns the value of the lower bound.  The default value is negative infinity.
 
 \ifmatlab
 \subpara{UB}
@@ -950,7 +954,7 @@ Read-only.  This property returns the value of the lower bound.  The default val
 \subpara{UpperBound}
 \fi
 
-Read-only.  This property returns the value of the upper bound.  The default value is Inf.
+Read-only.  This property returns the value of the upper bound.  The default value is positive infinity.
 
 
 
@@ -963,34 +967,46 @@ The RealJointDomain class is used to refer to the domain of RealJoint variables.
 
 \ifmatlab
 \begin{lstlisting}
-RealJointDomain([numDimensions], [listOfRealDomains]);
+RealJointDomain(numDimensions);
+RealJointDomain(listOfRealDomains);
+RealJointDomain(numDimensions, realDomain);
 \end{lstlisting}
 
 \begin{itemize}
-\item numDimensions indicates the number of dimensions in the domain of the RealJoint variable.  May be omitted only if the listOfRealDomains arguments are present.  In that case, the length of that list determines the dimension.
-\item listOfRealDomains comma-separated list of RealDomain objects, one for each dimension.  Each RealDomain in the list indicates the domain for the corresponding dimension of the RealJoint variable.  If no listOfRealDomains is specified, then all dimensions are assumed to be unbounded.
+\item numDimensions indicates the number of dimensions in the domain of the RealJoint variable.  If the form of constructor that specifies numDimensions is called, then all dimensions are assumed to be unbounded.
+\item listOfRealDomains is a comma-separated list or cell array of RealDomain objects, one for each dimension.  Each RealDomain in the list indicates the domain for the corresponding dimension of the RealJoint variable.
+\item realDomain specifies a single RealDomain.  If the number of dimensions is specified along with a single RealDomain, then that RealDomain is used for each dimension of the domain of the RealJoint variable.
 \end{itemize}
 \fi
 
 \ifjava
+Construction of a RealJointDomain object is done using the static create method.
+
 \begin{lstlisting}
-RealJointDomain(int size)
-RealJointDomain(RealDomain... domains)
+RealJointDomain.create(int size)
+RealJointDomain.create(RealDomain... domains)
+RealJointDomain.create(RealDomain domain, int size)
 \end{lstlisting}
 
 \begin{itemize}
-\item size indicates the number of dimensions in the domain of the RealJoint variable.  If the version of the constructor that specifies only the size is called, then all dimensions are assumed to be unbounded.
+\item size indicates the number of dimensions in the domain of the RealJoint variable.  If the form of create that specifies only the size is called, then all dimensions are assumed to be unbounded.
 \item domains is a list or array of RealDomain objects, one for each dimension.  Each RealDomain in the list indicates the domain of the corresponding dimension of the RealJoint variable.  The number of entries determines the number of dimensions.
+\item domain indicates a single RealDomain that is to be used for all dimensions of the RealJoint variable.  In this form of create, the size must also be specified to indicate the number of dimensions of the RealJoint variable.
 \end{itemize}
 \fi
 
-\ifmatlab
 \para{Properties}
 
+\ifmatlab
 \subpara{NumElements}
 
 Read-only.  Indicates the number of elements in the RealJointDomain, which corresponds to the number of dimensions of an associated RealJoint variable.
 \fi
+
+\subpara{RealDomains}
+
+Read-only.  Returns the collection of RealDomains that correspond to each dimension of the RealJointDomain.
+
 
 \ifjava
 \para{Methods}
@@ -1002,14 +1018,6 @@ domain.getNumVars();
 \end{lstlisting}
 
 Returns the number of elements in the RealJointDomain, which corresponds to the number of dimensions of an associated RealJoint variable.
-
-\subpara{getRealDomains}
-
-\begin{lstlisting}
-domain.getRealDomains();
-\end{lstlisting}
-
-Returns the collection of RealDomains that correspond to each dimension of the RealJointDomain.
 
 \subpara{getRealDomain}
 
@@ -1031,32 +1039,44 @@ The ComplexDomain class, a subclass of the RealJointDomain class, is used to ref
 
 \ifmatlab
 \begin{lstlisting}
-ComplexDomain([listOfRealDomains]);
+ComplexDomain();
+ComplexDomain(listOfRealDomains);
+ComplexDomain(realDomain);
 \end{lstlisting}
 
 \begin{itemize}
-\item listOfRealDomains comma-separated list of exactly two RealDomain objects, one for each dimension.  Each RealDomain in the list indicates the domain for the corresponding dimension of the Complex variable (real followed by imaginary).  If no listOfRealDomains is specified, then both dimensions are assumed to be unbounded.
+\item listOfRealDomains comma-separated list of exactly two RealDomain objects, one for each dimension.  Each RealDomain in the list indicates the domain for the corresponding dimension of the Complex variable (real followed by imaginary).  If no RealDomains are specified, then both dimensions are assumed to be unbounded.
+\item realDomain specifies a single RealDomain to apply to both dimensions of the domain of the Complex variable.
 \end{itemize}
 \fi
 
 \ifjava
+Construction of a ComplexDomain object is done using the static create method.
+
 \begin{lstlisting}
-ComplexDomain()
-ComplexDomain(RealDomain... domains)
+ComplexDomain.create()
+ComplexDomain.create(RealDomain... domains)
+ComplexDomain.create(RealDomain domain)
 \end{lstlisting}
 
 \begin{itemize}
-\item domains is a list or array of RealDomain objects, one for each dimension.  Each RealDomain in the list indicates the domain of the corresponding dimension of the Complex variable (real followed by imaginary).  If no domains argument is specified, then both dimensions are assumed to be unbounded.
+\item domains is an array of exactly two RealDomain objects, one for each dimension.  Each RealDomain in the list indicates the domain of the corresponding dimension of the Complex variable (real followed by imaginary).  If no domains argument is specified, then both dimensions are assumed to be unbounded.
+\item domain is a single RealDomain object.  When only one RealDomain object is specified, the same RealDomain is used for both dimensions.
 \end{itemize}
 \fi
 
-\ifmatlab
 \para{Properties}
 
+\ifmatlab
 \subpara{NumElements}
 
 Read-only.  Indicates the number of elements in the ComplexDomain, which should always equal two.
 \fi
+
+\subpara{RealDomains}
+
+Read-only.  Returns the collection of RealDomains that correspond to each dimension of the ComplexDomain (real followed by imaginary).
+
 
 \ifjava
 \para{Methods}
@@ -1068,14 +1088,6 @@ domain.getNumVars();
 \end{lstlisting}
 
 Returns the number of elements in the ComplexDomain, which should always equal two.
-
-\subpara{getRealDomains}
-
-\begin{lstlisting}
-domain.getRealDomains();
-\end{lstlisting}
-
-Returns the collection of RealDomains that correspond to each dimension of the ComplexDomain (real followed by imaginary).
 
 \subpara{getRealDomain}
 
@@ -1096,10 +1108,24 @@ The FiniteFieldDomain class represents the domain of a FiniteFieldVariable.  Fin
 
 \para{Construction}
 
+\ifmatlab
 \begin{lstlisting}
 FiniteFieldDomain(primitivePolynomial)
 \end{lstlisting}
-The primitive polynomial is an integer representation of the primitive polynomial of the finite field.
+\fi
+
+\ifjava
+Construction of a FiniteFieldDomain object is done using the static create method.
+
+\begin{lstlisting}
+FiniteFieldDomain.create(primitivePolynomial)
+\end{lstlisting}
+\fi
+
+\begin{itemize}
+\item primitivePolynomial is an integer representation of the primitive polynomial of the finite field.
+\end{itemize}
+
 
 \para{Properties}
 

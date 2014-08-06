@@ -16,22 +16,34 @@
 
 classdef RealJointStream < VariableStreamBase
     methods
-        function obj = RealJointStream(numVars,varargin)
+        function obj = RealJointStream(varargin)
             
-            dims = cell2mat(varargin);
-            if isempty(dims)
-                dims = [1 1];
+            % First argument can be either a RealJointDomain or
+            % the number of dimensions in the joint varaible
+            if (isa(varargin{1}, 'RealJointDomain'));
+                domain = varargin{1};
+            else
+                domain = RealJointDomain(varargin{1});
             end
-              
+            nextArg = 2;
+
+            % Determine the size of the array of RealJoint variables
+            if nargin < nextArg
+                dims = [1 1];
+            else
+                dimArgs = varargin(nextArg:end);
+                dims = [dimArgs{:}];
+                if size(dims) == 1
+                    dimArgs = {dimArgs{1}, dimArgs{1}};
+                    dims = [dimArgs{:}];
+                end
+            end              
             
             model = getModeler();
-            
-            domain = RealJointDomain(numVars);
-            
             stream = model.createRealJointStream(domain.IDomain,prod(dims));
             
-            obj@VariableStreamBase(stream,varargin{:});
-            
+            obj@VariableStreamBase(stream,dims);
+            obj.Domain = domain;
         end
     end
     

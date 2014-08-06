@@ -18,18 +18,40 @@ classdef RealStream < VariableStreamBase
     methods
         function obj = RealStream(varargin)
             
-            dims = cell2mat(varargin);
-            if isempty(dims)
-                dims = [1 1];
+            % Default arguments (unbounded domain, dimension 1x1)
+            if (isempty(varargin))
+                varargin = {1};
             end
             
-            model = getModeler();            
+            % First argument may be a domain
+            varargIndex = 1;
+            arg = varargin{varargIndex};
+            if (isnumeric(arg) && (length(arg) == 2))
+                domain = RealDomain(arg(1),arg(2));
+                varargIndex = varargIndex + 1;
+            elseif isa(arg, 'RealDomain')
+                domain = arg;
+                varargIndex = varargIndex + 1;
+            else
+                domain = RealDomain(-Inf,Inf);
+            end
+            if (varargIndex > length(varargin))
+                varargin = [varargin {1}];
+            end
             
-            domain = RealDomain(-Inf,Inf);
-                        
+            % Remaining arguments are array dimension
+            dimArgs = varargin(varargIndex:end);
+            dims = [dimArgs{:}];
+            if size(dims) == 1
+                dimArgs = {dimArgs{1}, dimArgs{1}};
+                dims = [dimArgs{:}];
+            end
+                                    
+            model = getModeler();            
             IDiscreteStream = model.createRealStream(domain.IDomain,prod(dims));
             
             obj@VariableStreamBase(IDiscreteStream,dims);
+            obj.Domain = domain;
 
         end
     end

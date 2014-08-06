@@ -19,18 +19,18 @@ classdef Real < VariableBase
         function obj = Real(varargin)
             obj@VariableBase([],[]);
             
-            numArgs = length(varargin);
-            
             if length(varargin) == 4 && strcmp('existing',varargin{2})
                 obj.Domain = varargin{1};
                 obj.VectorObject = varargin{3};
                 obj.VectorIndices = varargin{4};
             else
                 
-                if (numArgs == 0)
+                % Default arguments (unbounded domain, dimension 1x1)
+                if (isempty(varargin))
                     varargin = {1};
                 end
                 
+                % First argument may be a domain
                 varargIndex = 1;
                 arg = varargin{varargIndex};
                 if (isnumeric(arg) && (length(arg) == 2))
@@ -47,18 +47,16 @@ classdef Real < VariableBase
                     varargin = [varargin {1}];
                 end
                 
-
+                % Remaining arguments are array dimension
                 dimArgs = varargin(varargIndex:end);
-                
-                modeler = getModeler();
                 dims = [dimArgs{:}];
                 if size(dims) == 1
                     dimArgs = {dimArgs{1}, dimArgs{1}};
                     dims = [dimArgs{:}];
                 end
-                
                 numEls = prod(dims);
                 
+                modeler = getModeler();
                 VectorObject = modeler.createRealVariableVector(class(obj),domain.IDomain,numEls);
                 
                 obj.VectorObject = VectorObject;

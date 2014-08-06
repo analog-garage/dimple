@@ -23,16 +23,21 @@ classdef VariableStreamBase < IVariableStreamSlice
         Size;
         Variables;
         Dimensions;
+        Domain;
     end
     
     methods
         
         function obj = VariableStreamBase(IVariableStream,varargin)
             
-            obj.Dimensions = cell2mat(varargin);
-            if isempty(obj.Dimensions)
-                obj.Dimensions = [1 1];
+            dims = cell2mat(varargin);
+            if isempty(dims)
+                dims = [1 1];
             end
+            if (numel(dims) == 1)
+                dims = [dims(1) dims(1)];
+            end
+            obj.Dimensions = dims;
             obj.IVariableStream = IVariableStream;
         end
 
@@ -61,6 +66,10 @@ classdef VariableStreamBase < IVariableStreamSlice
         end
         function source = get.DataSource(obj)
             source = obj.getDataSource();
+        end
+        
+        function x = get.Domain(obj)
+            x = obj.Domain;
         end
         
         function slice = getSlice(obj,startIndex)

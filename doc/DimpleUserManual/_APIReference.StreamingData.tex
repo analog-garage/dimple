@@ -38,6 +38,21 @@ Read-only.  Indicates the number of elements in the variable stream that are act
 
 Read-only.  Returns a variable array containing all of the currently instantiated variables in the stream.
 
+\subpara{Domain}
+
+Read-only.  Returns the domain in a form that depends on the variable type, as summarized in the following table:
+
+\begin{longtable} {l | p{7cm}}
+Stream Type & Domain Data Type \\
+\hline
+\endhead
+DiscreteStream & DiscreteDomain (see section~\ref{sec:DiscreteDomain}) \\
+BitStream & DiscreteDomain (see section~\ref{sec:DiscreteDomain}) \\
+RealStream & RealDomain (see section~\ref{sec:RealDomain}) \\
+RealJointStream & RealJointDomain (see section~\ref{sec:RealJointDomain}) \\ 
+ComplexStream & ComplexDomain (see section~\ref{sec:ComplexDomain}) \\
+\end{longtable} 
+
 
 \para{Methods}
 
@@ -117,19 +132,33 @@ The RealStream constructor is used to create a stream of Real variables or array
 
 \ifmatlab
 \begin{lstlisting}
-RealStream([dimensions]);
+RealStream([domain], [dimensions]);
 \end{lstlisting}
-
-\begin{itemize}
-\item dimensions is an optional variable-length comma-separated list of matrix dimensions (an empty list indicates a single Real variable stream).
-\end{itemize}
 \fi
 
 \ifjava
 \begin{lstlisting}
 RealStream();
+RealStream(RealDomain domain)
+RealStream(double lowerBound, double upperBound)
 \end{lstlisting}
 \fi
+
+\ifmatlab
+All arguments are optional and can be used in any combination.
+
+\begin{itemize}
+\item domain specifies a bound on the domain of the stream. It can either be specified as a two-element array or a RealDomain object (see section~\ref{sec:RealDomain}).  If specified as an array, the first element is the lower bound and the second element is the upper bound. -Inf and Inf are allowed values for the lower or upper bound, respectively.  If no domain is specified, then a domain from $-\infty$ to $\infty$ is assumed.
+\item dimensions specify the array dimensions.  The behavior of the list of dimensions is identical to that for Discrete variables as described in section~\ref{sec:VariableMatrixDimensions}.
+\end{itemize}
+\fi
+
+\ifjava
+\begin{itemize}
+\item domain specifies a bound on the domain of the variable. It can either be specified as two elements or a RealDomain object (see section~\ref{sec:RealDomain}).  If specified as two values, the first element is the lower bound and the second element is the upper bound. Negative infinity and positive infinity are allowed values for the lower or upper bound, respectively.  If no domain is specified, then a domain from $-\infty$ to $\infty$ is assumed.
+\end{itemize}
+\fi
+
 
 \subsubsection{RealJointStream}
 
@@ -139,22 +168,30 @@ The RealJointStream constructor is used to create a stream of RealJoint variable
 
 \ifmatlab
 \begin{lstlisting}
+RealJointStream(domain, [dimensions])
 RealJointStream(numJointVariables, [dimensions]);
 \end{lstlisting}
 
+The arguments are defined as follows:
+
 \begin{itemize}
-\item numJointVariables indicates the dimension of the associated RealJoint variables.
-\item dimensions is an optional variable-length comma-separated list of matrix dimensions (an empty list indicates a single RealJoint variable stream).
+\item domain specifies a bound on the domain of the variable.  It is specified by a RealJointDomain object (see section~\ref{sec:RealJointDomain}).  If no domain is specified, then an unbounded domain is assumed and numJointVariables must be specified instead.
+\item numJointVariables specifies the number of joint real-valued elements. This argument is present only if the domain argument is not specified.
+\item dimensions specify the array dimensions (the array of individual RealJointStream variables).  The behavior of the list of dimensions is identical to that for Discrete variables as described in section~\ref{sec:VariableMatrixDimensions}.
 \end{itemize}
 \fi
 
 \ifjava
 \begin{lstlisting}
-RealJointStream(numJointVariables);
+RealJointStream(int numJointVariables)
+RealJointStream(RealJointDomain domain)
 \end{lstlisting}
 
+The arguments are defined as follows:
+
 \begin{itemize}
-\item numJointVariables indicates the dimension of the associated RealJoint variables.
+\item numJointVariables specifies the number of joint real-valued elements.
+\item domain specifies the domain of the RealJoint variable using a RealJointDomain object (see \ref{sec:RealJointDomain}).  Using this version of the constructor allows bounds to be specified in some or all dimensions of the domain.
 \end{itemize}
 \fi
 
@@ -167,18 +204,28 @@ The ComplexStream constructor is used to create a stream of Complex variables\if
 
 \ifmatlab
 \begin{lstlisting}
-ComplexStream([dimensions]);
+ComplexStream([domain], [dimensions]);
 \end{lstlisting}
 
+The arguments are defined as follows:
+
 \begin{itemize}
-\item dimensions is an optional variable-length comma-separated list of matrix dimensions (an empty list indicates a single Complex variable stream).
+\item domain specifies the domain of the ComplexStream using a ComplexDomain object (see \ref{sec:ComplexDomain}).  If no domain is specified, then an unbounded domain is assumed.
+\item dimensions specify the array dimensions (the array of individual Complex variables).  The behavior of the list of dimensions is identical to that for Discrete variables as described in section~\ref{sec:VariableMatrixDimensions}.
 \end{itemize}
 \fi
 
 \ifjava
 \begin{lstlisting}
-ComplexStream();
+ComplexStream()
+ComplexStream(ComplexDomain domain)
 \end{lstlisting}
+
+The arguments are defined as follows:
+
+\begin{itemize}
+\item domain specifies the domain of the ComplexStream using a ComplexDomain object (see \ref{sec:ComplexDomain}).  Using this version of the constructor allows bounds to be specified in some or all dimensions of the domain.
+\end{itemize}
 \fi
 
 

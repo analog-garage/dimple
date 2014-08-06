@@ -32,6 +32,18 @@ public class RealStream extends VariableStreamBase
 	{
 		super(domain);
 	}
+	
+	public RealStream(double lower, double upper)
+	{
+		this(RealDomain.create(lower,upper));
+	}
+
+	
+	@Override
+	public RealDomain getDomain()
+	{
+		return (RealDomain)super.getDomain();
+	}
 
 	@Override
 	protected VariableBase instantiateVariable(Domain domain)

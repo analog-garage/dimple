@@ -16,19 +16,33 @@
 
 package com.analog.lyric.dimple.model.repeated;
 
-import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.ComplexDomain;
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.variables.Complex;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 
-public class BitStream extends DiscreteStream
+public class ComplexStream extends VariableStreamBase
 {
-	public BitStream()
+	public ComplexStream()
 	{
-		super(DiscreteDomain.bit());
+		super(ComplexDomain.create());
+	}
+
+	public ComplexStream(ComplexDomain domain)
+	{
+		super(domain);
 	}
 	
 	@Override
-	public DiscreteDomain getDomain()
+	public ComplexDomain getDomain()
 	{
-		return (DiscreteDomain)super.getDomain();
+		return (ComplexDomain)super.getDomain();
+	}
+
+	@Override
+	protected VariableBase instantiateVariable(Domain domain)
+	{
+		return new Complex((ComplexDomain)domain);
 	}
 
 }

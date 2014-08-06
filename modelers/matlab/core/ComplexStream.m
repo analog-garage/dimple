@@ -17,7 +17,11 @@
 classdef ComplexStream < RealJointStream
     methods
        function obj = ComplexStream(varargin)
-           obj@RealJointStream(2,varargin{:});
+           % If the first argument isn't already a ComplexDomain, make one
+           if (isempty(varargin) || ~isa(varargin{1}, 'ComplexDomain'))
+               varargin = [{ComplexDomain()}, varargin];
+           end
+           obj@RealJointStream(varargin{:});
        end
     end
 end

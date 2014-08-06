@@ -21,20 +21,26 @@ import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 
-public class RealJointStream extends VariableStreamBase 
+public class RealJointStream extends VariableStreamBase
 {
-	public RealJointStream(int numVars)  
+	public RealJointStream(int numVars)
 	{
 		super(RealJointDomain.create(numVars));
 	}
 
-	public RealJointStream(RealJointDomain domain)  
+	public RealJointStream(RealJointDomain domain)
 	{
 		super(domain);
 	}
+	
+	@Override
+	public RealJointDomain getDomain()
+	{
+		return (RealJointDomain)super.getDomain();
+	}
 
 	@Override
-	protected VariableBase instantiateVariable(Domain domain)  
+	protected VariableBase instantiateVariable(Domain domain)
 	{
 		return new RealJoint((RealJointDomain)domain);
 	}
