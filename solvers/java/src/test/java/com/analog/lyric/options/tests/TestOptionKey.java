@@ -27,6 +27,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.options.BooleanOptionKey;
 import com.analog.lyric.options.DoubleListOptionKey;
 import com.analog.lyric.options.DoubleOptionKey;
+import com.analog.lyric.options.EnumOptionKey;
 import com.analog.lyric.options.GenericOptionKey;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.options.IOptionKey;
@@ -87,6 +88,14 @@ public class TestOptionKey
 	
 	public static final LongOptionKey LONG_BOUNDED =
 		new LongOptionKey(TestOptionKey.class, "LONG_BOUNDED", 2L, 0L, 0xFFFFFFFFFFL);
+	
+	public static enum Color
+	{
+		RED, GREEN, BLUE;
+	}
+	
+	public static final EnumOptionKey<Color> COLOR =
+		new EnumOptionKey<Color>(TestOptionKey.class, "COLOR", Color.class, Color.RED);
 	
 	@SuppressWarnings("null")
 	public static enum Option implements IOptionKey<Serializable>
@@ -210,6 +219,13 @@ public class TestOptionKey
 		expectThrow(OptionValidationException.class, PROB, "validate", Double.NaN);
 		assertEquals(0.0, PROB.lowerBound(), 0.0);
 		assertEquals(1.0, PROB.upperBound(), 0.0);
+		
+		// Test EnumOptionKey
+		assertEquals(Color.RED, COLOR.defaultValue());
+		assertEquals(Color.RED, COLOR.convertValue("RED"));
+		assertEquals(Color.BLUE, COLOR.convertValue("BLUE"));
+		expectThrow(IllegalArgumentException.class, COLOR, "convertValue", "gag");
+		expectThrow(IllegalArgumentException.class, COLOR, "convertValue", "blue"); // case-sensitive
 		
 		// Test list keys
 //		ExampleOptionHolder holder = new ExampleOptionHolder();
