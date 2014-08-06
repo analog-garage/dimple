@@ -323,7 +323,6 @@ public class PHelpers
 				for (int j = 0; j < tmp.length; j++)
 					for (int k = 0; k < tmp[0].length; k++)
 						retval[i][j][k] = (int)tmp[j][k];
-						
 			}
 			else if (indices[i] instanceof double[])
 			{
@@ -331,6 +330,33 @@ public class PHelpers
 				retval[i] = new int[tmp.length][];
 				for (int j= 0; j < tmp.length; j++)
 					retval[i][j] = new int[]{(int)tmp[j]};
+			}
+			else
+			{
+				throw new DimpleException("unsupported indices format: " + indices[i]);
+			}
+		}
+		return retval;
+	}
+	
+	// For non-vectorized node, second index dimension are indices themselves, rather than an array for each vector element
+	public static int[][][] extractIndicesNonVectorized(Object[] indices)
+	{
+		int [][][] retval = new int[indices.length][][];
+		for (int i = 0; i < indices.length; i++)
+		{
+			if (indices[i] instanceof Double)
+			{
+				int index = (int)(double)(Double)indices[i];
+				retval[i] = new int[1][1];
+				retval[i][0][0] = index;
+			}
+			else if (indices[i] instanceof double[])
+			{
+				double[] tmp = (double[])indices[i];
+				retval[i] = new int[1][tmp.length];
+				for (int k= 0; k < tmp.length; k++)
+					retval[i][0][k] = (int)tmp[k];
 			}
 			else
 			{

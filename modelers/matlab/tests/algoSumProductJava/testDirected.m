@@ -52,7 +52,6 @@ function testDirected
     catch e
         message = e.message;
     end
-
     assertTrue(~isempty(findstr(message,'weights must be normalized')));    
     
     %Test vectorized version
@@ -64,6 +63,30 @@ function testDirected
     for i = 1:size(b,1)
         assertTrue(isequal(f(i).DirectedTo,b(i,1:3)));
     end
+
+    % Test using variable array instead of cell array
+    b = Bit(1,3);
+    ff = @(a,b,c) 1;
+    fg = FactorGraph();
+    f = fg.addFactor(ff,b);
+    f.DirectedTo = b(1:2);
+    assert(isequal(f.DirectedTo, b(1:2)));
+
+    % Test using variable array in a cell
+    b = Bit(1,3);
+    ff = @(a,b,c) 1;
+    fg = FactorGraph();
+    f = fg.addFactor(ff,b);
+    f.DirectedTo = {b(1:2)};
+    assert(isequal(f.DirectedTo, b(1:2)));
+
+    % Test using variable array in a cell array
+    b = Bit(1,4);
+    ff = @(a,b,c,d) 1;
+    fg = FactorGraph();
+    f = fg.addFactor(ff,b);
+    f.DirectedTo = {b(1:2),b(3)};
+    assert(isequal(f.DirectedTo, b(1:3)));
 
 end
 
