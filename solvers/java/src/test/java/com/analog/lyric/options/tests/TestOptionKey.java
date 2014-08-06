@@ -27,11 +27,13 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.options.BooleanOptionKey;
 import com.analog.lyric.options.DoubleListOptionKey;
 import com.analog.lyric.options.DoubleOptionKey;
+import com.analog.lyric.options.EnumOptionKey;
 import com.analog.lyric.options.GenericOptionKey;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.IntegerListOptionKey;
 import com.analog.lyric.options.IntegerOptionKey;
+import com.analog.lyric.options.LongOptionKey;
 import com.analog.lyric.options.OptionDoubleList;
 import com.analog.lyric.options.OptionIntegerList;
 import com.analog.lyric.options.OptionKey;
@@ -83,6 +85,17 @@ public class TestOptionKey
 	
 	public static final DoubleOptionKey PROB =
 		new DoubleOptionKey(TestOptionKey.class, "PROB", .5, 0.0, 1.0);
+	
+	public static final LongOptionKey LONG_BOUNDED =
+		new LongOptionKey(TestOptionKey.class, "LONG_BOUNDED", 2L, 0L, 0xFFFFFFFFFFL);
+	
+	public static enum Color
+	{
+		RED, GREEN, BLUE;
+	}
+	
+	public static final EnumOptionKey<Color> COLOR =
+		new EnumOptionKey<Color>(TestOptionKey.class, "COLOR", Color.class, Color.RED);
 	
 	@SuppressWarnings("null")
 	public static enum Option implements IOptionKey<Serializable>
@@ -189,14 +202,30 @@ public class TestOptionKey
 		{
 		}
 		
+		// Test LongOptionKey
+		assertEquals(0L, LONG_BOUNDED.lowerBound());
+		assertEquals(0xFFFFFFFFFFL, LONG_BOUNDED.upperBound());
+		assertEquals((Long)LONG_BOUNDED.lowerBound(), LONG_BOUNDED.validate(LONG_BOUNDED.lowerBound()));
+		assertEquals((Long)LONG_BOUNDED.upperBound(), LONG_BOUNDED.validate(LONG_BOUNDED.upperBound()));
+		expectThrow(OptionValidationException.class, LONG_BOUNDED, "validate", LONG_BOUNDED.lowerBound() - 1);
+		expectThrow(OptionValidationException.class, LONG_BOUNDED, "validate", LONG_BOUNDED.upperBound() + 1);
+		
 		// Test DoubleOptionKey
 		assertEquals(0.0, PROB.validate(0.0), 0.0);
 		assertEquals(1.0, PROB.validate(1.0), 0.0);
 		assertEquals(.3, PROB.validate(.3), 0.0);
 		expectThrow(OptionValidationException.class, PROB, "validate", -0.0001);
 		expectThrow(OptionValidationException.class, PROB, "validate", 1.0001);
+		expectThrow(OptionValidationException.class, PROB, "validate", Double.NaN);
 		assertEquals(0.0, PROB.lowerBound(), 0.0);
 		assertEquals(1.0, PROB.upperBound(), 0.0);
+		
+		// Test EnumOptionKey
+		assertEquals(Color.RED, COLOR.defaultValue());
+		assertEquals(Color.RED, COLOR.convertValue("RED"));
+		assertEquals(Color.BLUE, COLOR.convertValue("BLUE"));
+		expectThrow(IllegalArgumentException.class, COLOR, "convertValue", "gag");
+		expectThrow(IllegalArgumentException.class, COLOR, "convertValue", "blue"); // case-sensitive
 		
 		// Test list keys
 //		ExampleOptionHolder holder = new ExampleOptionHolder();

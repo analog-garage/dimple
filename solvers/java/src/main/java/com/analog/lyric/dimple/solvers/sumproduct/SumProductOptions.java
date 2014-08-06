@@ -40,10 +40,12 @@ public class SumProductOptions extends SolverOptions
 	 * <p>
 	 * This option may be set on entire graph or on individual discrete variables or factors.
 	 * <p>
+	 * Must be a value in the range [0.0, 1.0].
+	 * <p>
 	 * @since 0.07
 	 */
 	public static final DoubleOptionKey damping =
-		new DoubleOptionKey(SumProductOptions.class, "damping", 0.0);
+		new DoubleOptionKey(SumProductOptions.class, "damping", 0.0, 0.0, 1.0);
 	
 	public static final BooleanOptionKey enableOptimizedUpdate =
 		new BooleanOptionKey(SumProductOptions.class, "enableOptimizedUpdate", false);
@@ -54,10 +56,12 @@ public class SumProductOptions extends SolverOptions
 	 * If less than the full domain size of the message, then messages will be truncated
 	 * to this number of dimensions with the lowest weight dimensions omitted.
 	 * <p>
+	 * Must be a positive number.
+	 * <p>
 	 * @since 0.07
 	 */
 	public static final IntegerOptionKey maxMessageSize =
-		new IntegerOptionKey(SumProductOptions.class, "maxMessageSize", Integer.MAX_VALUE);
+		new IntegerOptionKey(SumProductOptions.class, "maxMessageSize", Integer.MAX_VALUE, 1, Integer.MAX_VALUE);
 	
 	/**
 	 * Node specific damping values.
@@ -79,14 +83,14 @@ public class SumProductOptions extends SolverOptions
 
 	public static final IntegerOptionKey sampledFactorBurnInScansPerUpdate =
 		new IntegerOptionKey(SumProductOptions.class, "sampledFactorBurnInScansPerUpdate",
-			SampledFactor.DEFAULT_BURN_IN_SCANS_PER_UPDATE);
+			SampledFactor.DEFAULT_BURN_IN_SCANS_PER_UPDATE, 1, Integer.MAX_VALUE);
 	
 	public static final IntegerOptionKey sampledFactorSamplesPerUpdate =
 		new IntegerOptionKey(SumProductOptions.class, "sampledFactorSamplesPerUpdate",
-			SampledFactor.DEFAULT_SAMPLES_PER_UPDATE);
+			SampledFactor.DEFAULT_SAMPLES_PER_UPDATE, 1, Integer.MAX_VALUE);
 	
 	public static final IntegerOptionKey sampledFactorScansPerSample =
 		new IntegerOptionKey(SumProductOptions.class, "sampledFactorScansPerSample",
-			SampledFactor.DEFAULT_SCANS_PER_SAMPLE);
+			SampledFactor.DEFAULT_SCANS_PER_SAMPLE, 1, Integer.MAX_VALUE);
 	
 }
