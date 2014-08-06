@@ -37,6 +37,7 @@ import com.analog.lyric.options.OptionIntegerList;
 import com.analog.lyric.options.OptionKey;
 import com.analog.lyric.options.OptionKeys;
 import com.analog.lyric.options.OptionStringList;
+import com.analog.lyric.options.OptionValidationException;
 import com.analog.lyric.options.StringListOptionKey;
 import com.analog.lyric.options.StringOptionKey;
 import com.analog.lyric.util.misc.Nullable;
@@ -77,6 +78,12 @@ public class TestOptionKey
 	public static final IntegerListOptionKey IL2 =
 		new IntegerListOptionKey(TestOptionKey.class, "IL2", 23, 45);
 
+	public static final IntegerOptionKey DIGIT =
+		new IntegerOptionKey(TestOptionKey.class, "DIGIT", 0, 0, 9);
+	
+	public static final DoubleOptionKey PROB =
+		new DoubleOptionKey(TestOptionKey.class, "PROB", .5, 0.0, 1.0);
+	
 	@SuppressWarnings("null")
 	public static enum Option implements IOptionKey<Serializable>
 	{
@@ -129,6 +136,13 @@ public class TestOptionKey
 		{
 			holder.unsetOption(this);
 		}
+
+		@Override
+		public Serializable validate(Serializable value)
+		{
+			return type().cast(value);
+		}
+		
 	}
 	
 	private static enum NotAnOptionKey
@@ -148,6 +162,41 @@ public class TestOptionKey
 		{
 			assertOptionInvariants(key);
 		}
+		
+		// Test IntegerOptionKey
+		assertEquals((Integer)3, DIGIT.validate(3));
+		assertEquals((Integer)0, DIGIT.validate(0));
+		assertEquals((Integer)9, DIGIT.validate(9));
+		expectThrow(OptionValidationException.class, DIGIT, "validate", -1);
+		expectThrow(OptionValidationException.class, DIGIT, "validate", 10);
+		assertEquals(0, DIGIT.lowerBound());
+		assertEquals(9, DIGIT.upperBound());
+		assertEquals((Integer)42, I.convertValue(42.0));
+		try
+		{
+			I.convertValue(42.5);
+			fail("exception expected");
+		}
+		catch (IllegalArgumentException ex)
+		{
+		}
+		try
+		{
+			I.convertValue("42.5");
+			fail("exception expected");
+		}
+		catch (ClassCastException ex)
+		{
+		}
+		
+		// Test DoubleOptionKey
+		assertEquals(0.0, PROB.validate(0.0), 0.0);
+		assertEquals(1.0, PROB.validate(1.0), 0.0);
+		assertEquals(.3, PROB.validate(.3), 0.0);
+		expectThrow(OptionValidationException.class, PROB, "validate", -0.0001);
+		expectThrow(OptionValidationException.class, PROB, "validate", 1.0001);
+		assertEquals(0.0, PROB.lowerBound(), 0.0);
+		assertEquals(1.0, PROB.upperBound(), 0.0);
 		
 		// Test list keys
 //		ExampleOptionHolder holder = new ExampleOptionHolder();
@@ -188,6 +237,8 @@ public class TestOptionKey
 		assertNotNull(key.name());
 		assertNotNull(type);
 		assertTrue(type.isInstance(key.defaultValue()));
+		assertEquals(key.defaultValue(), key.convertValue(key.defaultValue()));
+		assertEquals(key.defaultValue(), key.validate(key.defaultValue()));
 		if (declaringClass.isEnum())
 		{
 			assertEquals(key.name(), key.toString());
@@ -219,7 +270,7 @@ public class TestOptionKey
 		assertEquals(key.defaultValue(), key.getOrDefault(holder));
 		
 		for (Object newValue : new Object[]
-			{ "foo", 42, 3.14159, new OptionStringList("foo", "bar"), new OptionDoubleList(1.324, 234234.2),
+			{ "foo", 7, .314159, new OptionStringList("foo", "bar"), new OptionDoubleList(1.324, 234234.2),
 			new OptionIntegerList(2,3,4,5)}
 		)
 		{

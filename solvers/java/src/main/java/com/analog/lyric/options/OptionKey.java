@@ -184,6 +184,12 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 		holder.unsetOption(this);
 	}
 	
+	@Override
+	public T validate(T value)
+	{
+		return type().cast(value);
+	}
+	
 	/*--------------------
 	 * OptionKey methods
 	 */

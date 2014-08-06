@@ -29,7 +29,7 @@ public class LongOptionKey extends OptionKey<Long>
 {
 	private static final long serialVersionUID = 1L;
 
-	private final long _defaultValue;
+	private final Long _defaultValue;
 	
 	public LongOptionKey(Class<?> declaringClass, String name)
 	{

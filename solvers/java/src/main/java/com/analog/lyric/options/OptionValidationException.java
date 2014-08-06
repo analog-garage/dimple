@@ -16,50 +16,24 @@
 
 package com.analog.lyric.options;
 
-import net.jcip.annotations.Immutable;
-
 /**
- * Key for boolean options.
+ * Indicates invalid option value.
  * <p>
+ * Throw by implementations of {@link IOptionKey#validate}.
  * @since 0.07
  * @author Christopher Barber
  */
-@Immutable
-public class BooleanOptionKey extends OptionKey<Boolean>
+public class OptionValidationException extends RuntimeException
 {
 	private static final long serialVersionUID = 1L;
-	
-	private final Boolean _defaultValue;
-	
-	public BooleanOptionKey(Class<?> declaringClass, String name)
-	{
-		this(declaringClass, name, false);
-	}
-
-	public BooleanOptionKey(Class<?> declaringClass, String name, boolean defaultValue)
-	{
-		super(declaringClass, name);
-		_defaultValue = defaultValue;
-	}
-
-	@Override
-	public final Class<Boolean> type()
-	{
-		return Boolean.class;
-	}
-
-	@Override
-	public final Boolean defaultValue()
-	{
-		return defaultBooleanValue();
-	}
 
 	/**
-	 * Default value of option.
+	 * Construct exception with given message.
+	 * @see String#format
 	 * @since 0.07
 	 */
-	public final boolean defaultBooleanValue()
+	public OptionValidationException(String format, Object ... args)
 	{
-		return _defaultValue;
+		super(String.format(format, args));
 	}
 }

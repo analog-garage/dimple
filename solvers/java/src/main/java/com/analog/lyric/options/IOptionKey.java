@@ -125,4 +125,18 @@ public interface IOptionKey<T extends Serializable> extends Serializable
 	 * on {@code holder}.
 	 */
 	public abstract void unset(IOptionHolder holder);
+	
+	/**
+	 * Validates value for this key.
+	 * <p>
+	 * This is invoked by implementations of {@link IOptionHolder#setOption} and can be
+	 * overridden to put extra constraints on the value.
+	 * <p>
+	 * @param value
+	 * @return the {@code value} itself if valid otherwise throws an exception.
+	 * @throws ClassCastException if {@code value} has the wrong type.
+	 * @throws OptionValidationException if value is invalid.
+	 * @since 0.07
+	 */
+	public T validate(T value);
 }
