@@ -25,4 +25,7 @@ function testVersion
     dv = dimpleVersion();
     movefile('LONG_VERSION_OLD',filename);
     assertTrue(length(regexp(dv,'\d+\.\d+ UNKNOWN')) > 0);    
+   
+    % Verify that the Dimple java layer can detect that we are inside MATLAB.
+    assertTrue(com.analog.lyric.dimple.environment.DimpleEnvironment.loadedFromMATLAB());
 end

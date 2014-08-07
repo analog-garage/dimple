@@ -17,6 +17,8 @@
 package com.analog.lyric.dimple.environment;
 
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.jcip.annotations.ThreadSafe;
@@ -51,6 +53,18 @@ public class DimpleEnvironment extends DimpleOptionHolder
 		}
 	};
 	
+	private static enum LoadedFromMATLAB
+	{
+		INSTANCE;
+		
+		private final boolean _fromMATLAB;
+		
+		private LoadedFromMATLAB()
+		{
+			_fromMATLAB = getClass().getClassLoader().getClass().getPackage().getName().startsWith("com.mathworks");
+		}
+	}
+	
 	/*----------------
 	 * Instance state
 	 */
@@ -75,7 +89,22 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 */
 	public DimpleEnvironment()
 	{
-		_logger.set(getDefaultLogger());
+		Logger logger = getDefaultLogger();
+		
+		if (loadedFromMATLAB() &&
+			logger.getHandlers().length == 0 &&
+			(logger.getLevel() == null || logger.getLevel().equals(Level.OFF)))
+		{
+			// HACK: The default configuration on MATLAB does not log anything to the console, so tweak it
+			// to output WARNING and above to console.
+			ConsoleHandler handler = new ConsoleHandler();
+			handler.setLevel(Level.ALL);
+			logger.addHandler(handler);
+			logger.setLevel(Level.WARNING);
+			logger.setUseParentHandlers(false);
+		}
+
+		_logger.set(logger);
 	}
 	
 	/*----------------
@@ -177,6 +206,23 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	{
 	}
 	
+	/*----------------------------
+	 * System environment methods
+	 */
+	
+	/**
+	 * Indicates whether Dimple is being run from MATLAB.
+	 * <p>
+	 * This returns true if the {@link ClassLoader} class used to load this class
+	 * has a name beginning with "com.mathworks".
+	 * <p>
+	 * @since 0.07
+	 */
+	public static boolean loadedFromMATLAB()
+	{
+		return LoadedFromMATLAB.INSTANCE._fromMATLAB;
+	}
+	
 	/*-----------------
 	 * Logging methods
 	 */
@@ -255,7 +301,7 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 */
 	public static void logError(String message)
 	{
-		local().logger().severe(message);
+		local().logger().log(ExtendedLevel.ERROR, message);
 	}
 	
 	/**

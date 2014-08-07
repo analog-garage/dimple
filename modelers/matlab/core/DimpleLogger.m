@@ -21,25 +21,34 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 classdef DimpleLogger
-    properties(Constant)
+    properties(Constant, Access=private)
         modeler = getModeler();
     end
     methods(Static)
-        function logToConsole(level)
-            %logToConsole configures Dimple to log to the console at the specified level.
-            %
-            % MATLAB's default logging configuration for the java.util.logging service
-            % that is used by Dimple does not enable logging output. This method
-            % provides an easy way to enable console logging without having
-            % to bother with configuring MATLAB's Java properties.
+        function level = getLevel()
+            %getLevel indicates the current minimum logging level
             logger = DimpleLogger.modeler.getLogger();
-            logger.logToConsole(level);
+            level = logger.getLevel();
         end
         
-        function resetConfiguration()
-            %resetConfiguration resets java.util.logging configuration
+        function setLevel(level)
+            %setLevel sets the new minimum logging level.
+            %
+            % Messages logged at a lower level will be discarded.
             logger = DimpleLogger.modeler.getLogger();
-            logger.resetConfiguration();
+            logger.setLevel(level);
+        end
+        
+        function logToConsole()
+            %logToConsole configures Dimple to log to the console.
+            logger = DimpleLogger.modeler.getLogger();
+            logger.logToConsole();
+        end
+        
+        function logToFile(filename)
+            %lotToFile configures Dimple to append to specified filename
+            logger = DimpleLogger.modeler.getLogger();
+            logger.logToFile(filename);
         end
         
         function logError(message)

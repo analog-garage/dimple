@@ -106,6 +106,8 @@ public class TestDimpleEnvironment
 	@Test
 	public void testLogging()
 	{
+		assertFalse(DimpleEnvironment.loadedFromMATLAB());
+		
 		DimpleEnvironment env = DimpleEnvironment.local();
 		
 		Logger defaultLogger = env.logger();
@@ -128,4 +130,5 @@ public class TestDimpleEnvironment
 		assertEquals("'whoops'", record.getMessage());
 		assertTrue(testLogger.loggedRecords().isEmpty());
 	}
+	
 }

@@ -16,12 +16,15 @@
 
 package com.analog.lyric.dimple.matlabproxy;
 
+import java.io.IOException;
 import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
+import com.analog.lyric.dimple.environment.ExtendedLevel;
 
 /**
  * Dimple logger interface for MATLAB.
@@ -43,25 +46,59 @@ public enum PLogger
 	}
 
 	/**
-	 * This configures the Dimple logger to log to System.err at the specified level.
+	 * This configures the Dimple logger to log to System.err.
 	 * <p>
-	 * More powerful logging patterns can be accomplished by configuring system properties.
-	 * This provides an easy way to simply log to the console. This will override any previous
-	 * configuration.
+	 * This closes and removes all underlying handlers and adds
+	 * a single {@link ConsoleHandler}.
 	 * <p>
-	 * @param levelName is one of ALL, ERROR/SEVERE, WARNING, INFO, OFF
 	 * @since 0.07
 	 */
-	public void logToConsole(String levelName)
+	public void logToConsole()
 	{
-		Level level = stringToLevel(levelName);
-
+		setSingleHandler(new ConsoleHandler());
+	}
+	
+	/**
+	 * This configures the Dimple logger to append to the specified file.
+	 * <p>
+	 * This closes and removes all underlying handlers and adds
+	 * a single {@link FileHandler}.
+	 * <p>
+	 * @param filename
+	 * @throws IOException if file cannot be written to.
+	 * @since 0.07
+	 */
+	public void logToFile(String filename) throws IOException
+	{
+		setSingleHandler(new FileHandler(filename, true));
+	}
+	
+	private void setSingleHandler(Handler handler)
+	{
 		Logger logger = DimpleEnvironment.local().logger();
 		logger.setUseParentHandlers(false);
-		logger.setLevel(level);
-		ConsoleHandler handler = new ConsoleHandler();
-		handler.setLevel(level);
+		Handler[] handlers = logger.getHandlers();
+		for (Handler oldHandler : handlers)
+		{
+			if (oldHandler != handler)
+			{
+				oldHandler.close();
+			}
+			logger.removeHandler(oldHandler);
+		}
+		handler.setLevel(Level.ALL);
 		logger.addHandler(handler);
+	}
+
+	public String getLevel()
+	{
+		Level level = DimpleEnvironment.local().logger().getLevel();
+		return level != null ? level.getName() : "";
+	}
+	
+	public void setLevel(String levelName)
+	{
+		DimpleEnvironment.local().logger().setLevel(stringToLevel(levelName));
 	}
 	
 	static Level stringToLevel(String levelName)
@@ -75,6 +112,7 @@ public enum PLogger
 		case "WARNING":
 			return Level.WARNING;
 		case "ERROR":
+			return ExtendedLevel.ERROR;
 		case "SEVERE":
 			return Level.SEVERE;
 		case "OFF":
@@ -82,19 +120,5 @@ public enum PLogger
 		default:
 			throw new Error(String.format("Log level '%s' not one of ALL, INFO, WARNING, ERROR, OFF", levelName));
 		}
-	}
-	
-	/**
-	 * Resets the java.util.logging configuration and reloads default Dimple logger.
-	 * <p>
-	 * Note that this calls {@link LogManager#reset} so it may affect the configuration
-	 * of non-Dimple loggers.
-	 * <p>
-	 * @since 0.07
-	 */
-	public void resetConfiguration()
-	{
-		LogManager.getLogManager().reset();
-		DimpleEnvironment.local().setLogger(DimpleEnvironment.getDefaultLogger());
 	}
 }
