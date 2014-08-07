@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
+import com.analog.lyric.dimple.environment.ExtendedLevel;
 import com.analog.lyric.util.test.TestLogger;
 
 /**
@@ -126,7 +127,7 @@ public class TestDimpleEnvironment
 
 		DimpleEnvironment.logError("'%s'","whoops");
 		record = testLogger.loggedRecords().remove();
-		assertEquals(Level.SEVERE, record.getLevel());
+		assertEquals(ExtendedLevel.ERROR, record.getLevel());
 		assertEquals("'whoops'", record.getMessage());
 		assertTrue(testLogger.loggedRecords().isEmpty());
 	}
