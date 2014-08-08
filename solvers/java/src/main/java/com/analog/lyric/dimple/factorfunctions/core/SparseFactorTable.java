@@ -676,12 +676,6 @@ public class SparseFactorTable extends SparseFactorTableBase implements IFactorT
 	}
 
 	@Override
-	public double[] getEnergiesDenseUnsafe()
-	{
-		throw notDense("getEnergiesDenseUnsafe");
-	}
-
-	@Override
 	public double[] getEnergySlice(@Nullable double[] slice, int sliceDimension, int... indices)
 	{
 		final int[] scratchIndices = _scratchIndices;

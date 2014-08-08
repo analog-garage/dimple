@@ -36,15 +36,12 @@ import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorEngine;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorTableEngine;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.dimple.solvers.optimizedupdate.FactorUpdatePlan;
-import com.analog.lyric.dimple.solvers.optimizedupdate.ISTableFactorSupportingOptimizedUpdate;
-import com.analog.lyric.dimple.solvers.optimizedupdate.STableFactorOptimizedUpdateImpl;
-import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateApproach;
 import com.analog.lyric.util.misc.Nullable;
 
 
-public class STableFactor extends STableFactorDoubleArray implements IKBestFactor, ISTableFactorSupportingOptimizedUpdate
+public class STableFactor extends STableFactorDoubleArray implements IKBestFactor
 {
 	/*
 	 * We cache all of the double arrays we use during the update.  This saves
@@ -59,8 +56,6 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	protected boolean _kIsSmallerThanDomain = false;
 	protected boolean _updateDerivative = false;
 	protected boolean _dampingInUse = false;
-	protected final STableFactorOptimizedUpdateImpl _sTableFactorOptimizedUpdateImpl;
-	
 	
 	/*--------------
 	 * Construction
@@ -69,13 +64,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	public STableFactor(Factor factor)
 	{
 		super(factor);
-		SFactorGraph sfg = (SFactorGraph) getRootGraph();
-		if (sfg == null)
-		{
-			throw new DimpleException("Internal error.");
-		}
-		_sTableFactorOptimizedUpdateImpl = new STableFactorOptimizedUpdateImpl(sfg._optimizedUpdateImpl, getFactorTable());
-
+		
 		//TODO: should I recheck for factor table every once in a while?
 		if (factor.getFactorFunction().factorTableExists(getFactor()))
 		{
@@ -86,7 +75,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 			_kbestFactorEngine = new KBestFactorEngine(this);
 		}
 	}
-	
+
 	@Override
 	public void initialize()
 	{
@@ -95,10 +84,9 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
     	configureDampingFromOptions();
 	    updateK(getOptionOrDefault(SumProductOptions.maxMessageSize));
 		
-		if (_sTableFactorOptimizedUpdateImpl.useOptimizedUpdate())
+		if (isOptimizedUpdateEnabled() && _factor.getSiblingCount() > 1)
 		{
-			FactorUpdatePlan factorUpdatePlan = _sTableFactorOptimizedUpdateImpl.getOptimizedUpdatePlan();
-			_tableFactorEngine = new TableFactorEngineOptimized(this, factorUpdatePlan);
+			_tableFactorEngine = new TableFactorEngineOptimized(this);
 		}
 		else
 		{
@@ -239,170 +227,81 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		configureDampingFromOptions();
 	}
 	
-	@Override
 	public double getDamping(int index)
 	{
 		return _dampingParams.length > 0 ? _dampingParams[index] : 0.0;
 	}
-
-	/**
-	 * Gets the update algorithm approach.
-	 * 
-	 * @since 0.07
-	 */
-	public UpdateApproach getUpdateApproach()
-	{
-		return _sTableFactorOptimizedUpdateImpl.getUpdateApproach();
-	}
 	
 	/**
-	 * Sets the update algorithm approach.
+	 * Enables use of the optimized update algorithm on this factor, if its degree is greater than
+	 * 1. The optimized update algorithm is employed only when all of the factor's edges are updated
+	 * together with an update call. If the schedule instead uses update_edge, the algorithm is not
+	 * used.
 	 * 
-	 * @since 0.07
+	 * @since 0.06
 	 */
-	public void setUpdateApproach(UpdateApproach approach)
+	public void enableOptimizedUpdate()
 	{
-		_sTableFactorOptimizedUpdateImpl.setUpdateApproach(approach);
+		setOption(SumProductOptions.enableOptimizedUpdate, true);
 	}
 
 	/**
-	 * Reverts to the inherited setting for the update algorithm approach.
+	 * Disables use of the optimized update algorithm on this factor.
 	 * 
-	 * @since 0.07
+	 * @see #enableOptimizedUpdate()
+	 * @since 0.06
 	 */
-	public void unsetUpdateApproach()
+	public void disableOptimizedUpdate()
 	{
-		_sTableFactorOptimizedUpdateImpl.unsetUpdateApproach();
+		setOption(SumProductOptions.enableOptimizedUpdate, false);
 	}
 
-	public boolean getAutomaticOptimizationDecision()
-	{
-		return _sTableFactorOptimizedUpdateImpl.getAutomaticOptimizationDecision();
-	}
-	
 	/**
-	 * Returns the effective update approach for the factor. If the update approach is set to
-	 * automatic, this value is not valid until the graph is initialized. Note that a factor
-	 * with only one edge always employs the normal update approach.
+	 * Reverts to the default setting for enabling of the optimized update algorithm, eliminating
+	 * the effect of previous calls to {@link #enableOptimizedUpdate()} or
+	 * {@link #disableOptimizedUpdate()}.
 	 * 
-	 * @since 0.07
+	 * @since 0.06
 	 */
-	public UpdateApproach getEffectiveUpdateApproach()
+	public void useDefaultOptimizedUpdateEnable()
 	{
-		if (_sTableFactorOptimizedUpdateImpl.useOptimizedUpdate())
+		unsetOption(SumProductOptions.enableOptimizedUpdate);
+	}
+
+	/**
+	 * Indicates if the optimized update algorithm is enabled for this factor. If
+	 * {@link #enableOptimizedUpdate()} or {@link #disableOptimizedUpdate()} has been called,
+	 * returns accordingly. If neither has been called, or if their effect has been reset by
+	 * {@link #useDefaultOptimizedUpdateEnable()}, returns the default setting. Only the sum-product
+	 * solver supports the tree update algorithm; if the root graph is for a different solver,
+	 * always returns false.
+	 * 
+	 * @return True if the tree update algorithm is enabled on this factor.
+	 * @since 0.06
+	 */
+	public boolean isOptimizedUpdateEnabled()
+	{
+		ISolverFactorGraph rootGraph = getRootGraph();
+		if (rootGraph instanceof SFactorGraph)
 		{
-			return UpdateApproach.UPDATE_APPROACH_OPTIMIZED;
+			SFactorGraph sfg = (SFactorGraph) rootGraph;
+			if (sfg.isOptimizedUpdateSupported())
+			{
+				return getOptionOrDefault(SumProductOptions.enableOptimizedUpdate);
+			}
 		}
-		else
-		{
-			return UpdateApproach.UPDATE_APPROACH_NORMAL;
-		}
+		return false;
 	}
 
 	/**
-	 * Gets the optimized update sparse threshold.
+	 * Indicates if the optimized update algorithm enable has been explicitly set.
 	 * 
-	 * @see #setOptimizedUpdateSparseThreshold(double)
-	 * @since 0.07
+	 * @return True if using an explicit setting. False if using the default.
+	 * @since 0.06
 	 */
-	public double getOptimizedUpdateSparseThreshold()
+	protected boolean isOptimizedUpdateExplicitlySet()
 	{
-		return _sTableFactorOptimizedUpdateImpl.getOptimizedUpdateSparseThreshold();
-	}
-	
-	/**
-	 * Sets the optimized update sparse threshold. The optimized update algorithm uses auxiliary
-	 * factor tables during update. This density setting determines whether it uses sparse or dense
-	 * representations for them. Sparse representations often offer superior execution time, but use
-	 * more memory because indices are stored. The automatic update approach considers the impact of
-	 * this setting when estimating update cost for the optimized update algorithm.
-	 * 
-	 * @param value A density, below which the system uses a sparse representation for auxiliary
-	 *        factor tables.
-	 * @since 0.07
-	 */
-	public void setOptimizedUpdateSparseThreshold(double value)
-	{
-		_sTableFactorOptimizedUpdateImpl.setOptimizedUpdateSparseThreshold(value);
-	}
-
-	/**
-	 * Resets the optimized update sparse threshold to use the inherited value.
-	 * 
-	 * @see #setOptimizedUpdateSparseThreshold(double)
-	 * @since 0.07
-	 */
-	public void unsetOptimizedUpdateSparseThreshold()
-	{
-		_sTableFactorOptimizedUpdateImpl.unsetOptimizedUpdateSparseThreshold();
-	}
-	
-	/**
-	 * Gets the automatic memory allocation scaling factor.
-	 * 
-	 * @see #setAutomaticMemoryAllocationScalingFactor(double)
-	 * @since 0.07
-	 */
-	public double getAutomaticMemoryAllocationScalingFactor()
-	{
-		return _sTableFactorOptimizedUpdateImpl.getAutomaticMemoryAllocationScalingFactor();
-	}
-	
-	/**
-	 * When the update approach is automatic, the system chooses which update algorithm to use by
-	 * estimating the execution time and memory allocation of each. The memory allocation estimate
-	 * is scaled by this factor in the cost estimation.
-	 * 
-	 * @since 0.07
-	 */
-	public void setAutomaticMemoryAllocationScalingFactor(double value)
-	{
-		_sTableFactorOptimizedUpdateImpl.setAutomaticMemoryAllocationScalingFactor(value);
-	}
-	
-	/**
-	 * Resets the automatic memory allocation scaling factor to use the inherited value.
-	 * 
-	 * @see #setAutomaticMemoryAllocationScalingFactor(double)
-	 * @since 0.07
-	 */
-	public void unsetAutomaticMemoryAllocationScalingFactor()
-	{
-		_sTableFactorOptimizedUpdateImpl.unsetAutomaticMemoryAllocationScalingFactor();
-	}
-
-	/**
-	 * Gets the automatic execution time scaling factor.
-	 * 
-	 * @see #setAutomaticExecutionTimeScalingFactor(double)
-	 * @since 0.07
-	 */
-	public double getAutomaticExecutionTimeScalingFactor()
-	{
-		return _sTableFactorOptimizedUpdateImpl.getAutomaticExecutionTimeScalingFactor();
-	}
-	
-	/**
-	 * When the update approach is automatic, the system chooses which update algorithm to use by
-	 * estimating the execution time and memory allocation of each. The execution time estimate
-	 * is scaled by this factor in the cost estimation.
-	 * 
-	 * @since 0.07
-	 */
-	public void setAutomaticExecutionTimeScalingFactor(double value)
-	{
-		_sTableFactorOptimizedUpdateImpl.setAutomaticExecutionTimeScalingFactor(value);
-	}
-	
-	/**
-	 * Resets the automatic execution time scaling factor to use the inherited value.
-	 * 
-	 * @see #setAutomaticExecutionTimeScalingFactor(double)
-	 * @since 0.07
-	 */
-	public void unsetAutomaticExecutionTimeScalingFactor()
-	{
-		_sTableFactorOptimizedUpdateImpl.unsetAutomaticExecutionTimeScalingFactor();
+		return getOption(SumProductOptions.enableOptimizedUpdate) != null;
 	}
 	
 	public int getK()
@@ -827,18 +726,6 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	public double[][] getOutPortMsgs()
 	{
 		return _outputMsgs;
-	}
-
-	@Override
-	public boolean isDampingInUse()
-	{
-		return _dampingInUse;
-	}
-
-	@Override
-	public double[] getSavedOutMsgArray(int _outPortNum)
-	{
-		return _savedOutMsgArray[_outPortNum];
 	}
 
 	/*------------------

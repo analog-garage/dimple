@@ -21,7 +21,6 @@ import java.util.Arrays;
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.Selection;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
@@ -32,13 +31,8 @@ import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorEngine;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorTableEngine;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergyMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.dimple.solvers.optimizedupdate.FactorUpdatePlan;
-import com.analog.lyric.dimple.solvers.optimizedupdate.ISTableFactorSupportingOptimizedUpdate;
-import com.analog.lyric.dimple.solvers.optimizedupdate.STableFactorOptimizedUpdateImpl;
-import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateApproach;
-import com.analog.lyric.util.misc.Nullable;
 
-public class STableFactor extends STableFactorDoubleArray implements IKBestFactor, ISTableFactorSupportingOptimizedUpdate
+public class STableFactor extends STableFactorDoubleArray implements IKBestFactor
 {
 	/*
 	 * We cache all of the double arrays we use during the update.  This saves
@@ -47,12 +41,10 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
     protected double [][] _savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
     protected double [] _dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
     protected int _k;
-    @Nullable
-    private TableFactorEngine _tableFactorEngine;
+    protected TableFactorEngine _tableFactorEngine;
     protected KBestFactorEngine _kbestFactorEngine;
     protected boolean _kIsSmallerThanDomain;
     protected boolean _dampingInUse = false;
-    protected final STableFactorOptimizedUpdateImpl _sTableFactorOptimizedUpdateImpl;
 
     /*--------------
      * Construction
@@ -62,13 +54,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	{
     	super(factor);
     	
-		SFactorGraph sfg = (SFactorGraph) getRootGraph();
-		if (sfg == null)
-		{
-			throw new DimpleException("Internal error.");
-		}
-		_sTableFactorOptimizedUpdateImpl = new STableFactorOptimizedUpdateImpl(sfg._optimizedUpdateImpl, getFactorTable());
-    	
+		_tableFactorEngine = new TableFactorEngine(this);
 		
 		if (factor.getFactorFunction().factorTableExists(getFactor()))
 			_kbestFactorEngine = new KBestFactorTableEngine(this);
@@ -76,28 +62,19 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 			_kbestFactorEngine = new KBestFactorEngine(this);
 	}
     
-	@Override
-	public void initialize()
-	{
-		super.initialize();
-    	configureDampingFromOptions();
-	    updateK(getOptionOrDefault(MinSumOptions.maxMessageSize));
-		
-		if (_sTableFactorOptimizedUpdateImpl.useOptimizedUpdate())
-		{
-			FactorUpdatePlan factorUpdatePlan = _sTableFactorOptimizedUpdateImpl.getOptimizedUpdatePlan();
-			_tableFactorEngine = new TableFactorEngineOptimized(this, factorUpdatePlan);
-		}
-		else
-		{
-			_tableFactorEngine = new TableFactorEngine(this);
-		}
-	}
-
     /*---------------------
      * ISolverNode methods
      */
-   
+
+    @Override
+    public void initialize()
+    {
+    	super.initialize();
+    	
+    	configureDampingFromOptions();
+	    updateK(getOptionOrDefault(MinSumOptions.maxMessageSize));
+    }
+    
 	@Override
 	public void moveMessages(ISolverNode other, int portNum, int otherPort)
 	{
@@ -106,27 +83,14 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	    	_savedOutMsgArray[portNum] = ((STableFactor)other)._savedOutMsgArray[otherPort];
 	    
 	}
-
-	private TableFactorEngine getTableFactorEngine()
-	{
-		final TableFactorEngine tableFactorEngine = _tableFactorEngine;
-		if (tableFactorEngine != null)
-		{
-			return tableFactorEngine;
-		}
-		else
-		{
-			throw new DimpleException("The solver was not initialized. Use solve() or call initialize() before iterate().");
-		}
-	}
-
+	
 	@Override
 	protected void doUpdate()
 	{
 		if (_kIsSmallerThanDomain)
 			_kbestFactorEngine.update();
 		else
-			getTableFactorEngine().update();
+			_tableFactorEngine.update();
 	}
 	
 	@Override
@@ -135,7 +99,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		if (_kIsSmallerThanDomain)
 			_kbestFactorEngine.updateEdge(outPortNum);
 		else
-			getTableFactorEngine().updateEdge(outPortNum);
+			_tableFactorEngine.updateEdge(outPortNum);
 
 	}
 	
@@ -187,170 +151,11 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	{
 		table.setRepresentation(FactorTableRepresentation.SPARSE_ENERGY_WITH_INDICES);
 	}
-
-	/**
-	 * Gets the update algorithm approach.
-	 * 
-	 * @since 0.07
-	 */
-	public UpdateApproach getUpdateApproach()
-	{
-		return _sTableFactorOptimizedUpdateImpl.getUpdateApproach();
-	}
 	
-	/**
-	 * Sets the update algorithm approach.
-	 * 
-	 * @since 0.07
-	 */
-	public void setUpdateApproach(UpdateApproach approach)
-	{
-		_sTableFactorOptimizedUpdateImpl.setUpdateApproach(approach);
-	}
-
-	/**
-	 * Reverts to the inherited setting for the update algorithm approach.
-	 * 
-	 * @since 0.07
-	 */
-	public void unsetUpdateApproach()
-	{
-		_sTableFactorOptimizedUpdateImpl.unsetUpdateApproach();
-	}
-
-	public boolean getAutomaticOptimizationDecision()
-	{
-		return _sTableFactorOptimizedUpdateImpl.getAutomaticOptimizationDecision();
-	}
-	
-	/**
-	 * Returns the effective update approach for the factor. If the update approach is set to
-	 * automatic, this value is not valid until the graph is initialized. Note that a factor
-	 * with only one edge always employs the normal update approach.
-	 * 
-	 * @since 0.07
-	 */
-	public UpdateApproach getEffectiveUpdateApproach()
-	{
-		if (_sTableFactorOptimizedUpdateImpl.useOptimizedUpdate())
-		{
-			return UpdateApproach.UPDATE_APPROACH_OPTIMIZED;
-		}
-		else
-		{
-			return UpdateApproach.UPDATE_APPROACH_NORMAL;
-		}
-	}
-
-	/**
-	 * Gets the optimized update sparse threshold.
-	 * 
-	 * @see #setOptimizedUpdateSparseThreshold(double)
-	 * @since 0.07
-	 */
-	public double getOptimizedUpdateSparseThreshold()
-	{
-		return _sTableFactorOptimizedUpdateImpl.getOptimizedUpdateSparseThreshold();
-	}
-	
-	/**
-	 * Sets the optimized update sparse threshold. The optimized update algorithm uses auxiliary
-	 * factor tables during update. This density setting determines whether it uses sparse or dense
-	 * representations for them. Sparse representations often offer superior execution time, but use
-	 * more memory because indices are stored. The automatic update approach considers the impact of
-	 * this setting when estimating update cost for the optimized update algorithm.
-	 * 
-	 * @param value A density, below which the system uses a sparse representation for auxiliary
-	 *        factor tables.
-	 * @since 0.07
-	 */
-	public void setOptimizedUpdateSparseThreshold(double value)
-	{
-		_sTableFactorOptimizedUpdateImpl.setOptimizedUpdateSparseThreshold(value);
-	}
-
-	/**
-	 * Resets the optimized update sparse threshold to use the inherited value.
-	 * 
-	 * @see #setOptimizedUpdateSparseThreshold(double)
-	 * @since 0.07
-	 */
-	public void unsetOptimizedUpdateSparseThreshold()
-	{
-		_sTableFactorOptimizedUpdateImpl.unsetOptimizedUpdateSparseThreshold();
-	}
-	
-	/**
-	 * Gets the automatic memory allocation scaling factor.
-	 * 
-	 * @see #setAutomaticMemoryAllocationScalingFactor(double)
-	 * @since 0.07
-	 */
-	public double getAutomaticMemoryAllocationScalingFactor()
-	{
-		return _sTableFactorOptimizedUpdateImpl.getAutomaticMemoryAllocationScalingFactor();
-	}
-	
-	/**
-	 * When the update approach is automatic, the system chooses which update algorithm to use by
-	 * estimating the execution time and memory allocation of each. The memory allocation estimate
-	 * is scaled by this factor in the cost estimation.
-	 * 
-	 * @since 0.07
-	 */
-	public void setAutomaticMemoryAllocationScalingFactor(double value)
-	{
-		_sTableFactorOptimizedUpdateImpl.setAutomaticMemoryAllocationScalingFactor(value);
-	}
-	
-	/**
-	 * Resets the automatic memory allocation scaling factor to use the inherited value.
-	 * 
-	 * @see #setAutomaticMemoryAllocationScalingFactor(double)
-	 * @since 0.07
-	 */
-	public void unsetAutomaticMemoryAllocationScalingFactor()
-	{
-		_sTableFactorOptimizedUpdateImpl.unsetAutomaticMemoryAllocationScalingFactor();
-	}
-
-	/**
-	 * Gets the automatic execution time scaling factor.
-	 * 
-	 * @see #setAutomaticExecutionTimeScalingFactor(double)
-	 * @since 0.07
-	 */
-	public double getAutomaticExecutionTimeScalingFactor()
-	{
-		return _sTableFactorOptimizedUpdateImpl.getAutomaticExecutionTimeScalingFactor();
-	}
-	
-	/**
-	 * When the update approach is automatic, the system chooses which update algorithm to use by
-	 * estimating the execution time and memory allocation of each. The execution time estimate
-	 * is scaled by this factor in the cost estimation.
-	 * 
-	 * @since 0.07
-	 */
-	public void setAutomaticExecutionTimeScalingFactor(double value)
-	{
-		_sTableFactorOptimizedUpdateImpl.setAutomaticExecutionTimeScalingFactor(value);
-	}
-	
-	/**
-	 * Resets the automatic execution time scaling factor to use the inherited value.
-	 * 
-	 * @see #setAutomaticExecutionTimeScalingFactor(double)
-	 * @since 0.07
-	 */
-	public void unsetAutomaticExecutionTimeScalingFactor()
-	{
-		_sTableFactorOptimizedUpdateImpl.unsetAutomaticExecutionTimeScalingFactor();
-	}
-    
 	/*----------------------
 	 * IKBestFactor methods
 	 */
+    
 	@Override
 	public FactorFunction getFactorFunction()
 	{
@@ -468,23 +273,10 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		MinSumOptions.nodeSpecificDamping.set(this, params);
 		configureDampingFromOptions();
 	}
-		
-	@Override
+	
 	public double getDamping(int index)
 	{
 		return _dampingParams.length > 0 ? _dampingParams[index] : 0.0;
-	}
-
-	@Override
-	public boolean isDampingInUse()
-	{
-		return _dampingInUse;
-	}
-
-	@Override
-	public double[] getSavedOutMsgArray(int _outPortNum)
-	{
-		return _savedOutMsgArray[_outPortNum];
 	}
 
 	/*------------------

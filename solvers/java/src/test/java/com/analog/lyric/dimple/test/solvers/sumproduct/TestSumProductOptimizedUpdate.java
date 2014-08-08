@@ -21,14 +21,13 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
-import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateApproach;
 import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
 import com.analog.lyric.dimple.solvers.sumproduct.STableFactor;
+import com.analog.lyric.dimple.solvers.sumproduct.TableFactorEngineOptimized;
 import com.google.common.primitives.Ints;
 
 /**
@@ -37,209 +36,6 @@ import com.google.common.primitives.Ints;
  */
 public class TestSumProductOptimizedUpdate
 {
-	static final UpdateApproach defaultApproach = UpdateApproach.UPDATE_APPROACH_NORMAL;
-	static final double defaultAllocationScale = 1.0;
-	static final double defaultExecutionTimeScale = 100.0;
-	static final double defaultSparseThreshold = 1.0;
-
-	/**
-	 * Verify that the solver graph has the correct default property values.
-	 * 
-	 * @since 0.07
-	 */
-	@Test
-	public void testGraphPropertiesDefaults()
-	{
-		FactorGraph fg = new FactorGraph();
-		SFactorGraph sfg = getSFactorGraph(fg);
-		assertEquals(defaultApproach, sfg.getUpdateApproach());
-		assertEquals(defaultAllocationScale, sfg.getAutomaticMemoryAllocationScalingFactor(), 1.0e-9);
-		assertEquals(defaultExecutionTimeScale, sfg.getAutomaticExecutionTimeScalingFactor(), 1.0e-9);
-		assertEquals(defaultSparseThreshold, sfg.getOptimizedUpdateSparseThreshold(), 1.0e-9);
-	}
-
-	private static SFactorGraph getSFactorGraph(FactorGraph fg)
-	{
-		SFactorGraph sfg = (SFactorGraph) fg.getSolver();
-		assertNotNull(sfg);
-		return sfg;
-	}
-
-	/**
-	 * Verify that the solver factor has the correct default property values.
-	 * 
-	 * @since 0.07
-	 */
-	@Test
-	public void testFactorPropertiesDefaults()
-	{
-		Random rand = new Random();
-		rand.setSeed(0); // Don't be random
-		FactorGraph fg = new FactorGraph();
-		Factor f = define2bitFactor(rand, fg);
-		STableFactor sft = getSFactorTable(f);
-		assertEquals(defaultApproach, sft.getUpdateApproach());
-		assertEquals(defaultAllocationScale, sft.getAutomaticMemoryAllocationScalingFactor(), 1.0e-9);
-		assertEquals(defaultExecutionTimeScale, sft.getAutomaticExecutionTimeScalingFactor(), 1.0e-9);
-		assertEquals(defaultSparseThreshold, sft.getOptimizedUpdateSparseThreshold(), 1.0e-9);
-	}
-
-	private static STableFactor getSFactorTable(Factor f)
-	{
-		STableFactor sft = (STableFactor) f.getSolver();
-		assertNotNull(sft);
-		return sft;
-	}
-
-	private static Factor define2bitFactor(Random rand, FactorGraph fg)
-	{
-		Bit[] vars = define2bits();
-		IFactorTable table = FactorTable.create(vars[0].getDomain(), vars[1].getDomain());
-		table.setRepresentation(FactorTableRepresentation.DENSE_WEIGHT);
-		final JointDomainIndexer domainIndexer = table.getDomainIndexer();
-		final int d = (domainIndexer.getCardinality());
-		for (int i = 0; i < d; i++)
-		{
-			table.setWeightForJointIndex(rand.nextDouble(), i);
-		}
-		Factor f = fg.addFactor(table, vars);
-		return f;
-	}
-
-	private static Bit[] define2bits()
-	{
-		Bit[] vars = new Bit[2];
-		for (int i = 0; i < 2; i++)
-		{
-			vars[i] = new Bit();
-		}
-		return vars;
-	}
-
-	/**
-	 * Verify that properties are properly inherited by factors from their graph.
-	 * 
-	 * @since 0.07
-	 */
-	@Test
-	public void testPropertyInheritance()
-	{
-		Random rand = new Random();
-		rand.setSeed(0); // Don't be random
-		FactorGraph fg = new FactorGraph();
-		SFactorGraph sfg = getSFactorGraph(fg);
-		Factor f = define2bitFactor(rand, fg);
-		STableFactor sft = getSFactorTable(f);
-		// Make sure the factor has the default values initially
-		assertEquals(defaultApproach, sft.getUpdateApproach());
-		assertEquals(defaultAllocationScale, sft.getAutomaticMemoryAllocationScalingFactor(), 1.0e-9);
-		assertEquals(defaultExecutionTimeScale, sft.getAutomaticExecutionTimeScalingFactor(), 1.0e-9);
-		assertEquals(defaultSparseThreshold, sft.getOptimizedUpdateSparseThreshold(), 1.0e-9);
-		// Set the properties at the graph to non-default values
-		final UpdateApproach graphApproach = UpdateApproach.UPDATE_APPROACH_OPTIMIZED;
-		final double graphAllocationScale = 2.0;
-		final double graphExecutionTimeScale = 50.0;
-		final double graphSparseThreshold = 0.6;
-		sfg.setUpdateApproach(graphApproach);
-		sfg.setAutomaticMemoryAllocationScalingFactor(graphAllocationScale);
-		sfg.setAutomaticExecutionTimeScalingFactor(graphExecutionTimeScale);
-		sfg.setOptimizedUpdateSparseThreshold(graphSparseThreshold);
-		// Check that the factor returns the values programmed on the graph
-		assertEquals(graphApproach, sft.getUpdateApproach());
-		assertEquals(graphAllocationScale, sft.getAutomaticMemoryAllocationScalingFactor(), 1.0e-9);
-		assertEquals(graphExecutionTimeScale, sft.getAutomaticExecutionTimeScalingFactor(), 1.0e-9);
-		assertEquals(graphSparseThreshold, sft.getOptimizedUpdateSparseThreshold(), 1.0e-9);
-		// Set the properties at the factor to yet different values
-		final UpdateApproach factorApproach = UpdateApproach.UPDATE_APPROACH_AUTOMATIC;
-		final double factorAllocationScale = 3.0;
-		final double factorExecutionTimeScale = 60.0;
-		final double factorSparseThreshold = 0.7;
-		sft.setUpdateApproach(factorApproach);
-		sft.setAutomaticMemoryAllocationScalingFactor(factorAllocationScale);
-		sft.setAutomaticExecutionTimeScalingFactor(factorExecutionTimeScale);
-		sft.setOptimizedUpdateSparseThreshold(factorSparseThreshold);
-		// Check that the factor returns the values programmed on the factor
-		assertEquals(factorApproach, sft.getUpdateApproach());
-		assertEquals(factorAllocationScale, sft.getAutomaticMemoryAllocationScalingFactor(), 1.0e-9);
-		assertEquals(factorExecutionTimeScale, sft.getAutomaticExecutionTimeScalingFactor(), 1.0e-9);
-		assertEquals(factorSparseThreshold, sft.getOptimizedUpdateSparseThreshold(), 1.0e-9);
-		// And that the graph returns its own values still
-		assertEquals(graphApproach, sfg.getUpdateApproach());
-		assertEquals(graphAllocationScale, sfg.getAutomaticMemoryAllocationScalingFactor(), 1.0e-9);
-		assertEquals(graphExecutionTimeScale, sfg.getAutomaticExecutionTimeScalingFactor(), 1.0e-9);
-		assertEquals(graphSparseThreshold, sfg.getOptimizedUpdateSparseThreshold(), 1.0e-9);
-		// "Unset" the factor properties
-		sft.unsetUpdateApproach();
-		sft.unsetAutomaticMemoryAllocationScalingFactor();
-		sft.unsetAutomaticExecutionTimeScalingFactor();
-		sft.unsetOptimizedUpdateSparseThreshold();
-		// And check that the factor again returns the graph values
-		assertEquals(graphApproach, sft.getUpdateApproach());
-		assertEquals(graphAllocationScale, sft.getAutomaticMemoryAllocationScalingFactor(), 1.0e-9);
-		assertEquals(graphExecutionTimeScale, sft.getAutomaticExecutionTimeScalingFactor(), 1.0e-9);
-		assertEquals(graphSparseThreshold, sft.getOptimizedUpdateSparseThreshold(), 1.0e-9);
-	}
-
-	/**
-	 * Verify that factors with the same factor table share property storage, and that factors with
-	 * different factor tables do not.
-	 */
-	@Test
-	public void testPropertySharing()
-	{
-		Random rand = new Random();
-		rand.setSeed(0); // Don't be random
-		FactorGraph fg = new FactorGraph();
-		Factor f1a = define2bitFactor(rand, fg);
-		STableFactor sft1a = getSFactorTable(f1a);
-		Factor f2a = define2bitFactor(rand, fg);
-		STableFactor sft2a = getSFactorTable(f2a);
-		Bit[] vars = define2bits();
-		// Define a 2nd factor using the same factor table as f1a
-		Factor f1b = fg.addFactor(sft1a.getFactorTable(), vars[0], vars[1]);
-		STableFactor sft1b = (STableFactor) f1b.getSolver();
-		assertNotNull(sft1b);
-		// And another factor using the same factor as f2a
-		Factor f2b = fg.addFactor(sft2a.getFactorTable(), vars[0], vars[1]);
-		STableFactor sft2b = (STableFactor) f2b.getSolver();
-		assertNotNull(sft2b);
-		// Set non-default values on f1a
-		final UpdateApproach factorApproach1 = UpdateApproach.UPDATE_APPROACH_AUTOMATIC;
-		final double factorAllocationScale1 = 3.0;
-		final double factorExecutionTimeScale1 = 60.0;
-		final double factorSparseThreshold1 = 0.7;
-		sft1a.setUpdateApproach(factorApproach1);
-		sft1a.setAutomaticMemoryAllocationScalingFactor(factorAllocationScale1);
-		sft1a.setAutomaticExecutionTimeScalingFactor(factorExecutionTimeScale1);
-		sft1a.setOptimizedUpdateSparseThreshold(factorSparseThreshold1);
-		// And set different non-default values to f2b
-		final UpdateApproach factorApproach2 = UpdateApproach.UPDATE_APPROACH_NORMAL;
-		final double factorAllocationScale2 = 2.0;
-		final double factorExecutionTimeScale2 = 40.0;
-		final double factorSparseThreshold2 = 0.8;
-		sft2b.setUpdateApproach(factorApproach2);
-		sft2b.setAutomaticMemoryAllocationScalingFactor(factorAllocationScale2);
-		sft2b.setAutomaticExecutionTimeScalingFactor(factorExecutionTimeScale2);
-		sft2b.setOptimizedUpdateSparseThreshold(factorSparseThreshold2);
-		// Check that each of the four factor's properties have the correct value now
-		assertEquals(factorApproach1, sft1a.getUpdateApproach());
-		assertEquals(factorAllocationScale1, sft1a.getAutomaticMemoryAllocationScalingFactor(), 1.0e-9);
-		assertEquals(factorExecutionTimeScale1, sft1a.getAutomaticExecutionTimeScalingFactor(), 1.0e-9);
-		assertEquals(factorSparseThreshold1, sft1a.getOptimizedUpdateSparseThreshold(), 1.0e-9);
-		assertEquals(factorApproach1, sft1b.getUpdateApproach());
-		assertEquals(factorAllocationScale1, sft1b.getAutomaticMemoryAllocationScalingFactor(), 1.0e-9);
-		assertEquals(factorExecutionTimeScale1, sft1b.getAutomaticExecutionTimeScalingFactor(), 1.0e-9);
-		assertEquals(factorSparseThreshold1, sft1b.getOptimizedUpdateSparseThreshold(), 1.0e-9);
-		assertEquals(factorApproach2, sft2a.getUpdateApproach());
-		assertEquals(factorAllocationScale2, sft2a.getAutomaticMemoryAllocationScalingFactor(), 1.0e-9);
-		assertEquals(factorExecutionTimeScale2, sft2a.getAutomaticExecutionTimeScalingFactor(), 1.0e-9);
-		assertEquals(factorSparseThreshold2, sft2a.getOptimizedUpdateSparseThreshold(), 1.0e-9);
-		assertEquals(factorApproach2, sft2b.getUpdateApproach());
-		assertEquals(factorAllocationScale2, sft2b.getAutomaticMemoryAllocationScalingFactor(), 1.0e-9);
-		assertEquals(factorExecutionTimeScale2, sft2b.getAutomaticExecutionTimeScalingFactor(), 1.0e-9);
-		assertEquals(factorSparseThreshold2, sft2b.getOptimizedUpdateSparseThreshold(), 1.0e-9);
-	}
-
 	private void doTest(final int zeroControl,
 		final double sparsityControl,
 		final double damping,
@@ -252,10 +48,10 @@ public class TestSumProductOptimizedUpdate
 		if (solver != null)
 		{
 			solver.useMultithreading(useMultithreading);
+			TableFactorEngineOptimized.setSparseThreshold(sparsityControl);
 			SFactorGraph ssolver = (SFactorGraph) solver;
-			ssolver.setOptimizedUpdateSparseThreshold(sparsityControl);
 			ssolver.setDamping(damping);
-			ssolver.setUpdateApproach(UpdateApproach.UPDATE_APPROACH_OPTIMIZED);
+			ssolver.setDefaultOptimizedUpdateEnabled(true);
 			fg.solve();
 			int[][] values = g.getValues();
 			int[] flat = Ints.concat(values);
@@ -351,106 +147,19 @@ public class TestSumProductOptimizedUpdate
 			fail("STableFactor is null");
 			return;
 		}
-		// stf.setOptimizedUpdateEnabled(true);
+		stf.enableOptimizedUpdate();
 		fg.solve();
 		int[] values = new int[vars.length];
 		for (int i = 0; i < values.length; i++)
 		{
-			values[i] = (Integer) vars[i].getValue();
+			values[i] = (Integer)vars[i].getValue();
 		}
 		int[] flat = Ints.concat(values);
 		int hash = Arrays.hashCode(flat);
 		final int EXPECTED_HASH = 31430530;
 		assertEquals(EXPECTED_HASH, hash);
 	}
-
-	/**
-	 * @since 0.07
-	 */
-	private void optimizeHelper(final double density, final boolean multithreaded)
-	{
-		Random rand = new Random();
-		rand.setSeed(0); // Don't be random
-		final FactorGraph fg = new FactorGraph();
-		DiscreteDomain[] domains = new DiscreteDomain[5];
-		final int N = 5;
-		Discrete[] vars = new Discrete[N];
-		for (int i = 0; i < domains.length; i++)
-		{
-			domains[i] = DiscreteDomain.range(1, Math.abs(2 - i) + 2);
-			vars[i] = new Discrete(domains[i]);
-		}
-		IFactorTable table = FactorTable.create(domains);
-		table.setRepresentation(FactorTableRepresentation.DENSE_WEIGHT);
-		int[] coordinates = null;
-		final JointDomainIndexer domainIndexer = table.getDomainIndexer();
-		final int d = (int) (domainIndexer.getCardinality() * density);
-		for (int i = 0; i < d; i++)
-		{
-			coordinates = domainIndexer.randomIndices(rand, coordinates);
-			table.setWeightForIndices(rand.nextDouble(), coordinates);
-		}
-		fg.addFactor(table, vars);
-		SFactorGraph sfg = (SFactorGraph) fg.getSolver();
-		if (sfg == null)
-		{
-			fail("SFactorGraph is null");
-			return;
-		}
-		sfg.setUpdateApproach(UpdateApproach.UPDATE_APPROACH_AUTOMATIC);
-		sfg.useMultithreading(multithreaded);
-		// Before optimize, all factors should not have their optimize enable explicitly set
-		for (Factor factor : fg.getFactors())
-		{
-			STableFactor sft = (STableFactor) factor.getSolver();
-			if (sft != null)
-			{
-				// sft.setOptimizedUpdateApproach(OptimizedUpdateApproach.OPTIMIZED_UPDATE_ENABLED);
-				// // TODO remove
-				boolean isExplicitlySet = sft.getAutomaticOptimizationDecision();
-				assertEquals(false, isExplicitlySet);
-			}
-		}
-		sfg.initialize();
-		// Afterward, they should
-		for (Factor factor : fg.getFactors())
-		{
-			STableFactor sft = (STableFactor) factor.getSolver();
-			if (sft != null)
-			{
-				boolean isExplicitlySet = sft.getAutomaticOptimizationDecision();
-				assertEquals(true, isExplicitlySet);
-			}
-		}
-	}
-
-	/**
-	 * @since 0.07
-	 */
-	@Test
-	public void testOptimizeSparse()
-	{
-		optimizeHelper(0.05, false);
-	}
-
-	/**
-	 * @since 0.07
-	 */
-	@Test
-	public void testOptimizeDense()
-	{
-		optimizeHelper(1.0, false);
-	}
-
-	/**
-	 * @since 0.07
-	 */
-	@Test
-	public void testOptimizeMultithreaded()
-	{
-		optimizeHelper(1.0, true);
-	}
-
+	
 	static private class Graph
 	{
 		private static Random _rnd = new Random();

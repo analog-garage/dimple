@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 import com.analog.lyric.dimple.options.SolverOptions;
 import com.analog.lyric.dimple.solvers.core.SNode;
 import com.analog.lyric.dimple.solvers.sumproduct.sampledfactor.SampledFactor;
+import com.analog.lyric.options.BooleanOptionKey;
 import com.analog.lyric.options.DoubleListOptionKey;
 import com.analog.lyric.options.DoubleOptionKey;
 import com.analog.lyric.options.IntegerOptionKey;
@@ -45,6 +46,9 @@ public class SumProductOptions extends SolverOptions
 	 */
 	public static final DoubleOptionKey damping =
 		new DoubleOptionKey(SumProductOptions.class, "damping", 0.0, 0.0, 1.0);
+	
+	public static final BooleanOptionKey enableOptimizedUpdate =
+		new BooleanOptionKey(SumProductOptions.class, "enableOptimizedUpdate", false);
 	
 	/**
 	 * Maximum size of discrete belief messages.

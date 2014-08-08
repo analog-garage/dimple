@@ -1523,16 +1523,6 @@ public class FactorTable extends SparseFactorTableBase
 		}
 		return _sparseEnergies;
 	}
-
-	@Override
-	public double[] getEnergiesDenseUnsafe()
-	{
-		if (!hasDenseEnergies())
-		{
-			setRepresentation(DENSE_ENERGY);
-		}
-		return _denseEnergies;
-	}
 	
 	@Override
 	public final double[] getEnergySlice(@Nullable double[] slice, int sliceDimension, int ... indices)
