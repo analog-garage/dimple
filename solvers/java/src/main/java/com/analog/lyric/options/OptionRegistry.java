@@ -136,7 +136,7 @@ public class OptionRegistry implements Iterable<IOptionKey<?>>
 			{
 				if (_keysIterator.hasNext())
 				{
-					_keyIterator = keyIter = _keysIterator.next().iterator();
+					_keyIterator = keyIter = _keysIterator.next().values().iterator();
 				}
 				else
 				{
@@ -183,7 +183,7 @@ public class OptionRegistry implements Iterable<IOptionKey<?>>
 				_simpleMap.put(classname, ObjectArrays.concat(existingArray, keys));
 			}
 			
-			_size += keys.size();
+			_size += keys.values().size();
 		}
 
 		return true;
@@ -194,13 +194,13 @@ public class OptionRegistry implements Iterable<IOptionKey<?>>
 	 * Adds all statically declared, final fields of type {@link IOptionKey} whose {@linkplain IOptionKey#name() name}
 	 * attribute matches its declared name. Also will recursively add from public nested classes.
 	 * 
-	 * @return the number of option keys that were added
+	 * @return the number of unique option keys that were added
 	 * @since 0.07
 	 */
 	public int addFromClass(Class<?> declaringClass)
 	{
 		OptionKeys keys = OptionKeys.declaredInClass(declaringClass);
-		int nAdded = keys.size();
+		int nAdded = keys.values().size();
 		
 		if (nAdded > 0 && !add(keys))
 		{

@@ -16,15 +16,19 @@
 
 package com.analog.lyric.options.tests;
 
-import static com.analog.lyric.util.test.ExceptionTester.*;
 import static org.junit.Assert.*;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.junit.Test;
 
 import com.analog.lyric.options.AmbiguousOptionNameException;
+import com.analog.lyric.options.GenericOptionKey;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.IntegerOptionKey;
 import com.analog.lyric.options.OptionKey;
@@ -115,22 +119,39 @@ public class TestOptionRegistry
 	{
 		OptionKeys keys = OptionKeys.declaredInClass(declaringClass);
 		assertSame(keys, OptionKeys.declaredInClass(declaringClass));
+		assertSame(keys, keys.clone());
 		
 		assertSame(declaringClass, keys.declaringClass());
 		
-		final int size = keys.size();
-		
-		assertEquals(expected.length, size);
+		assertEquals(expected.length, keys.values().size());
 
-		for (int i = 0; i < size; ++i)
+		Set<String> keySet = keys.keySet();
+		Set<Map.Entry<String,IOptionKey<?>>> entrySet = keys.entrySet();
+		assertEquals(keySet.size(), entrySet.size());
+		
+		for (Map.Entry<String, IOptionKey<?>> entry : entrySet)
 		{
-			IOptionKey<?> key = keys.get(i);
-			assertSame(key, keys.get(key.name()));
+			String name = entry.getKey();
+			IOptionKey<?> key = keys.get(name);
+			assertNotNull(key);
+			assertTrue(keySet.contains(name));
+			assertTrue(keys.containsValue(key));
+			assertTrue(keys.containsKey(name));
+			
+			@SuppressWarnings("unchecked")
+			IOptionKey<?> key2 =
+				new GenericOptionKey<Serializable>(key.getDeclaringClass(), key.name(), (Class<Serializable>) key.type(), key.defaultValue());
+			assertFalse(keys.containsValue(key2));
 		}
 		
+		assertFalse(keys.containsKey("does not exist"));
+		assertFalse(keys.containsValue("does not exist"));
 		assertNull(keys.get("does not exist"));
-		expectThrow(IndexOutOfBoundsException.class, keys, "get", -1);
-		expectThrow(IndexOutOfBoundsException.class, keys, "get", size);
+
+		Map<String,IOptionKey<?>> map = new HashMap<String,IOptionKey<?>>();
+		map.putAll(keys);
+		assertEquals(map, keys);
+		assertEquals(map.hashCode(), keys.hashCode());
 	}
 	
 	private void assertInvariants(OptionRegistry registry)
@@ -173,6 +194,9 @@ public class TestOptionRegistry
 		public static final OptionKey<String> S2 = new StringOptionKey(FieldOptions.class, "S2", "s");
 		public static final OptionKey<Integer> I42 = new IntegerOptionKey(FieldOptions.class, "I42", 42);
 		public static final OptionKey<Integer> I23 = new IntegerOptionKey(FieldOptions.class, "I23", 23);
+		
+		// An alias
+		public static final OptionKey<String> S1A = S1;
 		
 		//
 		// These should not be registered:

@@ -21,6 +21,18 @@ import com.analog.lyric.collect.ReleasableIterator;
 /**
  * Base for classes that declare option keys.
  * <p>
+ * This can be used as a base class for classes that contain {@linkplain IOptionKey option key}
+ * declarations. Although, such classes typically only contain static option declarations and
+ * will not usually be instantiated, it can still be useful to inherit from this class:
+ * <ul>
+ * <li>It will provide a way to organize option declaration classes in a hierarchy.
+ * <li>It will allow developers to visualize the option hierarchy and view available options
+ * using their IDE's type hierarchy viewer.
+ * </ul>It provides additional methods for exploring the option hierarchy programmatically.
+ * <p>
+ * It is recommended that a project using this option package declare a subclass of this
+ * class as the root for their project's options.
+ * <p>
  * @since 0.07
  * @author Christopher Barber
  */

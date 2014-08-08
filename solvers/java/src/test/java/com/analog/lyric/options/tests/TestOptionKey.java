@@ -166,7 +166,7 @@ public class TestOptionKey
 	@Test
 	public void test()
 	{
-		for (IOptionKey<?> key : OptionKeys.declaredInClass(getClass()))
+		for (IOptionKey<?> key : OptionKeys.declaredInClass(getClass()).values())
 		{
 			assertOptionInvariants(key);
 		}
