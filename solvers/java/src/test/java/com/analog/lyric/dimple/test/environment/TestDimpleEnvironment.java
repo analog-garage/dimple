@@ -38,18 +38,18 @@ public class TestDimpleEnvironment
 	@Test
 	public void testInstances()
 	{
-		final DimpleEnvironment global1 = DimpleEnvironment.global();
-		final DimpleEnvironment local1 = DimpleEnvironment.local();
+		final DimpleEnvironment global1 = DimpleEnvironment.defaultEnvironment();
+		final DimpleEnvironment local1 = DimpleEnvironment.active();
 		assertSame(global1, local1);
 		
 		Thread thread1 = new Thread() {
 			@Override
 			public void run()
 			{
-				assertSame(global1, DimpleEnvironment.local());
+				assertSame(global1, DimpleEnvironment.active());
 				DimpleEnvironment local2 = new DimpleEnvironment();
-				DimpleEnvironment.setLocal(local2);
-				assertSame(local2, DimpleEnvironment.local());
+				DimpleEnvironment.setActive(local2);
+				assertSame(local2, DimpleEnvironment.active());
 			}
 		};
 		thread1.start();
@@ -62,21 +62,21 @@ public class TestDimpleEnvironment
 			fail(ex.toString());
 		}
 		
-		assertSame(local1, DimpleEnvironment.local());
+		assertSame(local1, DimpleEnvironment.active());
 		
 		final DimpleEnvironment global2 = new DimpleEnvironment();
-		DimpleEnvironment.setGlobal(global2);
-		assertSame(global2, DimpleEnvironment.global());
-		assertSame(local1, DimpleEnvironment.local());
+		DimpleEnvironment.setDefaultEnvironment(global2);
+		assertSame(global2, DimpleEnvironment.defaultEnvironment());
+		assertSame(local1, DimpleEnvironment.active());
 		
 		Thread thread2 = new Thread() {
 			@Override
 			public void run()
 			{
-				assertSame(global2, DimpleEnvironment.local());
-				DimpleEnvironment.setGlobal(global1);
-				assertSame(global1, DimpleEnvironment.global());
-				assertSame(global2, DimpleEnvironment.local());
+				assertSame(global2, DimpleEnvironment.active());
+				DimpleEnvironment.setDefaultEnvironment(global1);
+				assertSame(global1, DimpleEnvironment.defaultEnvironment());
+				assertSame(global2, DimpleEnvironment.active());
 			}
 		};
 		thread2.start();
@@ -93,7 +93,7 @@ public class TestDimpleEnvironment
 	@Test
 	public void testEventSourceMethods()
 	{
-		DimpleEnvironment global = DimpleEnvironment.global();
+		DimpleEnvironment global = DimpleEnvironment.defaultEnvironment();
 		assertNull(global.getContainingGraph());
 		assertNull(global.getEventParent());
 		assertNull(global.getModelEventSource());
@@ -109,7 +109,7 @@ public class TestDimpleEnvironment
 	{
 		assertFalse(DimpleEnvironment.loadedFromMATLAB());
 		
-		DimpleEnvironment env = DimpleEnvironment.local();
+		DimpleEnvironment env = DimpleEnvironment.active();
 		
 		Logger defaultLogger = env.logger();
 		assertSame(defaultLogger, Logger.getLogger("com.analog.lyric.dimple"));
