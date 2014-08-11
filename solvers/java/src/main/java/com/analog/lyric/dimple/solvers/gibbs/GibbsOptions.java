@@ -58,7 +58,7 @@ public class GibbsOptions extends SolverOptions
 	 * <description>
 	 */
 	public static final IntegerOptionKey burnInScans =
-		new IntegerOptionKey(GibbsOptions.class, "burnInScans", -1);
+		new IntegerOptionKey(GibbsOptions.class, "burnInScans", 0);
 	
 	/**
 	 * <description>

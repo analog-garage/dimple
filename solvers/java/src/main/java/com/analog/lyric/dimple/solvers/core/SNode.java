@@ -97,6 +97,11 @@ public abstract class SNode extends SolverEventSource implements ISolverNode
 		return getModelObject().getSiblingCount();
 	}
 	
+	/**
+	 * Initialize solver node.
+	 * <p>
+	 * Clears internal state flags and resets messages for edges.
+	 */
 	@Override
 	public void initialize()
 	{
