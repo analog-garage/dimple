@@ -26,13 +26,11 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.sumproduct.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.sumproduct.STableFactor;
 import com.analog.lyric.math.DimpleRandomGenerator;
-import com.analog.lyric.util.misc.Nullable;
 
 
 public class SFactorGraph extends SFactorGraphBase
 {
 	protected int _numIterationsBetweenResampling = 1;
-	protected int _defaultResamplingUpdatesPerParticle = 1;
 	protected int _defaultNumParticles = 1;
 	protected boolean _temper = false;
 	protected double _initialTemperature;
@@ -40,24 +38,9 @@ public class SFactorGraph extends SFactorGraphBase
 	protected double _temperature;
 	protected final double LOG2 = Math.log(2);
 	
-	// Arguments for the constructor
-	public static class Arguments
-	{
-		public boolean temper = false;
-		public double initialTemperature = 1;
-		public double temperingHalfLifeInSamples = 1;
-	}
-	
-	protected SFactorGraph(FactorGraph factorGraph, @Nullable Arguments arguments)
+	protected SFactorGraph(FactorGraph factorGraph)
 	{
 		super(factorGraph);
-//		setNumSamples(arguments.numSamples);
-//		setUpdatesPerSample(arguments.updatesPerSample);
-//		setBurnInUpdates(arguments.burnInUpdates);
-//		setTempering(arguments.temper);
-//		configureInitialTemperature(arguments.initialTemperature);
-//		configureTemperingHalfLifeInSamples(arguments.temperingHalfLifeInSamples);
-//		_factorGraph.setSolverSpecificDefaultScheduler(new GibbsDefaultScheduler());	// Override the common default scheduler
 	}
 
 	@Override
@@ -84,7 +67,6 @@ public class SFactorGraph extends SFactorGraphBase
 		{
 			SRealVariable v = new SRealVariable(var);
 			v.setNumParticles(_defaultNumParticles);
-			v.setResamplingUpdatesPerParticle(_defaultResamplingUpdatesPerParticle);
 			return v;
 		}
 		else
@@ -94,8 +76,13 @@ public class SFactorGraph extends SFactorGraphBase
 	@Override
 	public void initialize()
 	{
+		_temper = getOptionOrDefault(ParticleBPOptions.enableTempering);
+		_initialTemperature = getOptionOrDefault(ParticleBPOptions.initialTemperature);
+		_numIterationsBetweenResampling = getOptionOrDefault(ParticleBPOptions.iterationsBetweenResampling);
+		_temperingDecayConstant = 1 - LOG2/getOptionOrDefault(ParticleBPOptions.temperingHalfLife);
+		
 		super.initialize();
-//		_minPotential = Double.MAX_VALUE;
+
 		if (_temper) setTemperature(_initialTemperature);
 	}
 	
@@ -187,35 +174,60 @@ public class SFactorGraph extends SFactorGraphBase
 	// Set the number of re-sampling updates per particle when re-sampling the particle values, globally for all real variables
 	public void setResamplingUpdatesPerParticle(int updatesPerParticle)
 	{
-		_defaultResamplingUpdatesPerParticle = updatesPerParticle;
-		for (VariableBase v : _factorGraph.getVariables())
-		{
-			ISolverVariable vs = v.getSolver();
-			if (vs instanceof SRealVariable)
-				((SRealVariable)vs).setResamplingUpdatesPerParticle(updatesPerParticle);
-		}
+		setOption(ParticleBPOptions.resamplingUpdatesPerParticle, updatesPerParticle);
 	}
 	
 	
 	// Set/get the number of iterations between resamplings
-	public void setNumIterationsBetweenResampling(int numIterationsBetweenResampling) {_numIterationsBetweenResampling = numIterationsBetweenResampling;}
+	public void setNumIterationsBetweenResampling(int numIterationsBetweenResampling)
+	{
+		setOption(ParticleBPOptions.iterationsBetweenResampling, numIterationsBetweenResampling);
+		_numIterationsBetweenResampling = numIterationsBetweenResampling;
+	}
+	
 	public int getNumIterationsBetweenResampling() {return _numIterationsBetweenResampling;}
 	
 	// Set/get the initial temperature when using tempering
-	public void setInitialTemperature(double initialTemperature) {_temper = true; _initialTemperature = initialTemperature;}
+	public void setInitialTemperature(double initialTemperature)
+	{
+		setOption(ParticleBPOptions.initialTemperature, initialTemperature);
+		setTempering(true);
+		_initialTemperature = initialTemperature;
+	}
+	
 	public double getInitialTemperature() {return _initialTemperature;}
-	protected void configureInitialTemperature(double initialTemperature) {_initialTemperature = initialTemperature;}	// Don't automatically enable tempering
 	
 	// Set/get the tempering half-life -- the number of *samples* for the temperature to decrease by half
-	public void setTemperingHalfLifeInIterations(double temperingHalfLifeInIterations) {_temper = true; _temperingDecayConstant = 1 - LOG2/temperingHalfLifeInIterations;}
+	public void setTemperingHalfLifeInIterations(double temperingHalfLifeInIterations)
+	{
+		setOption(ParticleBPOptions.temperingHalfLife, temperingHalfLifeInIterations);
+		setTempering(true);
+		_temperingDecayConstant = 1 - LOG2/temperingHalfLifeInIterations;
+	}
+	
 	public double getTemperingHalfLifeInIterations() {return LOG2/(1 - _temperingDecayConstant);}
-	protected void configureTemperingHalfLifeInIterations(double temperingHalfLifeInIterations) {_temperingDecayConstant = 1 - LOG2/temperingHalfLifeInIterations;}	// Don't automatically enable tempering
 	
 	// Enable or disable the use of tempering
-	protected void setTempering(boolean temper) {_temper = temper;}
-	public void enableTempering() {_temper = true;}
-	public void disableTempering() {_temper = false;}
-	public boolean isTemperingEnabled() {return _temper;}
+	protected void setTempering(boolean temper)
+	{
+		setOption(ParticleBPOptions.enableTempering, temper);
+		_temper = temper;
+	}
+
+	public final void enableTempering()
+	{
+		setTempering(true);
+	}
+
+	public final void disableTempering()
+	{
+		setTempering(false);
+	}
+	
+	public boolean isTemperingEnabled()
+	{
+		return _temper;
+	}
 
 	/*
 	 * 

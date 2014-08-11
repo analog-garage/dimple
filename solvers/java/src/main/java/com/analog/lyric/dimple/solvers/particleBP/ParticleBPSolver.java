@@ -27,6 +27,6 @@ public class ParticleBPSolver extends SolverBase<SFactorGraph>
 	@Override
 	public SFactorGraph createFactorGraph(FactorGraph factorGraph)
 	{
-		return new SFactorGraph(factorGraph, null);
+		return new SFactorGraph(factorGraph);
 	}
 }

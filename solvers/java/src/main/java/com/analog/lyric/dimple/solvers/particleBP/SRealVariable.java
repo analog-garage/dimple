@@ -71,6 +71,14 @@ public class SRealVariable extends SRealVariableBase
 	}
 
 	@Override
+	public void initialize()
+	{
+		_resamplingUpdatesPerSample = getOptionOrDefault(ParticleBPOptions.resamplingUpdatesPerParticle);
+		
+		super.initialize();
+	}
+	
+	@Override
 	protected void doUpdateEdge(int outPortNum)
 	{
 		final double minLog = -100;
@@ -411,7 +419,12 @@ public class SRealVariable extends SRealVariableBase
 	}
 	public int getNumParticles() {return _numParticles;}
 
-	public void setResamplingUpdatesPerParticle(int updatesPerParticle) {_resamplingUpdatesPerSample = updatesPerParticle;}
+	public void setResamplingUpdatesPerParticle(int updatesPerParticle)
+	{
+		setOption(ParticleBPOptions.resamplingUpdatesPerParticle, updatesPerParticle);
+		_resamplingUpdatesPerSample = updatesPerParticle;
+	}
+	
 	public int getResamplingUpdatesPerParticle() {return _resamplingUpdatesPerSample;}
 
 	// FIXME: Generalize to proposal kernels that take different parameters

@@ -20,21 +20,17 @@ import com.analog.lyric.dimple.options.SolverOptions;
 import com.analog.lyric.options.BooleanOptionKey;
 import com.analog.lyric.options.DoubleOptionKey;
 import com.analog.lyric.options.IntegerOptionKey;
-import com.analog.lyric.options.LongOptionKey;
 
 /**
- * 
+ * Options for the Particle BP solver.
+ * <p>
+ * Unless otherwise noted, all options take effect upon initialization.
+ * <P>
  * @since 0.07
  * @author Christopher Barber
  */
 public class ParticleBPOptions extends SolverOptions
 {
-	/**
-	 * <description>
-	 */
-	public static final DoubleOptionKey beta =
-		new DoubleOptionKey(ParticleBPOptions.class, "beta", 1.0);
-	
 	/**
 	 * <description>
 	 */
@@ -45,35 +41,30 @@ public class ParticleBPOptions extends SolverOptions
 	 * <description>
 	 */
 	public static final DoubleOptionKey initialTemperature =
-		new DoubleOptionKey(ParticleBPOptions.class, "initialTemperature", 1.0);
+		new DoubleOptionKey(ParticleBPOptions.class, "initialTemperature", 1.0, 0.0, Double.MAX_VALUE);
 	
 	/**
 	 * <description>
 	 */
-	public static final IntegerOptionKey iterationsBetweenResamping =
-		new IntegerOptionKey(ParticleBPOptions.class, "iterationsBetweenResamping", 1);
+	public static final IntegerOptionKey iterationsBetweenResampling =
+		new IntegerOptionKey(ParticleBPOptions.class, "iterationsBetweenResampling", 1, 1, Integer.MAX_VALUE);
 	
 	/**
 	 * <description>
 	 */
 	public static final IntegerOptionKey numParticles =
-		new IntegerOptionKey(ParticleBPOptions.class, "numParticles", 1);
+		new IntegerOptionKey(ParticleBPOptions.class, "numParticles", 1, 1, Integer.MAX_VALUE);
 	
 	/**
 	 * <description>
 	 */
-	public static final LongOptionKey randomSeed = new LongOptionKey(ParticleBPOptions.class, "randomSeed");
-
-	/**
-	 * <description>
-	 */
 	public static final IntegerOptionKey resamplingUpdatesPerParticle =
-		new IntegerOptionKey(ParticleBPOptions.class, "resamplingUpdatesPerParticle", 1);
+		new IntegerOptionKey(ParticleBPOptions.class, "resamplingUpdatesPerParticle", 1, 1, Integer.MAX_VALUE);
 	
 	/**
 	 * <description>
 	 */
 	public static final DoubleOptionKey temperingHalfLife =
-		new DoubleOptionKey(ParticleBPOptions.class, "temperingHalfLife", 1);
+		new DoubleOptionKey(ParticleBPOptions.class, "temperingHalfLife", 1, 1.0, Double.MAX_VALUE);
 	
 }
