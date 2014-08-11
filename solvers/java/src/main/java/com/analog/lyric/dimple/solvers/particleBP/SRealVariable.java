@@ -65,6 +65,9 @@ public class SRealVariable extends SRealVariableBase
 		if (!(var.getDomain() instanceof RealDomain))
 			throw new DimpleException("Expected real domain");
 
+		// Since numParticles is used to configure the message sizes, we set this at construction
+		// time to make it less likely that the messages will have to be recreated at initialize time.
+		_numParticles = getOptionOrDefault(ParticleBPOptions.numParticles);
 		_domain = (RealDomain)var.getDomain();
 		_particleValues = new Double[_numParticles];
 		_logWeight = new double[_numParticles];
@@ -74,6 +77,7 @@ public class SRealVariable extends SRealVariableBase
 	public void initialize()
 	{
 		_resamplingUpdatesPerSample = getOptionOrDefault(ParticleBPOptions.resamplingUpdatesPerParticle);
+		updateNumParticles(getOptionOrDefault(ParticleBPOptions.numParticles));
 		
 		super.initialize();
 	}
@@ -413,10 +417,20 @@ public class SRealVariable extends SRealVariableBase
 
 	public void setNumParticles(int numParticles)
 	{
-		_numParticles = numParticles;
-		for (Factor factor : _var.getFactors())
-			factor.requireSolver("setNumParticles").createMessages();
+		setOption(ParticleBPOptions.numParticles, numParticles);
+		updateNumParticles(numParticles);
 	}
+	
+	private void updateNumParticles(int numParticles)
+	{
+		if (numParticles != _numParticles)
+		{
+			_numParticles = numParticles;
+			for (Factor factor : _var.getFactors())
+				factor.requireSolver("setNumParticles").createMessages();
+		}
+	}
+	
 	public int getNumParticles() {return _numParticles;}
 
 	public void setResamplingUpdatesPerParticle(int updatesPerParticle)

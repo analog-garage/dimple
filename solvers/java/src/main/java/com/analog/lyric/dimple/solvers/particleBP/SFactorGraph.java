@@ -31,7 +31,7 @@ import com.analog.lyric.math.DimpleRandomGenerator;
 public class SFactorGraph extends SFactorGraphBase
 {
 	protected int _numIterationsBetweenResampling = 1;
-	protected int _defaultNumParticles = 1;
+//	protected int _defaultNumParticles = 1;
 	protected boolean _temper = false;
 	protected double _initialTemperature;
 	protected double _temperingDecayConstant;
@@ -66,7 +66,7 @@ public class SFactorGraph extends SFactorGraphBase
 		if (var.getModelerClassName().equals("Real"))
 		{
 			SRealVariable v = new SRealVariable(var);
-			v.setNumParticles(_defaultNumParticles);
+//			v.setNumParticles(_defaultNumParticles);
 			return v;
 		}
 		else
@@ -162,13 +162,14 @@ public class SFactorGraph extends SFactorGraphBase
 	// Set the number of particle values globally for all real variables
 	public void setNumParticles(int numParticles)
 	{
-		_defaultNumParticles = numParticles;
-		for (VariableBase v : _factorGraph.getVariables())
-		{
-			ISolverVariable vs = v.getSolver();
-			if (vs instanceof SRealVariable)
-				((SRealVariable)vs).setNumParticles(numParticles);
-		}
+		setOption(ParticleBPOptions.numParticles, numParticles);
+//		_defaultNumParticles = numParticles;
+//		for (VariableBase v : _factorGraph.getVariables())
+//		{
+//			ISolverVariable vs = v.getSolver();
+//			if (vs instanceof SRealVariable)
+//				((SRealVariable)vs).setNumParticles(numParticles);
+//		}
 	}
 
 	// Set the number of re-sampling updates per particle when re-sampling the particle values, globally for all real variables

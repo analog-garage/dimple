@@ -22,8 +22,6 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.domains.DiscreteDomain;
-import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.particleBP.ParticleBPOptions;
 import com.analog.lyric.dimple.solvers.particleBP.ParticleBPSolver;
@@ -52,12 +50,9 @@ public class TestParticleBPOptions
 		
 		// Set up test graph
 		FactorGraph fg = new FactorGraph();
-		DiscreteDomain digit = DiscreteDomain.range(0, 9);
-		Discrete d1 = new Discrete(digit);
-		Discrete d2 = new Discrete(digit);
 		Real r1 = new Real();
 		Real r2 = new Real();
-		fg.addVariables(d1, d2, r1, r2);
+		fg.addVariables(r1, r2);
 		
 		// Test default initialization on graph
 		SFactorGraph sfg = requireNonNull(fg.setSolverFactory(new ParticleBPSolver()));
@@ -70,6 +65,8 @@ public class TestParticleBPOptions
 		assertEquals(1, sfg.getNumIterationsBetweenResampling());
 		assertEquals(1, sr1.getResamplingUpdatesPerParticle());
 		assertEquals(1, sr2.getResamplingUpdatesPerParticle());
+		assertEquals(1, sr1.getNumParticles());
+		assertEquals(1, sr2.getNumParticles());
 		
 		// Test initialization from option on factor graph
 		fg.setSolverFactory(null);
@@ -79,11 +76,17 @@ public class TestParticleBPOptions
 		fg.setOption(ParticleBPOptions.iterationsBetweenResampling, 2);
 		fg.setOption(ParticleBPOptions.resamplingUpdatesPerParticle, 2);
 		r2.setOption(ParticleBPOptions.resamplingUpdatesPerParticle, 3);
+		fg.setOption(ParticleBPOptions.numParticles, 2);
+		r2.setOption(ParticleBPOptions.numParticles, 3);
 		sfg = requireNonNull(fg.setSolverFactory(new ParticleBPSolver()));
 		sr1 = (SRealVariable)sfg.getSolverVariable(r1);
 		sr2 = (SRealVariable)sfg.getSolverVariable(r2);
 		
-		// Does not take effect until initialize
+		// These take effect on construction
+		assertEquals(2, sr1.getNumParticles());
+		assertEquals(3, sr2.getNumParticles());
+
+		// These do not take effect until initialize
 		assertFalse(sfg.isTemperingEnabled());
 		assertEquals(0.0, sfg.getInitialTemperature(), 0.0);
 		assertEquals(Math.log(2), sfg.getTemperingHalfLifeInIterations(), 1e-9);
@@ -130,6 +133,13 @@ public class TestParticleBPOptions
 		assertEquals(4, sr1.getResamplingUpdatesPerParticle());
 		assertEquals(3, sr2.getResamplingUpdatesPerParticle()); // does not override more specific option setting
 		
+		sfg.setNumParticles(5);
+		sfg.initialize(); // does not take effect until initialize
+		assertEquals(5, sr1.getNumParticles());
+		assertEquals(3, sr2.getNumParticles()); // does not override more specific option setting
+		sr2.setNumParticles(6);
+		assertEquals(6, sr2.getNumParticles());
+		assertEquals((Integer)6, sr2.getLocalOption(ParticleBPOptions.numParticles));
 		
 	}
 }
