@@ -405,6 +405,13 @@ public class TestDomain
 			{
 				assertFalse(real.inDomain(tooHigh));
 			}
+			
+			assertTrue(real.isSubsetOf(real));
+			assertTrue(real.isSubsetOf(RealDomain.unbounded()));
+			if (!real.equals(RealDomain.unbounded()))
+			{
+				assertFalse(RealDomain.unbounded().isSubsetOf(real));
+			}
 		}
 		else
 		{
