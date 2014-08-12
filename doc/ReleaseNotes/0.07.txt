@@ -1,23 +1,23 @@
 Dimple version 0.07 release notes
 ==================================
 
-
 Significant New Features Since v0.06
 ------------------------------------
-- New com.analog.lyric.options package supports type-safe hierarchical
-  options.
 - New option mechanism used for configuring solver options.
-- DimpleEnvironment provides some facilities that can be shared among
-  multiple graphs, including a logging interface.
+
+- New com.analog.lyric.options package supports type-safe hierarchical options.
+
+- DimpleEnvironment provides some facilities that can be shared among multiple graphs, including a logging interface.
+
+- Added built-in factors to convert between vectors of Real variables and RealJoint or Complex variables.
+
 
 Significant Bug Fixes Since v0.06
 ---------------------------------
+- Fixed problem with gradle builds when git is not available or source tree is not a git clone.
 
-- Fixed problem with gradle builds when git is not available or source tree
-  is not a git clone.
 
 Optimizations
 --------------
-- Domains and JointDomainIndexer objects in Java are now interned on
-  creation to avoid creation of multiple equivalent instances.
+- Domains and JointDomainIndexer objects in Java are now interned on creation to avoid creation of multiple equivalent instances.
 
