@@ -22,7 +22,11 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.variables.Real;
+import com.analog.lyric.dimple.solvers.core.proposalKernels.CircularNormalProposalKernel;
+import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
+import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.particleBP.ParticleBPOptions;
 import com.analog.lyric.dimple.solvers.particleBP.ParticleBPSolver;
 import com.analog.lyric.dimple.solvers.particleBP.SFactorGraph;
@@ -47,6 +51,8 @@ public class TestParticleBPOptions
 		assertEquals((Integer)1, ParticleBPOptions.numParticles.defaultValue());
 		assertEquals((Integer)1, ParticleBPOptions.resamplingUpdatesPerParticle.defaultValue());
 		assertEquals(1.0, ParticleBPOptions.temperingHalfLife.defaultValue(), 0.0);
+		assertEquals(NormalProposalKernel.class, ParticleBPOptions.proposalKernel.defaultValue());
+		assertEquals(RealDomain.unbounded(), ParticleBPOptions.initialParticleDomain.defaultValue());
 		
 		// Set up test graph
 		FactorGraph fg = new FactorGraph();
@@ -67,6 +73,8 @@ public class TestParticleBPOptions
 		assertEquals(1, sr2.getResamplingUpdatesPerParticle());
 		assertEquals(1, sr1.getNumParticles());
 		assertEquals(1, sr2.getNumParticles());
+		assertTrue(sr1.getProposalKernel() instanceof NormalProposalKernel);
+		assertTrue(sr2.getProposalKernel() instanceof NormalProposalKernel);
 		
 		// Test initialization from option on factor graph
 		fg.setSolverFactory(null);
@@ -78,6 +86,8 @@ public class TestParticleBPOptions
 		r2.setOption(ParticleBPOptions.resamplingUpdatesPerParticle, 3);
 		fg.setOption(ParticleBPOptions.numParticles, 2);
 		r2.setOption(ParticleBPOptions.numParticles, 3);
+		fg.setOption(ParticleBPOptions.proposalKernel, CircularNormalProposalKernel.class);
+		r2.setOption(ParticleBPOptions.proposalKernel, NormalProposalKernel.class);
 		sfg = requireNonNull(fg.setSolverFactory(new ParticleBPSolver()));
 		sr1 = (SRealVariable)sfg.getSolverVariable(r1);
 		sr2 = (SRealVariable)sfg.getSolverVariable(r2);
@@ -91,6 +101,8 @@ public class TestParticleBPOptions
 		assertEquals(0.0, sfg.getInitialTemperature(), 0.0);
 		assertEquals(Math.log(2), sfg.getTemperingHalfLifeInIterations(), 1e-9);
 		assertEquals(1, sfg.getNumIterationsBetweenResampling());
+		assertNull(sr1.getProposalKernel());
+		assertNull(sr2.getProposalKernel());
 		
 		sfg.initialize();
 		assertTrue(sfg.isTemperingEnabled());
@@ -99,6 +111,8 @@ public class TestParticleBPOptions
 		assertEquals(2, sfg.getNumIterationsBetweenResampling());
 		assertEquals(2, sr1.getResamplingUpdatesPerParticle());
 		assertEquals(3, sr2.getResamplingUpdatesPerParticle());
+		assertTrue(sr1.getProposalKernel() instanceof CircularNormalProposalKernel);
+		assertTrue(sr2.getProposalKernel() instanceof NormalProposalKernel);
 		
 		// Test set methods
 		sfg.disableTempering();
@@ -140,6 +154,24 @@ public class TestParticleBPOptions
 		sr2.setNumParticles(6);
 		assertEquals(6, sr2.getNumParticles());
 		assertEquals((Integer)6, sr2.getLocalOption(ParticleBPOptions.numParticles));
+		
+		sr2.setProposalKernel("CircularNormalProposalKernel");
+		assertEquals(CircularNormalProposalKernel.class, sr2.getLocalOption(ParticleBPOptions.proposalKernel));
+		sr2.initialize();
+		assertTrue(sr2.getProposalKernel() instanceof CircularNormalProposalKernel);
+		
+		sr2.unsetOption(ParticleBPOptions.proposalKernel);
+		sr2.setProposalKernel(new NormalProposalKernel()); // This variant does not set the option
+		assertNull(sr2.getLocalOption(ParticleBPOptions.proposalKernel));
+		assertTrue(sr2.getProposalKernel() instanceof NormalProposalKernel);
+		sr2.initialize();
+		assertTrue(sr2.getProposalKernel() instanceof NormalProposalKernel); // not overridden by sfg option
+		
+		sr2.setProposalKernel((IProposalKernel)null); // revert back to option setting
+		assertNull(sr2.getProposalKernel());
+		sr2.initialize();
+		assertEquals(NormalProposalKernel.class, sr2.getOption(ParticleBPOptions.proposalKernel));
+		assertTrue(sr2.getProposalKernel() instanceof NormalProposalKernel);
 		
 	}
 }

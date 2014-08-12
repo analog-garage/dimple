@@ -21,6 +21,7 @@ import static java.util.Objects.*;
 import java.util.Arrays;
 import java.util.Objects;
 
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.domains.Domain;
@@ -36,6 +37,7 @@ import com.analog.lyric.dimple.solvers.core.proposalKernels.Proposal;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.options.OptionValidationException;
 import com.analog.lyric.util.misc.Nullable;
 
 public class SRealVariable extends SRealVariableBase
@@ -43,11 +45,13 @@ public class SRealVariable extends SRealVariableBase
 	protected Double[] _particleValues;
 	protected int _numParticles = 1;
 	protected int _resamplingUpdatesPerSample = 1;
-	protected IProposalKernel _proposalKernel = new NormalProposalKernel();	// Normal proposal kernel by default
-	protected double _resamplingProposalStdDev = 1;
-	protected double _initialParticleMin = 0;
-	protected double _initialParticleMax = 0;
-	protected boolean _initialParticleRangeSet = false;
+	protected @Nullable IProposalKernel _proposalKernel;
+	/**
+	 * True if {@link #_proposalKernel} was set explicitly via {@link #setProposalKernel(IProposalKernel)}
+	 * and should not be overridden by option settings.
+	 */
+	protected boolean _explicitProposalKernel;
+	protected RealDomain _initialParticleDomain;
 	protected @Nullable FactorFunction _input;
 	protected RealDomain _domain;
 	double[][] _inPortMsgs = new double[0][];
@@ -68,7 +72,7 @@ public class SRealVariable extends SRealVariableBase
 		// Since numParticles is used to configure the message sizes, we set this at construction
 		// time to make it less likely that the messages will have to be recreated at initialize time.
 		_numParticles = getOptionOrDefault(ParticleBPOptions.numParticles);
-		_domain = (RealDomain)var.getDomain();
+		_initialParticleDomain = _domain = (RealDomain)var.getDomain();
 		_particleValues = new Double[_numParticles];
 		_logWeight = new double[_numParticles];
 	}
@@ -78,6 +82,29 @@ public class SRealVariable extends SRealVariableBase
 	{
 		_resamplingUpdatesPerSample = getOptionOrDefault(ParticleBPOptions.resamplingUpdatesPerParticle);
 		updateNumParticles(getOptionOrDefault(ParticleBPOptions.numParticles));
+
+		if (!_explicitProposalKernel)
+		{
+			Class<? extends IProposalKernel> kernelClass = getOptionOrDefault(ParticleBPOptions.proposalKernel);
+			if (_proposalKernel == null || kernelClass != requireNonNull(_proposalKernel).getClass())
+			{
+				try
+				{
+					_proposalKernel = kernelClass.getConstructor().newInstance();
+				}
+				catch (Exception ex)
+				{
+					// Option validation should already have made sure that the constructor
+					// exists, so this should only happen if the constructor itself throws an exception.
+					DimpleEnvironment.logError("Could not create proposal kernel instance for '%s': %s",
+						kernelClass, ex.toString());
+				}
+			}
+		}
+		requireNonNull(_proposalKernel).setParametersFromOptions(this);
+		
+		RealDomain initialDomain = getOptionOrDefault(ParticleBPOptions.initialParticleDomain);
+		_initialParticleDomain = initialDomain.isSubsetOf(_domain) ? initialDomain : _domain;
 		
 		super.initialize();
 	}
@@ -211,6 +238,8 @@ public class SRealVariable extends SRealVariableBase
 
 		final FactorFunction input = _input;
 		
+		final IProposalKernel kernel = requireNonNull(_proposalKernel);
+
 		// For each sample value
 		for (int m = 0; m < M; m++)
 		{
@@ -250,7 +279,7 @@ public class SRealVariable extends SRealVariableBase
 			// Now repeat resampling this sample
 			for (int update = 0; update < _resamplingUpdatesPerSample; update++)
 			{
-				Proposal proposal = _proposalKernel.next(RealValue.create(sampleValue), varDomain);
+				Proposal proposal = kernel.next(RealValue.create(sampleValue), varDomain);
 				double proposalValue = proposal.value.getDouble();
 
 				// If outside the bounds, then reject
@@ -441,41 +470,70 @@ public class SRealVariable extends SRealVariableBase
 	
 	public int getResamplingUpdatesPerParticle() {return _resamplingUpdatesPerSample;}
 
-	// FIXME: Generalize to proposal kernels that take different parameters
+	/**
+	 * @deprecated instead set {@link NormalProposalKernel#standardDeviation} option using
+	 * {@link #setOption} method.
+	 */
+	@Deprecated
 	public void setProposalStandardDeviation(double stdDev)
 	{
-		_resamplingProposalStdDev = stdDev;
-	}
-	public double getProposalStandardDeviation()
-	{
-		return _resamplingProposalStdDev;
+		setOption(NormalProposalKernel.standardDeviation, stdDev);
 	}
 	
-	// Set the proposal kernel parameters more generally
+	/**
+	 * @deprecated instead lookup {@link NormalProposalKernel#standardDeviation} option using
+	 * {@link #getOptionOrDefault} method.
+	 */
+	@Deprecated
+	public double getProposalStandardDeviation()
+	{
+		return getOptionOrDefault(NormalProposalKernel.standardDeviation);
+	}
+	
+	/**
+	 * Current proposal kernel for variable.
+	 * <p>
+	 * May be null if {@link #initialize()} not yet invoked.
+	 * @since 0.07
+	 */
+	public @Nullable IProposalKernel getProposalKernel()
+	{
+		return _proposalKernel;
+	}
+	
+	/**
+	 * @deprecated instead set appropriate proposal-specific options using {@link #setOption}.
+	 */
+	@Deprecated
 	public final void setProposalKernelParameters(Object... parameters)
 	{
-		_proposalKernel.setParameters(parameters);
+		requireNonNull(_proposalKernel).setParameters(parameters);
 	}
 	
 	// Override the default proposal kernel
-	public final void setProposalKernel(IProposalKernel proposalKernel)					// IProposalKernel object
+	public final void setProposalKernel(@Nullable IProposalKernel proposalKernel)
 	{
 		_proposalKernel = proposalKernel;
+		_explicitProposalKernel = proposalKernel != null;
 	}
-	public final void setProposalKernel(String proposalKernelName) throws Exception		// Name of proposal kernel
+	
+	public final void setProposalKernel(String proposalKernelName)
 	{
-		String fullQualifiedName = "com.analog.lyric.dimple.solvers.core.proposalKernels." + proposalKernelName;
-		_proposalKernel = (IProposalKernel)(Class.forName(fullQualifiedName).getConstructor().newInstance());
+		ParticleBPOptions.proposalKernel.convertAndSet(this, proposalKernelName);
 	}
-
 
 	// Sets the range of initial particle values
 	// Overrides the domain (if one is specified) in determining the initial particle values
 	public void setInitialParticleRange(double min, double max)
 	{
-		_initialParticleRangeSet = true;
-		_initialParticleMin = min;
-		_initialParticleMax = max;
+		RealDomain domain = RealDomain.create(min, max);
+		if (!domain.isSubsetOf(_domain))
+		{
+			throw new OptionValidationException("Bounds [%g,%g] are not within variable bounds [%g,%g]",
+				min, max, _domain.getLowerBound(), _domain.getUpperBound());
+		}
+		setOption(ParticleBPOptions.initialParticleDomain, domain);
+		_initialParticleDomain = domain;
 	}
 
 	public void setBeta(double beta)	// beta = 1/temperature
@@ -570,18 +628,12 @@ public class SRealVariable extends SRealVariableBase
 		double particleMin = 0;
 		double particleMax = 0;
 		
-		if (_initialParticleRangeSet)
+		RealDomain domain = _initialParticleDomain;
+
+		if (domain.isBounded())
 		{
-			particleMin = _initialParticleMin;
-			particleMax = _initialParticleMax;
-		}
-		else// if (_var.getDomain() != null)
-		{
-			if (!Double.isInfinite(_domain.getLowerBound()) && !Double.isInfinite(_domain.getUpperBound()))
-			{
-				particleMin = _domain.getLowerBound();
-				particleMax = _domain.getUpperBound();
-			}
+			particleMin = domain.getLowerBound();
+			particleMax = domain.getUpperBound();
 		}
 
 		int length = _particleValues.length;
