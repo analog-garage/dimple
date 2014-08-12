@@ -43,6 +43,10 @@
  * </pre>
  * </blockquote>
  * <p>
+ * Sometimes when an option only applies to a single class, it may be easier to define
+ * the option key in that class directly rather than in a separately defined option declaration
+ * class.
+ * <p>
  * Classes that support getting and setting options must implement the
  * {@linkplain com.analog.lyric.options.IOptionHolder} interface and will
  * typically extend {@linkplain com.analog.lyric.options.LocalOptionHolder LocalOptionHolder},
@@ -62,6 +66,21 @@
  *     {
  *         widget.setOption(GuiOptions.color, "red");
  *     }
+ * </pre>
+ * </blockquote>
+ * <p>
+ * Some option key classes may support additional variants of the {@linkplain com.analog.lyric.options.IOptionKey#set}
+ * method to automatically combine or convert arguments, which may make is desirable to set the option through
+ * the key's method rather than {@linkplain com.analog.lyric.options.IOptionHolder#setOption setOption}. For instance,
+ * the {@linkplain com.analog.lyric.options.StringListOptionKey StringListOptionKey} class overloads the {@code set}
+ * method to directly take strings as arguments:
+ * <blockquote>
+ * <pre>
+ *     // Shorter version using key-specific set method:
+ *     MyOptions.names.set(widget, "foo", "bar", "baz");
+ * 
+ *     // Longer version using generic setOption method:
+ *     widget.setOption(MyOptions.names, new OptionStringList("foo", "bar", baz"));
  * </pre>
  * </blockquote>
  * <p>
