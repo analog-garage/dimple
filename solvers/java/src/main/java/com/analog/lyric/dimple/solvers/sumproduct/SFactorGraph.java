@@ -44,6 +44,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.options.DimpleOptions;
 import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
@@ -496,7 +497,7 @@ public class SFactorGraph extends SFactorGraphBase
 		// Update options
 		//
 		
-		Long seed = getOption(SumProductOptions.randomSeed);
+		Long seed = getOption(DimpleOptions.randomSeed);
 		if (seed != null)
 		{
 			setSeed(seed);

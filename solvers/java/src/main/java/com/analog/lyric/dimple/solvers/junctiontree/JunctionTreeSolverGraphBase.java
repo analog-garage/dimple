@@ -30,6 +30,7 @@ import com.analog.lyric.dimple.model.transform.VariableEliminator;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.CostFunction;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.VariableCost;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.options.DimpleOptions;
 import com.analog.lyric.dimple.solvers.core.proxy.ProxySolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
@@ -248,7 +249,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 			getOptionOrDefault(JunctionTreeOptions.variableEliminatorCostFunctions);
 		_transformer.variableEliminatorCostFunctions(costFunctions.toArray(new CostFunction[costFunctions.size()]));
 		
-		Long seed = getOption(JunctionTreeOptions.randomSeed);
+		Long seed = getOption(DimpleOptions.randomSeed);
 		if (seed != null)
 		{
 			_transformer.random().setSeed(seed);

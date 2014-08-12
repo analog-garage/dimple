@@ -23,7 +23,6 @@ import com.analog.lyric.dimple.model.transform.VariableEliminatorCostListOptionK
 import com.analog.lyric.dimple.options.SolverOptions;
 import com.analog.lyric.options.BooleanOptionKey;
 import com.analog.lyric.options.IntegerOptionKey;
-import com.analog.lyric.options.LongOptionKey;
 
 /**
  * Options for the junction tree solvers.
@@ -67,17 +66,6 @@ public class JunctionTreeOptions extends SolverOptions
 	public static final IntegerOptionKey maxTransformationAttempts =
 		new IntegerOptionKey(JunctionTreeOptions.class, "maxTransformationAttempts",
 			JunctionTreeTransform.DEFAULT_MAX_TRANSFORMATION_ATTEMPTS, 1, Integer.MAX_VALUE);
-	
-	/**
-	 * If set, specifies the random seed to be used by the variable elimination algorithm.
-	 * <p>
-	 * Only intended for testing purposes.
-	 * <p>
-	 * @since 0.07
-	 */
-	public static final LongOptionKey randomSeed =
-		new LongOptionKey(JunctionTreeOptions.class, "randomSeed");
-	
 	
 	/**
 	 * Specifies which cost functions the variable elimination algorithm should use when

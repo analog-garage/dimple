@@ -26,6 +26,7 @@ public class GibbsSolver extends Solver
 		super();
 	}
 	
+	@Deprecated
 	public GibbsSolver(SFactorGraph.Arguments config)
 	{
 		super(config);

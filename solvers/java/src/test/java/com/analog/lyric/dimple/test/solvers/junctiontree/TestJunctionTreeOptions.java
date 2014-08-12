@@ -24,6 +24,7 @@ import org.junit.Test;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.transform.JunctionTreeTransform;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.VariableCost;
+import com.analog.lyric.dimple.options.DimpleOptions;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeOptions;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolver;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolverGraphBase;
@@ -73,7 +74,7 @@ public class TestJunctionTreeOptions
 		assertArrayEquals(new Object[] { VariableCost.MIN_FILL.function() }, sfg.variableEliminatorCostFunctions());
 		
 		// Make sure setting random seed through option produces same result
-		fg.setOption(JunctionTreeOptions.randomSeed, 42L);
+		fg.setOption(DimpleOptions.randomSeed, 42L);
 		sfg.initialize();
 		assertEquals(r, sfg.getTransformer().random().nextDouble(), 0.0);
 		

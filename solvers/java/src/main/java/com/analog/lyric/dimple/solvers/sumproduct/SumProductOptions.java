@@ -23,7 +23,6 @@ import com.analog.lyric.options.BooleanOptionKey;
 import com.analog.lyric.options.DoubleListOptionKey;
 import com.analog.lyric.options.DoubleOptionKey;
 import com.analog.lyric.options.IntegerOptionKey;
-import com.analog.lyric.options.LongOptionKey;
 
 /**
  * Options for sum-product solver.
@@ -78,9 +77,6 @@ public class SumProductOptions extends SolverOptions
 	public static final DoubleListOptionKey nodeSpecificDamping =
 		new DoubleListOptionKey(SumProductOptions.class, "nodeSpecificDamping");
 	
-	public static final LongOptionKey randomSeed =
-		new LongOptionKey(SumProductOptions.class, "randomSeed");
-
 	public static final IntegerOptionKey sampledFactorBurnInScansPerUpdate =
 		new IntegerOptionKey(SumProductOptions.class, "sampledFactorBurnInScansPerUpdate",
 			SampledFactor.DEFAULT_BURN_IN_SCANS_PER_UPDATE, 1, Integer.MAX_VALUE);

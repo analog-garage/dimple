@@ -20,7 +20,6 @@ import com.analog.lyric.dimple.options.SolverOptions;
 import com.analog.lyric.options.BooleanOptionKey;
 import com.analog.lyric.options.DoubleOptionKey;
 import com.analog.lyric.options.IntegerOptionKey;
-import com.analog.lyric.options.LongOptionKey;
 import com.analog.lyric.options.StringOptionKey;
 
 /**
@@ -83,12 +82,6 @@ public class GibbsOptions extends SolverOptions
 	 */
 	public static final DoubleOptionKey temperingHalfLife =
 		new DoubleOptionKey(GibbsOptions.class, "temperingHalfLife", 1);
-	
-	/**
-	 * <description>
-	 */
-	public static final LongOptionKey randomSeed =
-		new LongOptionKey(GibbsOptions.class, "randomSeed", -1);
 	
 	/**
 	 * <description>
