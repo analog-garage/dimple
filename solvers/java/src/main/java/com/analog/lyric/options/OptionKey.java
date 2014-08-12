@@ -260,6 +260,20 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 	}
 	
 	/**
+	 * Converts value and sets it in given option holder.
+	 * <p>
+	 * Invokes {@link #set} after value is converted by {@link #convertValue}.
+	 * <p>
+	 * @param holder is a non-null option holder.
+	 * @param value is a value that will be converted to the target value.
+	 * @since 0.07
+	 */
+	public void convertAndSet(IOptionHolder holder, Object value)
+	{
+		set(holder, convertValue(value));
+	}
+	
+	/**
 	 * Computes the option name qualified by its simple declaring class name.
 	 * <p>
 	 * Shorthand for
