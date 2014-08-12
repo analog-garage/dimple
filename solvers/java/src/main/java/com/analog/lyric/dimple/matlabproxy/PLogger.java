@@ -75,7 +75,7 @@ public enum PLogger
 	
 	private void setSingleHandler(Handler handler)
 	{
-		Logger logger = DimpleEnvironment.local().logger();
+		Logger logger = DimpleEnvironment.active().logger();
 		logger.setUseParentHandlers(false);
 		Handler[] handlers = logger.getHandlers();
 		for (Handler oldHandler : handlers)
@@ -92,13 +92,13 @@ public enum PLogger
 
 	public String getLevel()
 	{
-		Level level = DimpleEnvironment.local().logger().getLevel();
+		Level level = DimpleEnvironment.active().logger().getLevel();
 		return level != null ? level.getName() : "";
 	}
 	
 	public void setLevel(String levelName)
 	{
-		DimpleEnvironment.local().logger().setLevel(stringToLevel(levelName));
+		DimpleEnvironment.active().logger().setLevel(stringToLevel(levelName));
 	}
 	
 	static Level stringToLevel(String levelName)
