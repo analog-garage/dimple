@@ -40,6 +40,8 @@ public class ParticleBPOptions extends SolverOptions
 	 * Enables use of a tempering and annealing process in particle BP solver.
 	 * <p>
 	 * Defaults to false.
+	 * <p>
+	 * @since 0.07
 	 */
 	public static final BooleanOptionKey enableTempering =
 		new BooleanOptionKey(ParticleBPOptions.class, "enableTempering", false);
@@ -48,6 +50,8 @@ public class ParticleBPOptions extends SolverOptions
 	 * Specifies the initial temperature for annealing in particle BP solver.
 	 * <p>
 	 * Defaults to 1.0.
+	 * <p>
+	 * @since 0.07
 	 */
 	public static final DoubleOptionKey initialTemperature =
 		new DoubleOptionKey(ParticleBPOptions.class, "initialTemperature", 1.0, 0.0, Double.MAX_VALUE);
@@ -56,6 +60,8 @@ public class ParticleBPOptions extends SolverOptions
 	 * Specifies number of iterations between resampling in particle BP solver.
 	 * <p>
 	 * Defaults to 1.
+	 * <p>
+	 * @since 0.07
 	 */
 	public static final IntegerOptionKey iterationsBetweenResampling =
 		new IntegerOptionKey(ParticleBPOptions.class, "iterationsBetweenResampling", 1, 1, Integer.MAX_VALUE);
@@ -66,18 +72,24 @@ public class ParticleBPOptions extends SolverOptions
 	 * Is evaluated both when solver variable is constructed and in {@link ISolverNode#initialize}.
 	 * <p>
 	 * Defaults to 1.
+	 * <p>
+	 * @since 0.07
 	 */
 	public static final IntegerOptionKey numParticles =
 		new IntegerOptionKey(ParticleBPOptions.class, "numParticles", 1, 1, Integer.MAX_VALUE);
 	
 	/**
 	 * Affects particle BP {@linkplain SRealVariable solver variable} objects.
+	 * <p>
+	 * @since 0.07
 	 */
 	public static final IntegerOptionKey resamplingUpdatesPerParticle =
 		new IntegerOptionKey(ParticleBPOptions.class, "resamplingUpdatesPerParticle", 1, 1, Integer.MAX_VALUE);
 	
 	/**
 	 * <description>
+	 * <p>
+	 * @since 0.07
 	 */
 	public static final DoubleOptionKey temperingHalfLife =
 		new DoubleOptionKey(ParticleBPOptions.class, "temperingHalfLife", 1, 1.0, Double.MAX_VALUE);
@@ -91,6 +103,8 @@ public class ParticleBPOptions extends SolverOptions
 	 * kernel. See documentation for the specific kernel for details.
 	 * <p>
 	 * Defaults to {@link NormalProposalKernel}.
+	 * <p>
+	 * @since 0.07
 	 */
 	public static final ProposalKernelOptionKey proposalKernel =
 		new ProposalKernelOptionKey(ParticleBPOptions.class, "proposalKernel", NormalProposalKernel.class);
@@ -104,6 +118,8 @@ public class ParticleBPOptions extends SolverOptions
 	 * for that variable.
 	 * <p>
 	 * Defaults to {@link RealDomain#unbounded()}.
+	 * <p>
+	 * @since 0.07
 	 */
 	public static final GenericOptionKey<RealDomain> initialParticleDomain =
 		new GenericOptionKey<RealDomain>(ParticleBPOptions.class, "initialParticleDomain",
