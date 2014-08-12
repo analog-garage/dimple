@@ -16,27 +16,32 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.core.SolverBase;
+import com.analog.lyric.util.misc.Nullable;
 
 
 public class Solver extends SolverBase<SFactorGraph>
 {
-	protected SFactorGraph.Arguments _factorGraphConfig;
+	protected final @Nullable SFactorGraph.Arguments _factorGraphConfig;
 	
 	public Solver()
 	{
-		this(new SFactorGraph.Arguments());
+		this(null);
 	}
 	
+	@Deprecated
 	public Solver(int burnInUpdates, int updatesPerSample)			// Constructor without tempering
 	{
-		this();
+		this(new SFactorGraph.Arguments());
 		_factorGraphConfig.burnInUpdates = burnInUpdates;
 		_factorGraphConfig.updatesPerSample = updatesPerSample;
 	}
+	
+	@Deprecated
 	public Solver(int burnInUpdates, int updatesPerSample, double initialTemperature, double temperingHalfLifeInSamples)
 	{
-		this();
+		this(new SFactorGraph.Arguments());
 		_factorGraphConfig.burnInUpdates = burnInUpdates;
 		_factorGraphConfig.updatesPerSample = updatesPerSample;
 		_factorGraphConfig.initialTemperature = initialTemperature;
@@ -44,13 +49,14 @@ public class Solver extends SolverBase<SFactorGraph>
 		_factorGraphConfig.temper = true;
 	}
 
-	public Solver(SFactorGraph.Arguments config)
+	@Deprecated
+	public Solver(@Nullable SFactorGraph.Arguments config)
 	{
 		_factorGraphConfig = config;
 	}
 	
 	@Override
-	public SFactorGraph createFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph graph)
+	public SFactorGraph createFactorGraph(FactorGraph graph)
 	{
 		return new SFactorGraph(graph, _factorGraphConfig);
 	}

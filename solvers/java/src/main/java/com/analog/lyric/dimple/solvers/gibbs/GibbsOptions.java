@@ -34,19 +34,19 @@ public class GibbsOptions extends SolverOptions
 	 * <description>
 	 */
 	public static final IntegerOptionKey numSamples =
-		new IntegerOptionKey(GibbsOptions.class, "numSamples", 1);
+		new IntegerOptionKey(GibbsOptions.class, "numSamples", 1, 1, Integer.MAX_VALUE);
 	
 	/**
 	 * <description>
 	 */
-	public static final IntegerOptionKey updatePerSample =
-		new IntegerOptionKey(GibbsOptions.class, "updatePerSample", -1);
+	public static final IntegerOptionKey updatesPerSample =
+		new IntegerOptionKey(GibbsOptions.class, "updatesPerSample", 1);
 	
 	/**
 	 * <description>
 	 */
 	public static final IntegerOptionKey burnInUpdates =
-		new IntegerOptionKey(GibbsOptions.class, "burnInUpdates", 0);
+		new IntegerOptionKey(GibbsOptions.class, "burnInUpdates", 0, 0, Integer.MAX_VALUE);
 	
 	/**
 	 * <description>
@@ -58,7 +58,7 @@ public class GibbsOptions extends SolverOptions
 	 * <description>
 	 */
 	public static final IntegerOptionKey burnInScans =
-		new IntegerOptionKey(GibbsOptions.class, "burnInScans", 0);
+		new IntegerOptionKey(GibbsOptions.class, "burnInScans", -1);
 	
 	/**
 	 * <description>

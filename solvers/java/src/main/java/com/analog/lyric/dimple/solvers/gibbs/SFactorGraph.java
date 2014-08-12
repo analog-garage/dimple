@@ -95,12 +95,12 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	private @Nullable IGibbsSchedule _schedule;
 	private @Nullable Iterator<IScheduleEntry> _scheduleIterator;
 	private @Nullable ArrayList<IBlockInitializer> _blockInitializers;
-	private int _numSamples;
-	private int _updatesPerSample;
+	private int _numSamples = GibbsOptions.numSamples.defaultIntValue();
+	private int _updatesPerSample = GibbsOptions.scansPerSample.defaultIntValue();
 	private int _burnInUpdates;
 	private int _scansPerSample = 1;
 	private int _burnInScans = -1;
-	private int _numRandomRestarts = 0;
+	private int _numRandomRestarts = GibbsOptions.numRandomRestarts.defaultIntValue();
 	private boolean _temper = false;
 	private double _initialTemperature;
 	private double _temperingDecayConstant;
@@ -111,7 +111,8 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	private @Nullable DoubleArrayList _scoreArray;
 	private String _defaultRealSamplerName = SRealVariable.DEFAULT_REAL_SAMPLER_NAME;
 	private String _defaultDiscreteSamplerName = SDiscreteVariable.DEFAULT_DISCRETE_SAMPLER_NAME;
-	private final double LOG2 = Math.log(2);
+	
+	private static final double LOG2 = Math.log(2);
 	
 	/**
 	 * Priority queue of deterministic factors whose outputs should be
@@ -130,27 +131,49 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	// Arguments for the constructor
 	public static class Arguments
 	{
-		public int numSamples = 1;
+		public int numSamples = -1;
 		public int updatesPerSample = -1;
-		public int scansPerSample = 1;
-		public int burnInUpdates = 0;
-		public boolean temper = false;
-		public double initialTemperature = 1;
-		public double temperingHalfLifeInSamples = 1;
+		public int scansPerSample = Integer.MIN_VALUE;
+		public int burnInUpdates = -1;
+		public @Nullable Boolean temper = null;
+		public double initialTemperature = Double.NaN;
+		public double temperingHalfLifeInSamples = Double.NaN;
 	}
 	
-	protected SFactorGraph(FactorGraph factorGraph, Arguments arguments)
+	protected SFactorGraph(FactorGraph factorGraph, @Nullable Arguments arguments)
 	{
 		super(factorGraph);
-		setNumSamples(arguments.numSamples);
-		if (arguments.updatesPerSample >=0)
-			setUpdatesPerSample(arguments.updatesPerSample);
-		if (arguments.scansPerSample >= 0)
-			setScansPerSample(arguments.scansPerSample);
-		setBurnInUpdates(arguments.burnInUpdates);
-		setTempering(arguments.temper);
-		configureInitialTemperature(arguments.initialTemperature);
-		configureTemperingHalfLifeInSamples(arguments.temperingHalfLifeInSamples);
+		if (arguments != null)
+		{
+			if (arguments.numSamples > 0)
+			{
+				setNumSamples(arguments.numSamples);
+			}
+			if (arguments.updatesPerSample >= 0)
+			{
+				setUpdatesPerSample(arguments.updatesPerSample);
+			}
+			if (arguments.scansPerSample > Integer.MIN_VALUE)
+			{
+				setScansPerSample(arguments.scansPerSample);
+			}
+			if (arguments.burnInUpdates >=0)
+			{
+				setBurnInUpdates(arguments.burnInUpdates);
+			}
+			if (arguments.temper != null)
+			{
+				setTempering(requireNonNull(arguments.temper));
+			}
+			if (!Double.isNaN(arguments.initialTemperature))
+			{
+				configureInitialTemperature(arguments.initialTemperature);
+			}
+			if (!Double.isNaN(arguments.temperingHalfLifeInSamples))
+			{
+				configureTemperingHalfLifeInSamples(arguments.temperingHalfLifeInSamples);
+			}
+		}
 		_factorGraph.setSolverSpecificDefaultScheduler(new GibbsDefaultScheduler());	// Override the common default scheduler
 	}
 
@@ -250,6 +273,11 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	@Override
 	public void initialize()
 	{
+		_numSamples = getOptionOrDefault(GibbsOptions.numSamples);
+		_numRandomRestarts = getOptionOrDefault(GibbsOptions.numRandomRestarts);
+		_updatesPerSample = getOptionOrDefault(GibbsOptions.updatesPerSample); // May be overridden by scansPerSample
+		_scansPerSample = getOptionOrDefault(GibbsOptions.scansPerSample);
+		
 		// Make sure the schedule is created before factor initialization to allow custom factors to modify the schedule if needed
 		final IGibbsSchedule schedule = _schedule = (IGibbsSchedule)_factorGraph.getSchedule();
 
@@ -279,8 +307,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		_minPotential = Double.POSITIVE_INFINITY;
 		_firstSample = true;
 		
-		if (_scansPerSample >= 0)
-			setScansPerSample(_scansPerSample);
+		setUpdatesPerSampleFromScans();
 		
 		if (_burnInScans >= 0) _burnInUpdates = _burnInScans * _factorGraph.getVariables().size();
 		if (_temper) setTemperature(_initialTemperature);
@@ -507,14 +534,21 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 	
 	// Set/get the number of samples to be run when solving the graph (post burn-in)
-	public void setNumSamples(int numSamples) {_numSamples = numSamples;}
+	public void setNumSamples(int numSamples)
+	{
+		setOption(GibbsOptions.numSamples, numSamples);
+		_numSamples = numSamples;
+	}
 	public int getNumSamples() {return _numSamples;}
 	
 	// Set/get the number of single-variable updates between samples
 	public int getUpdatesPerSample() {return _updatesPerSample;}
+	
 	public void setUpdatesPerSample(int updatesPerSample)
 	{
+		setOption(GibbsOptions.updatesPerSample, updatesPerSample);
 		_updatesPerSample = updatesPerSample;
+		setOption(GibbsOptions.scansPerSample, -1);
 		_scansPerSample = -1;	// Samples specified in updates rather than scans
 	}
 	
@@ -525,10 +559,19 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		if (scansPerSample < 1)
 			throw new DimpleException("Scans per sample must be greater than 0.");
 		
+		setOption(GibbsOptions.scansPerSample, scansPerSample);
 		_scansPerSample = scansPerSample;
 		
-		final IGibbsSchedule schedule = _schedule;
-		_updatesPerSample = _scansPerSample * (schedule != null ? schedule.size() : _factorGraph.getVariableCount());
+		setUpdatesPerSampleFromScans();
+	}
+	
+	private void setUpdatesPerSampleFromScans()
+	{
+		if (_scansPerSample >= 0)
+		{
+			final IGibbsSchedule schedule = _schedule;
+			_updatesPerSample = _scansPerSample * (schedule != null ? schedule.size() : _factorGraph.getVariableCount());
+		}
 	}
 	
 	// Set/get the number of single-variable updates for the burn-in period prior to collecting samples
@@ -540,7 +583,12 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 	
 	// Set/get the number of random-restarts
-	public void setNumRestarts(int numRestarts) {_numRandomRestarts = numRestarts;}
+	public void setNumRestarts(int numRestarts)
+	{
+		setOption(GibbsOptions.numRandomRestarts, numRestarts);
+		_numRandomRestarts = numRestarts;
+	}
+	
 	public int getNumRestarts() {return _numRandomRestarts;}
 	
 	// Set the number of scans for burn-in as an alternative means of specifying the burn-in period
