@@ -34,7 +34,7 @@ public class NormalProposalKernel implements IProposalKernel
 	 * @see #setParametersFromOptions(IOptionHolder)
 	 */
 	public static final DoubleOptionKey standardDeviation =
-		new DoubleOptionKey(NormalProposalKernel.class, "standardDeviation", 1.0);
+		new DoubleOptionKey(NormalProposalKernel.class, "standardDeviation", 1.0, 0.0, Double.POSITIVE_INFINITY);
 	
 	@Override
 	public Proposal next(Value currentValue, Domain variableDomain)

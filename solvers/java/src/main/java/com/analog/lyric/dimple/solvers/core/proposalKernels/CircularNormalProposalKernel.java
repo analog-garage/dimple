@@ -22,24 +22,12 @@ import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.DoubleOptionKey;
 import com.analog.lyric.options.IOptionHolder;
 
-public class CircularNormalProposalKernel implements IProposalKernel
+public class CircularNormalProposalKernel extends NormalProposalKernel
 {
-	protected double _standardDeviation = 1;
 	protected double _min = -Math.PI;
 	protected double _max = Math.PI;
 	protected double _range = _max-_min;
 
-	/**
-	 * Standard deviation parameter option.
-	 * <p>
-	 * Default value is 1.0.
-	 * <p>
-	 * @see #setParametersFromOptions(IOptionHolder)
-	 * @since 0.07
-	 */
-	public static final DoubleOptionKey standardDeviation =
-		new DoubleOptionKey(CircularNormalProposalKernel.class, "standardDeviation", 1.0);
-	
 	/**
 	 * Lower bound parameter option.
 	 * <p>
@@ -93,7 +81,7 @@ public class CircularNormalProposalKernel implements IProposalKernel
 	@Override
 	public void setParametersFromOptions(IOptionHolder optionHolder)
 	{
-		setStandardDeviation(optionHolder.getOptionOrDefault(standardDeviation));
+		super.setParametersFromOptions(optionHolder);
 		setCircularBounds(optionHolder.getOptionOrDefault(lowerBound), optionHolder.getOptionOrDefault(upperBound));
 	}
 	
@@ -107,16 +95,6 @@ public class CircularNormalProposalKernel implements IProposalKernel
 		return parameters;
 	}
 	
-	public void setStandardDeviation(double standardDeviation)
-	{
-		_standardDeviation = standardDeviation;
-	}
-	
-	public double getStandardDeviation()
-	{
-		return _standardDeviation;
-	}
-
 	public void setCircularBounds(double lower, double upper)
 	{
 		_min = lower;

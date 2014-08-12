@@ -91,7 +91,7 @@ public class TestProposalKernels
 	public void testCircularNormalProposalKernel()
 	{
 		CircularNormalProposalKernel kernel = new CircularNormalProposalKernel();
-		assertEquals(CircularNormalProposalKernel.standardDeviation.defaultValue(), kernel.getStandardDeviation(), 0.0);
+		assertEquals(NormalProposalKernel.standardDeviation.defaultValue(), kernel.getStandardDeviation(), 0.0);
 		assertEquals(CircularNormalProposalKernel.lowerBound.defaultValue(), kernel.getLowerBound(), 0.0);
 		assertEquals(CircularNormalProposalKernel.upperBound.defaultValue(), kernel.getUpperBound(), 0.0);
 		
@@ -103,11 +103,11 @@ public class TestProposalKernels
 
 		LocalOptionHolder holder = new LocalOptionHolder();
 		kernel.setParametersFromOptions(holder);
-		assertEquals(CircularNormalProposalKernel.standardDeviation.defaultValue(), kernel.getStandardDeviation(), 0.0);
+		assertEquals(NormalProposalKernel.standardDeviation.defaultValue(), kernel.getStandardDeviation(), 0.0);
 		assertEquals(CircularNormalProposalKernel.lowerBound.defaultValue(), kernel.getLowerBound(), 0.0);
 		assertEquals(CircularNormalProposalKernel.upperBound.defaultValue(), kernel.getUpperBound(), 0.0);
 		
-		holder.setOption(CircularNormalProposalKernel.standardDeviation, 2.3);
+		holder.setOption(NormalProposalKernel.standardDeviation, 2.3);
 		holder.setOption(CircularNormalProposalKernel.lowerBound, -4.3);
 		holder.setOption(CircularNormalProposalKernel.upperBound, 5.2);
 		kernel.setParametersFromOptions(holder);
