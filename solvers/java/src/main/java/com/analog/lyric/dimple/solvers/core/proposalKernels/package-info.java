@@ -7,6 +7,10 @@
  * for the specific language governing permissions and limitations under the License.
  ********************************************************************************/
 
+/**
+ * Proposal kernel support.
+ */
 @NonNullByDefault
 package com.analog.lyric.dimple.solvers.core.proposalKernels;
 import com.analog.lyric.util.misc.NonNullByDefault;
+

@@ -157,12 +157,26 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	}
 
 
+	/**
+	 * Sets number of solver iterations.
+	 * <p>
+	 * Sets {@link #getNumIterations()} and {@link SolverOptions#iterations} option
+	 * to specified value.
+	 */
 	@Override
 	public void setNumIterations(int numIter)
 	{
 		setOption(SolverOptions.iterations, numIter);
 		_numIterations = numIter;
 	}
+	
+	/**
+	 * Number of solver iterations
+	 * <p>
+	 * This is set from {@link SolverOptions#iterations} during {@link #initialize}.
+	 * <p>
+	 * This value is not meaningful to all solvers.
+	 */
 	@Override
 	public int getNumIterations()
 	{
@@ -516,6 +530,21 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	 * 
 	 ***********************************************/
 
+	/**
+	 * Initialize solver graph.
+	 * <p>
+	 * Default implementation does the following:
+	 * <ul>
+	 * <li>Initializes {@linkplain #getNumIterations() iterations} and multithreading from options.
+	 * <li>Invokes {@linkplain ISolverNode#initialize() initialize} on contents of graph in this order
+	 * <ol>
+	 * <li>owned solver variables
+	 * <li>boundary solver variables (only if this is the root solver graph)
+	 * <li>solver factors
+	 * <li>solver subgraphs
+	 * </ol>
+	 * </ul>
+	 */
 	@Override
 	public void initialize()
 	{

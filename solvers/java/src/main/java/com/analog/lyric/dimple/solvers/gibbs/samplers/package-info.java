@@ -7,6 +7,9 @@
  * for the specific language governing permissions and limitations under the License.
  ********************************************************************************/
 
+/**
+ * Gibbs samplers.
+ */
 @NonNullByDefault
 package com.analog.lyric.dimple.solvers.gibbs.samplers;
 import com.analog.lyric.util.misc.NonNullByDefault;

@@ -36,4 +36,17 @@ public class OptionValidationException extends RuntimeException
 	{
 		super(String.format(format, args));
 	}
+
+	/**
+	 * Construct exception given message and cause.
+	 * @param cause another exception that resulted in this error.
+	 * @param format is the string message format
+	 * @param args string format arguments
+	 * @see String#format
+	 * @since 0.07
+	 */
+	public OptionValidationException(Throwable cause, String format, Object ... args)
+	{
+		super(String.format(format, args), cause);
+	}
 }

@@ -64,7 +64,7 @@ public class TestDimpleOptions
 		for (OptionKeys keys : registry.getOptionKeys())
 		{
 			assertTrue(keys.size() > 0);
-			for (IOptionKey<?> key : keys)
+			for (IOptionKey<?> key : keys.values())
 			{
 				assertTrue(allKeys2.add(key));
 			}

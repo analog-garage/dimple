@@ -196,6 +196,21 @@ public class RealDomain extends Domain
 		return _lowerBound > Double.NEGATIVE_INFINITY || _upperBound < Double.POSITIVE_INFINITY;
 	}
 	
+	/**
+	 * True if bounds are within the bounds of other domain.
+	 * <p>
+	 * True if {@link #getLowerBound()} and {@link #getUpperBound()} are within
+	 * the bounds of the {@code other} domain.
+	 * <p>
+	 * @param other is non-null real domain.
+	 * @since 0.07
+	 */
+	public final boolean isSubsetOf(RealDomain other)
+	{
+		// TODO: we could generalize this to method to other domains...
+		return other._lowerBound <= _lowerBound && _upperBound <= other._upperBound;
+	}
+	
 	@Override
 	public String toString()
 	{

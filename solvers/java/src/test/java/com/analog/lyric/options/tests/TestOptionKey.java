@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.options.BooleanOptionKey;
+import com.analog.lyric.options.ClassOptionKey;
 import com.analog.lyric.options.DoubleListOptionKey;
 import com.analog.lyric.options.DoubleOptionKey;
 import com.analog.lyric.options.EnumOptionKey;
@@ -88,6 +89,9 @@ public class TestOptionKey
 	
 	public static final LongOptionKey LONG_BOUNDED =
 		new LongOptionKey(TestOptionKey.class, "LONG_BOUNDED", 2L, 0L, 0xFFFFFFFFFFL);
+	
+	public static final ClassOptionKey<CharSequence> CLASS =
+		new ClassOptionKey<>(TestOptionKey.class, "CLASS", CharSequence.class, String.class);
 	
 	public static enum Color
 	{
@@ -166,7 +170,7 @@ public class TestOptionKey
 	@Test
 	public void test()
 	{
-		for (IOptionKey<?> key : OptionKeys.declaredInClass(getClass()))
+		for (IOptionKey<?> key : OptionKeys.declaredInClass(getClass()).values())
 		{
 			assertOptionInvariants(key);
 		}
@@ -226,6 +230,15 @@ public class TestOptionKey
 		assertEquals(Color.BLUE, COLOR.convertValue("BLUE"));
 		expectThrow(IllegalArgumentException.class, COLOR, "convertValue", "gag");
 		expectThrow(IllegalArgumentException.class, COLOR, "convertValue", "blue"); // case-sensitive
+		
+		// Test ClassOptionKey
+		assertEquals(String.class, CLASS.defaultValue());
+		assertEquals(CharSequence.class, CLASS.superClass());
+		assertEquals(String.class, CLASS.convertValue("java.lang.String"));
+		expectThrow(ClassCastException.class, CLASS, "convertValue", new int[] {2});
+		expectThrow(OptionValidationException.class, CLASS, "convertValue", Object.class);
+		expectThrow(OptionValidationException.class, "Could not construct class.*", CLASS, "convertValue", "bogus");
+		expectThrow(OptionValidationException.class, ".*is not a subclass.*", CLASS, "validate", Object.class);
 		
 		// Test list keys
 //		ExampleOptionHolder holder = new ExampleOptionHolder();
@@ -311,6 +324,13 @@ public class TestOptionKey
 				key.unset(holder);
 				assertNull(key.get(holder));
 				assertEquals(key.defaultValue(), key.getOrDefault(holder));
+				if (key instanceof OptionKey)
+				{
+					((OptionKey<?>)key).convertAndSet(holder, newValue);
+					assertEquals(newValue, key.get(holder));
+					assertEquals(newValue, key.getOrDefault(holder));
+					key.unset(holder);
+				}
 			}
 		}
 	}

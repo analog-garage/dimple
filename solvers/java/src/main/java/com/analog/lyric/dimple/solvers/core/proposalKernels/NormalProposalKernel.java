@@ -19,26 +19,53 @@ package com.analog.lyric.dimple.solvers.core.proposalKernels;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.options.DoubleOptionKey;
+import com.analog.lyric.options.IOptionHolder;
 
 public class NormalProposalKernel implements IProposalKernel
 {
 	protected double _standardDeviation = 1;
 	
+	/**
+	 * Standard deviation parameter option.
+	 * <p>
+	 * Default value is 1.0
+	 * <p>
+	 * @see #setParametersFromOptions(IOptionHolder)
+	 */
+	public static final DoubleOptionKey standardDeviation =
+		new DoubleOptionKey(NormalProposalKernel.class, "standardDeviation", 1.0, 0.0, Double.POSITIVE_INFINITY);
+	
+	@Override
 	public Proposal next(Value currentValue, Domain variableDomain)
 	{
 		return new Proposal(currentValue.getDouble() + _standardDeviation * DimpleRandomGenerator.rand.nextGaussian());
 	}
 	
+	@Override
 	public void setParameters(Object... parameters)
 	{
 		_standardDeviation = (Double)parameters[0];
 	}
 	
+	@Override
 	public Object[] getParameters()
 	{
 		Object[] parameters = new Object[1];
 		parameters[0] = _standardDeviation;
 		return parameters;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Sets {@linkplain #getStandardDeviation() standard deviation} from {@linkplain #standardDeviation corresponding
+	 * option value}.
+	 */
+	@Override
+	public void setParametersFromOptions(IOptionHolder optionHolder)
+	{
+		setStandardDeviation(optionHolder.getOptionOrDefault(standardDeviation));
 	}
 	
 	public void setStandardDeviation(double standardDeviation)

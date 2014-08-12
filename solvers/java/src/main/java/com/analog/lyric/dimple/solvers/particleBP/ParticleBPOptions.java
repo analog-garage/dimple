@@ -16,64 +16,96 @@
 
 package com.analog.lyric.dimple.solvers.particleBP;
 
+import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.options.SolverOptions;
+import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
+import com.analog.lyric.dimple.solvers.core.proposalKernels.ProposalKernelOptionKey;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.options.BooleanOptionKey;
 import com.analog.lyric.options.DoubleOptionKey;
+import com.analog.lyric.options.GenericOptionKey;
 import com.analog.lyric.options.IntegerOptionKey;
-import com.analog.lyric.options.LongOptionKey;
 
 /**
- * 
+ * Options for the Particle BP solver.
+ * <p>
+ * Unless otherwise noted, all options take effect upon initialization.
+ * <P>
  * @since 0.07
  * @author Christopher Barber
  */
 public class ParticleBPOptions extends SolverOptions
 {
 	/**
-	 * <description>
-	 */
-	public static final DoubleOptionKey beta =
-		new DoubleOptionKey(ParticleBPOptions.class, "beta", 1.0);
-	
-	/**
-	 * <description>
+	 * Enables use of a tempering and annealing process in particle BP solver.
+	 * <p>
+	 * Defaults to false.
 	 */
 	public static final BooleanOptionKey enableTempering =
 		new BooleanOptionKey(ParticleBPOptions.class, "enableTempering", false);
 	
 	/**
-	 * <description>
+	 * Specifies the initial temperature for annealing in particle BP solver.
+	 * <p>
+	 * Defaults to 1.0.
 	 */
 	public static final DoubleOptionKey initialTemperature =
-		new DoubleOptionKey(ParticleBPOptions.class, "initialTemperature", 1.0);
+		new DoubleOptionKey(ParticleBPOptions.class, "initialTemperature", 1.0, 0.0, Double.MAX_VALUE);
 	
 	/**
-	 * <description>
+	 * Specifies number of iterations between resampling in particle BP solver.
+	 * <p>
+	 * Defaults to 1.
 	 */
-	public static final IntegerOptionKey iterationsBetweenResamping =
-		new IntegerOptionKey(ParticleBPOptions.class, "iterationsBetweenResamping", 1);
+	public static final IntegerOptionKey iterationsBetweenResampling =
+		new IntegerOptionKey(ParticleBPOptions.class, "iterationsBetweenResampling", 1, 1, Integer.MAX_VALUE);
 	
 	/**
-	 * <description>
+	 * Affects particle BP {@linkplain SRealVariable solver variable} objects.
+	 * <p>
+	 * Is evaluated both when solver variable is constructed and in {@link ISolverNode#initialize}.
+	 * <p>
+	 * Defaults to 1.
 	 */
 	public static final IntegerOptionKey numParticles =
-		new IntegerOptionKey(ParticleBPOptions.class, "numParticles", 1);
+		new IntegerOptionKey(ParticleBPOptions.class, "numParticles", 1, 1, Integer.MAX_VALUE);
 	
 	/**
-	 * <description>
-	 */
-	public static final LongOptionKey randomSeed = new LongOptionKey(ParticleBPOptions.class, "randomSeed");
-
-	/**
-	 * <description>
+	 * Affects particle BP {@linkplain SRealVariable solver variable} objects.
 	 */
 	public static final IntegerOptionKey resamplingUpdatesPerParticle =
-		new IntegerOptionKey(ParticleBPOptions.class, "resamplingUpdatesPerParticle", 1);
+		new IntegerOptionKey(ParticleBPOptions.class, "resamplingUpdatesPerParticle", 1, 1, Integer.MAX_VALUE);
 	
 	/**
 	 * <description>
 	 */
 	public static final DoubleOptionKey temperingHalfLife =
-		new DoubleOptionKey(ParticleBPOptions.class, "temperingHalfLife", 1);
+		new DoubleOptionKey(ParticleBPOptions.class, "temperingHalfLife", 1, 1.0, Double.MAX_VALUE);
 	
+	/**
+	 * Specifies proposal kernel for real variables in particle BP solver.
+	 * <p>
+	 * Affects particle BP {@linkplain SRealVariable solver variable} objects.
+	 * <p>
+	 * The proposal kernel instance can be configured by setting options on specific to that
+	 * kernel. See documentation for the specific kernel for details.
+	 * <p>
+	 * Defaults to {@link NormalProposalKernel}.
+	 */
+	public static final ProposalKernelOptionKey proposalKernel =
+		new ProposalKernelOptionKey(ParticleBPOptions.class, "proposalKernel", NormalProposalKernel.class);
+
+	/**
+	 * Specifies the domain of initial particle values for real variables in particle BP solver.
+	 * <p>
+	 * Affects particle BP {@linkplain SRealVariable solver variable} objects.
+	 * <p>
+	 * The domain should be a subset of the variable's domain. If it is not, then this option is ignored
+	 * for that variable.
+	 * <p>
+	 * Defaults to {@link RealDomain#unbounded()}.
+	 */
+	public static final GenericOptionKey<RealDomain> initialParticleDomain =
+		new GenericOptionKey<RealDomain>(ParticleBPOptions.class, "initialParticleDomain",
+			RealDomain.class, RealDomain.unbounded());
 }

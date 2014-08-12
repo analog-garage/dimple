@@ -31,7 +31,14 @@ import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
- * 
+ * Shared environment for Dimple
+ * <p>
+ * This object holds shared state for a Dimple session. Typically
+ * there will only be one instance of this class that is global across
+ * all threads, but it is possible to configure different instances in
+ * different threads in the rare case where multiple segregated instances
+ * of Dimple need to be run at the same time.
+ * <p>
  * @since 0.07
  * @author Christopher Barber
  */
@@ -49,7 +56,7 @@ public class DimpleEnvironment extends DimpleOptionHolder
 		@Override
 		protected DimpleEnvironment initialValue()
 		{
-			return global();
+			return defaultEnvironment();
 		}
 	};
 	
@@ -114,49 +121,54 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	/**
 	 * The default global instance of the dimple environment.
 	 * <p>
-	 * This is used as the initial value of the {@link #local} environment
-	 * for newly created threads. Most users should use {@link #local} instead of this.
+	 * This is used as the initial value of the {@link #active} environment
+	 * for newly created threads. Most users should use {@link #active} instead of this.
 	 * <p>
-	 * @see #setGlobal(DimpleEnvironment)
+	 * @see #setDefaultEnvironment(DimpleEnvironment)
 	 * @since 0.07
 	 */
-	public static DimpleEnvironment global()
+	public static DimpleEnvironment defaultEnvironment()
 	{
 		return _globalInstance.get();
 	}
 	
 	/**
-	 * The thread-specific instance of the dimple environment.
+	 * The active instance of the dimple environment.
 	 * <p>
-	 * This is initialized to be the same as the {@link #global} instance the
-	 * first time this is invoked, but can be overridden. Users should remember
-	 * that modifications to this environment will affect other threads unless
-	 * the environment has been set to a value unique to the current thread.
+	 * This is initialized to the {@link #defaultEnvironment} the
+	 * first time this is invoked, but can be overridden on a per-thread baseis.
+	 * Users should remember that modifications to this environment will affect
+	 * other threads unless the environment has been set to a value unique to the
+	 * current thread.
 	 * <p>
-	 * @see #setLocal(DimpleEnvironment)
+	 * @see #setActive(DimpleEnvironment)
 	 * @since 0.07
 	 */
-	public static DimpleEnvironment local()
+	public static DimpleEnvironment active()
 	{
 		return _threadInstance.get();
 	}
 	
 	/**
-	 * Sets the global dimple environment to a new instance.
+	 * Sets the default dimple environment to a new instance.
 	 * @param env is a non-null environment instance.
+	 * @see #defaultEnvironment()
 	 * @since 0.07
 	 */
-	public static void setGlobal(DimpleEnvironment env)
+	public static void setDefaultEnvironment(DimpleEnvironment env)
 	{
 		_globalInstance.set(env);
 	}
 	
 	/**
-	 * Sets the thread-specific dimple environment to a new instance.
+	 * Sets the active dimple environment to a new instance for the current thread.
+	 * <p>
+	 * This sets the value of {@link #active()} for the current thread only.
+	 * <p>
 	 * @param env is a non-null environment instance.
 	 * @since 0.07
 	 */
-	public static void setLocal(DimpleEnvironment env)
+	public static void setActive(DimpleEnvironment env)
 	{
 		_threadInstance.set(env);
 	}
@@ -269,7 +281,7 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 */
 	public static void logWarning(String message)
 	{
-		local().logger().warning(message);
+		active().logger().warning(message);
 	}
 	
 	/**
@@ -301,7 +313,7 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 */
 	public static void logError(String message)
 	{
-		local().logger().log(ExtendedLevel.ERROR, message);
+		active().logger().log(ExtendedLevel.ERROR, message);
 	}
 	
 	/**
