@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.solvers.core.proposalKernels;
 
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.util.misc.Nullable;
 
 public interface IProposalKernel
@@ -25,4 +26,12 @@ public interface IProposalKernel
 	public Proposal next(Value currentValue, Domain variableDomain);
 	public void setParameters(Object... parameters);
 	public @Nullable Object[] getParameters();
+	
+	/**
+	 * Sets the kernel parameters from options looked up in provided {@code optionHolder}.
+	 * <p>
+	 * @param optionHolder a non-null option holder.
+	 * @since 0.07
+	 */
+	public void setParametersFromOptions(IOptionHolder optionHolder);
 }

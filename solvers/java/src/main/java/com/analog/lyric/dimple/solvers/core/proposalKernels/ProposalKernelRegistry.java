@@ -16,40 +16,98 @@
 
 package com.analog.lyric.dimple.solvers.core.proposalKernels;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import net.jcip.annotations.GuardedBy;
+import net.jcip.annotations.ThreadSafe;
 
 import com.analog.lyric.util.misc.Nullable;
 
-public class ProposalKernelRegistry
+
+// TODO: rename ProposalKernelFactory?
+// TODO: should we have an instance per DimpleEnvironment?
+// TODO: should there be a way to iterate over contents?
+
+@ThreadSafe
+public enum ProposalKernelRegistry
 {
-	private static ArrayList<String> _packages = new ArrayList<String>();
-	static
+	INSTANCE;
+	
+	@GuardedBy("this")
+	private final ArrayList<String> _packages;
+	@GuardedBy("this")
+	private final Map<String, Constructor<IProposalKernel>> _nameToConstructor;
+	
+	private ProposalKernelRegistry()
 	{
-		_packages.add(ProposalKernelRegistry.class.getPackage().getName());
+		_packages = new ArrayList<String>();
+		_packages.add(getClass().getPackage().getName());
+		
+		_nameToConstructor = new ConcurrentHashMap<>();
+	}
+	
+	private synchronized @Nullable Constructor<IProposalKernel> getConstructor(String proposalKernelName)
+	{
+		Constructor<IProposalKernel> constructor = INSTANCE._nameToConstructor.get(proposalKernelName);
+		
+		if (constructor == null)
+		{
+			for (String packageName : _packages)
+			{
+				String fullQualifiedName = packageName + "." + proposalKernelName;
+				try
+				{
+					@SuppressWarnings("unchecked")
+					Class<IProposalKernel> kernelClass = (Class<IProposalKernel>)Class.forName(fullQualifiedName);
+					if (IProposalKernel.class.isAssignableFrom(kernelClass))
+					{
+						constructor = (kernelClass).getConstructor();
+						_nameToConstructor.put(proposalKernelName, constructor);
+						break;
+					}
+				}
+				catch (Exception e)
+				{
+				}
+			}
+		}
+		
+		return constructor;
+	}
+	
+	public static @Nullable Class<? extends IProposalKernel> getClass(String proposalKernelName)
+	{
+		Constructor<IProposalKernel> constructor = INSTANCE.getConstructor(proposalKernelName);
+		return constructor != null ? constructor.getDeclaringClass() : null;
 	}
 	
 	// Get a proposal kernel by name; assumes it is located in this package
 	public static @Nullable IProposalKernel get(String proposalKernelName)
 	{
-		for (String s : _packages)
+		Constructor<IProposalKernel> constructor = INSTANCE.getConstructor(proposalKernelName);
+		if (constructor != null)
 		{
-			String fullQualifiedName = s + "." + proposalKernelName;
 			try
 			{
-				IProposalKernel proposalKernel = (IProposalKernel)(Class.forName(fullQualifiedName).getConstructor().newInstance());
-				return proposalKernel;
+				return constructor.newInstance();
 			}
-			catch (Exception e)
+			catch (Exception ex)
 			{
-				continue;
+				// Ignore
 			}
 		}
+		
 		return null;
 	}
 	
-	
 	public static void addPackage(String packageName)
 	{
-		_packages.add(packageName);
+		synchronized(INSTANCE)
+		{
+			INSTANCE._packages.add(packageName);
+		}
 	}
 }

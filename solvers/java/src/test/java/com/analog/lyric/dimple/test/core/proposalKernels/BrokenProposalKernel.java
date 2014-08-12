@@ -14,33 +14,31 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.core.proposalKernels;
+package com.analog.lyric.dimple.test.core.proposalKernels;
 
-import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
-import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
+import com.analog.lyric.dimple.solvers.core.proposalKernels.Proposal;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
- * @since 0.05
+ * 
+ * @since 0.07
+ * @author Christopher Barber
  */
-public class UniformDiscreteProposalKernel implements IProposalKernel
+public class BrokenProposalKernel implements IProposalKernel
 {
+	public BrokenProposalKernel()
+	{
+		throw new Error("die");
+	}
 
 	@Override
 	public Proposal next(Value currentValue, Domain variableDomain)
 	{
-		// Choose uniformly at random from among all values except the current value
-		DiscreteDomain domain = (DiscreteDomain)variableDomain;
-		int currentIndex = ((DiscreteValue)currentValue).getIndex();
-		int nextIndex = DimpleRandomGenerator.rand.nextInt(domain.size() - 1);
-		if (nextIndex >= currentIndex) nextIndex++;
-		Value value = Value.create(domain);
-		value.setIndex(nextIndex);
-		return new Proposal(value);
+		return new Proposal(currentValue);
 	}
 
 	@Override
@@ -58,4 +56,5 @@ public class UniformDiscreteProposalKernel implements IProposalKernel
 	public void setParametersFromOptions(IOptionHolder optionHolder)
 	{
 	}
+
 }
