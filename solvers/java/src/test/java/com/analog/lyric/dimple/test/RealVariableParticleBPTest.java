@@ -38,7 +38,7 @@ public class RealVariableParticleBPTest
 	protected static boolean debugPrint = false;
 	protected static boolean repeatable = true;
 	
-	@SuppressWarnings("null")
+	@SuppressWarnings({ "null", "deprecation" })
 	@Test
 	public void basicTest1()
 	{
@@ -176,7 +176,7 @@ public class RealVariableParticleBPTest
 	}
 	
 	
-	@SuppressWarnings("null")
+	@SuppressWarnings({ "null", "deprecation" })
 	@Test
 	public void basicTest2()
 	{
@@ -361,6 +361,7 @@ public class RealVariableParticleBPTest
 	}
 	
 	
+	@SuppressWarnings("deprecation")
 	@Test
 	public void basicTest4()
 	{
