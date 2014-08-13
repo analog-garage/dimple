@@ -317,13 +317,31 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			scoreArray.clear();
 	}
 
+	/**
+	 * Does one round of Gibbs sampling.
+	 * <p>
+	 * Performs the equivalent of:
+	 * <blockquote>
+	 * <pre>
+	 * for (int restart = 0; restart <= {@link #getNumRestarts()}; ++restart)
+	 * {
+	 *     {@linkplain #burnIn(int) burnIn(restart)};
+	 *     for (int i = 0; i < {@link #getNumSamples()}; ++i)
+	 *     {
+	 *         {@link #sample()};
+	 *     }
+	 * }
+	 * </pre>
+	 * </blockquote>
+	 * </ol>
+	 */
 	@Override
 	public void solveOneStep()
 	{
 		_minPotential = Double.POSITIVE_INFINITY;
 		_firstSample = true;
 		
-		for (int restartCount = 0; restartCount < _numRandomRestarts + 1; restartCount++)
+		for (int restartCount = 0; restartCount <= _numRandomRestarts; restartCount++)
 		{
 			burnIn(restartCount);
 			for (int iter = 0; iter < _numSamples; iter++)
@@ -343,29 +361,47 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		iterate(_burnInUpdates);
 	}
 	
-	// Run more samples without initializing, burn-in, or random-restarts
-	// This is like iterate, except that while iterate just updates runs a specified number of single-variable updates,
-	// this runs a specified number of entire samples, where the size of a sample has already been defined in terms of
-	// number of either updates or scans.
-	public void sample() {sample(1);}
+	/**
+	 * Generate one sample.
+	 * <p>
+	 * Simply invokes {@link #sample(int)} with value one.
+	 */
+	public void sample()
+	{
+		sample(1);
+	}
+	
+	/**
+	 * Run more samples without initializing, burn-in, or random-restarts
+	 * <p>
+	 * This is like {@link #iterate}, except that while iterate just updates runs a specified number
+	 * of single-variable updates, this runs a specified number of entire samples, where the size of
+	 * a sample has already been defined in terms of number of either updates or scans.
+	 * <p>
+	 * @param numSamples is a positive number indicating the number of samples to generate.
+	 */
 	public void sample(int numSamples)
 	{
 		for (int sample = 0; sample < numSamples; sample++)
 			oneSample();
 	}
 
-	// Note that the iterate() method for the Gibbs solver means do the
-	// specified number of single-variable updates, regardless of other parameter settings.
-	// The iterate() method behaves differently than for other solvers due to the fact that the
-	// update() method for Gibbs-specific schedules will update only a single variable.
-	// Also, multithreaded operation for Gibbs is not supported
+	/**
+	 * Performs specified number of single variable updates
+	 *<p>
+	 * Note that the iterate() method for the Gibbs solver means do the
+	 * specified number of single-variable updates, regardless of other parameter settings.
+	 * The iterate() method behaves differently than for other solvers due to the fact that the
+	 * {@link #update()} method for Gibbs-specific schedules will update only a single variable.
+	 * Also, multithreaded operation for Gibbs is not supported
+	 */
 	@Override
-	public void iterate(int numIters)
+	public void iterate(int numUpdates)
 	{
 		Iterator<IScheduleEntry> scheduleIterator = Objects.requireNonNull(_scheduleIterator);
 		final ISchedule schedule = Objects.requireNonNull(_schedule);
 		
-		for (int iterNum = 0; iterNum < numIters; iterNum++)
+		for (int iterNum = 0; iterNum < numUpdates; iterNum++)
 		{
 			if (!scheduleIterator.hasNext())
 				scheduleIterator = _scheduleIterator = schedule.iterator();	// Wrap-around the schedule if reached the end
@@ -533,17 +569,50 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		DimpleRandomGenerator.setSeed(seed);
 	}
 	
-	// Set/get the number of samples to be run when solving the graph (post burn-in)
+	/**
+	 * Sets the number of samples to generate per restart.
+	 * <p>
+	 * Sets the value of {@link #getNumSamples()} and the corresponding {@link GibbsOptions#numSamples}
+	 * option to the specified value.
+	 * <p>
+	 * @param numSamples must be a positive integer.
+	 */
 	public void setNumSamples(int numSamples)
 	{
 		setOption(GibbsOptions.numSamples, numSamples);
 		_numSamples = numSamples;
 	}
-	public int getNumSamples() {return _numSamples;}
 	
-	// Set/get the number of single-variable updates between samples
-	public int getUpdatesPerSample() {return _updatesPerSample;}
+	/**
+	 * Number of samples to generate per restart.
+	 * <p>
+	 * Set automatically from the {@link GibbsOptions#numSamples} option during {@link #initialize}.
+	 */
+	public int getNumSamples()
+	{
+		return _numSamples;
+	}
 	
+	/**
+	 * The number of individual variable updates to perform per sample.
+	 * <p>
+	 * This is automatically initialized from the {@link GibbsOptions#updatesPerSample} and
+	 * {@link GibbsOptions#scansPerSample} options during {@link #initialize}.
+	 */
+	public int getUpdatesPerSample()
+	{
+		return _updatesPerSample;
+	}
+	
+	/**
+	 * Sets the number of individual variable updates to perform per sample.
+	 * <p>
+	 * This sets the value of {@link #getUpdatesPerSample()} and the corresponding
+	 * {@link GibbsOptions#updatesPerSample} option to the specified value. It also sets
+	 * the value of the {@link GibbsOptions#scansPerSample} to -1.
+	 * <p>
+	 * @param updatesPerSample must be a positive integer.
+	 */
 	public void setUpdatesPerSample(int updatesPerSample)
 	{
 		setOption(GibbsOptions.updatesPerSample, updatesPerSample);
@@ -554,6 +623,16 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	
 	// Set the number of scans between samples as an alternative means of specifying the sample rate
 	// A scan is an update of the number of variables equal to the total number of variables in the graph
+	/**
+	 * Sets the number of full updates of each the variables to perform for each sample.
+	 * <p>
+	 * This sets the value of the corresponding {@link GibbsOptions#scansPerSample} option and
+	 * updates the value of {@link #getUpdatesPerSample()} to be the number of {@code scansPerSample}
+	 * times the number of variables to be updated in the graph.
+	 * <p>
+	 * @param scansPerSample must be a positive integer.
+	 * @since 0.07
+	 */
 	public void setScansPerSample(int scansPerSample)
 	{
 		if (scansPerSample < 1)
@@ -565,9 +644,13 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		setUpdatesPerSampleFromScans();
 	}
 	
+	/**
+	 * Updates the value of {@link _updatesPerSample} based on {@link _scansPerSample} and
+	 * the current number of variables in the graph.
+	 */
 	private void setUpdatesPerSampleFromScans()
 	{
-		if (_scansPerSample >= 0)
+		if (_scansPerSample > 0)
 		{
 			final IGibbsSchedule schedule = _schedule;
 			_updatesPerSample = _scansPerSample * (schedule != null ? schedule.size() : _factorGraph.getVariableCount());
@@ -582,14 +665,29 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		_burnInScans = -1;		// Burn-in specified in updates rather than scans
 	}
 	
-	// Set/get the number of random-restarts
+	/**
+	 * Sets number of random restarts.
+	 * <p>
+	 * Sets the value of {@link #getNumRestarts()} and the corresponding {@link GibbsOptions#numRandomRestarts}
+	 * option.
+	 * @param numRestarts must be a positive integer.
+	 */
 	public void setNumRestarts(int numRestarts)
 	{
 		setOption(GibbsOptions.numRandomRestarts, numRestarts);
 		_numRandomRestarts = numRestarts;
 	}
 	
-	public int getNumRestarts() {return _numRandomRestarts;}
+	/**
+	 * Number of random restarts to perform during solve.
+	 * <p>
+	 * This is automatically set from {@link GibbsOptions#numRandomRestarts} option during
+	 * {@link #initialize}.
+	 */
+	public int getNumRestarts()
+	{
+		return _numRandomRestarts;
+	}
 	
 	// Set the number of scans for burn-in as an alternative means of specifying the burn-in period
 	public void setBurnInScans(int burnInScans) {_burnInScans = burnInScans;}
