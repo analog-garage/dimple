@@ -163,13 +163,6 @@ public class SFactorGraph extends SFactorGraphBase
 	public void setNumParticles(int numParticles)
 	{
 		setOption(ParticleBPOptions.numParticles, numParticles);
-//		_defaultNumParticles = numParticles;
-//		for (VariableBase v : _factorGraph.getVariables())
-//		{
-//			ISolverVariable vs = v.getSolver();
-//			if (vs instanceof SRealVariable)
-//				((SRealVariable)vs).setNumParticles(numParticles);
-//		}
 	}
 
 	// Set the number of re-sampling updates per particle when re-sampling the particle values, globally for all real variables
