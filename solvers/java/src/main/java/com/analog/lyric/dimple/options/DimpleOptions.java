@@ -16,7 +16,6 @@
 
 package com.analog.lyric.dimple.options;
 
-import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeOptions;
 import com.analog.lyric.options.LongOptionKey;
 import com.analog.lyric.options.OptionKeyDeclarer;
 
@@ -40,7 +39,7 @@ public class DimpleOptions extends OptionKeyDeclarer
 	 * @since 0.07
 	 */
 	public static final LongOptionKey randomSeed =
-		new LongOptionKey(JunctionTreeOptions.class, "randomSeed");
+		new LongOptionKey(DimpleOptions.class, "randomSeed");
 	
 	
 }
