@@ -30,6 +30,7 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
 import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
 
+@SuppressWarnings("deprecation")
 public class GibbsTestParameterizedNormal
 {
 	protected static boolean debugPrint = false;

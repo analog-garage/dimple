@@ -29,11 +29,11 @@ import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
 import com.analog.lyric.dimple.solvers.gibbs.STableFactor;
 
 
+@SuppressWarnings({"null", "deprecation"})
 public class GibbsTest
 {
 	protected static boolean debugPrint = false;
 	
-	@SuppressWarnings("null")
 	@Test
 	public void basicTest()
 	{

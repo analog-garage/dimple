@@ -52,6 +52,7 @@ import com.analog.lyric.util.misc.Nullable;
  * @since 0.06
  * @author Christopher Barber
  */
+@SuppressWarnings("deprecation")
 public class TestGibbsVariableUpdateEvent
 {
 	static class BogoFunction extends FactorFunction

@@ -34,13 +34,13 @@ import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
  */
 public class TestGibbsOptions
 {
+	@SuppressWarnings("deprecation")
 	@Test
 	public void test()
 	{
 		// Test default values
 		assertEquals(1, GibbsOptions.numSamples.defaultIntValue());
 		assertEquals(0, GibbsOptions.numRandomRestarts.defaultIntValue());
-		assertEquals(1, GibbsOptions.updatesPerSample.defaultIntValue());
 		assertEquals(1, GibbsOptions.scansPerSample.defaultIntValue());
 		
 		// Build test graph
@@ -55,7 +55,6 @@ public class TestGibbsOptions
 		
 		assertEquals(GibbsOptions.numSamples.defaultIntValue(), sfg.getNumSamples());
 		assertEquals(GibbsOptions.numRandomRestarts.defaultIntValue(), sfg.getNumRestarts());
-		assertEquals(GibbsOptions.updatesPerSample.defaultIntValue(), sfg.getUpdatesPerSample());
 		
 		sfg.initialize();
 		assertEquals(GibbsOptions.numSamples.defaultIntValue(), sfg.getNumSamples());
@@ -67,13 +66,11 @@ public class TestGibbsOptions
 		sfg = requireNonNull(fg.setSolverFactory(new GibbsSolver()));
 		fg.setOption(GibbsOptions.numSamples, 3);
 		fg.setOption(GibbsOptions.numRandomRestarts, 2);
-		fg.setOption(GibbsOptions.updatesPerSample, 5);
 		fg.setOption(GibbsOptions.scansPerSample, 2); // will override updatesPerSample
 		
 		// These do not take effect until after initialization
 		assertEquals(GibbsOptions.numSamples.defaultIntValue(), sfg.getNumSamples());
 		assertEquals(GibbsOptions.numRandomRestarts.defaultIntValue(), sfg.getNumRestarts());
-		assertEquals(GibbsOptions.updatesPerSample.defaultIntValue(), sfg.getUpdatesPerSample());
 		
 		sfg.initialize();
 		assertEquals(3, sfg.getNumSamples());
@@ -88,11 +85,9 @@ public class TestGibbsOptions
 		assertEquals(5, sfg.getNumRestarts());
 		assertEquals((Integer)5, sfg.getLocalOption(GibbsOptions.numRandomRestarts));
 		sfg.setUpdatesPerSample(6);
-		assertEquals((Integer)6, sfg.getLocalOption(GibbsOptions.updatesPerSample));
 		assertEquals(new Integer(-1), sfg.getLocalOption(GibbsOptions.scansPerSample));
 		sfg.setScansPerSample(3);
 		assertEquals(3 * nVars, sfg.getUpdatesPerSample());
 		assertEquals((Integer)3, sfg.getLocalOption(GibbsOptions.scansPerSample));
-		assertEquals((Integer)6, sfg.getLocalOption(GibbsOptions.updatesPerSample));
 	}
 }

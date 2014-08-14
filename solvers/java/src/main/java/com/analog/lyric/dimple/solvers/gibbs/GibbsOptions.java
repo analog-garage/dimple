@@ -33,13 +33,13 @@ import com.analog.lyric.options.StringOptionKey;
 public class GibbsOptions extends SolverOptions
 {
 	/**
-	 * <description>
-	 */
-	public static final IntegerOptionKey burnInUpdates =
-		new IntegerOptionKey(GibbsOptions.class, "burnInUpdates", 0, 0, Integer.MAX_VALUE);
-	
-	/**
-	 * <description>
+	 * The number of updates of all of the variables in the graph to perform during burn-in in Gibbs solver.
+	 * <p>
+	 * The effective updates per burn-in will be the number of variables to be updated in the graph times this number.
+	 * <p>
+	 * Must be non-negative. The default value is zero.
+	 * <p>
+	 * @since 0.07
 	 */
 	public static final IntegerOptionKey burnInScans =
 		new IntegerOptionKey(GibbsOptions.class, "burnInScans", -1);
@@ -58,23 +58,9 @@ public class GibbsOptions extends SolverOptions
 		new IntegerOptionKey(GibbsOptions.class, "numSamples", 1, 1, Integer.MAX_VALUE);
 	
 	/**
-	 * Number of variable updates to perform for each sample in Gibbs solver.
+	 * The number of updates of all of the variables in the graph to perform for each sample in Gibbs solver.
 	 * <p>
-	 * This option will only be used if {@link #scansPerSample} is less than one.
-	 * <p>
-	 * The default value is one.
-	 * <p>
-	 * @since 0.07
-	 */
-	public static final IntegerOptionKey updatesPerSample =
-		new IntegerOptionKey(GibbsOptions.class, "updatesPerSample", 1, 1, Integer.MAX_VALUE);
-	
-	/**
-	 * The number of updates of each of the variables in the graph to perform for each sample in Gibbs solver.
-	 * <p>
-	 * If this option is set to a value greater than zero, it will override the value of the
-	 * {@link #updatesPerSample} option. The effective updates per sample will be the number of variables to be
-	 * updated in the graph times this number.
+	 * The effective updates per sample will be the number of variables to be updated in the graph times this number.
 	 * <p>
 	 * The default value is one.
 	 * <p>

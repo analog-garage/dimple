@@ -87,6 +87,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.util.misc.Nullable;
 
 
@@ -97,9 +98,9 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	private @Nullable ArrayList<IBlockInitializer> _blockInitializers;
 	private int _numSamples = GibbsOptions.numSamples.defaultIntValue();
 	private int _updatesPerSample = GibbsOptions.scansPerSample.defaultIntValue();
-	private int _burnInUpdates;
+	private int _burnInUpdates = 0;
 	private int _scansPerSample = 1;
-	private int _burnInScans = -1;
+	private int _burnInScans = GibbsOptions.burnInScans.defaultIntValue();
 	private int _numRandomRestarts = GibbsOptions.numRandomRestarts.defaultIntValue();
 	private boolean _temper = false;
 	private double _initialTemperature;
@@ -127,8 +128,12 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	 * calls.
 	 */
 	private int _deferDeterministicFactorUpdatesCounter = 0;
-	
-	// Arguments for the constructor
+
+	/**
+	 * @deprecated set corresponding {@link GibbsOptions} using {@linkplain IOptionHolder#setOption setOption}
+	 * on graph instead of using this class to configure Gibbs solver.
+	 */
+	@Deprecated
 	public static class Arguments
 	{
 		public int numSamples = -1;
@@ -149,11 +154,11 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			{
 				setNumSamples(arguments.numSamples);
 			}
-			if (arguments.updatesPerSample >= 0)
+			if (arguments.updatesPerSample > 0)
 			{
 				setUpdatesPerSample(arguments.updatesPerSample);
 			}
-			if (arguments.scansPerSample > Integer.MIN_VALUE)
+			if (arguments.scansPerSample > 0)
 			{
 				setScansPerSample(arguments.scansPerSample);
 			}
@@ -275,8 +280,8 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	{
 		_numSamples = getOptionOrDefault(GibbsOptions.numSamples);
 		_numRandomRestarts = getOptionOrDefault(GibbsOptions.numRandomRestarts);
-		_updatesPerSample = getOptionOrDefault(GibbsOptions.updatesPerSample); // May be overridden by scansPerSample
 		_scansPerSample = getOptionOrDefault(GibbsOptions.scansPerSample);
+		_burnInScans = getOptionOrDefault(GibbsOptions.burnInScans);
 		
 		// Make sure the schedule is created before factor initialization to allow custom factors to modify the schedule if needed
 		final IGibbsSchedule schedule = _schedule = (IGibbsSchedule)_factorGraph.getSchedule();
@@ -349,12 +354,29 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		}
 	}
 	
-	
+	/**
+	 * Perform initial burn in.
+	 * <p>
+	 * This invokes {@link #burnIn(int)} with value zero.
+	 */
 	public final void burnIn()
 	{
 		burnIn(0);
 	}
 	
+	/**
+	 * Perform burn-in phase.
+	 * <p>
+	 * This consists of randomly reinitializing values of variables in the graph
+	 * that do not have fixed values and then performing {@link #getBurnInUpdates()}
+	 * variable updates.
+	 * <p>
+	 * Burn-in is required for most graphs to ensure that the samples will be closer to the
+	 * real distribution.
+	 * <p>
+	 * @param restartCount is a non-negative number indicating which random restart is
+	 * executing. This will be zero for the initial burn-in phase.
+	 */
 	public final void burnIn(int restartCount)
 	{
 		randomRestart(restartCount);
@@ -576,7 +598,10 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	 * option to the specified value.
 	 * <p>
 	 * @param numSamples must be a positive integer.
+	 * @deprecated Instead set {@link GibbsOptions#numSamples} option on this object or its corresponding
+	 * model object using {@link #setOption}.
 	 */
+	@Deprecated
 	public void setNumSamples(int numSamples)
 	{
 		setOption(GibbsOptions.numSamples, numSamples);
@@ -594,45 +619,35 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 	
 	/**
-	 * The number of individual variable updates to perform per sample.
-	 * <p>
-	 * This is automatically initialized from the {@link GibbsOptions#updatesPerSample} and
-	 * {@link GibbsOptions#scansPerSample} options during {@link #initialize}.
+	 * @deprecated This method will be removed in a future release.
 	 */
+	@Deprecated
 	public int getUpdatesPerSample()
 	{
 		return _updatesPerSample;
 	}
 	
 	/**
-	 * Sets the number of individual variable updates to perform per sample.
-	 * <p>
-	 * This sets the value of {@link #getUpdatesPerSample()} and the corresponding
-	 * {@link GibbsOptions#updatesPerSample} option to the specified value. It also sets
-	 * the value of the {@link GibbsOptions#scansPerSample} to -1.
-	 * <p>
-	 * @param updatesPerSample must be a positive integer.
+	 * @deprecated This method will be removed in a future release.
 	 */
+	@Deprecated
 	public void setUpdatesPerSample(int updatesPerSample)
 	{
-		setOption(GibbsOptions.updatesPerSample, updatesPerSample);
 		_updatesPerSample = updatesPerSample;
 		setOption(GibbsOptions.scansPerSample, -1);
 		_scansPerSample = -1;	// Samples specified in updates rather than scans
 	}
 	
-	// Set the number of scans between samples as an alternative means of specifying the sample rate
-	// A scan is an update of the number of variables equal to the total number of variables in the graph
 	/**
-	 * Sets the number of full updates of each the variables to perform for each sample.
+	 * Sets the number of full updates of all of the variables to perform for each sample.
 	 * <p>
-	 * This sets the value of the corresponding {@link GibbsOptions#scansPerSample} option and
-	 * updates the value of {@link #getUpdatesPerSample()} to be the number of {@code scansPerSample}
-	 * times the number of variables to be updated in the graph.
+	 * This sets the value of the corresponding {@link GibbsOptions#scansPerSample} option.
 	 * <p>
 	 * @param scansPerSample must be a positive integer.
-	 * @since 0.07
+	 * @deprecated Instead set {@link GibbsOptions#scansPerSample} option on this object or its
+	 * corresponding model graph using {@link #setOption}.
 	 */
+	@Deprecated
 	public void setScansPerSample(int scansPerSample)
 	{
 		if (scansPerSample < 1)
@@ -657,8 +672,19 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		}
 	}
 	
-	// Set/get the number of single-variable updates for the burn-in period prior to collecting samples
-	public int getBurnInUpdates() {return _burnInUpdates;}
+	/**
+	 * @deprecated This method will be removed in a future release.
+	 */
+	@Deprecated
+	public int getBurnInUpdates()
+	{
+		return _burnInUpdates;
+	}
+	
+	/**
+	 * @deprecated This method will be removed in a future release.
+	 */
+	@Deprecated
 	public void setBurnInUpdates(int burnInUpdates)
 	{
 		_burnInUpdates = burnInUpdates;
@@ -671,7 +697,10 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	 * Sets the value of {@link #getNumRestarts()} and the corresponding {@link GibbsOptions#numRandomRestarts}
 	 * option.
 	 * @param numRestarts must be a positive integer.
+	 * @deprecated Instead set {@link GibbsOptions#numRandomRestarts} option on this object or its corresponding
+	 * model graph using {@link #setOption}.
 	 */
+	@Deprecated
 	public void setNumRestarts(int numRestarts)
 	{
 		setOption(GibbsOptions.numRandomRestarts, numRestarts);
@@ -690,7 +719,21 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 	
 	// Set the number of scans for burn-in as an alternative means of specifying the burn-in period
-	public void setBurnInScans(int burnInScans) {_burnInScans = burnInScans;}
+	/**
+	 * Sets the number of updates of all of the variables to perform during the burn-in period.
+	 * <p>
+	 * This simply sets the value of the {@link GibbsOptions#burnInScans} option on this object.
+	 * <p>
+	 * @param burnInScans is a non-negative number.
+	 * @deprecated Instead set {@link GibbsOptions#burnInScans} option on this object or its corresponding
+	 * model graph using {@link #setOption}.
+	 */
+	@Deprecated
+	public void setBurnInScans(int burnInScans)
+	{
+		setOption(GibbsOptions.burnInScans, burnInScans);
+		_burnInScans = burnInScans;
+	}
 	
 	// Set the default sampler for Real (and RealJoint) variables
 	public void setDefaultRealSampler(String samplerName)
