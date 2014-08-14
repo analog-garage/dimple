@@ -40,12 +40,6 @@ public abstract class ProxySolverNode<Delegate extends ISolverNode> extends Solv
 	{
 	}
 
-	@Override
-	public @Nullable ISolverFactorGraph getOptionParent()
-	{
-		return getParentGraph();
-	}
-
 	/*---------------------
 	 * ISolverNode methods
 	 */

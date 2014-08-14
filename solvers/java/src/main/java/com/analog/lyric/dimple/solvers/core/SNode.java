@@ -25,7 +25,6 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.util.misc.Nullable;
 
 public abstract class SNode extends SolverEventSource implements ISolverNode
@@ -68,12 +67,6 @@ public abstract class SNode extends SolverEventSource implements ISolverNode
 	/*-----------------------
 	 * IOptionHolder methods
 	 */
-	
-	@Override
-	public @Nullable IOptionHolder getOptionParent()
-	{
-		return getParentGraph();
-	}
 	
 	/*---------------------
 	 * ISolverNode methods

@@ -22,6 +22,7 @@ import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.events.EventSourceIterator;
 import com.analog.lyric.dimple.events.IDimpleEventSource;
+import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.LocalOptionHolder;
 import com.analog.lyric.options.OptionDoubleList;
@@ -45,6 +46,17 @@ public abstract class DimpleOptionHolder extends LocalOptionHolder implements ID
 		return EventSourceIterator.create(this);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * By default, the option parent is the same as the {@linkplain #getEventParent event parent}.
+	 */
+	@Override
+	public @Nullable IOptionHolder getOptionParent()
+	{
+		return getEventParent();
+	}
+	
 	/*-------------------
 	 * Protected methods
 	 */

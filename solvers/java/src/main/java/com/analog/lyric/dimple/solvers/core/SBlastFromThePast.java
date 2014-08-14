@@ -30,7 +30,6 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.util.misc.Nullable;
 
 public class SBlastFromThePast extends SolverEventSource implements ISolverBlastFromThePastFactor
@@ -44,16 +43,6 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 		_factor = f;
 	}
 	
-	/*-----------------------
-	 * IOptionHolder methods
-	 */
-	
-	@Override
-	public IOptionHolder getOptionParent()
-	{
-		return getParentGraph();
-	}
-
 	/*----------------------
 	 * ISolverNode methods
 	 */
