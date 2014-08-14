@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.test.options;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
@@ -31,6 +32,7 @@ import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.OptionKey;
 import com.analog.lyric.options.OptionKeys;
 import com.analog.lyric.options.OptionRegistry;
+import com.google.common.reflect.ClassPath;
 
 /**
  * 
@@ -60,6 +62,7 @@ public class TestDimpleOptions
 			assertTrue(allKeys.add(key));
 		}
 		
+		Set<Class<?>> optionDeclarers = new HashSet<Class<?>>();
 		Set<IOptionKey<?>> allKeys2 = new HashSet<IOptionKey<?>>();
 		for (OptionKeys keys : registry.getOptionKeys())
 		{
@@ -70,6 +73,7 @@ public class TestDimpleOptions
 			}
 			
 			Class<?> declaringClass = keys.declaringClass();
+			optionDeclarers.add(declaringClass);
 			for (Field field : declaringClass.getDeclaredFields())
 			{
 				if (IOptionKey.class.isAssignableFrom(field.getType()))
@@ -86,6 +90,46 @@ public class TestDimpleOptions
 				}
 			}
 		}
+		
+		// Look for option declarations that are not automatically included in the registry.
+		try
+		{
+			String errorMessage = "";
+			ClassPath dimpleClassPath = ClassPath.from(DimpleOptionRegistry.class.getClassLoader());
+			Set<ClassPath.ClassInfo> dimpleClassInfo =
+				dimpleClassPath.getTopLevelClassesRecursive("com.analog.lyric.dimple");
+			for (ClassPath.ClassInfo info : dimpleClassInfo)
+			{
+				if (info.getPackageName().startsWith("com.analog.lyric.dimple.test"))
+				{
+					// Skip test packages
+					continue;
+				}
+				
+				Class<?> dimpleClass = info.load();
+				OptionKeys keys = OptionKeys.declaredInClass(dimpleClass);
+				if (!keys.isEmpty())
+				{
+					if (!optionDeclarers.contains(dimpleClass))
+					{
+						errorMessage += String.format("%s not in DimpleRegistry\n", keys.declaringClass().getName());
+					}
+				}
+			}
+
+			if (!errorMessage.isEmpty())
+			{
+				// When this fails, either add the class in the constructor of DimpleOptionRegistry or
+				// remove the option declarations if they are not used.
+				fail(errorMessage);
+			}
+		}
+		catch (IOException ex)
+		{
+			fail(ex.toString());
+		}
+		
+		// TODO check for missing option keys
 		
 		assertEquals(allKeys, allKeys2);
 	}
