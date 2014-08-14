@@ -17,6 +17,8 @@
 package com.analog.lyric.dimple.options;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.solvers.core.proposalKernels.CircularNormalProposalKernel;
+import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeOptions;
 import com.analog.lyric.dimple.solvers.lp.LPOptions;
@@ -41,15 +43,30 @@ public enum DimpleOptionRegistry
 	
 	private DimpleOptionRegistry()
 	{
-		_registry.addFromClass(DimpleOptions.class);
-		_registry.addFromClass(SolverOptions.class);
+		addFromClasses(
+			DimpleOptions.class,
+			SolverOptions.class,
 		
-		_registry.addFromClass(GibbsOptions.class);
-		_registry.addFromClass(JunctionTreeOptions.class);
-		_registry.addFromClass(LPOptions.class);
-		_registry.addFromClass(MinSumOptions.class);
-		_registry.addFromClass(ParticleBPOptions.class);
-		_registry.addFromClass(SumProductOptions.class);
+			// Solver option classes
+			GibbsOptions.class,
+			JunctionTreeOptions.class,
+			LPOptions.class,
+			MinSumOptions.class,
+			ParticleBPOptions.class,
+			SumProductOptions.class,
+		
+			// Proposal kernels
+			NormalProposalKernel.class,
+			CircularNormalProposalKernel.class
+			);
+	}
+	
+	private void addFromClasses(Class<?> ... classes)
+	{
+		for (Class<?> c : classes)
+		{
+			_registry.addFromClass(c);
+		}
 	}
 	
 	/**
