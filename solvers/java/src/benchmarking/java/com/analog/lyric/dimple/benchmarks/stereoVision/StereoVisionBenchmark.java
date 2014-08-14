@@ -24,7 +24,7 @@ import com.analog.lyric.benchmarking.utils.functional.Functions;
 import com.analog.lyric.dimple.benchmarks.utils.Image;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 
-@SuppressWarnings("null")
+@SuppressWarnings({"null", "deprecation"})
 public class StereoVisionBenchmark
 {
 	private final boolean saveResult = false;
