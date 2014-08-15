@@ -74,6 +74,15 @@ public class EventSourceIterator extends UnmodifiableReleasableIterator<IDimpleE
 			{
 				_next = prev.getEventParent();
 				_prev = null;
+				if (_next == null)
+				{
+					// If no more parents, use parent of corresponding model object
+					IModelEventSource modelSource = prev.getModelEventSource();
+					if (modelSource != prev && modelSource != null)
+					{
+						_next = modelSource.getEventParent();
+					}
+				}
 			}
 			else
 			{

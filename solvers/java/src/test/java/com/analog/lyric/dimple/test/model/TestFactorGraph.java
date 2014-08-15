@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.factorfunctions.Sum;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -32,7 +33,16 @@ public class TestFactorGraph
 	@Test
 	public void test()
 	{
+		// Temporarily change active environment to demonstrate that is what
+		// is getting used when graph is constructed.
+		DimpleEnvironment env = new DimpleEnvironment();
+		DimpleEnvironment.setActive(env);
+		
 		FactorGraph fg = new FactorGraph();
+		
+		DimpleEnvironment.setActive(DimpleEnvironment.defaultEnvironment());
+		assertNotSame(env, DimpleEnvironment.active());
+		
 		assertFactorGraphInvariants(fg);
 		assertEquals("Graph", fg.getClassLabel());
 		assertTrue(fg.getNumStepsInfinite());
@@ -46,10 +56,21 @@ public class TestFactorGraph
 		assertFalse(fg.isSolverRunning());
 		assertSame(fg, fg.getRootGraph());
 		
+		// Test environment and option parents
+		assertSame(env, fg.getEnvironment());
+		assertSame(env, fg.getEventParent());
+		assertSame(env, fg.getOptionParent());
+		fg.setEventAndOptionParent(null);
+		assertNull(fg.getOptionParent());
+		assertNull(fg.getEventParent());
+		fg.setEventAndOptionParent(env);
+		assertSame(env, fg.getOptionParent());
+		
 		fg.setSolverFactory(null);
 		assertNull(fg.getSolver());
 		
 		Bit b1 = new Bit();
+		assertSame(DimpleEnvironment.active(), b1.getEnvironment()); // defaults to active environment
 		Bit b2 = new Bit();
 		Factor sum1 = fg.addFactor(new Sum(), b1, b2);
 		assertSame(fg, b1.getParentGraph());
@@ -61,6 +82,7 @@ public class TestFactorGraph
 		assertSame(fg, sum1.getParentGraph());
 		assertSame(sum1, fg.getFactorByUUID(sum1.getUUID()));
 		assertNull(sum1.getSolver());
+		assertSame(env, b1.getEnvironment()); // gets environment from parent graph
 		
 		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
 		assertTrue(fg.getSolver() instanceof com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph);

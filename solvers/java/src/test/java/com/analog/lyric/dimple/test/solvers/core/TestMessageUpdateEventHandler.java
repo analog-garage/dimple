@@ -244,7 +244,7 @@ public class TestMessageUpdateEventHandler extends DimpleEventHandler<SolverEven
 			assertTrue(event.isToFactor());
 			assertTrue(event instanceof VariableToFactorMessageEvent);
 			assertSame(svar, event.getVariable());
-			assertSame(edge, event.getEdge());
+			assertEquals(edge, event.getEdge());
 		}
 	}
 	
@@ -258,7 +258,7 @@ public class TestMessageUpdateEventHandler extends DimpleEventHandler<SolverEven
 			assertFalse(event.isToFactor());
 			assertTrue(event instanceof FactorToVariableMessageEvent);
 			assertSame(sfactor, event.getFactor());
-			assertSame(edge, event.getEdge());
+			assertEquals(edge, event.getEdge());
 		}
 	}
 	

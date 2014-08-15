@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.options.SolverOptions;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
@@ -41,12 +42,17 @@ public class TestSolverOptions
 		assertEquals(1, SolverOptions.iterations.defaultIntValue());
 		assertEquals(false, SolverOptions.enableMultithreading.defaultBooleanValue());
 		
-		FactorGraph fg = new FactorGraph();
-		fg.setOption(SolverOptions.iterations, 42);
-		assertEquals((Integer)42, fg.getOption(SolverOptions.iterations));
-		fg.setOption(SolverOptions.enableMultithreading, true);
-		assertEquals(true, fg.getOption(SolverOptions.enableMultithreading));
+		DimpleEnvironment env = DimpleEnvironment.active();
 		
+		env.setOption(SolverOptions.iterations, 42);
+		assertEquals((Integer)42, env.getOption(SolverOptions.iterations));
+		env.setOption(SolverOptions.enableMultithreading, true);
+		assertEquals(true, env.getOption(SolverOptions.enableMultithreading));
+		
+		FactorGraph fg = new FactorGraph();
+		assertEquals((Integer)42, fg.getOption(SolverOptions.iterations));
+		assertEquals(true, fg.getOption(SolverOptions.enableMultithreading));
+
 		DummyFactorGraph sfg = new DummyFactorGraph(fg);
 		// Set manager so that calling useMultithreading(boolean) won't barf.
 		sfg.setMultithreadingManager(new MultiThreadingManager(fg));

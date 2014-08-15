@@ -88,6 +88,7 @@ public class TestParticleBPOptions
 		r2.setOption(ParticleBPOptions.numParticles, 3);
 		fg.setOption(ParticleBPOptions.proposalKernel, CircularNormalProposalKernel.class);
 		r2.setOption(ParticleBPOptions.proposalKernel, NormalProposalKernel.class);
+		r2.setOption(NormalProposalKernel.standardDeviation, 1.2);
 		sfg = requireNonNull(fg.setSolverFactory(new ParticleBPSolver()));
 		sr1 = (SRealVariable)sfg.getSolverVariable(r1);
 		sr2 = (SRealVariable)sfg.getSolverVariable(r2);

@@ -33,6 +33,7 @@ import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.events.DimpleEvent;
 import com.analog.lyric.dimple.events.IDimpleEventListener;
+import com.analog.lyric.dimple.events.IDimpleEventSource;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
@@ -212,7 +213,7 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	}
 	
 	@Override
-	public @Nullable FactorGraph getEventParent()
+	public @Nullable IDimpleEventSource getEventParent()
 	{
 		return _parentGraph;
 	}

@@ -20,8 +20,11 @@ import java.util.Arrays;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.ReleasableIterator;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
+import com.analog.lyric.dimple.environment.IDimpleEnvironmentHolder;
 import com.analog.lyric.dimple.events.EventSourceIterator;
 import com.analog.lyric.dimple.events.IDimpleEventSource;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.LocalOptionHolder;
@@ -34,7 +37,9 @@ import com.analog.lyric.util.misc.Nullable;
  * @since 0.07
  * @author Christopher Barber
  */
-public abstract class DimpleOptionHolder extends LocalOptionHolder implements IDimpleEventSource
+public abstract class DimpleOptionHolder
+	extends LocalOptionHolder
+	implements IDimpleEventSource, IDimpleEnvironmentHolder
 {
 	/*-----------------------
 	 * IOptionHolder methods
@@ -55,6 +60,23 @@ public abstract class DimpleOptionHolder extends LocalOptionHolder implements ID
 	public @Nullable IOptionHolder getOptionParent()
 	{
 		return getEventParent();
+	}
+	
+	/**
+	 * IDimpleEnvironmentHolder methods
+	 */
+
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Returns environment for {@linkplain #getContainingGraph() containing graph} if available, otherwise
+	 * {@link DimpleEnvironment#active()}.
+	 */
+	@Override
+	public DimpleEnvironment getEnvironment()
+	{
+		FactorGraph graph = getContainingGraph();
+		return graph != null ? graph.getEnvironment() : DimpleEnvironment.active();
 	}
 	
 	/*-------------------

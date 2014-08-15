@@ -29,6 +29,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.minsum.MinSumSolver;
 import com.analog.lyric.dimple.solvers.minsum.SFactorGraph;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.dimple.test.solvers.core.TestMessageUpdateEventHandler;
 
 /**
@@ -36,7 +37,7 @@ import com.analog.lyric.dimple.test.solvers.core.TestMessageUpdateEventHandler;
  * @since 0.06
  * @author Christopher Barber
  */
-public class TestMinSumMessageEvents
+public class TestMinSumMessageEvents extends DimpleTestBase
 {
 	private final Random _rand = new Random(42);
 	

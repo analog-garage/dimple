@@ -38,7 +38,7 @@ import com.analog.lyric.util.test.Helpers;
  * @author schweitz
  *
  */
-public class ScheduleTest
+public class ScheduleTest extends DimpleTestBase
 {
 	@Test
 	public void verify_im_not_crazy()

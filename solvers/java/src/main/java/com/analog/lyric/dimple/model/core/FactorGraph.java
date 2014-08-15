@@ -42,7 +42,9 @@ import org.xml.sax.SAXException;
 import cern.colt.list.IntArrayList;
 
 import com.analog.lyric.collect.Tuple2;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.events.DimpleEventListener;
+import com.analog.lyric.dimple.events.IDimpleEventSource;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Uniform;
 import com.analog.lyric.dimple.factorfunctions.core.CustomFactorFunctionWrapper;
@@ -108,7 +110,16 @@ public class FactorGraph extends FactorBase
 	/*-------
 	 * State
 	 */
+	
+	/**
+	 * Environment for this graph determined at construction. Unless the constructor
+	 * specifies a different one, this will be the value of {@link DimpleEnvironment.active}
+	 * when the object was constructed.
+	 */
+	private final DimpleEnvironment _env;
 
+	private volatile @Nullable IDimpleEventSource _eventAndOptionParent;
+	
 	private final VariableList _ownedVariables = new VariableList();
 
 	private final VariableList _boundaryVariables = new VariableList();
@@ -180,7 +191,10 @@ public class FactorGraph extends FactorBase
 		@Nullable VariableBase[] boundaryVariables,
 		@Nullable String name,
 		@Nullable IFactorGraphFactory<?> solver)
-		{
+	{
+		_env = DimpleEnvironment.active();
+		_eventAndOptionParent = _env;
+		
 		if (boundaryVariables != null)
 			addBoundaryVariables(boundaryVariables);
 
@@ -218,6 +232,36 @@ public class FactorGraph extends FactorBase
 		return "Graph";
 	}
 
+	/*--------------------------
+	 * IDimpleEnvironmentHolder
+	 */
+	
+	@Override
+	public DimpleEnvironment getEnvironment()
+	{
+		return _env;
+	}
+	
+	/*---------------------
+	 * IDimpleOptionHolder
+	 */
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * By default this returns {@link #getParentGraph()} if non null, and otherwise returns
+	 * the value of {@link #getEnvironment()} (which means that the environment is the default
+	 * root of the event source hierarchy), but it may be also be set to another value using
+	 * {@link #setEventAndOptionParent(IDimpleEventSource)}.
+	 * <p>
+	 * @see #setParentGraph(FactorGraph)
+	 */
+	@Override
+	public @Nullable IDimpleEventSource getOptionParent()
+	{
+		return _eventAndOptionParent;
+	}
+	
 	/*-------------------
 	 * IDimpleEventSource
 	 */
@@ -232,6 +276,22 @@ public class FactorGraph extends FactorBase
 	public @Nullable DimpleEventListener getEventListener()
 	{
 		return getRootGraph()._eventListener;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * By default this returns {@link #getParentGraph()} if non null, and otherwise returns
+	 * the value of {@link #getEnvironment()} (which means that the environment is the default
+	 * root of the event source hierarchy), but it may be also be set to another value using
+	 * {@link #setEventAndOptionParent(IDimpleEventSource)}.
+	 * <p>
+	 * @see #setParentGraph(FactorGraph)
+	 */
+	@Override
+	public @Nullable IDimpleEventSource getEventParent()
+	{
+		return _eventAndOptionParent;
 	}
 	
 	@Override
@@ -296,6 +356,39 @@ public class FactorGraph extends FactorBase
 		notifyListenerChanged();
 	}
 
+	/**
+	 * Sets the option/event parent object to specified value.
+	 * <p>
+	 * Sets the value returned by {@link #getOptionParent()}/{@link #getEventParent()} to {@code parent},
+	 * which may be null. Note that this will override any previous value set by
+	 * {@link #setEventAndOptionParent(IDimpleEventSource)}.
+	 * <p>
+	 * @param parent
+	 * @since 0.07
+	 */
+	public void setEventAndOptionParent(@Nullable IDimpleEventSource parent)
+	{
+		_eventAndOptionParent = parent;
+	}
+	
+	/*---------------
+	 * INode methods
+	 */
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * In addition to setting the value of @link #getParentGraph()}, this will also
+	 * reset the value of {@link #getOptionParent()} and {@link #getEventParent()} to
+	 * the new parent graph if non-null and otherwise the value of {@link #getEnvironment()}.
+	 */
+	@Override
+	public void setParentGraph(@Nullable FactorGraph parentGraph)
+	{
+		super.setParentGraph(parentGraph);
+		_eventAndOptionParent = parentGraph != null ? parentGraph : _env;
+	}
+	
 	/*==============
 	 * Solver stuff
 	 */

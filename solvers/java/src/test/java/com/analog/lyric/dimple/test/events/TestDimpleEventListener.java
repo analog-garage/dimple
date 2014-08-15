@@ -28,6 +28,7 @@ import java.util.Objects;
 import org.junit.Test;
 
 import com.analog.lyric.collect.ReleasableIterator;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.events.DimpleEvent;
 import com.analog.lyric.dimple.events.DimpleEventBlocker;
 import com.analog.lyric.dimple.events.DimpleEventHandler;
@@ -149,9 +150,12 @@ public class TestDimpleEventListener
 	@Test
 	public void testListener()
 	{
+		DimpleEnvironment env = DimpleEnvironment.active();
+		
 		// Set up model/solver for test
 		FactorGraph model = new FactorGraph();
 		model.setName("model");
+		assertSame(env, model.getEnvironment());
 		
 		VariableBase v1 = new Real();
 		model.addVariables(v1);
@@ -204,20 +208,20 @@ public class TestDimpleEventListener
 		ReleasableIterator<IDimpleEventSource> sources1 = listener.eventSources(sv1);
 		ReleasableIterator<IDimpleEventSource> sources2 = listener.eventSources(sv1);
 		assertNotSame(sources1, sources2);
-		assertEventSources(sources1, sv1, v1, sgraph, model);
-		assertEventSources(sources2, sv1, v1, sgraph, model);
+		assertEventSources(sources1, sv1, v1, sgraph, model, env);
+		assertEventSources(sources2, sv1, v1, sgraph, model, env);
 		expectThrow(UnsupportedOperationException.class, null, sources1, Iterator.class, "remove");
 		sources1.release();
 		sources2.release();
 		sources1 = listener.eventSources(v1);
 		assertSame(sources1, sources2);
-		assertEventSources(sources1, v1, model);
+		assertEventSources(sources1, v1, model, env);
 		sources1.release();
 		sources1 = listener.eventSources(sf1);
-		assertEventSources(sources1, sf1, f1, ssubgraph, subgraph, sgraph, model);
+		assertEventSources(sources1, sf1, f1, ssubgraph, subgraph, sgraph, model, env);
 		sources1.release();
 		sources1 = listener.eventSources(f1);
-		assertEventSources(sources1, f1, subgraph, model);
+		assertEventSources(sources1, f1, subgraph, model, env);
 		sources1.release();
 			
 		// Single handler
