@@ -29,12 +29,13 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.google.common.math.DoubleMath;
 
 /**
  * Contains utility methods for testing {@link FactorFunction} implementations.
  */
-public class FactorFunctionTester
+public class FactorFunctionTester extends DimpleTestBase
 {
 	/**
 	 * Tests given factor function over set of test cases.

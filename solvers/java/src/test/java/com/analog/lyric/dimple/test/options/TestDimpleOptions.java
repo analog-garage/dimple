@@ -28,6 +28,7 @@ import org.junit.Test;
 
 import com.analog.lyric.dimple.options.DimpleOptionRegistry;
 import com.analog.lyric.dimple.options.DimpleOptions;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.OptionKey;
 import com.analog.lyric.options.OptionKeys;
@@ -39,7 +40,7 @@ import com.google.common.reflect.ClassPath;
  * @since 0.07
  * @author Christopher Barber
  */
-public class TestDimpleOptions
+public class TestDimpleOptions extends DimpleTestBase
 {
 	/**
 	 * Test contents of {@link DimpleOptionRegistry} and {@link DimpleOptions} classes.

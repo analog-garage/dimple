@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.ProposalKernelOptionKey;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.ProposalKernelRegistry;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.options.LocalOptionHolder;
 import com.analog.lyric.options.OptionValidationException;
 
@@ -34,7 +35,7 @@ import com.analog.lyric.options.OptionValidationException;
  * @since 0.07
  * @author Christopher Barber
  */
-public class TestProposalKernels
+public class TestProposalKernels extends DimpleTestBase
 {
 	public static final ProposalKernelOptionKey testKey =
 		new ProposalKernelOptionKey(TestProposalKernels.class, "testKey", NormalProposalKernel.class);

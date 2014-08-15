@@ -31,6 +31,7 @@ import com.analog.lyric.dimple.solvers.particleBP.ParticleBPOptions;
 import com.analog.lyric.dimple.solvers.particleBP.ParticleBPSolver;
 import com.analog.lyric.dimple.solvers.particleBP.SFactorGraph;
 import com.analog.lyric.dimple.solvers.particleBP.SRealVariable;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 
 /**
  * Tests for {@link ParticleBPOptions}
@@ -38,7 +39,7 @@ import com.analog.lyric.dimple.solvers.particleBP.SRealVariable;
  * @since 0.07
  * @author Christopher Barber
  */
-public class TestParticleBPOptions
+public class TestParticleBPOptions extends DimpleTestBase
 {
 	@SuppressWarnings("null")
 	@Test

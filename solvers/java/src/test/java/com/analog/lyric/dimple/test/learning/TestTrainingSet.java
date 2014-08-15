@@ -27,13 +27,14 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.dimple.test.dummySolver.DummySolver;
 import com.analog.lyric.util.test.SerializationTester;
 
 /**
  * Tests for {@link ITrainingSet} and related classes.
  */
-public class TestTrainingSet
+public class TestTrainingSet extends DimpleTestBase
 {
 	@Test
 	public void testTrainingAssignment()

@@ -37,7 +37,8 @@ import com.analog.lyric.util.misc.FactorGraphDiffs;
 import com.analog.lyric.util.misc.Nullable;
 import com.analog.lyric.util.test.Helpers;
 
-public class FactorGraphDiffsTest {
+public class FactorGraphDiffsTest extends DimpleTestBase
+{
 
 	@BeforeClass
 	public static void setUpBeforeClass()  {

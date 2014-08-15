@@ -36,6 +36,7 @@ import com.analog.lyric.dimple.model.core.FactorAddEvent;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.util.misc.Nullable;
 import com.google.common.io.Files;
 
@@ -45,7 +46,7 @@ import com.google.common.io.Files;
  * @since 0.06
  * @author Christopher Barber
  */
-public class TestDimpleEventLogger
+public class TestDimpleEventLogger extends DimpleTestBase
 {
 	@SuppressWarnings("null")
 	@Test

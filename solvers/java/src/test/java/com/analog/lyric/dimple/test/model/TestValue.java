@@ -36,9 +36,10 @@ import com.analog.lyric.dimple.model.values.RealJointValue;
 import com.analog.lyric.dimple.model.values.RealValue;
 import com.analog.lyric.dimple.model.values.SimpleIntRangeValue;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.util.test.SerializationTester;
 
-public class TestValue
+public class TestValue extends DimpleTestBase
 {
 	
 	@Test

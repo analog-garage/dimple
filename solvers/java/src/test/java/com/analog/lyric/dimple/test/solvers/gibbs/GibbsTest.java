@@ -27,10 +27,11 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
 import com.analog.lyric.dimple.solvers.gibbs.STableFactor;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 
 
 @SuppressWarnings({"null", "deprecation"})
-public class GibbsTest
+public class GibbsTest extends DimpleTestBase
 {
 	protected static boolean debugPrint = false;
 	

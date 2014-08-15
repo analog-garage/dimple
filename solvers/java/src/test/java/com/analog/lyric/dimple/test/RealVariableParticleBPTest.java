@@ -32,8 +32,9 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.particleBP.SFactorGraph;
 import com.analog.lyric.dimple.solvers.particleBP.SRealVariable;
 
+// TODO: move to particleBP test directory
 
-public class RealVariableParticleBPTest
+public class RealVariableParticleBPTest extends DimpleTestBase
 {
 	protected static boolean debugPrint = false;
 	protected static boolean repeatable = true;

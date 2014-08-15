@@ -16,17 +16,13 @@
 
 package com.analog.lyric.dimple.test;
 
-//See 'JUnit4' / 'JUnit3' comments to change to back to JUnit4.
-//JUnit4
-//import static org.junit.Assert.assertTrue;
-//import org.junit.* ;
+import static org.junit.Assert.*;
 
-//JUnit3
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.UUID;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
@@ -37,35 +33,9 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.util.misc.Nullable;
 
-//JUnit3
-public class SolverNamesTest extends TestCase {
-	
-	//JUnit4
-	//@BeforeClass
-	//public static void setUpBeforeClass()
-	//{
-	//}
-
-	//JUnit4
-	//@AfterClass
-	//public static void tearDownAfterClass()  {
-	//}
-	
-	//JUnit4
-	//@Before
-	@Override
-	public void setUp()
-	{
-	}
-
-	//JUnit4
-	//@After
-	@Override
-	public void tearDown()  {
-	}
-
-	//JUnit4
-	//@Test
+public class SolverNamesTest extends DimpleTestBase
+{
+	@Test
 	public void test_simpleNameStuff()
 	{
 		Discrete variable = new Discrete(NodeId.getNext(), new Object[]{0.0, 1.0}, "Variable");
@@ -87,8 +57,7 @@ public class SolverNamesTest extends TestCase {
 		assertTrue(variable.getName().equals(variableNameSet));
 	}
 
-	//JUnit4
-	//@Test
+	@Test
 	@SuppressWarnings("null")
 	public void test_parentGraphNameStuff()
 	{
@@ -357,8 +326,7 @@ public class SolverNamesTest extends TestCase {
 		}
 	}
 	
-	//JUnit4
-	//@Test
+	@Test
 	public void test_getObjectByType()
 	{
 		DiscreteDomain domain2 = DiscreteDomain.range(0,1);

@@ -24,8 +24,9 @@ import org.junit.Test;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.DiscreteIndicesIterator;
 import com.analog.lyric.dimple.model.domains.DomainList;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 
-public class TestDiscreteIndicesIterator
+public class TestDiscreteIndicesIterator extends DimpleTestBase
 {
 
 	@Test

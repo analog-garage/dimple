@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.lp.LPOptions;
 import com.analog.lyric.dimple.solvers.lp.LPSolver;
 import com.analog.lyric.dimple.solvers.lp.SFactorGraph;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 
 /**
  * Test initalization of {@link LPOptions}.
@@ -32,7 +33,7 @@ import com.analog.lyric.dimple.solvers.lp.SFactorGraph;
  * @since 0.07
  * @author Christopher Barber
  */
-public class TestLPOptions
+public class TestLPOptions extends DimpleTestBase
 {
 	@Test
 	public void test()

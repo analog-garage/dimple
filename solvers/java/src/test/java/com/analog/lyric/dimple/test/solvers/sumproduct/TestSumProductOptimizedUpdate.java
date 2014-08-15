@@ -28,13 +28,14 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
 import com.analog.lyric.dimple.solvers.sumproduct.STableFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.TableFactorEngineOptimized;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.google.common.primitives.Ints;
 
 /**
  * @since 0.06
  * @author jking
  */
-public class TestSumProductOptimizedUpdate
+public class TestSumProductOptimizedUpdate extends DimpleTestBase
 {
 	private void doTest(final int zeroControl,
 		final double sparsityControl,

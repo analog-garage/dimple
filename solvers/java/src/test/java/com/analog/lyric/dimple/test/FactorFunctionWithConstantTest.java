@@ -28,7 +28,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Bit;
 
 
-public class FactorFunctionWithConstantTest
+public class FactorFunctionWithConstantTest extends DimpleTestBase
 {
 	protected static boolean debugPrint = true;
 	

@@ -36,13 +36,14 @@ import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.util.misc.Misc;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Tests for {@link JunctionTreeTransform}
  */
-public class TestJunctionTreeTransform
+public class TestJunctionTreeTransform extends DimpleTestBase
 {
 	private final long _seed = new Random().nextLong();
 	private final Random rand = new Random(_seed);

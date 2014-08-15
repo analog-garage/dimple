@@ -52,12 +52,13 @@ import com.analog.lyric.dimple.model.domains.DiscreteIndicesIterator;
 import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.util.test.SerializationTester;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
-public class TestFactorTable
+public class TestFactorTable extends DimpleTestBase
 {
 	final Random rand = new Random(42);
 	final DiscreteDomain domain2 = DiscreteDomain.range(0,1);

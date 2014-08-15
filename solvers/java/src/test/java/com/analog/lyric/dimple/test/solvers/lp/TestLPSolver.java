@@ -33,8 +33,9 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.lp.SFactorGraph;
 import com.analog.lyric.dimple.solvers.lp.Solver;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 
-public class TestLPSolver
+public class TestLPSolver extends DimpleTestBase
 {
 	/**
 	 * Deterministic factor that asserts that only one argument may be true.

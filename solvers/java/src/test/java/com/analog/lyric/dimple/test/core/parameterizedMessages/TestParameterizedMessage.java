@@ -23,6 +23,7 @@ import java.io.PrintStream;
 
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.ParameterizedMessageBase;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.util.test.SerializationTester;
 
 /**
@@ -31,7 +32,7 @@ import com.analog.lyric.util.test.SerializationTester;
  * @since 0.06
  * @author Christopher Barber
  */
-public class TestParameterizedMessage
+public class TestParameterizedMessage extends DimpleTestBase
 {
 	private static class BogusParameters extends ParameterizedMessageBase
 	{

@@ -39,9 +39,10 @@ import com.analog.lyric.dimple.model.domains.ObjectDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.util.test.SerializationTester;
 
-public class TestDomain
+public class TestDomain extends DimpleTestBase
 {
 	enum Bogus { X }
 	

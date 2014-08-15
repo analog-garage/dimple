@@ -29,9 +29,10 @@ import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
 import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 
 @SuppressWarnings("deprecation")
-public class GibbsTestParameterizedNormal
+public class GibbsTestParameterizedNormal extends DimpleTestBase
 {
 	protected static boolean debugPrint = false;
 	protected static boolean repeatable = true;

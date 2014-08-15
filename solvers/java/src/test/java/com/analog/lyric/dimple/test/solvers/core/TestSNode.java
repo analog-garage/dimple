@@ -49,6 +49,7 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.ParameterizedM
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
@@ -57,7 +58,7 @@ import com.analog.lyric.util.misc.Nullable;
  * @since 0.06
  * @author Christopher Barber
  */
-public class TestSNode
+public class TestSNode extends DimpleTestBase
 {
 	private static class TestNode extends SNode
 	{

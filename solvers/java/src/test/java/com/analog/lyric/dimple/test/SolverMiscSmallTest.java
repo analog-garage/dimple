@@ -30,7 +30,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.test.Helpers;
 
-public class SolverMiscSmallTest
+public class SolverMiscSmallTest extends DimpleTestBase
 {
 	@SuppressWarnings("null")
 	@Test

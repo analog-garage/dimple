@@ -44,6 +44,7 @@ import com.analog.lyric.dimple.model.core.VariableRemoveEvent;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.util.test.SerializationTester;
 
 /**
@@ -52,7 +53,7 @@ import com.analog.lyric.util.test.SerializationTester;
  * @since 0.06
  * @author Christopher Barber
  */
-public class TestFactorGraphEvent
+public class TestFactorGraphEvent extends DimpleTestBase
 {
 	@Test
 	public void test()

@@ -32,7 +32,8 @@ import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
 import com.analog.lyric.util.misc.Nullable;
 
 
-public class FiniteFieldTest {
+public class FiniteFieldTest extends DimpleTestBase
+{
 
 	static @Nullable IFactorGraphFactory<?> _oldSolver;
 	

@@ -28,8 +28,9 @@ import com.analog.lyric.dimple.matlabproxy.PFactorVector;
 import com.analog.lyric.dimple.matlabproxy.PNodeVector;
 import com.analog.lyric.dimple.matlabproxy.PObject;
 import com.analog.lyric.dimple.matlabproxy.PVariableVector;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 
-public class TestPObject
+public class TestPObject extends DimpleTestBase
 {
 
 	@Test

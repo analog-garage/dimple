@@ -35,6 +35,7 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableChangeEvent;
 import com.analog.lyric.dimple.model.variables.VariableFixedValueChangeEvent;
 import com.analog.lyric.dimple.model.variables.VariableInputChangeEvent;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
@@ -43,7 +44,7 @@ import com.analog.lyric.util.misc.Nullable;
  * @since 0.06
  * @author Christopher Barber
  */
-public class TestVariableChangeEvent
+public class TestVariableChangeEvent extends DimpleTestBase
 {
 	@Test
 	public void test()

@@ -20,10 +20,6 @@ import static org.junit.Assert.*;
 
 import java.util.Arrays;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
@@ -31,24 +27,8 @@ import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.dimple.model.variables.Discrete;
 
 
-public class VariableTest {
-
-	@BeforeClass
-	public static void setUpBeforeClass()  {
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass()  {
-	}
-
-	@Before
-	public void setUp()  {
-	}
-
-	@After
-	public void tearDown()  {
-	}
-	
+public class VariableTest extends DimpleTestBase
+{
 	@Test
 	public void test_bit()
 	{

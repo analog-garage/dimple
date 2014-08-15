@@ -36,7 +36,8 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.util.misc.Nullable;
 
-public class NamesTest {
+public class NamesTest extends DimpleTestBase
+{
 
 	@BeforeClass
 	public static void setUpBeforeClass()  {

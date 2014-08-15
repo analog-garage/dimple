@@ -29,8 +29,9 @@ import com.analog.lyric.dimple.model.repeated.ComplexStream;
 import com.analog.lyric.dimple.model.repeated.DiscreteStream;
 import com.analog.lyric.dimple.model.repeated.RealJointStream;
 import com.analog.lyric.dimple.model.repeated.RealStream;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 
-public class TestStreamDomains
+public class TestStreamDomains extends DimpleTestBase
 {
 	
 	@SuppressWarnings("null")

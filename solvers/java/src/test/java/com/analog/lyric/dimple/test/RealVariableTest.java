@@ -27,7 +27,7 @@ import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.variables.Real;
 
 
-public class RealVariableTest
+public class RealVariableTest extends DimpleTestBase
 {
 	protected static boolean debugPrint = false;
 	

@@ -36,6 +36,7 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolver;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.dimple.test.solvers.core.TestMessageUpdateEventHandler;
 
 /**
@@ -44,7 +45,7 @@ import com.analog.lyric.dimple.test.solvers.core.TestMessageUpdateEventHandler;
  * @since 0.06
  * @author Christopher Barber
  */
-public class TestSumProductMessageEvents
+public class TestSumProductMessageEvents extends DimpleTestBase
 {
 	private final Random _rand = new Random(42);
 	

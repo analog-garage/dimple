@@ -31,6 +31,7 @@ import com.analog.lyric.dimple.solvers.minsum.MinSumOptions;
 import com.analog.lyric.dimple.solvers.minsum.MinSumSolver;
 import com.analog.lyric.dimple.solvers.minsum.SFactorGraph;
 import com.analog.lyric.dimple.solvers.minsum.STableFactor;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 
 /**
  * Test setting of {@link MinSumOptions} values.
@@ -38,7 +39,7 @@ import com.analog.lyric.dimple.solvers.minsum.STableFactor;
  * @since 0.07
  * @author Christopher Barber
  */
-public class TestMinSumOptions
+public class TestMinSumOptions extends DimpleTestBase
 {
 	@SuppressWarnings({ "deprecation", "null" })
 	@Test

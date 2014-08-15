@@ -37,12 +37,13 @@ import com.analog.lyric.dimple.model.transform.VariableEliminatorCostListOptionK
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.options.LocalOptionHolder;
 
 /**
  * Test cases for {@link VariableEliminator}
  */
-public class TestVariableEliminator
+public class TestVariableEliminator extends DimpleTestBase
 {
 	// It doesn't matter what factor function we use for these tests, since we
 	// will never evaluate it.

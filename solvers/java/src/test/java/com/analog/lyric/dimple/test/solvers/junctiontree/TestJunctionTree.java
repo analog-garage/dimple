@@ -38,6 +38,7 @@ import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolver;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolverGraphBase;
 import com.analog.lyric.dimple.solvers.junctiontreemap.JunctionTreeMAPSolver;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.dimple.test.model.RandomGraphGenerator;
 import com.analog.lyric.dimple.test.model.TestJunctionTreeTransform;
 import com.analog.lyric.util.misc.MapList;
@@ -52,7 +53,7 @@ import com.google.common.math.DoubleMath;
  * @author Christopher Barber
  * @see TestJunctionTreeTransform
  */
-public class TestJunctionTree
+public class TestJunctionTree extends DimpleTestBase
 {
 	private final long _seed = new Random().nextLong();
 	private final Random _rand = new Random(_seed);

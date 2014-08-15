@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.options.SolverOptions;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.dimple.test.dummySolver.DummyFactorGraph;
 
 /**
@@ -33,7 +34,7 @@ import com.analog.lyric.dimple.test.dummySolver.DummyFactorGraph;
  * @since 0.07
  * @author Christopher Barber
  */
-public class TestSolverOptions
+public class TestSolverOptions extends DimpleTestBase
 {
 	@Test
 	public void test()

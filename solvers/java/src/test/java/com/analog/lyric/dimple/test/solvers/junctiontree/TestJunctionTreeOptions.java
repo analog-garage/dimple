@@ -28,13 +28,14 @@ import com.analog.lyric.dimple.options.DimpleOptions;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeOptions;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolver;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolverGraphBase;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 
 /**
  * Unit tests for {@link JunctionTreeOptions}.
  * @since 0.07
  * @author Christopher Barber
  */
-public class TestJunctionTreeOptions
+public class TestJunctionTreeOptions extends DimpleTestBase
 {
 	@Test
 	public void test()

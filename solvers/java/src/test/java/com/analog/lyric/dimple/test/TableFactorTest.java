@@ -19,10 +19,6 @@ package com.analog.lyric.dimple.test;
 
 import static org.junit.Assert.*;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.factorfunctions.XorDelta;
@@ -32,23 +28,8 @@ import com.analog.lyric.dimple.model.factors.DiscreteFactor;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 
-public class TableFactorTest {
-
-	@BeforeClass
-	public static void setUpBeforeClass()  {
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass()  {
-	}
-
-	@Before
-	public void setUp()  {
-	}
-
-	@After
-	public void tearDown()  {
-	}
+public class TableFactorTest extends DimpleTestBase
+{
 	@Test
 	public void test_simple()
 	{

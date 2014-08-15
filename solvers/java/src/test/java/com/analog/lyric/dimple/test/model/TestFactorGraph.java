@@ -27,8 +27,9 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 
-public class TestFactorGraph
+public class TestFactorGraph extends DimpleTestBase
 {
 	@Test
 	public void test()

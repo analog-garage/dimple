@@ -33,7 +33,7 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.math.DimpleRandomGenerator;
 
 
-public class RandomSchedulerTest
+public class RandomSchedulerTest extends DimpleTestBase
 {
 	protected static boolean debugPrint = false;
 

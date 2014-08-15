@@ -29,6 +29,7 @@ import com.analog.lyric.dimple.events.IDimpleEventListener;
 import com.analog.lyric.dimple.events.IDimpleEventSource;
 import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.options.StatelessOptionHolder;
 import com.analog.lyric.util.misc.Nullable;
 import com.analog.lyric.util.test.SerializationTester;
@@ -37,7 +38,7 @@ import com.analog.lyric.util.test.SerializationTester;
  * Test for {@link DimpleEvent}
  * @author Christopher Barber
  */
-public class TestDimpleEvent
+public class TestDimpleEvent extends DimpleTestBase
 {
 	@Test
 	public void test()

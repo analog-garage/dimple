@@ -44,6 +44,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsVariableUpdateEvent;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
@@ -53,7 +54,7 @@ import com.analog.lyric.util.misc.Nullable;
  * @author Christopher Barber
  */
 @SuppressWarnings("deprecation")
-public class TestGibbsVariableUpdateEvent
+public class TestGibbsVariableUpdateEvent extends DimpleTestBase
 {
 	static class BogoFunction extends FactorFunction
 	{

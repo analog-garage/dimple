@@ -41,7 +41,8 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 
 
 
-public class FactorFunctionTest {
+public class FactorFunctionTest extends DimpleTestBase
+{
 
 	@BeforeClass
 	public static void setUpBeforeClass()  {

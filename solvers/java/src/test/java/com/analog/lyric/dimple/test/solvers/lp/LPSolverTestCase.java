@@ -41,10 +41,11 @@ import com.analog.lyric.dimple.solvers.lp.SFactorGraph;
 import com.analog.lyric.dimple.solvers.lp.STableFactor;
 import com.analog.lyric.dimple.solvers.lp.SVariable;
 import com.analog.lyric.dimple.solvers.lp.Solver;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.util.misc.Nullable;
 import com.analog.lyric.util.test.Unchecked;
 
-public class LPSolverTestCase
+public class LPSolverTestCase extends DimpleTestBase
 {
 	public final FactorGraph model;
 	public @Nullable String[] expectedConstraints = null;

@@ -40,9 +40,10 @@ import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.util.test.SerializationTester;
 
-public class TestJointDomainIndexer
+public class TestJointDomainIndexer extends DimpleTestBase
 {
 	private Random rand = new Random(1323);
 	

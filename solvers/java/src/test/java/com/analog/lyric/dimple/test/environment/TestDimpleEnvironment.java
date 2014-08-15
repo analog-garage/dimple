@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.environment.ExtendedLevel;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.util.test.TestLogger;
 
 /**
@@ -33,7 +34,7 @@ import com.analog.lyric.util.test.TestLogger;
  * @since 0.07
  * @author Christopher Barber
  */
-public class TestDimpleEnvironment
+public class TestDimpleEnvironment extends DimpleTestBase
 {
 	@Test
 	public void testInstances()

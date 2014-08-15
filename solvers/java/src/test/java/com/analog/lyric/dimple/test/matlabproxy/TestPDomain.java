@@ -29,8 +29,9 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 
-public class TestPDomain
+public class TestPDomain extends DimpleTestBase
 {
 
 	@Test

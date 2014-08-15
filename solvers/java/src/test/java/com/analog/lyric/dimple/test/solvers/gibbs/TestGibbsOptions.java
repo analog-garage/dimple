@@ -26,13 +26,14 @@ import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 
 /**
  * Tests setting of {@link GibbsOptions}
  * @since 0.07
  * @author Christopher Barber
  */
-public class TestGibbsOptions
+public class TestGibbsOptions extends DimpleTestBase
 {
 	@SuppressWarnings("deprecation")
 	@Test

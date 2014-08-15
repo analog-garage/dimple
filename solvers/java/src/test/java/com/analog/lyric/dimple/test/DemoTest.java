@@ -16,14 +16,15 @@
 
 package com.analog.lyric.dimple.test;
 
-import org.junit.* ;
+import org.junit.Test;
 
 import com.analog.lyric.util.test.Demo;
 
-public class DemoTest {
+public class DemoTest extends DimpleTestBase
+{
 
 	@Test
-	public void test_DemoMain() 
+	public void test_DemoMain()
 	{
 		Demo.main(new String[]{"quiet"});
 	}

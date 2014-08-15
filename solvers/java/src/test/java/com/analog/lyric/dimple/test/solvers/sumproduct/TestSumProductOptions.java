@@ -33,13 +33,14 @@ import com.analog.lyric.dimple.solvers.sumproduct.STableFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductOptions;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolver;
 import com.analog.lyric.dimple.solvers.sumproduct.sampledfactor.SampledFactor;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 
 /**
  * 
  * @since 0.07
  * @author Christopher Barber
  */
-public class TestSumProductOptions
+public class TestSumProductOptions extends DimpleTestBase
 {
 	@SuppressWarnings({ "deprecation", "null" })
 	@Test

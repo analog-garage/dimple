@@ -38,8 +38,9 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverNodeGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.Solver;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 
-public class TestGibbsNeighborList
+public class TestGibbsNeighborList extends DimpleTestBase
 {
 	@SuppressWarnings("null")
 	@Test
