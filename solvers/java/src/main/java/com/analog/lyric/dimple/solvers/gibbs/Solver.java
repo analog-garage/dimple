@@ -23,6 +23,7 @@ import com.analog.lyric.util.misc.Nullable;
 
 public class Solver extends SolverBase<SFactorGraph>
 {
+	@Deprecated
 	protected final @Nullable SFactorGraph.Arguments _factorGraphConfig;
 	
 	public Solver()

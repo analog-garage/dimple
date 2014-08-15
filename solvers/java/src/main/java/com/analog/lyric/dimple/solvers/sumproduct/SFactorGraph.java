@@ -48,6 +48,7 @@ import com.analog.lyric.dimple.options.DimpleOptions;
 import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomComplexGaussianPolynomial;
@@ -76,9 +77,6 @@ public class SFactorGraph extends SFactorGraphBase
 {
 	private double _damping = 0;
 	private @Nullable IFactorTable _currentFactorTable = null;
-	private int _sampledFactorSamplesPerUpdate = SampledFactor.DEFAULT_SAMPLES_PER_UPDATE;
-	private int _sampledFactorBurnInScansPerUpdate = SampledFactor.DEFAULT_BURN_IN_SCANS_PER_UPDATE;
-	private int _sampledFactorScansPerSample = SampledFactor.DEFAULT_SCANS_PER_SAMPLE;
 	private static Random _rand = new Random();
 	private boolean _defaultOptimizedUpdateEnabled;
 
@@ -87,6 +85,11 @@ public class SFactorGraph extends SFactorGraphBase
 	{
 		super(factorGraph);
 		setMultithreadingManager(new MultiThreadingManager(getModelObject()));
+		
+		// Set default Gibbs options for sampled factors.
+		setOption(GibbsOptions.numSamples, SampledFactor.DEFAULT_SAMPLES_PER_UPDATE);
+		setOption(GibbsOptions.burnInScans, SampledFactor.DEFAULT_BURN_IN_SCANS_PER_UPDATE);
+		setOption(GibbsOptions.scansPerSample, SampledFactor.DEFAULT_SCANS_PER_SAMPLE);
 	}
 	
 
@@ -187,9 +190,7 @@ public class SFactorGraph extends SFactorGraphBase
 			else	// No custom factor exists, so create a generic one
 			{
 				// For non-discrete factor that doesn't have a custom factor, create a sampled factor
-				SampledFactor sf = new SampledFactor(factor);
-				sf.setSamplesPerUpdate(_sampledFactorSamplesPerUpdate);
-				return sf;
+				return new SampledFactor(factor);
 			}
 		}
 	}
@@ -287,58 +288,67 @@ public class SFactorGraph extends SFactorGraphBase
 		_defaultOptimizedUpdateEnabled = value;
 		setOption(SumProductOptions.enableOptimizedUpdate, value);
 	}
-	
+
+	/**
+	 * @deprecated Will be removed in a future release. Instead set {@link GibbsOptions#numSamples} on
+	 * this object using {@link #setOption}.
+	 */
+	@Deprecated
 	public void setSampledFactorSamplesPerUpdate(int samplesPerUpdate)
 	{
-		_sampledFactorSamplesPerUpdate = samplesPerUpdate;
-		setOption(SumProductOptions.sampledFactorSamplesPerUpdate, samplesPerUpdate);
-		for (Factor f : _factorGraph.getNonGraphFactors())
-		{
-			ISolverFactor s = f.getSolver();
-			if (s instanceof SampledFactor)
-				((SampledFactor)s).setSamplesPerUpdate(samplesPerUpdate);
-		}
+		setOption(GibbsOptions.numSamples, samplesPerUpdate);
 	}
+	
+	/**
+	 * @deprecated Will be removed in a future release. Instead get {@link GibbsOptions#numSamples}
+	 * on from this object using {@link #getOption}.
+	 */
+	@Deprecated
 	public int getSampledFactorSamplesPerUpdate()
 	{
-		return _sampledFactorSamplesPerUpdate;
+		return getOptionOrDefault(GibbsOptions.numSamples);
 	}
 	
+	/**
+	 * @deprecated Will be removed in a future release. Instead set {@link GibbsOptions#burnInScans} on
+	 * this object using {@link #setOption}.
+	 */
+	@Deprecated
 	public void setSampledFactorBurnInScansPerUpdate(int burnInScans)
 	{
-		_sampledFactorBurnInScansPerUpdate = burnInScans;
-		setOption(SumProductOptions.sampledFactorBurnInScansPerUpdate, burnInScans);
-		for (Factor f : _factorGraph.getNonGraphFactors())
-		{
-			ISolverFactor s = f.getSolver();
-			if (s instanceof SampledFactor)
-				((SampledFactor)s).setSamplesPerUpdate(burnInScans);
-		}
+		setOption(GibbsOptions.burnInScans, burnInScans);
 	}
+
+	/**
+	 * @deprecated Will be removed in a future release. Instead set {@link GibbsOptions#burnInScans} on
+	 * this object using {@link #setOption}.
+	 */
+	@Deprecated
 	public int getSampledFactorBurnInScansPerUpdate()
 	{
-		return _sampledFactorBurnInScansPerUpdate;
+		return getOptionOrDefault(GibbsOptions.burnInScans);
 	}
 
+	/**
+	 * @deprecated Will be removed in a future release. Instead set {@link GibbsOptions#scansPerSample} on
+	 * this object using {@link #setOption}.
+	 */
+	@Deprecated
 	public void setSampledFactorScansPerSample(int scansPerSample)
 	{
-		_sampledFactorScansPerSample = scansPerSample;
-		setOption(SumProductOptions.sampledFactorScansPerSample, scansPerSample);
-		for (Factor f : _factorGraph.getNonGraphFactors())
-		{
-			ISolverFactor s = f.getSolver();
-			if (s instanceof SampledFactor)
-				((SampledFactor)s).setSamplesPerUpdate(scansPerSample);
-		}
+		setOption(GibbsOptions.scansPerSample, scansPerSample);
 	}
+
+	/**
+	 * @deprecated Will be removed in a future release. Instead set {@link GibbsOptions#scansPerSample} on
+	 * this object using {@link #setOption}.
+	 */
+	@Deprecated
 	public int getSampledFactorScansPerSample()
 	{
-		return _sampledFactorScansPerSample;
+		return getOptionOrDefault(GibbsOptions.scansPerSample);
 	}
 
-	
-
-	
 	@Override
 	public void baumWelch(IFactorTable [] fts, int numRestarts, int numSteps)
 	{
@@ -504,10 +514,6 @@ public class SFactorGraph extends SFactorGraphBase
 		}
 		
 		_damping = getOptionOrDefault(SumProductOptions.damping);
-		
-		_sampledFactorBurnInScansPerUpdate = getOptionOrDefault(SumProductOptions.sampledFactorBurnInScansPerUpdate);
-		_sampledFactorSamplesPerUpdate = getOptionOrDefault(SumProductOptions.sampledFactorSamplesPerUpdate);
-		_sampledFactorScansPerSample = getOptionOrDefault(SumProductOptions.sampledFactorScansPerSample);
 		
 		_defaultOptimizedUpdateEnabled = getOptionOrDefault(SumProductOptions.enableOptimizedUpdate);
 	}

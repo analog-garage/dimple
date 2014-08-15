@@ -27,6 +27,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.sumproduct.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
 import com.analog.lyric.dimple.solvers.sumproduct.STableFactor;
@@ -54,13 +55,6 @@ public class TestSumProductOptions extends DimpleTestBase
 
 		assertFalse(SumProductOptions.enableOptimizedUpdate.defaultValue());
 		
-		assertEquals((Integer)SampledFactor.DEFAULT_BURN_IN_SCANS_PER_UPDATE,
-			SumProductOptions.sampledFactorBurnInScansPerUpdate.defaultValue());
-		assertEquals((Integer)SampledFactor.DEFAULT_SAMPLES_PER_UPDATE,
-			SumProductOptions.sampledFactorSamplesPerUpdate.defaultValue());
-		assertEquals((Integer)SampledFactor.DEFAULT_SCANS_PER_SAMPLE,
-			SumProductOptions.sampledFactorScansPerSample.defaultValue());
-
 		final int nVars = 4;
 		FactorGraph fg = new FactorGraph();
 		Discrete[] vars = new Discrete[nVars];
@@ -91,13 +85,13 @@ public class TestSumProductOptions extends DimpleTestBase
 		// Set initial options on model
 		fg.setOption(SumProductOptions.damping, .9);
 		fg.setOption(SumProductOptions.maxMessageSize, 10);
+		fg.setOption(GibbsOptions.burnInScans, 42); // will be overridden by default option in solver graph
+		fg.setOption(GibbsOptions.scansPerSample, 23); // will be overridden by default option in solver graph
+		fg.setOption(GibbsOptions.numSamples, 12); // will be overridden by default option in solver graph
 		SumProductOptions.nodeSpecificDamping.set(f1, .4, .5, .6, .7);
 		SumProductOptions.nodeSpecificDamping.set(f2, .3, .4, .5, .6);
 		fg.setOption(SumProductOptions.enableOptimizedUpdate, true);
 		f2.setOption(SumProductOptions.enableOptimizedUpdate, false);
-		fg.setOption(SumProductOptions.sampledFactorBurnInScansPerUpdate, 3);
-		fg.setOption(SumProductOptions.sampledFactorSamplesPerUpdate, 4);
-		fg.setOption(SumProductOptions.sampledFactorScansPerSample, 5);
 		
 		// Test options that are updated on initialize()
 		sfg = requireNonNull(fg.setSolverFactory(new SumProductSolver()));
@@ -111,6 +105,10 @@ public class TestSumProductOptions extends DimpleTestBase
 		assertEquals(SampledFactor.DEFAULT_BURN_IN_SCANS_PER_UPDATE, sfg.getSampledFactorBurnInScansPerUpdate());
 		assertEquals(SampledFactor.DEFAULT_SAMPLES_PER_UPDATE, sfg.getSampledFactorSamplesPerUpdate());
 		assertEquals(SampledFactor.DEFAULT_SCANS_PER_SAMPLE, sfg.getSampledFactorScansPerSample());
+		assertEquals((Integer)SampledFactor.DEFAULT_SAMPLES_PER_UPDATE, sfg.getLocalOption(GibbsOptions.numSamples));
+		assertEquals((Integer)SampledFactor.DEFAULT_SCANS_PER_SAMPLE, sfg.getLocalOption(GibbsOptions.scansPerSample));
+		assertEquals((Integer)SampledFactor.DEFAULT_BURN_IN_SCANS_PER_UPDATE,
+			sfg.getLocalOption(GibbsOptions.burnInScans));
 		SDiscreteVariable sv1 = (SDiscreteVariable)vars[0].getSolver();
 		assertEquals(0.0, sv1.getDamping(0), 0.0);
 		
@@ -134,10 +132,6 @@ public class TestSumProductOptions extends DimpleTestBase
 		assertTrue(sf1.isOptimizedUpdateEnabled());
 		assertFalse(sf2.isOptimizedUpdateEnabled());
 		
-		assertEquals(3, sfg.getSampledFactorBurnInScansPerUpdate());
-		assertEquals(4, sfg.getSampledFactorSamplesPerUpdate());
-		assertEquals(5, sfg.getSampledFactorScansPerSample());
-
 		// Test using set methods
 		sfg.setDamping(.5);
 		assertEquals(.5, sfg.getDamping(), 0.0);
@@ -158,6 +152,16 @@ public class TestSumProductOptions extends DimpleTestBase
 		sfg.setDefaultOptimizedUpdateEnabled(false);
 		assertFalse(sfg.getDefaultOptimizedUpdateEnabled());
 		assertEquals(false, sfg.getOption(SumProductOptions.enableOptimizedUpdate));
+
+		sfg.setSampledFactorSamplesPerUpdate(142);
+		sfg.setSampledFactorScansPerSample(24);
+		sfg.setSampledFactorBurnInScansPerUpdate(11);
+		assertEquals(142, sfg.getSampledFactorSamplesPerUpdate());
+		assertEquals(24, sfg.getSampledFactorScansPerSample());
+		assertEquals(11, sfg.getSampledFactorBurnInScansPerUpdate());
+		assertEquals((Integer)142, sfg.getLocalOption(GibbsOptions.numSamples));
+		assertEquals((Integer)24, sfg.getLocalOption(GibbsOptions.scansPerSample));
+		assertEquals((Integer)11, sfg.getLocalOption(GibbsOptions.burnInScans));
 		
 		assertNull(sf1.getLocalOption(SumProductOptions.enableOptimizedUpdate));
 		sf1.enableOptimizedUpdate();

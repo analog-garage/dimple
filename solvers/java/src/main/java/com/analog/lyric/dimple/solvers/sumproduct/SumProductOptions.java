@@ -18,7 +18,6 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 
 import com.analog.lyric.dimple.options.SolverOptions;
 import com.analog.lyric.dimple.solvers.core.SNode;
-import com.analog.lyric.dimple.solvers.sumproduct.sampledfactor.SampledFactor;
 import com.analog.lyric.options.BooleanOptionKey;
 import com.analog.lyric.options.DoubleListOptionKey;
 import com.analog.lyric.options.DoubleOptionKey;
@@ -76,17 +75,4 @@ public class SumProductOptions extends SolverOptions
 	 */
 	public static final DoubleListOptionKey nodeSpecificDamping =
 		new DoubleListOptionKey(SumProductOptions.class, "nodeSpecificDamping");
-	
-	public static final IntegerOptionKey sampledFactorBurnInScansPerUpdate =
-		new IntegerOptionKey(SumProductOptions.class, "sampledFactorBurnInScansPerUpdate",
-			SampledFactor.DEFAULT_BURN_IN_SCANS_PER_UPDATE, 1, Integer.MAX_VALUE);
-	
-	public static final IntegerOptionKey sampledFactorSamplesPerUpdate =
-		new IntegerOptionKey(SumProductOptions.class, "sampledFactorSamplesPerUpdate",
-			SampledFactor.DEFAULT_SAMPLES_PER_UPDATE, 1, Integer.MAX_VALUE);
-	
-	public static final IntegerOptionKey sampledFactorScansPerSample =
-		new IntegerOptionKey(SumProductOptions.class, "sampledFactorScansPerSample",
-			SampledFactor.DEFAULT_SCANS_PER_SAMPLE, 1, Integer.MAX_VALUE);
-	
 }

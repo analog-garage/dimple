@@ -22,6 +22,8 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.NonNull;
@@ -57,17 +59,13 @@ import com.analog.lyric.util.misc.Nullable;
  */
 public class SampledFactor extends SFactorBase
 {
-	private int _samplesPerUpdate = DEFAULT_SAMPLES_PER_UPDATE;
-	private int _burnInScansPerUpdate = DEFAULT_BURN_IN_SCANS_PER_UPDATE;
-	private int _scansPerSample = DEFAULT_SCANS_PER_SAMPLE;
-	private MessageTranslatorBase[] _messageTranslator;
-	private VariableBase[] _privateVariables;
-	private FactorGraph _messageGraph;
-	private com.analog.lyric.dimple.solvers.gibbs.SFactorGraph _solverGraph;
+	private final MessageTranslatorBase[] _messageTranslator;
+	private final VariableBase[] _privateVariables;
+	private final FactorGraph _messageGraph;
+	
 	public final static int DEFAULT_SAMPLES_PER_UPDATE = 1000;
 	public final static int DEFAULT_BURN_IN_SCANS_PER_UPDATE = 10;
 	public final static int DEFAULT_SCANS_PER_SAMPLE = 1;
-
 	
 	public SampledFactor(Factor factor)
 	{
@@ -98,7 +96,8 @@ public class SampledFactor extends SFactorBase
 		
 		// Create a private message graph on which the Gibbs sampler will be run
 		_messageGraph = new FactorGraph();
-		_solverGraph = _messageGraph.createSolver(new com.analog.lyric.dimple.solvers.gibbs.Solver());
+		_messageGraph.setSolverFactory(new GibbsSolver());
+		_messageGraph.setEventAndOptionParent(this); // inherit options from this solver graph
 		_messageGraph.addFactor(factor.getFactorFunction(), _privateVariables);
 	}
 	
@@ -106,9 +105,6 @@ public class SampledFactor extends SFactorBase
 	public void doUpdateEdge(int outPortNum)
 	{
 		int numSiblings = _factor.getSiblingCount();
-		_solverGraph.setNumSamples(_samplesPerUpdate);
-		_solverGraph.setBurnInScans(_burnInScansPerUpdate);
-		_solverGraph.setScansPerSample(_scansPerSample);
 		
 		// Set inputs of the message-graph variables to the incoming message value; all except the output variable
 		for (int edge = 0; edge < numSiblings; edge++)
@@ -135,31 +131,64 @@ public class SampledFactor extends SFactorBase
 	}
 	
 	
-	// Set/get operating parameters
+	/**
+	 * @deprecated Will be removed in a future release. Instead set {@link GibbsOptions#numSamples} option
+	 * on this object using {@link #setOption}.
+	 */
+	@Deprecated
 	public void setSamplesPerUpdate(int numSamples)
 	{
-		_samplesPerUpdate = numSamples;
+		setOption(GibbsOptions.numSamples, numSamples);
 	}
+
+	/**
+	 * @deprecated Will be removed in a future release. Instead get {@link GibbsOptions#numSamples} option
+	 * from this object using {@link #getOption}.
+	 */
+	@Deprecated
 	public int getSamplesPerUpdate()
 	{
-		return _samplesPerUpdate;
-	}
-	public void setBurnInScansPerUpdate(int burnInScansPerUpdate)
-	{
-		_burnInScansPerUpdate = burnInScansPerUpdate;
-	}
-	public int getBurnInScansPerUpdate()
-	{
-		return _burnInScansPerUpdate;
-	}
-	public void setScansPerSample(int scansPerSample)
-	{
-		_scansPerSample = scansPerSample;
+		return getOptionOrDefault(GibbsOptions.numSamples);
 	}
 	
+	/**
+	 * @deprecated Will be removed in a future release. Instead set {@link GibbsOptions#burnInScans} option
+	 * on this object using {@link #setOption}.
+	 */
+	@Deprecated
+	public void setBurnInScansPerUpdate(int burnInScansPerUpdate)
+	{
+		setOption(GibbsOptions.burnInScans, burnInScansPerUpdate);
+	}
+
+	/**
+	 * @deprecated Will be removed in a future release. Instead get {@link GibbsOptions#burnInScans} option
+	 * from this object using {@link #getOption}.
+	 */
+	@Deprecated
+	public int getBurnInScansPerUpdate()
+	{
+		return getOptionOrDefault(GibbsOptions.burnInScans);
+	}
+	
+	/**
+	 * @deprecated Will be removed in a future release. Instead set {@link GibbsOptions#scansPerSample} option
+	 * on this object using {@link #setOption}.
+	 */
+	@Deprecated
+	public void setScansPerSample(int scansPerSample)
+	{
+		setOption(GibbsOptions.scansPerSample, scansPerSample);
+	}
+	
+	/**
+	 * @deprecated Will be removed in a future release. Instead get {@link GibbsOptions#scansPerSample} option
+	 * from this object using {@link #getOption}.
+	 */
+	@Deprecated
 	public int getScansPerSample()
 	{
-		return _scansPerSample;
+		return getOptionOrDefault(GibbsOptions.scansPerSample);
 	}
 
 	
