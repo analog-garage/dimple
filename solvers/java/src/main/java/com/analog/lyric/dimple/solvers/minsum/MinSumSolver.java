@@ -19,14 +19,10 @@ package com.analog.lyric.dimple.solvers.minsum;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.core.SolverBase;
 
-/**
- * 
- * @since 0.05
- * @author Christopher Barber
- */
-public class MinSumSolver extends SolverBase<SFactorGraph>
+public class MinSumSolver extends SolverBase<MinSumSolverGraph>
 {
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public SFactorGraph createFactorGraph(FactorGraph factorGraph)
 	{

@@ -123,7 +123,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	@Override
 	public void updateNeighborVariableValue(int variableIndex, Value oldValue)
 	{
-		((SFactorGraph)requireNonNull(getRootGraph())).scheduleDeterministicDirectedUpdate(this, variableIndex, oldValue);
+		((GibbsSolverGraph)requireNonNull(getRootGraph())).scheduleDeterministicDirectedUpdate(this, variableIndex, oldValue);
 	}
 	
 	@Override

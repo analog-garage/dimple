@@ -48,7 +48,7 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
-import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.test.DimpleTestBase;
@@ -171,7 +171,7 @@ public class TestDimpleEventListener extends DimpleTestBase
 		Factor f1 = subgraph.getFactorByName("normal");
 		assertNotNull(f1);
 		
-		SFactorGraph sgraph = model.setSolverFactory(new GibbsSolver());
+		GibbsSolverGraph sgraph = model.setSolverFactory(new GibbsSolver());
 		ISolverVariableGibbs sv1 = sgraph.getSolverVariable(v1);
 		assertNotNull(sv1);
 		

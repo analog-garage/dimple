@@ -24,7 +24,7 @@ import org.junit.Test;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.lp.LPOptions;
 import com.analog.lyric.dimple.solvers.lp.LPSolver;
-import com.analog.lyric.dimple.solvers.lp.SFactorGraph;
+import com.analog.lyric.dimple.solvers.lp.LPSolverGraph;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
 /**
@@ -46,7 +46,7 @@ public class TestLPOptions extends DimpleTestBase
 		LPOptions.LPSolver.set(fg, "GLPK");
 		LPOptions.MatlabLPSolver.set(fg, "glpkIP");
 		
-		SFactorGraph sfg = requireNonNull(fg.setSolverFactory(new LPSolver()));
+		LPSolverGraph sfg = requireNonNull(fg.setSolverFactory(new LPSolver()));
 		
 		assertEquals("GLPK", LPOptions.LPSolver.get(sfg));
 		assertEquals("glpkIP", LPOptions.MatlabLPSolver.get(sfg));

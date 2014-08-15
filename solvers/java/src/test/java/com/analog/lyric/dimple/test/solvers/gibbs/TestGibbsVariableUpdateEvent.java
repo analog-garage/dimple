@@ -43,7 +43,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsScoredVariableUpdateEvent;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsVariableUpdateEvent;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
-import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.util.misc.Nullable;
 
@@ -150,7 +150,7 @@ public class TestGibbsVariableUpdateEvent extends DimpleTestBase
 		Factor frc = model.addFactor(function, r1, c1);
 		Factor fcd = model.addFactor(function, c1, d1);
 		
-		SFactorGraph sgraph = requireNonNull(model.setSolverFactory(new GibbsSolver()));
+		GibbsSolverGraph sgraph = requireNonNull(model.setSolverFactory(new GibbsSolver()));
 		ISolverVariableGibbs sd1 = Objects.requireNonNull(sgraph.getSolverVariable(d1));
 		ISolverVariableGibbs sr1 = Objects.requireNonNull(sgraph.getSolverVariable(r1));
 		ISolverVariableGibbs sc1 = Objects.requireNonNull(sgraph.getSolverVariable(c1));

@@ -27,7 +27,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
-import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
@@ -49,7 +49,7 @@ public class RealVariableGibbsTest extends DimpleTestBase
 
 		FactorGraph graph = new FactorGraph();
 		graph.setSolverFactory(new com.analog.lyric.dimple.solvers.gibbs.Solver());
-		SFactorGraph solver = (SFactorGraph)graph.getSolver();
+		GibbsSolverGraph solver = (GibbsSolverGraph)graph.getSolver();
 		solver.setNumSamples(numSamples);
 		solver.setUpdatesPerSample(updatesPerSample);
 		solver.setBurnInUpdates(burnInUpdates);
@@ -123,7 +123,7 @@ public class RealVariableGibbsTest extends DimpleTestBase
 
 		FactorGraph graph = new FactorGraph();
 		graph.setSolverFactory(new com.analog.lyric.dimple.solvers.gibbs.Solver());
-		SFactorGraph solver = requireNonNull((SFactorGraph)graph.getSolver());
+		GibbsSolverGraph solver = requireNonNull((GibbsSolverGraph)graph.getSolver());
 		solver.setNumSamples(numSamples);
 		solver.setUpdatesPerSample(updatesPerSample);
 		solver.setBurnInUpdates(burnInUpdates);

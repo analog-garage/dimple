@@ -48,7 +48,7 @@ public class GibbsOptions extends SolverOptions
 	 * The number of samples to generate per restart in Gibbs solver.
 	 * <p>
 	 * This multiplied by {@link #numRandomRestarts} plus one specifies the number of samples that
-	 * will be produced in a call to {@linkplain SFactorGraph#solveOneStep solveOneStep}.
+	 * will be produced in a call to {@linkplain GibbsSolverGraph#solveOneStep solveOneStep}.
 	 * <p>
 	 * The default value is one.
 	 * <p>
@@ -73,7 +73,7 @@ public class GibbsOptions extends SolverOptions
 	 * The number of times to randomly restart during one round of Gibbs sampling.
 	 * <p>
 	 * This is the number of additional times to randomly reinitialize the graph, run burn in, and generate
-	 * samples during one invocation of {@linkplain SFactorGraph#solveOneStep() solveOneStep}
+	 * samples during one invocation of {@linkplain GibbsSolverGraph#solveOneStep() solveOneStep}
 	 * in the Gibbs solver.
 	 * <p>
 	 * This number plus one multiplied by the value set for {@link #numSamples} determines the actual number

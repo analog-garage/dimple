@@ -35,7 +35,7 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
-import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.util.misc.Misc;
 import com.analog.lyric.util.misc.Nullable;
@@ -146,8 +146,8 @@ public class TestJunctionTreeTransform extends DimpleTestBase
 		final FactorGraph target = transformMap.target();
 		
 		GibbsSolver gibbs = new GibbsSolver();
-		SFactorGraph sourceGibbs = source.setSolverFactory(gibbs);
-		SFactorGraph targetGibbs = target.setSolverFactory(gibbs);
+		GibbsSolverGraph sourceGibbs = source.setSolverFactory(gibbs);
+		GibbsSolverGraph targetGibbs = target.setSolverFactory(gibbs);
 		
 		final int nSamples = 100;
 		

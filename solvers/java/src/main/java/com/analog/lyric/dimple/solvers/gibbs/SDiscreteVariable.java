@@ -432,7 +432,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	public void postAddFactor(@Nullable Factor f)
 	{
 		// Set the default sampler
-		_defaultSamplerName = ((SFactorGraph)_var.getRootGraph().getSolver()).getDefaultDiscreteSampler();
+		_defaultSamplerName = ((GibbsSolverGraph)_var.getRootGraph().getSolver()).getDefaultDiscreteSampler();
 	}
 	
     @Override
@@ -838,7 +838,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		final IntArrayList sampleIndexArray = _sampleIndexArray;
 		if (sampleIndexArray != null)
 			sampleIndexArray.clear();
-		else if (((SFactorGraph)requireNonNull(requireNonNull(_var.getRootGraph()).getSolver())).isSavingAllSamplesEnabled())
+		else if (((GibbsSolverGraph)requireNonNull(requireNonNull(_var.getRootGraph()).getSolver())).isSavingAllSamplesEnabled())
 			saveAllSamples();
 
 		Arrays.fill(_beliefHistogram, 0);

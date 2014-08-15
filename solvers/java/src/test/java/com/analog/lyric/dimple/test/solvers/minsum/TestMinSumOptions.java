@@ -29,7 +29,7 @@ import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.minsum.MinSumOptions;
 import com.analog.lyric.dimple.solvers.minsum.MinSumSolver;
-import com.analog.lyric.dimple.solvers.minsum.SFactorGraph;
+import com.analog.lyric.dimple.solvers.minsum.MinSumSolverGraph;
 import com.analog.lyric.dimple.solvers.minsum.STableFactor;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
@@ -61,7 +61,7 @@ public class TestMinSumOptions extends DimpleTestBase
 		Factor f2 = fg.addFactor(new And(), vars);
 		
 		// Check initial defaults
-		SFactorGraph sfg = requireNonNull(fg.setSolverFactory(new MinSumSolver()));
+		MinSumSolverGraph sfg = requireNonNull(fg.setSolverFactory(new MinSumSolver()));
 		assertEquals(0.0, sfg.getDamping(), 0.0);
 		STableFactor sf1 = (STableFactor)requireNonNull(f1.getSolver());
 		assertEquals(0, sf1.getK());

@@ -536,7 +536,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	public void postAddFactor(@Nullable Factor f)
 	{
 		// Set the default sampler
-		_defaultSamplerName = ((SFactorGraph)_var.getRootGraph().getSolver()).getDefaultRealSampler();
+		_defaultSamplerName = ((GibbsSolverGraph)_var.getRootGraph().getSolver()).getDefaultRealSampler();
 	}
 
 	@Override
@@ -963,7 +963,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		final ArrayList<double[]> sampleArray = _sampleArray;
 		if (sampleArray != null)
 			sampleArray.clear();
-		else if (((SFactorGraph)requireNonNull(requireNonNull(_var.getRootGraph()).getSolver())).isSavingAllSamplesEnabled())
+		else if (((GibbsSolverGraph)requireNonNull(requireNonNull(_var.getRootGraph()).getSolver())).isSavingAllSamplesEnabled())
 			saveAllSamples();
 		
 		// Determine which sampler to use

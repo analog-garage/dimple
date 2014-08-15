@@ -44,7 +44,7 @@ public class SVariable extends SDiscreteVariableBase
 	/**
 	 * The LP solver factor graph that owns this instance.
 	 */
-	private final SFactorGraph _solverGraph;
+	private final LPSolverGraph _solverGraph;
 	
 	/**
 	 * The index of the first marginal LP variable associated with the model variable.
@@ -77,7 +77,7 @@ public class SVariable extends SDiscreteVariableBase
 	 * Construction
 	 */
 
-	SVariable(SFactorGraph solverGraph, Discrete var)
+	SVariable(LPSolverGraph solverGraph, Discrete var)
 	{
 		super(var);
 		_solverGraph = solverGraph;
@@ -118,7 +118,7 @@ public class SVariable extends SDiscreteVariableBase
 	 * if the solver on the associated model variable has changed.
 	 */
 	@Override
-	public SFactorGraph getParentGraph()
+	public LPSolverGraph getParentGraph()
 	{
 		return _solverGraph;
 	}

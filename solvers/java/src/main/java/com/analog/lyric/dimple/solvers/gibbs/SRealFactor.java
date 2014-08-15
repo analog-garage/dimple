@@ -131,7 +131,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	@Override
 	public void updateNeighborVariableValue(int variableIndex, Value oldValue)
 	{
-		((SFactorGraph)getRootGraph()).scheduleDeterministicDirectedUpdate(this, variableIndex, oldValue);
+		((GibbsSolverGraph)getRootGraph()).scheduleDeterministicDirectedUpdate(this, variableIndex, oldValue);
 	}
 	
 	@Override

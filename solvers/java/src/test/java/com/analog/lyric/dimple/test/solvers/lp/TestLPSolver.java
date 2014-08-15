@@ -31,7 +31,7 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.solvers.lp.SFactorGraph;
+import com.analog.lyric.dimple.solvers.lp.LPSolverGraph;
 import com.analog.lyric.dimple.solvers.lp.Solver;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
@@ -95,7 +95,7 @@ public class TestLPSolver extends DimpleTestBase
 		RealDomain realDomain = new RealDomain(0.0, 1.0);
 		FactorGraph fg0 = new FactorGraph();
 		fg0.setSolverFactory(new Solver());
-		assertTrue(fg0.getSolver() instanceof SFactorGraph);
+		assertTrue(fg0.getSolver() instanceof LPSolverGraph);
 		Real real1 = new Real(realDomain);
 		real1.setName("real1");
 		try
@@ -261,7 +261,7 @@ public class TestLPSolver extends DimpleTestBase
 		y.setInput(.2, .8);
 		z.setInput(.6, .3);
 
-		SFactorGraph solver = new Solver().createFactorGraph(fg1);
+		LPSolverGraph solver = new Solver().createFactorGraph(fg1);
 		solver.setLPSolverName("GLPK");
 		solver.solve();
 	}

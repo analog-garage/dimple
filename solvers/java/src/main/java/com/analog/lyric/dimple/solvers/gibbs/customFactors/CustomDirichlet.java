@@ -27,7 +27,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
-import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockInitializer;
@@ -100,7 +100,7 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 		determineConstantsAndEdges();
 		
 		// Create a block initializer to initialize the neighboring variables
-		((SFactorGraph)_factor.getRootGraph().getSolver()).addBlockInitializer(new CustomDirichlet.BlockInitializer());
+		((GibbsSolverGraph)_factor.getRootGraph().getSolver()).addBlockInitializer(new CustomDirichlet.BlockInitializer());
 	}
 	
 	

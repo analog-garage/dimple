@@ -19,11 +19,9 @@ package com.analog.lyric.dimple.solvers.particleBP;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.core.SolverBase;
 
-/**
- * @since 0.05
- */
-public class ParticleBPSolver extends SolverBase<SFactorGraph>
+public class ParticleBPSolver extends SolverBase<ParticleBPSolverGraph>
 {
+	@SuppressWarnings("deprecation")
 	@Override
 	public SFactorGraph createFactorGraph(FactorGraph factorGraph)
 	{

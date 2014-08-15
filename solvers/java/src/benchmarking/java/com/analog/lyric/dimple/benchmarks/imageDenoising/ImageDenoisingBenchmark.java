@@ -41,7 +41,7 @@ public class ImageDenoisingBenchmark
 	{
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.gibbs.Solver());
-		com.analog.lyric.dimple.solvers.gibbs.SFactorGraph solver = (com.analog.lyric.dimple.solvers.gibbs.SFactorGraph) fg
+		com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph solver = (com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph) fg
 				.getSolver();
 		solver.setNumSamples(1600);
 

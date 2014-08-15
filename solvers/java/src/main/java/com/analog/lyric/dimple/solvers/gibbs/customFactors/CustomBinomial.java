@@ -28,7 +28,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
-import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockInitializer;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaSampler;
@@ -113,7 +113,7 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 		determineConstantsAndEdges();
 		
 		// Create a block initializer to initialize the neighboring variables
-		((SFactorGraph)_factor.getRootGraph().getSolver()).addBlockInitializer(new CustomBinomial.BlockInitializer());
+		((GibbsSolverGraph)_factor.getRootGraph().getSolver()).addBlockInitializer(new CustomBinomial.BlockInitializer());
 	}
 	
 	

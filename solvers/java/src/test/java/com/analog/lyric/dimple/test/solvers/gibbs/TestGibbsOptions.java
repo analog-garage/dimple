@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
-import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
 /**
@@ -52,7 +52,7 @@ public class TestGibbsOptions extends DimpleTestBase
 		int nVars = fg.getVariableCount();
 		
 		// Test default initialization
-		SFactorGraph sfg = requireNonNull(fg.setSolverFactory(new GibbsSolver()));
+		GibbsSolverGraph sfg = requireNonNull(fg.setSolverFactory(new GibbsSolver()));
 		
 		assertEquals(GibbsOptions.numSamples.defaultIntValue(), sfg.getNumSamples());
 		assertEquals(GibbsOptions.numRandomRestarts.defaultIntValue(), sfg.getNumRestarts());

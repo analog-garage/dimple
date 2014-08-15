@@ -36,7 +36,7 @@ import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
-import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHSampler;
@@ -195,7 +195,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 		}
 			
 		// Use the block sampler to initialize the neighboring variables
-		((SFactorGraph)rootGraph.getSolver()).addBlockInitializer(blockSampler);
+		((GibbsSolverGraph)rootGraph.getSolver()).addBlockInitializer(blockSampler);
 	}
 	
 	

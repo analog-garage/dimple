@@ -45,7 +45,7 @@ public class STableFactor extends STableFactorBase
 	/**
 	 * The LP solver factor graph that owns this instance.
 	 */
-	private final SFactorGraph _solverGraph;
+	private final LPSolverGraph _solverGraph;
 	
 	/**
 	 * The index of the first LP variable associated with the model factor.
@@ -76,7 +76,7 @@ public class STableFactor extends STableFactorBase
 	 * Construction
 	 */
 	
-	STableFactor(SFactorGraph solverGraph, DiscreteFactor factor)
+	STableFactor(LPSolverGraph solverGraph, DiscreteFactor factor)
 	{
 		super(factor);
 		_solverGraph = solverGraph;
@@ -99,7 +99,7 @@ public class STableFactor extends STableFactorBase
 	 * if the solver on the associated model variable has changed.
 	 */
 	@Override
-	public SFactorGraph getParentGraph()
+	public LPSolverGraph getParentGraph()
 	{
 		return _solverGraph;
 	}

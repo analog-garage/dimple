@@ -19,13 +19,13 @@ package com.analog.lyric.dimple.solvers.junctiontreemap;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolverBase;
 import com.analog.lyric.dimple.solvers.minsum.MinSumSolver;
-import com.analog.lyric.dimple.solvers.minsum.SFactorGraph;
+import com.analog.lyric.dimple.solvers.minsum.MinSumSolverGraph;
 
 /**
  * @since 0.05
  * @author Christopher Barber
  */
-public class JunctionTreeMAPSolver extends JunctionTreeSolverBase<SFactorGraph, JunctionTreeMAPSolverGraph>
+public class JunctionTreeMAPSolver extends JunctionTreeSolverBase<MinSumSolverGraph, JunctionTreeMAPSolverGraph>
 {
 	@Override
 	public JunctionTreeMAPSolverGraph createFactorGraph(FactorGraph graph)

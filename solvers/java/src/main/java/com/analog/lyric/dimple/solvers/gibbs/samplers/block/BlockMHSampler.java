@@ -33,7 +33,7 @@ import com.analog.lyric.dimple.solvers.core.proposalKernels.IBlockProposalKernel
 import com.analog.lyric.dimple.solvers.gibbs.GibbsNeighbors;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverNodeGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
-import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.util.misc.NonNull;
 import com.analog.lyric.util.misc.Nullable;
@@ -47,7 +47,7 @@ public class BlockMHSampler implements IBlockSampler, IBlockInitializer
 	private @Nullable IBlockProposalKernel _proposalKernel;
 	private VariableBase[] _variables = new VariableBase[0];
 	private @Nullable ISolverVariableGibbs[] _sVariables;
-	private @Nullable SFactorGraph _sRootGraph;
+	private @Nullable GibbsSolverGraph _sRootGraph;
 	private @Nullable Domain[] _domains;
 	private int _numVariables = 0;
 	private @Nullable Set<ISolverNodeGibbs> _neighbors;
@@ -77,7 +77,7 @@ public class BlockMHSampler implements IBlockSampler, IBlockInitializer
 			sVariables[i] = (ISolverVariableGibbs)variable.getSolver();
 			domains[i] = variable.getDomain();
 		}
-		_sRootGraph = (SFactorGraph)sVariables[0].getRootGraph();
+		_sRootGraph = (GibbsSolverGraph)sVariables[0].getRootGraph();
 		
 		// Pre-determine neighbors that will need to be scored
 		final Set<ISolverNodeGibbs> neighborSet = _neighbors = new HashSet<ISolverNodeGibbs>();
@@ -205,7 +205,7 @@ public class BlockMHSampler implements IBlockSampler, IBlockInitializer
 	{
 		if (_numVariables > 0)
 		{
-			final SFactorGraph sRootGraph = Objects.requireNonNull(_sRootGraph);
+			final GibbsSolverGraph sRootGraph = Objects.requireNonNull(_sRootGraph);
 			final ISolverVariableGibbs[] sVariables = Objects.requireNonNull(_sVariables);
 			sRootGraph.deferDeterministicUpdates();
 			for (int i = 0; i < _numVariables; i++)

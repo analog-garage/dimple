@@ -30,7 +30,7 @@ import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
-import com.analog.lyric.dimple.solvers.minsum.SFactorGraph;
+import com.analog.lyric.dimple.solvers.minsum.MinSumSolverGraph;
 import com.analog.lyric.dimple.solvers.minsum.Solver;
 import com.analog.lyric.util.test.Helpers;
 
@@ -48,7 +48,7 @@ public class ScheduleTest extends DimpleTestBase
 		int iterations = 1;
 
 		FactorGraph fg = new FactorGraph();
-		SFactorGraph solver = fg.createSolver(new Solver());
+		MinSumSolverGraph solver = fg.createSolver(new Solver());
 		fg.setName(tag);
 		solver.setNumIterations(iterations);
 

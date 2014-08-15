@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
-import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.STableFactor;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
@@ -44,7 +44,7 @@ public class GibbsTest extends DimpleTestBase
 
 		FactorGraph graph = new FactorGraph();
 		graph.setSolverFactory(new com.analog.lyric.dimple.solvers.gibbs.Solver());
-		SFactorGraph solver = (SFactorGraph)graph.getSolver();
+		GibbsSolverGraph solver = (GibbsSolverGraph)graph.getSolver();
 		solver.setNumSamples(numSamples);
 		solver.setUpdatesPerSample(updatesPerSample);
 		solver.setBurnInUpdates(burnInUpdates);

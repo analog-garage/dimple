@@ -21,7 +21,7 @@ import com.analog.lyric.dimple.solvers.core.SolverBase;
 import com.analog.lyric.util.misc.Nullable;
 
 
-public class Solver extends SolverBase<SFactorGraph>
+public class Solver extends SolverBase<GibbsSolverGraph>
 {
 	@Deprecated
 	protected final @Nullable SFactorGraph.Arguments _factorGraphConfig;
@@ -56,6 +56,7 @@ public class Solver extends SolverBase<SFactorGraph>
 		_factorGraphConfig = config;
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public SFactorGraph createFactorGraph(FactorGraph graph)
 	{

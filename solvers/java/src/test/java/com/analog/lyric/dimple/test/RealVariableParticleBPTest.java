@@ -29,7 +29,7 @@ import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.solvers.particleBP.SFactorGraph;
+import com.analog.lyric.dimple.solvers.particleBP.ParticleBPSolverGraph;
 import com.analog.lyric.dimple.solvers.particleBP.SRealVariable;
 
 // TODO: move to particleBP test directory
@@ -51,7 +51,7 @@ public class RealVariableParticleBPTest extends DimpleTestBase
 
 		FactorGraph graph = new FactorGraph();
 		graph.setSolverFactory(new com.analog.lyric.dimple.solvers.particleBP.Solver());
-		SFactorGraph solver = (SFactorGraph)graph.getSolver();
+		ParticleBPSolverGraph solver = (ParticleBPSolverGraph)graph.getSolver();
 		solver.setNumIterations(numIterations);
 		solver.setNumParticles(numParticlesPerRealVariable);
 		solver.setResamplingUpdatesPerParticle(numResamplingUpdatesPerParticle);
@@ -190,7 +190,7 @@ public class RealVariableParticleBPTest extends DimpleTestBase
 
 		FactorGraph graph = new FactorGraph();
 		graph.setSolverFactory(new com.analog.lyric.dimple.solvers.particleBP.Solver());
-		SFactorGraph solver = (SFactorGraph)graph.getSolver();
+		ParticleBPSolverGraph solver = (ParticleBPSolverGraph)graph.getSolver();
 		solver.setNumIterations(numIterations);
 		solver.setNumParticles(numParticlesPerRealVariable);
 		solver.setResamplingUpdatesPerParticle(numResamplingUpdatesPerParticle);
@@ -298,7 +298,7 @@ public class RealVariableParticleBPTest extends DimpleTestBase
 
 		FactorGraph graph = new FactorGraph();
 		graph.setSolverFactory(new com.analog.lyric.dimple.solvers.particleBP.Solver());
-		SFactorGraph solver = (SFactorGraph)graph.getSolver();
+		ParticleBPSolverGraph solver = (ParticleBPSolverGraph)graph.getSolver();
 		solver.setNumIterations(numIterations);
 		solver.setNumParticles(numParticlesPerRealVariable);
 
@@ -375,7 +375,7 @@ public class RealVariableParticleBPTest extends DimpleTestBase
 
 		FactorGraph graph = new FactorGraph();
 		graph.setSolverFactory(new com.analog.lyric.dimple.solvers.particleBP.Solver());
-		SFactorGraph solver = requireNonNull((SFactorGraph)graph.getSolver());
+		ParticleBPSolverGraph solver = requireNonNull((ParticleBPSolverGraph)graph.getSolver());
 		solver.setNumIterations(numIterations);
 
 		double aPriorMean = 1;

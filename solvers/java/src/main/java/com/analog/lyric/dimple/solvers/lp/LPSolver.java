@@ -25,7 +25,7 @@ import com.analog.lyric.util.misc.Matlab;
  * @since 0.07
  * @author Christopher Barber
  */
-public class LPSolver extends SolverBase<SFactorGraph>
+public class LPSolver extends SolverBase<LPSolverGraph>
 {
 	/*--------------
 	 * Construction
@@ -40,6 +40,7 @@ public class LPSolver extends SolverBase<SFactorGraph>
 	 * IFactorGraphFactory methods
 	 */
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public SFactorGraph createFactorGraph(FactorGraph factorGraph)
 	{

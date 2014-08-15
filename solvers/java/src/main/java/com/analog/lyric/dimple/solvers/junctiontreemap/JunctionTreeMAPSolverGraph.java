@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.solvers.junctiontreemap;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolverGraphBase;
-import com.analog.lyric.dimple.solvers.minsum.SFactorGraph;
+import com.analog.lyric.dimple.solvers.minsum.MinSumSolverGraph;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
@@ -27,7 +27,7 @@ import com.analog.lyric.util.misc.Nullable;
  * @since 0.05
  * @author Christopher Barber
  */
-public class JunctionTreeMAPSolverGraph extends JunctionTreeSolverGraphBase<SFactorGraph>
+public class JunctionTreeMAPSolverGraph extends JunctionTreeSolverGraphBase<MinSumSolverGraph>
 {
 	private final @Nullable JunctionTreeMAPSolverGraph _parent;
 	private final JunctionTreeMAPSolverGraph _root;

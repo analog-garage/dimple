@@ -35,7 +35,7 @@ import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
-import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHSampler;
@@ -179,7 +179,7 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 		}
 			
 		// Use the block sampler to initialize the neighboring variables
-		((SFactorGraph)rootGraph.requireSolver("initialize")).addBlockInitializer(blockSampler);
+		((GibbsSolverGraph)rootGraph.requireSolver("initialize")).addBlockInitializer(blockSampler);
 	}
 	
 	

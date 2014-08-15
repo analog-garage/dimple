@@ -35,7 +35,7 @@ public class hmmBenchmark
 	{
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.gibbs.Solver());
-		com.analog.lyric.dimple.solvers.gibbs.SFactorGraph solver = (com.analog.lyric.dimple.solvers.gibbs.SFactorGraph) fg
+		com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph solver = (com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph) fg
 				.getSolver();
 		solver.setNumSamples(600000); // Aiming for ~1s execution time
 
@@ -51,7 +51,7 @@ public class hmmBenchmark
 	{
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.gibbs.Solver());
-		com.analog.lyric.dimple.solvers.gibbs.SFactorGraph solver = (com.analog.lyric.dimple.solvers.gibbs.SFactorGraph) fg
+		com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph solver = (com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph) fg
 				.getSolver();
 		solver.setNumSamples(300); // Aiming for ~1s execution time
 
@@ -67,7 +67,7 @@ public class hmmBenchmark
 	{
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.gibbs.Solver());
-		com.analog.lyric.dimple.solvers.gibbs.SFactorGraph solver = (com.analog.lyric.dimple.solvers.gibbs.SFactorGraph) fg
+		com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph solver = (com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph) fg
 				.getSolver();
 		solver.setNumSamples(1500); // Aiming for ~1s execution time
 

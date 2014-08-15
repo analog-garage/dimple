@@ -34,7 +34,7 @@ public class StereoVisionBenchmark
 	{
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.gibbs.Solver());
-		com.analog.lyric.dimple.solvers.gibbs.SFactorGraph solver = (com.analog.lyric.dimple.solvers.gibbs.SFactorGraph)fg.getSolver();
+		com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph solver = (com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph)fg.getSolver();
 		solver.setNumSamples(400);
 		depthInference(fg, "art_scaled", 75, "gibbs");
 		return false;

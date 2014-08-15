@@ -37,7 +37,7 @@ import com.analog.lyric.dimple.solvers.lp.IntegerEquation;
 import com.analog.lyric.dimple.solvers.lp.LPFactorMarginalConstraint;
 import com.analog.lyric.dimple.solvers.lp.LPVariableConstraint;
 import com.analog.lyric.dimple.solvers.lp.MatlabConstraintTermIterator;
-import com.analog.lyric.dimple.solvers.lp.SFactorGraph;
+import com.analog.lyric.dimple.solvers.lp.LPSolverGraph;
 import com.analog.lyric.dimple.solvers.lp.STableFactor;
 import com.analog.lyric.dimple.solvers.lp.SVariable;
 import com.analog.lyric.dimple.solvers.lp.Solver;
@@ -50,7 +50,7 @@ public class LPSolverTestCase extends DimpleTestBase
 	public final FactorGraph model;
 	public @Nullable String[] expectedConstraints = null;
 
-	public final SFactorGraph solver;
+	public final LPSolverGraph solver;
 	
 	public LPSolverTestCase(FactorGraph model)
 	{

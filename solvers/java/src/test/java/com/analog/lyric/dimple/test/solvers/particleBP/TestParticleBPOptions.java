@@ -29,7 +29,7 @@ import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.particleBP.ParticleBPOptions;
 import com.analog.lyric.dimple.solvers.particleBP.ParticleBPSolver;
-import com.analog.lyric.dimple.solvers.particleBP.SFactorGraph;
+import com.analog.lyric.dimple.solvers.particleBP.ParticleBPSolverGraph;
 import com.analog.lyric.dimple.solvers.particleBP.SRealVariable;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
@@ -62,7 +62,7 @@ public class TestParticleBPOptions extends DimpleTestBase
 		fg.addVariables(r1, r2);
 		
 		// Test default initialization on graph
-		SFactorGraph sfg = requireNonNull(fg.setSolverFactory(new ParticleBPSolver()));
+		ParticleBPSolverGraph sfg = requireNonNull(fg.setSolverFactory(new ParticleBPSolver()));
 		SRealVariable sr1 = (SRealVariable)sfg.getSolverVariable(r1);
 		SRealVariable sr2 = (SRealVariable)sfg.getSolverVariable(r2);
 		sfg.initialize();
