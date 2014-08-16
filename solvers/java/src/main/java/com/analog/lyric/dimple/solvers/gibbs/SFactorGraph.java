@@ -20,7 +20,7 @@ import static java.util.Objects.*;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.options.IOptionHolder;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * @deprecated Will be removed in future release. Use {@link GibbsSolverGraph} instead.

@@ -36,7 +36,7 @@ import com.analog.lyric.dimple.model.variables.VariableChangeEvent;
 import com.analog.lyric.dimple.model.variables.VariableFixedValueChangeEvent;
 import com.analog.lyric.dimple.model.variables.VariableInputChangeEvent;
 import com.analog.lyric.dimple.test.DimpleTestBase;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Test for {@link VariableChangeEvent}s on {@link VariableBase}.

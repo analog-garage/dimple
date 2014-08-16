@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.math.DimpleRandomGenerator;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class NormalSampler implements IRealConjugateSampler
 {

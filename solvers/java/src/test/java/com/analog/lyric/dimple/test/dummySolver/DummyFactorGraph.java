@@ -24,7 +24,7 @@ import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class DummyFactorGraph extends SFactorGraphBase
 {

@@ -28,7 +28,7 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
 import com.analog.lyric.math.DimpleRandomGenerator;
-import com.analog.lyric.util.misc.NonNull;
+import org.eclipse.jdt.annotation.NonNull;
 
 /**
  * @author jeffb

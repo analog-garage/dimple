@@ -23,7 +23,7 @@ import java.util.RandomAccess;
 
 import net.jcip.annotations.Immutable;
 
-import com.analog.lyric.util.misc.NonNullByDefault;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
  * Base implementation for list option values.

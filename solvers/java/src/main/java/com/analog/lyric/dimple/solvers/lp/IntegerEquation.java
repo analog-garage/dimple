@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.lp;
 
 import java.io.PrintStream;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 
 /**

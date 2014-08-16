@@ -37,8 +37,8 @@ import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.VariableBase;
-import com.analog.lyric.util.misc.NonNull;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Represents the neighbors of a {@link ISolverVariableGibbs} that need to be included in the variable's

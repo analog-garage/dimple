@@ -34,8 +34,8 @@ import com.analog.lyric.collect.Supers;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.util.misc.NonNullByDefault;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Provides a representation and canonical indexing operations for an ordered list of

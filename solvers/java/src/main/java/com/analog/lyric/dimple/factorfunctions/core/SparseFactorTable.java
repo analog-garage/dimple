@@ -29,6 +29,8 @@ import java.util.Objects;
 import net.jcip.annotations.Immutable;
 import net.jcip.annotations.NotThreadSafe;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
@@ -37,9 +39,8 @@ import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer.Indices;
 import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.util.misc.NonNull;
-import com.analog.lyric.util.misc.NonNullByDefault;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import com.google.common.math.DoubleMath;
 
 /**

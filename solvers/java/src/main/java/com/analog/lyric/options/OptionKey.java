@@ -23,7 +23,7 @@ import java.lang.reflect.Field;
 import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Base implementation of {@link IOptionKey} interface.

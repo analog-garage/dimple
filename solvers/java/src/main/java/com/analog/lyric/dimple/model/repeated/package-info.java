@@ -12,4 +12,4 @@
  */
 @NonNullByDefault
 package com.analog.lyric.dimple.model.repeated;
-import com.analog.lyric.util.misc.NonNullByDefault;
+import org.eclipse.jdt.annotation.NonNullByDefault;

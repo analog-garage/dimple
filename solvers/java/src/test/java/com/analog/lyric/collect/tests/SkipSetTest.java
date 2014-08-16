@@ -25,7 +25,7 @@ import java.util.Random;
 import org.junit.Test;
 
 import com.analog.lyric.collect.SkipSet;
-import com.analog.lyric.util.misc.NonNullByDefault;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 public class SkipSetTest
 {

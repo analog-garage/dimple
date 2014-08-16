@@ -22,7 +22,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.util.misc.Matlab;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public interface ISolverFactorGraph extends ISolverNode
 {

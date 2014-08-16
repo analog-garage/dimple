@@ -21,6 +21,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 @NonNullByDefault(false)
 public class TrivialArgs
 {

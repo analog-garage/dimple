@@ -19,8 +19,8 @@ package com.analog.lyric.dimple.model.values;
 import static java.util.Objects.*;
 
 import com.analog.lyric.dimple.model.domains.RealDomain;
-import com.analog.lyric.util.misc.NonNull;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * A holder for a real (i.e. {@code double} value).

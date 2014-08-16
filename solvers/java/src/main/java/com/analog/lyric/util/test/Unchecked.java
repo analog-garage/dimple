@@ -16,8 +16,8 @@
 
 package com.analog.lyric.util.test;
 
-import com.analog.lyric.util.misc.NonNull;
-import com.analog.lyric.util.misc.NonNullByDefault;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
  * 

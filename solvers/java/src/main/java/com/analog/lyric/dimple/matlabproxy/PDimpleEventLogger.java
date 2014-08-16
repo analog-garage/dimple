@@ -27,7 +27,7 @@ import com.analog.lyric.dimple.events.DimpleEventLogger;
 import com.analog.lyric.dimple.events.IDimpleEventSource;
 import com.analog.lyric.dimple.events.StandardDimpleEvents;
 import com.analog.lyric.util.misc.Matlab;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Proxy wrapper for {@link DimpleEventLogger}.

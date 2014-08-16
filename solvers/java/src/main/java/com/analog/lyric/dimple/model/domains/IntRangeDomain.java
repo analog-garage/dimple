@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.model.domains;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * A discrete domain defined by a range of integers separated by a constant positive interval.

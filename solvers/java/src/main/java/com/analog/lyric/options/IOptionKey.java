@@ -21,8 +21,8 @@ import java.util.Comparator;
 
 import net.jcip.annotations.Immutable;
 
-import com.analog.lyric.util.misc.NonNullByDefault;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * A unique key for looking up or setting a value from a {@link IOptionHolder}.

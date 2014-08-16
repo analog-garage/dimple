@@ -21,7 +21,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class BlastFromThePastFactor extends Factor
 {

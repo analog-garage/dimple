@@ -38,7 +38,7 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessag
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 
 public class STableFactor extends STableFactorDoubleArray implements IKBestFactor

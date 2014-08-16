@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.matlabproxy;
 
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.util.misc.Matlab;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Base class for Dimple MATLAB proxy objects.

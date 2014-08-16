@@ -10,7 +10,6 @@
 /**
  * @author Jason King
  */
-@NonNullByDefault
+@org.eclipse.jdt.annotation.NonNullByDefault
 package com.analog.lyric.benchmarking.utils.doublespace;
-import com.analog.lyric.util.misc.NonNullByDefault;
 

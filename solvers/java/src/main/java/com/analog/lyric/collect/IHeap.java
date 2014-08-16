@@ -19,7 +19,7 @@ package com.analog.lyric.collect;
 import java.util.Collection;
 import java.util.Iterator;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Priority queue supporting dynamically changeable priorities of type double.

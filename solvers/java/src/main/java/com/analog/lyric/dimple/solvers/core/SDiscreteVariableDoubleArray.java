@@ -23,8 +23,8 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.util.misc.NonNull;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * @since 0.05

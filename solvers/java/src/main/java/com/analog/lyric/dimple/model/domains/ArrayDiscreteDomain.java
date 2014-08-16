@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Objects;
 
 import com.analog.lyric.collect.Supers;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class ArrayDiscreteDomain<Element> extends TypedDiscreteDomain<Element>
 {

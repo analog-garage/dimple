@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.learning;
 
 import java.util.Iterator;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class BasicTrainingSet implements ITrainingSet
 {

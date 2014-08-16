@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.core.proposalKernels;
 
 import java.util.ArrayList;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class BlockProposalKernelRegistry
 {

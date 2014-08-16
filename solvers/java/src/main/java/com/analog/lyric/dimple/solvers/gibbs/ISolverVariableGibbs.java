@@ -23,7 +23,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.ISamplerClient;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Internal;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable, ISamplerClient
 {

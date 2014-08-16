@@ -31,8 +31,8 @@ import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.util.misc.NonNull;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 {

@@ -18,11 +18,12 @@ package com.analog.lyric.dimple.model.serializerdetails;
 
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
-import com.analog.lyric.util.misc.Nullable;
 
 class xmlsFactorTable
 {

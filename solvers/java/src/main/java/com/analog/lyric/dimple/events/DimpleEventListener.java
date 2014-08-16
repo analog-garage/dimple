@@ -32,8 +32,8 @@ import net.jcip.annotations.ThreadSafe;
 
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.collect.Supers;
-import com.analog.lyric.util.misc.NonNullByDefault;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.MapMaker;
 
 

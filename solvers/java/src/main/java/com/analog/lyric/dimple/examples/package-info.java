@@ -9,4 +9,4 @@
 
 @NonNullByDefault(false)
 package com.analog.lyric.dimple.examples;
-import com.analog.lyric.util.misc.NonNullByDefault;
+import org.eclipse.jdt.annotation.NonNullByDefault;

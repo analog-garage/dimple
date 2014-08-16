@@ -24,6 +24,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
@@ -42,7 +43,6 @@ import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.serializerdetails.Deserializer;
 import com.analog.lyric.dimple.model.serializerdetails.Serializer;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
-import com.analog.lyric.util.misc.Nullable;
 
 public class xmlSerializer
 {

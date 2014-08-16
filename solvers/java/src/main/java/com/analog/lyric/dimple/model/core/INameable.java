@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.model.core;
 import java.util.UUID;
 
 import com.analog.lyric.util.misc.IGetId;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public interface INameable extends IGetId
 {

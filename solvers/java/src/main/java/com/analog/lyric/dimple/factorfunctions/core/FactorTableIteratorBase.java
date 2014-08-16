@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.factorfunctions.core;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Common implementation base for {@link IFactorTableIterator}s.

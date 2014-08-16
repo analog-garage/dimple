@@ -28,7 +28,7 @@ import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.sumproduct.SRealJointVariable;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class MultivariateNormalMessageTranslator extends MessageTranslatorBase
 {

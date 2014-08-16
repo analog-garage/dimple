@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.test.dummySolver;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class DummyCustomFactor extends SFactorBase
 {

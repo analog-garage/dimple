@@ -71,7 +71,7 @@ import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultivaria
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomNormalConstantParameters;
 import com.analog.lyric.dimple.solvers.sumproduct.sampledfactor.SampledFactor;
 import com.analog.lyric.math.DimpleRandomGenerator;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class SFactorGraph extends SFactorGraphBase
 {

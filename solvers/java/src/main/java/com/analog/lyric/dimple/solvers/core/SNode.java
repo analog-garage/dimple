@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public abstract class SNode extends SolverEventSource implements ISolverNode
 {

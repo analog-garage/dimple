@@ -37,8 +37,8 @@ import com.analog.lyric.dimple.solvers.core.VariableToFactorMessageEvent;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsScoredVariableUpdateEvent;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverVariableEvent;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsVariableUpdateEvent;
-import com.analog.lyric.util.misc.NonNullByDefault;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.Iterators;
 
 

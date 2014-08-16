@@ -28,7 +28,7 @@ import com.analog.lyric.dimple.events.IDimpleEventSource;
 import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Shared environment for Dimple

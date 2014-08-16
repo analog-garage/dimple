@@ -57,7 +57,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.util.misc.Internal;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.primitives.Doubles;
 
 /**** WARNING: Whenever editing this class, also make the corresponding edit to SRealJointVariable.

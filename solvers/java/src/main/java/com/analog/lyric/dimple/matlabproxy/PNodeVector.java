@@ -26,9 +26,14 @@ import java.util.UUID;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.Port;
+import com.analog.lyric.dimple.options.DimpleOptionRegistry;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.options.AbstractOptionValueList;
+import com.analog.lyric.options.IOptionKey;
+import com.analog.lyric.options.Option;
 import com.analog.lyric.util.misc.Matlab;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
+import com.google.common.collect.Iterables;
 
 @Matlab
 public abstract class PNodeVector extends PObject
@@ -63,6 +68,54 @@ public abstract class PNodeVector extends PObject
 	/*---------------------
 	 * PNodeVector methods
 	 */
+
+	public Object[][] getLocallySetOptions()
+	{
+		final Object[][] options = new Object[_nodes.length][];
+		for (int i = _nodes.length; --i>=0;)
+		{
+			final Node node = _nodes[i];
+			options[i] = Iterables.toArray(node.getLocalOptions(),Object.class);
+		}
+		return options;
+	}
+	
+	public Object[] getOptions(Object optionKey, boolean localOnly)
+	{
+		final IOptionKey<?> key = DimpleOptionRegistry.asKey(optionKey);
+		final Object[] optionValues = new Object[_nodes.length];
+		for (int i = _nodes.length; --i>=0;)
+		{
+			Node node = _nodes[i];
+			Object value = localOnly? node.getLocalOption(key) : node.getOption(key);
+			if (value instanceof AbstractOptionValueList)
+			{
+				// Convert to primitive array so that MATLAB will automatically convert
+				// to appropriate type.
+				value = ((AbstractOptionValueList<?>)value).toPrimitiveArray();
+			}
+			optionValues[i] = value;
+		}
+		return optionValues;
+	}
+	
+	public void unsetOption(Object optionKey)
+	{
+		IOptionKey<?> key = DimpleOptionRegistry.asKey(optionKey);
+		for (Node node : _nodes)
+		{
+			node.unsetOption(key);
+		}
+	}
+		
+	public void setOption(Object optionKey, @Nullable Object value)
+	{
+		Option<?> option = Option.create(DimpleOptionRegistry.asKey(optionKey), value);
+		for (Node node : _nodes)
+		{
+			Option.setOptions(node, option);
+		}
+	}
 	
 	public void setNodes(Node [] nodes)
 	{

@@ -35,8 +35,8 @@ import com.analog.lyric.dimple.solvers.gibbs.ISolverNodeGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.math.DimpleRandomGenerator;
-import com.analog.lyric.util.misc.NonNull;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * @since 0.06

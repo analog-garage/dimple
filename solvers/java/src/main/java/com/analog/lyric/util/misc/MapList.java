@@ -24,6 +24,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import net.jcip.annotations.NotThreadSafe;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import cern.colt.map.OpenIntObjectHashMap;
 
 import com.google.common.collect.Iterators;

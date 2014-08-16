@@ -21,7 +21,7 @@ import java.util.Iterator;
 import net.jcip.annotations.NotThreadSafe;
 
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Iterator over entries in a {@link IFactorTable}.

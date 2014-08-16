@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.gibbs;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.core.SolverBase;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 
 public class Solver extends SolverBase<GibbsSolverGraph>

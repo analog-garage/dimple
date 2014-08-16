@@ -23,7 +23,7 @@ import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 
 /**

@@ -21,7 +21,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraphNode;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /*
  * Object that retrieves data from the work queue until there is nothing left.

@@ -20,7 +20,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class RealJoint extends VariableBase
 {

@@ -27,7 +27,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * An iterator that walks through connected nodes in a {@link FactorGraph}

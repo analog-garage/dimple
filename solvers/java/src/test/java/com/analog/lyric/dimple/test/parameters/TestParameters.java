@@ -35,7 +35,7 @@ import com.analog.lyric.dimple.parameters.ParameterListN;
 import com.analog.lyric.dimple.parameters.SharedParameterValue;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.options.IOptionHolder;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.util.test.SerializationTester;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.AtomicDouble;

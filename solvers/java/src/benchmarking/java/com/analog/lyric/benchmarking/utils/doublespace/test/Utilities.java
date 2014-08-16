@@ -22,7 +22,7 @@ import static org.hamcrest.MatcherAssert.*;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.primitives.Booleans;

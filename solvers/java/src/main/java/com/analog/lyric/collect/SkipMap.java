@@ -23,8 +23,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-import com.analog.lyric.util.misc.NonNullByDefault;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 // TODO: implement NavigableMap - requires implementing various submap/keyset views.
 

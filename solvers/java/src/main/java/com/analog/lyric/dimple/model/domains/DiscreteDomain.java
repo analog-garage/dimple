@@ -22,7 +22,7 @@ import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.WeakInterner;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.variables.Bit;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.Interner;
 import com.google.common.math.DoubleMath;
 

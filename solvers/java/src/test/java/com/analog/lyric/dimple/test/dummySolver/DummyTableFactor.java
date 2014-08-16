@@ -20,7 +20,7 @@ import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class DummyTableFactor extends STableFactorBase
 {

@@ -40,7 +40,7 @@ import com.analog.lyric.collect.LongArrayIterable;
 import com.analog.lyric.collect.LongArrayIterator;
 import com.analog.lyric.collect.PrimitiveIterable;
 import com.analog.lyric.collect.PrimitiveIterator;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class TestPrimitiveIterator
 {

@@ -27,7 +27,7 @@ import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.math.Utilities;
-import com.analog.lyric.util.misc.NonNullByDefault;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import com.google.common.primitives.Ints;
 
 /**

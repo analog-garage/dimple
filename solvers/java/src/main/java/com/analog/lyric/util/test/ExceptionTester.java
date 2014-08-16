@@ -22,7 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.regex.Pattern;
 
 import com.analog.lyric.collect.Supers;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Utility functions for testing exception behavior.

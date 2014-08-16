@@ -78,7 +78,7 @@ import com.analog.lyric.util.misc.FactorGraphDiffs;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.MapList;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.cache.LoadingCache;
 
 

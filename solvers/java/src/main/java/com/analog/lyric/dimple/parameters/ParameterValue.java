@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.parameters;
 
 import net.jcip.annotations.ThreadSafe;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.util.concurrent.AtomicDouble;
 
 @ThreadSafe

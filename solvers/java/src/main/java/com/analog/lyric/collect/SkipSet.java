@@ -23,9 +23,9 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedSet;
 
-import com.analog.lyric.util.misc.NonNull;
-import com.analog.lyric.util.misc.NonNullByDefault;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.Ordering;
 
 @NonNullByDefault(false) // to avoid clashes with methods overridden from standard library

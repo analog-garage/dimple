@@ -23,7 +23,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * This class is used to create a singleton ThreadPool.  The threadpool

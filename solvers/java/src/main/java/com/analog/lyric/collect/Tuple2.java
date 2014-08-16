@@ -20,7 +20,7 @@ import java.util.Map;
 
 import net.jcip.annotations.Immutable;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 // TODO: Create additional Tuple classes as needed...
 

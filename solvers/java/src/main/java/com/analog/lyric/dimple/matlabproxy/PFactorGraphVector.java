@@ -51,7 +51,7 @@ import com.analog.lyric.util.misc.FactorGraphDiffs;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.MapList;
 import com.analog.lyric.util.misc.Matlab;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 @Matlab
 public class PFactorGraphVector extends PFactorVector

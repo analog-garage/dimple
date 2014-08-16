@@ -45,7 +45,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsVariableUpdateEvent;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.test.DimpleTestBase;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Test generation of {@link GibbsVariableUpdateEvent}s.

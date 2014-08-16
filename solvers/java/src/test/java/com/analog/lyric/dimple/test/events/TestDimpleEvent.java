@@ -31,7 +31,7 @@ import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.options.StatelessOptionHolder;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.util.test.SerializationTester;
 
 /**

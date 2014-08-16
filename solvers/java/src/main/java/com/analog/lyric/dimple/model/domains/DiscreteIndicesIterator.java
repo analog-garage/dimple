@@ -21,7 +21,7 @@ import java.util.Iterator;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * An iterator over any array of integer indices each with a specified bounds

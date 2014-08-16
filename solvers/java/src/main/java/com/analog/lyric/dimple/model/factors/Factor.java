@@ -40,7 +40,7 @@ import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.util.misc.Internal;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class Factor extends FactorBase implements Cloneable
 {

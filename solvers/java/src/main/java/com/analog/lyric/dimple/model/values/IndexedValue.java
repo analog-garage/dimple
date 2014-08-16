@@ -23,8 +23,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import net.jcip.annotations.NotThreadSafe;
 
 import com.analog.lyric.collect.IKeyed;
-import com.analog.lyric.util.misc.NonNullByDefault;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.Iterators;
 import com.google.common.primitives.Ints;
 

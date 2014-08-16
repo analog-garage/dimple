@@ -30,7 +30,7 @@ import com.analog.lyric.dimple.model.domains.ObjectDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Holder for a values for a given {@link Domain}.

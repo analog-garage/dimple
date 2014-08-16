@@ -27,7 +27,7 @@ import com.analog.lyric.dimple.solvers.particleBP.ParticleBPOptions;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductOptions;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.OptionRegistry;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Registry of option keys for known dimple options.

@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.model.values;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public abstract class IntDiscreteValue extends DiscreteValue
 {

@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraphN
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /*
  * The LastUpdateGraph data structure provides the ability to retrieve edges associated

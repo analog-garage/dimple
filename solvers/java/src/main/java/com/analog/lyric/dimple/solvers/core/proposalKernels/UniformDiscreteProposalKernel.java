@@ -22,7 +22,7 @@ import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.IOptionHolder;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * @since 0.05

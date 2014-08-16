@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.events;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.options.IOptionHolder;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Interface for classes of objects that may produce {@link DimpleEvent}s.

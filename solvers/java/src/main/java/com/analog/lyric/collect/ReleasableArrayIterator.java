@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * {@link ReleasableIterator} that visits all of the elements of an array.

@@ -21,7 +21,7 @@ import java.io.Serializable;
 import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Holds the information for one factor table entry from a {@link IFactorTableIterator}

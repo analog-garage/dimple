@@ -19,6 +19,8 @@ package com.analog.lyric.util.misc;
 import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 // TODO: extend List<T>
 public interface IMapList<T extends IGetId> extends Collection<T>
 {

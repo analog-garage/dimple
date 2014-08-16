@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.examples;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.util.misc.NonNullByDefault;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 @NonNullByDefault
 public class ThreeBitXor extends FactorFunction

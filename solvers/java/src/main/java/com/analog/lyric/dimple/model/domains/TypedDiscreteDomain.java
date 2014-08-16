@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.model.domains;
 
 import java.util.Iterator;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 // REFACTOR: I think this should eventually be folded up into DiscreteDomain.
 public abstract class TypedDiscreteDomain<Element> extends DiscreteDomain implements Iterable<Element>

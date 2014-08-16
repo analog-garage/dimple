@@ -19,7 +19,7 @@ package com.analog.lyric.collect;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Array-based binary heap implementation of {@link IHeap}.

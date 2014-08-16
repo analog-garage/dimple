@@ -29,7 +29,7 @@ import java.util.Set;
 import net.jcip.annotations.ThreadSafe;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Provides basic logging of dimple events.

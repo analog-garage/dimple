@@ -34,7 +34,7 @@ import com.analog.lyric.options.LocalOptionHolder;
 import com.analog.lyric.options.Option;
 import com.analog.lyric.options.StatelessOptionHolder;
 import com.analog.lyric.options.StringOptionKey;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 

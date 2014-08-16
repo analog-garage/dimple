@@ -19,7 +19,7 @@ package com.analog.lyric.collect;
 import java.util.AbstractCollection;
 import java.util.Iterator;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Base implementation of {@link IHeap} with default implementation

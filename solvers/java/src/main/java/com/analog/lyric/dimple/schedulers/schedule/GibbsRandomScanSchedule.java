@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.schedulers.GibbsSequentialScanScheduler;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.math.DimpleRandomGenerator;
-import com.analog.lyric.util.misc.NonNull;
+import org.eclipse.jdt.annotation.NonNull;
 
 /**
  * @author jeffb

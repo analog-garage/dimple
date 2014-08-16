@@ -31,7 +31,7 @@ import cern.colt.map.OpenIntIntHashMap;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BitSetUtil;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Supports conversion of indexes between two {@link JointDomainIndexer}s.

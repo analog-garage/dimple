@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.schedulers.dependencyGraph.helpers;
 
 import com.analog.lyric.dimple.model.core.INode;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /*
  * Utility class used by LastUpdateGraph and StaticDependencyGraphNodes for

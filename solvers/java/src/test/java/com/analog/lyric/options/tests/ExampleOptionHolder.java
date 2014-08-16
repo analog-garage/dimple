@@ -18,7 +18,7 @@ package com.analog.lyric.options.tests;
 
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.options.LocalOptionHolder;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 class ExampleOptionHolder extends LocalOptionHolder
 {

@@ -32,8 +32,8 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
-import com.analog.lyric.util.misc.NonNull;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 /*
  * The pseudolikelihood class uses the Pseudolikelihood algorithm

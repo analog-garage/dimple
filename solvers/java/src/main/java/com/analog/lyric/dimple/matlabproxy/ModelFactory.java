@@ -36,7 +36,7 @@ import com.analog.lyric.dimple.solvers.core.multithreading.ThreadPool;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /*
  * The model factory creates variable vectors and FactorGraphs for MATLAB

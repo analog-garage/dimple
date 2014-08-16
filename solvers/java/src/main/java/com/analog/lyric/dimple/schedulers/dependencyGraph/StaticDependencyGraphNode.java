@@ -27,7 +27,7 @@ import com.analog.lyric.dimple.schedulers.dependencyGraph.helpers.LastUpdateGrap
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
-import com.analog.lyric.util.misc.NonNullByDefault;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /*
  * A single node in the StaticDependencyGraph.

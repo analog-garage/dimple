@@ -24,7 +24,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import com.analog.lyric.util.misc.NonNull;
+import org.eclipse.jdt.annotation.NonNull;
 
 public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFactor
 {

@@ -21,7 +21,7 @@ import java.util.WeakHashMap;
 
 import net.jcip.annotations.ThreadSafe;
 
-import com.analog.lyric.util.misc.NonNullByDefault;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import com.google.common.collect.Interner;
 
 /**

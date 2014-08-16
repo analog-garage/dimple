@@ -20,7 +20,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public interface IRealConjugateSampler extends ISampler
 {

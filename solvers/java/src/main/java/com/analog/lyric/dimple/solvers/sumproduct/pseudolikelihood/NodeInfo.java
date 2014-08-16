@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.sumproduct.pseudolikelihood;
 
 import java.util.LinkedList;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /*
  * Used to store information about Factors and Variables.

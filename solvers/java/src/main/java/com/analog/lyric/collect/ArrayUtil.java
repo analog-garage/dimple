@@ -22,8 +22,8 @@ import java.util.Comparator;
 
 import cern.colt.list.IntArrayList;
 
-import com.analog.lyric.util.misc.NonNull;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.math.DoubleMath;
 
 /**

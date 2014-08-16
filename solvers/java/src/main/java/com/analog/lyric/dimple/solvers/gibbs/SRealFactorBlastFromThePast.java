@@ -29,7 +29,7 @@ import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SBlastFromThePast;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class SRealFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs
 {

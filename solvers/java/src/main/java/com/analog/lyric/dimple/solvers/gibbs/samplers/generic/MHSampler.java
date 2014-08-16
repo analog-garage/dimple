@@ -26,7 +26,7 @@ import com.analog.lyric.dimple.solvers.core.proposalKernels.Proposal;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.ProposalKernelRegistry;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.UniformDiscreteProposalKernel;
 import com.analog.lyric.math.DimpleRandomGenerator;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class MHSampler implements IMCMCSampler
 {

@@ -44,7 +44,7 @@ import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.math.Utilities;
 import com.analog.lyric.util.misc.Misc;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.math.DoubleMath;
 import com.google.common.primitives.Ints;
 

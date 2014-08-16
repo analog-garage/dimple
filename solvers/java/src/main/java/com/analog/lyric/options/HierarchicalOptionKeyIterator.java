@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.analog.lyric.collect.Supers;
 import com.analog.lyric.collect.UnmodifiableReleasableIterator;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Iterates over {@link OptionKeys} from starting declaring class up through its parents.

@@ -18,6 +18,8 @@ package com.analog.lyric.util.misc;
 
 import java.util.Arrays;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.math.Utilities;
 import com.google.common.primitives.Ints;

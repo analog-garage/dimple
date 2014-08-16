@@ -27,7 +27,7 @@ import com.analog.lyric.dimple.solvers.core.proposalKernels.BlockProposal;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IBlockProposalKernel;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.math.Utilities;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * 

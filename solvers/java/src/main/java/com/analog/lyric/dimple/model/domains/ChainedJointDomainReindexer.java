@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public final class ChainedJointDomainReindexer extends JointDomainReindexer
 {

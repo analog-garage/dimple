@@ -23,7 +23,7 @@ import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import com.analog.lyric.util.misc.NonNull;
+import org.eclipse.jdt.annotation.NonNull;
 
 public abstract class MultivariateGaussianFactorBase extends SFactorBase
 {

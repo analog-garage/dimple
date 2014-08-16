@@ -22,9 +22,9 @@ import java.util.Comparator;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import com.analog.lyric.util.misc.NonNull;
-import com.analog.lyric.util.misc.NonNullByDefault;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * A priority queue that works on elements that have inherent keys and that does not allow

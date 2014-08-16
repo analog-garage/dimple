@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.model.core;
 import static java.util.Objects.*;
 
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class Port
 {

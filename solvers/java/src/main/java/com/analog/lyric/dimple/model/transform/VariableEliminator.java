@@ -44,7 +44,7 @@ import com.analog.lyric.dimple.model.factors.FactorBase;
 import com.analog.lyric.dimple.model.factors.FactorList;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
 

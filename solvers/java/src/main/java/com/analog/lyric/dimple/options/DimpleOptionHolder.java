@@ -29,7 +29,7 @@ import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.LocalOptionHolder;
 import com.analog.lyric.options.OptionDoubleList;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Base class for dimple objects that can hold options and generate events.

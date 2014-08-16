@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
-import com.analog.lyric.util.misc.NonNull;
+import org.eclipse.jdt.annotation.NonNull;
 
 /*
  * The Multiplexer factor is a directed factor

@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.model.values;
 
 import com.analog.lyric.dimple.model.domains.ObjectDomain;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Holder for arbitrary values represented as {@link Object}.

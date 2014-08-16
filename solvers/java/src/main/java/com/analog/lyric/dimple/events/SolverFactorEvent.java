@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.events;
 
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * 

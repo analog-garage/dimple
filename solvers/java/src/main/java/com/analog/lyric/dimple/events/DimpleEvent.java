@@ -23,7 +23,7 @@ import net.jcip.annotations.ThreadSafe;
 
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.util.misc.IPrintable;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Abstract base class for all Dimple events.

@@ -30,7 +30,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class SBlastFromThePast extends SolverEventSource implements ISolverBlastFromThePastFactor
 {

@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import net.jcip.annotations.ThreadSafe;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 @ThreadSafe
 public abstract class AbstractParameterList<Key extends IParameterKey> implements IParameterList<Key>

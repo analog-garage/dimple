@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.model.domains;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * A {@link JointDomainReindexer} that supports the splitting/joining of adjacent subdomains.

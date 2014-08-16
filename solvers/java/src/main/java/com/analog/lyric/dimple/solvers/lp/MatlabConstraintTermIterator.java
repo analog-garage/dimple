@@ -23,7 +23,7 @@ import net.jcip.annotations.NotThreadSafe;
 
 import com.analog.lyric.dimple.solvers.lp.IntegerEquation.TermIterator;
 import com.analog.lyric.util.misc.Matlab;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 @Matlab
 @NotThreadSafe

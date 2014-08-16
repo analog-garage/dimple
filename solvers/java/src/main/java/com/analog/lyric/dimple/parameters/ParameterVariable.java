@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.parameters;
 
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * A {@link Real} variable that implements a parameter of a parametric factor

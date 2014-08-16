@@ -22,7 +22,7 @@ import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Base class for model events whose source is a {@link FactorGraph}.

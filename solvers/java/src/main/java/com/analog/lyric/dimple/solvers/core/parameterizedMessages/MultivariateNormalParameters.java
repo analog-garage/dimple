@@ -24,7 +24,7 @@ import Jama.Matrix;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.math.LyricEigenvalueDecomposition;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class MultivariateNormalParameters extends ParameterizedMessageBase
 {

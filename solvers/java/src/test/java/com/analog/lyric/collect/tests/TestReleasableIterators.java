@@ -25,7 +25,7 @@ import com.analog.lyric.collect.ReleasableArrayIterator;
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.collect.ReleasableIterators;
 import com.analog.lyric.collect.UnmodifiableReleasableIterator;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.util.test.ExceptionTester;
 
 public class TestReleasableIterators

@@ -29,7 +29,7 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.sumproduct.SRealVariable;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class NormalMessageTranslator extends MessageTranslatorBase
 {

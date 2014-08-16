@@ -21,7 +21,7 @@ import java.io.Serializable;
 
 import net.jcip.annotations.Immutable;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Simple holder for a {@link IParameterKey}/value pair.

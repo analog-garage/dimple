@@ -42,8 +42,8 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.util.misc.NonNull;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class CustomMultinomial extends SRealFactor implements IRealJointConjugateFactor, MultinomialBlockProposal.ICustomMultinomial
 {

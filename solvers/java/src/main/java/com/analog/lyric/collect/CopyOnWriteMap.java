@@ -27,9 +27,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import net.jcip.annotations.ThreadSafe;
 
-import com.analog.lyric.util.misc.NonNull;
-import com.analog.lyric.util.misc.NonNullByDefault;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * A {@link Map} implementation that delegates to another map

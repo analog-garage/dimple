@@ -31,7 +31,7 @@ import org.junit.Test;
 import com.analog.lyric.benchmarking.utils.doublespace.DoubleSpace;
 import com.analog.lyric.benchmarking.utils.doublespace.DoubleSpaceFactory;
 import com.analog.lyric.benchmarking.utils.doublespace.JointIndexer;
-import com.analog.lyric.util.misc.NonNullByDefault;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 public class IndexedDoubleSpaceTest
 {

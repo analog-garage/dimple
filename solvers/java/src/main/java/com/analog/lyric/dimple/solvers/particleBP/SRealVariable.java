@@ -38,7 +38,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.OptionValidationException;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class SRealVariable extends SRealVariableBase
 {

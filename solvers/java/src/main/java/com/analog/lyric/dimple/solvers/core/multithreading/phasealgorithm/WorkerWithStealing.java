@@ -21,7 +21,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /*
  * Responsible for picking of a chunk of schedule entries,

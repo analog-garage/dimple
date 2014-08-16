@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.solvers.core.proposalKernels;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.options.IOptionHolder;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public interface IProposalKernel
 {

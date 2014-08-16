@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.factorfunctions.core;
 import java.util.Objects;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.math.DoubleMath;
 import com.google.common.primitives.Primitives;
 

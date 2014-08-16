@@ -22,7 +22,7 @@ package com.analog.lyric.dimple.solvers.interfaces;
 import com.analog.lyric.dimple.events.ISolverEventSource;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.options.IOptionHolder;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * @author schweitz

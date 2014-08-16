@@ -29,9 +29,9 @@ import java.util.PriorityQueue;
 import net.jcip.annotations.Immutable;
 import net.jcip.annotations.NotThreadSafe;
 
-import com.analog.lyric.util.misc.NonNull;
-import com.analog.lyric.util.misc.NonNullByDefault;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.Ordering;
 
 /**

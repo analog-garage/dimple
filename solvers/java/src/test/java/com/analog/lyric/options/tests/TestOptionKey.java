@@ -43,7 +43,7 @@ import com.analog.lyric.options.OptionStringList;
 import com.analog.lyric.options.OptionValidationException;
 import com.analog.lyric.options.StringListOptionKey;
 import com.analog.lyric.options.StringOptionKey;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.util.test.SerializationTester;
 
 public class TestOptionKey

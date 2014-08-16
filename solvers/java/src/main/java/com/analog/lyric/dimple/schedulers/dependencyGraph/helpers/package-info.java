@@ -9,5 +9,5 @@
 
 @NonNullByDefault
 package com.analog.lyric.dimple.schedulers.dependencyGraph.helpers;
-import com.analog.lyric.util.misc.NonNullByDefault;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 

@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import net.jcip.annotations.ThreadSafe;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.util.concurrent.AtomicDoubleArray;
 
 @ThreadSafe

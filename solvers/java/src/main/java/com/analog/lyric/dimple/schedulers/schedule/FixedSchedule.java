@@ -37,7 +37,7 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 
 /**

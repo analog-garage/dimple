@@ -19,5 +19,5 @@
  * @since 0.07
  * @author Christopher Barber
  */
-@com.analog.lyric.util.misc.NonNullByDefault
+@org.eclipse.jdt.annotation.NonNullByDefault
 package com.analog.lyric.options.tests.bar;

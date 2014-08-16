@@ -9,4 +9,4 @@
 
 @NonNullByDefault
 package com.analog.lyric.test.util.misc;
-import com.analog.lyric.util.misc.NonNullByDefault;
+import org.eclipse.jdt.annotation.NonNullByDefault;

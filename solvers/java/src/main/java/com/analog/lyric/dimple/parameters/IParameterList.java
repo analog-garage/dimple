@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.parameters;
 
 import java.io.Serializable;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Interface for holding a set of parameters associated with a parametric function.

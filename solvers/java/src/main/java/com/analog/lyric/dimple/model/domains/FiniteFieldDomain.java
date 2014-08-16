@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.model.domains;
 import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.math.Utilities;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * A finite field of characteristic 2 (GF(2^N)).  The domain is determined by the length, N,

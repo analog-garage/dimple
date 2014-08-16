@@ -21,7 +21,7 @@ import java.util.Comparator;
 import java.util.NoSuchElementException;
 import java.util.Random;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Abstract base class for collections based on a skip list.

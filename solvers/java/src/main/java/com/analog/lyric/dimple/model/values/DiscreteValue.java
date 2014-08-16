@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.model.values;
 
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
-import com.analog.lyric.util.misc.NonNull;
+import org.eclipse.jdt.annotation.NonNull;
 
 /**
  * Base class for {@link Value} implementations for {@link DiscreteDomain}s.

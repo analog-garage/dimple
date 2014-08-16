@@ -25,7 +25,7 @@ import java.util.TreeSet;
 import org.junit.Test;
 
 import com.analog.lyric.collect.Comparators;
-import com.analog.lyric.util.misc.NonNullByDefault;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 public class TestComparators
 {

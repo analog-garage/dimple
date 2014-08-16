@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.solvers.core;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public abstract class STableFactorBase extends SFactorBase
 {

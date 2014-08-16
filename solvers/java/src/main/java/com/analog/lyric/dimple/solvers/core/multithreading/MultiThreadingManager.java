@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraph;
 import com.analog.lyric.dimple.solvers.core.multithreading.phasealgorithm.PhaseMultithreadingAlgorithm;
 import com.analog.lyric.dimple.solvers.core.multithreading.singlequeuealgorithm.SingleQueueMutlithreadingAlgorithm;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /*
  * The MultiThreading Manager handles the collection of multithreading algorithms

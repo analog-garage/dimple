@@ -20,8 +20,8 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
-import com.analog.lyric.util.misc.NonNull;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class RealJointValue extends Value
 {

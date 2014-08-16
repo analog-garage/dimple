@@ -43,7 +43,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IGenericSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IMCMCSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.primitives.Doubles;
 
 

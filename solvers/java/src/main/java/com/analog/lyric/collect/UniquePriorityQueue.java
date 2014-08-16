@@ -22,7 +22,7 @@ import java.util.Comparator;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * A priority queue that only holds one instance of an element.

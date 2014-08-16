@@ -22,7 +22,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.variables.Complex;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.RealJoint;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.math.DoubleMath;
 
 /**

@@ -22,8 +22,8 @@ import java.util.Arrays;
 import java.util.RandomAccess;
 
 import com.analog.lyric.collect.WeakInterner;
-import com.analog.lyric.util.misc.NonNullByDefault;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.Interner;
 
 /**

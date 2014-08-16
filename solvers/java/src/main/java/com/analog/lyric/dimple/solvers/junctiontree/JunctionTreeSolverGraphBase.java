@@ -39,7 +39,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Matlab;
 import com.analog.lyric.util.misc.Misc;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Base class for solver graphs using junction tree algorithm to transform graph into a tree

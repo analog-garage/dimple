@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.model.domains;
 
 import net.jcip.annotations.Immutable;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Domain of all Java objects.

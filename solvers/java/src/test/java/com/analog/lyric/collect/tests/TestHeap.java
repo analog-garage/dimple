@@ -32,8 +32,8 @@ import com.analog.lyric.collect.AbstractHeap;
 import com.analog.lyric.collect.BinaryHeap;
 import com.analog.lyric.collect.IHeap;
 import com.analog.lyric.collect.IHeap.IEntry;
-import com.analog.lyric.util.misc.NonNull;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class TestHeap
 {

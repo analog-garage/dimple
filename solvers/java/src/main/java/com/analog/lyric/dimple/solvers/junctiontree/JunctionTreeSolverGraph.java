@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.solvers.junctiontree;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * @since 0.05

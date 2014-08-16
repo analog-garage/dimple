@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.events;
 
 import net.jcip.annotations.Immutable;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Abstract base class for events involving changes to a Dimple model.

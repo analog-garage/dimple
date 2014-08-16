@@ -30,8 +30,8 @@ import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.collect.ReleasableIterator;
-import com.analog.lyric.util.misc.NonNullByDefault;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * An immutable map of option keys declared in a single class.

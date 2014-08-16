@@ -12,4 +12,4 @@
  */
 @NonNullByDefault
 package com.analog.lyric.dimple.solvers.gibbs;
-import com.analog.lyric.util.misc.NonNullByDefault;
+import org.eclipse.jdt.annotation.NonNullByDefault;

@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import net.jcip.annotations.ThreadSafe;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * {@link JointDomainReindexer} implementation that permutes the domain order

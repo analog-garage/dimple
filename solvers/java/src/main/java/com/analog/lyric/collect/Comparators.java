@@ -23,8 +23,8 @@ import java.util.SortedSet;
 
 import net.jcip.annotations.Immutable;
 
-import com.analog.lyric.util.misc.NonNullByDefault;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * 

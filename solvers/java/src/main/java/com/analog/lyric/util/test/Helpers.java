@@ -44,7 +44,7 @@ import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 
 public class Helpers

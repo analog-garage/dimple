@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.solvers.interfaces;
 
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 
 public interface ISolverFactor extends ISolverNode

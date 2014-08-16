@@ -16,8 +16,8 @@
 
 package com.analog.lyric.dimple.model.core;
 
-import com.analog.lyric.util.misc.NonNullByDefault;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 
 public class Edge implements Comparable<Edge>

@@ -19,6 +19,8 @@ package com.analog.lyric.util.misc;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 
 public class IndexCounter implements Iterator<int[]>, Iterable<int[]>
 {

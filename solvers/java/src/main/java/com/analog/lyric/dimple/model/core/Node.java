@@ -42,8 +42,8 @@ import com.analog.lyric.math.Utilities;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.MapList;
-import com.analog.lyric.util.misc.NonNull;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.Iterators;
 
 public abstract class Node extends DimpleOptionHolder implements INode, Cloneable

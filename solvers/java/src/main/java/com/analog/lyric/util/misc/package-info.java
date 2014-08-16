@@ -9,3 +9,5 @@
 
 @NonNullByDefault
 package com.analog.lyric.util.misc;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+

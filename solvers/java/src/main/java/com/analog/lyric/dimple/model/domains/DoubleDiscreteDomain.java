@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.model.domains;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public abstract class DoubleDiscreteDomain extends TypedDiscreteDomain<Double>
 {

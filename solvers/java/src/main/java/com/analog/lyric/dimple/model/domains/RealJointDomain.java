@@ -22,7 +22,7 @@ import java.util.Arrays;
 import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.collect.WeakInterner;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.Interner;
 
 @Immutable

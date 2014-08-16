@@ -27,7 +27,7 @@ import java.util.Random;
 import org.junit.Test;
 
 import com.analog.lyric.collect.SkipMap;
-import com.analog.lyric.util.misc.NonNullByDefault;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 public class SkipMapTest
 {

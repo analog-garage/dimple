@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.model.domains;
 
 import java.util.Arrays;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.math.DoubleMath;
 import com.google.common.primitives.Doubles;
 

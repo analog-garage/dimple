@@ -28,7 +28,7 @@ import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.math.DimpleRandomGenerator;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 
 public class DirichletSampler implements IRealJointConjugateSampler

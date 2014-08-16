@@ -22,5 +22,5 @@
  */
 @NonNullByDefault
 package com.analog.lyric.dimple.test.environment;
-import com.analog.lyric.util.misc.NonNullByDefault;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 

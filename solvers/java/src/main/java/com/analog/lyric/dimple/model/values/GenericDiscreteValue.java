@@ -19,8 +19,8 @@ package com.analog.lyric.dimple.model.values;
 import java.util.Objects;
 
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
-import com.analog.lyric.util.misc.NonNull;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class GenericDiscreteValue extends DiscreteValue
 {

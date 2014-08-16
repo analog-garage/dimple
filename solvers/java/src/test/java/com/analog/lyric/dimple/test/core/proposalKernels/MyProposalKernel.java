@@ -21,7 +21,7 @@ import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.Proposal;
 import com.analog.lyric.options.IOptionHolder;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * 

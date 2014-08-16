@@ -19,7 +19,7 @@ package com.analog.lyric.options;
 import java.io.Serializable;
 
 import com.analog.lyric.collect.ReleasableIterator;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Provides default implementation of some {@link IOptionHolder} methods.

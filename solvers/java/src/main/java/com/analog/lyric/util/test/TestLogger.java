@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 
 import net.jcip.annotations.ThreadSafe;
 
-import com.analog.lyric.util.misc.NonNullByDefault;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
  * A {@link java.util.logging.Logger} implementation that simply saves all its log records

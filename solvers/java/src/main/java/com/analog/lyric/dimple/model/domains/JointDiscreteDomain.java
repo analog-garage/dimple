@@ -22,7 +22,7 @@ import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * A discrete domain representing the Cartesian product of other discrete domains.

@@ -16,7 +16,7 @@
 
 package com.analog.lyric.collect;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Simple interface for element with an inherent key.

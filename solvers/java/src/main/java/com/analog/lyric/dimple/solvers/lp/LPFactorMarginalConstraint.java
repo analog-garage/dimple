@@ -22,7 +22,7 @@ import java.util.Objects;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Represents a linear equality describing the constraint that the marginal probability

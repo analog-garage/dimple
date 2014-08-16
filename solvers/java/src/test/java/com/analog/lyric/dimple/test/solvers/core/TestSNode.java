@@ -50,7 +50,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
 import com.analog.lyric.dimple.test.DimpleTestBase;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Unit test for {@link SNode} base class.

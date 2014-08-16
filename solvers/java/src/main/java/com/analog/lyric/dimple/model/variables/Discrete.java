@@ -27,7 +27,7 @@ import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.IDiscreteSolverVariable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Internal;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class Discrete extends VariableBase
 {

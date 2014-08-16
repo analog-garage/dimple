@@ -20,7 +20,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolverGraphBase;
 import com.analog.lyric.dimple.solvers.minsum.MinSumSolverGraph;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * 

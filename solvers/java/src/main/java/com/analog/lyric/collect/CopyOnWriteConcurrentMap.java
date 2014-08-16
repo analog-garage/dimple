@@ -24,9 +24,9 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 import net.jcip.annotations.ThreadSafe;
 
-import com.analog.lyric.util.misc.NonNull;
-import com.analog.lyric.util.misc.NonNullByDefault;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * An extension of {@link CopyOnWriteMap} for delegating to a {@link ConcurrentMap}.

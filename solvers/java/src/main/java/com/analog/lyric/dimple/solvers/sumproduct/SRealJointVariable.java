@@ -28,7 +28,7 @@ import com.analog.lyric.dimple.solvers.core.SRealJointVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class SRealJointVariable extends SRealJointVariableBase
 {

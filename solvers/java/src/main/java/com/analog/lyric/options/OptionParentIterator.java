@@ -19,7 +19,7 @@ package com.analog.lyric.options;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.analog.lyric.collect.UnmodifiableReleasableIterator;
-import com.analog.lyric.util.misc.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Iterates chain of option parents.

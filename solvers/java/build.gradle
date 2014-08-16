@@ -73,6 +73,7 @@ ext.pluginJar = files("${javaHome}/lib/plugin.jar")
 
 //Benchmarking source set depends on main and its dependencies
 dependencies {
+	compile "org.eclipse.jdt:org.eclipse.jdt.annotation:1.1.0"
 	compile "com.google.guava:guava:14.0"
 	compile "org.apache.commons:commons-math3:3.2"
 	compile "edu.emory.mathcs:jtransforms:2.3"
