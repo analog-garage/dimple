@@ -18,9 +18,10 @@ package com.analog.lyric.dimple.solvers.gibbs;
 
 import static java.util.Objects.*;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.options.IOptionHolder;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * @deprecated Will be removed in future release. Use {@link GibbsSolverGraph} instead.
@@ -71,11 +72,11 @@ public class SFactorGraph extends GibbsSolverGraph
 			}
 			if (!Double.isNaN(arguments.initialTemperature))
 			{
-				configureInitialTemperature(arguments.initialTemperature);
+				setOption(GibbsOptions.initialTemperature, arguments.initialTemperature);
 			}
 			if (!Double.isNaN(arguments.temperingHalfLifeInSamples))
 			{
-				configureTemperingHalfLifeInSamples(arguments.temperingHalfLifeInSamples);
+				setOption(GibbsOptions.temperingHalfLife, arguments.temperingHalfLifeInSamples);
 			}
 		}
 	}

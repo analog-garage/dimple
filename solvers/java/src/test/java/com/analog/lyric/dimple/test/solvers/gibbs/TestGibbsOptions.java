@@ -38,7 +38,7 @@ import com.analog.lyric.dimple.test.DimpleTestBase;
  * @since 0.07
  * @author Christopher Barber
  */
-@SuppressWarnings("deprecation")
+@SuppressWarnings({"null", "deprecation"})
 public class TestGibbsOptions extends DimpleTestBase
 {
 	@Test
@@ -51,6 +51,9 @@ public class TestGibbsOptions extends DimpleTestBase
 		assertEquals(0, GibbsOptions.burnInScans.defaultIntValue());
 		assertFalse(GibbsOptions.saveAllSamples.defaultBooleanValue());
 		assertFalse(GibbsOptions.saveAllScores.defaultBooleanValue());
+		assertFalse(GibbsOptions.enableTempering.defaultValue());
+		assertEquals(1.0, GibbsOptions.initialTemperature.defaultDoubleValue(), 1.0);
+		assertEquals(1.0, GibbsOptions.temperingHalfLife.defaultDoubleValue(), 1.0);
 		
 		// Build test graph
 		FactorGraph fg = new FactorGraph();
@@ -83,6 +86,9 @@ public class TestGibbsOptions extends DimpleTestBase
 		assertEquals(GibbsOptions.numRandomRestarts.defaultIntValue(), sfg.getNumRestarts());
 		assertEquals(nVars * GibbsOptions.scansPerSample.defaultIntValue(), sfg.getUpdatesPerSample());
 		assertEquals(nVars * GibbsOptions.burnInScans.defaultIntValue(), sfg.getBurnInUpdates());
+		assertFalse(sfg.isTemperingEnabled());
+		assertEquals(GibbsOptions.initialTemperature.defaultDoubleValue(), sfg.getInitialTemperature(), 0.0);
+		assertEquals(GibbsOptions.temperingHalfLife.defaultDoubleValue(), sfg.getTemperingHalfLifeInSamples(), 1e-9);
 		
 		// Test initialization from options
 		fg.setSolverFactory(null);
@@ -101,10 +107,16 @@ public class TestGibbsOptions extends DimpleTestBase
 		b2.setOption(GibbsOptions.saveAllSamples, false);
 		r2.setOption(GibbsOptions.saveAllSamples, false);
 		j2.setOption(GibbsOptions.saveAllSamples, false);
+		fg.setOption(GibbsOptions.enableTempering, true);
+		fg.setOption(GibbsOptions.initialTemperature, Math.PI);
+		fg.setOption(GibbsOptions.temperingHalfLife, 3.1);
 		
 		// These do not take effect until after initialization
 		assertEquals(GibbsOptions.numSamples.defaultIntValue(), sfg.getNumSamples());
 		assertEquals(GibbsOptions.numRandomRestarts.defaultIntValue(), sfg.getNumRestarts());
+		assertFalse(sfg.isTemperingEnabled());
+		assertEquals(0.0, sfg.getInitialTemperature(), 0.0);
+		assertEquals(Math.log(2), sfg.getTemperingHalfLifeInSamples(), 1e-9);
 		
 		sfg.initialize();
 		assertEquals(3, sfg.getNumSamples());
@@ -117,6 +129,9 @@ public class TestGibbsOptions extends DimpleTestBase
 		assertEquals(false, sr2.getOptionOrDefault(GibbsOptions.saveAllSamples));
 		assertEquals(true, sj1.getOptionOrDefault(GibbsOptions.saveAllSamples));
 		assertEquals(false, sj2.getOptionOrDefault(GibbsOptions.saveAllSamples));
+		assertTrue(sfg.isTemperingEnabled());
+		assertEquals(Math.PI, sfg.getInitialTemperature(), 0.0);
+		assertEquals(3.1, sfg.getTemperingHalfLifeInSamples(), 1e-9);
 	
 		// Test set methods
 		sfg.setNumSamples(4);
@@ -167,5 +182,26 @@ public class TestGibbsOptions extends DimpleTestBase
 		assertEquals(true, sfg.getLocalOption(GibbsOptions.saveAllScores));
 		sfg.disableSavingAllScores();
 		assertEquals(false, sfg.getLocalOption(GibbsOptions.saveAllScores));
+		
+		sfg.disableTempering();
+		assertFalse(sfg.isTemperingEnabled());
+		assertEquals(false, sfg.getLocalOption(GibbsOptions.enableTempering));
+		sfg.enableTempering();
+		assertTrue(sfg.isTemperingEnabled());
+		assertEquals(true, sfg.getLocalOption(GibbsOptions.enableTempering));
+		
+		sfg.disableTempering();
+		sfg.unsetOption(GibbsOptions.enableTempering);
+		sfg.setInitialTemperature(2.345);
+		assertEquals((Double)2.345, sfg.getLocalOption(GibbsOptions.initialTemperature));
+		assertTrue(sfg.isTemperingEnabled()); // tempering implicitly enabled when setting initial temperature
+		
+		sfg.disableTempering();
+		sfg.unsetOption(GibbsOptions.enableTempering);
+		sfg.setTemperingHalfLifeInSamples(4);
+		assertEquals(4, sfg.getTemperingHalfLifeInSamples(), 1e-9);
+		assertEquals(4.0, sfg.getLocalOption(GibbsOptions.temperingHalfLife), 0.0);
+		assertTrue(sfg.isTemperingEnabled()); // tempering implicitly enabled when setting tempering half life
+
 	}
 }

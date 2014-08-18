@@ -107,7 +107,15 @@ public class GibbsOptions extends SolverOptions
 		new DoubleOptionKey(GibbsOptions.class, "initialTemperature", 1.0, 0.0, Double.MAX_VALUE);
 	
 	/**
-	 * <description>
+	 * Specifies the temperature decay rate for annealing in Gibbs solver.
+	 * <p>
+	 * Specifies the rate at which the temperature will be lowered during simulated annealing
+	 * in Gibbs solver in terms of the number of samples it will take for the temperature to
+	 * be lowered by half.
+	 * <p>
+	 * Defaults to 1.0.
+	 * <p>
+	 * @since 0.07
 	 */
 	public static final DoubleOptionKey temperingHalfLife =
 		new DoubleOptionKey(GibbsOptions.class, "temperingHalfLife", 1, 1.0, Double.MAX_VALUE);

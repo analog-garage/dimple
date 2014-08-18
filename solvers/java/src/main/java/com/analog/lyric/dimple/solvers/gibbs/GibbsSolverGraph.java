@@ -241,6 +241,9 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		_scansPerSample = getOptionOrDefault(GibbsOptions.scansPerSample);
 		_burnInScans = getOptionOrDefault(GibbsOptions.burnInScans);
 		final boolean saveAllScores = getOptionOrDefault(GibbsOptions.saveAllScores);
+		_temper = getOptionOrDefault(GibbsOptions.enableTempering);
+		_initialTemperature = getOptionOrDefault(GibbsOptions.initialTemperature);
+		_temperingDecayConstant = 1 - LOG2/getOptionOrDefault(GibbsOptions.temperingHalfLife);
 		
 		// Make sure the schedule is created before factor initialization to allow custom factors to modify the schedule if needed
 		final IGibbsSchedule schedule = _schedule = (IGibbsSchedule)_factorGraph.getSchedule();
@@ -737,23 +740,76 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	}
 	public String getDefaultDiscreteSampler() {return _defaultDiscreteSamplerName;}
 
-	// Set/get the initial temperature when using tempering
-	public void setInitialTemperature(double initialTemperature) {_temper = true; _initialTemperature = initialTemperature;}
+	/**
+	 * @deprecated Instead set {@link GibbsOptions#initialTemperature} option using {@link #setOption}.
+	 */
+	@Deprecated
+	public void setInitialTemperature(double initialTemperature)
+	{
+		setOption(GibbsOptions.initialTemperature, initialTemperature);
+		setTempering(true);
+		_initialTemperature = initialTemperature;
+	}
+	
+	/**
+	 * @deprecated Instead get {@link GibbsOptions#initialTemperature} option using {@link #getOption}.
+	 */
+	@Deprecated
 	public double getInitialTemperature() {return _initialTemperature;}
-	protected void configureInitialTemperature(double initialTemperature) {_initialTemperature = initialTemperature;}	// Don't automatically enable tempering
 	
-	// Set/get the tempering half-life -- the number of *samples* for the temperature to decrease by half
-	public void setTemperingHalfLifeInSamples(double temperingHalfLifeInSamples) {_temper = true; _temperingDecayConstant = 1 - LOG2/temperingHalfLifeInSamples;}
+	/**
+	 * @deprecated Instead set {@link GibbsOptions#temperingHalfLife} option using {@link #setOption}.
+	 */
+	@Deprecated
+	public void setTemperingHalfLifeInSamples(double temperingHalfLifeInSamples)
+	{
+		setOption(GibbsOptions.temperingHalfLife, temperingHalfLifeInSamples);
+		setTempering(true);
+		_temperingDecayConstant = 1 - LOG2/temperingHalfLifeInSamples;
+	}
+	
+	/**
+	 * @deprecated Instead get {@link GibbsOptions#temperingHalfLife} option using {@link #getOption}.
+	 */
+	@Deprecated
 	public double getTemperingHalfLifeInSamples() {return LOG2/(1 - _temperingDecayConstant);}
-	protected void configureTemperingHalfLifeInSamples(double temperingHalfLifeInSamples) {_temperingDecayConstant = 1 - LOG2/temperingHalfLifeInSamples;}	// Don't automatically enable tempering
 	
-	// Enable or disable the use of tempering
-	protected void setTempering(boolean temper) {_temper = temper;}
-	public void enableTempering() {_temper = true;}
-	public void disableTempering() {_temper = false;}
-	public boolean isTemperingEnabled() {return _temper;}
+	/**
+	 * @deprecated Instead set {@link GibbsOptions#enableTempering} option using {@link #setOption}.
+	 */
+	@Deprecated
+	protected void setTempering(boolean temper)
+	{
+		setOption(GibbsOptions.enableTempering, temper);
+		_temper = temper;
+	}
+
+	/**
+	 * @deprecated Instead set {@link GibbsOptions#enableTempering} option to true using {@link #setOption}.
+	 */
+	@Deprecated
+	public final void enableTempering()
+	{
+		setTempering(true);
+	}
+
+	/**
+	 * @deprecated Instead set {@link GibbsOptions#enableTempering} option to false using {@link #setOption}.
+	 */
+	@Deprecated
+	public final void disableTempering()
+	{
+		setTempering(false);
+	}
 	
-	
+	/**
+	 * @deprecated Instead get {@link GibbsOptions#enableTempering} option using {@link #getOption}.
+	 */
+	@Deprecated
+	public boolean isTemperingEnabled()
+	{
+		return _temper;
+	}
 	
 	// Helpers for operating on pre-specified groups of variables in the graph
 	public double[] getVariableSampleValues(int variableGroupID)
