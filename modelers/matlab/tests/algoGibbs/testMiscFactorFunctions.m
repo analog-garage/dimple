@@ -22,7 +22,7 @@ repeatable = true;
 dtrace(debugPrint, '++testMiscFactorFunctions');
 
 if (repeatable)
-    seed = 1;
+    seed = 2;
     rs=RandStream('mt19937ar');
     RandStream.setGlobalStream(rs);
     reset(rs,seed);
@@ -57,23 +57,27 @@ for trial = 1:2
     c2 = Complex;
     rc1 = Real(1,2);
     rc2 = Real(1,2);
-    
+    j33 = RealJoint(3);
+    r3 = Real;
+
     if trial == 1
         fg.addFactor('RealJointToRealVector',r31,j31);
         fg.addFactor('RealVectorToRealJoint',j32,r32);
-        fg.addFactor('ComplexToRealVector',rc1,c1);
-        fg.addFactor('RealVectorToComplex',c2,rc2);
+        fg.addFactor('ComplexToRealAndImaginary',rc1,c1);
+        fg.addFactor('RealAndImaginaryToComplex',c2,rc2);
+        fg.addFactor({'RealJointProjection',1},r3,j33);
         tolerance = 0.1;
     else
         smoothing = 1;
         fg.addFactor({'RealJointToRealVector',smoothing},r31,j31);
         fg.addFactor({'RealVectorToRealJoint',smoothing},j32,r32);
-        fg.addFactor({'ComplexToRealVector',smoothing},rc1,c1);
-        fg.addFactor({'RealVectorToComplex',smoothing},c2,rc2);
+        fg.addFactor({'ComplexToRealAndImaginary',smoothing},rc1,c1);
+        fg.addFactor({'RealAndImaginaryToComplex',smoothing},c2,rc2);
+        fg.addFactor({'RealJointProjection',1,smoothing},r3,j33);
         tolerance = 0.25;
     end
     
-    ff = cell(1,10);
+    ff = cell(1,13);
     means = zeros(size(ff));
     precisions = zeros(size(ff));
     for i=1:length(ff)
@@ -88,6 +92,7 @@ for trial = 1:2
     c1.Input = {ff{7},ff{8}};
     rc2(1).Input = ff{9};
     rc2(2).Input = ff{10};
+    j33.Input = {ff{11},ff{12},ff{13}};
     
     fg.solve();
     
@@ -105,6 +110,8 @@ for trial = 1:2
     rc1s2 = rc1(2).Solver.getAllSamples;
     rc2s1 = rc2(1).Solver.getAllSamples;
     rc2s2 = rc2(2).Solver.getAllSamples;
+    j33s = j33.Solver.getAllSamples;
+    r3s = r3.Solver.getAllSamples;
     
     if (trial == 1) % Without smoothing, samples should be exact
         assertElementsAlmostEqual(j31s(:,1), r31s1);
@@ -118,6 +125,8 @@ for trial = 1:2
         assertElementsAlmostEqual(c1s(:,2), rc1s2);
         assertElementsAlmostEqual(c2s(:,1), rc2s1);
         assertElementsAlmostEqual(c2s(:,2), rc2s2);
+        
+        assertElementsAlmostEqual(j33s(:,2), r3s);
     end
     
     assertElementsAlmostEqual(means(1), mean(r31s1), 'absolute', tolerance);
@@ -130,6 +139,7 @@ for trial = 1:2
     assertElementsAlmostEqual(means(8), mean(rc1s2), 'absolute', tolerance);
     assertElementsAlmostEqual(means(9), mean(c2s(:,1)), 'absolute', tolerance);
     assertElementsAlmostEqual(means(10), mean(c2s(:,2)), 'absolute', tolerance);
+    assertElementsAlmostEqual(means(12), mean(r3s), 'absolute', tolerance);
     
 end
 

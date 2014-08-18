@@ -9,7 +9,7 @@ Significant New Features Since v0.06
 
 - DimpleEnvironment provides some facilities that can be shared among multiple graphs, including a logging interface.
 
-- Added built-in factors to convert between vectors of Real variables and RealJoint or Complex variables.
+- Added built-in factors to convert between vectors of Real variables and RealJoint or Complex variables (ComplexToRealAndImaginary, RealAndImaginaryToComplex, RealJointProjection, RealJointToRealVector, RealVectorToRealJoint).
 
 
 Significant Bug Fixes Since v0.06

@@ -51,6 +51,8 @@ ComplexProduct & out(C) \newline in...(C,R) & [smoothing] & Deterministic comple
 ComplexSubtract & out(C) \newline posIn(C,R) \newline negIn...(C,R) & [smoothing] & Deterministic complex subtraction function, where $\mathrm{out} = \mathrm{posIn} - \sum \mathrm{negIn}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
 ComplexSum & out(C) \newline in...(C,R) & [smoothing] & Deterministic complex summation function, where $\mathrm{out} = \sum \mathrm{in}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+ComplexTo\newline RealAndImaginary & outReal(R) \newline outImag(R) \newline in(RJ) &  [smoothing] & Deterministic conversion of a Complex variable to two Real variables, with the first representing the real component and the second representing the imaginary component. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %%
 %% Primarily for testing, need not be listed here.
 %ConstantPower & out(D,R) \newline base(D,R) & power \newline [smoothing] & Deterministic power function, with a constant power. The power value is specified in the constructor. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
@@ -151,11 +153,19 @@ Product & out(D,R) \newline in...(B,D,R) & [smoothing] & Deterministic product f
 %
 Rayleigh & [$\sigma$](R) \newline value...(R) & [$\sigma$] & Rayleigh distribution. There can be any number of value variables, all associated with the same parameter value.  Parameter $\sigma$ can be a variable, or if constant, can be specified in the constructor. \\
 %
+RealAndImaginary\newline ToComplex & out(C) \newline inReal(R) \newline inImag(R) & [smoothing] & Deterministic conversion of two Real variables to a Complex variable, where the first input represents the real component and the second represents the imaginary component.  An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
 RealJointNegate & out(RJ) \newline in(RJ) & [smoothing] & Deterministic negation function for RealJoint variables, where out = -in. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+RealJointProjection & out(R) \newline in(RJ) & index \newline [smoothing] & Deterministic conversion of a RealJoint variable to a Real variable corresponding to one specific element of the RealJoint variable.  The $index$ constructor argument indicates which element of the RealJoint variable to be used (using zero-based numbering).  An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
 RealJointSubtract & out(RJ) \newline posIn(RJ) \newline negIn...(RJ) & [smoothing] & Deterministic subtraction function for RealJoint variables, where $\mathrm{out} = \mathrm{posIn} - \sum \mathrm{negIn}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
 RealJointSum & out(RJ) \newline in...(RJ) & [smoothing] & Deterministic summation function for RealJoint variables, where $\mathrm{out} = \sum \mathrm{in}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+RealJointTo\newline RealVector & out...(R) \newline in(RJ) & [smoothing] & Deterministic conversion of a RealJoint variable to a vector of Real variables.  An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+RealVectorTo\newline RealJoint & out(RJ) \newline in...(R) & [smoothing] & Deterministic conversion of a vector of Real variables to a RealJoint variable.  An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
 Sin & out(D,R) \newline in(D,R) & [smoothing] & Deterministic sine function, where out = sin(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
