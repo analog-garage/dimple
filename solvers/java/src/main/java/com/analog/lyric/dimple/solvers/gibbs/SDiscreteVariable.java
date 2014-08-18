@@ -22,6 +22,8 @@ import static java.util.Objects.*;
 import java.util.Arrays;
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import cern.colt.list.IntArrayList;
 
 import com.analog.lyric.collect.ArrayUtil;
@@ -43,7 +45,6 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IGenericSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IMCMCSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.primitives.Doubles;
 
 
@@ -439,12 +440,14 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	public final void saveAllSamples()
     {
     	_sampleIndexArray = new IntArrayList();
+    	setOption(GibbsOptions.saveAllSamples, true);
     }
     
     @Override
 	public void disableSavingAllSamples()
     {
     	_sampleIndexArray = null;
+    	setOption(GibbsOptions.saveAllSamples, false);
     }
     
     @Override
@@ -595,7 +598,9 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     	final IntArrayList sampleIndexArray = _sampleIndexArray;
     	
 		if (sampleIndexArray == null)
-			throw new DimpleException("No samples saved. Must call saveAllSamples on variable or entire graph prior to solving");
+		{
+			return ArrayUtil.EMPTY_OBJECT_ARRAY;
+		}
 		int length = sampleIndexArray.size();
     	DiscreteDomain domain = _varDiscrete.getDiscreteDomain();
     	Object[] retval = new Object[length];
@@ -608,7 +613,9 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     	final IntArrayList sampleIndexArray = _sampleIndexArray;
 
     	if (sampleIndexArray == null)
-			throw new DimpleException("No samples saved. Must call saveAllSamples on variable or entire graph prior to solving");
+    	{
+    		return ArrayUtil.EMPTY_INT_ARRAY;
+    	}
     	
     	return Arrays.copyOf(sampleIndexArray.elements(), sampleIndexArray.size());
     }
@@ -827,6 +834,8 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	@Override
 	public void initialize()
 	{
+		final boolean saveAllSamples = getOptionOrDefault(GibbsOptions.saveAllSamples);
+		
 		super.initialize();
 		
 		// We actually only need to change this if the model has changed in the vicinity of this variable,
@@ -835,11 +844,20 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		
 		// Clear out sample state
 		_bestSampleIndex = -1;
-		final IntArrayList sampleIndexArray = _sampleIndexArray;
-		if (sampleIndexArray != null)
-			sampleIndexArray.clear();
-		else if (((GibbsSolverGraph)requireNonNull(requireNonNull(_var.getRootGraph()).getSolver())).isSavingAllSamplesEnabled())
-			saveAllSamples();
+		IntArrayList sampleIndexArray = null;
+		if (saveAllSamples)
+		{
+			sampleIndexArray = _sampleIndexArray;
+			if (sampleIndexArray == null)
+			{
+				sampleIndexArray = new IntArrayList();
+			}
+			else
+			{
+				sampleIndexArray.clear();
+			}
+		}
+		_sampleIndexArray = sampleIndexArray;
 
 		Arrays.fill(_beliefHistogram, 0);
 		

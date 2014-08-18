@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
@@ -56,7 +59,6 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.MHSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.math.DimpleRandomGenerator;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.primitives.Doubles;
 
 /**** WARNING: Whenever editing this class, also make the corresponding edit to SRealVariable.
@@ -585,12 +587,14 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	public final void saveAllSamples()
 	{
 		_sampleArray = new ArrayList<double[]>();
+		setOption(GibbsOptions.saveAllSamples, true);
 	}
 
     @Override
 	public void disableSavingAllSamples()
     {
     	_sampleArray = null;
+		setOption(GibbsOptions.saveAllSamples, false);
     }
     
 	@Override
@@ -729,7 +733,9 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	{
 		final ArrayList<double[]> sampleArray = _sampleArray;
 		if (sampleArray == null)
-			throw new DimpleException("No samples saved. Must call saveAllSamples on variable or entire graph prior to solving");
+		{
+			return ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+		}
 		int length = sampleArray.size();
 		double[][] retval = new double[length][];
 		for (int i = 0; i < length; i++)
@@ -945,6 +951,8 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	@Override
 	public void initialize()
 	{
+		final boolean saveAllSamples = getOptionOrDefault(GibbsOptions.saveAllSamples);
+		
 		super.initialize();
 
 		// We actually only need to change this if the model has changed in the vicinity of this variable,
@@ -960,11 +968,20 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		
 		// Clear out sample state
 		_bestSampleValue = _sampleValue;
-		final ArrayList<double[]> sampleArray = _sampleArray;
-		if (sampleArray != null)
-			sampleArray.clear();
-		else if (((GibbsSolverGraph)requireNonNull(requireNonNull(_var.getRootGraph()).getSolver())).isSavingAllSamplesEnabled())
-			saveAllSamples();
+		ArrayList<double[]> sampleArray = null;
+		if (saveAllSamples)
+		{
+			sampleArray = _sampleArray;
+			if (sampleArray == null)
+			{
+				sampleArray = new ArrayList<double[]>();
+			}
+			else
+			{
+				sampleArray.clear();
+			}
+		}
+		_sampleArray = sampleArray;
 		
 		// Determine which sampler to use
 		if (_samplerSpecificallySpecified)
