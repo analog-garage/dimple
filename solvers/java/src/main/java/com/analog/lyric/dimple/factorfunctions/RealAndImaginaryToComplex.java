@@ -32,17 +32,18 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
  * The variables are ordered as follows in the argument list:
  * 
  * 1) Output (Complex vector)
- * 2, 3) Input (vector of two Real variables)
+ * 2) Input real-part (Real)
+ * 3) Input imaginary-part (Real)
  * 
  * @since 0.07
  */
-public class RealVectorToComplex extends FactorFunction
+public class RealAndImaginaryToComplex extends FactorFunction
 {
 	private double _beta = 0;
 	private boolean _smoothingSpecified = false;
 	
-	public RealVectorToComplex() {this(0);}
-	public RealVectorToComplex(double smoothing)
+	public RealAndImaginaryToComplex() {this(0);}
+	public RealAndImaginaryToComplex(double smoothing)
 	{
 		super();
 		if (smoothing > 0)

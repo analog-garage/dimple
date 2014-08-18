@@ -32,8 +32,8 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
  * 
  * The variables are ordered as follows in the argument list:
  * 
- * 1...N) Output (Real vector)
- * N+1) Input (RealJoint - must have dimension N)
+ * 1) Output (Real vector)
+ * 2) Input (RealJoint - must have dimension equal to the number of Real output variables)
  * 
  * @since 0.07
  */

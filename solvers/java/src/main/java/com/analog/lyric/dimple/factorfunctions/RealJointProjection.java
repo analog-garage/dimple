@@ -16,13 +16,13 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 
 
 /**
- * Deterministic conversion of a vector of real variables to a real-joint variable.
+ * Deterministic conversion of a real-joint variable to a real variable
+ * corresponding to one specific element of the real-joint variable.
  * This is a deterministic directed factor (if smoothing is not enabled).
  * 
  * Optional smoothing may be applied, by providing a smoothing value in the
@@ -32,20 +32,22 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
  * 
  * The variables are ordered as follows in the argument list:
  * 
- * 1) Output (RealJoint vector - dimension equal to the number of Real input variables)
- * 2) Input (vector of Real variables)
+ * 1) Output (Real)
+ * 2) Input (RealJoint)
  * 
  * @since 0.07
  */
-public class RealVectorToRealJoint extends FactorFunction
+public class RealJointProjection extends FactorFunction
 {
 	private double _beta = 0;
 	private boolean _smoothingSpecified = false;
+	private int _elementIndex;
 	
-	public RealVectorToRealJoint() {this(0);}
-	public RealVectorToRealJoint(double smoothing)
+	public RealJointProjection(int elementIndex) {this(elementIndex, 0);}
+	public RealJointProjection(int elementIndex, double smoothing)
 	{
 		super();
+		_elementIndex = elementIndex;
 		if (smoothing > 0)
 		{
 			_beta = 1 / smoothing;
@@ -56,29 +58,21 @@ public class RealVectorToRealJoint extends FactorFunction
     @Override
     public double evalEnergy(Object ... arguments)
     {
-    	final int dimension = arguments.length - 1;
-
-    	// Output RealJoint
-		final double[] joint = ((double[])arguments[0]);
-		if (dimension != joint.length) throw new DimpleException("RealJoint argument does not have the correct dimension");
+    	// Input RealJoint
+		final double[] joint = ((double[])arguments[1]);
     	
     	if (_smoothingSpecified)
     	{
-    		double potential = 0;
-    		for (int d = 0; d < dimension; d++)
-    		{
-    			double diff = FactorFunctionUtilities.toDouble(arguments[d + 1]) - joint[d];
-    			potential += diff*diff;
-    		}
+    		final double diff = FactorFunctionUtilities.toDouble(arguments[0]) - joint[_elementIndex];
+    		final double potential = diff*diff;
     		return potential*_beta;
     	}
     	else
     	{
-    		boolean equal = true;
-    		for (int d = 0; d < dimension; d++)
-    			if (FactorFunctionUtilities.toDouble(arguments[d + 1]) != joint[d])
-    				equal = false;
-    		return (equal) ? 0 : Double.POSITIVE_INFINITY;
+    		if (FactorFunctionUtilities.toDouble(arguments[0]) == joint[_elementIndex])
+    			return 0;
+    		else
+    			return Double.POSITIVE_INFINITY;
     	}
     }
     
@@ -92,13 +86,6 @@ public class RealVectorToRealJoint extends FactorFunction
     @Override
 	public final void evalDeterministic(Object[] arguments)
     {
-    	final int dimension = arguments.length - 1;
-
-    	// Output RealJoint
-		final double[] joint = ((double[])arguments[0]);
-		if (dimension != joint.length) throw new DimpleException("RealJoint argument does not have the correct dimension");
-
-		for (int d = 0; d < dimension; d++)
-			joint[d] = (Double)arguments[d + 1];
+		arguments[0] = ((double[])arguments[1])[_elementIndex];
     }
 }
