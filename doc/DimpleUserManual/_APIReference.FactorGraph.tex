@@ -239,9 +239,9 @@ be = fg.getBetheEntropy();
 MyGraph.addFactor(factorSpecification, variableList);
 \end{lstlisting}
 
-The addFactor method is used to add a factor to a factor-graph, connecting that factor to a specified set of variables. There are several ways of specifying the factor.  The method takes a factorSpecification argument followed by a comma-separated list of variables or variable arrays.
+The addFactor method is used to add a factor to a factor-graph, connecting that factor to a specified set of variables. There are several ways of specifying the factor.  The method takes a factorSpecification argument followed by a comma-separated list of variables or \ifmatlab variable arrays\fi \ifjava a single variable array\fi.
 
-The list of variables or variable arrays indicate which variables to connect to the factor.  The order of the variables listed must correspond to the order of edges of the factor.   \ifmatlab  In the case of variable arrays, the array is flattened to a one-dimensional form using the usual MATLAB ordering, defining the order of the individual variables in the array.  In this ordering, the array is scanned in successive dimensions, beginning with the first (row) dimension (equivalent to the MATLAB \texttt{(:)} operator). \fi
+The list of variables \ifmatlab or variable arrays \fi indicates which variables to connect to the factor.  The order of the variables listed must correspond to the order of edges of the factor.  \ifmatlab  In the case of variable arrays, the array is flattened to a one-dimensional form using the usual MATLAB ordering, defining the order of the individual variables in the array.  In this ordering, the array is scanned in successive dimensions, beginning with the first (row) dimension (equivalent to the MATLAB \texttt{(:)} operator). \fi
 
 Some of the variables may be replaced by constants.  In this case, no variable is created, but instead the specified constant value is used in place of a variable for the corresponding edge of the factor.  The value of a constant must be a valid value given the definition of the corresponding factor.  \ifmatlab Constants may be arrays, but in this case, they are not flattened.  Instead they are treated as array-valued constants\footnote{This is because Dimple supports variables that have domains for which individual domain elements are arrays.}.  \fi
 
