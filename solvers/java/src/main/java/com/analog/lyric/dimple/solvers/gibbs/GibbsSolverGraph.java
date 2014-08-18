@@ -481,14 +481,20 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		return totalPotential;
 	}
 	
-	// Before running, calling this method instructs the solver to save all sample values for all variables in the graph
+	/**
+	 * @deprecated Instead set {@link GibbsOptions#saveAllSamples} to true using {@link #setOption}.
+	 */
+	@Deprecated
 	@SuppressWarnings("null")
 	public void saveAllSamples()
 	{
 		setOption(GibbsOptions.saveAllSamples, true);
 	}
 	
-	// Disable saving all samples if it had previously been set
+	/**
+	 * @deprecated Instead set {@link GibbsOptions#saveAllSamples} to false using {@link #setOption}.
+	 */
+	@Deprecated
 	@SuppressWarnings("null")
 	public void disableSavingAllSamples()
 	{

@@ -436,6 +436,10 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		_defaultSamplerName = ((GibbsSolverGraph)_var.getRootGraph().getSolver()).getDefaultDiscreteSampler();
 	}
 	
+	/**
+	 * @deprecated Instead set {@link GibbsOptions#saveAllSamples} to true using {@link #setOption}.
+	 */
+	@Deprecated
     @Override
 	public final void saveAllSamples()
     {
@@ -443,6 +447,10 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     	setOption(GibbsOptions.saveAllSamples, true);
     }
     
+	/**
+	 * @deprecated Instead set {@link GibbsOptions#saveAllSamples} to false using {@link #setOption}.
+	 */
+	@Deprecated
     @Override
 	public void disableSavingAllSamples()
     {

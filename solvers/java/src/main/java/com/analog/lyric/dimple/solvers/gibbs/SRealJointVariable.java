@@ -583,6 +583,10 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 			return _sampleValue;
 	}
 	
+	/**
+	 * @deprecated Instead set {@link GibbsOptions#saveAllSamples} to true using {@link #setOption}.
+	 */
+	@Deprecated
 	@Override
 	public final void saveAllSamples()
 	{
@@ -590,6 +594,10 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		setOption(GibbsOptions.saveAllSamples, true);
 	}
 
+	/**
+	 * @deprecated Instead set {@link GibbsOptions#saveAllSamples} to false using {@link #setOption}.
+	 */
+	@Deprecated
     @Override
 	public void disableSavingAllSamples()
     {

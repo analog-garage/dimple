@@ -475,6 +475,10 @@ public class SRealVariable extends SRealVariableBase
 			return Double.valueOf(_sampleValue);
 	}
 
+	/**
+	 * @deprecated Instead set {@link GibbsOptions#saveAllSamples} to true using {@link #setOption}.
+	 */
+	@Deprecated
 	@Override
 	public final void saveAllSamples()
 	{
@@ -482,6 +486,10 @@ public class SRealVariable extends SRealVariableBase
 		setOption(GibbsOptions.saveAllSamples, true);
 	}
 
+	/**
+	 * @deprecated Instead set {@link GibbsOptions#saveAllSamples} to false using {@link #setOption}.
+	 */
+	@Deprecated
     @Override
 	public void disableSavingAllSamples()
     {

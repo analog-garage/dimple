@@ -20,6 +20,8 @@ import static java.util.Objects.*;
 
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import cern.colt.list.DoubleArrayList;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -28,8 +30,8 @@ import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.sumproduct.SRealVariable;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class NormalMessageTranslator extends MessageTranslatorBase
 {
@@ -53,10 +55,7 @@ public class NormalMessageTranslator extends MessageTranslatorBase
 	@Override
 	public final void setMessageDirection(MessageDirection messageDirection)
 	{
-		if (messageDirection == MessageDirection.OUTPUT)
-			_solverVariable.saveAllSamples();
-		else
-			_solverVariable.disableSavingAllSamples();
+		_solverVariable.setOption(GibbsOptions.saveAllSamples, messageDirection == MessageDirection.OUTPUT);
 	}
 	
 	@Override
