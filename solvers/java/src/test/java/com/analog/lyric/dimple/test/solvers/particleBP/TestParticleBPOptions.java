@@ -39,9 +39,9 @@ import com.analog.lyric.dimple.test.DimpleTestBase;
  * @since 0.07
  * @author Christopher Barber
  */
+@SuppressWarnings({"null", "deprecation"})
 public class TestParticleBPOptions extends DimpleTestBase
 {
-	@SuppressWarnings("null")
 	@Test
 	public void test()
 	{

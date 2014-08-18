@@ -87,7 +87,11 @@ public class ParticleBPOptions extends SolverOptions
 		new IntegerOptionKey(ParticleBPOptions.class, "resamplingUpdatesPerParticle", 1, 1, Integer.MAX_VALUE);
 	
 	/**
-	 * <description>
+	 * Specifies the temperature decay rate for annealing in particle BP solver.
+	 * <p>
+	 * Specifies the rate at which the temperature will be lowered during simulated annealing
+	 * in particle BP solver in terms of the number of iterations it will take for the temperature to
+	 * be lowered by half.
 	 * <p>
 	 * @since 0.07
 	 */

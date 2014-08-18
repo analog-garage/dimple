@@ -187,7 +187,10 @@ public class ParticleBPSolverGraph extends SFactorGraphBase
 	
 	public int getNumIterationsBetweenResampling() {return _numIterationsBetweenResampling;}
 	
-	// Set/get the initial temperature when using tempering
+	/**
+	 * @deprecated Instead set {@link ParticleBPOptions#initialTemperature} option using {@link #setOption}.
+	 */
+	@Deprecated
 	public void setInitialTemperature(double initialTemperature)
 	{
 		setOption(ParticleBPOptions.initialTemperature, initialTemperature);
@@ -195,9 +198,16 @@ public class ParticleBPSolverGraph extends SFactorGraphBase
 		_initialTemperature = initialTemperature;
 	}
 	
+	/**
+	 * @deprecated Instead get {@link ParticleBPOptions#initialTemperature} option using {@link #getOption}.
+	 */
+	@Deprecated
 	public double getInitialTemperature() {return _initialTemperature;}
 	
-	// Set/get the tempering half-life -- the number of *samples* for the temperature to decrease by half
+	/**
+	 * @deprecated Instead set {@link ParticleBPOptions#temperingHalfLife} option using {@link #setOption}.
+	 */
+	@Deprecated
 	public void setTemperingHalfLifeInIterations(double temperingHalfLifeInIterations)
 	{
 		setOption(ParticleBPOptions.temperingHalfLife, temperingHalfLifeInIterations);
@@ -205,25 +215,44 @@ public class ParticleBPSolverGraph extends SFactorGraphBase
 		_temperingDecayConstant = 1 - LOG2/temperingHalfLifeInIterations;
 	}
 	
+	/**
+	 * @deprecated Instead get {@link ParticleBPOptions#temperingHalfLife} option using {@link #getOption}.
+	 */
+	@Deprecated
 	public double getTemperingHalfLifeInIterations() {return LOG2/(1 - _temperingDecayConstant);}
 	
-	// Enable or disable the use of tempering
+	/**
+	 * @deprecated Instead set {@link ParticleBPOptions#enableTempering} option using {@link #setOption}.
+	 */
+	@Deprecated
 	protected void setTempering(boolean temper)
 	{
 		setOption(ParticleBPOptions.enableTempering, temper);
 		_temper = temper;
 	}
 
+	/**
+	 * @deprecated Instead set {@link ParticleBPOptions#enableTempering} option to true using {@link #setOption}.
+	 */
+	@Deprecated
 	public final void enableTempering()
 	{
 		setTempering(true);
 	}
 
+	/**
+	 * @deprecated Instead set {@link ParticleBPOptions#enableTempering} option to false using {@link #setOption}.
+	 */
+	@Deprecated
 	public final void disableTempering()
 	{
 		setTempering(false);
 	}
 	
+	/**
+	 * @deprecated Instead get {@link ParticleBPOptions#enableTempering} option using {@link #getOption}.
+	 */
+	@Deprecated
 	public boolean isTemperingEnabled()
 	{
 		return _temper;
