@@ -21,14 +21,16 @@ import static java.util.Objects.*;
 import java.util.List;
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.MultivariateNormal;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.sumproduct.SRealJointVariable;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class MultivariateNormalMessageTranslator extends MessageTranslatorBase
 {
@@ -50,10 +52,7 @@ public class MultivariateNormalMessageTranslator extends MessageTranslatorBase
 	@Override
 	public final void setMessageDirection(MessageDirection messageDirection)
 	{
-		if (messageDirection == MessageDirection.OUTPUT)
-			_solverVariable.saveAllSamples();
-		else
-			_solverVariable.disableSavingAllSamples();
+		_solverVariable.setOption(GibbsOptions.saveAllSamples, messageDirection == MessageDirection.OUTPUT);
 	}
 	
 	@Override

@@ -26,8 +26,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import cern.colt.list.DoubleArrayList;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
@@ -57,7 +60,6 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.util.misc.Internal;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.primitives.Doubles;
 
 /**** WARNING: Whenever editing this class, also make the corresponding edit to SRealJointVariable.
@@ -473,16 +475,26 @@ public class SRealVariable extends SRealVariableBase
 			return Double.valueOf(_sampleValue);
 	}
 
+	/**
+	 * @deprecated Instead set {@link GibbsOptions#saveAllSamples} to true using {@link #setOption}.
+	 */
+	@Deprecated
 	@Override
 	public final void saveAllSamples()
 	{
 		_sampleArray = new DoubleArrayList();
+		setOption(GibbsOptions.saveAllSamples, true);
 	}
 
+	/**
+	 * @deprecated Instead set {@link GibbsOptions#saveAllSamples} to false using {@link #setOption}.
+	 */
+	@Deprecated
     @Override
 	public void disableSavingAllSamples()
     {
     	_sampleArray = null;
+		setOption(GibbsOptions.saveAllSamples, false);
     }
     
 	@Override
@@ -582,7 +594,9 @@ public class SRealVariable extends SRealVariableBase
 	{
 		final DoubleArrayList sampleArray = _sampleArray;
 		if (sampleArray == null)
-			throw new DimpleException("No samples saved. Must call saveAllSamples on variable or entire graph prior to solving");
+		{
+			return ArrayUtil.EMPTY_DOUBLE_ARRAY;
+		}
 		
 		return Arrays.copyOf(sampleArray.elements(), sampleArray.size());
 	}
@@ -793,6 +807,8 @@ public class SRealVariable extends SRealVariableBase
 	@Override
 	public void initialize()
 	{
+		final boolean saveAllSamples = getOptionOrDefault(GibbsOptions.saveAllSamples);
+		
 		super.initialize();
 
 		// We actually only need to change this if the model has changed in the vicinity of this variable,
@@ -809,11 +825,20 @@ public class SRealVariable extends SRealVariableBase
 		
 		// Clear out sample state
 		_bestSampleValue = _sampleValue;
-		final DoubleArrayList sampleArray = _sampleArray;
-		if (sampleArray != null)
-			sampleArray.clear();
-		else if (((GibbsSolverGraph)requireNonNull(requireNonNull(_var.getRootGraph()).getSolver())).isSavingAllSamplesEnabled())
-			saveAllSamples();
+		DoubleArrayList sampleArray = null;
+		if (saveAllSamples)
+		{
+			sampleArray = _sampleArray;
+			if (sampleArray == null)
+			{
+				sampleArray = new DoubleArrayList();
+			}
+			else
+			{
+				sampleArray.clear();
+			}
+		}
+		_sampleArray = sampleArray;
 		
 		// Determine which sampler to use
 		if (_samplerSpecificallySpecified)

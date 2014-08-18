@@ -37,12 +37,12 @@ public class GibbsOptions extends SolverOptions
 	 * <p>
 	 * The effective updates per burn-in will be the number of variables to be updated in the graph times this number.
 	 * <p>
-	 * Must be non-negative. The default value is zero.
+	 * The default value is zero.
 	 * <p>
 	 * @since 0.07
 	 */
 	public static final IntegerOptionKey burnInScans =
-		new IntegerOptionKey(GibbsOptions.class, "burnInScans", -1);
+		new IntegerOptionKey(GibbsOptions.class, "burnInScans", 0, -1, Integer.MAX_VALUE);
 	
 	/**
 	 * The number of samples to generate per restart in Gibbs solver.
@@ -67,7 +67,7 @@ public class GibbsOptions extends SolverOptions
 	 * @since 0.07
 	 */
 	public static final IntegerOptionKey scansPerSample =
-		new IntegerOptionKey(GibbsOptions.class, "scansPerSample", 1);
+		new IntegerOptionKey(GibbsOptions.class, "scansPerSample", 1, -1, Integer.MAX_VALUE);
 	
 	/**
 	 * The number of times to randomly restart during one round of Gibbs sampling.
@@ -87,22 +87,30 @@ public class GibbsOptions extends SolverOptions
 		new IntegerOptionKey(GibbsOptions.class, "numRandomRestarts", 0, 0, Integer.MAX_VALUE);
 	
 	/**
-	 * <description>
+	 * Enables use of a tempering and annealing process in Gibbs solver.
+	 * <p>
+	 * Defaults to false.
+	 * <p>
+	 * @since 0.07
 	 */
 	public static final BooleanOptionKey enableTempering =
 		new BooleanOptionKey(GibbsOptions.class, "enableTempering", false);
 	
 	/**
-	 * <description>
+	 * Specifies the initial temperature for annealing in Gibbs solver.
+	 * <p>
+	 * Defaults to 1.0.
+	 * <p>
+	 * @since 0.07
 	 */
 	public static final DoubleOptionKey initialTemperature =
-		new DoubleOptionKey(GibbsOptions.class, "initialTemperature", 1);
+		new DoubleOptionKey(GibbsOptions.class, "initialTemperature", 1.0, 0.0, Double.MAX_VALUE);
 	
 	/**
 	 * <description>
 	 */
 	public static final DoubleOptionKey temperingHalfLife =
-		new DoubleOptionKey(GibbsOptions.class, "temperingHalfLife", 1);
+		new DoubleOptionKey(GibbsOptions.class, "temperingHalfLife", 1, 1.0, Double.MAX_VALUE);
 	
 	/**
 	 * <description>
@@ -117,7 +125,11 @@ public class GibbsOptions extends SolverOptions
 		new StringOptionKey(GibbsOptions.class, "realSampler", SRealVariable.DEFAULT_REAL_SAMPLER_NAME);
 	
 	/**
-	 * <description>
+	 * Specifies whether to save sample values for variables in Gibbs solver.
+	 * <p>
+	 * Defaults to false.
+	 * <p>
+	 * @since 0.07
 	 */
 	public static final BooleanOptionKey saveAllSamples =
 		new BooleanOptionKey(GibbsOptions.class, "saveAllSamples", false);

@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import cern.colt.list.DoubleArrayList;
 
 import com.analog.lyric.collect.ArrayUtil;
@@ -87,7 +89,6 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.math.DimpleRandomGenerator;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Solver-specific factor graph for Gibbs solver.
@@ -113,7 +114,6 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	private double _temperature;
 	private double _minPotential = Double.MAX_VALUE;
 	private boolean _firstSample = true;
-	private boolean _saveAllSamples = false;
 	private @Nullable DoubleArrayList _scoreArray;
 	private String _defaultRealSamplerName = SRealVariable.DEFAULT_REAL_SAMPLER_NAME;
 	private String _defaultDiscreteSamplerName = SDiscreteVariable.DEFAULT_DISCRETE_SAMPLER_NAME;
@@ -481,27 +481,24 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		return totalPotential;
 	}
 	
-	// Before running, calling this method instructs the solver to save all sample values for all variables in the graph
+	/**
+	 * @deprecated Instead set {@link GibbsOptions#saveAllSamples} to true using {@link #setOption}.
+	 */
+	@Deprecated
 	@SuppressWarnings("null")
 	public void saveAllSamples()
 	{
-		_saveAllSamples = true;
-		for (VariableBase v : _factorGraph.getVariables())
-			getSolverVariable(v).saveAllSamples();
+		setOption(GibbsOptions.saveAllSamples, true);
 	}
 	
-	// Disable saving all samples if it had previously been set
+	/**
+	 * @deprecated Instead set {@link GibbsOptions#saveAllSamples} to false using {@link #setOption}.
+	 */
+	@Deprecated
 	@SuppressWarnings("null")
 	public void disableSavingAllSamples()
 	{
-		_saveAllSamples = true;
-		for (VariableBase v : _factorGraph.getVariables())
-			((ISolverVariableGibbs)(v.getSolver())).disableSavingAllSamples();
-	}
-	
-	protected boolean isSavingAllSamplesEnabled()
-	{
-		return _saveAllSamples;
+		setOption(GibbsOptions.saveAllSamples, false);
 	}
 	
 	// Before running, calling this method instructs the solver to save the score (energy/likelihood) values for each sample
@@ -591,6 +588,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	@Deprecated
 	public void setUpdatesPerSample(int updatesPerSample)
 	{
+		// TODO: when this method is removed, change the range of scansPerSample to [0,max]
 		_updatesPerSample = updatesPerSample;
 		setOption(GibbsOptions.scansPerSample, -1);
 		_scansPerSample = -1;	// Samples specified in updates rather than scans
@@ -645,8 +643,10 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	@Deprecated
 	public void setBurnInUpdates(int burnInUpdates)
 	{
+		// TODO: when this method is removed, change the range of burnInScans to [0,max]
 		_burnInUpdates = burnInUpdates;
 		_burnInScans = -1;		// Burn-in specified in updates rather than scans
+		setOption(GibbsOptions.burnInScans, -1);
 	}
 	
 	/**

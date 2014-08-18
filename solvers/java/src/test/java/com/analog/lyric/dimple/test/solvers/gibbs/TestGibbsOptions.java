@@ -23,9 +23,14 @@ import org.junit.Test;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.variables.Bit;
+import com.analog.lyric.dimple.model.variables.Real;
+import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
+import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
+import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
+import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
 /**
@@ -33,9 +38,9 @@ import com.analog.lyric.dimple.test.DimpleTestBase;
  * @since 0.07
  * @author Christopher Barber
  */
+@SuppressWarnings("deprecation")
 public class TestGibbsOptions extends DimpleTestBase
 {
-	@SuppressWarnings("deprecation")
 	@Test
 	public void test()
 	{
@@ -43,31 +48,58 @@ public class TestGibbsOptions extends DimpleTestBase
 		assertEquals(1, GibbsOptions.numSamples.defaultIntValue());
 		assertEquals(0, GibbsOptions.numRandomRestarts.defaultIntValue());
 		assertEquals(1, GibbsOptions.scansPerSample.defaultIntValue());
+		assertEquals(0, GibbsOptions.burnInScans.defaultIntValue());
+		assertFalse(GibbsOptions.saveAllSamples.defaultBooleanValue());
 		
 		// Build test graph
 		FactorGraph fg = new FactorGraph();
 		Bit b1 = new Bit();
 		Bit b2 = new Bit();
 		fg.addVariables(b1, b2);
+		Real r1 = new Real();
+		Real r2 = new Real();
+		fg.addVariables(r1, r2);
+		RealJoint j1 = new RealJoint(2);
+		RealJoint j2 = new RealJoint(2);
+		fg.addVariables(j1, j2);
 		int nVars = fg.getVariableCount();
 		
 		// Test default initialization
 		GibbsSolverGraph sfg = requireNonNull(fg.setSolverFactory(new GibbsSolver()));
+		SDiscreteVariable sb1 = (SDiscreteVariable)sfg.getSolverVariable(b1);
+		SDiscreteVariable sb2 = (SDiscreteVariable)sfg.getSolverVariable(b2);
+		SRealVariable sr1 = (SRealVariable)sfg.getSolverVariable(r1);
+		SRealVariable sr2 = (SRealVariable)sfg.getSolverVariable(r2);
+		SRealJointVariable sj1 = (SRealJointVariable)sfg.getSolverVariable(j1);
+		SRealJointVariable sj2 = (SRealJointVariable)sfg.getSolverVariable(j2);
 		
 		assertEquals(GibbsOptions.numSamples.defaultIntValue(), sfg.getNumSamples());
 		assertEquals(GibbsOptions.numRandomRestarts.defaultIntValue(), sfg.getNumRestarts());
+		assertEquals(nVars * GibbsOptions.burnInScans.defaultIntValue(), sfg.getBurnInUpdates());
 		
 		sfg.initialize();
 		assertEquals(GibbsOptions.numSamples.defaultIntValue(), sfg.getNumSamples());
 		assertEquals(GibbsOptions.numRandomRestarts.defaultIntValue(), sfg.getNumRestarts());
-		assertEquals(nVars, sfg.getUpdatesPerSample()); // because scansPerSample is 1
+		assertEquals(nVars * GibbsOptions.scansPerSample.defaultIntValue(), sfg.getUpdatesPerSample());
+		assertEquals(nVars * GibbsOptions.burnInScans.defaultIntValue(), sfg.getBurnInUpdates());
 		
 		// Test initialization from options
 		fg.setSolverFactory(null);
 		sfg = requireNonNull(fg.setSolverFactory(new GibbsSolver()));
+		sb1 = requireNonNull((SDiscreteVariable)sfg.getSolverVariable(b1));
+		sb2 = requireNonNull((SDiscreteVariable)sfg.getSolverVariable(b2));
+		sr1 = requireNonNull((SRealVariable)sfg.getSolverVariable(r1));
+		sr2 = requireNonNull((SRealVariable)sfg.getSolverVariable(r2));
+		sj1 = requireNonNull((SRealJointVariable)sfg.getSolverVariable(j1));
+		sj2 = requireNonNull((SRealJointVariable)sfg.getSolverVariable(j2));
 		fg.setOption(GibbsOptions.numSamples, 3);
 		fg.setOption(GibbsOptions.numRandomRestarts, 2);
-		fg.setOption(GibbsOptions.scansPerSample, 2); // will override updatesPerSample
+		fg.setOption(GibbsOptions.scansPerSample, 2);
+		fg.setOption(GibbsOptions.burnInScans, 4);
+		fg.setOption(GibbsOptions.saveAllSamples, true);
+		b2.setOption(GibbsOptions.saveAllSamples, false);
+		r2.setOption(GibbsOptions.saveAllSamples, false);
+		j2.setOption(GibbsOptions.saveAllSamples, false);
 		
 		// These do not take effect until after initialization
 		assertEquals(GibbsOptions.numSamples.defaultIntValue(), sfg.getNumSamples());
@@ -76,7 +108,14 @@ public class TestGibbsOptions extends DimpleTestBase
 		sfg.initialize();
 		assertEquals(3, sfg.getNumSamples());
 		assertEquals(2, sfg.getNumRestarts());
-		assertEquals(2 * nVars, sfg.getUpdatesPerSample()); // because scansPerSample is 2
+		assertEquals(nVars * 2 /*scansPerSample */, sfg.getUpdatesPerSample());
+		assertEquals(nVars * 4 /* burnInScans */, sfg.getBurnInUpdates());
+		assertEquals(true, sb1.getOptionOrDefault(GibbsOptions.saveAllSamples));
+		assertEquals(false, sb2.getOptionOrDefault(GibbsOptions.saveAllSamples));
+		assertEquals(true, sr1.getOptionOrDefault(GibbsOptions.saveAllSamples));
+		assertEquals(false, sr2.getOptionOrDefault(GibbsOptions.saveAllSamples));
+		assertEquals(true, sj1.getOptionOrDefault(GibbsOptions.saveAllSamples));
+		assertEquals(false, sj2.getOptionOrDefault(GibbsOptions.saveAllSamples));
 	
 		// Test set methods
 		sfg.setNumSamples(4);
@@ -90,5 +129,36 @@ public class TestGibbsOptions extends DimpleTestBase
 		sfg.setScansPerSample(3);
 		assertEquals(3 * nVars, sfg.getUpdatesPerSample());
 		assertEquals((Integer)3, sfg.getLocalOption(GibbsOptions.scansPerSample));
+		sfg.setBurnInScans(5);
+		assertEquals((Integer)5, sfg.getLocalOption(GibbsOptions.burnInScans));
+		
+		sfg.initialize();
+		assertEquals(5 * nVars, sfg.getBurnInUpdates());
+
+		sfg.setUpdatesPerSample(23);
+		assertEquals(23, sfg.getUpdatesPerSample());
+		assertEquals(new Integer(-1), sfg.getLocalOption(GibbsOptions.scansPerSample));
+		sfg.setBurnInUpdates(12);
+		assertEquals(12, sfg.getBurnInUpdates());
+		assertEquals(new Integer(-1), sfg.getLocalOption(GibbsOptions.burnInScans));
+		
+		sfg.unsetOption(GibbsOptions.saveAllSamples);
+		b2.unsetOption(GibbsOptions.saveAllSamples);
+		sfg.saveAllSamples();
+		assertEquals(true, sfg.getLocalOption(GibbsOptions.saveAllSamples));
+		sfg.disableSavingAllSamples();
+		assertEquals(false, sfg.getLocalOption(GibbsOptions.saveAllSamples));
+		sb1.saveAllSamples();
+		assertEquals(true, sb1.getLocalOption(GibbsOptions.saveAllSamples));
+		sb1.disableSavingAllSamples();
+		assertEquals(false, sb1.getLocalOption(GibbsOptions.saveAllSamples));
+		sr1.saveAllSamples();
+		assertEquals(true, sr1.getLocalOption(GibbsOptions.saveAllSamples));
+		sr1.disableSavingAllSamples();
+		assertEquals(false, sr1.getLocalOption(GibbsOptions.saveAllSamples));
+		sj1.saveAllSamples();
+		assertEquals(true, sj1.getLocalOption(GibbsOptions.saveAllSamples));
+		sj1.disableSavingAllSamples();
+		assertEquals(false, sj1.getLocalOption(GibbsOptions.saveAllSamples));
 	}
 }
