@@ -133,4 +133,17 @@ public class GibbsOptions extends SolverOptions
 	 */
 	public static final BooleanOptionKey saveAllSamples =
 		new BooleanOptionKey(GibbsOptions.class, "saveAllSamples", false);
+	
+	/**
+	 * Specifies whether to save sample scores in Gibbs solver.
+	 * <p>
+	 * If true, then for each sample, the total energy/log-likelihood aka "score" of the graph
+	 * will be saved. The saved scores can later be retrieved by {@link GibbsSolverGraph#getAllScores()}.
+	 * <p>
+	 * Defaults to false.
+	 * <p>
+	 * @since 0.07
+	 */
+	public static final BooleanOptionKey saveAllScores =
+		new BooleanOptionKey(GibbsOptions.class, "saveAllScores", false);
 }

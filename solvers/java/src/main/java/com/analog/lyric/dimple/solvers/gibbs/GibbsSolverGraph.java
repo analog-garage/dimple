@@ -240,6 +240,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		_numRandomRestarts = getOptionOrDefault(GibbsOptions.numRandomRestarts);
 		_scansPerSample = getOptionOrDefault(GibbsOptions.scansPerSample);
 		_burnInScans = getOptionOrDefault(GibbsOptions.burnInScans);
+		final boolean saveAllScores = getOptionOrDefault(GibbsOptions.saveAllScores);
 		
 		// Make sure the schedule is created before factor initialization to allow custom factors to modify the schedule if needed
 		final IGibbsSchedule schedule = _schedule = (IGibbsSchedule)_factorGraph.getSchedule();
@@ -275,9 +276,20 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		if (_burnInScans >= 0) _burnInUpdates = _burnInScans * _factorGraph.getVariables().size();
 		if (_temper) setTemperature(_initialTemperature);
 		
-		final DoubleArrayList scoreArray = _scoreArray;
-		if (scoreArray != null)
-			scoreArray.clear();
+		DoubleArrayList scoreArray = null;
+		if (saveAllScores)
+		{
+			scoreArray = _scoreArray;
+			if (scoreArray == null)
+			{
+				scoreArray = new DoubleArrayList();
+			}
+			else
+			{
+				scoreArray.clear();
+			}
+		}
+		_scoreArray = scoreArray;
 	}
 
 	/**
@@ -501,23 +513,29 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		setOption(GibbsOptions.saveAllSamples, false);
 	}
 	
-	// Before running, calling this method instructs the solver to save the score (energy/likelihood) values for each sample
+	/**
+	 * @deprecated Instead set {@link GibbsOptions#saveAllScores} to true using {@link #setOption}.
+	 */
+	@Deprecated
 	public void saveAllScores()
 	{
 		_scoreArray = new DoubleArrayList();
+		setOption(GibbsOptions.saveAllScores, true);
 	}
 	
 	/**
-	 * Disable saving all scores if it had previously been set
-	 * 
-	 * @since 0.05
+	 * @deprecated Instead set {@link GibbsOptions#saveAllScores} to false using {@link #setOption}.
 	 */
+	@Deprecated
 	public void disableSavingAllScores()
 	{
 		_scoreArray = null;
+		setOption(GibbsOptions.saveAllScores, false);
 	}
 	
-	// If the score had been saved, return the array of score values
+	/**
+	 * If the score had been saved, return the array of score values, otherwise null.
+	 */
 	public final @Nullable double[] getAllScores()
 	{
 		final DoubleArrayList scoreArray = _scoreArray;

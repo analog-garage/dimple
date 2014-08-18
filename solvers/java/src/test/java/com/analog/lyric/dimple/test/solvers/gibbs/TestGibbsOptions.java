@@ -50,6 +50,7 @@ public class TestGibbsOptions extends DimpleTestBase
 		assertEquals(1, GibbsOptions.scansPerSample.defaultIntValue());
 		assertEquals(0, GibbsOptions.burnInScans.defaultIntValue());
 		assertFalse(GibbsOptions.saveAllSamples.defaultBooleanValue());
+		assertFalse(GibbsOptions.saveAllScores.defaultBooleanValue());
 		
 		// Build test graph
 		FactorGraph fg = new FactorGraph();
@@ -160,5 +161,11 @@ public class TestGibbsOptions extends DimpleTestBase
 		assertEquals(true, sj1.getLocalOption(GibbsOptions.saveAllSamples));
 		sj1.disableSavingAllSamples();
 		assertEquals(false, sj1.getLocalOption(GibbsOptions.saveAllSamples));
+		
+		sfg.unsetOption(GibbsOptions.saveAllScores);
+		sfg.saveAllScores();
+		assertEquals(true, sfg.getLocalOption(GibbsOptions.saveAllScores));
+		sfg.disableSavingAllScores();
+		assertEquals(false, sfg.getLocalOption(GibbsOptions.saveAllScores));
 	}
 }
