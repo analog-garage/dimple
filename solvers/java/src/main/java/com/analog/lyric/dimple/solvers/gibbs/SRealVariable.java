@@ -52,7 +52,6 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.RealConjugateSamplerRegistry;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.GenericSamplerRegistry;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IMCMCSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IRealSamplerClient;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.MHSampler;
@@ -699,7 +698,7 @@ public class SRealVariable extends SRealVariableBase
 	}
 	public final void setSampler(String samplerName)
 	{
-		_sampler = (IMCMCSampler)GenericSamplerRegistry.get(samplerName);
+		_sampler = (IMCMCSampler)getEnvironment().genericSamplers().instantiateOrNull(samplerName);
 		_samplerSpecificallySpecified = true;
 	}
 	@Override
@@ -847,7 +846,9 @@ public class SRealVariable extends SRealVariableBase
 		{
 			_conjugateSampler = findConjugateSampler();		// See if there's an available conjugate sampler, and if so, use it
 			if (_conjugateSampler == null)
-				_sampler = (IMCMCSampler)GenericSamplerRegistry.get(_defaultSamplerName);	// If not, use the default sampler
+			{
+				_sampler = (IMCMCSampler)getEnvironment().genericSamplers().instantiateOrNull(_defaultSamplerName);
+			}
 		}
 		
 		final IMCMCSampler sampler = _sampler;

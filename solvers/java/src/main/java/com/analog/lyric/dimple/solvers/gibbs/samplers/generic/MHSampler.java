@@ -91,7 +91,7 @@ public class MHSampler implements IMCMCSampler
 	}
 	public void setProposalKernel(String proposalKernelName)
 	{
-		_proposalKernel = DimpleEnvironment.active().proposalKernels().instantiate(proposalKernelName);
+		_proposalKernel = DimpleEnvironment.active().proposalKernels().instantiateOrNull(proposalKernelName);
 	}
 	public @Nullable IProposalKernel getProposalKernel()
 	{

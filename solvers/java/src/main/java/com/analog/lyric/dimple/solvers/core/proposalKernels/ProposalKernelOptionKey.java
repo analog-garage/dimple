@@ -16,9 +16,10 @@
 
 package com.analog.lyric.dimple.solvers.core.proposalKernels;
 
+import com.analog.lyric.collect.ConstructorRegistry;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.options.ClassOptionKey;
-import com.analog.lyric.options.OptionValidationException;
+import com.analog.lyric.options.ConstructorOptionKey;
 
 
 /**
@@ -31,7 +32,7 @@ import com.analog.lyric.options.OptionValidationException;
  * @since 0.07
  * @author Christopher Barber
  */
-public class ProposalKernelOptionKey extends ClassOptionKey<IProposalKernel>
+public class ProposalKernelOptionKey extends ConstructorOptionKey<IProposalKernel>
 {
 	private static final long serialVersionUID = 1L;
 
@@ -50,42 +51,12 @@ public class ProposalKernelOptionKey extends ClassOptionKey<IProposalKernel>
 	/**
 	 * {@inheritDoc}
 	 * <p>
-	 * If the {@code value} is a string, this will attempt to look it up in the
-	 * {@linkplain DimpleEnvironment#proposalKernels() proposal kernel registry} for
+	 * Returns {@linkplain DimpleEnvironment#proposalKernels() proposal kernel registry} for
 	 * {@linkplain DimpleEnvironment#active active environment}.
 	 */
 	@Override
-	public Class<? extends IProposalKernel> convertValue(Object value)
+	public ConstructorRegistry<IProposalKernel> getRegistry()
 	{
-		if (value instanceof String)
-		{
-			Class<? extends IProposalKernel> kernelClass =
-				DimpleEnvironment.active().proposalKernels().getClass((String)value);
-			if (kernelClass != null)
-			{
-				return kernelClass;
-			}
-		}
-		
-		return super.convertValue(value);
-	}
-	
-	@Override
-	public Class<? extends IProposalKernel> validate(Class<? extends IProposalKernel> value)
-	{
-		Class<? extends IProposalKernel> kernelClass = super.validate(value);
-		
-		// Verify that class has a no-argument constructor
-		try
-		{
-			kernelClass.getConstructor();
-		}
-		catch (Exception ex)
-		{
-			throw new OptionValidationException("Class '%s' does not have an accessible no argument constructor.",
-				kernelClass);
-		}
-		
-		return kernelClass;
+		return DimpleEnvironment.active().proposalKernels();
 	}
 }

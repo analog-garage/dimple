@@ -38,7 +38,6 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.CDFSampler;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.GenericSamplerRegistry;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IDiscreteDirectSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IDiscreteSamplerClient;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IGenericSampler;
@@ -699,7 +698,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     }
     public final void setSampler(String samplerName)
     {
-    	_sampler = GenericSamplerRegistry.get(samplerName);
+    	_sampler = getEnvironment().genericSamplers().instantiate(samplerName);
     	_samplerSpecificallySpecified = true;
     }
     @Override
@@ -709,7 +708,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     	
     	if (sampler == null || !_samplerSpecificallySpecified)
     	{
-    		IGenericSampler newSampler = GenericSamplerRegistry.get(_defaultSamplerName);
+    		IGenericSampler newSampler = getEnvironment().genericSamplers().instantiate(_defaultSamplerName);
     		if (newSampler != sampler)
     		{
     			newSampler.initialize(_var.getDomain());
@@ -878,7 +877,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		if (sampler == null || !_samplerSpecificallySpecified)
 		{
 			// If not specifically specified, use the default sampler
-			sampler = _sampler = GenericSamplerRegistry.get(_defaultSamplerName);
+			sampler = _sampler = getEnvironment().genericSamplers().instantiate(_defaultSamplerName);
 		}
 		sampler.initialize(_var.getDomain());
 	}

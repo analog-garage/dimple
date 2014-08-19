@@ -29,9 +29,11 @@ import com.analog.lyric.collect.ConstructorRegistry;
 import com.analog.lyric.dimple.events.IDimpleEventListener;
 import com.analog.lyric.dimple.events.IDimpleEventSource;
 import com.analog.lyric.dimple.events.IModelEventSource;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IGenericSampler;
 
 /**
  * Shared environment for Dimple
@@ -88,11 +90,15 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 */
 	private final AtomicReference<Logger> _logger = new AtomicReference<>();
 	
-	/**
-	 * Instance of
-	 */
+	private final ConstructorRegistry<FactorFunction> _factorFunctions =
+		new ConstructorRegistry<FactorFunction>(FactorFunction.class);
+	
+	private final ConstructorRegistry<IGenericSampler> _genericSamplers =
+		new ConstructorRegistry<IGenericSampler>(IGenericSampler.class);
+
 	private final ConstructorRegistry<IProposalKernel> _proposalKernels =
 		new ConstructorRegistry<>(IProposalKernel.class);
+	
 	
 	/*--------------
 	 * Construction
@@ -361,10 +367,20 @@ public class DimpleEnvironment extends DimpleOptionHolder
 		return _logger.getAndSet(logger);
 	}
 	
-	/*---------------
-	 * Other methods
+	/*------------------------
+	 * Constructor registries
 	 */
-
+	
+	public ConstructorRegistry<FactorFunction> factorFunctions()
+	{
+		return _factorFunctions;
+	}
+	
+	public ConstructorRegistry<IGenericSampler> genericSamplers()
+	{
+		return _genericSamplers;
+	}
+	
 	/**
 	 * Registry of proposal kernel classes for this environment.
 	 */
@@ -372,6 +388,5 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	{
 		return _proposalKernels;
 	}
-	
 
 }

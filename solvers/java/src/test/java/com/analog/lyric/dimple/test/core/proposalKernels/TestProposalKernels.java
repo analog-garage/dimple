@@ -45,22 +45,22 @@ public class TestProposalKernels extends DimpleTestBase
 	public void testRegistry()
 	{
 		ConstructorRegistry<IProposalKernel> registry = DimpleEnvironment.active().proposalKernels();
-		assertNull(registry.instantiate("does not exist"));
-		assertNull(registry.instantiate("ProposalKernelRegistry"));
-		assertNull(registry.instantiate("MyProposalKernel"));
-		assertNull(registry.getClass("MyProposalKernel"));
-		IProposalKernel kernel = registry.instantiate("NormalProposalKernel");
+		assertNull(registry.instantiateOrNull("does not exist"));
+		assertNull(registry.instantiateOrNull("ProposalKernelRegistry"));
+		assertNull(registry.instantiateOrNull("MyProposalKernel"));
+		assertNull(registry.getClassOrNull("MyProposalKernel"));
+		IProposalKernel kernel = registry.instantiateOrNull("NormalProposalKernel");
 		assertTrue(kernel instanceof NormalProposalKernel);
-		IProposalKernel kernel2 = registry.instantiate("NormalProposalKernel");
+		IProposalKernel kernel2 = registry.instantiateOrNull("NormalProposalKernel");
 		assertTrue(kernel2 instanceof NormalProposalKernel);
 		assertNotSame(kernel, kernel2);
 		
 		registry.addPackage(getClass().getPackage().getName());
-		kernel = registry.instantiate("MyProposalKernel");
+		kernel = registry.instantiateOrNull("MyProposalKernel");
 		assertTrue(kernel instanceof MyProposalKernel);
-		assertSame(MyProposalKernel.class, registry.getClass("MyProposalKernel"));
+		assertSame(MyProposalKernel.class, registry.getClassOrNull("MyProposalKernel"));
 		expectThrow(RuntimeException.class, registry, "instantiate", "BrokenProposalKernel");
-		assertNull(registry.instantiate("NoConstructorProposalKernel"));
+		assertNull(registry.instantiateOrNull("NoConstructorProposalKernel"));
 	}
 	
 	@Test
