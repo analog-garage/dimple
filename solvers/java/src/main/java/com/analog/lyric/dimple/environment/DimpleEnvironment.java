@@ -23,12 +23,15 @@ import java.util.logging.Logger;
 
 import net.jcip.annotations.ThreadSafe;
 
+import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.collect.ConstructorRegistry;
 import com.analog.lyric.dimple.events.IDimpleEventListener;
 import com.analog.lyric.dimple.events.IDimpleEventSource;
 import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
-import org.eclipse.jdt.annotation.Nullable;
+import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 
 /**
  * Shared environment for Dimple
@@ -84,6 +87,12 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 * Logging instance for this environment.
 	 */
 	private final AtomicReference<Logger> _logger = new AtomicReference<>();
+	
+	/**
+	 * Instance of
+	 */
+	private final ConstructorRegistry<IProposalKernel> _proposalKernels =
+		new ConstructorRegistry<>(IProposalKernel.class);
 	
 	/*--------------
 	 * Construction
@@ -351,4 +360,18 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	{
 		return _logger.getAndSet(logger);
 	}
+	
+	/*---------------
+	 * Other methods
+	 */
+
+	/**
+	 * Registry of proposal kernel classes for this environment.
+	 */
+	public ConstructorRegistry<IProposalKernel> proposalKernels()
+	{
+		return _proposalKernels;
+	}
+	
+
 }

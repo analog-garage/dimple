@@ -18,6 +18,7 @@ package com.analog.lyric.collect;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -250,6 +251,10 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 			try
 			{
 				return constructor.newInstance();
+			}
+			catch (InvocationTargetException ex)
+			{
+				throw new RuntimeException(ex.getCause());
 			}
 			catch (ReflectiveOperationException ex)
 			{

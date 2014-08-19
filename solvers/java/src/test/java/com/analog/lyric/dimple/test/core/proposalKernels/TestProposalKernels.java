@@ -21,11 +21,12 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import com.analog.lyric.collect.ConstructorRegistry;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.CircularNormalProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.ProposalKernelOptionKey;
-import com.analog.lyric.dimple.solvers.core.proposalKernels.ProposalKernelRegistry;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.options.LocalOptionHolder;
 import com.analog.lyric.options.OptionValidationException;
@@ -43,22 +44,23 @@ public class TestProposalKernels extends DimpleTestBase
 	@Test
 	public void testRegistry()
 	{
-		assertNull(ProposalKernelRegistry.get("does not exist"));
-		assertNull(ProposalKernelRegistry.get("ProposalKernelRegistry"));
-		assertNull(ProposalKernelRegistry.get("MyProposalKernel"));
-		assertNull(ProposalKernelRegistry.getClass("MyProposalKernel"));
-		IProposalKernel kernel = ProposalKernelRegistry.get("NormalProposalKernel");
+		ConstructorRegistry<IProposalKernel> registry = DimpleEnvironment.active().proposalKernels();
+		assertNull(registry.instantiate("does not exist"));
+		assertNull(registry.instantiate("ProposalKernelRegistry"));
+		assertNull(registry.instantiate("MyProposalKernel"));
+		assertNull(registry.getClass("MyProposalKernel"));
+		IProposalKernel kernel = registry.instantiate("NormalProposalKernel");
 		assertTrue(kernel instanceof NormalProposalKernel);
-		IProposalKernel kernel2 = ProposalKernelRegistry.get("NormalProposalKernel");
+		IProposalKernel kernel2 = registry.instantiate("NormalProposalKernel");
 		assertTrue(kernel2 instanceof NormalProposalKernel);
 		assertNotSame(kernel, kernel2);
 		
-		ProposalKernelRegistry.addPackage(getClass().getPackage().getName());
-		kernel = ProposalKernelRegistry.get("MyProposalKernel");
+		registry.addPackage(getClass().getPackage().getName());
+		kernel = registry.instantiate("MyProposalKernel");
 		assertTrue(kernel instanceof MyProposalKernel);
-		assertSame(MyProposalKernel.class, ProposalKernelRegistry.getClass("MyProposalKernel"));
-		assertNull(ProposalKernelRegistry.get("BrokenProposalKernel"));
-		assertNull(ProposalKernelRegistry.get("NoConstructorProposalKernel"));
+		assertSame(MyProposalKernel.class, registry.getClass("MyProposalKernel"));
+		expectThrow(RuntimeException.class, registry, "instantiate", "BrokenProposalKernel");
+		assertNull(registry.instantiate("NoConstructorProposalKernel"));
 	}
 	
 	@Test

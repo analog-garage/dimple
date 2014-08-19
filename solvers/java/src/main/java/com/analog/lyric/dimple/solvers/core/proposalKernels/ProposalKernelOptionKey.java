@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.core.proposalKernels;
 
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.options.ClassOptionKey;
 import com.analog.lyric.options.OptionValidationException;
 
@@ -24,7 +25,8 @@ import com.analog.lyric.options.OptionValidationException;
  * Option key for identifying proposal kernel.
  * <p>
  * Extends {@link ClassOptionKey} with {@link #convertValue} method that looks up {@link IProposalKernel}
- * subclasses in {@link ProposalKernelRegistry}.
+ * subclasses in {@linkplain DimpleEnvironment#proposalKernels() proposal kernel registry} for
+ * {@linkplain DimpleEnvironment#active active environment}.
  * <p>
  * @since 0.07
  * @author Christopher Barber
@@ -49,14 +51,16 @@ public class ProposalKernelOptionKey extends ClassOptionKey<IProposalKernel>
 	 * {@inheritDoc}
 	 * <p>
 	 * If the {@code value} is a string, this will attempt to look it up in the
-	 * {@link ProposalKernelRegistry} before attempting any other conversions.
+	 * {@linkplain DimpleEnvironment#proposalKernels() proposal kernel registry} for
+	 * {@linkplain DimpleEnvironment#active active environment}.
 	 */
 	@Override
 	public Class<? extends IProposalKernel> convertValue(Object value)
 	{
 		if (value instanceof String)
 		{
-			Class<? extends IProposalKernel> kernelClass = ProposalKernelRegistry.getClass((String)value);
+			Class<? extends IProposalKernel> kernelClass =
+				DimpleEnvironment.active().proposalKernels().getClass((String)value);
 			if (kernelClass != null)
 			{
 				return kernelClass;

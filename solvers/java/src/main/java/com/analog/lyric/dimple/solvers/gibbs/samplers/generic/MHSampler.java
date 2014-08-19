@@ -18,15 +18,16 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.Proposal;
-import com.analog.lyric.dimple.solvers.core.proposalKernels.ProposalKernelRegistry;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.UniformDiscreteProposalKernel;
 import com.analog.lyric.math.DimpleRandomGenerator;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class MHSampler implements IMCMCSampler
 {
@@ -90,7 +91,7 @@ public class MHSampler implements IMCMCSampler
 	}
 	public void setProposalKernel(String proposalKernelName)
 	{
-		_proposalKernel = ProposalKernelRegistry.get(proposalKernelName);
+		_proposalKernel = DimpleEnvironment.active().proposalKernels().instantiate(proposalKernelName);
 	}
 	public @Nullable IProposalKernel getProposalKernel()
 	{
