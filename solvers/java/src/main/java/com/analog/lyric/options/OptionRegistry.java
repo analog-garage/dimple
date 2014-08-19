@@ -30,6 +30,7 @@ import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
 import org.eclipse.jdt.annotation.Nullable;
+
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.ObjectArrays;
@@ -271,7 +272,8 @@ public class OptionRegistry implements Iterable<IOptionKey<?>>
 				{
 					try
 					{
-						add(keys = OptionKeys.declaredInClass(Class.forName(className)));
+						Class<?> c = Class.forName(className, false, Thread.currentThread().getContextClassLoader());
+						add(keys = OptionKeys.declaredInClass(c));
 					}
 					catch (ClassNotFoundException ex)
 					{

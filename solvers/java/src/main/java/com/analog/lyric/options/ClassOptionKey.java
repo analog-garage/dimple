@@ -77,7 +77,7 @@ public class ClassOptionKey<SuperClass> extends OptionKey<Class<? extends SuperC
 		{
 			try
 			{
-				value = Class.forName((String)value);
+				value = Class.forName((String)value, false, Thread.currentThread().getContextClassLoader());
 			}
 			catch (ClassNotFoundException ex)
 			{

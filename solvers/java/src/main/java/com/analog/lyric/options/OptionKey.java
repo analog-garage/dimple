@@ -103,7 +103,7 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 		Class<?> declaringClass;
 		try
 		{
-			declaringClass = Class.forName(className);
+			declaringClass = Class.forName(className, false, Thread.currentThread().getContextClassLoader());
 		}
 		catch (ClassNotFoundException ex)
 		{
