@@ -14,20 +14,19 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.core.proposalKernels;
+package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 
 import com.analog.lyric.collect.ConstructorRegistry;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.options.ConstructorOptionKey;
 
-
 /**
- * Option key for identifying proposal kernel.
+ * Option key for identifying sampler.
  * <p>
  * @since 0.07
  * @author Christopher Barber
  */
-public class ProposalKernelOptionKey extends ConstructorOptionKey<IProposalKernel>
+public class GenericSamplerOptionKey extends ConstructorOptionKey<IGenericSampler>
 {
 	private static final long serialVersionUID = 1L;
 
@@ -38,20 +37,22 @@ public class ProposalKernelOptionKey extends ConstructorOptionKey<IProposalKerne
 	 * @param defaultValue is the default value of the option. Used when option is not set.
 	 * @since 0.07
 	 */
-	public ProposalKernelOptionKey(Class<?> declaringClass, String name, Class<? extends IProposalKernel> defaultValue)
+	public GenericSamplerOptionKey(Class<?> declaringClass,
+		String name,
+		Class<? extends IGenericSampler> defaultValue)
 	{
-		super(declaringClass, name, IProposalKernel.class, defaultValue);
+		super(declaringClass, name, IGenericSampler.class, defaultValue);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * <p>
-	 * Returns {@linkplain DimpleEnvironment#proposalKernels() proposal kernel registry} for
+	 * Returns {@linkplain DimpleEnvironment#genericSamplers() generic sampler registry} for
 	 * {@linkplain DimpleEnvironment#active active environment}.
 	 */
 	@Override
-	public ConstructorRegistry<IProposalKernel> getRegistry()
+	public ConstructorRegistry<IGenericSampler> getRegistry()
 	{
-		return DimpleEnvironment.active().proposalKernels();
+		return DimpleEnvironment.active().genericSamplers();
 	}
 }

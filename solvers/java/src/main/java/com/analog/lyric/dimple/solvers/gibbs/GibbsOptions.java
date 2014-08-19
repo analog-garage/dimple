@@ -17,10 +17,12 @@
 package com.analog.lyric.dimple.solvers.gibbs;
 
 import com.analog.lyric.dimple.options.SolverOptions;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.CDFSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.GenericSamplerOptionKey;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.SliceSampler;
 import com.analog.lyric.options.BooleanOptionKey;
 import com.analog.lyric.options.DoubleOptionKey;
 import com.analog.lyric.options.IntegerOptionKey;
-import com.analog.lyric.options.StringOptionKey;
 
 /**
  * Options for Gibbs solver.
@@ -123,14 +125,14 @@ public class GibbsOptions extends SolverOptions
 	/**
 	 * <description>
 	 */
-	public static final StringOptionKey discreteSampler =
-		new StringOptionKey(GibbsOptions.class, "discreteSampler", SDiscreteVariable.DEFAULT_DISCRETE_SAMPLER_NAME);
+	public static final GenericSamplerOptionKey discreteSampler =
+		new GenericSamplerOptionKey(GibbsOptions.class, "discreteSampler", CDFSampler.class);
 	
 	/**
 	 * <description>
 	 */
-	public static final StringOptionKey realSampler =
-		new StringOptionKey(GibbsOptions.class, "realSampler", SRealVariable.DEFAULT_REAL_SAMPLER_NAME);
+	public static final GenericSamplerOptionKey realSampler =
+		new GenericSamplerOptionKey(GibbsOptions.class, "realSampler", SliceSampler.class);
 	
 	/**
 	 * Specifies whether to save sample values for variables in Gibbs solver.

@@ -58,8 +58,6 @@ import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.schedulers.GibbsDefaultScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.IGibbsSchedule;
@@ -115,8 +113,6 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	private double _minPotential = Double.MAX_VALUE;
 	private boolean _firstSample = true;
 	private @Nullable DoubleArrayList _scoreArray;
-	private String _defaultRealSamplerName = SRealVariable.DEFAULT_REAL_SAMPLER_NAME;
-	private String _defaultDiscreteSamplerName = SDiscreteVariable.DEFAULT_DISCRETE_SAMPLER_NAME;
 	
 	private static final double LOG2 = Math.log(2);
 	
@@ -717,28 +713,23 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	// Set the default sampler for Real (and RealJoint) variables
 	public void setDefaultRealSampler(String samplerName)
 	{
-		_defaultRealSamplerName = samplerName;
-		for (VariableBase v : _factorGraph.getVariables())
-		{
-			if (v instanceof Real)
-				((SRealVariable)v.requireSolver("setDefaultRealSampler")).setDefaultSampler(samplerName);
-			else if (v instanceof RealJoint)
-				((SRealJointVariable)v.requireSolver("setDefaultRealSampler")).setDefaultSampler(samplerName);
-		}
+		GibbsOptions.realSampler.convertAndSet(this, samplerName);
 	}
-	public String getDefaultRealSampler() {return _defaultRealSamplerName;}
+	public String getDefaultRealSampler()
+	{
+		return getOptionOrDefault(GibbsOptions.realSampler).getSimpleName();
+	}
 
 	// Set the default sampler for Discrete variables
 	public void setDefaultDiscreteSampler(String samplerName)
 	{
-		_defaultDiscreteSamplerName = samplerName;
-		for (VariableBase v : _factorGraph.getVariables())
-		{
-			if (v instanceof Discrete)
-				((SDiscreteVariable)v.requireSolver("setDefaultDiscreteSampler")).setDefaultSampler(samplerName);
-		}
+		GibbsOptions.discreteSampler.convertAndSet(this, samplerName);
 	}
-	public String getDefaultDiscreteSampler() {return _defaultDiscreteSamplerName;}
+	
+	public String getDefaultDiscreteSampler()
+	{
+		return getOptionOrDefault(GibbsOptions.discreteSampler).getSimpleName();
+	}
 
 	/**
 	 * @deprecated Instead set {@link GibbsOptions#initialTemperature} option using {@link #setOption}.

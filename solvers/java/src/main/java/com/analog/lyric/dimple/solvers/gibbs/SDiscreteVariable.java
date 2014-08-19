@@ -83,7 +83,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	private final Discrete _varDiscrete;
 	private boolean _holdSampleValue = false;
 	private @Nullable IGenericSampler _sampler;
-	private String _defaultSamplerName = DEFAULT_DISCRETE_SAMPLER_NAME;
 	private boolean _samplerSpecificallySpecified = false;
 
 	/**
@@ -431,8 +430,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	@Override
 	public void postAddFactor(@Nullable Factor f)
 	{
-		// Set the default sampler
-		_defaultSamplerName = ((GibbsSolverGraph)_var.getRootGraph().getSolver()).getDefaultDiscreteSampler();
 	}
 	
 	/**
@@ -685,22 +682,27 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     // Set/get the sampler to be used for this variable
     public final void setDefaultSampler(String samplerName)
     {
-    	_defaultSamplerName = samplerName;
+    	GibbsOptions.discreteSampler.convertAndSet(this, samplerName);
     }
+    
     public final String getDefaultSamplerName()
     {
-    	return _defaultSamplerName;
+    	return getOptionOrDefault(GibbsOptions.discreteSampler).getSimpleName();
     }
+    
     public final void setSampler(ISampler sampler)
     {
     	_sampler = (IGenericSampler)sampler;
     	_samplerSpecificallySpecified = true;
     }
+    
     public final void setSampler(String samplerName)
     {
-    	_sampler = getEnvironment().genericSamplers().instantiate(samplerName);
+    	GibbsOptions.discreteSampler.convertAndSet(this, samplerName);
+    	_sampler = GibbsOptions.discreteSampler.instantiate(this);
     	_samplerSpecificallySpecified = true;
     }
+    
     @Override
     public final ISampler getSampler()
     {
@@ -708,7 +710,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     	
     	if (sampler == null || !_samplerSpecificallySpecified)
     	{
-    		IGenericSampler newSampler = getEnvironment().genericSamplers().instantiate(_defaultSamplerName);
+    		IGenericSampler newSampler = GibbsOptions.discreteSampler.instantiate(this);
     		if (newSampler != sampler)
     		{
     			newSampler.initialize(_var.getDomain());
@@ -833,7 +835,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		_initialSampleValue = ovar._initialSampleValue;
 		_beta = ovar._beta;
 		_sampler = ovar._sampler;
-		_defaultSamplerName = ovar._defaultSamplerName;
 		_samplerSpecificallySpecified = ovar._samplerSpecificallySpecified;
     }
 	
@@ -877,7 +878,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		if (sampler == null || !_samplerSpecificallySpecified)
 		{
 			// If not specifically specified, use the default sampler
-			sampler = _sampler = getEnvironment().genericSamplers().instantiate(_defaultSamplerName);
+			sampler = _sampler = GibbsOptions.discreteSampler.instantiate(this);
 		}
 		sampler.initialize(_var.getDomain());
 	}

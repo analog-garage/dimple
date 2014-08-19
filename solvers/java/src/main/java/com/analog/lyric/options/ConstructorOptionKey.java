@@ -109,4 +109,15 @@ public abstract class ConstructorOptionKey<SuperClass> extends ClassOptionKey<Su
 	 */
 	public abstract ConstructorRegistry<SuperClass> getRegistry();
 	
+	public SuperClass instantiate(IOptionHolder holder)
+	{
+		try
+		{
+			return getOrDefault(holder).newInstance();
+		}
+		catch (InstantiationException | IllegalAccessException ex)
+		{
+			throw new RuntimeException(ex);
+		}
+	}
 }

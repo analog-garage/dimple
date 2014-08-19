@@ -96,7 +96,6 @@ public class SRealVariable extends SRealVariableBase
 	private boolean _initialSampleValueSet = false;
 	private @Nullable FactorFunction _input;
 	private RealDomain _domain;
-	private String _defaultSamplerName = DEFAULT_REAL_SAMPLER_NAME;
 	private @Nullable IMCMCSampler _sampler = null;
 	private @Nullable IRealConjugateSampler _conjugateSampler = null;
 	private boolean _samplerSpecificallySpecified = false;
@@ -444,8 +443,6 @@ public class SRealVariable extends SRealVariableBase
 	@Override
 	public void postAddFactor(@Nullable Factor f)
 	{
-		// Set the default sampler
-		_defaultSamplerName = ((GibbsSolverGraph)_var.getRootGraph().getSolver()).getDefaultRealSampler();
 	}
 
 	@Override
@@ -685,22 +682,27 @@ public class SRealVariable extends SRealVariableBase
 	// Set/get the sampler to be used for this variable
 	public final void setDefaultSampler(String samplerName)
 	{
-		_defaultSamplerName = samplerName;
+		GibbsOptions.realSampler.convertAndSet(this, samplerName);
 	}
+	
 	public final String getDefaultSamplerName()
 	{
-		return _defaultSamplerName;
+		return getOptionOrDefault(GibbsOptions.realSampler).getSimpleName();
 	}
+	
 	public final void setSampler(ISampler sampler)
 	{
 		_sampler = (IMCMCSampler)sampler;
 		_samplerSpecificallySpecified = true;
 	}
+	
 	public final void setSampler(String samplerName)
 	{
-		_sampler = (IMCMCSampler)getEnvironment().genericSamplers().instantiateOrNull(samplerName);
+		GibbsOptions.realSampler.convertAndSet(this, samplerName);
+		_sampler = (IMCMCSampler) GibbsOptions.realSampler.instantiate(this);
 		_samplerSpecificallySpecified = true;
 	}
+	
 	@Override
 	public final @Nullable ISampler getSampler()
 	{
@@ -847,7 +849,7 @@ public class SRealVariable extends SRealVariableBase
 			_conjugateSampler = findConjugateSampler();		// See if there's an available conjugate sampler, and if so, use it
 			if (_conjugateSampler == null)
 			{
-				_sampler = (IMCMCSampler)getEnvironment().genericSamplers().instantiateOrNull(_defaultSamplerName);
+				_sampler = (IMCMCSampler)GibbsOptions.realSampler.instantiate(this);
 			}
 		}
 		
@@ -886,7 +888,6 @@ public class SRealVariable extends SRealVariableBase
 		_sampleArray = ovar._sampleArray;
 		_bestSampleValue = ovar._bestSampleValue;
 		_beta = ovar._beta;
-		_defaultSamplerName = ovar._defaultSamplerName;
 		_sampler = ovar._sampler;
 		_conjugateSampler = ovar._conjugateSampler;
 		_samplerSpecificallySpecified = ovar._samplerSpecificallySpecified;
