@@ -16,6 +16,7 @@
 
 package com.analog.lyric.collect.tests;
 
+import static com.analog.lyric.util.test.ExceptionTester.*;
 import static org.junit.Assert.*;
 
 import java.lang.reflect.Constructor;
@@ -48,12 +49,14 @@ public class TestConstructorRegistry
 		assertTrue(heapRegistry.isEmpty());
 		assertInvariants(heapRegistry);
 		assertNull(heapRegistry.get("DoesNotExist"));
-		assertNull(heapRegistry.getClass("DoesNotExist"));
-		assertNull(heapRegistry.instantiate("DoesNotExist"));
+		assertNull(heapRegistry.getClassOrNull("DoesNotExist"));
+		assertNull(heapRegistry.instantiateOrNull("DoesNotExist"));
 		assertNull(heapRegistry.get("ArrayUtil"));
+		expectThrow(RuntimeException.class, heapRegistry, "getClass", "DoesNotExist");
+		expectThrow(RuntimeException.class, heapRegistry, "instantiate", "DoesNotExist");
 		
 		assertArrayEquals(new String[] { lyricCollectPackage }, heapRegistry.getPackages());
-		assertSame(BinaryHeap.class, heapRegistry.getClass("BinaryHeap"));
+		assertSame(BinaryHeap.class, heapRegistry.getClassOrNull("BinaryHeap"));
 		assertInvariants(heapRegistry);
 		assertEquals(1, heapRegistry.size());
 		assertTrue(heapRegistry.containsKey("BinaryHeap"));
@@ -71,7 +74,7 @@ public class TestConstructorRegistry
 		
 		collectionRegistry.addPackage("java.util");
 		assertArrayEquals(new String[] { lyricCollectPackage, "java.util" }, collectionRegistry.getPackages());
-		assertSame(ArrayDeque.class, collectionRegistry.getClass("ArrayDeque"));
+		assertSame(ArrayDeque.class, collectionRegistry.getClassOrNull("ArrayDeque"));
 		assertInvariants(collectionRegistry);
 	}
 	
@@ -103,7 +106,6 @@ public class TestConstructorRegistry
 			assertEquals(name, c.getSimpleName());
 			
 			T instance = registry.instantiate(name);
-			assertNotNull(instance);
 			assertSame(c, instance.getClass());
 		}
 	}

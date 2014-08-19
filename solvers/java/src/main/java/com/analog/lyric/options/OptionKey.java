@@ -22,8 +22,9 @@ import java.lang.reflect.Field;
 
 import net.jcip.annotations.Immutable;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.exceptions.DimpleException;
 
 /**
  * Base implementation of {@link IOptionKey} interface.
@@ -103,7 +104,7 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 		Class<?> declaringClass;
 		try
 		{
-			declaringClass = Class.forName(className, false, Thread.currentThread().getContextClassLoader());
+			declaringClass = Class.forName(className, false, OptionKey.class.getClassLoader());
 		}
 		catch (ClassNotFoundException ex)
 		{

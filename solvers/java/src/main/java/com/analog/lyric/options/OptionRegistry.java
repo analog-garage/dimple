@@ -272,7 +272,7 @@ public class OptionRegistry implements Iterable<IOptionKey<?>>
 				{
 					try
 					{
-						Class<?> c = Class.forName(className, false, Thread.currentThread().getContextClassLoader());
+						Class<?> c = Class.forName(className, false, getClass().getClassLoader());
 						add(keys = OptionKeys.declaredInClass(c));
 					}
 					catch (ClassNotFoundException ex)

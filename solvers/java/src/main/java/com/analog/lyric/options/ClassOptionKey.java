@@ -16,6 +16,8 @@
 
 package com.analog.lyric.options;
 
+import net.jcip.annotations.Immutable;
+
 /**
  * Key for options with literal Java class values.
  * <p>
@@ -25,6 +27,7 @@ package com.analog.lyric.options;
  * @since 0.07
  * @author Christopher Barber
  */
+@Immutable
 public class ClassOptionKey<SuperClass> extends OptionKey<Class<? extends SuperClass>>
 {
 	private static final long serialVersionUID = 1L;
@@ -66,7 +69,8 @@ public class ClassOptionKey<SuperClass> extends OptionKey<Class<? extends SuperC
 	 * {@inheritDoc}
 	 * <p>
 	 * If {@code value} is a string. This will attempt to load the class from the string using
-	 * {@link Class#forName}. Subclasses may want to extend this to allow construction from simple
+	 * {@linkplain Class#forName(String, boolean, ClassLoader) Class.forName} with context class loader.
+	 * Subclasses may want to extend this to allow construction from simple
 	 * class names.
 	 */
 	@SuppressWarnings("unchecked")
@@ -77,7 +81,7 @@ public class ClassOptionKey<SuperClass> extends OptionKey<Class<? extends SuperC
 		{
 			try
 			{
-				value = Class.forName((String)value, false, Thread.currentThread().getContextClassLoader());
+				value = Class.forName((String)value, false, getClass().getClassLoader());
 			}
 			catch (ClassNotFoundException ex)
 			{

@@ -139,7 +139,7 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 		
 		if (constructor == null)
 		{
-			ClassLoader loader = Thread.currentThread().getContextClassLoader();
+			ClassLoader loader = getClass().getClassLoader();
 			
 			for (String packageName : _packages)
 			{
@@ -204,11 +204,29 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 	 * Returns class type named by {@code simpleClassName}.
 	 * <p>
 	 * Simply returns {@linkplain Constructor#getDeclaringClass() declaring class} of
+	 * value returned by {@link #get}.
+	 * @throws RuntimeException if no such class can be found.
+	 * @since 0.07
+	 */
+	public Class<? extends T> getClass(String simpleClassName)
+	{
+		Class<? extends T> c = getClassOrNull(simpleClassName);
+		if (c == null)
+		{
+			throw noMatchingClass(simpleClassName);
+		}
+		return c;
+	}
+
+	/**
+	 * Returns class type named by {@code simpleClassName}.
+	 * <p>
+	 * Simply returns {@linkplain Constructor#getDeclaringClass() declaring class} of
 	 * value returned by {@link #get} or else null.
 	 * @since 0.07
 	 */
 	@Nullable
-	public Class<? extends T> getClass(String simpleClassName)
+	public Class<? extends T> getClassOrNull(String simpleClassName)
 	{
 		Constructor<T> constructor = get(simpleClassName);
 		return constructor != null ? constructor.getDeclaringClass() : null;
@@ -238,12 +256,29 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 	/**
 	 * Instantiates an instance of named class.
 	 * <p>
+	 * Simply invokes {@link Constructor#newInstance} on constructor returned by {@link #get}.
+	 * @throws RuntimeException if no such class can be found.
+	 * @since 0.07
+	 */
+	public T instantiate(String simpleClassName)
+	{
+		T instance = instantiateOrNull(simpleClassName);
+		if (instance == null)
+		{
+			throw noMatchingClass(simpleClassName);
+		}
+		return instance;
+	}
+	
+	/**
+	 * Instantiates an instance of named class.
+	 * <p>
 	 * Simply invokes {@link Constructor#newInstance} on constructor returned by {@link #get} or
 	 * else returns null.
 	 * @since 0.07
 	 */
 	@Nullable
-	public T instantiate(String simpleClassName)
+	public T instantiateOrNull(String simpleClassName)
 	{
 		Constructor<T> constructor = get(simpleClassName);
 		if (constructor != null)
@@ -264,7 +299,7 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 		
 		return null;
 	}
-
+	
 	/**
 	 * Preloads all subclasses of declared superclass {@code T} found in registry's packages.
 	 * <p>
@@ -275,7 +310,7 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 	 */
 	public synchronized void loadAll()
 	{
-		ClassLoader loader = Thread.currentThread().getContextClassLoader();
+		ClassLoader loader = getClass().getClassLoader();
 		
 		ClassPath path;
 		try
@@ -331,4 +366,12 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 		
 		return constructor;
 	}
+	
+	private RuntimeException noMatchingClass(String simpleClassName)
+	{
+		return new RuntimeException(
+			String.format("Cannot find class named '%s' with accessible no-argument constructor", simpleClassName));
+	}
+
+
 }
