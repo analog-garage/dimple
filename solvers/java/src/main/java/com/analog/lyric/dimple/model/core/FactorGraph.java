@@ -37,6 +37,7 @@ import java.util.UUID;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.xml.sax.SAXException;
 
 import cern.colt.list.IntArrayList;
@@ -78,7 +79,6 @@ import com.analog.lyric.util.misc.FactorGraphDiffs;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.MapList;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.cache.LoadingCache;
 
 
@@ -588,16 +588,8 @@ public class FactorGraph extends FactorBase
 			return addFactor(new CustomFactorFunctionWrapper(factorFunctionName), vars);
 		else
 		{
-			String fqName = "com.analog.lyric.dimple.factorfunctions." + factorFunctionName;
-			try
-			{
-				FactorFunction factorFunction = (FactorFunction)Class.forName(fqName).getConstructor((Class<FactorFunction>[])null).newInstance();
-				return addFactor(factorFunction, vars);
-			}
-			catch (Exception e)
-			{
-				throw new DimpleException("Could not instantiate factor function.");
-			}
+			FactorFunction factorFunction = getEnvironment().factorFunctions().instantiate(factorFunctionName);
+			return addFactor(factorFunction, vars);
 		}
 	}
 	

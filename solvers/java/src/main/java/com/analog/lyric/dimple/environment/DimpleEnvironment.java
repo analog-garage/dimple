@@ -91,7 +91,7 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	private final AtomicReference<Logger> _logger = new AtomicReference<>();
 	
 	private final ConstructorRegistry<FactorFunction> _factorFunctions =
-		new ConstructorRegistry<FactorFunction>(FactorFunction.class);
+		new ConstructorRegistry<FactorFunction>(FactorFunction.class, "com.analog.lyric.dimple.factorfunctions");
 	
 	private final ConstructorRegistry<IGenericSampler> _genericSamplers =
 		new ConstructorRegistry<IGenericSampler>(IGenericSampler.class);
