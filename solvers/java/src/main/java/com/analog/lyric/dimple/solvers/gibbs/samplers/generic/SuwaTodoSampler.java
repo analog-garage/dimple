@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.math.Utilities;
 
-public class SuwaTodoSampler implements IDiscreteDirectSampler
+public class SuwaTodoSampler extends AbstractGenericSampler implements IDiscreteDirectSampler
 {
 	protected double[] _samplerScratch = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	protected int _lengthRoundedUp = 0;
@@ -116,5 +116,4 @@ public class SuwaTodoSampler implements IDiscreteDirectSampler
 
 		samplerClient.setNextSampleIndex(sampleIndex);
 	}
-
 }

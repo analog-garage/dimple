@@ -36,6 +36,7 @@ import com.analog.lyric.options.OptionValidationException;
  * @since 0.07
  * @author Christopher Barber
  */
+@SuppressWarnings("deprecation")
 public class TestProposalKernels extends DimpleTestBase
 {
 	public static final ProposalKernelOptionKey testKey =
@@ -83,10 +84,11 @@ public class TestProposalKernels extends DimpleTestBase
 		assertEquals(2.0, kernel.getStandardDeviation(), 0.0);
 		
 		LocalOptionHolder holder = new LocalOptionHolder();
-		kernel.setParametersFromOptions(holder);
+		kernel = new NormalProposalKernel();
+		kernel.configureFromOptions(holder);
 		assertEquals(NormalProposalKernel.standardDeviation.defaultValue(), kernel.getStandardDeviation(), 0.0);
 		holder.setOption(NormalProposalKernel.standardDeviation, 2.3);
-		kernel.setParametersFromOptions(holder);
+		kernel.configureFromOptions(holder);
 		assertEquals(2.3, kernel.getStandardDeviation(), 0.0);
 	}
 	
@@ -105,7 +107,8 @@ public class TestProposalKernels extends DimpleTestBase
 		assertEquals(1.0, kernel.getUpperBound(), 0.0);
 
 		LocalOptionHolder holder = new LocalOptionHolder();
-		kernel.setParametersFromOptions(holder);
+		kernel = new CircularNormalProposalKernel();
+		kernel.configureFromOptions(holder);
 		assertEquals(NormalProposalKernel.standardDeviation.defaultValue(), kernel.getStandardDeviation(), 0.0);
 		assertEquals(CircularNormalProposalKernel.lowerBound.defaultValue(), kernel.getLowerBound(), 0.0);
 		assertEquals(CircularNormalProposalKernel.upperBound.defaultValue(), kernel.getUpperBound(), 0.0);
@@ -113,7 +116,7 @@ public class TestProposalKernels extends DimpleTestBase
 		holder.setOption(NormalProposalKernel.standardDeviation, 2.3);
 		holder.setOption(CircularNormalProposalKernel.lowerBound, -4.3);
 		holder.setOption(CircularNormalProposalKernel.upperBound, 5.2);
-		kernel.setParametersFromOptions(holder);
+		kernel.configureFromOptions(holder);
 		assertEquals(2.3, kernel.getStandardDeviation(), 0.0);
 		assertEquals(-4.3, kernel.getLowerBound(), 0.0);
 		assertEquals(5.2, kernel.getUpperBound(), 0.0);

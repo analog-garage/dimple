@@ -16,22 +16,26 @@
 
 package com.analog.lyric.dimple.solvers.core.proposalKernels;
 
-import com.analog.lyric.dimple.model.domains.Domain;
-import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.options.IOptionHolder;
 import org.eclipse.jdt.annotation.Nullable;
 
-public interface IProposalKernel
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.options.IOptionConfigurable;
+
+public interface IProposalKernel extends IOptionConfigurable
 {
 	public Proposal next(Value currentValue, Domain variableDomain);
-	public void setParameters(Object... parameters);
-	public @Nullable Object[] getParameters();
 	
 	/**
-	 * Sets the kernel parameters from options looked up in provided {@code optionHolder}.
-	 * <p>
-	 * @param optionHolder a non-null option holder.
-	 * @since 0.07
+	 * @deprecated Will be removed in future release. Instead set options on
+	 * corresponding option holder (e.g. the variable or the graph).
 	 */
-	public void setParametersFromOptions(IOptionHolder optionHolder);
+	@Deprecated
+	public void setParameters(Object... parameters);
+	
+	/**
+	 * @deprecated Will be removed in future release. Instead use {@link #getOptionConfiguration}.
+	 */
+	@Deprecated
+	public @Nullable Object[] getParameters();
 }

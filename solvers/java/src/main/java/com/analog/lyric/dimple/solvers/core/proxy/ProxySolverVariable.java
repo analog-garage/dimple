@@ -18,11 +18,13 @@ package com.analog.lyric.dimple.solvers.core.proxy;
 
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * @since 0.05
@@ -47,6 +49,12 @@ public abstract class ProxySolverVariable<Delegate extends ISolverVariable>
 	/*---------------------
 	 * ISolverNode methods
 	 */
+	
+	@Override
+	public Domain getDomain()
+	{
+		return _modelVariable.getDomain();
+	}
 	
 	@Override
 	public VariableBase getModelObject()

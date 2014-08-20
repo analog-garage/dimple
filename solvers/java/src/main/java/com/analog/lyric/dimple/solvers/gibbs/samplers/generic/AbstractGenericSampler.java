@@ -14,16 +14,13 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.test.core.proposalKernels;
+package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.model.domains.Domain;
-import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
-import com.analog.lyric.dimple.solvers.core.proposalKernels.Proposal;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.options.Option;
 
@@ -32,28 +29,8 @@ import com.analog.lyric.options.Option;
  * @since 0.07
  * @author Christopher Barber
  */
-public class NoConstructorProposalKernel implements IProposalKernel
+public abstract class AbstractGenericSampler implements IGenericSampler
 {
-	private NoConstructorProposalKernel(int arg)
-	{
-	}
-	
-	@Override
-	public Proposal next(Value currentValue, Domain variableDomain)
-	{
-		return new Proposal(currentValue);
-	}
-
-	@Override
-	public void setParameters(Object... parameters)
-	{
-	}
-
-	@Override
-	public @Nullable Object[] getParameters()
-	{
-		return null;
-	}
 
 	@Override
 	public void configureFromOptions(IOptionHolder optionHolder)
@@ -65,4 +42,12 @@ public class NoConstructorProposalKernel implements IProposalKernel
 	{
 		return list;
 	}
+
+	@Override
+	public void initializeFromVariable(ISolverVariable var)
+	{
+		initialize(var.getDomain());
+		configureFromOptions(var);
+	}
+
 }

@@ -21,6 +21,8 @@ import static java.util.Objects.*;
 import java.util.Arrays;
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
@@ -38,7 +40,6 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.OptionValidationException;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class SRealVariable extends SRealVariableBase
 {
@@ -101,7 +102,7 @@ public class SRealVariable extends SRealVariableBase
 				}
 			}
 		}
-		requireNonNull(_proposalKernel).setParametersFromOptions(this);
+		requireNonNull(_proposalKernel).configureFromOptions(this);
 		
 		RealDomain initialDomain = getOptionOrDefault(ParticleBPOptions.initialParticleDomain);
 		_initialParticleDomain = initialDomain.isSubsetOf(_domain) ? initialDomain : _domain;

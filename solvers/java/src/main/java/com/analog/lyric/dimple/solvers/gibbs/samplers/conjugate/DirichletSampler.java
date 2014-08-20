@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
 import static java.util.Objects.*;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Dirichlet;
 import com.analog.lyric.dimple.factorfunctions.ExchangeableDirichlet;
@@ -28,7 +30,6 @@ import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.math.DimpleRandomGenerator;
-import org.eclipse.jdt.annotation.Nullable;
 
 
 public class DirichletSampler implements IRealJointConjugateSampler

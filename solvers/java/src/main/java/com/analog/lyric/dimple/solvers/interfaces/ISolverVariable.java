@@ -16,11 +16,15 @@
 
 package com.analog.lyric.dimple.solvers.interfaces;
 
-import com.analog.lyric.dimple.model.variables.VariableBase;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 
 public interface ISolverVariable extends ISolverNode
 {
+	public Domain getDomain();
+	
 	@Override
 	public @Nullable VariableBase getModelObject();
 	

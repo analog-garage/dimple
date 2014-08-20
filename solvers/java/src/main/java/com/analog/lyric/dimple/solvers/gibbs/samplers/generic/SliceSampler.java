@@ -16,19 +16,69 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 
+import java.util.LinkedList;
+import java.util.List;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.options.DoubleOptionKey;
+import com.analog.lyric.options.IOptionHolder;
+import com.analog.lyric.options.IntegerOptionKey;
+import com.analog.lyric.options.Option;
 
 
-public class SliceSampler implements IMCMCSampler
+public class SliceSampler extends AbstractGenericSampler implements IMCMCSampler
 {
 	private double _initialSliceWidth = 1;	// Default value
-	private double _maximumDoublings = 10;	// Default value
+	private int _maximumDoublings = 10;	// Default value
+	private boolean _explicitInitialSliceWidth = false;
+	private boolean _explicitMaximumDoublings = false;
+	
+	/**
+	 * <description>
+	 */
+	public static final DoubleOptionKey initialSliceWidth =
+		new DoubleOptionKey(SliceSampler.class, "initialSliceWidth", 1.0);
+	
+	/**
+	 * <description>
+	 */
+	public static final IntegerOptionKey maximumDoublings =
+		new IntegerOptionKey(SliceSampler.class, "maximumDoublings", 10);
 	
 	@Override
 	public void initialize(Domain variableDomain)
 	{
+	}
+	
+	@Override
+	public void configureFromOptions(IOptionHolder optionHolder)
+	{
+		if (!_explicitInitialSliceWidth)
+		{
+			_initialSliceWidth = optionHolder.getOptionOrDefault(initialSliceWidth);
+		}
+		if (!_explicitMaximumDoublings)
+		{
+			_maximumDoublings = optionHolder.getOptionOrDefault(maximumDoublings);
+		}
+	}
+	
+	@Override
+	public List<Option<?>> getOptionConfiguration(@Nullable List<Option<?>> list)
+	{
+		if (list == null)
+		{
+			list = new LinkedList<Option<?>>();
+		}
+		
+		list.add(new Option<Double>(initialSliceWidth, _initialSliceWidth));
+		list.add(new Option<Integer>(maximumDoublings, _maximumDoublings));
+		
+		return list;
 	}
 	
 	@Override
@@ -130,9 +180,15 @@ public class SliceSampler implements IMCMCSampler
 		return _initialSliceWidth;
 	}
 
+	/**
+	 * @deprecated Will be removed in future release. Instead set {@link #initialSliceWidth} option on
+	 * variables or graphs that will be using this sampler.
+	 */
+	@Deprecated
 	public void setInitialSliceWidth(double initialSliceWidth)
 	{
 		_initialSliceWidth = initialSliceWidth;
+		_explicitInitialSliceWidth = true;
 	}
 
 	public double getMaximumDoublings()
@@ -140,9 +196,14 @@ public class SliceSampler implements IMCMCSampler
 		return _maximumDoublings;
 	}
 
+	/**
+	 * @deprecated Will be removed in future release. Instead set {@link #maximumDoublings} option on
+	 * variables or graphs that will be using this sampler.
+	 */
+	@Deprecated
 	public void setMaximumDoublings(double maximumDoublings)
 	{
-		_maximumDoublings = maximumDoublings;
+		_maximumDoublings = (int)maximumDoublings;
+		_explicitMaximumDoublings = true;
 	}
-
 }

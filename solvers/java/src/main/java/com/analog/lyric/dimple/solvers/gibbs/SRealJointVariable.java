@@ -33,7 +33,6 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.core.Port;
-import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -52,12 +51,14 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjug
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.RealConjugateSamplerRegistry;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.RealJointConjugateSamplerRegistry;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IGenericSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IMCMCSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IRealSamplerClient;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.MHSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.options.IOptionHolder;
 import com.google.common.primitives.Doubles;
 
 /**** WARNING: Whenever editing this class, also make the corresponding edit to SRealVariable.
@@ -314,11 +315,6 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	{
 		if (sampleValue != _sampleValue[_tempIndex])
 			setCurrentSample(_tempIndex, sampleValue);
-	}
-	@Override
-	public final Domain getDomain()
-	{
-		return _var.getDomain();
 	}
 
 	// TODO move to local methods?
@@ -857,7 +853,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	{
 		if (_samplerSpecificallySpecified)
 		{
-			Objects.requireNonNull(_sampler).initialize(_var.getDomain());
+			Objects.requireNonNull(_sampler).initializeFromVariable(this);
 			return _sampler;
 		}
 		else if (_var.hasParentGraph())
@@ -866,7 +862,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 			initialize();	// To determine the appropriate sampler
 			if (_conjugateSampler == null)
 			{
-				Objects.requireNonNull(_sampler).initialize(_var.getDomain());
+				Objects.requireNonNull(_sampler).initializeFromVariable(this);
 				return _sampler;
 			}
 			else
@@ -992,21 +988,48 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		}
 		_sampleArray = sampleArray;
 		
+		//
 		// Determine which sampler to use
-		if (_samplerSpecificallySpecified)
-			_conjugateSampler = null;		// A sampler was specified and already created, use that one (don't use a conjugate sampler)
-		else
+		//
+		
+		_conjugateSampler = null;
+
+		if (!_samplerSpecificallySpecified)
 		{
-			_conjugateSampler = findConjugateSampler();		// See if there's an available conjugate sampler, and if so, use it
+			IOptionHolder[] source = new IOptionHolder[1];
+			Class<? extends IGenericSampler> samplerClass = getOptionAndSource(GibbsOptions.realSampler, source);
+			if (samplerClass == null || source[0] != this && source[0] != _var)
+			{
+				if (getOptionOrDefault(GibbsOptions.enableAutomaticConjugateSampling))
+				{
+					// See if there's an available conjugate sampler, and if so, use it
+					_conjugateSampler = findConjugateSampler();
+				}
+			}
+			
 			if (_conjugateSampler == null)
 			{
-				_sampler = (IMCMCSampler)GibbsOptions.realSampler.instantiate(this);
+				if (samplerClass == null)
+				{
+					samplerClass = GibbsOptions.realSampler.defaultValue();
+				}
+				
+				IMCMCSampler sampler = _sampler;
+				if (sampler == null || sampler.getClass() != samplerClass)
+				{
+					try
+					{
+						_sampler = sampler = (IMCMCSampler)samplerClass.newInstance();
+					}
+					catch (InstantiationException | IllegalAccessException ex)
+					{
+						throw new RuntimeException(ex);
+					}
+				}
+
+				sampler.initializeFromVariable(this);
 			}
 		}
-		
-		final IMCMCSampler sampler = _sampler;
-		if (sampler != null)
-			sampler.initialize(_var.getDomain());
 	}
 
 	// TODO move to ISolverVariable

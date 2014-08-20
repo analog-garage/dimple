@@ -89,6 +89,17 @@ public class GibbsOptions extends SolverOptions
 		new IntegerOptionKey(GibbsOptions.class, "numRandomRestarts", 0, 0, Integer.MAX_VALUE);
 	
 	/**
+	 * Determines whether conjugate sampling is automatically used when possible.
+	 * <p>
+	 * Note that if a specific sampler is set on the solver or model instance of a variable, that
+	 * sampler will be used regardless of this setting.
+	 * <p>
+	 * @since 0.07
+	 */
+	public static final BooleanOptionKey enableAutomaticConjugateSampling =
+		new BooleanOptionKey(GibbsOptions.class, "enableAutomaticConjugateSampling", true);
+	
+	/**
 	 * Enables use of a tempering and annealing process in Gibbs solver.
 	 * <p>
 	 * Defaults to false.
@@ -123,13 +134,17 @@ public class GibbsOptions extends SolverOptions
 		new DoubleOptionKey(GibbsOptions.class, "temperingHalfLife", 1, 1.0, Double.MAX_VALUE);
 	
 	/**
-	 * <description>
+	 * Specifies which sampler to use for discrete variables in Gibbs solver.
+	 * <p>
+	 * @since 0.07
 	 */
 	public static final GenericSamplerOptionKey discreteSampler =
 		new GenericSamplerOptionKey(GibbsOptions.class, "discreteSampler", CDFSampler.class);
 	
 	/**
-	 * <description>
+	 * Specifies which sampler to use for real variables in Gibbs solver.
+	 * <p>
+	 * @since 0.07
 	 */
 	public static final GenericSamplerOptionKey realSampler =
 		new GenericSamplerOptionKey(GibbsOptions.class, "realSampler", SliceSampler.class);

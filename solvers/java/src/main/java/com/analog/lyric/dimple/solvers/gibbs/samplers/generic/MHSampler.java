@@ -26,28 +26,55 @@ import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.Proposal;
+import com.analog.lyric.dimple.solvers.core.proposalKernels.ProposalKernelOptionKey;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.UniformDiscreteProposalKernel;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.options.IOptionHolder;
 
-public class MHSampler implements IMCMCSampler
+public class MHSampler extends AbstractGenericSampler implements IMCMCSampler
 {
 	protected @Nullable IProposalKernel _proposalKernel;
-
+	protected boolean _useDiscreteKernel;
+	protected boolean _explicitKernel = false;
+	
+	/**
+	 * Option specifies which discrete proposal kernel to use for MHSampler
+	 * <p>
+	 * Default value is {@link UniformDiscreteProposalKernel}.
+	 * <p>
+	 * @since 0.07
+	 */
+	public static final ProposalKernelOptionKey discreteProposalKernel =
+		new ProposalKernelOptionKey(MHSampler.class, "discreteProposalKernel", UniformDiscreteProposalKernel.class);
+	
+	/**
+	 * Option specifies which real proposal kernel to use for MHSampler
+	 * <p>
+	 * Default value is {@link NormalProposalKernel}.
+	 * <p>
+	 * @since 0.07
+	 */
+	public static final ProposalKernelOptionKey realProposalKernel =
+		new ProposalKernelOptionKey(MHSampler.class, "realProposalKernel", NormalProposalKernel.class);
+	
 	@Override
 	public void initialize(Domain variableDomain)
 	{
-		if (_proposalKernel == null)
+		_useDiscreteKernel = variableDomain.isDiscrete();
+	}
+	
+	@Override
+	public void configureFromOptions(IOptionHolder optionHolder)
+	{
+		IProposalKernel kernel = _proposalKernel;
+		
+		if (kernel == null || !_explicitKernel)
 		{
-			// Set default proposal kernel
-			if (variableDomain.isDiscrete())
-			{
-				_proposalKernel = new UniformDiscreteProposalKernel();
-			}
-			else
-			{
-				_proposalKernel = new NormalProposalKernel();
-			}
+			ProposalKernelOptionKey key = _useDiscreteKernel ? discreteProposalKernel : realProposalKernel;
+			_proposalKernel = kernel = key.instantiateIfDifferent(optionHolder, kernel);
 		}
+		
+		kernel.configureFromOptions(optionHolder);
 	}
 	
 	@Override
@@ -88,15 +115,19 @@ public class MHSampler implements IMCMCSampler
 	public void setProposalKernel(IProposalKernel proposalKernel)
 	{
 		_proposalKernel = proposalKernel;
+		_explicitKernel = true;
 	}
+	
 	public void setProposalKernel(String proposalKernelName)
 	{
-		_proposalKernel = DimpleEnvironment.active().proposalKernels().instantiateOrNull(proposalKernelName);
+		setProposalKernel(DimpleEnvironment.active().proposalKernels().instantiate(proposalKernelName));
 	}
+	
 	public @Nullable IProposalKernel getProposalKernel()
 	{
 		return _proposalKernel;
 	}
+	
 	public String getProposalKernelName()
 	{
 		final IProposalKernel proposalKernel = _proposalKernel;
@@ -105,6 +136,4 @@ public class MHSampler implements IMCMCSampler
 		else
 			return "";
 	}
-
-
 }

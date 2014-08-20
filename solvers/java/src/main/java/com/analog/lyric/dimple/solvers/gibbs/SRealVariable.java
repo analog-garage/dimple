@@ -37,7 +37,6 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Port;
-import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.RealValue;
@@ -52,12 +51,14 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.RealConjugateSamplerRegistry;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IGenericSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IMCMCSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IRealSamplerClient;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.MHSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.util.misc.Internal;
 import com.google.common.primitives.Doubles;
 
@@ -299,11 +300,6 @@ public class SRealVariable extends SRealVariableBase
 	{
 		if (sampleValue != _sampleValue)
 			setCurrentSample(sampleValue);
-	}
-	@Override
-	public final Domain getDomain()
-	{
-		return _var.getDomain();
 	}
 
 	// TODO move to local methods?
@@ -699,8 +695,9 @@ public class SRealVariable extends SRealVariableBase
 	public final void setSampler(String samplerName)
 	{
 		GibbsOptions.realSampler.convertAndSet(this, samplerName);
-		_sampler = (IMCMCSampler) GibbsOptions.realSampler.instantiate(this);
+		_sampler = (IMCMCSampler) GibbsOptions.realSampler.instantiateIfDifferent(this, _sampler);
 		_samplerSpecificallySpecified = true;
+		_sampler.initializeFromVariable(this);
 	}
 	
 	@Override
@@ -708,7 +705,7 @@ public class SRealVariable extends SRealVariableBase
 	{
 		if (_samplerSpecificallySpecified)
 		{
-			Objects.requireNonNull(_sampler).initialize(_var.getDomain());
+			Objects.requireNonNull(_sampler).initializeFromVariable(this);
 			return _sampler;
 		}
 		else
@@ -716,7 +713,7 @@ public class SRealVariable extends SRealVariableBase
 			initialize();	// To determine the appropriate sampler
 			if (_conjugateSampler == null)
 			{
-				Objects.requireNonNull(_sampler).initialize(_var.getDomain());
+				Objects.requireNonNull(_sampler).initializeFromVariable(this);
 				return _sampler;
 			}
 			else
@@ -841,21 +838,48 @@ public class SRealVariable extends SRealVariableBase
 		}
 		_sampleArray = sampleArray;
 		
+		//
 		// Determine which sampler to use
-		if (_samplerSpecificallySpecified)
-			_conjugateSampler = null;		// A sampler was specified and already created, use that one (don't use a conjugate sampler)
-		else
+		//
+		
+		_conjugateSampler = null;
+
+		if (!_samplerSpecificallySpecified)
 		{
-			_conjugateSampler = findConjugateSampler();		// See if there's an available conjugate sampler, and if so, use it
+			IOptionHolder[] source = new IOptionHolder[1];
+			Class<? extends IGenericSampler> samplerClass = getOptionAndSource(GibbsOptions.realSampler, source);
+			if (samplerClass == null || source[0] != this && source[0] != _var)
+			{
+				if (getOptionOrDefault(GibbsOptions.enableAutomaticConjugateSampling))
+				{
+					// See if there's an available conjugate sampler, and if so, use it
+					_conjugateSampler = findConjugateSampler();
+				}
+			}
+			
 			if (_conjugateSampler == null)
 			{
-				_sampler = (IMCMCSampler)GibbsOptions.realSampler.instantiate(this);
+				if (samplerClass == null)
+				{
+					samplerClass = GibbsOptions.realSampler.defaultValue();
+				}
+				
+				IMCMCSampler sampler = _sampler;
+				if (sampler == null || sampler.getClass() != samplerClass)
+				{
+					try
+					{
+						_sampler = sampler = (IMCMCSampler)samplerClass.newInstance();
+					}
+					catch (InstantiationException | IllegalAccessException ex)
+					{
+						throw new RuntimeException(ex);
+					}
+				}
+
+				sampler.initializeFromVariable(this);
 			}
 		}
-		
-		final IMCMCSampler sampler = _sampler;
-		if (sampler != null)
-			sampler.initialize(_var.getDomain());
 	}
 
 	// TODO move to ISolverVariable

@@ -26,7 +26,7 @@ import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.math.Utilities;
 
-public class CDFSampler implements IDiscreteDirectSampler
+public class CDFSampler extends AbstractGenericSampler implements IDiscreteDirectSampler
 {
 	protected double[] _samplerScratch = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	protected int _lengthRoundedUp = 0;
@@ -119,5 +119,4 @@ public class CDFSampler implements IDiscreteDirectSampler
 		final long expValue = (long)((int)(1512775.395195186 * value) + 0x3FF00000) << 32;	// 1512775.395195186 = 2^20/log(2)
 		return Double.longBitsToDouble(expValue & ~(expValue >> 63));	// Clip result if negative and convert to a double
 	}
-
 }

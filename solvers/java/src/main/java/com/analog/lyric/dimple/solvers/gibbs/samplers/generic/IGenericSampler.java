@@ -18,8 +18,18 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.options.IOptionConfigurable;
 
-public interface IGenericSampler extends ISampler
+public interface IGenericSampler extends ISampler, IOptionConfigurable
 {
+	/**
+	 * Initializes sampler state
+	 * <p>
+	 * @param variableDomain is the domain of the variable to be sampled.
+	 * @since 0.07
+	 */
 	public void initialize(Domain variableDomain);
+	
+	public void initializeFromVariable(ISolverVariable var);
 }

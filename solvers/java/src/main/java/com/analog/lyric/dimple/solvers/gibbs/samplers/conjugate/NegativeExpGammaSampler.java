@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
 import static java.util.Objects.*;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.factorfunctions.NegativeExpGamma;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.Port;
@@ -25,7 +27,6 @@ import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.math.DimpleRandomGenerator;
-import org.eclipse.jdt.annotation.Nullable;
 
 
 public class NegativeExpGammaSampler implements IRealConjugateSampler

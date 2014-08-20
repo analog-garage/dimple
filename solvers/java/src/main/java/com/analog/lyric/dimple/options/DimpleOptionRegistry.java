@@ -16,10 +16,14 @@
 
 package com.analog.lyric.dimple.options;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.CircularNormalProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.MHSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.SliceSampler;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeOptions;
 import com.analog.lyric.dimple.solvers.lp.LPOptions;
 import com.analog.lyric.dimple.solvers.minsum.MinSumOptions;
@@ -27,7 +31,6 @@ import com.analog.lyric.dimple.solvers.particleBP.ParticleBPOptions;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductOptions;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.OptionRegistry;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Registry of option keys for known dimple options.
@@ -57,7 +60,11 @@ public enum DimpleOptionRegistry
 		
 			// Proposal kernels
 			NormalProposalKernel.class,
-			CircularNormalProposalKernel.class
+			CircularNormalProposalKernel.class,
+			
+			// Samplers
+			MHSampler.class,
+			SliceSampler.class
 			);
 	}
 	

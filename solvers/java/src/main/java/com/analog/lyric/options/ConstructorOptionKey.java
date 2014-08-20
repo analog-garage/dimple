@@ -18,6 +18,8 @@ package com.analog.lyric.options;
 
 import net.jcip.annotations.Immutable;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.ConstructorRegistry;
 
 /**
@@ -108,12 +110,51 @@ public abstract class ConstructorOptionKey<SuperClass> extends ClassOptionKey<Su
 	 * @since 0.07
 	 */
 	public abstract ConstructorRegistry<SuperClass> getRegistry();
-	
+
+	/**
+	 * Instantiates new instance of class that is the current value of this option.
+	 * <p>
+	 * Looks up value of class using {@link #getOrDefault} and instantiates
+	 * it using {@link Class#newInstance()} with no arguments.
+	 * <p>
+	 * @param holder is a non-null option holder.
+	 * @since 0.07
+	 */
 	public SuperClass instantiate(IOptionHolder holder)
 	{
 		try
 		{
 			return getOrDefault(holder).newInstance();
+		}
+		catch (InstantiationException | IllegalAccessException ex)
+		{
+			throw new RuntimeException(ex);
+		}
+	}
+
+	/**
+	 * Returns instance of class that is the current value of this option, instantiating if
+	 * different from existing value.
+	 * <p>
+	 * This is similar to {@link #instantiate} but will return {@code prev} if it its
+	 * non-null and is already an instance of the class retrieved by {@link #getOrDefault}.
+	 * <p>
+	 * @param holder is a non-null option holder.
+	 * @param prev is a possibly-null existing instance.
+	 * @since 0.07
+	 */
+	public SuperClass instantiateIfDifferent(IOptionHolder holder, @Nullable SuperClass prev)
+	{
+		Class<? extends SuperClass> c = getOrDefault(holder);
+		
+		if (prev != null && prev.getClass() == c)
+		{
+			return prev;
+		}
+		
+		try
+		{
+			return c.newInstance();
 		}
 		catch (InstantiationException | IllegalAccessException ex)
 		{

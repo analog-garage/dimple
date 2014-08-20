@@ -16,12 +16,16 @@
 
 package com.analog.lyric.dimple.test.core.proposalKernels;
 
+import java.util.List;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.Proposal;
 import com.analog.lyric.options.IOptionHolder;
-import org.eclipse.jdt.annotation.Nullable;
+import com.analog.lyric.options.Option;
 
 /**
  * 
@@ -51,9 +55,15 @@ public class BrokenProposalKernel implements IProposalKernel
 	{
 		return null;
 	}
+	
+	@Override
+	public @Nullable List<Option<?>> getOptionConfiguration(@Nullable List<Option<?>> list)
+	{
+		return list;
+	}
 
 	@Override
-	public void setParametersFromOptions(IOptionHolder optionHolder)
+	public void configureFromOptions(IOptionHolder optionHolder)
 	{
 	}
 

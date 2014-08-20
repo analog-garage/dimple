@@ -30,7 +30,6 @@ import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
-import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.Value;
@@ -293,7 +292,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		else	// If the actual sampler isn't a CDF sampler, make a CDF sampler to use for random restart
 		{
 			IDiscreteDirectSampler sampler = new CDFSampler();
-			sampler.initialize(_var.getDomain());
+			sampler.initializeFromVariable(this);
 			sampler.nextSample(_outputMsg, _input, minEnergy, this);
 	}
 	}
@@ -351,12 +350,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		if (sampleIndex != _outputMsg.getIndex())
 			setCurrentSampleIndex(sampleIndex);
 	}
-	@Override
-	public final Domain getDomain()
-	{
-		return _var.getDomain();
-	}
-	
 	
 	@SuppressWarnings("null")
 	@Override
@@ -713,7 +706,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     		IGenericSampler newSampler = GibbsOptions.discreteSampler.instantiate(this);
     		if (newSampler != sampler)
     		{
-    			newSampler.initialize(_var.getDomain());
+    			newSampler.initializeFromVariable(this);
     		}
 			sampler = newSampler;
     	}
@@ -880,6 +873,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			// If not specifically specified, use the default sampler
 			sampler = _sampler = GibbsOptions.discreteSampler.instantiate(this);
 		}
-		sampler.initialize(_var.getDomain());
+		sampler.initializeFromVariable(this);
 	}
 }

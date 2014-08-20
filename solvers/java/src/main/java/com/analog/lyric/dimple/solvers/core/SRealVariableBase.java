@@ -16,10 +16,12 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
-import org.eclipse.jdt.annotation.Nullable;
 
 public abstract class SRealVariableBase extends SVariableBase
 {
@@ -70,6 +72,12 @@ public abstract class SRealVariableBase extends SVariableBase
 	/*-------------------------
 	 * ISolverVariable methods
 	 */
+	
+	@Override
+	public RealDomain getDomain()
+	{
+		return getModelObject().getDomain();
+	}
 	
 	@Override
 	public Object getGuess()

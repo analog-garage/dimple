@@ -16,11 +16,12 @@
 
 package com.analog.lyric.dimple.model.variables;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class RealJoint extends VariableBase
 {
@@ -38,11 +39,17 @@ public class RealJoint extends VariableBase
 		super(domain, modelerClassName);
 	}
 
+	@Override
+	public RealJointDomain getDomain()
+	{
+		return (RealJointDomain)super.getDomain();
+	}
 	
 	public RealJointDomain getRealDomain()
 	{
-		return (RealJointDomain)getDomain();
+		return getDomain();
 	}
+	
 	public @Nullable Object getInput()
 	{
 		return getInputObject();
@@ -68,7 +75,7 @@ public class RealJoint extends VariableBase
 	public void setFixedValue(double[] fixedValue)
 	{
 		// Verify that the fixed value is in the domain of the variable
-		if (!((RealJointDomain)getDomain()).inDomain(fixedValue))
+		if (!getDomain().inDomain(fixedValue))
 			throw new DimpleException("Attempt to set fixed value outside of variable domain.");
 	
 		setFixedValueObject(fixedValue);

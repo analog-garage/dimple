@@ -16,24 +16,30 @@
 
 package com.analog.lyric.dimple.solvers.core.proposalKernels;
 
+import java.util.List;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.DoubleOptionKey;
 import com.analog.lyric.options.IOptionHolder;
+import com.analog.lyric.options.Option;
 
 public class CircularNormalProposalKernel extends NormalProposalKernel
 {
 	protected double _min = -Math.PI;
 	protected double _max = Math.PI;
 	protected double _range = _max-_min;
+	private boolean _explicitBounds = false;
 
 	/**
 	 * Lower bound parameter option.
 	 * <p>
 	 * Default value is -pi
 	 * <p>
-	 * @see #setParametersFromOptions(IOptionHolder)
+	 * @see #configureFromOptions(IOptionHolder)
 	 * @since 0.07
 	 */
 	public static final DoubleOptionKey lowerBound =
@@ -44,7 +50,7 @@ public class CircularNormalProposalKernel extends NormalProposalKernel
 	 * <p>
 	 * Default value is pi.
 	 * <p>
-	 * @see #setParametersFromOptions(IOptionHolder)
+	 * @see #configureFromOptions(IOptionHolder)
 	 * @since 0.07
 	 */
 	public static final DoubleOptionKey upperBound =
@@ -58,6 +64,7 @@ public class CircularNormalProposalKernel extends NormalProposalKernel
 		return new Proposal(value);
 	}
 	
+	@Deprecated
 	@Override
 	public void setParameters(Object... parameters)
 	{
@@ -67,6 +74,15 @@ public class CircularNormalProposalKernel extends NormalProposalKernel
 		if (parameters.length > 2)
 			_max = (Double)parameters[2];
 		_range = _max-_min;
+	}
+
+	@Override
+	public List<Option<?>> getOptionConfiguration(@Nullable List<Option<?>> list)
+	{
+		list = super.getOptionConfiguration(list);
+		list.add(new Option<Double>(lowerBound, _min));
+		list.add(new Option<Double>(upperBound, _max));
+		return list;
 	}
 	
 	/**
@@ -79,12 +95,18 @@ public class CircularNormalProposalKernel extends NormalProposalKernel
 	 * @since 0.07
 	 */
 	@Override
-	public void setParametersFromOptions(IOptionHolder optionHolder)
+	public void configureFromOptions(IOptionHolder optionHolder)
 	{
-		super.setParametersFromOptions(optionHolder);
-		setCircularBounds(optionHolder.getOptionOrDefault(lowerBound), optionHolder.getOptionOrDefault(upperBound));
+		super.configureFromOptions(optionHolder);
+		if (!_explicitBounds)
+		{
+			_min = optionHolder.getOptionOrDefault(lowerBound);
+			_max = optionHolder.getOptionOrDefault(upperBound);
+			_range = _max-_min;
+		}
 	}
 	
+	@Deprecated
 	@Override
 	public Object[] getParameters()
 	{
@@ -95,11 +117,17 @@ public class CircularNormalProposalKernel extends NormalProposalKernel
 		return parameters;
 	}
 	
+	/**
+	 * @deprecated Will be removed in future release. Instead set {@link #lowerBound} and {@link #upperBound} options on
+	 * variables or graphs that will be using this proposal kernel.
+	 */
+	@Deprecated
 	public void setCircularBounds(double lower, double upper)
 	{
 		_min = lower;
 		_max = upper;
 		_range = _max-_min;
+		_explicitBounds = true;
 	}
 	
 	public double getLowerBound()
