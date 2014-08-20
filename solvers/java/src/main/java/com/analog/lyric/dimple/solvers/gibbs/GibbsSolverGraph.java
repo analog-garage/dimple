@@ -271,8 +271,8 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		_firstSample = true;
 		
 		setUpdatesPerSampleFromScans();
+		setBurnInUpdatesFromScans();
 		
-		if (_burnInScans >= 0) _burnInUpdates = _burnInScans * _factorGraph.getVariables().size();
 		if (_temper) setTemperature(_initialTemperature);
 		
 		DoubleArrayList scoreArray = null;
@@ -666,6 +666,38 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		setOption(GibbsOptions.burnInScans, -1);
 	}
 	
+	// Set the number of scans for burn-in as an alternative means of specifying the burn-in period
+	/**
+	 * Sets the number of updates of all of the variables to perform during the burn-in period.
+	 * <p>
+	 * This simply sets the value of the {@link GibbsOptions#burnInScans} option on this object.
+	 * <p>
+	 * @param burnInScans is a non-negative number.
+	 * @deprecated Instead set {@link GibbsOptions#burnInScans} option on this object or its corresponding
+	 * model graph using {@link #setOption}.
+	 */
+	@Deprecated
+	public void setBurnInScans(int burnInScans)
+	{
+		setOption(GibbsOptions.burnInScans, burnInScans);
+		_burnInScans = burnInScans;
+		
+		setBurnInUpdatesFromScans();
+	}
+
+	/**
+	 * Updates the value of {@link _burnInUpdates} based on {@link _burnInScans} and
+	 * the current number of variables in the graph.
+	 */
+	private void setBurnInUpdatesFromScans()
+	{
+		if (_burnInScans > 0)
+		{
+			final IGibbsSchedule schedule = _schedule;
+			_burnInUpdates = _burnInScans * (schedule != null ? schedule.size() : _factorGraph.getVariableCount());
+		}
+	}
+
 	/**
 	 * Sets number of random restarts.
 	 * <p>
@@ -691,23 +723,6 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	public int getNumRestarts()
 	{
 		return _numRandomRestarts;
-	}
-	
-	// Set the number of scans for burn-in as an alternative means of specifying the burn-in period
-	/**
-	 * Sets the number of updates of all of the variables to perform during the burn-in period.
-	 * <p>
-	 * This simply sets the value of the {@link GibbsOptions#burnInScans} option on this object.
-	 * <p>
-	 * @param burnInScans is a non-negative number.
-	 * @deprecated Instead set {@link GibbsOptions#burnInScans} option on this object or its corresponding
-	 * model graph using {@link #setOption}.
-	 */
-	@Deprecated
-	public void setBurnInScans(int burnInScans)
-	{
-		setOption(GibbsOptions.burnInScans, burnInScans);
-		_burnInScans = burnInScans;
 	}
 	
 	// Set the default sampler for Real (and RealJoint) variables
