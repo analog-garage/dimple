@@ -27,9 +27,18 @@ public interface IGenericSampler extends ISampler, IOptionConfigurable
 	 * Initializes sampler state
 	 * <p>
 	 * @param variableDomain is the domain of the variable to be sampled.
-	 * @since 0.07
 	 */
 	public void initialize(Domain variableDomain);
 	
+	/**
+	 * Initializes sampler state
+	 * <p>
+	 * Implementations should invoke {@link #initialize} with the domain
+	 * of {@code var} and {@link #configureFromOptions} using {@code var}
+	 * as the option holder.
+	 * <p>
+	 * @param var is the variable for which samples will be generated.
+	 * @since 0.07
+	 */
 	public void initializeFromVariable(ISolverVariable var);
 }

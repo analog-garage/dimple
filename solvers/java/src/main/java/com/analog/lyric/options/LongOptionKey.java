@@ -18,6 +18,8 @@ package com.analog.lyric.options;
 
 import net.jcip.annotations.Immutable;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * Option key with type {@link Long}.
  * <p>
@@ -73,7 +75,7 @@ public class LongOptionKey extends OptionKey<Long>
 		_defaultValue = defaultValue;
 		_lowerBound = lowerBound;
 		_upperBound = upperBound;
-		validate(defaultValue);
+		validate(defaultValue, null);
 	}
 
 	@Override
@@ -121,9 +123,9 @@ public class LongOptionKey extends OptionKey<Long>
 	 * or greater than {@link #upperBound()}.
 	 */
 	@Override
-	public Long validate(Long value)
+	public Long validate(Long value, @Nullable IOptionHolder optionHolder)
 	{
-		value = super.validate(value);
+		value = super.validate(value, optionHolder);
 		if (value < _lowerBound || value > _upperBound)
 		{
 			throw new OptionValidationException("Value %d is not in range [%d,%d].",

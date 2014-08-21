@@ -29,6 +29,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.ReleasableIterator;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
@@ -44,6 +45,7 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealJointVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
+import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.IRealJointConjugateFactor;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
@@ -771,8 +773,10 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 
 
 	// FIXME: REMOVE
-	// There should be a way to call these directly via the samplers
-	// If so, they should be removed from here since this makes this sampler-specific
+	/**
+	 * @deprecated Will be removed in future release. Instead set corresponding option
+	 * for desired proposal kernel (e.g. {@link NormalProposalKernel#standardDeviation}.
+	 */
 	@SuppressWarnings("null")
 	@Deprecated
 	public final void setProposalStandardDeviation(double stdDev)
@@ -780,6 +784,11 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		if (_sampler instanceof MHSampler)
 			((MHSampler)_sampler).getProposalKernel().setParameters(stdDev);
 	}
+
+	/**
+	 * @deprecated Will be removed in future release. Instead lookup corresponding option
+	 * for desired proposal kernel (e.g. {@link NormalProposalKernel#standardDeviation}.
+	 */
 	@SuppressWarnings("null")
 	@Deprecated
 	public final double getProposalStandardDeviation()
@@ -789,7 +798,11 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		else
 			return 0;
 	}
-	// Set the proposal kernel parameters more generally
+
+	/**
+	 * @deprecated Will be removed in future release. Instead set appropriate options
+	 * for proposal kernel using {@link #setOption}.
+	 */
 	@SuppressWarnings("null")
 	@Deprecated
 	public final void setProposalKernelParameters(Object... parameters)
@@ -825,23 +838,48 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 			return null;
 	}
 	
-	// Set/get the sampler to be used for this variable
+	/**
+	 * @deprecated Will be removed in future release. Instead use {@link GibbsOptions#realSampler}
+	 * option.
+	 */
+	@Deprecated
 	public final void setDefaultSampler(String samplerName)
 	{
 		GibbsOptions.realSampler.convertAndSet(this, samplerName);
 	}
 	
+	/**
+	 * @deprecated Will be removed in future release. Instead use {@link GibbsOptions#realSampler}
+	 * option.
+	 */
+	@Deprecated
 	public final String getDefaultSamplerName()
 	{
 		return getOptionOrDefault(GibbsOptions.realSampler).getSimpleName();
 	}
 	
+	/**
+	 * Sets sampler to be used for this variable.
+	 * <p>
+	 * In general, it is usually easier to configure the sampler using the
+	 * {@link GibbsOptions#realSampler} option. This method should only be
+	 * required when the sampler class is not registered with the
+	 * {@linkplain DimpleEnvironment#genericSamplers() generic sampler registry}
+	 * for the current environment.
+	 * <p>
+	 * @param sampler is a non-null sampler.
+	 */
 	public final void setSampler(ISampler sampler)
 	{
 		_sampler = (IMCMCSampler)sampler;
 		_samplerSpecificallySpecified = true;
 	}
 	
+	/**
+	 * @deprecated Will be removed in future release. Instead set sampler by setting
+	 * {@link GibbsOptions#realSampler} option using {@link #setOption}.
+	 */
+	@Deprecated
 	public final void setSampler(String samplerName)
 	{
 		_sampler = (IMCMCSampler)GibbsOptions.realSampler.instantiate(this);

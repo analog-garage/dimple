@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.eclipse.jdt.annotation.Nullable;
+
 import com.google.common.collect.UnmodifiableIterator;
 
 /**
@@ -115,7 +116,7 @@ public class LocalOptionHolder extends AbstractOptionHolder
 	@Override
 	public <T extends Serializable> void setOption(IOptionKey<T> key, T value)
 	{
-		createLocalOptionMap().put(key, key.validate(value));
+		createLocalOptionMap().put(key, key.validate(value, this));
 	}
 	
 	@Override

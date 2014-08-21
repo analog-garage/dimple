@@ -28,6 +28,7 @@ import cern.colt.list.IntArrayList;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.ReleasableIterator;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -672,24 +673,49 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	
     // TODO move to bottom
 
-    // Set/get the sampler to be used for this variable
-    public final void setDefaultSampler(String samplerName)
+	/**
+	 * @deprecated Will be removed in future release. Instead use {@link GibbsOptions#discreteSampler}
+	 * option.
+	 */
+    @Deprecated
+	public final void setDefaultSampler(String samplerName)
     {
     	GibbsOptions.discreteSampler.convertAndSet(this, samplerName);
     }
     
-    public final String getDefaultSamplerName()
+	/**
+	 * @deprecated Will be removed in future release. Instead use {@link GibbsOptions#discreteSampler}
+	 * option.
+	 */
+    @Deprecated
+	public final String getDefaultSamplerName()
     {
     	return getOptionOrDefault(GibbsOptions.discreteSampler).getSimpleName();
     }
     
+	/**
+	 * Sets sampler to be used for this variable.
+	 * <p>
+	 * In general, it is usually easier to configure the sampler using the
+	 * {@link GibbsOptions#discreteSampler} option. This method should only be
+	 * required when the sampler class is not registered with the
+	 * {@linkplain DimpleEnvironment#genericSamplers() generic sampler registry}
+	 * for the current environment.
+	 * <p>
+	 * @param sampler is a non-null sampler.
+	 */
     public final void setSampler(ISampler sampler)
     {
     	_sampler = (IGenericSampler)sampler;
     	_samplerSpecificallySpecified = true;
     }
     
-    public final void setSampler(String samplerName)
+	/**
+	 * @deprecated Will be removed in future release. Instead set sampler by setting
+	 * {@link GibbsOptions#discreteSampler} option using {@link #setOption}.
+	 */
+    @Deprecated
+   public final void setSampler(String samplerName)
     {
     	GibbsOptions.discreteSampler.convertAndSet(this, samplerName);
     	_sampler = GibbsOptions.discreteSampler.instantiate(this);
