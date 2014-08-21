@@ -16,12 +16,15 @@
 
 package com.analog.lyric.options.tests;
 
+import static com.analog.lyric.util.test.ExceptionTester.*;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -53,8 +56,8 @@ public class TestOptionRegistry
 		assertEquals(0, registry.size());
 		assertInvariants(registry);
 		
-		assertEquals(4, registry.addFromClass(getClass()));
-		assertEquals(0, registry.addFromClass(getClass()));
+		assertEquals(4, registry.addFromClasses(getClass()));
+		assertEquals(0, registry.addFromClasses(getClass()));
 		assertInvariants(registry);
 		assertEquals(4, registry.size());
 		
@@ -95,6 +98,11 @@ public class TestOptionRegistry
 		}
 		assertInvariants(registry);
 
+		expectThrow(NoSuchElementException.class, "Unknown option key 'DoesNot.exist'",
+			registry, "asKey", "DoesNot.exist");
+		expectThrow(IllegalArgumentException.class, "Expected String or IOptionKey instead of 'Integer'",
+			registry, "asKey", 42);
+		
 		assertNull(registry.get("this.class.does.not.exist"));
 		
 		assertEquals(false, registry.add(OptionKeys.declaredInClass(BarA.getDeclaringClass())));
@@ -162,7 +170,9 @@ public class TestOptionRegistry
 		
 		for (IOptionKey<?> key : registry)
 		{
-			assertEquals(key, registry.get(OptionKey.canonicalName(key)));
+			assertSame(key, registry.get(OptionKey.canonicalName(key)));
+			assertSame(key, registry.asKey(key));
+			assertSame(key, registry.asKey(OptionKey.canonicalName(key)));
 			try
 			{
 				assertEquals(key, registry.get(OptionKey.qualifiedName(key)));
@@ -179,6 +189,17 @@ public class TestOptionRegistry
 		
 		ArrayList<IOptionKey<?>> all2 = registry.getAllMatching(".*");
 		assertEquals(all1, all2);
+		
+		ArrayList<IOptionKey<?>> all3 = new ArrayList<>();
+		Collection<OptionKeys> allKeys = registry.getOptionKeys();
+		for (OptionKeys keys : allKeys)
+		{
+			for (IOptionKey<?> key : keys.values())
+			{
+				all3.add(key);
+			}
+		}
+		assertEquals(all1, all3);
 		
 		assertTrue(registry.getAllMatching("does-not-exist").isEmpty());
 	}

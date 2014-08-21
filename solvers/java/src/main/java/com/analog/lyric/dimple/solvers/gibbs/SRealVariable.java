@@ -745,9 +745,10 @@ public class SRealVariable extends SRealVariableBase
 	public final void setSampler(String samplerName)
 	{
 		GibbsOptions.realSampler.convertAndSet(this, samplerName);
-		_sampler = (IMCMCSampler) GibbsOptions.realSampler.instantiateIfDifferent(this, _sampler);
+		IMCMCSampler sampler = (IMCMCSampler) GibbsOptions.realSampler.instantiateIfDifferent(this, _sampler);
+		_sampler = sampler;
 		_samplerSpecificallySpecified = true;
-		_sampler.initializeFromVariable(this);
+		sampler.initializeFromVariable(this);
 	}
 	
 	@Override
