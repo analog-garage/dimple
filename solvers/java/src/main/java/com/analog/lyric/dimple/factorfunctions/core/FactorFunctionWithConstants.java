@@ -22,13 +22,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.util.misc.Internal;
-import org.eclipse.jdt.annotation.Nullable;
 
 
 public class FactorFunctionWithConstants extends FactorFunction
@@ -272,7 +273,7 @@ public class FactorFunctionWithConstants extends FactorFunction
 	@Override
 	public @Nullable int[] getDirectedToIndicesForInput(Factor factor, int inputEdge)
 	{
-		int[] directedToIndices = _factorFunction.getDirectedToIndicesForInput(factor, expandInputEdge(inputEdge));
+		int[] directedToIndices = _factorFunction.getDirectedToIndicesForInput(factor, getIndexByEdge(inputEdge));
 		if (directedToIndices != null)
 		{
 			directedToIndices = contractIndexList(directedToIndices);
@@ -359,34 +360,6 @@ public class FactorFunctionWithConstants extends FactorFunction
 		}
 		
 		return incremental;
-	}
-	
-	protected int expandInputEdge(int inputEdge)
-	{
-		final int[] constantIndices = _constantIndices;
-		final int constantLength = constantIndices.length;
-
-		int low = 0, high = constantLength;
-		while (low < high)
-		{
-			final int mid = (high - low) / 2;
-			
-			// The offset at which the constant would be inserted in the
-			// contracted version of list. Equal to the constant offset
-			// in the expanded list minus its position in the list.
-			final int insertPoint = constantIndices[mid] - mid;
-			
-			if (inputEdge >= insertPoint)
-			{
-				low = mid + 1;
-			}
-			else
-			{
-				high = mid;
-			}
-		}
-		
-		return inputEdge + low;
 	}
 	
 	// Expand list of inputs to include the constants
