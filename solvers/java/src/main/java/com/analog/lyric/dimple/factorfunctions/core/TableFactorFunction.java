@@ -22,6 +22,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 
 
@@ -72,11 +73,23 @@ public class TableFactorFunction extends FactorFunction
 	}
 
 	@Override
+	public double evalEnergy(Value[] input)
+	{
+		return _factorTable.getEnergyForValues(input);
+	}
+
+	@Override
 	public double evalEnergy(Object... input)
 	{
 		return _factorTable.getEnergyForElements(input);
 	}
-
+	
+	@Override
+	public double eval(Value[] input)
+	{
+		return _factorTable.getWeightForValues(input);
+	}
+	
 	@Override
 	public double eval(Object... input)
 	{

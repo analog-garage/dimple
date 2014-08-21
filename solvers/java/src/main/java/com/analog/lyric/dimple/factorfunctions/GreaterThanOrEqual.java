@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -34,11 +35,11 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 public class GreaterThanOrEqual extends FactorFunction
 {
     @Override
-    public double evalEnergy(Object... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
-    	boolean indicator = FactorFunctionUtilities.toBoolean(arguments[0]);
-    	double firstVal = FactorFunctionUtilities.toDouble(arguments[1]);
-    	double secondVal = FactorFunctionUtilities.toDouble(arguments[2]);
+    	final boolean indicator = arguments[0].getBoolean();
+    	final double firstVal = arguments[1].getDouble();
+    	final double secondVal = arguments[2].getDouble();
     	
     	if (indicator == (firstVal >= secondVal))
     		return 0;

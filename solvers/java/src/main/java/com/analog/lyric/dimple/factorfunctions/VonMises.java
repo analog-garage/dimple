@@ -21,6 +21,7 @@ import cern.jet.math.Bessel;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -58,22 +59,22 @@ public class VonMises extends FactorFunction
 	}
 	
     @Override
-	public double evalEnergy(Object... arguments)
+	public final double evalEnergy(Value[] arguments)
     {
     	int index = 0;
     	if (!_parametersConstant)
     	{
-    		_mean = FactorFunctionUtilities.toDouble(arguments[index++]);				// First variable is mean parameter
-    		_precision = FactorFunctionUtilities.toDouble(arguments[index++]);			// Second variable is precision (must be non-negative)
+    		_mean = arguments[index++].getDouble();					// First variable is mean parameter
+    		_precision = arguments[index++].getDouble();			// Second variable is precision (must be non-negative)
     		_log2piBesseli0Precision = Math.log(Bessel.i0(_precision)) + _log2pi;
     		if (_precision < 0) return Double.POSITIVE_INFINITY;
     	}
-    	int length = arguments.length;
-    	int N = length - index;			// Number of non-parameter variables
+    	final int length = arguments.length;
+    	final int N = length - index;			// Number of non-parameter variables
     	double sum = 0;
     	for (; index < length; index++)
     	{
-    		double x = FactorFunctionUtilities.toDouble(arguments[index]);				// Remaining inputs are VonMises variables
+    		final double x = arguments[index].getDouble();			// Remaining inputs are VonMises variables
     		if (x < MINUS_PI || x > PI)
     			return Double.POSITIVE_INFINITY;
         	sum -= Math.cos(x - _mean);

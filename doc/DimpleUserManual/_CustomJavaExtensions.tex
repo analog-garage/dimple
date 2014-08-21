@@ -52,17 +52,17 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 public class BigEquals extends FactorFunction
 {	
     @Override
-    public double evalEnergy(Object... input)
+    public final double evalEnergy(Value[] input)
     {
         if (input.length == 0)
             return 0;
-    	
-        Object firstVal = input[0];
-    	
+	    	
+        Value firstVal = input[0];
+	    	
         for (int i = 1; i < input.length; i++)
-            if (input[i] != firstVal)
-    	        return Double.POSITIVE_INFINITY;
-    	
+            if (!input[i].valueEquals(firstVal))
+                return Double.POSITIVE_INFINITY;
+	    	
         return 0;
     }
 }

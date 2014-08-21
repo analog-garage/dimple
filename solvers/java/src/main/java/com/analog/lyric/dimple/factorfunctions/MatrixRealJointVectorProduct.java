@@ -68,7 +68,7 @@ public class MatrixRealJointVectorProduct extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object ... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
     	int argIndex = 0;
 		double error = 0;
@@ -77,25 +77,25 @@ public class MatrixRealJointVectorProduct extends FactorFunction
     	final int outLength = _outLength;
 
     	// Get the output vector values
-		double[] outVector = (double[])arguments[argIndex++];
+		final double[] outVector = arguments[argIndex++].getDoubleArray();
 
     	// How is the matrix passed?
-    	if (arguments[argIndex] instanceof double[][])
+    	if (arguments[argIndex].getObject() instanceof double[][])
     	{
     		// Constant matrix is passed as a single argument; get the matrix values
-    		double[][] matrix = (double[][])arguments[argIndex++];
+    		final double[][] matrix = (double[][])requireNonNull(arguments[argIndex++].getObject());
     		
         	// Get the input vector values
-        	double[] inVector = (double[])arguments[argIndex++];
+    		final double[] inVector = arguments[argIndex++].getDoubleArray();
         	
         	// Compute the expected output and the total error
         	for (int row = 0; row < outLength; row++)
         	{
         		double sum = 0;
-        		double[] rowValues = matrix[row];
+        		final double[] rowValues = matrix[row];
         		for (int col = 0; col < inLength; col++)
         			sum += rowValues[col] * inVector[col];
-        		double diff = outVector[row] - sum;
+        		final double diff = outVector[row] - sum;
         		error += diff*diff;
         	}
     	}
@@ -105,15 +105,15 @@ public class MatrixRealJointVectorProduct extends FactorFunction
     		final int numMatrixElements = inLength * outLength;
     		
         	// Get the input vector values
-        	double[] inVector = (double[])arguments[argIndex + numMatrixElements];
+    		final double[] inVector = arguments[argIndex + numMatrixElements].getDoubleArray();
         	
         	// Compute the expected output and the total error
         	for (int row = 0, rowOffset = argIndex; row < outLength; row++, rowOffset++)
         	{
         		double sum = 0;
         		for (int col = 0, offset = rowOffset; col < inLength; col++, offset += outLength)
-        			sum += FactorFunctionUtilities.toDouble(arguments[offset]) * inVector[col];
-        		double diff = outVector[row] - sum;
+        			sum += arguments[offset].getDouble() * inVector[col];
+        		final double diff = outVector[row] - sum;
         		error += diff*diff;
         	}
     	}

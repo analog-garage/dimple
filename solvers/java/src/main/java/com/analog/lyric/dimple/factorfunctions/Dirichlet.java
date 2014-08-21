@@ -22,6 +22,7 @@ import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -68,17 +69,17 @@ public class Dirichlet extends FactorFunction
 	}
 	
     @Override
-	public double evalEnergy(Object ... arguments)
+	public final double evalEnergy(Value[] arguments)
 	{
     	int index = 0;
     	if (!_parametersConstant)
     	{
-    		double[] alpha = (double[])arguments[index++];		// First variable is array of parameter values
+    		final double[] alpha = arguments[index++].getDoubleArray();		// First variable is array of parameter values
     		_dimension = alpha.length;
     		_alphaMinusOne = new double[_dimension];
     		for (int i = 0; i < _dimension; i++)
     		{
-    			double alphai = alpha[i];
+    			final double alphai = alpha[i];
     			if (alphai <= 0)
     				return Double.POSITIVE_INFINITY;
         		_alphaMinusOne[i] = alphai - 1;
@@ -87,17 +88,17 @@ public class Dirichlet extends FactorFunction
     	}
 
     	double sum = 0;
-    	int length = arguments.length;
-    	int N = length - index;			// Number of non-parameter variables
+    	final int length = arguments.length;
+    	final int N = length - index;			// Number of non-parameter variables
     	for (; index < length; index++)
     	{
-    		double[] x = (double[])arguments[index];	// Remaining inputs are Dirichlet distributed random variable vectors
+    		final double[] x = arguments[index].getDoubleArray();			// Remaining inputs are Dirichlet distributed random variable vectors
     		if (x.length != _dimension)
 	    		throw new DimpleException("Dimension of variable does not equal to the dimension of the parameter vector.");
     		double xSum = 0;
     		for (int i = 0; i < _dimension; i++)
     		{
-    			double xi = x[i];
+    			final double xi = x[i];
     			if (xi <= 0)
     				return Double.POSITIVE_INFINITY;
     			else

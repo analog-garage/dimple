@@ -17,21 +17,22 @@
 package com.analog.lyric.dimple.factorfunctions.core;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.values.Value;
 
-public class CustomFactorFunctionWrapper extends FactorFunction 
+public class CustomFactorFunctionWrapper extends FactorFunction
 {
 
 	public CustomFactorFunctionWrapper()
 	{
 		super();
 	}
-	public CustomFactorFunctionWrapper(String name) 
+	public CustomFactorFunctionWrapper(String name)
 	{
 		super(name);
 	}
 
 	@Override
-	public double evalEnergy(Object ... input) 
+	public double evalEnergy(Value[] input)
 	{
 		throw new DimpleException("not implemented");
 	}

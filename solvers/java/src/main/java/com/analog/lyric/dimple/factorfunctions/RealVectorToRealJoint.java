@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -54,12 +54,12 @@ public class RealVectorToRealJoint extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object ... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
     	final int dimension = arguments.length - 1;
 
     	// Output RealJoint
-		final double[] joint = ((double[])arguments[0]);
+		final double[] joint = arguments[0].getDoubleArray();
 		if (dimension != joint.length) throw new DimpleException("RealJoint argument does not have the correct dimension");
     	
     	if (_smoothingSpecified)
@@ -67,7 +67,7 @@ public class RealVectorToRealJoint extends FactorFunction
     		double potential = 0;
     		for (int d = 0; d < dimension; d++)
     		{
-    			double diff = FactorFunctionUtilities.toDouble(arguments[d + 1]) - joint[d];
+    			final double diff = arguments[d + 1].getDouble() - joint[d];
     			potential += diff*diff;
     		}
     		return potential*_beta;
@@ -76,7 +76,7 @@ public class RealVectorToRealJoint extends FactorFunction
     	{
     		boolean equal = true;
     		for (int d = 0; d < dimension; d++)
-    			if (FactorFunctionUtilities.toDouble(arguments[d + 1]) != joint[d])
+    			if (arguments[d + 1].getDouble() != joint[d])
     				equal = false;
     		return (equal) ? 0 : Double.POSITIVE_INFINITY;
     	}

@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -51,19 +52,19 @@ public class Sum extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object ... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
-    	int length = arguments.length;
-    	double out = FactorFunctionUtilities.toDouble(arguments[0]);
+    	final int length = arguments.length;
+    	final double out = arguments[0].getDouble();
 
     	double sum = 0;
     	for (int i = 1; i < length; i++)
-    		sum += FactorFunctionUtilities.toDouble(arguments[i]);
+    		sum += arguments[i].getDouble();
     	
     	if (_smoothingSpecified)
     	{
-    		double diff = sum - out;
-    		double potential = diff*diff;
+    		final double diff = sum - out;
+    		final double potential = diff*diff;
     		return potential*_beta;
     	}
     	else

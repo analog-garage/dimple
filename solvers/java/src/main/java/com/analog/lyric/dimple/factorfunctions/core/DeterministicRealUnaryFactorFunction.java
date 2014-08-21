@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.factorfunctions.core;
 
+import com.analog.lyric.dimple.model.values.Value;
+
 public abstract class DeterministicRealUnaryFactorFunction extends FactorFunction
 {
 	/**
@@ -51,10 +53,10 @@ public abstract class DeterministicRealUnaryFactorFunction extends FactorFunctio
 	protected abstract double myFunction(double in);
 
 	@Override
-	public double evalEnergy(Object ... arguments)
+	public double evalEnergy(Value[] arguments)
 	{
-		double out = FactorFunctionUtilities.toDouble(arguments[0]);
-		double in = FactorFunctionUtilities.toDouble(arguments[1]);
+		double out = arguments[0].getDouble();
+		double in = arguments[1].getDouble();
 		double value = myFunction(in);
 		
 		if (Double.isNaN(value))

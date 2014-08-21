@@ -60,7 +60,7 @@ public class VectorInnerProduct extends FactorFunction
 	}
 
 	@Override
-	public double evalEnergy(Object ... arguments)
+	public final double evalEnergy(Value[] arguments)
 	{
 		double expectedOutValue = 0;
 		double[] firstInput = null;
@@ -68,52 +68,52 @@ public class VectorInnerProduct extends FactorFunction
 		
 		// Figure out the type of inputs (array or list of arguments)
 		final int numArgs = arguments.length;
-		Object firstInputArg = arguments[1];
-		Object lastInputArg = arguments[numArgs-1];
-		if (firstInputArg instanceof double[])
+		final Value firstInputArg = arguments[1];
+		final Value lastInputArg = arguments[numArgs-1];
+		if (firstInputArg.getObject() instanceof double[])
 		{
-			firstInput = (double[])firstInputArg;
+			firstInput = firstInputArg.getDoubleArray();
 		}
-		if (lastInputArg instanceof double[])
+		if (lastInputArg.getObject() instanceof double[])
 		{
-			secondInput = (double[])lastInputArg;
+			secondInput = lastInputArg.getDoubleArray();
 		}
 		
 		// Compute the output
 		if (firstInput != null && secondInput != null)
 		{
-			int vectorLength = firstInput.length;
+			final int vectorLength = firstInput.length;
 			for (int i = 0; i < vectorLength; i++)
 				expectedOutValue += firstInput[i] * secondInput[i];
 		}
 		else if (firstInput != null)
 		{
-			int vectorLength = firstInput.length;
+			final int vectorLength = firstInput.length;
 			int secondIndex = 2;
 			for (int i = 0; i < vectorLength; i++)
-				expectedOutValue += firstInput[i] * FactorFunctionUtilities.toDouble(arguments[secondIndex++]);
+				expectedOutValue += firstInput[i] * arguments[secondIndex++].getDouble();
 		}
 		else if (secondInput != null)
 		{
-			int vectorLength = secondInput.length;
+			final int vectorLength = secondInput.length;
 			int firstIndex = 1;
 			for (int i = 0; i < vectorLength; i++)
-				expectedOutValue += FactorFunctionUtilities.toDouble(arguments[firstIndex++]) * secondInput[i];
+				expectedOutValue += arguments[firstIndex++].getDouble() * secondInput[i];
 		}
 		else	// Neither input is array
 		{
-			int vectorLength = (numArgs - 1) >> 1;
+			final int vectorLength = (numArgs - 1) >> 1;
 			int firstIndex = 1;
 			int secondIndex = 1 + vectorLength;
 			for (int i = 0; i < vectorLength; i++)
-				expectedOutValue += FactorFunctionUtilities.toDouble(arguments[firstIndex++]) * FactorFunctionUtilities.toDouble(arguments[secondIndex++]);
+				expectedOutValue += arguments[firstIndex++].getDouble() * arguments[secondIndex++].getDouble();
 		}
 
 		// Get the output value
-		double outValue = FactorFunctionUtilities.toDouble(arguments[0]);
+		final double outValue = arguments[0].getDouble();
 
-		double diff = (outValue - expectedOutValue);
-		double error = diff*diff;
+		final double diff = (outValue - expectedOutValue);
+		final double error = diff*diff;
 
 		if (_smoothingSpecified)
 			return error*_beta;

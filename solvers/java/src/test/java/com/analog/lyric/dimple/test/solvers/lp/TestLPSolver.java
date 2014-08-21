@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.test.solvers.lp;
 
+import static java.util.Objects.*;
 import static org.junit.Assert.*;
 import static org.junit.matchers.JUnitMatchers.*;
 
@@ -25,10 +26,10 @@ import org.junit.Test;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Cos;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.lp.LPSolverGraph;
@@ -45,12 +46,12 @@ public class TestLPSolver extends DimpleTestBase
 		static public OnlyOneTrue INSTANCE = new OnlyOneTrue();
 		
 		@Override
-		public double evalEnergy(Object ... args)
+		public final double evalEnergy(Value[] args)
 		{
 			int nTrue = 0;
-			for (Object arg : args)
+			for (Value arg : args)
 			{
-				if (FactorFunctionUtilities.toBoolean(arg))
+				if (arg.getBoolean())
 				{
 					if (++nTrue > 1)
 					{
@@ -70,14 +71,14 @@ public class TestLPSolver extends DimpleTestBase
 		static public NoDups INSTANCE = new NoDups();
 		
 		@Override
-		public double evalEnergy(Object ... args)
+		public final double evalEnergy(Value[] args)
 		{
 			for (int i = args.length; --i >= 0;)
 			{
-				Object arg = args[i];
+				Object arg = requireNonNull(args[i].getObject());
 				for (int j = i; --j >= 0;)
 				{
-					if (arg.equals(args[j]))
+					if (arg.equals(args[j].getObject()))
 					{
 						return Double.POSITIVE_INFINITY;
 					}

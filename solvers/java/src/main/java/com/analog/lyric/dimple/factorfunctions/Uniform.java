@@ -34,20 +34,26 @@ public class Uniform extends FactorFunction
 	}
 	
 	@Override
-	public double eval(Object ... arguments)
-	{
-		return 1.0;
-	}
-	
-	@Override
-	public double evalEnergy(Object ... arguments)
+	public final double evalEnergy(Value[] values)
 	{
 		return 0.0;
 	}
 
 	@Override
-	public double evalEnergy(Value[] values)
+	public final double evalEnergy(Object... arguments)
 	{
 		return 0.0;
+	}
+	
+	@Override
+	public final double eval(Value[] values)
+	{
+		return 1.0;
+	}
+
+	@Override
+	public final double eval(Object... arguments)
+	{
+		return 1.0;
 	}
 }

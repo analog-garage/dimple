@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.factorfunctions;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -56,29 +57,29 @@ public class LogNormal extends FactorFunction
 	}
 	
     @Override
-	public double evalEnergy(Object... arguments)
+	public final double evalEnergy(Value[] arguments)
     {
     	int index = 0;
     	if (!_parametersConstant)
     	{
-    		_mean = FactorFunctionUtilities.toDouble(arguments[index++]);				// First variable is mean parameter
-    		_precision = FactorFunctionUtilities.toDouble(arguments[index++]);			// Second variable is precision (must be non-negative)
+    		_mean = arguments[index++].getDouble();					// First variable is mean parameter
+    		_precision = arguments[index++].getDouble();			// Second variable is precision (must be non-negative)
     		_logSqrtPrecisionOver2Pi = Math.log(_precision)*0.5 - _logSqrt2pi;
     		_precisionOverTwo = _precision*0.5;
     		if (_precision < 0) return Double.POSITIVE_INFINITY;
     	}
-    	int length = arguments.length;
-    	int N = length - index;			// Number of non-parameter variables
+    	final int length = arguments.length;
+    	final int N = length - index;			// Number of non-parameter variables
     	double sum = 0;
     	for (; index < length; index++)
     	{
-    		double x = FactorFunctionUtilities.toDouble(arguments[index]);				// Remaining inputs are LogNormal variables
+    		final double x = arguments[index].getDouble();			// Remaining inputs are LogNormal variables
         	if (x <= 0)
         		return Double.POSITIVE_INFINITY;
         	else
         	{
-        		double logX = Math.log(x);
-        		double relLogX = logX - _mean;
+        		final double logX = Math.log(x);
+        		final double relLogX = logX - _mean;
         		sum += logX + relLogX*relLogX*_precisionOverTwo;
         	}
     	}

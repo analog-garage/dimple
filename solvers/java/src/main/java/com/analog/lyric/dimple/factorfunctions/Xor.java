@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -38,11 +39,11 @@ public class Xor extends FactorFunction
 	public Xor(String name)	{super(name);}
 	
     @Override
-    public double evalEnergy(Object ... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
     	boolean total = false;
     	for(int i = 0; i < arguments.length; ++i)
-    		total ^= FactorFunctionUtilities.toBoolean(arguments[i]);
+    		total ^= arguments[i].getBoolean();
 
     	return !total ? 0 : Double.POSITIVE_INFINITY;
     }

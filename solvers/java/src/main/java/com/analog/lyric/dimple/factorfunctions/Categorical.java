@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
-import java.util.Objects;
-
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
@@ -76,34 +74,17 @@ public class Categorical extends FactorFunction
 	}
 
     @Override
-	public double evalEnergy(Object... arguments)
+	public final double evalEnergy(Value[] arguments)
     {
     	int index = 0;
     	if (!_parametersConstant)
-    		_alpha = (double[])arguments[index++];		// First argument is the parameter vector, if not constant
+    		_alpha = arguments[index++].getDoubleArray();		// First argument is the parameter vector, if not constant
 
     	final int length = arguments.length;
     	double sum = 0;
     	for (; index < length; index++)
     	{
-    		int x = FactorFunctionUtilities.toInteger(arguments[index]);		// Remaining arguments are Categorical variables
-    		sum += -Math.log(_alpha[x]);
-    	}
-    	return sum;
-	}
-    
-    @Override
-	public double evalEnergy(Value[] values)
-    {
-    	int index = 0;
-    	if (!_parametersConstant)
-    		_alpha = (double[])Objects.requireNonNull(values[index++].getObject());	// First argument is the parameter vector, if not constant
-
-    	final int length = values.length;
-    	double sum = 0;
-    	for (; index < length; index++)
-    	{
-    		int x = FactorFunctionUtilities.toInteger(values[index].getObject());		// Remaining arguments are Categorical variables
+    		final int x = arguments[index].getInt();			// Remaining arguments are Categorical variables
     		sum += -Math.log(_alpha[x]);
     	}
     	return sum;

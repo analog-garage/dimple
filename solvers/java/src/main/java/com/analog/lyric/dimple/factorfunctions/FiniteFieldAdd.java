@@ -36,28 +36,13 @@ import com.analog.lyric.dimple.model.values.Value;
 public class FiniteFieldAdd extends FactorFunction
 {
     @Override
-    public double evalEnergy(Object ... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
-    	// Allow one constant input
-    	int result = ((FiniteFieldNumber)arguments[0]).intValue();
-    	Object arg1 = arguments[1];
-    	int input1 = (arg1 instanceof FiniteFieldNumber) ? ((FiniteFieldNumber)arg1).intValue() : FactorFunctionUtilities.toInteger(arg1);
-    	Object arg2 = arguments[2];
-    	int input2 = (arg2 instanceof FiniteFieldNumber) ? ((FiniteFieldNumber)arg2).intValue() : FactorFunctionUtilities.toInteger(arg2);
-
-    	double computedResult = input1 ^ input2;
+    	final int result = arguments[0].getInt();
+    	final int input1 = arguments[1].getInt();
+    	final int input2 = arguments[2].getInt();
     	
-    	return (computedResult == result) ? 0 : Double.POSITIVE_INFINITY;
-    }
-    
-    @Override
-    public double evalEnergy(Value[] values)
-    {
-    	int result = values[0].getInt();
-    	int input1 = values[1].getInt();
-    	int input2 = values[2].getInt();
-    	
-    	int computedResult = input1 ^ input2;
+    	final int computedResult = input1 ^ input2;
     	
     	return (computedResult == result) ? 0 : Double.POSITIVE_INFINITY;
     }

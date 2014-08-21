@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -58,17 +59,17 @@ public class ConstantPower extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
-    	Double result = FactorFunctionUtilities.toDouble(arguments[0]);
-    	Double base = FactorFunctionUtilities.toDouble(arguments[1]);
+    	final double result = arguments[0].getDouble();
+    	final double base = arguments[1].getDouble();
     	
-    	double computedResult = Math.pow(base, _power);
+    	final double computedResult = Math.pow(base, _power);
     	
     	if (_smoothingSpecified)
     	{
-        	double diff = computedResult - result;
-        	double potential = diff*diff;
+    		final double diff = computedResult - result;
+    		final double potential = diff*diff;
     		return potential*_beta;
     	}
     	else

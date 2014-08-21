@@ -53,13 +53,13 @@ public class Divide extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object ... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
-    	double quotient = FactorFunctionUtilities.toDouble(arguments[0]);
-    	double dividend = FactorFunctionUtilities.toDouble(arguments[1]);
-    	double divisor = FactorFunctionUtilities.toDouble(arguments[2]);
+    	final double quotient = arguments[0].getDouble();
+    	final double dividend = arguments[1].getDouble();
+    	final double divisor = arguments[2].getDouble();
     	
-    	double expectedQuotient = dividend / divisor;
+    	final double expectedQuotient = dividend / divisor;
     	
     	if (Double.isNaN(expectedQuotient))
     		return Double.POSITIVE_INFINITY;
@@ -68,34 +68,8 @@ public class Divide extends FactorFunction
     	
     	if (_smoothingSpecified)
     	{
-    		double diff = expectedQuotient - quotient;
-    		double potential = diff*diff;
-    		return potential*_beta;
-    	}
-    	else
-    	{
-    		return (expectedQuotient == quotient) ? 0 : Double.POSITIVE_INFINITY;
-    	}
-    }
-    
-    @Override
-    public double evalEnergy(Value[] values)
-    {
-    	double quotient = values[0].getDouble();
-    	double dividend = values[1].getDouble();
-    	double divisor = values[2].getDouble();
-    	
-    	double expectedQuotient = dividend / divisor;
-    	
-    	if (Double.isNaN(expectedQuotient))
-    		return Double.POSITIVE_INFINITY;
-    	if (Double.isInfinite(expectedQuotient))
-    		return Double.POSITIVE_INFINITY;
-    	
-    	if (_smoothingSpecified)
-    	{
-    		double diff = expectedQuotient - quotient;
-    		double potential = diff*diff;
+    		final double diff = expectedQuotient - quotient;
+    		final double potential = diff*diff;
     		return potential*_beta;
     	}
     	else

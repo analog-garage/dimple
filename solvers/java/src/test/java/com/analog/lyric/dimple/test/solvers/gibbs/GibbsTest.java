@@ -23,6 +23,7 @@ import org.junit.Test;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
@@ -117,10 +118,10 @@ public class GibbsTest extends DimpleTestBase
 	{
 		public PA() {super("PA");}
 	    @Override
-		public double evalEnergy(Object ... input)
+		public final double evalEnergy(Value[] input)
 	    {
 	    	double value = 0;
-	    	int a = (Integer)input[0];
+	    	int a = input[0].getInt();
 	    	if (a == 1)
 	    	    value = 0.2;
 	    	else
@@ -133,11 +134,11 @@ public class GibbsTest extends DimpleTestBase
 	{
 		public PBA() {super("PBA");}
 	    @Override
-		public double evalEnergy(Object ... input)
+		public final double evalEnergy(Value[] input)
 	    {
 	    	double value = 0;
-	    	int b = (Integer)input[0];
-	    	int a = (Integer)input[1];
+	    	int b = input[0].getInt();
+	    	int a = input[1].getInt();
 	    	if ((b == 1) && (a == 1))
 	    		value = 0.1;
 	    	else if ((b == 0) && (a == 1))

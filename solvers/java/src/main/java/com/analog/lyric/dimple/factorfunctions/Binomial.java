@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.factorfunctions;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -53,27 +54,27 @@ public class Binomial extends FactorFunction
 		this();
 		_N = N;
     	if (_N < 0) throw new DimpleException("N must be a non-negative value.");
-		_negativeLogFactorialN = -org.apache.commons.math3.special.Gamma.logGamma((double)(_N + 1));
+		_negativeLogFactorialN = -org.apache.commons.math3.special.Gamma.logGamma(_N + 1);
 		_NParameterConstant = true;
 		_firstDirectedToIndex = 1;
 	}
 
 	
     @Override
-	public double evalEnergy(Object... arguments)
+	public final double evalEnergy(Value[] arguments)
     {
     	int index = 0;
     	if (!_NParameterConstant)
     	{
-    		_N = FactorFunctionUtilities.toInteger(arguments[index++]);				// First argument is N parameter
+    		_N = arguments[index++].getInt();					// First argument is N parameter
     		if (_N < 0) return Double.POSITIVE_INFINITY;
-    		_negativeLogFactorialN = -org.apache.commons.math3.special.Gamma.logGamma((double)(_N + 1));
+    		_negativeLogFactorialN = -org.apache.commons.math3.special.Gamma.logGamma(_N + 1);
     	}
     	
-    	double p = FactorFunctionUtilities.toDouble(arguments[index++]);			// Next argument is the probability parameter
+    	final double p = arguments[index++].getDouble();		// Next argument is the probability parameter
 		if (p < 0 || p > 1) return Double.POSITIVE_INFINITY;
 
-		int numOnes = FactorFunctionUtilities.toInteger(arguments[index++]);		// Next argument is the one-count
+		final int numOnes = arguments[index++].getInt();		// Next argument is the one-count
 		if (numOnes < 0 || numOnes > _N) return Double.POSITIVE_INFINITY;
 		int numZeros = _N - numOnes;
 		
@@ -90,7 +91,7 @@ public class Binomial extends FactorFunction
     			return 0;
     	else
     		return -(numOnes * Math.log(p) + numZeros * Math.log(1-p))
-    				+ _negativeLogFactorialN 
+    				+ _negativeLogFactorialN
     				+ org.apache.commons.math3.special.Gamma.logGamma(numOnes + 1)
     				+ org.apache.commons.math3.special.Gamma.logGamma(numZeros + 1);
 	}

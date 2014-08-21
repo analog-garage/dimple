@@ -58,26 +58,27 @@ public class Gamma extends FactorFunction
     	if (_beta <= 0) throw new DimpleException("Non-positive beta parameter. This must be a positive value.");
 	}
 	
+
     @Override
-    public double evalEnergy(Object... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
     	int index = 0;
     	if (!_parametersConstant)
     	{
-    		_alpha = FactorFunctionUtilities.toDouble(arguments[index++]);	// First input is alpha parameter (must be non-negative)
+    		_alpha = arguments[index++].getDouble();	// First input is alpha parameter (must be non-negative)
     		if (_alpha <= 0) return Double.POSITIVE_INFINITY;
-    		_beta = FactorFunctionUtilities.toDouble(arguments[index++]);	// Second input is beta parameter (must be non-negative)
+    		_beta = arguments[index++].getDouble();	// Second input is beta parameter (must be non-negative)
     		if (_beta <= 0) return Double.POSITIVE_INFINITY;
     		_logBeta = Math.log(_beta);
     	}
-    	int length = arguments.length;
-    	int N = length - index;			// Number of non-parameter variables
+    	final int length = arguments.length;
+    	final int N = length - index;			// Number of non-parameter variables
     	double sum = 0;
     	if (_alpha == 1)
     	{
     		for (; index < length; index++)
     		{
-    			double x = FactorFunctionUtilities.toDouble(arguments[index]);				// Remaining inputs are Gamma variables
+    			double x = arguments[index].getDouble();				// Remaining inputs are Gamma variables
     			if (x < 0)
     				return Double.POSITIVE_INFINITY;
     			else
@@ -94,53 +95,7 @@ public class Gamma extends FactorFunction
     		}
         	for (; index < length; index++)
         	{
-        		double x = FactorFunctionUtilities.toDouble(arguments[index]);				// Remaining inputs are Gamma variables
-            	if (x < 0)
-            		return Double.POSITIVE_INFINITY;
-            	else
-            		sum += x * _beta - Math.log(x) * _alphaMinusOne;
-        	}
-        	return sum + N * _logGammaAlphaMinusAlphaLogBeta;
-    	}
-	}
-    
-    @Override
-    public double evalEnergy(Value[] values)
-    {
-    	int index = 0;
-    	if (!_parametersConstant)
-    	{
-    		_alpha = values[index++].getDouble();	// First input is alpha parameter (must be non-negative)
-    		if (_alpha <= 0) return Double.POSITIVE_INFINITY;
-    		_beta = values[index++].getDouble();	// Second input is beta parameter (must be non-negative)
-    		if (_beta <= 0) return Double.POSITIVE_INFINITY;
-    		_logBeta = Math.log(_beta);
-    	}
-    	int length = values.length;
-    	int N = length - index;			// Number of non-parameter variables
-    	double sum = 0;
-    	if (_alpha == 1)
-    	{
-    		for (; index < length; index++)
-    		{
-    			double x = values[index].getDouble();				// Remaining inputs are Gamma variables
-    			if (x < 0)
-    				return Double.POSITIVE_INFINITY;
-    			else
-    				sum += x;
-    		}
-    		return sum * _beta - N * _logBeta;
-    	}
-    	else
-    	{
-    		if (!_parametersConstant)
-    		{
-        		_alphaMinusOne = _alpha - 1;
-        		_logGammaAlphaMinusAlphaLogBeta = org.apache.commons.math3.special.Gamma.logGamma(_alpha) - _alpha * _logBeta;
-    		}
-        	for (; index < length; index++)
-        	{
-        		double x = values[index].getDouble();				// Remaining inputs are Gamma variables
+        		final double x = arguments[index].getDouble();				// Remaining inputs are Gamma variables
             	if (x < 0)
             		return Double.POSITIVE_INFINITY;
             	else

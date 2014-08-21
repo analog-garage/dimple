@@ -98,15 +98,15 @@ public class MultivariateNormal extends FactorFunction
 	
 
     @Override
-	public double evalEnergy(Object ... arguments)
+	public final double evalEnergy(Value[] arguments)
 	{
     	int index = 0;
-    	int length = arguments.length;
-    	int N = length - index;			// Number of non-parameter variables
+    	final int length = arguments.length;
+    	final int N = length - index;			// Number of non-parameter variables
     	double sum = 0;
     	for (; index < length; index++)
     	{
-    		double[] x = (double[])arguments[index];	// Remaining inputs are multivariate Normal random variable vectors
+    		final double[] x = arguments[index].getDoubleArray();	// Remaining inputs are multivariate Normal random variable vectors
     		if (x.length != _dimension)
 	    		throw new DimpleException("Dimension of variable does not equal to the dimension of the parameter vector.");
     		for (int i = 0; i < _dimension; i++)
@@ -115,35 +115,7 @@ public class MultivariateNormal extends FactorFunction
     		for (int row = 0; row < _dimension; row++)
     		{
     			double rowSum = 0;
-    			double[] informationMatrixRow = _informationMatrix[row];
-    			for (int col = 0; col < _dimension; col++)
-    				rowSum += informationMatrixRow[col] * _diff[col];	// Matrix * vector
-    			colSum += rowSum * _diff[row];	// Vector * vector
-    		}
-    		sum += colSum;
-    	}
-    	return sum * 0.5 + N * _normalizationConstant;
-	}
-    
-    @Override
-	public double evalEnergy(Value[] values)
-	{
-    	int index = 0;
-    	int length = values.length;
-    	int N = length - index;			// Number of non-parameter variables
-    	double sum = 0;
-    	for (; index < length; index++)
-    	{
-    		double[] x = values[index].getDoubleArray();	// Remaining inputs are multivariate Normal random variable vectors
-    		if (x.length != _dimension)
-	    		throw new DimpleException("Dimension of variable does not equal to the dimension of the parameter vector.");
-    		for (int i = 0; i < _dimension; i++)
-    			_diff[i] = x[i] - _mean[i];
-    		double colSum = 0;
-    		for (int row = 0; row < _dimension; row++)
-    		{
-    			double rowSum = 0;
-    			double[] informationMatrixRow = _informationMatrix[row];
+    			final double[] informationMatrixRow = _informationMatrix[row];
     			for (int col = 0; col < _dimension; col++)
     				rowSum += informationMatrixRow[col] * _diff[col];	// Matrix * vector
     			colSum += rowSum * _diff[row];	// Vector * vector

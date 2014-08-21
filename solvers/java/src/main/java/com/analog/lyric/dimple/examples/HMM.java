@@ -25,6 +25,7 @@ import cern.colt.Arrays;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
@@ -39,11 +40,12 @@ public class HMM
 			super("TransitionFactorFunction");
 		}
 		
+		@SuppressWarnings("null")
 		@Override
-		public double evalEnergy(Object ... args)
+		public final double evalEnergy(Value[] args)
 		{
-			String state1 = (String)args[0];
-			String state2 = (String)args[1];
+			String state1 = (String)args[0].getObject();
+			String state2 = (String)args[1].getObject();
 			double value;
 			
 			if (state1.equals("sunny"))
@@ -73,11 +75,12 @@ public class HMM
 			super("ObservationFactorFunction");
 		}
 		
+		@SuppressWarnings("null")
 		@Override
-		public double evalEnergy(Object ... args)
+		public final double evalEnergy(Value[] args)
 		{
-			String state = (String)args[0];
-			String observation = (String)args[1];
+			String state = (String)args[0].getObject();
+			String observation = (String)args[1].getObject();
 			double value;
 			
 			if (state.equals("sunny"))

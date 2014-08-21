@@ -20,6 +20,7 @@ import java.util.Arrays;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -54,18 +55,18 @@ public class RealJointSum extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object ... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
     	// Output variable
-    	int length = arguments.length;
-		double[] out = ((double[])arguments[0]);
-		int dimension = out.length;
+    	final int length = arguments.length;
+    	final double[] out = arguments[0].getDoubleArray();
+    	final int dimension = out.length;
 
 		// Sum input variables
-		double[] sum = new double[dimension];	// Zero filled
+    	final double[] sum = new double[dimension];	// Zero filled
     	for (int i = 1; i < length; i++)
     	{
-    		double[] arg = ((double[])arguments[i]);
+    		final double[] arg = arguments[i].getDoubleArray();
     		if (dimension != arg.length) throw new DimpleException("Argument variables must all have the same dimension");
     		for (int d = 0; d < dimension; d++)
     			sum[d] += arg[d];
@@ -76,7 +77,7 @@ public class RealJointSum extends FactorFunction
     		double potential = 0;
     		for (int d = 0; d < dimension; d++)
     		{
-    			double diff = sum[d] - out[d];
+    			final double diff = sum[d] - out[d];
     			potential += diff*diff;
     		}
     		return potential*_beta;

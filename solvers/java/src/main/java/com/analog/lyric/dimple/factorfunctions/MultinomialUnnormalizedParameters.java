@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.factorfunctions;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -79,19 +80,19 @@ public class MultinomialUnnormalizedParameters extends FactorFunction
 	}
 
     @Override
-	public double evalEnergy(Object... arguments)
+	public final double evalEnergy(Value[] arguments)
     {
     	int index = 0;
     	if (!_NParameterConstant)
     	{
-    		_N = FactorFunctionUtilities.toInteger(arguments[index++]);				// First argument is N parameter
+    		_N = arguments[index++].getInt();				// First argument is N parameter
     		if (_N < 0) return Double.POSITIVE_INFINITY;
     		_negativeLogFactorialN = -org.apache.commons.math3.special.Gamma.logGamma(_N + 1);
     	}
     	
     	for (int i = 0; i < _dimension; i++)
     	{
-    		double a = FactorFunctionUtilities.toDouble(arguments[index++]);	// Next _dimension arguments are vector of Alpha parameters
+    		final double a = arguments[index++].getDouble();	// Next _dimension arguments are vector of Alpha parameters
     		if (a < 0) return Double.POSITIVE_INFINITY;
     		_alpha[i] = a;
     	}
@@ -105,12 +106,12 @@ public class MultinomialUnnormalizedParameters extends FactorFunction
     	double sum = _negativeLogFactorialN;
     	for (int i = 0; i < _dimension; i++)
     	{
-    		double alphai = _alpha[i];
+    		final double alphai = _alpha[i];
     		if (alphai < 0)
     			return Double.POSITIVE_INFINITY;
     		parameterSum += alphai;
 
-    		int x = FactorFunctionUtilities.toInteger(arguments[index++]);		// Remaining arguments are discrete count variables
+    		final int x = arguments[index++].getInt();		// Remaining arguments are discrete count variables
     		if (x < 0)
     			return Double.POSITIVE_INFINITY;
     		countSum += x;

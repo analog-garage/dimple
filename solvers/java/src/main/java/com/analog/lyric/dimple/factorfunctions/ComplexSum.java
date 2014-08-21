@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -51,33 +52,33 @@ public class ComplexSum extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object ... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
-    	int length = arguments.length;
-		double[] out = ((double[])arguments[0]);
-		double rOut = out[0];
-		double iOut = out[1];
+    	final int length = arguments.length;
+    	final double[] out = arguments[0].getDoubleArray();
+    	final double rOut = out[0];
+    	final double iOut = out[1];
 
     	double rSum = 0;
     	double iSum = 0;
     	for (int i = 1; i < length; i++)
     	{
-    		Object arg = arguments[i];
-    		if (arg instanceof double[])
+    		final Value arg = arguments[i];
+    		if (arg.getObject() instanceof double[])
     		{
-    			double[] in = ((double[])arg);
+    			final double[] in = arg.getDoubleArray();
     			rSum += in[0];
     			iSum += in[1];
     		}
     		else
-    			rSum += FactorFunctionUtilities.toDouble(arg);
+    			rSum += arg.getDouble();
     	}
     	
     	if (_smoothingSpecified)
     	{
-    		double rDiff = rSum - rOut;
-    		double iDiff = iSum - iOut;
-    		double potential = rDiff*rDiff + iDiff*iDiff;
+    		final double rDiff = rSum - rOut;
+    		final double iDiff = iSum - iOut;
+    		final double potential = rDiff*rDiff + iDiff*iDiff;
     		return potential*_beta;
     	}
     	else

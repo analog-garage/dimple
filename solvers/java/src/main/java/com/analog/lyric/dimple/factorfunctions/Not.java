@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -32,11 +33,11 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 public class Not extends FactorFunction
 {
     @Override
-    public double evalEnergy(Object... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
-    	boolean outValue = FactorFunctionUtilities.toBoolean(arguments[0]);
-    	boolean inValue = FactorFunctionUtilities.toBoolean(arguments[1]);
-    	boolean notValue = !inValue;
+    	final boolean outValue = arguments[0].getBoolean();
+    	final boolean inValue = arguments[1].getBoolean();
+    	final boolean notValue = !inValue;
     	
     	return (notValue == outValue) ? 0 : Double.POSITIVE_INFINITY;
     }

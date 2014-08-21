@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -54,22 +54,22 @@ public class ComplexToRealAndImaginary extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object ... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
     	// Input RealJoint
-		final double[] complex = ((double[])arguments[2]);
+		final double[] complex = arguments[2].getDoubleArray();
     	
     	if (_smoothingSpecified)
     	{
-    		double diffR = FactorFunctionUtilities.toDouble(arguments[0]) - complex[0];
-    		double diffI = FactorFunctionUtilities.toDouble(arguments[1]) - complex[1];
+    		final double diffR = arguments[0].getDouble() - complex[0];
+    		final double diffI = arguments[1].getDouble() - complex[1];
     		return _beta * ((diffR*diffR) + (diffI*diffI));
     	}
     	else
     	{
-			if (FactorFunctionUtilities.toDouble(arguments[0]) != complex[0])
+			if (arguments[0].getDouble() != complex[0])
 				return Double.POSITIVE_INFINITY;
-			else if (FactorFunctionUtilities.toDouble(arguments[1]) != complex[1])
+			else if (arguments[1].getDouble() != complex[1])
 				return Double.POSITIVE_INFINITY;
 			else
 				return 0;

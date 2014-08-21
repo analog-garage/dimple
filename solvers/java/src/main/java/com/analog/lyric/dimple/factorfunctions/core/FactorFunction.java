@@ -66,33 +66,36 @@ public abstract class FactorFunction
 	}
 
     /*------------------------
-     * FactorFunction methods
+     * Abstract methods
      */
     
     // Evaluate the factor function with the specified values and return the energy
-	public abstract double evalEnergy(Object... arguments);
-//	public double evalEnergy(Object... arguments)
-//	{
-//		final int size = arguments.length;
-//		final Value[] values = new Value[size];
-//		for (int i = 0; i < size; ++i)
-//			values[i] = Value.create(arguments[i]);
-//
-//		return evalEnergy(values);
-//	}
+    // All factor functions must implement this method
+	public abstract double evalEnergy(Value[] values);
 
-//	public abstract double evalEnergy(Value[] values);
-	public double evalEnergy(Value[] values)
+
+    /*------------------------
+     * FactorFunction methods
+     */
+    
+	// Evaluate the factor function energy using unwrapped object arguments
+	public double evalEnergy(Object... arguments)
 	{
-		final int size = values.length;
-		final Object[] objects = new Object[size];
+		final int size = arguments.length;
+		final Value[] values = new Value[size];
 		for (int i = 0; i < size; ++i)
-			objects[i] = values[i].getObject();
+			values[i] = Value.create(arguments[i]);
 
-		return evalEnergy(objects);
+		return evalEnergy(values);
 	}
 
-	// Evaluate the factor and return a weight value rather than an energy value
+	// Evaluate the factor and return a weight rather than an energy value
+	public double eval(Value[] values)
+	{
+		return Math.exp(-evalEnergy(values));
+	}
+
+	// Evaluate the factor and return a weight value using unwrapped object arguments
 	public double eval(Object... arguments)
 	{
 		return Math.exp(-evalEnergy(arguments));

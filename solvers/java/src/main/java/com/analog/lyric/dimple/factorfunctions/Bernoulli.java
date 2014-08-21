@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.factorfunctions;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -63,7 +64,7 @@ public class Bernoulli extends FactorFunction
 	}
 
     @Override
-	public double evalEnergy(Object... arguments)
+	public final double evalEnergy(Value[] arguments)
     {
     	double p;
     	if (_parametersConstant)
@@ -72,19 +73,19 @@ public class Bernoulli extends FactorFunction
     	}
     	else
     	{
-    		p = FactorFunctionUtilities.toDouble(arguments[0]);			// First argument, if present, is parameter, p
+    		p = arguments[0].getDouble();								// First argument, if present, is parameter, p
     		if (p < 0 || p > 1) return Double.POSITIVE_INFINITY;
     	}
 		
 		int numZeros = 0;
-		int length = arguments.length;
+		final int length = arguments.length;
     	for (int i = _firstDirectedToIndex; i < length; i++)
     	{
-    		int x = FactorFunctionUtilities.toInteger(arguments[i]);	// Remaining arguments are Discrete or Bit variables
+    		int x = arguments[i].getInt();								// Remaining arguments are Discrete or Bit variables
     		if (x == 0) numZeros++;
     	}
-		int N = length - _firstDirectedToIndex;							// Number of non-parameter variables
-    	int numOnes = N - numZeros;
+		final int N = length - _firstDirectedToIndex;					// Number of non-parameter variables
+    	final int numOnes = N - numZeros;
     	
 
     	if (p == 0)

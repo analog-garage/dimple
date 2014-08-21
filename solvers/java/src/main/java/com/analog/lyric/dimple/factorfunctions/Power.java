@@ -55,40 +55,20 @@ public class Power extends FactorFunction
 		}
 	}
 	
+
     @Override
-    public double evalEnergy(Object ... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
-    	Double result = FactorFunctionUtilities.toDouble(arguments[0]);
-    	Double base = FactorFunctionUtilities.toDouble(arguments[1]);
-    	Double power = FactorFunctionUtilities.toDouble(arguments[2]);
+    	final double result = arguments[0].getDouble();
+    	final double base = arguments[1].getDouble();
+    	final double power = arguments[2].getDouble();
     	
-    	double computedResult = Math.pow(base, power);
+    	final double computedResult = Math.pow(base, power);
     	
     	if (_smoothingSpecified)
     	{
-        	double diff = computedResult - result;
-        	double potential = diff*diff;
-    		return potential*_beta;
-    	}
-    	else
-    	{
-    		return (computedResult == result) ? 0 : Double.POSITIVE_INFINITY;
-    	}
-    }
-    
-    @Override
-    public double evalEnergy(Value[] values)
-    {
-    	double result = values[0].getDouble();
-    	double base = values[1].getDouble();
-    	double power = values[2].getDouble();
-    	
-    	double computedResult = Math.pow(base, power);
-    	
-    	if (_smoothingSpecified)
-    	{
-        	double diff = computedResult - result;
-        	double potential = diff*diff;
+    		final double diff = computedResult - result;
+    		final double potential = diff*diff;
     		return potential*_beta;
     	}
     	else

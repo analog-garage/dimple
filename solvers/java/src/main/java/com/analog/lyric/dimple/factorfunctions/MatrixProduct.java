@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import static java.util.Objects.*;
+
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -90,7 +92,7 @@ public class MatrixProduct extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object ... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
     	final int Nr = _Nr;
     	final int Nx = _Nx;
@@ -104,26 +106,26 @@ public class MatrixProduct extends FactorFunction
 		// Get the output matrix values
     	for (int c = 0; c < Nc; c++)		// Scan by columns
     		for (int r = 0; r < Nr; r++)
-    			out[r][c] = FactorFunctionUtilities.toDouble(arguments[argIndex++]);
+    			out[r][c] = arguments[argIndex++].getDouble();
     	
 		// Get the first input matrix values
-    	if (arguments[argIndex] instanceof double[][])	// Constant matrix is passed as a single argument
-    		in1 = (double[][])arguments[argIndex++];
+    	if (arguments[argIndex].getObject() instanceof double[][])	// Constant matrix is passed as a single argument
+    		in1 = (double[][])requireNonNull(arguments[argIndex++].getObject());
     	else
     	{
     		for (int x = 0; x < Nx; x++)		// Scan by columns
     			for (int r = 0; r < Nr; r++)
-    				in1[r][x] = FactorFunctionUtilities.toDouble(arguments[argIndex++]);
+    				in1[r][x] = arguments[argIndex++].getDouble();
     	}
 
 		// Get the second input matrix values
-    	if (arguments[argIndex] instanceof double[][])	// Constant matrix is passed as a single argument
-    		in2 = (double[][])arguments[argIndex++];
+    	if (arguments[argIndex].getObject() instanceof double[][])	// Constant matrix is passed as a single argument
+    		in2 = (double[][])requireNonNull(arguments[argIndex++].getObject());
     	else
     	{
     		for (int c = 0; c < Nc; c++)		// Scan by columns
     			for (int x = 0; x < Nx; x++)
-    				in2[x][c] = FactorFunctionUtilities.toDouble(arguments[argIndex++]);
+    				in2[x][c] = arguments[argIndex++].getDouble();
     	}
     	
     	// Compute the expected output and total error
@@ -132,11 +134,11 @@ public class MatrixProduct extends FactorFunction
     	{
     		for (int r = 0; r < Nr; r++)
     		{
-    			double[] in1r = in1[r];
+    			final double[] in1r = in1[r];
     			double sum = 0;
     			for (int x = 0; x < Nx; x++)
     				sum += in1r[x] * in2[x][c];
-    			double diff = out[r][c] - sum;
+    			final double diff = out[r][c] - sum;
     			error += diff*diff;
     		}
     	}

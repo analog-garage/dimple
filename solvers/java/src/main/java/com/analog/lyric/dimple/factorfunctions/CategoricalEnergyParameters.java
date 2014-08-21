@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -68,14 +69,14 @@ public class CategoricalEnergyParameters extends FactorFunction
 	}
 	
     @Override
-	public double evalEnergy(Object... arguments)
+	public final double evalEnergy(Value[] arguments)
     {
     	int index = 0;
     	
     	if (!_parametersConstant)
     	{
     		for (int i = 0; i < _dimension; i++)
-    			_alpha[i] = FactorFunctionUtilities.toDouble(arguments[index++]);	// First _dimension arguments are vector of Alpha parameters, if not constant
+    			_alpha[i] = arguments[index++].getDouble();	// First _dimension arguments are vector of Alpha parameters, if not constant
     	}
     	
     	// Get the normalization value
@@ -83,12 +84,12 @@ public class CategoricalEnergyParameters extends FactorFunction
     	for (int i = 0; i < _dimension; i++)
     		normalizationValue += Math.exp(-_alpha[i]);
     	
-    	int length = arguments.length;
-    	int N = length - index;			// Number of non-parameter variables
+    	final int length = arguments.length;
+    	final int N = length - index;						// Number of non-parameter variables
     	double sum = 0;
     	for (; index < length; index++)
     	{
-    		int x = FactorFunctionUtilities.toInteger(arguments[index]);		// Remaining arguments are Categorical variables
+    		final int x = arguments[index].getInt();		// Remaining arguments are Categorical variables
     		sum += _alpha[x];
     	}
     	return sum + N * Math.log(normalizationValue);

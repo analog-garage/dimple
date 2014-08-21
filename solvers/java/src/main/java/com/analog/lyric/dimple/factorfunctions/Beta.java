@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.factorfunctions;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 /**
  * Gamma distribution. The variables in the argument list are ordered as follows:
@@ -57,27 +58,27 @@ public class Beta extends FactorFunction
 	}
 
 	@Override
-	public double evalEnergy(Object... arguments)
+	public final double evalEnergy(Value[] arguments)
 	{
 		int index = 0;
 		if (!_parametersConstant)
 		{
-			_alpha = FactorFunctionUtilities.toDouble(arguments[index++]);	// First input is alpha parameter (must be non-negative)
-			_beta = FactorFunctionUtilities.toDouble(arguments[index++]);	// Second input is beta parameter (must be non-negative)
+			_alpha = arguments[index++].getDouble();	// First input is alpha parameter (must be non-negative)
+			_beta = arguments[index++].getDouble();	// Second input is beta parameter (must be non-negative)
 			_alphaMinusOne = _alpha - 1;
 			_betaMinusOne = _beta - 1;
 			_logBetaAlphaBeta = org.apache.commons.math3.special.Beta.logBeta(_alpha, _beta);
 			if (_alpha < 0) return Double.POSITIVE_INFINITY;
 			if (_beta < 0) return Double.POSITIVE_INFINITY;
 		}
-    	int length = arguments.length;
-    	int N = length - index;			// Number of non-parameter variables
+    	final int length = arguments.length;
+    	final int N = length - index;			// Number of non-parameter variables
     	double sum = 0;
     	if (_alpha == 1 && _beta == 1)
     	{
     		for (; index < length; index++)
     		{
-    			double x = FactorFunctionUtilities.toDouble(arguments[index]);				// Remaining inputs are Beta variables
+    			final double x = arguments[index].getDouble();			// Remaining inputs are Beta variables
         		if (x < 0 || x > 1)
         			return Double.POSITIVE_INFINITY;
     		}
@@ -87,7 +88,7 @@ public class Beta extends FactorFunction
     	{
     		for (; index < length; index++)
     		{
-    			double x = FactorFunctionUtilities.toDouble(arguments[index]);				// Remaining inputs are Beta variables
+    			final double x = arguments[index].getDouble();			// Remaining inputs are Beta variables
     			sum += Math.log(1 - x);
     		}
     		return N * _logBetaAlphaBeta - sum * _betaMinusOne;
@@ -96,7 +97,7 @@ public class Beta extends FactorFunction
 		{
     		for (; index < length; index++)
     		{
-    			double x = FactorFunctionUtilities.toDouble(arguments[index]);				// Remaining inputs are Beta variables
+    			final double x = arguments[index].getDouble();			// Remaining inputs are Beta variables
     			sum += Math.log(x);
     		}
     		return N * _logBetaAlphaBeta - sum * _alphaMinusOne;
@@ -105,7 +106,7 @@ public class Beta extends FactorFunction
 		{
     		for (; index < length; index++)
     		{
-    			double x = FactorFunctionUtilities.toDouble(arguments[index]);				// Remaining inputs are Beta variables
+    			final double x = arguments[index].getDouble();			// Remaining inputs are Beta variables
     			sum += _alphaMinusOne * Math.log(x) + _betaMinusOne * Math.log(1 - x);
     		}
     		return N * _logBetaAlphaBeta - sum;

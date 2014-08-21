@@ -16,21 +16,25 @@
 
 package com.analog.lyric.dimple.model.values;
 
+import static java.util.Objects.*;
+
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.Objects;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.DoubleRangeDomain;
+import com.analog.lyric.dimple.model.domains.FiniteFieldNumber;
 import com.analog.lyric.dimple.model.domains.IntRangeDomain;
 import com.analog.lyric.dimple.model.domains.ObjectDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Holder for a values for a given {@link Domain}.
@@ -197,6 +201,10 @@ public abstract class Value implements Cloneable, Serializable
 			{
 				return new IntValue(number.intValue());
 			}
+			else if (number instanceof FiniteFieldNumber)
+			{
+				return new FiniteFieldValue((FiniteFieldNumber)number);
+			}
 			else
 			{
 				return new RealValue(number.doubleValue());
@@ -280,7 +288,25 @@ public abstract class Value implements Cloneable, Serializable
 	{
 		setObject(value);
 	}
+	
+	
+	/**
+	 * Gets the current value as a {@code FiniteFieldNumber}
+	 */
+	public FiniteFieldNumber getFiniteField()
+	{
+		return (FiniteFieldNumber)requireNonNull(getObject());
+	}
+	
+	/**
+	 * Sets the current value from a {@code FiniteFieldNumber}
+	 */
+	public void setFiniteField(FiniteFieldNumber value)
+	{
+		setObject(value);
+	}
 
+	
 	/**
 	 * If value is known to be a member of a {@link DiscreteDomain}, returns its index within its domain otherwise -1.
 	 */

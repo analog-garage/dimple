@@ -19,6 +19,7 @@ package com.analog.lyric.util.test;
 import java.util.Random;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.values.Value;
 
 public class AlwaysTrueUpToNRowsFactorFunction extends FactorFunction
 {
@@ -36,7 +37,7 @@ public class AlwaysTrueUpToNRowsFactorFunction extends FactorFunction
 	}
 
 	@Override
-	public double evalEnergy(Object... input)
+	public final double evalEnergy(Value[] input)
 	{
 		double value = _randomWeights ? -Math.log(_r.nextDouble()) : 0;
 		if(_currRows < _maxRows)

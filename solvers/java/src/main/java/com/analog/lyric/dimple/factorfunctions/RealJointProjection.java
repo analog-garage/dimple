@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -56,20 +56,20 @@ public class RealJointProjection extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object ... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
     	// Input RealJoint
-		final double[] joint = ((double[])arguments[1]);
+		final double[] joint = arguments[1].getDoubleArray();
     	
     	if (_smoothingSpecified)
     	{
-    		final double diff = FactorFunctionUtilities.toDouble(arguments[0]) - joint[_elementIndex];
+    		final double diff = arguments[0].getDouble() - joint[_elementIndex];
     		final double potential = diff*diff;
     		return potential*_beta;
     	}
     	else
     	{
-    		if (FactorFunctionUtilities.toDouble(arguments[0]) == joint[_elementIndex])
+    		if (arguments[0].getDouble() == joint[_elementIndex])
     			return 0;
     		else
     			return Double.POSITIVE_INFINITY;

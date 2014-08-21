@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -51,31 +52,31 @@ public class ComplexProduct extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object ... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
-    	int length = arguments.length;
-		double[] out = ((double[])arguments[0]);
-		double rOut = out[0];
-		double iOut = out[1];
+    	final int length = arguments.length;
+    	final double[] out = arguments[0].getDoubleArray();
+    	final double rOut = out[0];
+    	final double iOut = out[1];
 
     	double rProduct = 1;
     	double iProduct = 0;
     	for (int i = 1; i < length; i++)
     	{
-    		Object arg = arguments[i];
-    		if (arg instanceof double[])	// Complex input
+    		Value arg = arguments[i];
+    		if (arg.getObject() instanceof double[])	// Complex input
     		{
-    			double[] in = ((double[])arg);
-    			double rIn = in[0];
-    			double iIn = in[1];
-    			double rProductNext = rIn * rProduct - iIn * iProduct;
-    			double iProductNext = rIn * iProduct + iIn * rProduct;
+    			final double[] in = arg.getDoubleArray();
+    			final double rIn = in[0];
+    			final double iIn = in[1];
+    			final double rProductNext = rIn * rProduct - iIn * iProduct;
+    			final double iProductNext = rIn * iProduct + iIn * rProduct;
     			rProduct = rProductNext;
     			iProduct = iProductNext;
     		}
     		else	// Real input
     		{
-    			Double in = FactorFunctionUtilities.toDouble(arg);
+    			final double in = arg.getDouble();
     			rProduct *= in;
     			iProduct *= in;
     		}
@@ -83,9 +84,9 @@ public class ComplexProduct extends FactorFunction
     	
     	if (_smoothingSpecified)
     	{
-    		double rDiff = rProduct - rOut;
-    		double iDiff = iProduct - iOut;
-    		double potential = rDiff*rDiff + iDiff*iDiff;
+    		final double rDiff = rProduct - rOut;
+    		final double iDiff = iProduct - iOut;
+    		final double potential = rDiff*rDiff + iDiff*iDiff;
     		return potential*_beta;
     	}
     	else

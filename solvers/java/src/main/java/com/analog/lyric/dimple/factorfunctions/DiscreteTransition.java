@@ -18,7 +18,6 @@ package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -50,30 +49,16 @@ public class DiscreteTransition extends FactorFunction
 	private final static int NUM_DATA_ARGUMENTS = 2;
 	
 	@Override
-	public double evalEnergy(Object... arguments)
-    {
+	public final double evalEnergy(Value[] arguments)
+	{
     	if (arguments.length < NUM_DATA_ARGUMENTS + 1)
     		throw new DimpleException("Insufficient number of arguments.");
-    	
-    	int y = FactorFunctionUtilities.toInteger(arguments[0]);			// First argument is y (output variable)
-    	int x = FactorFunctionUtilities.toInteger(arguments[1]);			// Second argument is x (input variable)
-
-    	double[] Acol = (double[])arguments[x + NUM_DATA_ARGUMENTS];		// Choose column of A indexed by input variable x
-    	
-    	return -Math.log(Acol[y]);
-	}
-
-	@Override
-	public double evalEnergy(Value[] values)
-	{
-    	if (values.length < NUM_DATA_ARGUMENTS + 1)
-    		throw new DimpleException("Insufficient number of arguments.");
 		
-    	final int y = values[0].getInt(); // First argument is y (output variable)
-    	final int x = values[1].getInt(); // Second argument is x (input variable)
+    	final int y = arguments[0].getInt(); 	// First argument is y (output variable)
+    	final int x = arguments[1].getInt(); 	// Second argument is x (input variable)
 
     	// Choose column of A indexed by input variable x
-    	final double[] Acol = values[x + NUM_DATA_ARGUMENTS].getDoubleArray();
+    	final double[] Acol = arguments[x + NUM_DATA_ARGUMENTS].getDoubleArray();
 
     	return -Math.log(Acol[y]);
 	}

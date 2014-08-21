@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -50,24 +51,24 @@ public class ComplexExp extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object ... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
-		double[] out = ((double[])arguments[0]);
-		double rOut = out[0];
-		double iOut = out[1];
+    	final double[] out = arguments[0].getDoubleArray();
+    	final double rOut = out[0];
+    	final double iOut = out[1];
 
-		double[] in = ((double[])arguments[1]);
-		double rIn = in[0];
-		double iIn = in[1];
-		double magnitude = Math.exp(rIn);
-		double rExp = magnitude * Math.cos(iIn);
-		double iExp = magnitude * Math.sin(iIn);
+    	final double[] in = arguments[1].getDoubleArray();
+    	final double rIn = in[0];
+    	final double iIn = in[1];
+    	final double magnitude = Math.exp(rIn);
+    	final double rExp = magnitude * Math.cos(iIn);
+    	final double iExp = magnitude * Math.sin(iIn);
     	
     	if (_smoothingSpecified)
     	{
-    		double rDiff = rExp - rOut;
-    		double iDiff = iExp - iOut;
-    		double potential = rDiff*rDiff + iDiff*iDiff;
+    		final double rDiff = rExp - rOut;
+    		final double iDiff = iExp - iOut;
+    		final double potential = rDiff*rDiff + iDiff*iDiff;
     		return potential*_beta;
     	}
     	else

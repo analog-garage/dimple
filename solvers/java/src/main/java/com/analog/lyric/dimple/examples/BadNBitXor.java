@@ -23,6 +23,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 
 public class BadNBitXor
@@ -32,11 +33,11 @@ public class BadNBitXor
 	public static class BadNBitXorFactor extends FactorFunction
 	{
 		@Override
-		public double evalEnergy(Object ... args)
+		public final double evalEnergy(Value[] args)
 		{
 			int sum = 0;
 			for (int i = 0; i < args.length; i++)
-				sum += (Integer)args[i];
+				sum += args[i].getInt();
 			
 			return (sum % 2) == 0 ? 0 : Double.POSITIVE_INFINITY;
 		}

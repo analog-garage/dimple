@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -50,21 +51,21 @@ public class ComplexConjugate extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object ... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
-		double[] out = ((double[])arguments[0]);
-		double rOut = out[0];
-		double iOut = out[1];
+		final double[] out = arguments[0].getDoubleArray();
+		final double rOut = out[0];
+		final double iOut = out[1];
 
-		double[] in = ((double[])arguments[1]);
-		double rConjugate = in[0];
-		double iConjugate = -in[1];
+		final double[] in = arguments[1].getDoubleArray();
+		final double rConjugate = in[0];
+		final double iConjugate = -in[1];
 
     	if (_smoothingSpecified)
     	{
-    		double rDiff = rConjugate - rOut;
-    		double iDiff = iConjugate - iOut;
-    		double potential = rDiff*rDiff + iDiff*iDiff;
+    		final double rDiff = rConjugate - rOut;
+    		final double iDiff = iConjugate - iOut;
+    		final double potential = rDiff*rDiff + iDiff*iDiff;
     		return potential*_beta;
     	}
     	else

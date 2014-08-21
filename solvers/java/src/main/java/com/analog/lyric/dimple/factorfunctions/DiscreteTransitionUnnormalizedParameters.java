@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -60,18 +60,18 @@ public class DiscreteTransitionUnnormalizedParameters extends FactorFunction
 	}
 	
     @Override
-	public double evalEnergy(Object... arguments)
+	public final double evalEnergy(Value[] arguments)
     {
     	if (arguments.length != _xDimension*_yDimension + NUM_DATA_ARGUMENTS)
     		throw new DimpleException("Incorrect number of arguments.");
     	
-    	int y = FactorFunctionUtilities.toInteger(arguments[0]);			// First argument is y (output variable)
-    	int x = FactorFunctionUtilities.toInteger(arguments[1]);			// Second argument is x (input variable)
+    	final int y = arguments[0].getInt();				// First argument is y (output variable)
+    	final int x = arguments[1].getInt();				// Second argument is x (input variable)
     	
     	int index = x * _yDimension + NUM_DATA_ARGUMENTS;	// Beginning of the column for the given value of x (matrix is scanned by columns)
     	for (int row = 0; row < _yDimension; row++)
     	{
-    		double a = FactorFunctionUtilities.toDouble(arguments[index++]);
+    		final double a = arguments[index++].getDouble();
     		if (a < 0) return Double.POSITIVE_INFINITY;
     		_Acol[row] = a;
     	}
