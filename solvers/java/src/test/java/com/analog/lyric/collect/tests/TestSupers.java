@@ -16,6 +16,7 @@
 
 package com.analog.lyric.collect.tests;
 
+import static com.analog.lyric.util.test.ExceptionTester.*;
 import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
@@ -160,14 +161,20 @@ public class TestSupers
 			m = Supers.lookupMethod(String.class, "format", "hi");
 			assertEquals("format", m.getName());
 			assertArrayEquals(new Object[] { String.class, Object[].class }, m.getParameterTypes());
-// FIXME - Supers.lookupMethod support for autoboxing of primitives
-//			m = Supers.lookupMethod(Arrays.class, "asList", 1, 2, 3);
-//			assertEquals("asList", m.getName());
+			m = Supers.lookupMethod(Arrays.class, "asList", 1, 2, 3);
+			assertEquals("asList", m.getName());
 		}
 		catch (Exception ex)
 		{
 			fail(ex.toString());
 		}
+		
+		expectThrow(NoSuchMethodException.class,
+			"No method in String with signature compatible with doesNotExist\\(\\)",
+			Supers.class, "lookupMethod", "foo", "doesNotExist");
+		expectThrow(NoSuchMethodException.class,
+			".*with size\\(null,\\s?int\\)",
+			Supers.class, "lookupMethod", "foo", "size", null, 23);
 	}
 	
 	@Test
