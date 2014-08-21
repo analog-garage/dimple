@@ -18,6 +18,8 @@ package com.analog.lyric.options;
 
 import net.jcip.annotations.Immutable;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * Key for options with literal Java class values.
  * <p>
@@ -89,16 +91,11 @@ public class ClassOptionKey<SuperClass> extends OptionKey<Class<? extends SuperC
 			}
 		}
 		
-		if (value instanceof Class)
-		{
-			return validate((Class<? extends SuperClass>)value);
-		}
-		
 		return super.convertValue(value);
 	}
 	
 	@Override
-	public Class<? extends SuperClass> validate(Class<? extends SuperClass> value)
+	public Class<? extends SuperClass> validate(Class<? extends SuperClass> value, @Nullable IOptionHolder optionHolder)
 	{
 		if (!_superClass.isAssignableFrom(value))
 		{

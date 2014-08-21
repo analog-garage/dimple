@@ -21,6 +21,7 @@ import static org.junit.Assert.*;
 
 import java.io.Serializable;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -43,7 +44,6 @@ import com.analog.lyric.options.OptionStringList;
 import com.analog.lyric.options.OptionValidationException;
 import com.analog.lyric.options.StringListOptionKey;
 import com.analog.lyric.options.StringOptionKey;
-import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.util.test.SerializationTester;
 
 public class TestOptionKey
@@ -155,7 +155,7 @@ public class TestOptionKey
 		}
 
 		@Override
-		public Serializable validate(Serializable value)
+		public Serializable validate(Serializable value, IOptionHolder optionHolder)
 		{
 			return type().cast(value);
 		}
@@ -181,11 +181,11 @@ public class TestOptionKey
 		}
 		
 		// Test IntegerOptionKey
-		assertEquals((Integer)3, DIGIT.validate(3));
-		assertEquals((Integer)0, DIGIT.validate(0));
-		assertEquals((Integer)9, DIGIT.validate(9));
-		expectThrow(OptionValidationException.class, DIGIT, "validate", -1);
-		expectThrow(OptionValidationException.class, DIGIT, "validate", 10);
+		assertEquals((Integer)3, DIGIT.validate(3, null));
+		assertEquals((Integer)0, DIGIT.validate(0, null));
+		assertEquals((Integer)9, DIGIT.validate(9, null));
+		expectThrow(OptionValidationException.class, DIGIT, "validate", -1, null);
+		expectThrow(OptionValidationException.class, DIGIT, "validate", 10, null);
 		assertEquals(0, DIGIT.lowerBound());
 		assertEquals(9, DIGIT.upperBound());
 		assertEquals((Integer)42, I.convertValue(42.0));
@@ -209,18 +209,20 @@ public class TestOptionKey
 		// Test LongOptionKey
 		assertEquals(0L, LONG_BOUNDED.lowerBound());
 		assertEquals(0xFFFFFFFFFFL, LONG_BOUNDED.upperBound());
-		assertEquals((Long)LONG_BOUNDED.lowerBound(), LONG_BOUNDED.validate(LONG_BOUNDED.lowerBound()));
-		assertEquals((Long)LONG_BOUNDED.upperBound(), LONG_BOUNDED.validate(LONG_BOUNDED.upperBound()));
-		expectThrow(OptionValidationException.class, LONG_BOUNDED, "validate", LONG_BOUNDED.lowerBound() - 1);
-		expectThrow(OptionValidationException.class, LONG_BOUNDED, "validate", LONG_BOUNDED.upperBound() + 1);
+		assertEquals((Long)LONG_BOUNDED.lowerBound(), LONG_BOUNDED.validate(LONG_BOUNDED.lowerBound(), null));
+		assertEquals((Long)LONG_BOUNDED.upperBound(), LONG_BOUNDED.validate(LONG_BOUNDED.upperBound(), null));
+		expectThrow(OptionValidationException.class, LONG_BOUNDED, "validate", LONG_BOUNDED.lowerBound() - 1, null);
+		expectThrow(OptionValidationException.class, LONG_BOUNDED, "validate", LONG_BOUNDED.upperBound() + 1, null);
+		assertEquals((Long)23L, LONG_BOUNDED.convertValue(23.0));
+		expectThrow(IllegalArgumentException.class, LONG_BOUNDED, "convertValue", (Object)23.4);
 		
 		// Test DoubleOptionKey
-		assertEquals(0.0, PROB.validate(0.0), 0.0);
-		assertEquals(1.0, PROB.validate(1.0), 0.0);
-		assertEquals(.3, PROB.validate(.3), 0.0);
-		expectThrow(OptionValidationException.class, PROB, "validate", -0.0001);
-		expectThrow(OptionValidationException.class, PROB, "validate", 1.0001);
-		expectThrow(OptionValidationException.class, PROB, "validate", Double.NaN);
+		assertEquals(0.0, PROB.validate(0.0, null), 0.0);
+		assertEquals(1.0, PROB.validate(1.0, null), 0.0);
+		assertEquals(.3, PROB.validate(.3, null), 0.0);
+		expectThrow(OptionValidationException.class, PROB, "validate", -0.0001, null);
+		expectThrow(OptionValidationException.class, PROB, "validate", 1.0001, null);
+		expectThrow(OptionValidationException.class, PROB, "validate", Double.NaN, null);
 		assertEquals(0.0, PROB.lowerBound(), 0.0);
 		assertEquals(1.0, PROB.upperBound(), 0.0);
 		
@@ -236,9 +238,9 @@ public class TestOptionKey
 		assertEquals(CharSequence.class, CLASS.superClass());
 		assertEquals(String.class, CLASS.convertValue("java.lang.String"));
 		expectThrow(ClassCastException.class, CLASS, "convertValue", new int[] {2});
-		expectThrow(OptionValidationException.class, CLASS, "convertValue", Object.class);
+		assertSame(Object.class, CLASS.convertValue(Object.class)); // Does not validate
 		expectThrow(OptionValidationException.class, "Could not construct class.*", CLASS, "convertValue", "bogus");
-		expectThrow(OptionValidationException.class, ".*is not a subclass.*", CLASS, "validate", Object.class);
+		expectThrow(OptionValidationException.class, ".*is not a subclass.*", CLASS, "validate", Object.class, null);
 		
 		// Test list keys
 //		ExampleOptionHolder holder = new ExampleOptionHolder();
@@ -280,7 +282,7 @@ public class TestOptionKey
 		assertNotNull(type);
 		assertTrue(type.isInstance(key.defaultValue()));
 		assertEquals(key.defaultValue(), key.convertValue(key.defaultValue()));
-		assertEquals(key.defaultValue(), key.validate(key.defaultValue()));
+		assertEquals(key.defaultValue(), key.validate(key.defaultValue(), null));
 		if (declaringClass.isEnum())
 		{
 			assertEquals(key.name(), key.toString());

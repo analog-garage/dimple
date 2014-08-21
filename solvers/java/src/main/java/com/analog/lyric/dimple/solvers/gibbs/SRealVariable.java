@@ -32,6 +32,7 @@ import cern.colt.list.DoubleArrayList;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.ReleasableIterator;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
@@ -46,6 +47,7 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
+import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.IRealConjugateFactor;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
@@ -621,8 +623,10 @@ public class SRealVariable extends SRealVariableBase
 
 
 	// FIXME: REMOVE
-	// There should be a way to call these directly via the samplers
-	// If so, they should be removed from here since this makes this sampler-specific
+	/**
+	 * @deprecated Will be removed in future release. Instead set corresponding option
+	 * for desired proposal kernel (e.g. {@link NormalProposalKernel#standardDeviation}.
+	 */
 	@SuppressWarnings("null")
 	@Deprecated
 	public final void setProposalStandardDeviation(double stdDev)
@@ -630,6 +634,11 @@ public class SRealVariable extends SRealVariableBase
 		if (_sampler instanceof MHSampler)
 			((MHSampler)_sampler).getProposalKernel().setParameters(stdDev);
 	}
+
+	/**
+	 * @deprecated Will be removed in future release. Instead lookup corresponding option
+	 * for desired proposal kernel (e.g. {@link NormalProposalKernel#standardDeviation}.
+	 */
 	@SuppressWarnings("null")
 	@Deprecated
 	public final double getProposalStandardDeviation()
@@ -639,7 +648,11 @@ public class SRealVariable extends SRealVariableBase
 		else
 			return 0;
 	}
-	// Set the proposal kernel parameters more generally
+	
+	/**
+	 * @deprecated Will be removed in future release. Instead set appropriate options
+	 * for proposal kernel using {@link #setOption}.
+	 */
 	@SuppressWarnings("null")
 	@Deprecated
 	public final void setProposalKernelParameters(Object... parameters)
@@ -649,8 +662,10 @@ public class SRealVariable extends SRealVariableBase
 	}
 	
 	// FIXME: REMOVE
-	// There should be a way to call these directly via the samplers
-	// If so, they should be removed from here since this makes this sampler-specific
+	/**
+	 * @deprecated Will be removed in future release. Instead set corresponding option
+	 * for sampler (e.g. {@link MHSampler#realProposalKernel}).
+	 */
 	@SuppressWarnings("null")
 	@Deprecated
 	public final void setProposalKernel(IProposalKernel proposalKernel)					// IProposalKernel object
@@ -658,6 +673,11 @@ public class SRealVariable extends SRealVariableBase
 		if (_sampler instanceof MHSampler)
 			((MHSampler)_sampler).setProposalKernel(proposalKernel);
 	}
+
+	/**
+	 * @deprecated Will be removed in future release. Instead lookup corresponding option
+	 * for sampler (e.g. {@link MHSampler#realProposalKernel}).
+	 */
 	@SuppressWarnings("null")
 	@Deprecated
 	public final void setProposalKernel(String proposalKernelName)						// Name of proposal kernel
@@ -665,6 +685,11 @@ public class SRealVariable extends SRealVariableBase
 		if (_sampler instanceof MHSampler)
 			((MHSampler)_sampler).setProposalKernel(proposalKernelName);
 	}
+	
+	/**
+	 * @deprecated Will be removed in future release. Instead get kernel directly
+	 * from {@linkplain #getSampler() sampler}.
+	 */
 	@SuppressWarnings("null")
 	@Deprecated
 	public final @Nullable IProposalKernel getProposalKernel()
@@ -675,29 +700,55 @@ public class SRealVariable extends SRealVariableBase
 			return null;
 	}
 	
-	// Set/get the sampler to be used for this variable
+	/**
+	 * @deprecated Will be removed in future release. Instead use {@link GibbsOptions#realSampler}
+	 * option.
+	 */
+	@Deprecated
 	public final void setDefaultSampler(String samplerName)
 	{
 		GibbsOptions.realSampler.convertAndSet(this, samplerName);
 	}
 	
+	/**
+	 * @deprecated Will be removed in future release. Instead use {@link GibbsOptions#realSampler}
+	 * option.
+	 */
+	@Deprecated
 	public final String getDefaultSamplerName()
 	{
 		return getOptionOrDefault(GibbsOptions.realSampler).getSimpleName();
 	}
-	
+
+	/**
+	 * Sets sampler to be used for this variable.
+	 * <p>
+	 * In general, it is usually easier to configure the sampler using the
+	 * {@link GibbsOptions#realSampler} option. This method should only be
+	 * required when the sampler class is not registered with the
+	 * {@linkplain DimpleEnvironment#genericSamplers() generic sampler registry}
+	 * for the current environment.
+	 * <p>
+	 * @param sampler is a non-null sampler.
+	 */
 	public final void setSampler(ISampler sampler)
 	{
 		_sampler = (IMCMCSampler)sampler;
 		_samplerSpecificallySpecified = true;
 	}
-	
+
+	/**
+	 * @deprecated Will be removed in future release. Instead set sampler by setting
+	 * {@link GibbsOptions#realSampler} option using {@link #setOption}.
+	 */
+	@Deprecated
 	public final void setSampler(String samplerName)
 	{
 		GibbsOptions.realSampler.convertAndSet(this, samplerName);
-		_sampler = (IMCMCSampler) GibbsOptions.realSampler.instantiateIfDifferent(this, _sampler);
+		IMCMCSampler sampler = (IMCMCSampler) GibbsOptions.realSampler.instantiateIfDifferent(this, _sampler);
+		_sampler = sampler;
 		_samplerSpecificallySpecified = true;
-		_sampler.initializeFromVariable(this);
+		sampler.initializeFromVariable(this);
 	}
 	
 	@Override

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.regex.Matcher;
@@ -191,34 +192,81 @@ public class OptionRegistry implements Iterable<IOptionKey<?>>
 	}
 	
 	/**
-	 * Registers statically declared option key instances found reflectively in specified class.
+	 * Registers statically declared option key instances found reflectively in specified classes.
 	 * Adds all statically declared, final fields of type {@link IOptionKey} whose {@linkplain IOptionKey#name() name}
 	 * attribute matches its declared name. Also will recursively add from public nested classes.
 	 * 
 	 * @return the number of unique option keys that were added
 	 * @since 0.07
 	 */
-	public int addFromClass(Class<?> declaringClass)
+	public int addFromClasses(Class<?> ... declaringClasses)
 	{
-		OptionKeys keys = OptionKeys.declaredInClass(declaringClass);
-		int nAdded = keys.values().size();
+		int nAdded = 0;
 		
-		if (nAdded > 0 && !add(keys))
+		for (Class<?> declaringClass : declaringClasses)
 		{
-			nAdded = 0;
-		}
+			OptionKeys keys = OptionKeys.declaredInClass(declaringClass);
+			int nAddedFromClass = keys.values().size();
 
-		for (Class<?> innerClass : declaringClass.getDeclaredClasses())
-		{
-			if ((innerClass.getModifiers() & publicStatic) == publicStatic)
+			if (nAddedFromClass > 0 && !add(keys))
 			{
-				nAdded += addFromClass(innerClass);
+				nAddedFromClass = 0;
 			}
+
+			for (Class<?> innerClass : declaringClass.getDeclaredClasses())
+			{
+				if ((innerClass.getModifiers() & publicStatic) == publicStatic)
+				{
+					nAddedFromClass += addFromClasses(innerClass);
+				}
+			}
+			
+			nAdded += nAddedFromClass;
 		}
 		
 		return nAdded;
 	}
 	
+	/**
+	 * Returns key for given qualified name or throws an error.
+	 * <p>
+	 * @param keyOrName either a {@link IOptionKey} instance which will simply be returned or
+	 * a {@link String} compatible with {@link #get(String)}.
+	 * @throws NoSuchElementException if key not found or input argument is not the correct type.
+	 * @throws IllegalArgumentException if {@code keyOrName} does not have the correct type.
+	 * @since 0.07
+	 */
+	public IOptionKey<?> asKey(Object keyOrName)
+	{
+		IOptionKey<?> key;
+		
+		if (keyOrName instanceof String)
+		{
+			String name = (String)keyOrName;
+			key = get(name);
+			if (key == null)
+			{
+				throw new NoSuchElementException(String.format("Unknown option key '%s'", name));
+			}
+			else
+			{
+				return key;
+			}
+		}
+		else if (keyOrName instanceof IOptionKey)
+		{
+			key = (IOptionKey<?>)keyOrName;
+		}
+		else
+		{
+			throw new IllegalArgumentException(
+				String.format("Expected String or IOptionKey instead of '%s'",
+					keyOrName.getClass().getSimpleName()));
+		}
+		
+		return key;
+	}
+
 	/**
 	 * If true, registry will attempt to automatically load fully qualified keys from classes.
 	 * <p>

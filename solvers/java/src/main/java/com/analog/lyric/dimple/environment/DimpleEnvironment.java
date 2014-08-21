@@ -32,6 +32,7 @@ import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
+import com.analog.lyric.dimple.options.DimpleOptionRegistry;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IGenericSampler;
 
@@ -99,6 +100,8 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	private final ConstructorRegistry<IProposalKernel> _proposalKernels =
 		new ConstructorRegistry<>(IProposalKernel.class);
 	
+	@SuppressWarnings("deprecation")
+	private final DimpleOptionRegistry _optionRegistry = new DimpleOptionRegistry();
 	
 	/*--------------
 	 * Construction
@@ -367,8 +370,8 @@ public class DimpleEnvironment extends DimpleOptionHolder
 		return _logger.getAndSet(logger);
 	}
 	
-	/*------------------------
-	 * Constructor registries
+	/*--------------------
+	 * Various registries
 	 */
 	
 	public ConstructorRegistry<FactorFunction> factorFunctions()
@@ -379,6 +382,11 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	public ConstructorRegistry<IGenericSampler> genericSamplers()
 	{
 		return _genericSamplers;
+	}
+	
+	public DimpleOptionRegistry optionRegistry()
+	{
+		return _optionRegistry;
 	}
 	
 	/**

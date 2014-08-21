@@ -23,16 +23,17 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.Port;
-import com.analog.lyric.dimple.options.DimpleOptionRegistry;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.options.AbstractOptionValueList;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.Option;
 import com.analog.lyric.util.misc.Matlab;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.Iterables;
 
 @Matlab
@@ -69,6 +70,8 @@ public abstract class PNodeVector extends PObject
 	 * PNodeVector methods
 	 */
 
+	// TODO add indices argument to option methods
+	
 	public Object[][] getLocallySetOptions()
 	{
 		final Object[][] options = new Object[_nodes.length][];
@@ -82,7 +85,14 @@ public abstract class PNodeVector extends PObject
 	
 	public Object[] getOptions(Object optionKey, boolean localOnly)
 	{
-		final IOptionKey<?> key = DimpleOptionRegistry.asKey(optionKey);
+		final int size = _nodes.length;
+		
+		if (size == 0)
+		{
+			return ArrayUtil.EMPTY_OBJECT_ARRAY;
+		}
+		
+		final IOptionKey<?> key = _nodes[0].getEnvironment().optionRegistry().asKey(optionKey);
 		final Object[] optionValues = new Object[_nodes.length];
 		for (int i = _nodes.length; --i>=0;)
 		{
@@ -101,19 +111,26 @@ public abstract class PNodeVector extends PObject
 	
 	public void unsetOption(Object optionKey)
 	{
-		IOptionKey<?> key = DimpleOptionRegistry.asKey(optionKey);
-		for (Node node : _nodes)
+		if (_nodes.length > 0)
 		{
-			node.unsetOption(key);
+			final IOptionKey<?> key = _nodes[0].getEnvironment().optionRegistry().asKey(optionKey);
+			for (Node node : _nodes)
+			{
+				node.unsetOption(key);
+			}
 		}
 	}
 		
 	public void setOption(Object optionKey, @Nullable Object value)
 	{
-		Option<?> option = Option.create(DimpleOptionRegistry.asKey(optionKey), value);
-		for (Node node : _nodes)
+		if (_nodes.length > 0)
 		{
-			Option.setOptions(node, option);
+			final IOptionKey<?> key = _nodes[0].getEnvironment().optionRegistry().asKey(optionKey);
+			Option<?> option = Option.create(key, value);
+			for (Node node : _nodes)
+			{
+				Option.setOptions(node, option);
+			}
 		}
 	}
 	

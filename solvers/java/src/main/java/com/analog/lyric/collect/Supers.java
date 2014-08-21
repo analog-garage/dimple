@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import org.eclipse.jdt.annotation.Nullable;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Primitives;
 
@@ -157,7 +158,7 @@ public abstract class Supers
 
 				if (nArgs > 0)
 				{
-					args = Arrays.copyOf(args, declaredSize);
+					args = Arrays.copyOf(args, declaredSize, Object[].class);
 				}
 				else
 				{
@@ -226,7 +227,7 @@ public abstract class Supers
 		{
 			for (int i = 0; i < nArgs; ++i)
 			{
-				argTypes[i] = args[i] == null ? null : Primitives.unwrap(args[i].getClass());
+				argTypes[i] = args[i] == null ? null : args[i].getClass();
 			}
 		}
 		
@@ -234,6 +235,21 @@ public abstract class Supers
 		try
 		{
 			return objClass.getMethod(methodName, argTypes);
+		}
+		catch (NoSuchMethodException ex)
+		{
+		}
+		
+		// Next try unwrapping arg types
+		Class<?>[] unwrappedArgTypes = new Class<?>[nArgs];
+		for (int i = 0; i < nArgs; ++i)
+		{
+			Class<?> argType = argTypes[i];
+			unwrappedArgTypes[i] = argType == null ? null : Primitives.unwrap(argType);
+		}
+		try
+		{
+			return objClass.getMethod(methodName, unwrappedArgTypes);
 		}
 		catch (NoSuchMethodException ex)
 		{
@@ -256,7 +272,7 @@ public abstract class Supers
 			if (method.isVarArgs())
 			{
 				--end;
-				varArgType = Primitives.unwrap(declaredTypes[end].getComponentType());
+				varArgType = Primitives.wrap(declaredTypes[end].getComponentType());
 				if (end > argTypes.length)
 				{
 					continue outer;
@@ -269,7 +285,7 @@ public abstract class Supers
 
 			for (int i = 0; i < end; ++i)
 			{
-				Class<?> declaredType = Primitives.unwrap(declaredTypes[i]);
+				Class<?> declaredType = declaredTypes[i];
 				if (argTypes[i] == null)
 				{
 					// null matches all non-primitive declared types (at least until
@@ -279,9 +295,13 @@ public abstract class Supers
 						continue outer;
 					}
 				}
-				else if (!declaredType.isAssignableFrom(argTypes[i]))
+				else
 				{
-					continue outer;
+					declaredType = Primitives.wrap(declaredType);
+					if (!declaredType.isAssignableFrom(argTypes[i]))
+					{
+						continue outer;
+					}
 				}
 			}
 			
@@ -289,7 +309,8 @@ public abstract class Supers
 			{
 				for (int i = end; i < argTypes.length; ++i)
 				{
-					if (!varArgType.isAssignableFrom(argTypes[i]))
+					Class<?> argType = argTypes[i];
+					if (argType != null && !varArgType.isAssignableFrom(argType))
 					{
 						continue outer;
 					}
@@ -299,7 +320,22 @@ public abstract class Supers
 			return method;
 		}
 		
-		throw new NoSuchMethodException(); // FIXME message
+		StringBuilder sb = new StringBuilder(methodName);
+		sb.append("(");
+		for (int i = 0; i < nArgs; ++i)
+		{
+			if (i > 0)
+			{
+				sb.append(",");
+			}
+			
+			Class<?> argType = unwrappedArgTypes[i];
+			sb.append(argType == null ? "null" : argType.getSimpleName());
+		}
+		sb.append(")");
+		String msg = String.format("No method in %s with signature compatible with %s",
+			objClass.getSimpleName(), sb.toString());
+		throw new NoSuchMethodException(msg);
 	}
 	
 	/**

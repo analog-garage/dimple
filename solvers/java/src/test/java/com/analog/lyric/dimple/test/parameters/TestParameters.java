@@ -116,7 +116,7 @@ public class TestParameters extends DimpleTestBase
 		 @Override
 		 public RealDomain domain() { return _domain; }
 			@Override
-			public Double validate(Double value)
+			public Double validate(Double value, IOptionHolder optionHolder)
 			{
 				return type().cast(value);
 			}

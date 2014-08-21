@@ -16,9 +16,12 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.ConstructorRegistry;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.options.ConstructorOptionKey;
+import com.analog.lyric.options.IOptionHolder;
 
 /**
  * Option key for identifying sampler.
@@ -54,5 +57,12 @@ public class GenericSamplerOptionKey extends ConstructorOptionKey<IGenericSample
 	public ConstructorRegistry<IGenericSampler> getRegistry()
 	{
 		return DimpleEnvironment.active().genericSamplers();
+	}
+	
+	@Override
+	public Class<? extends IGenericSampler> validate(Class<? extends IGenericSampler> value,
+		@Nullable IOptionHolder optionHolder)
+	{
+		return super.validate(value, optionHolder);
 	}
 }

@@ -67,7 +67,7 @@ public class Option<T extends Serializable> implements IOption<T>
 	public Option(IOptionKey<T> key, @Nullable T value)
 	{
 		_key = key;
-		_value = value != null ? key.validate(value) : null;
+		_value = value != null ? key.validate(value, null) : null;
 	}
 	
 	/**

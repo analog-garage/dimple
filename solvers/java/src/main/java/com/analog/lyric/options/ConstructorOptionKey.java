@@ -82,9 +82,9 @@ public abstract class ConstructorOptionKey<SuperClass> extends ClassOptionKey<Su
 	}
 	
 	@Override
-	public Class<? extends SuperClass> validate(Class<? extends SuperClass> value)
+	public Class<? extends SuperClass> validate(Class<? extends SuperClass> value, @Nullable IOptionHolder optionHolder)
 	{
-		Class<? extends SuperClass> c = super.validate(value);
+		Class<? extends SuperClass> c = super.validate(value, optionHolder);
 		
 		// Verify that class has a no-argument constructor
 		try

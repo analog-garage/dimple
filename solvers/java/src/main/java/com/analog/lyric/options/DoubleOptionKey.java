@@ -18,6 +18,8 @@ package com.analog.lyric.options;
 
 import net.jcip.annotations.Immutable;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * Key for double options.
  * <p>
@@ -100,9 +102,9 @@ public class DoubleOptionKey extends OptionKey<Double>
 	 * or greater than {@link #upperBound()}.
 	 */
 	@Override
-	public Double validate(Double value)
+	public Double validate(Double value, @Nullable IOptionHolder optionHolder)
 	{
-		value = super.validate(value);
+		value = super.validate(value, optionHolder);
 		// This is written in this fashion to correctly handle NaN values.
 		if (!(value >= _lowerBound && value <= _upperBound))
 		{

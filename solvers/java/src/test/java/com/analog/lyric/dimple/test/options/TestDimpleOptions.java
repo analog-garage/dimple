@@ -26,13 +26,13 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.options.DimpleOptionRegistry;
 import com.analog.lyric.dimple.options.DimpleOptions;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.OptionKey;
 import com.analog.lyric.options.OptionKeys;
-import com.analog.lyric.options.OptionRegistry;
 import com.google.common.reflect.ClassPath;
 
 /**
@@ -53,13 +53,15 @@ public class TestDimpleOptions extends DimpleTestBase
 	@Test
 	public void test() throws IllegalAccessException
 	{
-		OptionRegistry registry = DimpleOptionRegistry.getRegistry();
+		DimpleOptionRegistry registry = DimpleEnvironment.active().optionRegistry();
 		
 		Set<IOptionKey<?>> allKeys = new HashSet<IOptionKey<?>>();
 		for (IOptionKey<?> key : registry)
 		{
-			assertSame(key, DimpleOptionRegistry.getKey(OptionKey.canonicalName(key)));
-			assertSame(key, DimpleOptionRegistry.getKey(OptionKey.qualifiedName(key)));
+			assertSame(key, registry.get(OptionKey.canonicalName(key)));
+			assertSame(key, registry.get(OptionKey.qualifiedName(key)));
+			assertSame(key, registry.asKey(key));
+			assertSame(key, registry.asKey(OptionKey.qualifiedName(key)));
 			assertTrue(allKeys.add(key));
 		}
 		
@@ -86,7 +88,7 @@ public class TestDimpleOptions extends DimpleTestBase
 					
 					IOptionKey<?> key = (IOptionKey<?>)field.get(declaringClass);
 					assertEquals(field.getName(), key.name());
-					assertSame(key, DimpleOptionRegistry.getKey(OptionKey.qualifiedName(key)));
+					assertSame(key, registry.get(OptionKey.qualifiedName(key)));
 					assertSame(declaringClass, key.getDeclaringClass());
 				}
 			}

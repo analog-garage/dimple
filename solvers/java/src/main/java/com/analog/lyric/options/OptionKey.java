@@ -62,7 +62,7 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 	/**
 	 * Returns key with specified {@code name} in {@code declaringClass} using Java reflection.
 	 * <p>
-	 * @see OptionRegistry#addFromClass(Class)
+	 * @see OptionRegistry#addFromClasses
 	 * <p>
 	 * @since 0.07
 	 */
@@ -186,7 +186,7 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 	}
 	
 	@Override
-	public T validate(T value)
+	public T validate(T value, @Nullable IOptionHolder optionHolder)
 	{
 		return type().cast(value);
 	}

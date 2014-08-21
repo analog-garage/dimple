@@ -16,9 +16,7 @@
 
 package com.analog.lyric.dimple.options;
 
-import org.eclipse.jdt.annotation.Nullable;
-
-import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.CircularNormalProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
@@ -29,23 +27,68 @@ import com.analog.lyric.dimple.solvers.lp.LPOptions;
 import com.analog.lyric.dimple.solvers.minsum.MinSumOptions;
 import com.analog.lyric.dimple.solvers.particleBP.ParticleBPOptions;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductOptions;
-import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.OptionRegistry;
 
 /**
  * Registry of option keys for known dimple options.
  * <p>
+ * This is used primarily for looking up option keys by name from dynamic language
+ * front-ends (e.g. MATLAB). Java users should instead directly use the key objects.
+ * <p>
+ * Includes options from the following classes:
+ * <dl>
+ * <dt>General options</dt>
+ * <dd>
+ * <ul>
+ * <li>{@link DimpleOptions}
+ * <li>{@link SolverOptions}
+ * </ul>
+ * </dd>
+ * <dt>Solver-specific options</dt>
+ * <dd>
+ * <ul>
+ * <li>{@link GibbsOptions}
+ * <li>{@link JunctionTreeOptions}
+ * <li>{@link LPOptions}
+ * <li>{@link MinSumOptions}
+ * <li>{@link ParticleBPOptions}
+ * <li>{@link SumProductOptions}
+ * </ul>
+ * </dd>
+ * <dt>Proposal kernels options</dt>
+ * <dd>
+ * <ul>
+ * <li>{@link NormalProposalKernel}
+ * <li>{@link CircularNormalProposalKernel}
+ * </ul>
+ * </dd>
+ * <dt>Sampler options</dt>
+ * <dd>
+ * <ul>
+ * <li>{@link MHSampler}
+ * <li>{@link SliceSampler}
+ * </ul>
+ * </dd>
+ * </dl>
+ * 
+ * Additional options can be added to the registry using {@linkplain OptionRegistry#addFromClasses addFromClasses}.
+ * <p>
+ * Instances of this class should be obtained from {@link DimpleEnvironment#optionRegistry()}.
+ * <p>
  * @since 0.07
  * @author Christopher Barber
  */
-public enum DimpleOptionRegistry
+public final class DimpleOptionRegistry extends OptionRegistry
 {
-	INSTANCE;
-	
-	private final OptionRegistry _registry = new OptionRegistry();
-	
-	private DimpleOptionRegistry()
+	// This is deprecated to prevent external users from calling this, but will not be removed.
+	/**
+	 * @deprecated Instead use {@link DimpleEnvironment#optionRegistry()}.
+	 */
+	@Deprecated
+	public DimpleOptionRegistry()
 	{
+		super(true);
+		
 		addFromClasses(
 			DimpleOptions.class,
 			SolverOptions.class,
@@ -66,75 +109,5 @@ public enum DimpleOptionRegistry
 			MHSampler.class,
 			SliceSampler.class
 			);
-	}
-	
-	private void addFromClasses(Class<?> ... classes)
-	{
-		for (Class<?> c : classes)
-		{
-			_registry.addFromClass(c);
-		}
-	}
-	
-	/**
-	 * Underlying option registry.
-	 * @since 0.07
-	 */
-	public static OptionRegistry getRegistry()
-	{
-		return INSTANCE._registry;
-	}
-	
-	/**
-	 * Returns key for given qualified name or null.
-	 * <p>
-	 * @see OptionRegistry#get(String)
-	 * @param name is a non-null string containing either the fully qualified name of the option
-	 * or the name qualified with just the option class name (e.g. "SolverOptions.iterations").
-	 * @return key for name or null if not found.
-	 * @since 0.07
-	 */
-	public static @Nullable IOptionKey<?> getKey(String name)
-	{
-		return INSTANCE._registry.get(name);
-	}
-	
-	/**
-	 * Returns key for given qualified name or throws an error.
-	 * <p>
-	 * @param keyOrName either a {@link IOptionKey} instance which will simply be returned or
-	 * a {@link String} compatible with {@link #getKey(String)}.
-	 * @throws DimpleException if key not found or input argument is not the correct type.
-	 * @throws IllegalArgumentException if {@code keyOrName} does not have the correct type.
-	 * @since 0.07
-	 */
-	public static IOptionKey<?> asKey(Object keyOrName)
-	{
-		IOptionKey<?> key;
-		
-		if (keyOrName instanceof String)
-		{
-			String name = (String)keyOrName;
-			key = getKey(name);
-			if (key == null)
-			{
-				throw new DimpleException("Unknown option key '%s'", name);
-			}
-			else
-			{
-				return key;
-			}
-		}
-		else if (keyOrName instanceof IOptionKey)
-		{
-			key = (IOptionKey<?>)keyOrName;
-		}
-		else
-		{
-			throw new IllegalArgumentException(
-				String.format("Expected String or IOptionKey instead of '%s'", keyOrName.getClass()));
-		}
-		
-		return key;
 	}
 }

@@ -65,7 +65,7 @@ public interface IOptionKey<T extends Serializable> extends Serializable
 	/**
 	 * Attempts to convert value to appropriate key value type.
 	 * <p>
-	 * @param value a non-null value.
+	 * @param value a non-null value to be converted to the option's {@link #type}.
 	 * @throws RuntimeException if value cannot be converted
 	 * @since 0.07
 	 */
@@ -132,11 +132,12 @@ public interface IOptionKey<T extends Serializable> extends Serializable
 	 * This is invoked by implementations of {@link IOptionHolder#setOption} and can be
 	 * overridden to put extra constraints on the value.
 	 * <p>
-	 * @param value
+	 * @param value is the value to be set on this option.
+	 * @param optionHolder is the option holder on which the option is being set, if available.
 	 * @return the {@code value} itself if valid otherwise throws an exception.
 	 * @throws ClassCastException if {@code value} has the wrong type.
 	 * @throws OptionValidationException if value is invalid.
 	 * @since 0.07
 	 */
-	public T validate(T value);
+	public T validate(T value, @Nullable IOptionHolder optionHolder);
 }
