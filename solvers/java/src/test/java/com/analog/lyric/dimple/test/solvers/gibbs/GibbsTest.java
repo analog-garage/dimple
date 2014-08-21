@@ -24,8 +24,8 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
+import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.gibbs.STableFactor;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
@@ -117,7 +117,7 @@ public class GibbsTest extends DimpleTestBase
 	{
 		public PA() {super("PA");}
 	    @Override
-		public double eval(Object ... input)
+		public double evalEnergy(Object ... input)
 	    {
 	    	double value = 0;
 	    	int a = (Integer)input[0];
@@ -125,7 +125,7 @@ public class GibbsTest extends DimpleTestBase
 	    	    value = 0.2;
 	    	else
 	    	    value = 0.8;
-	    	return value;
+	    	return -Math.log(value);
 	    }
 	}
 	
@@ -133,7 +133,7 @@ public class GibbsTest extends DimpleTestBase
 	{
 		public PBA() {super("PBA");}
 	    @Override
-		public double eval(Object ... input)
+		public double evalEnergy(Object ... input)
 	    {
 	    	double value = 0;
 	    	int b = (Integer)input[0];
@@ -146,7 +146,7 @@ public class GibbsTest extends DimpleTestBase
 	    	    value = 0.75;
 	    	else
 	    		value = 0.25;
-	    	return value;
+	    	return -Math.log(value);
 	    }
 	}
 	

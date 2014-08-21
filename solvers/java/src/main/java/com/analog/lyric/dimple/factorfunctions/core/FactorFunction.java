@@ -24,6 +24,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.jcip.annotations.ThreadSafe;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
 
@@ -35,7 +38,6 @@ import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
-import org.eclipse.jdt.annotation.Nullable;
 
 @ThreadSafe
 public abstract class FactorFunction
@@ -67,45 +69,19 @@ public abstract class FactorFunction
      * FactorFunction methods
      */
     
-    public boolean convertFactorTable(@Nullable JointDomainIndexer oldDomains, @Nullable JointDomainIndexer newDomains)
-    {
-    	boolean converted = false;
-    	
-    	if (oldDomains != null && newDomains != null)
-    	{
-    		ConcurrentMap<JointDomainIndexer, IFactorTable> tables = _factorTables.get();
-    		
-    		if (tables != null)
-    		{
-    			IFactorTable table = tables.get(oldDomains);
-    			if (table != null)
-    			{
-    				table.setConditional(Objects.requireNonNull(newDomains.getOutputSet()));
-    			}
-    		}
-    	}
-    	
-    	return converted;
-    }
-    
-	// WARNING WARNING WARNING
-	// At least one or the other of these must be overridden in a derived class.
-	// SHOULD override evalEnergy instead of eval, but for now can override one or the other.
-	// TODO: Eventually eval should be made final and so that only evalEnergy can be overridden.
-	public double eval(Object... arguments)
-	{
-		return Math.exp(-evalEnergy(arguments));
-	}
-	public double evalEnergy(Object... arguments)
-	{
-		return -Math.log(eval(arguments));
-	}
+    // Evaluate the factor function with the specified values and return the energy
+	public abstract double evalEnergy(Object... arguments);
+//	public double evalEnergy(Object... arguments)
+//	{
+//		final int size = arguments.length;
+//		final Value[] values = new Value[size];
+//		for (int i = 0; i < size; ++i)
+//			values[i] = Value.create(arguments[i]);
+//
+//		return evalEnergy(values);
+//	}
 
-	/**
-	 * Default version of evalEnergy that takes values; can be overridden to implement
-	 * a more efficient version that doesn't require copying the input array
-	 * @since 0.05
-	 */
+//	public abstract double evalEnergy(Value[] values);
 	public double evalEnergy(Value[] values)
 	{
 		final int size = values.length;
@@ -116,6 +92,12 @@ public abstract class FactorFunction
 		return evalEnergy(objects);
 	}
 
+	// Evaluate the factor and return a weight value rather than an energy value
+	public double eval(Object... arguments)
+	{
+		return Math.exp(-evalEnergy(arguments));
+	}
+	
 
 	/**
 	 * @since 0.05
@@ -163,6 +145,28 @@ public abstract class FactorFunction
 		return factorTableExists(factor.getDomainList().asJointDomainIndexer());
 	}
 
+	
+    public boolean convertFactorTable(@Nullable JointDomainIndexer oldDomains, @Nullable JointDomainIndexer newDomains)
+    {
+    	boolean converted = false;
+    	
+    	if (oldDomains != null && newDomains != null)
+    	{
+    		ConcurrentMap<JointDomainIndexer, IFactorTable> tables = _factorTables.get();
+    		
+    		if (tables != null)
+    		{
+    			IFactorTable table = tables.get(oldDomains);
+    			if (table != null)
+    			{
+    				table.setConditional(Objects.requireNonNull(newDomains.getOutputSet()));
+    			}
+    		}
+    	}
+    	
+    	return converted;
+    }
+    
 
 	public Object getDeterministicFunctionValue(Object... arguments)
 	{

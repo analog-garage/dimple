@@ -127,11 +127,11 @@ public class StereoVisionGraph
 	private static class rho_p extends FactorFunction
 	{
 		@Override
-		public double eval(Object... args)
+		public double evalEnergy(Object... args)
 		{
 			int ds = (Integer) args[0];
 			int dt = (Integer) args[1];
-			return (1 - ep) * Math.exp(-Math.abs(ds - dt) / sigmaP) + ep;
+			return -Math.log( (1 - ep) * Math.exp(-Math.abs(ds - dt) / sigmaP) + ep );
 		}
 	}
 

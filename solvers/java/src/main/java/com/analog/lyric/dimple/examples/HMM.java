@@ -17,6 +17,9 @@
 package com.analog.lyric.dimple.examples;
 
 import static java.util.Objects.*;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import cern.colt.Arrays;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
@@ -24,7 +27,6 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import org.eclipse.jdt.annotation.NonNullByDefault;
 
 public class HMM
 {
@@ -38,28 +40,28 @@ public class HMM
 		}
 		
 		@Override
-		public double eval(Object ... args)
+		public double evalEnergy(Object ... args)
 		{
 			String state1 = (String)args[0];
 			String state2 = (String)args[1];
+			double value;
 			
 			if (state1.equals("sunny"))
 			{
 				if (state2.equals("sunny"))
 				{
-					return 0.8;
+					value = 0.8;
 				}
 				else
 				{
-					return 0.2;
+					value = 0.2;
 				}
-				
 			}
 			else
 			{
-				return 0.5;
+				value = 0.5;
 			}
-			
+			return -Math.log(value);
 		}
 	}
 	
@@ -72,25 +74,32 @@ public class HMM
 		}
 		
 		@Override
-		public double eval(Object ... args)
+		public double evalEnergy(Object ... args)
 		{
 			String state = (String)args[0];
 			String observation = (String)args[1];
+			double value;
 			
 			if (state.equals("sunny"))
+			{
 				if (observation.equals("walk"))
-					return 0.7;
+					value = 0.7;
 				else if (observation.equals("book"))
-					return 0.1;
+					value = 0.1;
 				else // cook
-					return 0.2;
+					value = 0.2;
+			}
 			else
+			{
 				if (observation.equals("walk"))
-					return 0.2;
+					value = 0.2;
 				else if (observation.equals("book"))
-					return 0.4;
+					value = 0.4;
 				else // cook
-					return 0.4;
+					value = 0.4;
+			}
+			
+			return -Math.log(value);
 		}
 	}
 	
