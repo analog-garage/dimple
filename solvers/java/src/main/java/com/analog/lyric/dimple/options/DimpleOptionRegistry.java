@@ -35,6 +35,48 @@ import com.analog.lyric.options.OptionRegistry;
 /**
  * Registry of option keys for known dimple options.
  * <p>
+ * This is used primarily for looking up option keys by name from dynamic language
+ * front-ends (e.g. MATLAB). Java users should instead directly use the key objects.
+ * <p>
+ * Includes options from the following classes:
+ * <dl>
+ * <dt>General options</dt>
+ * <dd>
+ * <ul>
+ * <li>{@link DimpleOptions}
+ * <li>{@link SolverOptions}
+ * </ul>
+ * </dd>
+ * <dt>Solver-specific options</dt>
+ * <dd>
+ * <ul>
+ * <li>{@link GibbsOptions}
+ * <li>{@link JunctionTreeOptions}
+ * <li>{@link LPOptions}
+ * <li>{@link MinSumOptions}
+ * <li>{@link ParticleBPOptions}
+ * <li>{@link SumProductOptions}
+ * </ul>
+ * </dd>
+ * <dt>Proposal kernels options</dt>
+ * <dd>
+ * <ul>
+ * <li>{@link NormalProposalKernel}
+ * <li>{@link CircularNormalProposalKernel}
+ * </ul>
+ * </dd>
+ * <dt>Sampler options</dt>
+ * <dd>
+ * <ul>
+ * <li>{@link MHSampler}
+ * <li>{@link SliceSampler}
+ * </ul>
+ * </dd>
+ * </dl>
+ * 
+ * Additional options can be added to the registry using {@linkplain OptionRegistry#addFromClass addFromClass}
+ * on the underlying {@linkplain #getRegistry() registry}.
+ * <p>
  * @since 0.07
  * @author Christopher Barber
  */
