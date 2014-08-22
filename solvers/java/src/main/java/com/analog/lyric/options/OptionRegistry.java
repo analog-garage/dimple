@@ -375,8 +375,8 @@ public class OptionRegistry implements Iterable<IOptionKey<?>>
 	/**
 	 * Returns a newly constructed list of keys matching regular expression.
 	 * <p>
-	 * The will contain all keys whose qualified name matches the given
-	 * regular expression pattern sorted by name.
+	 * The will contain all keys whose {@linkplain OptionKey#qualifiedName(IOptionKey) qualified name} matches the
+	 * given regular expression pattern sorted by name.
 	 * @since 0.07
 	 */
 	public ArrayList<IOptionKey<?>> getAllMatching(Pattern pattern)
@@ -386,7 +386,7 @@ public class OptionRegistry implements Iterable<IOptionKey<?>>
 		
 		for (IOptionKey<?> key : this)
 		{
-			matcher.reset(OptionKey.canonicalName(key));
+			matcher.reset(OptionKey.qualifiedName(key));
 			if (matcher.matches())
 			{
 				results.add(key);
@@ -399,8 +399,8 @@ public class OptionRegistry implements Iterable<IOptionKey<?>>
 	/**
 	 * Returns a newly constructed list of keys matching regular expression.
 	 * <p>
-	 * The will contain all keys whose qualified name matches the given
-	 * regular expression pattern sorted by name.
+	 * The will contain all keys whose {@linkplain OptionKey#qualifiedName(IOptionKey) qualified name} matches the
+	 * given regular expression pattern sorted by name.
 	 * @since 0.07
 	 */
 	public ArrayList<IOptionKey<?>> getAllMatching(String regexp)

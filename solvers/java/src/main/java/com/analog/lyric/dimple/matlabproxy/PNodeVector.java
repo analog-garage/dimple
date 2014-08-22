@@ -70,8 +70,6 @@ public abstract class PNodeVector extends PObject
 	 * PNodeVector methods
 	 */
 
-	// TODO add indices argument to option methods
-	
 	public Object[][] getLocallySetOptions()
 	{
 		final Object[][] options = new Object[_nodes.length][];
@@ -134,6 +132,20 @@ public abstract class PNodeVector extends PObject
 		}
 	}
 	
+	public void setOptions(Object optionKey, Object[] values)
+	{
+		final int size = _nodes.length;
+		if (size > 0)
+		{
+			final IOptionKey<?> key = _nodes[0].getEnvironment().optionRegistry().asKey(optionKey);
+			for (int i = 0; i < size; ++i)
+			{
+				Option<?> option = Option.create(key, values[i]);
+				Option.setOptions(_nodes[i], option);
+			}
+		}
+	}
+
 	public void setNodes(Node [] nodes)
 	{
 		_nodes = nodes;
