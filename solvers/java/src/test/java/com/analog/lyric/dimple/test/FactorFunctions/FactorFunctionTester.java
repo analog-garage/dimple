@@ -65,15 +65,6 @@ public class FactorFunctionTester extends DimpleTestBase
 		assertTrue(function.isDeterministicDirected());
 		assertTrue(function.isDirected());
 		
-		final int caseSize = testCases[0].length;
-		final int nInputs = caseSize - outputIndices.length;
-		final BitSet inputSet = BitSetUtil.bitsetFromIndices(caseSize, outputIndices);
-		inputSet.flip(0, caseSize);
-		final int[] inputIndices = new int[nInputs];
-		for (int i = 0, j = -1; (j = inputSet.nextSetBit(j+1)) >= 0; ++i)
-		{
-			inputIndices[i] = j;
-		}
 		
 		AtomicReference<int[]> changedOutputsHolder = new AtomicReference<int[]>();
 
@@ -81,6 +72,15 @@ public class FactorFunctionTester extends DimpleTestBase
 		{
 			Object[] prevTestCase = i > 0 ? testCases[i - 1] : null;
 			Object[] testCase = testCases[i];
+			final int caseSize = testCase.length;
+			final int nInputs = caseSize - outputIndices.length;
+			final BitSet inputSet = BitSetUtil.bitsetFromIndices(caseSize, outputIndices);
+			inputSet.flip(0, caseSize);
+			final int[] inputIndices = new int[nInputs];
+			for (int k = 0, j = -1; (j = inputSet.nextSetBit(j+1)) >= 0; ++k)
+			{
+				inputIndices[k] = j;
+			}
 			Object[] objects = copyInputs(inputIndices, testCase);
 			function.evalDeterministic(objects);
 			assertArrayEquals(testCase, objects);

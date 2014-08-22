@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.factorfunctions.ACos;
 import com.analog.lyric.dimple.factorfunctions.ASin;
 import com.analog.lyric.dimple.factorfunctions.ATan;
 import com.analog.lyric.dimple.factorfunctions.Abs;
+import com.analog.lyric.dimple.factorfunctions.And;
 import com.analog.lyric.dimple.factorfunctions.Cos;
 import com.analog.lyric.dimple.factorfunctions.Cosh;
 import com.analog.lyric.dimple.factorfunctions.Divide;
@@ -36,8 +37,11 @@ import com.analog.lyric.dimple.factorfunctions.LessThan;
 import com.analog.lyric.dimple.factorfunctions.LessThanOrEqual;
 import com.analog.lyric.dimple.factorfunctions.Log;
 import com.analog.lyric.dimple.factorfunctions.Negate;
+import com.analog.lyric.dimple.factorfunctions.Or;
 import com.analog.lyric.dimple.factorfunctions.Product;
+import com.analog.lyric.dimple.factorfunctions.Xor;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 
 /**
@@ -76,6 +80,30 @@ public class TestSimpleDeterministicFunctions extends FactorFunctionTester
 		});
 	}
 
+	@Test
+	public void testAnd()
+	{
+		And and = new And();
+		assertArrayEquals(new int[] { 0 }, and.getDirectedToIndices());
+		testEvalDeterministic(and, RealDomain.unbounded(),
+			testCase(1.0, 1.0, 1.0),
+			testCase(1.0, 1.0, 1.0, 1.0));
+		testEvalDeterministic(and, RealDomain.unbounded(),
+			testCase(0.0, 1.0, 0.0),
+			testCase(0.0, 1.0, 1.0, 0.0),
+			testCase(0.0, 0.0, 0.0));
+		testEvalDeterministic(and, DiscreteDomain.bool(),
+			testCase(false, true, false ,true),
+			testCase(false, false, false),
+			testCase(false, true, true, true, false)
+		);
+		testEvalDeterministic(and, DiscreteDomain.bool(),
+			testCase(true, true, true ,true),
+			testCase(true, true),
+			testCase(true, true, true, true, true)
+		);
+	}
+	
 	@Test
 	public void testASin()
 	{
@@ -233,6 +261,31 @@ public class TestSimpleDeterministicFunctions extends FactorFunctionTester
 	}
 
 	@Test
+	public void testOr()
+	{
+		Or or = new Or();
+		assertArrayEquals(new int[] { 0 }, or.getDirectedToIndices());
+		testEvalDeterministic(or, RealDomain.unbounded(),
+			testCase(1.0, 1.0, 1.0),
+			testCase(1.0, 0.0, 0.0, 1.0),
+			testCase(1.0, 1.0, 1.0, 1.0));
+		testEvalDeterministic(or, RealDomain.unbounded(),
+			testCase(0.0, 0.0, 0.0),
+			testCase(0.0, 0.0, 0.0, 0.0),
+			testCase(0.0, 0.0));
+		testEvalDeterministic(or, DiscreteDomain.bool(),
+			testCase(false, false, false ,false),
+			testCase(false, false, false),
+			testCase(false, false, false, false, false)
+		);
+		testEvalDeterministic(or, DiscreteDomain.bool(),
+			testCase(true, true, false ,true),
+			testCase(true, true),
+			testCase(true, true, false, true, true)
+		);
+	}
+
+	@Test
 	public void testProduct()
 	{
 		Product product = new Product();
@@ -247,6 +300,31 @@ public class TestSimpleDeterministicFunctions extends FactorFunctionTester
 		});
 	}
 	
+	@Test
+	public void testXor()
+	{
+		Xor xor = new Xor();
+		assertArrayEquals(new int[] { 0 }, xor.getDirectedToIndices());
+		testEvalDeterministic(xor, RealDomain.unbounded(),
+			testCase(0.0, 1.0, 1.0),
+			testCase(0.0, 0.0, 0.0, 1.0, 1.0),
+			testCase(0.0, 0.0, 0.0));
+		testEvalDeterministic(xor, RealDomain.unbounded(),
+			testCase(0.0, 0.0, 0.0),
+			testCase(0.0, 0.0, 0.0, 0.0),
+			testCase(0.0, 0.0));
+		testEvalDeterministic(xor, DiscreteDomain.bool(),
+			testCase(false, false, false ,false),
+			testCase(false, false, false),
+			testCase(false, false, false, false, false)
+		);
+		testEvalDeterministic(xor, DiscreteDomain.bool(),
+			testCase(true, true),
+			testCase(true, true, false),
+			testCase(true, false, false, true)
+		);
+	}
+
 	private static interface TestCaseGenerator
 	{
 		Object[] createTestCase();
@@ -261,5 +339,10 @@ public class TestSimpleDeterministicFunctions extends FactorFunctionTester
 			assertArrayEquals(new int[] { 0 }, function.getDirectedToIndices(testCases[i].length));
 		}
 		testEvalDeterministic(function, RealDomain.unbounded(), testCases);
+	}
+	
+	private Object[] testCase(Object ... args)
+	{
+		return args;
 	}
 }

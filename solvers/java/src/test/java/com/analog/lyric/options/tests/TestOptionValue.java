@@ -24,6 +24,7 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.options.AbstractOptionValueList;
 import com.analog.lyric.options.IOptionValue;
 import com.analog.lyric.options.OptionDoubleList;
@@ -38,7 +39,7 @@ import com.google.common.primitives.Primitives;
  * @since 0.07
  * @author Christopher Barber
  */
-public class TestOptionValue
+public class TestOptionValue extends DimpleTestBase
 {
 	@Test
 	public void test()
