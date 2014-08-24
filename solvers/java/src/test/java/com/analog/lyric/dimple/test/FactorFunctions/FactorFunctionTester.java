@@ -82,7 +82,7 @@ public class FactorFunctionTester extends DimpleTestBase
 				inputIndices[k] = j;
 			}
 			Value[] objectValues = copyInputs(inputIndices, testCaseValues);
-			function.evalDeterministic(objects);
+			function.evalDeterministic(objectValues);
 			Object[] testCase = Value.toObjects(testCaseValues);
 			Object[] objects = Value.toObjects(objectValues);
 			assertArrayEquals(testCase, objects);

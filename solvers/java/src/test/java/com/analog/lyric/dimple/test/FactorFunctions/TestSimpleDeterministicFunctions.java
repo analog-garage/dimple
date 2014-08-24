@@ -342,8 +342,11 @@ public class TestSimpleDeterministicFunctions extends FactorFunctionTester
 		testEvalDeterministic(function, RealDomain.unbounded(), testCases);
 	}
 	
-	private Object[] testCase(Object ... args)
+	private Value[] testCase(Object ... args)
 	{
-		return args;
+		Value[] out = new Value[args.length];
+		for (int i = 0; i < args.length; i++)
+			out[i] = Value.create(args[i]);
+		return out;
 	}
 }
