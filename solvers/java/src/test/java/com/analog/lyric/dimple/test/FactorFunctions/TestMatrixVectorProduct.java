@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.factorfunctions.MatrixVectorProduct;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
+import com.analog.lyric.dimple.model.values.Value;
 
 public class TestMatrixVectorProduct extends FactorFunctionTester
 {
@@ -98,20 +99,20 @@ public class TestMatrixVectorProduct extends FactorFunctionTester
 		domains[outLength] = null; // matrix
 		domains[outLength + 1] = rd2;
 		
-		Object[][] testCases = new Object[nCases][];
+		Value[][] testCases = new Value[nCases][];
 		for (int i = 0; i < nCases; ++i)
 		{
 			double[] inVector = inVectors[i];
 			double[][] matrix = matrices[i];
 			double[] outVector = outVectors[i];
 			
-			Object[] testCase = testCases[i] = new Object[2 + outLength];
+			Value[] testCase = testCases[i] = new Value[2 + outLength];
 			for (int j = 0; j < outLength; ++j)
 			{
-				testCase[j] = outVector[j];
+				testCase[j] = Value.create(outVector[j]);
 			}
-			testCase[outLength] = matrix;
-			testCase[outLength + 1] = inVector.clone();
+			testCase[outLength] = Value.create(matrix);
+			testCase[outLength + 1] = Value.create(inVector.clone());
 		}
 		
 		testEvalDeterministic(function, domains, outputIndices, testCases);
@@ -130,15 +131,15 @@ public class TestMatrixVectorProduct extends FactorFunctionTester
 			double[][] matrix = matrices[i];
 			double[] outVector = outVectors[i];
 			
-			Object[] testCase = testCases[i] = new Object[domains.length];
+			Value[] testCase = testCases[i] = new Value[domains.length];
 			for (int j = 0; j < outLength; ++j)
 			{
-				testCase[j] = outVector[j];
+				testCase[j] = Value.create(outVector[j]);
 			}
-			testCase[outLength] = matrix;
+			testCase[outLength] = Value.create(matrix);
 			for (int j = 0; j < inLength; ++j)
 			{
-				testCase[outLength + 1 + j] = inVector[j];
+				testCase[outLength + 1 + j] = Value.create(inVector[j]);
 			}
 		}
 		
@@ -158,20 +159,20 @@ public class TestMatrixVectorProduct extends FactorFunctionTester
 			double[][] matrix = matrices[i];
 			double[] outVector = outVectors[i];
 
-			Object[] testCase = testCases[i] = new Object[domains.length];
+			Value[] testCase = testCases[i] = new Value[domains.length];
 			for (int j = 0; j < outLength; ++j)
 			{
-				testCase[j] = outVector[j];
+				testCase[j] = Value.create(outVector[j]);
 			}
 			int j = outLength;
 			for (int col = 0; col < inLength; ++col)
 			{
 				for (int row = 0; row < outLength; ++row)
 				{
-					testCase[j++] = matrix[row][col];
+					testCase[j++] = Value.create(matrix[row][col]);
 				}
 			}
-			testCase[domains.length - 1] = inVector;
+			testCase[domains.length - 1] = Value.create(inVector);
 		}
 
 		testEvalDeterministic(function, domains, outputIndices, testCases);
@@ -190,22 +191,22 @@ public class TestMatrixVectorProduct extends FactorFunctionTester
 			double[][] matrix = matrices[i];
 			double[] outVector = outVectors[i];
 
-			Object[] testCase = testCases[i] = new Object[domains.length];
+			Value[] testCase = testCases[i] = new Value[domains.length];
 			for (int j = 0; j < outLength; ++j)
 			{
-				testCase[j] = outVector[j];
+				testCase[j] = Value.create(outVector[j]);
 			}
 			int j = outLength;
 			for (int col = 0; col < inLength; ++col)
 			{
 				for (int row = 0; row < outLength; ++row)
 				{
-					testCase[j++] = matrix[row][col];
+					testCase[j++] = Value.create(matrix[row][col]);
 				}
 			}
 			for (j = 0; j < inLength; ++j)
 			{
-				testCase[inVectorOffset + j] = inVector[j];
+				testCase[inVectorOffset + j] = Value.create(inVector[j]);
 			}
 		}
 

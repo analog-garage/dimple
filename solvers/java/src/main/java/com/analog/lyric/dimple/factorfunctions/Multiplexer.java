@@ -18,8 +18,6 @@ package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -83,22 +81,15 @@ public class Multiplexer extends FactorFunction
     }
     
     @Override
-    public final boolean isDirected()	{return true;}
+    public final boolean isDirected() {return true;}
     @Override
 	public final int[] getDirectedToIndices() {return new int[]{0};}
     @Override
 	public final boolean isDeterministicDirected() {return true;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+    public final void evalDeterministic(Value[] arguments)
     {
-    	int selector = FactorFunctionUtilities.toInteger(arguments[1]);
-    	arguments[0] = arguments[selector + 2];		// Replace the output value
-    }
-    
-    @Override
-    public final void evalDeterministic(Factor factor, Value[] values)
-    {
-    	values[0].setFrom(values[values[1].getInt() + 2]);
+    	arguments[0].setFrom(arguments[arguments[1].getInt() + 2]);
     }
     
     // Factor-specific methods

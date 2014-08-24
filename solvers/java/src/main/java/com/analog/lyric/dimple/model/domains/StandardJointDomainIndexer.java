@@ -18,8 +18,9 @@ package com.analog.lyric.dimple.model.domains;
 
 import net.jcip.annotations.Immutable;
 
-import com.analog.lyric.dimple.model.values.Value;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.model.values.Value;
 
 @Immutable
 public class StandardJointDomainIndexer extends JointDomainIndexer
@@ -197,6 +198,25 @@ public class StandardJointDomainIndexer extends JointDomainIndexer
 		return elements;
 	}
 	
+	@Override
+	public final Value[] undirectedJointIndexToValues(int jointIndex, Value[] elements)
+	{
+		final DiscreteDomain[] domains = _domains;
+		final int[] products = _products;
+		
+		int product;
+		for (int i = products.length; --i >= 0;)
+		{
+			final int index = jointIndex / (product = products[i]);
+			@SuppressWarnings("unchecked")
+			Object element = domains[i].getElement(index);
+			elements[i].setObject(element);
+			jointIndex -= index * product;
+		}
+		return elements;
+	}
+	
+
 	/**
 	 * Computes element index for a single domain from a joint index using undirected ordering
 	 * of domains.

@@ -42,7 +42,7 @@ public class FactorFunctionTester extends DimpleTestBase
 	 * <p>
 	 * Exercises the following methods:
 	 * <ul>
-	 * <li>{@link FactorFunction#evalDeterministic(Object[])}
+	 * <li>{@link FactorFunction#evalDeterministic(Value[])}
 	 * <li>{@link FactorFunction#updateDeterministicLimit(int)}
 	 * <li>{@link FactorFunction#updateDeterministic(Value[], Collection, AtomicReference)}
 	 * </ul>
@@ -56,11 +56,11 @@ public class FactorFunctionTester extends DimpleTestBase
 	 * @param testCases one or more object arrays specifying the inputs and expected outputs for deterministic
 	 * evaluation. Each test case must be the same length.
 	 * 
-	 * @see #testEvalDeterministic(FactorFunction, Domain, int[], Object[][])
-	 * @see #testEvalDeterministic(FactorFunction, Domain, Object[][])
+	 * @see #testEvalDeterministic(FactorFunction, Domain, int[], Value[][])
+	 * @see #testEvalDeterministic(FactorFunction, Domain, Value[][])
 	 */
 	public static void testEvalDeterministic(FactorFunction function, Domain[] domains, int[] outputIndices,
-		Object[] ... testCases)
+		Value[]... testCases)
 	{
 		assertTrue(function.isDeterministicDirected());
 		assertTrue(function.isDirected());
@@ -79,10 +79,12 @@ public class FactorFunctionTester extends DimpleTestBase
 
 		for (int i = 0, end = testCases.length; i < end; ++i)
 		{
-			Object[] prevTestCase = i > 0 ? testCases[i - 1] : null;
-			Object[] testCase = testCases[i];
-			Object[] objects = copyInputs(inputIndices, testCase);
-			function.evalDeterministic(objects);
+			Object[] prevTestCase = i > 0 ? Value.toObjects(testCases[i - 1]) : null;
+			Value[] testCaseValues = testCases[i];
+			Value[] objectValues = copyInputs(inputIndices, testCaseValues);
+			function.evalDeterministic(objectValues);
+			Object[] testCase = Value.toObjects(testCaseValues);
+			Object[] objects = Value.toObjects(objectValues);
 			assertArrayEquals(testCase, objects);
 			
 			assertEquals(0.0, function.evalEnergy(testCase), 0.0);
@@ -184,31 +186,31 @@ public class FactorFunctionTester extends DimpleTestBase
 	}
 	
 	/**
-	 * Shorthand for call to {@link #testEvalDeterministic(FactorFunction, Domain[], int[], Object[][])} like
+	 * Shorthand for call to {@link #testEvalDeterministic(FactorFunction, Domain[], int[], Value[][])} like
 	 * following:
 	 * <pre>
 	 *    testEvalDeterministic(function, new Domain[] { domain }, inputIndices, testCases)
 	 * </pre>
 	 */
 	public static void testEvalDeterministic(FactorFunction function, Domain domain, int[] inputIndices,
-		Object[] ... testCases)
+		Value[]... testCases)
 	{
 		testEvalDeterministic(function, new Domain[] { domain }, inputIndices, testCases);
 	}
 	
 	/**
-	 * Shorthand for call to {@link #testEvalDeterministic(FactorFunction, Domain[], int[], Object[][])}
+	 * Shorthand for call to {@link #testEvalDeterministic(FactorFunction, Domain[], int[], Value[][])}
 	 * like following:
 	 * <pre>
 	 *    testEvalDeterministic(function, new Domain[] { domain }, new int[] { 0 }, testCases)
 	 * </pre>
 	 */
-	public static void testEvalDeterministic(FactorFunction function, Domain domain, Object[] ... testCases)
+	public static void testEvalDeterministic(FactorFunction function, Domain domain, Value[]... testCases)
 	{
 		testEvalDeterministic(function, domain, new int[] { 0 }, testCases);
 	}
 	
-	public static void testEvalDeterministic(FactorFunction function, Domain[] domains, Object[] ... testCases)
+	public static void testEvalDeterministic(FactorFunction function, Domain[] domains, Value[]... testCases)
 	{
 		testEvalDeterministic(function, domains, new int[] { 0 }, testCases);
 	}
@@ -229,15 +231,19 @@ public class FactorFunctionTester extends DimpleTestBase
 	}
 	
 	/**
-	 * Returns a new Object array with same length as {@code objects} and shallow copying only
+	 * Returns a new Value array with same length as {@code objects} and shallow copying only
 	 * the entries specified by {@code inputIndices}.
 	 */
-	private static Object[] copyInputs(int[] inputIndices, Object[] objects)
+	private static Value[] copyInputs(int[] inputIndices, Value[] objects)
 	{
-		Object[] copy = new Object[objects.length];
+		Value[] copy = new Value[objects.length];
+		for (int i = 0; i < objects.length; i++)
+		{
+			copy[i] = Value.create(objects[i].getDomain());
+		}
 		for (int i : inputIndices)
 		{
-			copy[i] = objects[i];
+			copy[i].setFrom(objects[i]);
 		}
 		return copy;
 	}

@@ -104,22 +104,22 @@ public class RealJointSubtract extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
     	// Output variable
-    	int length = arguments.length;
-		double[] out = ((double[])arguments[0]);
-    	int dimension = out.length;
+    	final int length = arguments.length;
+    	final double[] out = arguments[0].getDoubleArray();
+    	final int dimension = out.length;
 
     	// Positive input variable
-		double[] posIn = ((double[])arguments[1]);
+    	final double[] posIn = arguments[1].getDoubleArray();
 		for (int d = 0; d < dimension; d++)
 			out[d] = posIn[d];
 			
 		// Remaining subtracted input variables
     	for (int i = 2; i < length; i++)
     	{
-    		double[] arg = ((double[])arguments[i]);
+    		final double[] arg = arguments[i].getDoubleArray();
     		if (dimension != arg.length) throw new DimpleException("Argument variables must all have the same dimension");
     		for (int d = 0; d < dimension; d++)
     			out[d] -= arg[d];

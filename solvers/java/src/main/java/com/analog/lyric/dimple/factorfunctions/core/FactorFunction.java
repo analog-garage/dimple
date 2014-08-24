@@ -37,7 +37,9 @@ import com.analog.lyric.dimple.model.domains.DomainList;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
+import com.analog.lyric.dimple.model.values.RealValue;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.misc.Matlab;
 
 @ThreadSafe
 public abstract class FactorFunction
@@ -79,6 +81,7 @@ public abstract class FactorFunction
      */
     
 	// Evaluate the factor function energy using unwrapped object arguments
+	@Matlab
 	public double evalEnergy(Object... arguments)
 	{
 		final int size = arguments.length;
@@ -96,34 +99,30 @@ public abstract class FactorFunction
 	}
 
 	// Evaluate the factor and return a weight value using unwrapped object arguments
+	@Matlab
 	public double eval(Object... arguments)
 	{
 		return Math.exp(-evalEnergy(arguments));
 	}
 	
-
-	/**
-	 * @since 0.05
-	 */
-	public void evalDeterministic(Object[] arguments)
-	{ }
-
-	/**
-	 * @since 0.05
-	 */
-	public void evalDeterministic(Factor factor, Value[] values)
+	// For deterministic-directed factor functions, set the value of the output variables given the input variables
+	// The default implementation does nothing; any deterministic-directed factor function must override this method
+	public void evalDeterministic(Value[] arguments)
 	{
-		final Object[] objects = Value.toObjects(values);
-		evalDeterministic(objects);
-		final int[] directedTo = factor.getDirectedTo();
-		if (directedTo != null)
-		{
-			for (int to : directedTo)
-			{
-				values[to].setObject(objects[to]);
-			}
-		}
 	}
+	
+	// Used by MATLAB core Dimple code for discrete variables only
+    @Matlab
+	public @Nullable Object getDeterministicFunctionValue(Object... arguments)
+	{
+		Value[] fullArgumentList = new Value[arguments.length + 1];
+		for (int i = 0; i < arguments.length; i++)
+			fullArgumentList[i + 1] = Value.create(arguments[i]);
+		fullArgumentList[0] = RealValue.create();	// Ok to use RealValue since it will be a number, but we don't know what
+		evalDeterministic(fullArgumentList);
+		return fullArgumentList[0].getObject();
+	}
+
 
 	
 	/**
@@ -170,15 +169,6 @@ public abstract class FactorFunction
     	return converted;
     }
     
-
-	public Object getDeterministicFunctionValue(Object... arguments)
-	{
-		Object[] fullArgumentList = new Object[arguments.length + 1];
-		System.arraycopy(arguments, 0, fullArgumentList, 1, arguments.length);
-		evalDeterministic(fullArgumentList);
-		return fullArgumentList[0];
-	}
-
 	public @Nullable int[] getDirectedToIndices(int numEdges)
 	{return getDirectedToIndices();}	// May depend on the number of edges
 
@@ -310,7 +300,7 @@ public abstract class FactorFunction
      * inputs and or outputs and only a small subset of inputs have changed (e.g. one when doing a single
      * Gibbs update).
      * <p>
-     * The default implementation delegates back to {@link #evalDeterministic(Object[])}, which
+     * The default implementation delegates back to {@link #evalDeterministic(Value[])}, which
      * will do a full update.
      * <p>
      * @param values is the array of output and input values that are maintained persistently. When this
@@ -330,18 +320,11 @@ public abstract class FactorFunction
     public boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues,
     	AtomicReference<int[]> changedOutputsHolder)
     {
-		Object[] tmp = Value.toObjects(values);
-		evalDeterministic(tmp);
-		Value.copyFromObjects(tmp, values);
+		evalDeterministic(values);
 		changedOutputsHolder.set(null);
 		return false;
     }
     
-    // REFACTOR: does anyone use this anymore. Should we remove?
-	public boolean verifyValidForDirectionality(int [] directedTo, int [] directedFrom)
-	{
-		return true;
-	}
 
     /*-------------------
      * Protected methods
@@ -357,7 +340,9 @@ public abstract class FactorFunction
     {
     	final FactorTable table = new FactorTable(domains);
 
-    	final Object[] elements = new Object[domains.size()];
+    	final Value[] elements = new Value[domains.size()];
+    	for (int i = 0, size = domains.size(); i < size; i++)
+    		elements[i] = Value.create(domains.get(i));
 
     	if (isDeterministicDirected() && domains.isDirected())
     	{
@@ -366,9 +351,9 @@ public abstract class FactorFunction
 
     		for (int inputIndex = 0; inputIndex < maxInput; ++inputIndex)
     		{
-    			domains.inputIndexToElements(inputIndex, elements);
+    			domains.inputIndexToValues(inputIndex, elements);
     			evalDeterministic(elements);
-    			outputs[inputIndex] = domains.outputIndexFromElements(elements);
+    			outputs[inputIndex] = domains.outputIndexFromValues(elements);
     		}
 
     		table.setDeterministicOutputIndices(outputs);
@@ -381,7 +366,7 @@ public abstract class FactorFunction
     		final int maxJoint = domains.getCardinality();
     		for (int jointIndex = 0; jointIndex < maxJoint; ++ jointIndex)
     		{
-    			domains.jointIndexToElements(jointIndex, elements);
+    			domains.jointIndexToValues(jointIndex, elements);
     			double energy = evalEnergy(elements);
     			if (!Double.isInfinite(energy))
     			{

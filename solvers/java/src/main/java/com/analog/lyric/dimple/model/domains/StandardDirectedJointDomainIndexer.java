@@ -22,10 +22,11 @@ import java.util.Comparator;
 
 import net.jcip.annotations.Immutable;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.Comparators;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.values.Value;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Directed implementation of {@link JointDomainIndexer}.
@@ -302,6 +303,12 @@ final class StandardDirectedJointDomainIndexer extends StandardJointDomainIndexe
 	}
 	
 	@Override
+	public void inputIndexToValues(int inputIndex, Value[] elements)
+	{
+		locationToValues(inputIndex, elements, _inputIndices, _inputProducts);
+	}
+	
+	@Override
 	public void inputIndexToIndices(int inputIndex, int[] indices)
 	{
 		locationToIndices(inputIndex, indices, _inputIndices, _inputProducts);
@@ -436,5 +443,12 @@ final class StandardDirectedJointDomainIndexer extends StandardJointDomainIndexe
 	{
 		locationToIndices(outputIndex, indices, _outputIndices, _outputProducts);
 	}
+
+	@Override
+	public void outputIndexToValues(int outputIndex, Value[] elements)
+	{
+		locationToValues(outputIndex, elements, _outputIndices, _outputProducts);
+	}
+	
 
 }

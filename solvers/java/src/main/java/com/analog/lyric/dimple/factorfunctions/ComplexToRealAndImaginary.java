@@ -84,12 +84,12 @@ public class ComplexToRealAndImaginary extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
     	// Input Complex
-		final double[] complex = ((double[])arguments[2]);
+		final double[] complex = arguments[2].getDoubleArray();
 
-		arguments[0] = complex[0];
-		arguments[1] = complex[1];
+		arguments[0].setDouble(complex[0]);
+		arguments[1].setDouble(complex[1]);
     }
 }

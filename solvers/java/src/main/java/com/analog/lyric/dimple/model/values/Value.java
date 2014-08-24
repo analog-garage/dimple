@@ -29,6 +29,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.DoubleRangeDomain;
+import com.analog.lyric.dimple.model.domains.FiniteFieldDomain;
 import com.analog.lyric.dimple.model.domains.FiniteFieldNumber;
 import com.analog.lyric.dimple.model.domains.IntRangeDomain;
 import com.analog.lyric.dimple.model.domains.ObjectDomain;
@@ -119,6 +120,10 @@ public abstract class Value implements Cloneable, Serializable
 					return new IntRangeValue(rangeDomain);
 				}
 			}
+			else if (domain instanceof FiniteFieldDomain)
+			{
+				return new FiniteFieldValue((FiniteFieldDomain)domain);
+			}
 			@SuppressWarnings("unchecked")
 			TypedDiscreteDomain<Integer> intDomain = (TypedDiscreteDomain<Integer>) domain;
 			return new GenericIntDiscreteValue(intDomain);
@@ -145,6 +150,14 @@ public abstract class Value implements Cloneable, Serializable
 		{
 			return new GenericDiscreteValue(domain.asDiscrete());
 		}
+	}
+	
+	/**
+	 * Creates a {@link FiniteFieldValue} instance for given {@code domain}.
+	 */
+	public static FiniteFieldValue create(FiniteFieldDomain domain)
+	{
+		return new FiniteFieldValue(domain);
 	}
 	
 	/**
@@ -347,6 +360,15 @@ public abstract class Value implements Cloneable, Serializable
 	 * Sets contents from a {@code int}.
 	 */
 	public void setInt(int value)
+	{
+		setObject(value);
+	}
+	
+	/**
+	 * Sets contents from a {@code boolean}
+	 * Subclasses should override this to set a boolean in the appropriate form
+	 */
+	public void setBoolean(boolean value)
 	{
 		setObject(value);
 	}

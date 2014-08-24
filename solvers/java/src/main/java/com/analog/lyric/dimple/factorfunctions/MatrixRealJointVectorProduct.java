@@ -19,8 +19,6 @@ package com.analog.lyric.dimple.factorfunctions;
 import static java.util.Objects.*;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.util.misc.Matlab;
 
@@ -132,75 +130,28 @@ public class MatrixRealJointVectorProduct extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public void evalDeterministic(Value[] arguments)
     {
     	int argIndex = 0;
-    	double[] outVector = (double[])arguments[argIndex++];
-    	
-    	final int inLength = _inLength;
-    	final int outLength = _outLength;
-    	
-    	// How is the matrix passed?
-    	if (arguments[argIndex] instanceof double[][])
-    	{
-    		// Constant matrix is passed as a single argument; get the matrix values
-    		double[][] matrix = (double[][])arguments[argIndex++];
-    		
-        	// Get the input vector values
-        	double[] inVector = (double[])arguments[argIndex++];
-        	
-        	// Compute the output and replace the output values
-        	for (int row = 0; row < outLength; row++)
-        	{
-        		double sum = 0;
-        		double[] rowValues = matrix[row];
-        		for (int col = 0; col < inLength; col++)
-        			sum += rowValues[col] * inVector[col];
-        		outVector[row] = sum;
-        	}
-    	}
-    	else
-    	{
-    		// Variable matrix is passed as individual elements
-    		final int numMatrixElements = inLength * outLength;
-    		
-        	// Get the input vector values
-        	double[] inVector = (double[])arguments[argIndex + numMatrixElements];
-        	
-        	// Compute the output and replace the output values
-        	for (int row = 0, rowOffset = argIndex; row < outLength; row++, rowOffset++)
-        	{
-        		double sum = 0;
-        		for (int col = 0, offset = rowOffset; col < inLength; col++, offset += outLength)
-        			sum += FactorFunctionUtilities.toDouble(arguments[offset]) * inVector[col];
-        		outVector[row] = sum;
-        	}
-    	}
-    }
-    
-    @Override
-	public void evalDeterministic(Factor factor, Value[] values)
-    {
-    	int argIndex = 0;
-    	double[] outVector = values[argIndex++].getDoubleArray();
+    	double[] outVector = arguments[argIndex++].getDoubleArray();
 
     	final int inLength = _inLength;
     	final int outLength = _outLength;
 
     	// How is the matrix passed?
-    	if (values[argIndex].getObject() instanceof double[][])
+    	if (arguments[argIndex].getObject() instanceof double[][])
     	{
     		// Constant matrix is passed as a single argument; get the matrix values
-    		double[][] matrix = (double[][])(requireNonNull(values[argIndex++].getObject()));
+    		final double[][] matrix = (double[][])requireNonNull(arguments[argIndex++].getObject());
 
         	// Get the input vector values
-        	double[] inVector = values[argIndex++].getDoubleArray();
+    		final double[] inVector = arguments[argIndex++].getDoubleArray();
 
         	// Compute the output and replace the output values
         	for (int row = 0; row < outLength; row++)
         	{
         		double sum = 0;
-        		double[] rowValues = matrix[row];
+        		final double[] rowValues = matrix[row];
         		for (int col = 0; col < inLength; col++)
         			sum += rowValues[col] * inVector[col];
         		outVector[row] = sum;
@@ -212,14 +163,14 @@ public class MatrixRealJointVectorProduct extends FactorFunction
     		final int numMatrixElements = inLength * outLength;
 
         	// Get the input vector values
-        	double[] inVector = values[argIndex + numMatrixElements].getDoubleArray();
+    		final double[] inVector = arguments[argIndex + numMatrixElements].getDoubleArray();
 
         	// Compute the output and replace the output values
         	for (int row = 0, rowOffset = argIndex; row < outLength; row++, rowOffset++)
         	{
         		double sum = 0;
         		for (int col = 0, offset = rowOffset; col < inLength; col++, offset += outLength)
-        			sum += values[offset].getDouble() * inVector[col];
+        			sum += arguments[offset].getDouble() * inVector[col];
         		outVector[row] = sum;
         	}
     	}

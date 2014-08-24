@@ -29,6 +29,9 @@ import java.util.Map;
 import java.util.Objects;
 
 import net.jcip.annotations.NotThreadSafe;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import cern.colt.map.OpenIntDoubleHashMap;
 
 import com.analog.lyric.collect.ArrayUtil;
@@ -44,7 +47,6 @@ import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.math.Utilities;
 import com.analog.lyric.util.misc.Misc;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.math.DoubleMath;
 import com.google.common.primitives.Ints;
 
@@ -755,7 +757,7 @@ public class FactorTable extends SparseFactorTableBase
 	 */
 	
 	@Override
-	public void evalDeterministic(Object[] arguments)
+	public void evalDeterministic(Value[] arguments)
 	{
 		if (!isDeterministicDirected())
 		{
@@ -764,10 +766,10 @@ public class FactorTable extends SparseFactorTableBase
 		
 		final JointDomainIndexer domains = getDomainIndexer();
 		int outputSize = domains.getOutputCardinality();
-		int inputIndex = domains.inputIndexFromElements(arguments);
+		int inputIndex = domains.inputIndexFromValues(arguments);
 		int jointIndex = _sparseIndexToJointIndex[inputIndex];
 		int outputIndex = jointIndex - inputIndex * outputSize;
-		domains.outputIndexToElements(outputIndex, arguments);
+		domains.outputIndexToValues(outputIndex, arguments);
 	}
 	
 	@Override

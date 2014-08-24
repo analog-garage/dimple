@@ -272,11 +272,11 @@ public class TestGibbsNeighborList extends DimpleTestBase
 		}
 		
 		@Override
-		public void evalDeterministic(Object[] arguments)
+		public void evalDeterministic(Value[] arguments)
 		{
-			Object value = arguments[0];
+			Value value = arguments[0];
 			for (int i = arguments.length; --i>=1;)
-				arguments[i] = value;
+				arguments[i].setFrom(value);
 		}
 		
 		@Override

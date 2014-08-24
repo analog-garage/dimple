@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -89,32 +88,32 @@ public class ComplexSum extends FactorFunction
     
     
     @Override
-    public final boolean isDirected()	{return true;}
+    public final boolean isDirected() {return true;}
     @Override
 	public final int[] getDirectedToIndices() {return new int[]{0};}
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
-    	int length = arguments.length;
+    	final int length = arguments.length;
 
     	double rSum = 0;
     	double iSum = 0;
     	for (int i = 1; i < length; i++)
     	{
-    		Object arg = arguments[i];
-    		if (arg instanceof double[])	// Input is complex
+    		final Value arg = arguments[i];
+    		if (arg.getObject() instanceof double[])	// Input is complex
     		{
-    			double[] in = ((double[])arg);
+    			final double[] in = arg.getDoubleArray();
     			rSum += in[0];
     			iSum += in[1];
     		}
     		else	// Input is real
-    			rSum += FactorFunctionUtilities.toDouble(arg);
+    			rSum += arg.getDouble();
     	}
     	
-		double[] out = ((double[])arguments[0]);
+    	final double[] out = arguments[0].getDoubleArray();
 		out[0] = rSum;		// Replace the output value
 		out[1] = iSum;		// Replace the output value
     }

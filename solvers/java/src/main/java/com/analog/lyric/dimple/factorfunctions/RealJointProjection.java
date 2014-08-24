@@ -84,8 +84,8 @@ public class RealJointProjection extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
-		arguments[0] = ((double[])arguments[1])[_elementIndex];
+		arguments[0].setDouble(arguments[1].getDoubleArray()[_elementIndex]);
     }
 }

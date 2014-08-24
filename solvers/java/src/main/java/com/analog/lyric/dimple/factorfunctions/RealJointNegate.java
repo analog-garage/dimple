@@ -91,14 +91,14 @@ public class RealJointNegate extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
     	// Output variable
-		double[] out = ((double[])arguments[0]);
-    	int dimension = out.length;
+		final double[] out = arguments[0].getDoubleArray();
+		final int dimension = out.length;
 
     	// Input variable
-		double[] in = ((double[])arguments[1]);
+		final double[] in = arguments[1].getDoubleArray();
 		if (dimension != in.length) throw new DimpleException("Argument variables must all have the same dimension");
 		for (int d = 0; d < dimension; d++)
 			out[d] = -in[d];

@@ -27,6 +27,9 @@ import java.util.Random;
 
 import net.jcip.annotations.Immutable;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.collect.Comparators;
@@ -34,8 +37,6 @@ import com.analog.lyric.collect.Supers;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.Value;
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Provides a representation and canonical indexing operations for an ordered list of
@@ -375,7 +376,34 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	{
 		return ArrayUtil.allocateArrayOfType(_elementClass,  elements,  _domains.length);
 	}
-
+	
+//	/**
+//	 * Returns an array with length at least {@link #size()} and with {@code Value} type
+//	 * compatible with elements of all domains in list
+//	 * <p>
+//	 * If {@code elements} fits the above description, it will simply be returned.
+//	 * If {@code elements} is too short but has a compatible Value type, this will
+//	 * return a new array with length equal to {@link #size()} and Value type
+//	 * the the correct Value types.
+//	 */
+//	public final Value[] allocateValues(@Nullable Value[] elements)
+//	{
+//		Value[] out;
+//		if (elements == null || elements.length < _domains.length)
+//			out = new Value[_domains.length];
+//		else
+//			out = elements;
+//
+//		for (int i = 0; i < _domains.length; i++)
+//		{
+//			Value allocatedValue = out[i];
+//			Domain elementDomain = get(i);
+//			if (allocatedValue == null || !allocatedValue.getDomain().equals(elementDomain))
+//				out[i] = Value.create(elementDomain);
+//		}
+//		return out;
+//	}
+	
 	/**
 	 * Returns an array with length at least {@link #size()}.
 	 * <p>
@@ -709,6 +737,19 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	}
 	
 	/**
+	 * Writes elements corresponding to {@code inputIndex} into corresponding {@code elements} array.
+	 * <p>
+	 * Only updates members of {@code elements} designated as inputs, and therefore will do nothing
+	 * if not {@link #isDirected()}.
+	 * <p>
+	 * @param inputIndex must be in range [0, {@link #getInputCardinality()}-1].
+	 * @param elements must have length equal to {@link #size()}.
+	 */
+	public void inputIndexToValues(int inputIndex, Value[] elements)
+	{
+	}
+	
+	/**
 	 * Writes element indices corresponding to {@code inputIndex} into corresponding {@code indices} array.
 	 * <p>
 	 * Only updates members of {@code indices} for domains designated as inputs, and therefore will do nothing
@@ -793,6 +834,18 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	public <T> T[] jointIndexToElements(int jointIndex, @Nullable T[] elements)
 	{
 		return undirectedJointIndexToElements(jointIndex, elements);
+	}
+	
+	/**
+	 * Computes domain values corresponding to given joint index.
+	 * <p>
+	 * @param jointIndex a unique joint table index in the range [0,{@link #getCardinality()}).
+	 * @param elements if this is an array of length {@link #size()}, the computed values will
+	 * be placed in this array, otherwise a new array will be allocated.
+	 */
+	public Value[] jointIndexToValues(int jointIndex, @Nullable Value[] elements)
+	{
+		return undirectedJointIndexToValues(jointIndex, requireNonNull(elements));
 	}
 	
 	/**
@@ -913,6 +966,20 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	}
 	
 	/**
+	 * Writes elements corresponding to {@code outputIndex} into corresponding {@code elements} array.
+	 * <p>
+	 * Only updates members of {@code elements} designated as outputs, so this will only update all
+	 * of the elements if not {@link #isDirected()}.
+	 * <p>
+	 * @param outputIndex must be in range [0, {@link #getOutputCardinality()}-1].
+	 * @param elements must have length equal to {@link #size()}.
+	 */
+	public void outputIndexToValues(int outputIndex, Value[] elements)
+	{
+		undirectedJointIndexToValues(outputIndex, elements);
+	}
+	
+	/**
 	 * Writes element indices corresponding to {@code outputIndex} into corresponding {@code indices} array.
 	 * <p>
 	 * Only updates members of {@code indices} for domains designated as inputs, and therefore will do nothing
@@ -935,6 +1002,8 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	public abstract int undirectedJointIndexFromValues(Value ... values);
 	
 	public abstract <T> T[] undirectedJointIndexToElements(int jointIndex, @Nullable T[] elements);
+	
+	public abstract Value[] undirectedJointIndexToValues(int jointIndex, Value[] elements);
 	
 	public final Object[] undirectedJointIndexToElements(int jointIndex)
 	{
@@ -1185,6 +1254,22 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 			int j = subindices[i];
 			index = location / (product = products[j]);
 			elements[j] = domains[j].getElement(index);
+			location -= index * product;
+		}
+	}
+	
+	void locationToValues(int location, Value[] elements, int[] subindices, int[] products)
+	{
+		final DiscreteDomain[] domains = _domains;
+		int product, index;
+		for (int i = subindices.length; --i >= 0;)
+		{
+			int j = subindices[i];
+			index = location / (product = products[j]);
+			if (elements[j] != null)
+				elements[j].setObject(domains[j].getElement(index));
+			else
+				elements[j] = Value.create(domains[j], domains[j].getElement(index));
 			location -= index * product;
 		}
 	}

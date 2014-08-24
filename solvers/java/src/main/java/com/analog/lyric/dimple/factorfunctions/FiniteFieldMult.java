@@ -20,7 +20,6 @@ import static java.util.Objects.*;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.domains.FiniteFieldNumber;
 import com.analog.lyric.dimple.model.values.FiniteFieldValue;
 import com.analog.lyric.dimple.model.values.Value;
@@ -59,22 +58,24 @@ public class FiniteFieldMult extends FactorFunction
     
     
     @Override
-    public final boolean isDirected()	{return true;}
+    public final boolean isDirected() {return true;}
     @Override
 	public final int[] getDirectedToIndices() {return new int[]{0};}
     @Override
 	public final boolean isDeterministicDirected() {return true;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
     	// Allow one constant input
-    	Object arg1 = arguments[1];
-    	Object arg2 = arguments[2];
-    	FiniteFieldNumber input1 = (arg1 instanceof FiniteFieldNumber) ? (FiniteFieldNumber)arg1 : ((FiniteFieldNumber)arg2).cloneWithNewValue(FactorFunctionUtilities.toInteger(arg1));
-    	FiniteFieldNumber input2 = (arg2 instanceof FiniteFieldNumber) ? (FiniteFieldNumber)arg2 : ((FiniteFieldNumber)arg1).cloneWithNewValue(FactorFunctionUtilities.toInteger(arg2));
+    	final Value arg1Value = arguments[1];
+    	final Value arg2Value = arguments[2];
+    	final Object arg1 = requireNonNull(arg1Value.getObject());
+    	final Object arg2 = requireNonNull(arg2Value.getObject());
+    	final FiniteFieldNumber input1 = (arg1 instanceof FiniteFieldNumber) ? (FiniteFieldNumber)arg1 : ((FiniteFieldNumber)arg2).cloneWithNewValue(arg1Value.getInt());
+    	final FiniteFieldNumber input2 = (arg2 instanceof FiniteFieldNumber) ? (FiniteFieldNumber)arg2 : ((FiniteFieldNumber)arg1).cloneWithNewValue(arg2Value.getInt());
     	if (!input1.isCompatible(input2))
     		throw new DimpleException("Primitive polynomials must match.");
-    	arguments[0] = finiteFieldProduct(input1, input2);		// Replace the output value
+    	arguments[0].setFiniteField(finiteFieldProduct(input1, input2));		// Replace the output value
     }
     
     

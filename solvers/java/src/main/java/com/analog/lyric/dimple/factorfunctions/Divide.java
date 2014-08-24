@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -87,15 +86,15 @@ public class Divide extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
-    	double dividend = FactorFunctionUtilities.toDouble(arguments[1]);
-    	double divisor = FactorFunctionUtilities.toDouble(arguments[2]);
+    	final double dividend = arguments[1].getDouble();
+    	final double divisor = arguments[2].getDouble();
 
     	double quotient = dividend / divisor;
     	if (Double.isNaN(quotient))
     		quotient = 0;
 
-    	arguments[0] = quotient;		// Replace the output value
+    	arguments[0].setDouble(quotient);		// Replace the output value
     }
 }

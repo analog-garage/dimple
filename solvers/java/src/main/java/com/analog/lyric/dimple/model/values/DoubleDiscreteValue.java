@@ -16,10 +16,11 @@
 
 package com.analog.lyric.dimple.model.values;
 
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
 
 /**
  * Base class for {@link DiscreteValue} implementations for
@@ -101,6 +102,12 @@ public abstract class DoubleDiscreteValue extends DiscreteValue
 	public final void setInt(int value)
 	{
 		setDouble(value);
+	}
+	
+	@Override
+	public void setBoolean(boolean value)
+	{
+		_value = value ? 1.0 : 0.0;
 	}
 	
 	@Override

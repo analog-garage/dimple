@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.factorfunctions.VectorInnerProduct;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
+import com.analog.lyric.dimple.model.values.Value;
 
 public class TestVectorInnerProduct extends FactorFunctionTester
 {
@@ -36,9 +37,9 @@ public class TestVectorInnerProduct extends FactorFunctionTester
 		
 		// Some simple hand-coded cases
 		testEvalDeterministic(function, RealDomain.unbounded(),
-			new Object[] { 23.0, 2.0, 3.0, 4.0, 5.0 },
-			new Object[] { 1.0, 7.0, 3.0, -2.0, 5.0 },
-			new Object[] { 23.5, 2.5, 3.5, 1.0, 6.0 }
+			new Value[] { Value.create(23.0), Value.create(2.0), Value.create(3.0), Value.create(4.0), Value.create(5.0) },
+			new Value[] { Value.create(1.0), Value.create(7.0), Value.create(3.0), Value.create(-2.0), Value.create(5.0) },
+			new Value[] { Value.create(23.5), Value.create(2.5), Value.create(3.5), Value.create(1.0), Value.create(6.0) }
 			);
 
 		Random rand = new Random(123456);
@@ -60,25 +61,25 @@ public class TestVectorInnerProduct extends FactorFunctionTester
 				output += v1[i] * v2[i];
 			}
 			
-			Object[][] testCases = new Object[nCases][];
+			Value[][] testCases = new Value[nCases][];
 			for (int i = 0; i < nCases; ++i)
 			{
-				Object[] testCase = testCases[i] = new Object[3];
-				testCase[0] = output;
-				testCase[1] = v1.clone();
-				testCase[2] = v2.clone();
+				Value[] testCase = testCases[i] = new Value[3];
+				testCase[0] = Value.create(output);
+				testCase[1] = Value.create(v1.clone());
+				testCase[2] = Value.create(v2.clone());
 			}
 			
 			testEvalDeterministic(function, new Domain[] { rd, rd2, rd2 } , testCases);
 			
 			for (int i = 0; i < nCases; ++i)
 			{
-				Object[] testCase = testCases[i] = new Object[2 + size];
-				testCase[0] = output;
-				testCase[1] = v1.clone();
+				Value[] testCase = testCases[i] = new Value[2 + size];
+				testCase[0] = Value.create(output);
+				testCase[1] = Value.create(v1.clone());
 				for (int j = 0; j < size; ++j)
 				{
-					testCase[2 + j] = v2[j];
+					testCase[2 + j] = Value.create(v2[j]);
 				}
 			}
 			
@@ -86,13 +87,13 @@ public class TestVectorInnerProduct extends FactorFunctionTester
 
 			for (int i = 0; i < nCases; ++i)
 			{
-				Object[] testCase = testCases[i] = new Object[2 + size];
-				testCase[0] = output;
+				Value[] testCase = testCases[i] = new Value[2 + size];
+				testCase[0] = Value.create(output);
 				for (int j = 0; j < size; ++j)
 				{
-					testCase[1 + j] = v1[j];
+					testCase[1 + j] = Value.create(v1[j]);
 				}
-				testCase[1 + size] = v2.clone();
+				testCase[1 + size] = Value.create(v2.clone());
 			}
 			
 			Domain[] domains = new Domain[2 + size];
@@ -103,12 +104,12 @@ public class TestVectorInnerProduct extends FactorFunctionTester
 			
 			for (int i = 0; i < nCases; ++i)
 			{
-				Object[] testCase = testCases[i] = new Object[1 + 2 * size];
-				testCase[0] = output;
+				Value[] testCase = testCases[i] = new Value[1 + 2 * size];
+				testCase[0] = Value.create(output);
 				for (int j = 0; j < size; ++j)
 				{
-					testCase[1 + j] = v1[j];
-					testCase[1 + size + j] = v2[j];
+					testCase[1 + j] = Value.create(v1[j]);
+					testCase[1 + size + j] = Value.create(v2[j]);
 				}
 			}
 

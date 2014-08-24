@@ -20,6 +20,8 @@ import static java.util.Objects.*;
 
 import java.util.Collection;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
@@ -32,7 +34,6 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import org.eclipse.jdt.annotation.Nullable;
 
 
 public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
@@ -131,7 +132,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	{
 		// Compute the output values of the deterministic factor function from the input values
 		final Factor factor = _factor;
-		factor.getFactorFunction().evalDeterministic(factor, _inPortMsgs);
+		factor.getFactorFunction().evalDeterministic(_inPortMsgs);
 		
 		// Update the directed-to variables with the computed values
 		int[] directedTo = factor.getDirectedTo();

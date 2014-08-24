@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -97,40 +96,40 @@ public class ComplexProduct extends FactorFunction
     
     
     @Override
-    public final boolean isDirected()	{return true;}
+    public final boolean isDirected() {return true;}
     @Override
 	public final int[] getDirectedToIndices() {return new int[]{0};}
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
-    	int length = arguments.length;
+    	final int length = arguments.length;
 
     	double rProduct = 1;
     	double iProduct = 0;
     	for (int i = 1; i < length; i++)
     	{
-    		Object arg = arguments[i];
-    		if (arg instanceof double[])	// Complex input
+    		final Value arg = arguments[i];
+    		if (arg.getObject() instanceof double[])	// Complex input
     		{
-    			double[] in = ((double[])arg);
-    			double rIn = in[0];
-    			double iIn = in[1];
-    			double rProductNext = rIn * rProduct - iIn * iProduct;
-    			double iProductNext = rIn * iProduct + iIn * rProduct;
+    			final double[] in = arg.getDoubleArray();
+    			final double rIn = in[0];
+    			final double iIn = in[1];
+    			final double rProductNext = rIn * rProduct - iIn * iProduct;
+    			final double iProductNext = rIn * iProduct + iIn * rProduct;
     			rProduct = rProductNext;
     			iProduct = iProductNext;
     		}
     		else	// Real input
     		{
-    			Double in = FactorFunctionUtilities.toDouble(arg);
+    			final Double in = arg.getDouble();
     			rProduct *= in;
     			iProduct *= in;
     		}
     	}
     	
-		double[] out = ((double[])arguments[0]);
+    	final double[] out = arguments[0].getDoubleArray();
 		out[0] = rProduct;		// Replace the output value
 		out[1] = iProduct;		// Replace the output value
     }

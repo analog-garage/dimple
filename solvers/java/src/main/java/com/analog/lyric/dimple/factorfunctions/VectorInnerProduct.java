@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 
@@ -129,7 +128,7 @@ public class VectorInnerProduct extends FactorFunction
 	@Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
 	@Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
 	{
 		double outValue = 0;
 		double[] firstInput = null;
@@ -137,49 +136,49 @@ public class VectorInnerProduct extends FactorFunction
 		
 		// Figure out the type of inputs (array or list of arguments)
 		final int numArgs = arguments.length;
-		Object firstInputArg = arguments[1];
-		Object lastInputArg = arguments[numArgs-1];
-		if (firstInputArg instanceof double[])
+		final Value firstInputArg = arguments[1];
+		final Value lastInputArg = arguments[numArgs-1];
+		if (firstInputArg.getObject() instanceof double[])
 		{
-			firstInput = (double[])firstInputArg;
+			firstInput = firstInputArg.getDoubleArray();
 		}
-		if (lastInputArg instanceof double[])
+		if (lastInputArg.getObject() instanceof double[])
 		{
-			secondInput = (double[])lastInputArg;
+			secondInput = lastInputArg.getDoubleArray();
 		}
 		
 		// Compute the output
 		if (firstInput != null && secondInput != null)
 		{
-			int vectorLength = firstInput.length;
+			final int vectorLength = firstInput.length;
 			for (int i = 0; i < vectorLength; i++)
 				outValue += firstInput[i] * secondInput[i];
 		}
 		else if (firstInput != null)
 		{
-			int vectorLength = firstInput.length;
+			final int vectorLength = firstInput.length;
 			int secondIndex = 2;
 			for (int i = 0; i < vectorLength; i++)
-				outValue += firstInput[i] * FactorFunctionUtilities.toDouble(arguments[secondIndex++]);
+				outValue += firstInput[i] * arguments[secondIndex++].getDouble();
 		}
 		else if (secondInput != null)
 		{
-			int vectorLength = secondInput.length;
+			final int vectorLength = secondInput.length;
 			int firstIndex = 1;
 			for (int i = 0; i < vectorLength; i++)
-				outValue += FactorFunctionUtilities.toDouble(arguments[firstIndex++]) * secondInput[i];
+				outValue += arguments[firstIndex++].getDouble() * secondInput[i];
 		}
 		else	// Neither input is array
 		{
-			int vectorLength = (numArgs - 1) >> 1;
+			final int vectorLength = (numArgs - 1) >> 1;
 			int firstIndex = 1;
 			int secondIndex = 1 + vectorLength;
 			for (int i = 0; i < vectorLength; i++)
-				outValue += FactorFunctionUtilities.toDouble(arguments[firstIndex++]) * FactorFunctionUtilities.toDouble(arguments[secondIndex++]);
+				outValue += arguments[firstIndex++].getDouble() * arguments[secondIndex++].getDouble();
 		}
 
 		// Replace the output values
-		arguments[0] = outValue;
+		arguments[0].setDouble(outValue);
 	}
 	
 	@Override

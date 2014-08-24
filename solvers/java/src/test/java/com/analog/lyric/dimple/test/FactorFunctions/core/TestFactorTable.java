@@ -52,6 +52,7 @@ import com.analog.lyric.dimple.model.domains.DiscreteIndicesIterator;
 import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.util.test.SerializationTester;
 import com.google.common.base.Stopwatch;
@@ -1397,7 +1398,7 @@ public class TestFactorTable extends DimpleTestBase
 			assertEquals(expectedJointSize, jointSize);
 		}
 		
-		Object[] arguments = new Object[nDomains];
+		Value[] arguments = new Value[nDomains];
 		int[] indices = new int[nDomains];
 		
 		assertEquals(table.hasDenseRepresentation(), table.hasDenseWeights() || table.hasDenseEnergies());
@@ -1565,12 +1566,15 @@ public class TestFactorTable extends DimpleTestBase
 				}
 				assertEquals(si, table.sparseIndexFromIndices(indices));
 
-				table.sparseIndexToElements(si, arguments);
+				Object[] elements = new Object[arguments.length];
+				table.sparseIndexToElements(si, elements);
+				for (int j = 0; j < nDomains; j++)
+					arguments[j] = Value.create(domains.get(j), elements[j]);
 				for (int j = 0; j < nDomains; ++j)
 				{
-					assertEquals(arguments[j], domains.get(j).getElement(indices[j]));
+					assertEquals(arguments[j].getObject(), domains.get(j).getElement(indices[j]));
 				}
-				assertEquals(si, table.sparseIndexFromElements(arguments));
+				assertEquals(si, table.sparseIndexFromElements(elements));
 
 				if (supportsJoint)
 				{
@@ -1583,12 +1587,12 @@ public class TestFactorTable extends DimpleTestBase
 				double energy = table.getEnergyForSparseIndex(si);
 				table.setEnergyForSparseIndex(energy, si);
 				assertEquals(energy, table.getEnergyForIndices(indices), 1e-12);
-				assertEquals(energy, table.getEnergyForElements(arguments), 1e-12);
+				assertEquals(energy, table.getEnergyForElements(elements), 1e-12);
 
 				double weight = table.getWeightForSparseIndex(si);
 				table.setWeightForSparseIndex(weight, si);
 				assertEquals(weight, table.getWeightForIndices(indices), 1e-12);
-				assertEquals(weight, table.getWeightForElements(arguments), 1e-12);
+				assertEquals(weight, table.getWeightForElements(elements), 1e-12);
 
 				assertEquals(energy, -Math.log(weight), 1e-12);
 				
@@ -1611,14 +1615,15 @@ public class TestFactorTable extends DimpleTestBase
 			
 			for (int inputIndex = 0, end = domains.getInputCardinality(); inputIndex < end; ++inputIndex)
 			{
-				Arrays.fill(arguments, null);
-				domains.inputIndexToElements(inputIndex, arguments);
+				for (int i = 0; i < nDomains; i++)
+					arguments[i] = Value.create(domains.get(i));	// Empty the values
+				domains.inputIndexToValues(inputIndex, arguments);
 				table.evalDeterministic(arguments);
-				assertEquals(1.0, table.getWeightForElements(arguments), 0.0);
-				assertEquals(0.0, table.getEnergyForElements(arguments), 0.0);
+				assertEquals(1.0, table.getWeightForValues(arguments), 0.0);
+				assertEquals(0.0, table.getEnergyForValues(arguments), 0.0);
 				assertEquals(1.0, table.getWeightForSparseIndex(inputIndex), 0.0);
 				assertEquals(0.0, table.getEnergyForSparseIndex(inputIndex), 0.0);
-				assertEquals(inputIndex, table.sparseIndexFromElements(arguments));
+				assertEquals(inputIndex, table.sparseIndexFromValues(arguments));
 			}
 		}
 		else

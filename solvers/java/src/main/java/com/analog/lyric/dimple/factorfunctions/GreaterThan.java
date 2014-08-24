@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -48,17 +47,17 @@ public class GreaterThan extends FactorFunction
 
     
     @Override
-    public final boolean isDirected()	{return true;}
+    public final boolean isDirected() {return true;}
     @Override
 	public final int[] getDirectedToIndices() {return new int[]{0};}
     @Override
 	public final boolean isDeterministicDirected() {return true;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
-    	double firstVal = FactorFunctionUtilities.toDouble(arguments[1]);
-    	double secondVal = FactorFunctionUtilities.toDouble(arguments[2]);
+    	final double firstVal = arguments[1].getDouble();
+    	final double secondVal = arguments[2].getDouble();
     	
-    	arguments[0] = FactorFunctionUtilities.toDouble(firstVal > secondVal);		// Replace the output value
+    	arguments[0].setBoolean(firstVal > secondVal);		// Replace the output value
     }
 }

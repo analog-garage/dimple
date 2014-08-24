@@ -22,6 +22,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.FiniteFieldDomain;
 import com.analog.lyric.dimple.model.domains.FiniteFieldNumber;
 
 public class FiniteFieldValue extends DiscreteValue
@@ -33,6 +34,11 @@ public class FiniteFieldValue extends DiscreteValue
 	public FiniteFieldValue(FiniteFieldNumber value)
 	{
 		_value = value;
+	}
+	
+	public FiniteFieldValue(FiniteFieldDomain domain)
+	{
+		_value = new FiniteFieldNumber(0, domain);
 	}
 
 	public FiniteFieldValue(FiniteFieldValue other)	// Copy constructor

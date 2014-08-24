@@ -22,6 +22,8 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
@@ -33,7 +35,6 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import org.eclipse.jdt.annotation.Nullable;
 
 
 public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
@@ -167,7 +168,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 		}
 		else
 		{
-			function.evalDeterministic(factor, inputMsgs);
+			function.evalDeterministic(inputMsgs);
 			_outputsValid = true;
 
 			// Update the directed-to variables with the computed values

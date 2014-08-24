@@ -18,9 +18,10 @@ package com.analog.lyric.dimple.model.values;
 
 import static java.util.Objects.*;
 
-import com.analog.lyric.dimple.model.domains.RealDomain;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.model.domains.RealDomain;
 
 /**
  * A holder for a real (i.e. {@code double} value).
@@ -127,6 +128,12 @@ public class RealValue extends Value
 	public void setInt(int value)
 	{
 		_value = value;
+	}
+	
+	@Override
+	public void setBoolean(boolean value)
+	{
+		_value = value ? 1.0 : 0.0;
 	}
 	
 	@Override

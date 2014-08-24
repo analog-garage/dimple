@@ -140,12 +140,6 @@ public class TableFactorFunction extends FactorFunction
 	// For deterministic directed factors, evaluate the deterministic function output(s) given only the inputs
 	// The arguments are in the same order as eval and evalEnergy, but in this case the output values should be overridden by new values
 	@Override
-	public void evalDeterministic(Object[] arguments){_factorTable.evalDeterministic(arguments);}
+	public void evalDeterministic(Value[] arguments){_factorTable.evalDeterministic(arguments);}
 	
-	@Override
-	public boolean verifyValidForDirectionality(int [] directedTo, int [] directedFrom)
-	{
-		return true;
-	}
-
 }

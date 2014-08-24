@@ -25,7 +25,6 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
@@ -203,7 +202,7 @@ public class MatrixVectorProduct extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
     	int argIndex = _outLength;	// Skip the outputs
     	
@@ -213,23 +212,23 @@ public class MatrixVectorProduct extends FactorFunction
     	double[][] matrix = _matrix;
     	
 		// Get the matrix values
-    	if (arguments[argIndex] instanceof double[][])	// Constant matrix is passed as a single argument
-    		matrix = (double[][])arguments[argIndex++];
+    	if (arguments[argIndex].getObject() instanceof double[][])	// Constant matrix is passed as a single argument
+    		matrix = (double[][])requireNonNull(arguments[argIndex++].getObject());
     	else
     	{
     		for (int col = 0; col < inLength; col++)
     			for (int row = 0; row < outLength; row++)
-    				matrix[row][col] = FactorFunctionUtilities.toDouble(arguments[argIndex++]);
+    				matrix[row][col] = arguments[argIndex++].getDouble();
     	}
     	
     	// Get the input vector values
     	double[] inVector = _inVector;
-    	if (arguments[argIndex] instanceof double[])	// Constant matrix is passed as a single argument
-    		inVector = (double[])arguments[argIndex++];
+    	if (arguments[argIndex].getObject() instanceof double[])	// Constant matrix is passed as a single argument
+    		inVector = arguments[argIndex++].getDoubleArray();
     	else
     	{
     		for (int i = 0; i < inLength; i++)
-    			inVector[i] = FactorFunctionUtilities.toDouble(arguments[argIndex++]);
+    			inVector[i] = arguments[argIndex++].getDouble();
     	}
     	
     	// Compute the output
@@ -237,7 +236,7 @@ public class MatrixVectorProduct extends FactorFunction
     	for (int row = 0; row < outLength; row++)
     	{
     		double sum = 0;
-    		double[] rowValues = matrix[row];
+    		final double[] rowValues = matrix[row];
     		for (int col = 0; col < inLength; col++)
     			sum += rowValues[col] * inVector[col];
     		outVector[row] = sum;
@@ -246,7 +245,7 @@ public class MatrixVectorProduct extends FactorFunction
     	// Replace the output values
     	int outIndex = 0;
     	for (int i = 0; i < outLength; i++)
-    		arguments[outIndex++] = outVector[i];
+    		arguments[outIndex++].setDouble(outVector[i]);
     }
     
     @Override

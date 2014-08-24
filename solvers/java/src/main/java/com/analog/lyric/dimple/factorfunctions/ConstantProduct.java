@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -74,14 +73,14 @@ public class ConstantProduct extends FactorFunction
     
     
     @Override
-    public final boolean isDirected()	{return true;}
+    public final boolean isDirected() {return true;}
     @Override
 	public final int[] getDirectedToIndices() {return new int[]{0};}
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
-    	arguments[0] = _constant * FactorFunctionUtilities.toDouble(arguments[1]);		// Replace the output value
+    	arguments[0].setDouble(_constant * arguments[1].getDouble());		// Replace the output value
     }
 }

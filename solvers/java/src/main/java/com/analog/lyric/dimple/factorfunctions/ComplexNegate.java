@@ -76,19 +76,19 @@ public class ComplexNegate extends FactorFunction
     
     
     @Override
-    public final boolean isDirected()	{return true;}
+    public final boolean isDirected() {return true;}
     @Override
 	public final int[] getDirectedToIndices() {return new int[]{0};}
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
-		double[] in = ((double[])arguments[1]);
-		double rNegation = -in[0];
-		double iNegation = -in[1];
+    	final double[] in = arguments[1].getDoubleArray();
+    	final double rNegation = -in[0];
+    	final double iNegation = -in[1];
     	
-		double[] out = ((double[])arguments[0]);
+    	final double[] out = arguments[0].getDoubleArray();
     	out[0] = rNegation;		// Replace the output value
     	out[1] = iNegation;		// Replace the output value
     }

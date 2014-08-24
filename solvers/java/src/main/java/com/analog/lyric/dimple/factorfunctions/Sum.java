@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -75,20 +74,20 @@ public class Sum extends FactorFunction
     
     
     @Override
-    public final boolean isDirected()	{return true;}
+    public final boolean isDirected() {return true;}
     @Override
 	public final int[] getDirectedToIndices() {return new int[]{0};}
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
-    	int length = arguments.length;
+    	final int length = arguments.length;
 
     	double sum = 0;
     	for (int i = 1; i < length; i++)
-    		sum += FactorFunctionUtilities.toDouble(arguments[i]);
+    		sum += arguments[i].getDouble();
     	
-    	arguments[0] = sum;		// Replace the output value
+    	arguments[0].setDouble(sum);		// Replace the output value
     }
 }

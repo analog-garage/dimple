@@ -100,18 +100,18 @@ public class RealJointSum extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
     	// Output variable
-    	int length = arguments.length;
-		double[] out = ((double[])arguments[0]);
-    	int dimension = out.length;
+    	final int length = arguments.length;
+    	final double[] out = arguments[0].getDoubleArray();
+    	final int dimension = out.length;
 
     	// Sum input variables
     	Arrays.fill(out, 0);
     	for (int i = 1; i < length; i++)
     	{
-    		double[] arg = ((double[])arguments[i]);
+    		final double[] arg = arguments[i].getDoubleArray();
     		if (dimension != arg.length) throw new DimpleException("Argument variables must all have the same dimension");
     		for (int d = 0; d < dimension; d++)
     			out[d] += arg[d];

@@ -23,10 +23,11 @@ import java.util.BitSet;
 import java.util.Comparator;
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.Comparators;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.values.Value;
-import org.eclipse.jdt.annotation.Nullable;
 
 public final class LargeDirectedJointDomainIndexer extends LargeJointDomainIndexer
 {
@@ -280,6 +281,14 @@ public final class LargeDirectedJointDomainIndexer extends LargeJointDomainIndex
 		final int[] outputProducts = assertSupportsOutputIndexing("outputIndexToIndices");
 		locationToIndices(outputIndex, indices, _outputIndices, outputProducts);
 	}
+	
+	@Override
+	public void outputIndexToValues(int outputIndex, Value[] elements)
+	{
+		final int[] outputProducts = assertSupportsOutputIndexing("outputIndexToElements");
+		locationToValues(outputIndex, elements, _outputIndices, outputProducts);
+	}
+	
 
 	@Override
 	public boolean supportsOutputIndexing()

@@ -79,22 +79,22 @@ public class ComplexExp extends FactorFunction
     
     
     @Override
-    public final boolean isDirected()	{return true;}
+    public final boolean isDirected() {return true;}
     @Override
 	public final int[] getDirectedToIndices() {return new int[]{0};}
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
-		double[] in = ((double[])arguments[1]);
-		double rIn = in[0];
-		double iIn = in[1];
-		double magnitude = Math.exp(rIn);
-		double rExp = magnitude * Math.cos(iIn);
-		double iExp = magnitude * Math.sin(iIn);
+		final double[] in = arguments[1].getDoubleArray();
+		final double rIn = in[0];
+		final double iIn = in[1];
+		final double magnitude = Math.exp(rIn);
+		final double rExp = magnitude * Math.cos(iIn);
+		final double iExp = magnitude * Math.sin(iIn);
 
-		double[] out = ((double[])arguments[0]);
+		final double[] out = arguments[0].getDoubleArray();
 		out[0] = rExp;		// Replace the output value
 		out[1] = iExp;		// Replace the output value
     }

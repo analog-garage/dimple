@@ -97,15 +97,15 @@ public class RealJointToRealVector extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
     	final int dimension = arguments.length - 1;
 
     	// Input RealJoint
-		final double[] joint = ((double[])arguments[dimension]);
+		final double[] joint = arguments[dimension].getDoubleArray();
 		if (dimension != joint.length) throw new DimpleException("RealJoint argument does not have the correct dimension");
 
 		for (int d = 0; d < dimension; d++)
-			arguments[d] = joint[d];
+			arguments[d].setDouble(joint[d]);
     }
 }

@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -79,16 +78,16 @@ public class Power extends FactorFunction
     
     
     @Override
-    public final boolean isDirected()	{return true;}
+    public final boolean isDirected() {return true;}
     @Override
 	public final int[] getDirectedToIndices() {return new int[]{0};}
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
-    	Double base = FactorFunctionUtilities.toDouble(arguments[1]);
-    	Double power = FactorFunctionUtilities.toDouble(arguments[2]);
-    	arguments[0] = Math.pow(base, power);		// Replace the output value
+    	final double base = arguments[1].getDouble();
+    	final double power = arguments[2].getDouble();
+    	arguments[0].setDouble(Math.pow(base, power));		// Replace the output value
     }
 }

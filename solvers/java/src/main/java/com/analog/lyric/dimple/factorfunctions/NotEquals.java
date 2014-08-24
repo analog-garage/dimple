@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -52,27 +51,27 @@ public class NotEquals extends FactorFunction
 
     
     @Override
-    public final boolean isDirected()	{return true;}
+    public final boolean isDirected() {return true;}
     @Override
 	public final int[] getDirectedToIndices() {return new int[]{0};}
     @Override
 	public final boolean isDeterministicDirected() {return true;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
-    	if (arguments.length <= 2)										// One value, must be equal
+    	if (arguments.length <= 2)							// One value, must be equal
     	{
-        	arguments[0] = FactorFunctionUtilities.toDouble(false);		// Replace the output value
+        	arguments[0].setBoolean(false);					// Replace the output value
         	return;
     	}
     		
     	int index = 1;
     	boolean allEqual = true;
-    	double firstVal = FactorFunctionUtilities.toDouble(arguments[index++]);
+    	final double firstVal = arguments[index++].getDouble();
     	for (; index < arguments.length; index++)
-    		if (FactorFunctionUtilities.toDouble(arguments[index]) != firstVal)
+    		if (arguments[index].getDouble() != firstVal)
     			allEqual = false;
     	
-    	arguments[0] = FactorFunctionUtilities.toDouble(!allEqual);		// Replace the output value
+    	arguments[0].setBoolean(!allEqual);		// Replace the output value
     }
 }

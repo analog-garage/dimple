@@ -82,9 +82,9 @@ public abstract class DeterministicRealUnaryFactorFunction extends FactorFunctio
 	@Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
 	@Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
 	{
-		arguments[0] = myFunction(FactorFunctionUtilities.toDouble(arguments[1]));		// Replace the output value
+		arguments[0].setDouble(myFunction(arguments[1].getDouble()));		// Replace the output value
 	}
 
 }
