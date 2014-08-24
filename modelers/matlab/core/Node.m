@@ -1,5 +1,8 @@
+%Node is the base class for Dimple model elements
+%
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Copyright 2012 Analog Devices, Inc.
+%   Copyright 2012-2014 Analog Devices, Inc.
 %
 %   Licensed under the Apache License, Version 2.0 (the "License");
 %   you may not use this file except in compliance with the License.
@@ -50,6 +53,67 @@ classdef Node < MatrixObject
         end
         function set.Label(obj,name)
             obj.VectorObject.setLabel(name);
+        end
+        
+        function value = getOption(obj,option)
+            %getOption Returns current value of specified option.
+            %
+            % getOption(name)
+            %
+            %    name - a string qualified option name of the form
+            %           'Class.field' (e.g. 'SumProductOptions.damping').
+            %           An instance of the Java IOptionKey class may also
+            %           be used.
+            %
+            % If invoked on a Node matrix with more than one element, this
+            % will return a cell array of the same dimensions containing
+            % the corresponding option setting for each element.
+            %
+            % See also setOption, dimpleOptions
+        	value = obj.VectorObject.getOptions(option,false);
+            if numel(value) == 1
+                value = value(1);
+            else
+                value = reshape(cell(value), size(obj.VectorIndices));
+            end
+        end
+        	
+        function unsetOption(obj,option)
+            %unsetOption Unsets option on this object.
+            %
+            % unsetOption(name)
+            %
+            %    name - a string qualified option name of the form
+            %           'Class.field' (e.g. 'SumProductOptions.damping').
+            %           An instance of the Java IOptionKey class may also
+            %           be used.
+            %
+            % See also setOption, dimpleOptions
+        	obj.VectorObject.unsetOption(option);
+        end
+        
+        function setOption(obj,option,value)
+            %setOption Returns current value of specified option.
+            %
+            % setOption(name,value)
+            %
+            %    name  - a string qualified option name of the form
+            %            'Class.field' (e.g. 'SumProductOptions.damping').
+            %            An instance of the Java IOptionKey class may also
+            %            be used.
+            %
+            %    value - value to give the option. May either be a single
+            %            value or a cell array with dimensions matching
+            %            the that of the Node matrix it is being invoked
+            %            on.
+            %
+            % See also getOption, unsetOption, dimpleOptions
+            if numel(value) == 1
+                obj.VectorObject.setOption(option,value);
+            else
+                assert(iscell(value));
+                obj.VectorObject.setOptions(option,value(:));
+            end
         end
         
         function update(obj)
