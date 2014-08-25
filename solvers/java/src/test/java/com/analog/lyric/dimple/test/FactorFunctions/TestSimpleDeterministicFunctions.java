@@ -63,7 +63,7 @@ public class TestSimpleDeterministicFunctions extends FactorFunctionTester
 			public Value[] createTestCase()
 			{
 				double x = _rand.nextDouble();
-				return new Value[] { Value.create(Math.abs(x)), Value.create(x) };
+				return testCase(Math.abs(x), x);
 			}
 		});
 	}
@@ -76,7 +76,7 @@ public class TestSimpleDeterministicFunctions extends FactorFunctionTester
 			public Value[] createTestCase()
 			{
 				double x = _rand.nextDouble();
-				return new Value[] { Value.create(Math.acos(x)), Value.create(x) };
+				return testCase(Math.acos(x), x);
 			}
 		});
 	}
@@ -113,7 +113,7 @@ public class TestSimpleDeterministicFunctions extends FactorFunctionTester
 			public Value[] createTestCase()
 			{
 				double x = _rand.nextDouble();
-				return new Value[] { Value.create(Math.asin(x)), Value.create(x) };
+				return testCase(Math.asin(x), x);
 			}
 		});
 	}
@@ -126,7 +126,7 @@ public class TestSimpleDeterministicFunctions extends FactorFunctionTester
 			public Value[] createTestCase()
 			{
 				double x = _rand.nextDouble();
-				return new Value[] { Value.create(Math.atan(x)), Value.create(x) };
+				return testCase(Math.atan(x), x);
 			}
 		});
 	}
@@ -139,7 +139,7 @@ public class TestSimpleDeterministicFunctions extends FactorFunctionTester
 			public Value[] createTestCase()
 			{
 				double x = _rand.nextDouble();
-				return new Value[] { Value.create(Math.cos(x)), Value.create(x) };
+				return testCase(Math.cos(x), x);
 			}
 		});
 	}
@@ -152,7 +152,7 @@ public class TestSimpleDeterministicFunctions extends FactorFunctionTester
 			public Value[] createTestCase()
 			{
 				double x = _rand.nextDouble();
-				return new Value[] { Value.create(Math.cosh(x)), Value.create(x) };
+				return testCase(Math.cosh(x), x);
 			}
 		});
 	}
@@ -165,7 +165,7 @@ public class TestSimpleDeterministicFunctions extends FactorFunctionTester
 			public Value[] createTestCase()
 			{
 				double x = _rand.nextDouble(), y = _rand.nextDouble();
-				return new Value[] { Value.create(x / y) , Value.create(x), Value.create(y) };
+				return testCase(x / y, x, y);
 			}
 		});
 	}
@@ -178,7 +178,7 @@ public class TestSimpleDeterministicFunctions extends FactorFunctionTester
 			public Value[] createTestCase()
 			{
 				double x = _rand.nextDouble();
-				return new Value[] { Value.create(Math.exp(x)), Value.create(x) };
+				return testCase(Math.exp(x), x);
 			}
 		});
 	}
@@ -191,7 +191,7 @@ public class TestSimpleDeterministicFunctions extends FactorFunctionTester
 			public Value[] createTestCase()
 			{
 				double x = _rand.nextDouble(),  y = _rand.nextDouble();
-				return new Value[] { Value.create(x > y ? 1.0 : 0.0), Value.create(x), Value.create(y) };
+				return testCase(x > y ? 1.0 : 0.0, x, y);
 			}
 		});
 	}
@@ -204,7 +204,7 @@ public class TestSimpleDeterministicFunctions extends FactorFunctionTester
 			public Value[] createTestCase()
 			{
 				double x = _rand.nextDouble(),  y = _rand.nextDouble();
-				return new Value[] { Value.create(x >= y ? 1.0 : 0.0), Value.create(x), Value.create(y) };
+				return testCase(x >= y ? 1.0 : 0.0, x, y);
 			}
 		});
 	}
@@ -217,7 +217,7 @@ public class TestSimpleDeterministicFunctions extends FactorFunctionTester
 			public Value[] createTestCase()
 			{
 				double x = _rand.nextDouble(),  y = _rand.nextDouble();
-				return new Value[] { Value.create(x < y ? 1.0 : 0.0), Value.create(x), Value.create(y) };
+				return testCase(x < y ? 1.0 : 0.0, x, y);
 			}
 		});
 	}
@@ -230,7 +230,7 @@ public class TestSimpleDeterministicFunctions extends FactorFunctionTester
 			public Value[] createTestCase()
 			{
 				double x = _rand.nextDouble(),  y = _rand.nextDouble();
-				return new Value[] { Value.create(x <= y ? 1.0 : 0.0), Value.create(x), Value.create(y) };
+				return testCase(x <= y ? 1.0 : 0.0, x, y);
 			}
 		});
 	}
@@ -243,7 +243,7 @@ public class TestSimpleDeterministicFunctions extends FactorFunctionTester
 			public Value[] createTestCase()
 			{
 				double x = _rand.nextDouble();
-				return new Value[] { Value.create(Math.log(x)), Value.create(x) };
+				return testCase(Math.log(x), x);
 			}
 		});
 	}
@@ -256,7 +256,7 @@ public class TestSimpleDeterministicFunctions extends FactorFunctionTester
 			public Value[] createTestCase()
 			{
 				double x = _rand.nextDouble();
-				return new Value[] { Value.create(-x), Value.create(x) };
+				return testCase(-x, x);
 			}
 		});
 	}
@@ -296,7 +296,7 @@ public class TestSimpleDeterministicFunctions extends FactorFunctionTester
 			public Value[] createTestCase()
 			{
 				double x = _rand.nextDouble(), y = _rand.nextDouble();
-				return new Value[] { Value.create(x * y), Value.create(x), Value.create(y) };
+				return testCase(x * y, x, y);
 			}
 		});
 	}

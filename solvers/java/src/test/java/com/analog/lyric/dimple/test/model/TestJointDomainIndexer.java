@@ -262,6 +262,8 @@ public class TestJointDomainIndexer extends DimpleTestBase
 			int max = Math.min(cardinality, 10000);
 			for (i = 0; i < max; ++i)
 			{
+				Value[] values = Value.createFromObjects(elements, domains);
+				
 				assertSame(indices, indexer.undirectedJointIndexToIndices(i, indices));
 				assertArrayEquals(indices, indexer.undirectedJointIndexToIndices(i, null));
 				assertArrayEquals(indices, indexer.undirectedJointIndexToIndices(i, new int[0]));
@@ -270,6 +272,8 @@ public class TestJointDomainIndexer extends DimpleTestBase
 				assertArrayEquals(elements, indexer.undirectedJointIndexToElements(i));
 				assertArrayEquals(elements, indexer.undirectedJointIndexToElements(i, null));
 				assertArrayEquals(elements, indexer.undirectedJointIndexToElements(i, new Object[0]));
+				assertSame(values, indexer.undirectedJointIndexToValues(i, values));
+				assertArrayEquals(Value.toObjects(values), Value.toObjects(indexer.undirectedJointIndexToValues(i)));
 				for (int j = 0; j < size; ++ j)
 				{
 					assertTrue(indices[j] >= 0);
@@ -280,8 +284,6 @@ public class TestJointDomainIndexer extends DimpleTestBase
 				assertTrue(indicesIterator.hasNext());
 				assertArrayEquals(indices, indicesIterator.next());
 
-				Value[] values = Value.createFromObjects(elements, domains);
-				
 				indexer.validateIndices(indices);
 				indexer.validateValues(values);
 
@@ -317,6 +319,10 @@ public class TestJointDomainIndexer extends DimpleTestBase
 				assertArrayEquals(indices, indexer.jointIndexToIndices(ji));
 				assertSame(elements2, indexer.jointIndexToElements(ji, elements2));
 				assertArrayEquals(elements, elements2);
+				
+				Value[] values2 = Value.createFromObjects(elements2, domains);
+				assertSame(values2, indexer.jointIndexToValues(ji, values2));
+
 
 				for (int j = 0; j < size; ++j)
 				{
@@ -325,6 +331,8 @@ public class TestJointDomainIndexer extends DimpleTestBase
 				
 				Object[] elements3 = indexer.jointIndexToElements(ji);
 				assertArrayEquals(elements, elements3);
+				Value[] values3 = indexer.jointIndexToValues(ji);
+				assertArrayEquals(Value.toObjects(values), Value.toObjects(values3));
 
 				if (!indexer.isDirected())
 				{
@@ -339,6 +347,8 @@ public class TestJointDomainIndexer extends DimpleTestBase
 				assertEquals(in, indexer.inputIndexFromIndices(indices2));
 				indexer.inputIndexToElements(in, elements2);
 				assertEquals(in, indexer.inputIndexFromElements(elements2));
+				indexer.inputIndexToValues(in, values2);
+				assertEquals(in, indexer.inputIndexFromValues(values2));
 				if (indexer.isDirected())
 				{
 				}
@@ -356,6 +366,8 @@ public class TestJointDomainIndexer extends DimpleTestBase
 				assertEquals(out, indexer.outputIndexFromIndices(indices2));
 				indexer.outputIndexToElements(out, elements2);
 				assertEquals(out, indexer.outputIndexFromElements(elements2));
+				indexer.outputIndexToValues(out, values2);
+				assertEquals(out, indexer.outputIndexFromValues(values2));
 				if (indexer.isDirected())
 				{
 				}

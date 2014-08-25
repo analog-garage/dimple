@@ -75,6 +75,13 @@ public class GenericDoubleDiscreteValue extends DoubleDiscreteValue
 	}
 	
 	@Override
+	public void setBoolean(boolean value)
+	{
+		_value = value ? 1.0 : 0.0;
+		_index = getDomain().getIndex(_value);
+	}
+
+	@Override
 	public void setFrom(Value other)
 	{
 		if (other instanceof GenericDoubleDiscreteValue)

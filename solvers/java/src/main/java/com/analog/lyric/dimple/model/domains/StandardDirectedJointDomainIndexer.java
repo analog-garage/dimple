@@ -369,6 +369,16 @@ final class StandardDirectedJointDomainIndexer extends StandardJointDomainIndexe
 	}
 	
 	@Override
+	public Value[] jointIndexToValues(int jointIndex, Value[] elements)
+	{
+		final int inputIndex = jointIndex / _outputCardinality;
+		final int outputIndex = jointIndex - inputIndex * _outputCardinality;
+		inputIndexToValues(inputIndex, elements);
+		outputIndexToValues(outputIndex, elements);
+		return elements;
+	}
+	
+	@Override
 	public int jointIndexToElementIndex(int jointIndex, int domainIndex)
 	{
 		return (jointIndex / _directedProducts[domainIndex]) % _domains[domainIndex].size();

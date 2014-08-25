@@ -377,33 +377,6 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		return ArrayUtil.allocateArrayOfType(_elementClass,  elements,  _domains.length);
 	}
 	
-//	/**
-//	 * Returns an array with length at least {@link #size()} and with {@code Value} type
-//	 * compatible with elements of all domains in list
-//	 * <p>
-//	 * If {@code elements} fits the above description, it will simply be returned.
-//	 * If {@code elements} is too short but has a compatible Value type, this will
-//	 * return a new array with length equal to {@link #size()} and Value type
-//	 * the the correct Value types.
-//	 */
-//	public final Value[] allocateValues(@Nullable Value[] elements)
-//	{
-//		Value[] out;
-//		if (elements == null || elements.length < _domains.length)
-//			out = new Value[_domains.length];
-//		else
-//			out = elements;
-//
-//		for (int i = 0; i < _domains.length; i++)
-//		{
-//			Value allocatedValue = out[i];
-//			Domain elementDomain = get(i);
-//			if (allocatedValue == null || !allocatedValue.getDomain().equals(elementDomain))
-//				out[i] = Value.create(elementDomain);
-//		}
-//		return out;
-//	}
-	
 	/**
 	 * Returns an array with length at least {@link #size()}.
 	 * <p>
@@ -843,9 +816,9 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * @param elements if this is an array of length {@link #size()}, the computed values will
 	 * be placed in this array, otherwise a new array will be allocated.
 	 */
-	public Value[] jointIndexToValues(int jointIndex, @Nullable Value[] elements)
+	public Value[] jointIndexToValues(int jointIndex, Value[] elements)
 	{
-		return undirectedJointIndexToValues(jointIndex, requireNonNull(elements));
+		return undirectedJointIndexToValues(jointIndex, elements);
 	}
 	
 	/**
@@ -856,6 +829,16 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	public final Object[] jointIndexToElements(int jointIndex)
 	{
 		return jointIndexToElements(jointIndex, null);
+	}
+	
+	/**
+	 * Computes domain values corresponding to given joint index.
+	 * <p>
+	 * Same as {@link #jointIndexToValues(int, Value[])} with null second argument.
+	 */
+	public final Value[] jointIndexToValues(int jointIndex)
+	{
+		return jointIndexToValues(jointIndex, Value.createFromDomains(_domains));
 	}
 	
 	/**
@@ -1008,6 +991,11 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	public final Object[] undirectedJointIndexToElements(int jointIndex)
 	{
 		return undirectedJointIndexToElements(jointIndex, null);
+	}
+
+	public final Value[] undirectedJointIndexToValues(int jointIndex)
+	{
+		return undirectedJointIndexToValues(jointIndex, Value.createFromDomains(_domains));
 	}
 
 	/**
@@ -1266,10 +1254,12 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		{
 			int j = subindices[i];
 			index = location / (product = products[j]);
-			if (elements[j] != null)
-				elements[j].setObject(domains[j].getElement(index));
+			Value elementsJ = elements[j];
+			DiscreteDomain domainsJ = domains[j];
+			if (elementsJ != null)
+				elementsJ.setObject(domainsJ.getElement(index));
 			else
-				elements[j] = Value.create(domains[j], domains[j].getElement(index));
+				elementsJ = Value.create(domainsJ, domainsJ.getElement(index));
 			location -= index * product;
 		}
 	}

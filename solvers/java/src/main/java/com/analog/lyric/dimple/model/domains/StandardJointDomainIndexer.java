@@ -208,7 +208,6 @@ public class StandardJointDomainIndexer extends JointDomainIndexer
 		for (int i = products.length; --i >= 0;)
 		{
 			final int index = jointIndex / (product = products[i]);
-			@SuppressWarnings("unchecked")
 			Object element = domains[i].getElement(index);
 			elements[i].setObject(element);
 			jointIndex -= index * product;

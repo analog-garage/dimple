@@ -285,7 +285,7 @@ public final class LargeDirectedJointDomainIndexer extends LargeJointDomainIndex
 	@Override
 	public void outputIndexToValues(int outputIndex, Value[] elements)
 	{
-		final int[] outputProducts = assertSupportsOutputIndexing("outputIndexToElements");
+		final int[] outputProducts = assertSupportsOutputIndexing("outputIndexToValues");
 		locationToValues(outputIndex, elements, _outputIndices, outputProducts);
 	}
 	

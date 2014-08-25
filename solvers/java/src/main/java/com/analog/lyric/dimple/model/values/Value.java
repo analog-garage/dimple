@@ -28,6 +28,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.domains.DomainList;
 import com.analog.lyric.dimple.model.domains.DoubleRangeDomain;
 import com.analog.lyric.dimple.model.domains.FiniteFieldDomain;
 import com.analog.lyric.dimple.model.domains.FiniteFieldNumber;
@@ -444,6 +445,46 @@ public abstract class Value implements Cloneable, Serializable
 	public static Value[] createFromObjects(Object[] objs, Domain ... domains)
 	{
 		return createFromObjects(objs, Value.class, domains);
+	}
+
+	/**
+	 * Creates {@code Value} array with empty or default content from array of Domains.
+	 * 
+	 * @param domains specifies the domains of the objects. This must have between 1 and {@code objs.length}
+	 * elements. If less than the maximum, the last domain will be applied to all remaining objects.
+	 * @return array of {@code Value} instances each with the corresponding domain.
+	 */
+	public static Value[] createFromDomains(Domain... domains)
+	{
+		final int nDomains = domains.length;
+		
+		final Value[] output = new Value[nDomains];
+		for (int i = 0; i < nDomains; ++i)
+		{
+			Value value = create(domains[i]);
+			output[i] = value;
+		}
+		return output;
+	}
+
+	/**
+	 * Creates {@code Value} array with empty or default content from a DomainList.
+	 * 
+	 * @param domains specifies the domains of the objects. This must have between 1 and {@code objs.length}
+	 * elements. If less than the maximum, the last domain will be applied to all remaining objects.
+	 * @return array of {@code Value} instances each with the corresponding domain.
+	 */
+	public static Value[] createFromDomains(DomainList<?> domains)
+	{
+		final int nDomains = domains.size();
+		
+		final Value[] output = new Value[nDomains];
+		for (int i = 0; i < nDomains; ++i)
+		{
+			Value value = create(domains.get(i));
+			output[i] = value;
+		}
+		return output;
 	}
 
 	/**

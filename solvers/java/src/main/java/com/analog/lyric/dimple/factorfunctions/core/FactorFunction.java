@@ -340,9 +340,7 @@ public abstract class FactorFunction
     {
     	final FactorTable table = new FactorTable(domains);
 
-    	final Value[] elements = new Value[domains.size()];
-    	for (int i = 0, size = domains.size(); i < size; i++)
-    		elements[i] = Value.create(domains.get(i));
+    	final Value[] elements = Value.createFromDomains(domains);
 
     	if (isDeterministicDirected() && domains.isDirected())
     	{
