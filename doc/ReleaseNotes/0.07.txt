@@ -11,6 +11,8 @@ Significant New Features Since v0.06
 
 - Added built-in factors to convert between vectors of Real variables and RealJoint or Complex variables (ComplexToRealAndImaginary, RealAndImaginaryToComplex, RealJointProjection, RealJointToRealVector, RealVectorToRealJoint).
 
+- Modified API for custom Java FactorFunctions, now requiring use of evalEnergy(Value[]) method instead of the other variants; and for deterministic directed FactorFunctions, evalDeterministic now takes a Value array argument instead of an Object array.
+
 
 Significant Bug Fixes Since v0.06
 ---------------------------------
