@@ -21,6 +21,9 @@ import static java.util.Objects.*;
 
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.environment.DimpleThread;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -39,7 +42,6 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import org.eclipse.jdt.annotation.Nullable;
 
 public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGraph
 {
@@ -379,7 +381,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	@Override
 	public void startContinueSolve()
 	{
-		final Thread thread = _thread = new Thread(new Runnable()
+		final Thread thread = _thread = new DimpleThread(new Runnable()
 		{
 
 			@Override
@@ -402,7 +404,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	@Override
 	public void startSolveOneStep()
 	{
-		final Thread thread = _thread = new Thread(new Runnable()
+		final Thread thread = _thread = new DimpleThread(new Runnable()
 		{
 
 			@Override
@@ -425,7 +427,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	@Override
 	public void startSolver()
 	{
-		final Thread thread = _thread = new Thread(new Runnable()
+		final Thread thread = _thread = new DimpleThread(new Runnable()
 		{
 
 			@Override

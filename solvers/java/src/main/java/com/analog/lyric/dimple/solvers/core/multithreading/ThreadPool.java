@@ -22,8 +22,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.environment.DimpleThreadFactory;
+import com.analog.lyric.dimple.exceptions.DimpleException;
 
 /**
  * This class is used to create a singleton ThreadPool.  The threadpool
@@ -66,7 +68,8 @@ public class ThreadPool
 		_numThreads = numThreads;
 		ThreadPoolExecutor pool = new ThreadPoolExecutor(numThreads,
 				numThreads, 1L, TimeUnit.SECONDS,
-				new LinkedBlockingQueue<Runnable>());
+				new LinkedBlockingQueue<Runnable>(),
+				new DimpleThreadFactory());
 		pool.allowCoreThreadTimeOut(true);
 		_service = pool;
 	}
