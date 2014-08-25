@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.examples;
 
-import static java.util.Objects.*;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import cern.colt.Arrays;
@@ -27,7 +25,6 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 public class HMM
 {
@@ -106,6 +103,7 @@ public class HMM
 		}
 	}
 	
+	@SuppressWarnings("null")
 	public static void main(String[] args)
 	{
 		FactorGraph HMM = new FactorGraph();
@@ -125,7 +123,7 @@ public class HMM
 		HMM.addFactor(trans, WednesdayWeather,ThursdayWeather);
 		HMM.addFactor(trans, ThursdayWeather,FridayWeather);
 		HMM.addFactor(trans, FridayWeather,SaturdayWeather);
-		HMM.addFactor(trans, FridayWeather,SundayWeather);
+		HMM.addFactor(trans, SaturdayWeather,SundayWeather);
 		
 		ObservationFactorFunction obs = new ObservationFactorFunction();
 		HMM.addFactor(obs,MondayWeather,"walk");
@@ -139,14 +137,11 @@ public class HMM
 		
 		MondayWeather.setInput(0.7,0.3);
 		
-		ISolverFactorGraph solver = requireNonNull(HMM.getSolver());
-		solver.setNumIterations(20);
+		HMM.getSolver().setNumIterations(20);
 		HMM.solve();
 		
 		double [] belief = TuesdayWeather.getBelief();
 		System.out.println(Arrays.toString(belief));
-		solver.iterate();
-		solver.iterate(5);
 	}
 
 }
