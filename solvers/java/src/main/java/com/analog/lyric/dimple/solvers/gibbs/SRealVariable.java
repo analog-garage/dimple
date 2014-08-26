@@ -107,6 +107,8 @@ public class SRealVariable extends SRealVariableBase
 	private double _beta = 1;
 	private boolean _holdSampleValue = false;
 	private boolean _visited = false;
+	private long _updateCount;
+	private long _rejectCount;
 	
 	/**
 	 * List of neighbors for sample scoring. Instantiated during initialization.
@@ -179,12 +181,14 @@ public class SRealVariable extends SRealVariableBase
 
 		// Get the next sample value from the sampler
 		boolean rejected = false;
+		_updateCount++;
 		final IRealConjugateSampler conjugateSampler = _conjugateSampler;
 		if (conjugateSampler == null)
 		{
 			// Use MCMC sampler
 			RealValue nextSample = RealValue.create(_sampleValue);
 			rejected = !Objects.requireNonNull(_sampler).nextSample(nextSample, this);
+			if (rejected) _rejectCount++;
 		}
 		else
 		{
@@ -595,6 +599,31 @@ public class SRealVariable extends SRealVariableBase
 		return Arrays.copyOf(sampleArray.elements(), sampleArray.size());
 	}
 	
+	@Override
+	public final double getRejectionRate()
+	{
+		return (_updateCount > 0) ? (double)_rejectCount / (double)_updateCount : 0;
+	}
+	
+	@Override
+	public final void resetRejectionRateStats()
+	{
+		_updateCount = 0;
+		_rejectCount = 0;
+	}
+	
+	@Override
+	public final long getUpdateCount()
+	{
+		return _updateCount;
+	}
+	
+	@Override
+	public final long getRejectionCount()
+	{
+		return _rejectCount;
+	}
+
 	// This is meant for internal use, not as a user accessible method
 	@Internal
 	public final @Nullable DoubleArrayList _getSampleArrayUnsafe()
@@ -929,6 +958,8 @@ public class SRealVariable extends SRealVariableBase
 				}
 
 				sampler.initializeFromVariable(this);
+				
+				resetRejectionRateStats();
 			}
 		}
 	}

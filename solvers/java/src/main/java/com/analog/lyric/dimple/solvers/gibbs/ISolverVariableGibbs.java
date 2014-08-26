@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
@@ -23,7 +25,6 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.ISamplerClient;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Internal;
-import org.eclipse.jdt.annotation.Nullable;
 
 public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable, ISamplerClient
 {
@@ -58,6 +59,19 @@ public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable,
 	 */
 	public boolean hasPotential();
 	
+	/**
+	 * Get the rejection rate of the sampler; applies only to certain samplers
+	 * @return rejection rate
+	 * @since 0.07
+	 */
+	public double getRejectionRate();
+	
+	/**
+	 * Clear the rejection rate statistics
+	 * @since 0.07
+	 */
+	public void resetRejectionRateStats();
+	
 	// Internal methods
 	@Internal
 	public void updateBelief();
@@ -65,4 +79,9 @@ public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable,
 	public void randomRestart(int restartCount);
 	@Internal
 	public void postAddFactor(@Nullable Factor f);
+	
+	@Internal
+	public long getUpdateCount();
+	@Internal
+	public long getRejectionCount();
 }

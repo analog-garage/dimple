@@ -1031,6 +1031,35 @@ graph.getSolver().burnIn()
 
 Run the burn-in samples independently of using solve (which automatically runs the burn-in samples).  This may be run before using sample() or iterate().
 
+\ifmatlab
+\begin{lstlisting}
+graph.Solver.getRejectionRate()
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().getRejectionRate()
+\end{lstlisting}
+\fi
+
+Get the overall rejection rate over the entire graph.  The rejection rate is the ratio of the number of MCMC proposals that were rejected to the total number of sampler updates.  Rejections only occur in MCMC samplers, such as the MHSampler.  In other samplers, such as conjugate samplers or the CDFSampler, rejection doesn't occur and the rate for variables that use these samplers is zero (in these cases, sampling the same value twice in a row is not considered rejection).  When getting the rejection rate for the entire graph, both the number of rejections and number of updates is counted for all variables, as well as all blocks of variables over which a block sampler is used.  These counts are accumulated from the time the graph is initialized, which automatically occurs when running solve().  This includes both burn-in and subsequent sampling.  These counts can also be reset explicitly using the resetRejectionRateStats method (see below), which allows these values to be determined, for example, during a specific set of samples.
+
+\ifmatlab
+\begin{lstlisting}
+graph.Solver.resetRejectionRateStats()
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().resetRejectionRateStats()
+\end{lstlisting}
+\fi
+
+Explicitly reset the rejection-rate statistics.  These are automatically reset when the graph is initialized, which automatically occurs when running solve(), but may be reset manually at other times using this method.
+
+
 \para{Variable Methods}
 
 \ifmatlab
@@ -1140,6 +1169,35 @@ variable.getSolver().getSamplerName();
 Set/get the sampler to be used for this variable.  Setting the sampler for a given variable overrides the default sampler for the given variable type, and also overrides any conjugate sampler that might otherwise be used.  Using this method the sampler may be set only to one of the generic samplers appropriate for the given variable type.
 
 The getSampler method returns the sampler object, while the getSamplerName method returns a string indicating the name of the sampler being used for this variable.  Automatic assignment of a conjugate sampler is done at graph initialization time, so in order to determine what sampler will actually be used, these methods must be called either after a call to the graph initialize method, or after running the solver.
+
+\ifmatlab
+\begin{lstlisting}
+variable.Solver.getRejectionRate()
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().getRejectionRate()
+\end{lstlisting}
+\fi
+
+Get the rejection rate for the sampler used for a specific variable.  The rejection rate is the ratio of the number of MCMC proposals that were rejected to the total number of sampler updates.  Rejections only occur in MCMC samplers, such as the MHSampler.  In other samplers, such as conjugate samplers or the CDFSampler, rejection doesn't occur and the rate for variables that use these samplers is zero (in these cases, sampling the same value twice in a row is not considered rejection).  These counts are accumulated from the time the graph is initialized, which automatically occurs when running solve().  This includes both  burn-in and subsequent sampling.  These counts can also be reset explicitly using the resetRejectionRateStats method (see below), which allows these values to be determined, for example, during a specific set of samples.
+
+\ifmatlab
+\begin{lstlisting}
+variable.Solver.resetRejectionRateStats()
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().resetRejectionRateStats()
+\end{lstlisting}
+\fi
+
+Explicitly reset the rejection-rate statistics for a specific variable.  These are automatically reset when the graph is initialized, which automatically occurs when running solve(), but may be reset manually at other times using this method.
+
 
 
 \para{Discrete-Variable-Specific Methods}

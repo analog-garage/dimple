@@ -100,7 +100,9 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	private int _numRealVars;
 	private int _tempIndex = 0;
 	private boolean _visited = false;
-	
+	private long _updateCount;
+	private long _rejectCount;
+
 	/**
 	 * List of neighbors for sample scoring. Instantiated during initialization.
 	 */
@@ -187,6 +189,8 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 				{
 					++rejectCount;
 				}
+				_updateCount++;	// Updates count each real variable when using an MCMC sampler
+				_rejectCount += rejectCount;
 			}
 		}
 		else
@@ -204,6 +208,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
 			}
 			setCurrentSample(conjugateSampler.nextSample(ports, _inputJoint));
+			_updateCount++;
 		}
 
 		switch (updateEventFlags)
@@ -745,6 +750,31 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 			retval[i] = sampleArray.get(i);
 		return retval;
 	}
+	
+	@Override
+	public final double getRejectionRate()
+	{
+		return (_updateCount > 0) ? (double)_rejectCount / (double)_updateCount : 0;
+	}
+	
+	@Override
+	public final void resetRejectionRateStats()
+	{
+		_updateCount = 0;
+		_rejectCount = 0;
+	}
+	
+	@Override
+	public final long getUpdateCount()
+	{
+		return _updateCount;
+	}
+	
+	@Override
+	public final long getRejectionCount()
+	{
+		return _rejectCount;
+	}
 
 	// This is meant for internal use, not as a user accessible method
 	public final @Nullable List<double[]> _getSampleArrayUnsafe()
@@ -1025,7 +1055,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 			}
 		}
 		_sampleArray = sampleArray;
-		
+
 		//
 		// Determine which sampler to use
 		//
@@ -1066,6 +1096,8 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 				}
 
 				sampler.initializeFromVariable(this);
+				
+				resetRejectionRateStats();
 			}
 		}
 	}
