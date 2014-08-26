@@ -551,27 +551,27 @@ public class TestVariableEliminator extends DimpleTestBase
 			key.defaultValue().toArray());
 		
 		// Test convertValue
-		assertSame(list, key.convertValue(list));
+		assertSame(list, key.convertToValue(list));
 		assertArrayEquals(
 			new Object[] { VariableCost.MIN_FILL.function() },
-			key.convertValue(VariableCost.MIN_FILL).toArray());
+			key.convertToValue(VariableCost.MIN_FILL).toArray());
 		assertArrayEquals(
 			new Object[] { VariableCost.MIN_FILL.function() },
-			key.convertValue(VariableCost.MIN_FILL.function()).toArray());
+			key.convertToValue(VariableCost.MIN_FILL.function()).toArray());
 		assertArrayEquals(
 			new Object[] { VariableCost.MIN_FILL.function() },
-			key.convertValue("MIN_FILL").toArray());
+			key.convertToValue("MIN_FILL").toArray());
 		assertArrayEquals(
 			new Object[] { VariableCost.MIN_FILL.function() },
-			key.convertValue(new VariableCost[] { VariableCost.MIN_FILL }).toArray());
+			key.convertToValue(new VariableCost[] { VariableCost.MIN_FILL }).toArray());
 		assertArrayEquals(
 			new Object[] { VariableCost.MIN_FILL.function() },
-			key.convertValue(new VariableEliminator.CostFunction[] { VariableCost.MIN_FILL.function() }).toArray());
+			key.convertToValue(new VariableEliminator.CostFunction[] { VariableCost.MIN_FILL.function() }).toArray());
 		assertArrayEquals(
 			new Object[] { VariableCost.MIN_FILL.function(), VariableCost.MIN_NEIGHBORS.function() },
-			key.convertValue(new Object[] { "MIN_FILL", VariableCost.MIN_NEIGHBORS } ).toArray());
+			key.convertToValue(new Object[] { "MIN_FILL", VariableCost.MIN_NEIGHBORS } ).toArray());
 		
-		expectThrow(ClassCastException.class, key, "convertValue", new double[] { 2.3 });
+		expectThrow(ClassCastException.class, key, "convertToValue", new double[] { 2.3 });
 		
 		// Test set methods
 		LocalOptionHolder holder = new LocalOptionHolder();

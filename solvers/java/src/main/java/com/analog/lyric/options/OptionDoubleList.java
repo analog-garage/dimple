@@ -16,6 +16,8 @@
 
 package com.analog.lyric.options;
 
+import java.lang.reflect.Array;
+
 import net.jcip.annotations.Immutable;
 
 import com.google.common.primitives.Doubles;
@@ -45,6 +47,44 @@ public class OptionDoubleList extends AbstractOptionValueList<Double>
 	public OptionDoubleList(double ... elements)
 	{
 		super(Doubles.asList(elements).toArray(new Double[elements.length]));
+	}
+	
+	public static OptionDoubleList fromObject(Object object)
+	{
+		Class<?> objectClass = object.getClass();
+		
+		if (object instanceof OptionDoubleList)
+		{
+			return (OptionDoubleList)object;
+		}
+		if (objectClass == Double[].class)
+		{
+			return new OptionDoubleList((Double[])object);
+		}
+		if (objectClass == double[].class)
+		{
+			return new OptionDoubleList((double[])object);
+		}
+		if (objectClass.isArray())
+		{
+			final int size = Array.getLength(object);
+			Double[] doubles = new Double[size];
+			for (int i = 0; i < size; ++i)
+			{
+				Object element = Array.get(object, i);
+				if (element instanceof Number)
+				{
+					doubles[i] = ((Number)element).doubleValue();
+				}
+				else
+				{
+					throw new OptionValidationException("Cannot convert '%s' to double", element);
+				}
+			}
+			return new OptionDoubleList(doubles);
+		}
+		
+		throw new OptionValidationException("Cannot convert %s to doubles", object);
 	}
 	
 	@Override

@@ -70,6 +70,17 @@ public class ClassOptionKey<SuperClass> extends OptionKey<Class<? extends SuperC
 	/**
 	 * {@inheritDoc}
 	 * <p>
+	 * Returns fully qualified name of the class {@code value}.
+	 */
+	@Override
+	public Object convertToExternal(Class<? extends SuperClass> value)
+	{
+		return value.getName();
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
 	 * If {@code value} is a string. This will attempt to load the class from the string using
 	 * {@linkplain Class#forName(String, boolean, ClassLoader) Class.forName} with context class loader.
 	 * Subclasses may want to extend this to allow construction from simple
@@ -77,7 +88,7 @@ public class ClassOptionKey<SuperClass> extends OptionKey<Class<? extends SuperC
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public Class<? extends SuperClass> convertValue(Object value)
+	public Class<? extends SuperClass> convertToValue(Object value)
 	{
 		if (value instanceof String)
 		{
@@ -91,7 +102,7 @@ public class ClassOptionKey<SuperClass> extends OptionKey<Class<? extends SuperC
 			}
 		}
 		
-		return super.convertValue(value);
+		return super.convertToValue(value);
 	}
 	
 	@Override

@@ -56,29 +56,21 @@ public class DoubleListOptionKey extends OptionKey<OptionDoubleList>
 	 * IOptionKey methods
 	 */
 	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Returns a double array.
+	 */
 	@Override
-	public OptionDoubleList convertValue(Object value)
+	public Object convertToExternal(OptionDoubleList value)
 	{
-		if (!(value instanceof OptionDoubleList))
-		{
-			Class<?> valueClass = value.getClass();
-
-			if (valueClass.isArray())
-			{
-				Class<?> elementType = valueClass.getComponentType();
-
-				if (elementType == Double.TYPE)
-				{
-					return new OptionDoubleList((double[])value);
-				}
-				else if (elementType == Double.class)
-				{
-					return new OptionDoubleList((Double[])value);
-				}
-			}
-		}
-		
-		return (OptionDoubleList)value;
+		return value.toPrimitiveArray();
+	}
+	
+	@Override
+	public OptionDoubleList convertToValue(Object value)
+	{
+		return OptionDoubleList.fromObject(value);
 	}
 	
 	@Override

@@ -64,6 +64,12 @@ public class EnumOptionKey<E extends Enum<E>> extends OptionKey<E>
 		return _defaultValue;
 	}
 	
+	@Override
+	public Object convertToExternal(E value)
+	{
+		return value.name();
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * <p>
@@ -72,7 +78,7 @@ public class EnumOptionKey<E extends Enum<E>> extends OptionKey<E>
 	 * @throws ClassCastException if value is not a string or an instance of {@code E}.
 	 */
 	@Override
-	public E convertValue(Object value)
+	public E convertToValue(Object value)
 	{
 		final Class<?> valueClass = value.getClass();
 		
@@ -81,6 +87,6 @@ public class EnumOptionKey<E extends Enum<E>> extends OptionKey<E>
 			value = Enum.valueOf(_enumClass, (String)value);
 		}
 		
-		return super.convertValue(value);
+		return super.convertToValue(value);
 	}
 }

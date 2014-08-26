@@ -67,6 +67,29 @@ public class VariableEliminatorCostListOptionKey extends OptionKey<OptionVariabl
 	 * IOptionKey methods
 	 */
 	
+	@Override
+	public Object convertToExternal(OptionVariableEliminatorCostList value)
+	{
+		final int size = value.size();
+		String[] result = new String[size];
+		
+		for (int i = 0; i < size; ++i)
+		{
+			CostFunction costFunction = value.get(i);
+			VariableCost cost = costFunction.type();
+			if (cost != null)
+			{
+				result[i] = cost.name();
+			}
+			else
+			{
+				result[i] = costFunction.getClass().getName();
+			}
+		}
+		
+		return result;
+	}
+	
 	/**
 	 * Converts value to cost list representation.
 	 * <p>
@@ -79,57 +102,9 @@ public class VariableEliminatorCostListOptionKey extends OptionKey<OptionVariabl
 	 * </ul>
 	 */
 	@Override
-	public OptionVariableEliminatorCostList convertValue(Object value)
+	public OptionVariableEliminatorCostList convertToValue(Object value)
 	{
-		if (!(value instanceof OptionVariableEliminatorCostList))
-		{
-			Class<?> valueClass = value.getClass();
-
-			if (valueClass.isArray())
-			{
-				Class<?> elementType = valueClass.getComponentType();
-
-				if (elementType == CostFunction.class)
-				{
-					return new OptionVariableEliminatorCostList((CostFunction[])value);
-				}
-				else if (elementType == VariableCost.class)
-				{
-					return new OptionVariableEliminatorCostList((VariableCost[])value);
-				}
-				else if (!elementType.isPrimitive())
-				{
-					Object[] values = (Object[])value;
-					final int size = values.length;
-					CostFunction[] costFunctions = new CostFunction[size];
-					for (int i = 0; i < size; ++i)
-					{
-						costFunctions[i] = convertToCostFunction(values[i]);
-					}
-					return new OptionVariableEliminatorCostList(costFunctions);
-				}
-			}
-			else
-			{
-				return new OptionVariableEliminatorCostList(convertToCostFunction(value));
-			}
-			
-		}
-		
-		return (OptionVariableEliminatorCostList)value;
-	}
-	
-	private static CostFunction convertToCostFunction(Object value)
-	{
-		if (value instanceof VariableCost)
-		{
-			return ((VariableCost)value).function();
-		}
-		if (value instanceof String)
-		{
-			return VariableCost.valueOf((String)value).function();
-		}
-		return (CostFunction)value;
+		return OptionVariableEliminatorCostList.fromObject(value);
 	}
 	
 	@Override

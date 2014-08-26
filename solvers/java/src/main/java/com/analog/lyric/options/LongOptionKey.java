@@ -79,7 +79,7 @@ public class LongOptionKey extends OptionKey<Long>
 	}
 
 	@Override
-	public Long convertValue(Object value)
+	public Long convertToValue(Object value)
 	{
 		if (value instanceof Long)
 		{
@@ -99,7 +99,7 @@ public class LongOptionKey extends OptionKey<Long>
 		}
 		else
 		{
-			return super.convertValue(value);
+			return super.convertToValue(value);
 		}
 	}
 

@@ -16,6 +16,8 @@
 
 package com.analog.lyric.options;
 
+import java.lang.reflect.Array;
+
 import com.google.common.primitives.Ints;
 
 
@@ -43,6 +45,44 @@ public class OptionIntegerList extends AbstractOptionValueList<Integer>
 	public OptionIntegerList(int ... elements)
 	{
 		super(Ints.asList(elements).toArray(new Integer[elements.length]));
+	}
+	
+	public static OptionIntegerList fromObject(Object object)
+	{
+		Class<?> objectClass = object.getClass();
+		
+		if (object instanceof OptionIntegerList)
+		{
+			return (OptionIntegerList)object;
+		}
+		if (objectClass == Integer[].class)
+		{
+			return new OptionIntegerList((Integer[])object);
+		}
+		if (objectClass == double[].class)
+		{
+			return new OptionIntegerList((int[])object);
+		}
+		if (objectClass.isArray())
+		{
+			final int size = Array.getLength(object);
+			Integer[] ints = new Integer[size];
+			for (int i = 0; i < size; ++i)
+			{
+				Object element = Array.get(object, i);
+				if (element instanceof Number)
+				{
+					ints[i] = ((Number)element).intValue();
+				}
+				else
+				{
+					throw new OptionValidationException("Cannot convert '%s' to double", element);
+				}
+			}
+			return new OptionIntegerList(ints);
+		}
+		
+		throw new OptionValidationException("Cannot convert %s to ints", object);
 	}
 	
 	@Override

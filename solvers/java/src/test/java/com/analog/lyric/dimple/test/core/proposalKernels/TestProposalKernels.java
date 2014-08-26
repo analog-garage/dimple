@@ -69,9 +69,9 @@ public class TestProposalKernels extends DimpleTestBase
 	{
 		assertSame(IProposalKernel.class, testKey.superClass());
 		assertSame(NormalProposalKernel.class, testKey.defaultValue());
-		assertSame(NormalProposalKernel.class, testKey.convertValue("NormalProposalKernel"));
-		assertSame(NormalProposalKernel.class, testKey.convertValue(NormalProposalKernel.class.getName()));
-		assertSame(NormalProposalKernel.class, testKey.convertValue(NormalProposalKernel.class));
+		assertSame(NormalProposalKernel.class, testKey.convertToValue("NormalProposalKernel"));
+		assertSame(NormalProposalKernel.class, testKey.convertToValue(NormalProposalKernel.class.getName()));
+		assertSame(NormalProposalKernel.class, testKey.convertToValue(NormalProposalKernel.class));
 		expectThrow(OptionValidationException.class, testKey, "validate", NoConstructorProposalKernel.class, null);
 	}
 	

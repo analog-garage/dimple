@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -35,7 +36,6 @@ import com.analog.lyric.dimple.parameters.ParameterListN;
 import com.analog.lyric.dimple.parameters.SharedParameterValue;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.options.IOptionHolder;
-import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.util.test.SerializationTester;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.AtomicDouble;
@@ -101,7 +101,12 @@ public class TestParameters extends DimpleTestBase
 		 @Override
 		 public Class<Double> type() { return Double.class; }
 		 @Override
-		 public Double convertValue(Object value) { return type().cast(value); }
+		public Object convertToExternal(Double value)
+		{
+			 return value;
+		}
+		 @Override
+		 public Double convertToValue(Object value) { return type().cast(value); }
 		 @Override
 		 public Double defaultValue() { return _defaultValue; }
 		 @Override

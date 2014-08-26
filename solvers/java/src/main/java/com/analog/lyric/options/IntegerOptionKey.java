@@ -91,7 +91,7 @@ public class IntegerOptionKey extends OptionKey<Integer>
 	}
 	
 	@Override
-	public Integer convertValue(Object value)
+	public Integer convertToValue(Object value)
 	{
 		if (value instanceof Number)
 		{
@@ -107,7 +107,7 @@ public class IntegerOptionKey extends OptionKey<Integer>
 		}
 		else
 		{
-			return super.convertValue(value);
+			return super.convertToValue(value);
 		}
 	}
 

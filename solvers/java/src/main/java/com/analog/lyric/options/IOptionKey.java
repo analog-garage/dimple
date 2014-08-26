@@ -65,11 +65,28 @@ public interface IOptionKey<T extends Serializable> extends Serializable
 	/**
 	 * Attempts to convert value to appropriate key value type.
 	 * <p>
+	 * This method should be able to convert values produced by {@link #convertToExternal}.
+	 * <p>
 	 * @param value a non-null value to be converted to the option's {@link #type}.
 	 * @throws RuntimeException if value cannot be converted
 	 * @since 0.07
 	 */
-	public abstract T convertValue(Object value);
+	public abstract T convertToValue(Object value);
+	
+	/**
+	 * Converts value to an external representation
+	 * <p>
+	 * Converts value to representation suitable for use in external environments
+	 * such as MATLAB or Python. Acceptable output types include boxed primitive
+	 * types, Strings, and arrays of the those.
+	 * <p>
+	 * It is expected that the returned value can be converted back to the original
+	 * typed value using {@link #convertToValue}.
+	 * <p>
+	 * @param value
+	 * @since 0.07
+	 */
+	public abstract Object convertToExternal(T value);
 	
 	/**
 	 * Should be the class that contains the declaration of this instance.

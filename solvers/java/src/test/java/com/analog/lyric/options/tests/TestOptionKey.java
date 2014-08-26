@@ -113,7 +113,13 @@ public class TestOptionKey
 		private Option(Serializable defaultValue) { _defaultValue = defaultValue; }
 
 		@Override
-		public Serializable convertValue(Object value)
+		public Object convertToExternal(Serializable value)
+		{
+			return value;
+		}
+
+		@Override
+		public Serializable convertToValue(Object value)
 		{
 			return type().cast(value);
 		}
@@ -188,10 +194,10 @@ public class TestOptionKey
 		expectThrow(OptionValidationException.class, DIGIT, "validate", 10, null);
 		assertEquals(0, DIGIT.lowerBound());
 		assertEquals(9, DIGIT.upperBound());
-		assertEquals((Integer)42, I.convertValue(42.0));
+		assertEquals((Integer)42, I.convertToValue(42.0));
 		try
 		{
-			I.convertValue(42.5);
+			I.convertToValue(42.5);
 			fail("exception expected");
 		}
 		catch (IllegalArgumentException ex)
@@ -199,7 +205,7 @@ public class TestOptionKey
 		}
 		try
 		{
-			I.convertValue("42.5");
+			I.convertToValue("42.5");
 			fail("exception expected");
 		}
 		catch (ClassCastException ex)
@@ -213,8 +219,8 @@ public class TestOptionKey
 		assertEquals((Long)LONG_BOUNDED.upperBound(), LONG_BOUNDED.validate(LONG_BOUNDED.upperBound(), null));
 		expectThrow(OptionValidationException.class, LONG_BOUNDED, "validate", LONG_BOUNDED.lowerBound() - 1, null);
 		expectThrow(OptionValidationException.class, LONG_BOUNDED, "validate", LONG_BOUNDED.upperBound() + 1, null);
-		assertEquals((Long)23L, LONG_BOUNDED.convertValue(23.0));
-		expectThrow(IllegalArgumentException.class, LONG_BOUNDED, "convertValue", (Object)23.4);
+		assertEquals((Long)23L, LONG_BOUNDED.convertToValue(23.0));
+		expectThrow(IllegalArgumentException.class, LONG_BOUNDED, "convertToValue", (Object)23.4);
 		
 		// Test DoubleOptionKey
 		assertEquals(0.0, PROB.validate(0.0, null), 0.0);
@@ -228,18 +234,18 @@ public class TestOptionKey
 		
 		// Test EnumOptionKey
 		assertEquals(Color.RED, COLOR.defaultValue());
-		assertEquals(Color.RED, COLOR.convertValue("RED"));
-		assertEquals(Color.BLUE, COLOR.convertValue("BLUE"));
-		expectThrow(IllegalArgumentException.class, COLOR, "convertValue", "gag");
-		expectThrow(IllegalArgumentException.class, COLOR, "convertValue", "blue"); // case-sensitive
+		assertEquals(Color.RED, COLOR.convertToValue("RED"));
+		assertEquals(Color.BLUE, COLOR.convertToValue("BLUE"));
+		expectThrow(IllegalArgumentException.class, COLOR, "convertToValue", "gag");
+		expectThrow(IllegalArgumentException.class, COLOR, "convertToValue", "blue"); // case-sensitive
 		
 		// Test ClassOptionKey
 		assertEquals(String.class, CLASS.defaultValue());
 		assertEquals(CharSequence.class, CLASS.superClass());
-		assertEquals(String.class, CLASS.convertValue("java.lang.String"));
-		expectThrow(ClassCastException.class, CLASS, "convertValue", new int[] {2});
-		assertSame(Object.class, CLASS.convertValue(Object.class)); // Does not validate
-		expectThrow(OptionValidationException.class, "Could not construct class.*", CLASS, "convertValue", "bogus");
+		assertEquals(String.class, CLASS.convertToValue("java.lang.String"));
+		expectThrow(ClassCastException.class, CLASS, "convertToValue", new int[] {2});
+		assertSame(Object.class, CLASS.convertToValue(Object.class)); // Does not validate
+		expectThrow(OptionValidationException.class, "Could not construct class.*", CLASS, "convertToValue", "bogus");
 		expectThrow(OptionValidationException.class, ".*is not a subclass.*", CLASS, "validate", Object.class, null);
 		
 		// Test list keys
@@ -281,7 +287,8 @@ public class TestOptionKey
 		assertNotNull(key.name());
 		assertNotNull(type);
 		assertTrue(type.isInstance(key.defaultValue()));
-		assertEquals(key.defaultValue(), key.convertValue(key.defaultValue()));
+		assertEquals(key.defaultValue(), key.convertToValue(key.defaultValue()));
+		assertEquals(key.defaultValue(), key.convertToValue(key.convertToExternal(key.defaultValue())));
 		assertEquals(key.defaultValue(), key.validate(key.defaultValue(), null));
 		if (declaringClass.isEnum())
 		{

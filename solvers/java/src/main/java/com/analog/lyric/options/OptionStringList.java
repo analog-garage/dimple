@@ -16,6 +16,8 @@
 
 package com.analog.lyric.options;
 
+import java.lang.reflect.Array;
+
 import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.collect.ArrayUtil;
@@ -40,4 +42,33 @@ public final class OptionStringList extends AbstractOptionValueList<String>
 	{
 		super(String.class, elements);
 	}
+	
+	public static OptionStringList fromObject(Object object)
+	{
+		Class<?> objectClass = object.getClass();
+		
+		if (object instanceof OptionStringList)
+		{
+			return (OptionStringList)object;
+		}
+		if (objectClass == String[].class)
+		{
+			return new OptionStringList((String[])object);
+		}
+		if (objectClass.isArray())
+		{
+			final int size = Array.getLength(object);
+			String[] strings = new String[size];
+			for (int i = 0; i < size; ++i)
+			{
+				Object element = Array.get(object, i);
+				strings[i] = element.toString();
+			}
+			return new OptionStringList(strings);
+		}
+		
+		throw new OptionValidationException("Cannot convert %s to strings", object);
+	}
+	
+
 }

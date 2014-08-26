@@ -61,13 +61,31 @@ public abstract class ConstructorOptionKey<SuperClass> extends ClassOptionKey<Su
 	/**
 	 * {@inheritDoc}
 	 * <p>
+	 * Returns simple name of class {@code value} if in {@linkplain #getRegistry() registry}
+	 * and otherwise returns the fully qualified class name.
+	 */
+	@Override
+	public Object convertToExternal(Class<? extends SuperClass> value)
+	{
+		String name = value.getSimpleName();
+		if (getRegistry().getClassOrNull(name) != value)
+		{
+			name = value.getName();
+		}
+		
+		return name;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
 	 * If the {@code value} is a string, this will attempt to look the class up in this
 	 * key's {@linkplain #getRegistry() registry} and otherwise will attempt
 	 * to load the class using {@linkplain Class#forName(String, boolean, ClassLoader) Class.forName}
 	 * with context class loader.
 	 */
 	@Override
-	public Class<? extends SuperClass> convertValue(Object value)
+	public Class<? extends SuperClass> convertToValue(Object value)
 	{
 		if (value instanceof String)
 		{
@@ -78,7 +96,7 @@ public abstract class ConstructorOptionKey<SuperClass> extends ClassOptionKey<Su
 			}
 		}
 		
-		return super.convertValue(value);
+		return super.convertToValue(value);
 	}
 	
 	@Override
@@ -106,7 +124,7 @@ public abstract class ConstructorOptionKey<SuperClass> extends ClassOptionKey<Su
 	/**
 	 * The constructor registry associated with this key, if any.
 	 * <p>
-	 * @see #convertValue(Object)
+	 * @see #convertToValue(Object)
 	 * @since 0.07
 	 */
 	public abstract ConstructorRegistry<SuperClass> getRegistry();

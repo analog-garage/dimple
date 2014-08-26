@@ -75,14 +75,14 @@ public class Option<T extends Serializable> implements IOption<T>
 	 * <p>
 	 * @param key is a non-null option key.
 	 * @param value is either null or a value that can be converted using {@code key}'s
-	 * {@linkplain IOptionKey#convertValue convertValue} method.
+	 * {@linkplain IOptionKey#convertToValue convertValue} method.
 	 * @throws RuntimeException if {@code value} does not have compatible type for key.
 	 * @since 0.07
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T extends Serializable> Option<T> create(IOptionKey<T> key, @Nullable Object value)
 	{
-		return new Option<T>(key, value == null ? null : key.convertValue(value));
+		return new Option<T>(key, value == null ? null : key.convertToValue(value));
 	}
 	
 	/**

@@ -144,9 +144,15 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 	 */
 	
 	@Override
-	public T convertValue(Object value)
+	public T convertToValue(Object value)
 	{
 		return type().cast(value);
+	}
+	
+	@Override
+	public Object convertToExternal(T value)
+	{
+		return value;
 	}
 	
 	@Override
@@ -263,7 +269,7 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 	/**
 	 * Converts value and sets it in given option holder.
 	 * <p>
-	 * Invokes {@link #set} after value is converted by {@link #convertValue}.
+	 * Invokes {@link #set} after value is converted by {@link #convertToValue}.
 	 * <p>
 	 * @param holder is a non-null option holder.
 	 * @param value is a value that will be converted to the target value.
@@ -271,7 +277,7 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 	 */
 	public void convertAndSet(IOptionHolder holder, Object value)
 	{
-		set(holder, convertValue(value));
+		set(holder, convertToValue(value));
 	}
 	
 	/**

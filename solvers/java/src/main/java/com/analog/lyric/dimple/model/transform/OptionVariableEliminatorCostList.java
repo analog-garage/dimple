@@ -69,4 +69,76 @@ public class OptionVariableEliminatorCostList extends AbstractOptionValueList<Va
 	{
 		this(VariableCost.toFunctions(costs));
 	}
+	
+	public static OptionVariableEliminatorCostList fromObject(Object object)
+	{
+		if ((object instanceof OptionVariableEliminatorCostList))
+		{
+			return (OptionVariableEliminatorCostList)object;
+		}
+		
+		Class<?> valueClass = object.getClass();
+
+		if (valueClass.isArray())
+		{
+			Class<?> elementType = valueClass.getComponentType();
+
+			if (elementType == CostFunction.class)
+			{
+				return new OptionVariableEliminatorCostList((CostFunction[])object);
+			}
+			else if (elementType == VariableCost.class)
+			{
+				return new OptionVariableEliminatorCostList((VariableCost[])object);
+			}
+			else if (!elementType.isPrimitive())
+			{
+				Object[] values = (Object[])object;
+				final int size = values.length;
+				CostFunction[] costFunctions = new CostFunction[size];
+				for (int i = 0; i < size; ++i)
+				{
+					costFunctions[i] = convertToCostFunction(values[i]);
+				}
+				return new OptionVariableEliminatorCostList(costFunctions);
+			}
+		}
+		
+		return new OptionVariableEliminatorCostList(convertToCostFunction(object));
+	}
+
+	private static CostFunction convertToCostFunction(Object value)
+	{
+		if (value instanceof VariableCost)
+		{
+			return ((VariableCost)value).function();
+		}
+		if (value instanceof String)
+		{
+			String name = (String)value;
+			try
+			{
+				return VariableCost.valueOf(name).function();
+			}
+			catch (IllegalArgumentException ex)
+			{
+				// TODO: this is ugly. If we are going to support arbitrary cost functions, then
+				// we should probably use a ConstructorRegistry to allow lookup of CostFunction constructors.
+
+				// If not a VariableCost value, try constructing a class instance:
+				try
+				{
+					return (CostFunction) Class.forName(name).newInstance();
+				}
+				catch (Exception ignore)
+				{
+					// If that doesn't work, just rethrow the original exception from
+					// the VariableCost lookup.
+					throw ex;
+				}
+			}
+		}
+		return (CostFunction)value;
+	}
+
 }

@@ -58,6 +58,18 @@ public class StringListOptionKey extends OptionKey<OptionStringList>
 	/*--------------------
 	 * IOptionKey methods
 	 */
+
+	@Override
+	public Object convertToExternal(OptionStringList value)
+	{
+		return value.toPrimitiveArray();
+	}
+	
+	@Override
+	public OptionStringList convertToValue(Object value)
+	{
+		return OptionStringList.fromObject(value);
+	}
 	
 	@Override
 	public Class<OptionStringList> type()

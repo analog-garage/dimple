@@ -16,6 +16,7 @@
 
 package com.analog.lyric.options;
 
+
 /**
  * Key for options with list of integer values.
  * @since 0.07
@@ -55,6 +56,18 @@ public class IntegerListOptionKey extends OptionKey<OptionIntegerList>
 	/*--------------------
 	 * IOptionKey methods
 	 */
+	
+	@Override
+	public Object convertToExternal(OptionIntegerList value)
+	{
+		return value.toPrimitiveArray();
+	}
+
+	@Override
+	public OptionIntegerList convertToValue(Object value)
+	{
+		return OptionIntegerList.fromObject(value);
+	}
 	
 	@Override
 	public Class<OptionIntegerList> type()

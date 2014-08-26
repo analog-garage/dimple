@@ -16,10 +16,12 @@
 
 package com.analog.lyric.options.tests;
 
+import static com.analog.lyric.util.test.ExceptionTester.*;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import org.junit.Test;
@@ -30,6 +32,7 @@ import com.analog.lyric.options.IOptionValue;
 import com.analog.lyric.options.OptionDoubleList;
 import com.analog.lyric.options.OptionIntegerList;
 import com.analog.lyric.options.OptionStringList;
+import com.analog.lyric.options.OptionValidationException;
 import com.analog.lyric.util.test.SerializationTester;
 import com.google.common.primitives.Primitives;
 
@@ -106,6 +109,33 @@ public class TestOptionValue extends DimpleTestBase
 		else
 		{
 			assertFalse(primitive.getClass().getComponentType().isPrimitive());
+		}
+		
+		Class<?> listClass = list.getClass();
+		try
+		{
+			final Method fromObject = listClass.getMethod("fromObject", Object.class);
+			try
+			{
+				assertSame(list, fromObject.invoke(listClass, list));
+				assertEquals(list, fromObject.invoke(listClass, primitive));
+				assertEquals(list, fromObject.invoke(listClass, new Object[] { list.toArray() }));
+				if (Primitives.isWrapperType(elementType))
+				{
+					Object[] a = (Object[])Array.newInstance(elementType, size);
+					assertEquals(list, fromObject.invoke(listClass, new Object[] { list.toArray(a) }));
+				}
+			}
+			catch (Exception ex)
+			{
+				fail(ex.toString());
+			}
+			
+			expectThrow(OptionValidationException.class, listClass, "fromObject", Thread.currentThread());
+		}
+		catch (NoSuchMethodException ex)
+		{
+			// ignore
 		}
 		
 		for (int i = 0; i < size; ++i)
