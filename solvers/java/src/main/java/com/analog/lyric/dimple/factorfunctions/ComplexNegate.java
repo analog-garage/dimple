@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -50,21 +51,21 @@ public class ComplexNegate extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object ... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
-		double[] out = ((double[])arguments[0]);
-		double rOut = out[0];
-		double iOut = out[1];
+    	final double[] out = arguments[0].getDoubleArray();
+    	final double rOut = out[0];
+    	final double iOut = out[1];
 
-		double[] in = ((double[])arguments[1]);
-		double rNegation = -in[0];
-		double iNegation = -in[1];
+    	final double[] in = arguments[1].getDoubleArray();
+    	final double rNegation = -in[0];
+    	final double iNegation = -in[1];
 
     	if (_smoothingSpecified)
     	{
-    		double rDiff = rNegation - rOut;
-    		double iDiff = iNegation - iOut;
-    		double potential = rDiff*rDiff + iDiff*iDiff;
+    		final double rDiff = rNegation - rOut;
+    		final double iDiff = iNegation - iOut;
+    		final double potential = rDiff*rDiff + iDiff*iDiff;
     		return potential*_beta;
     	}
     	else
@@ -75,19 +76,19 @@ public class ComplexNegate extends FactorFunction
     
     
     @Override
-    public final boolean isDirected()	{return true;}
+    public final boolean isDirected() {return true;}
     @Override
 	public final int[] getDirectedToIndices() {return new int[]{0};}
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
-		double[] in = ((double[])arguments[1]);
-		double rNegation = -in[0];
-		double iNegation = -in[1];
+    	final double[] in = arguments[1].getDoubleArray();
+    	final double rNegation = -in[0];
+    	final double iNegation = -in[1];
     	
-		double[] out = ((double[])arguments[0]);
+    	final double[] out = arguments[0].getDoubleArray();
     	out[0] = rNegation;		// Replace the output value
     	out[1] = iNegation;		// Replace the output value
     }

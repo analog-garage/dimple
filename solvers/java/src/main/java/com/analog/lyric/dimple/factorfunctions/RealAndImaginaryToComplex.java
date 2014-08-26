@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -54,22 +54,22 @@ public class RealAndImaginaryToComplex extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object ... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
     	// Output Complex
-		final double[] complex = ((double[])arguments[0]);
+		final double[] complex = arguments[0].getDoubleArray();
     	
     	if (_smoothingSpecified)
     	{
-    		double diffR = FactorFunctionUtilities.toDouble(arguments[1]) - complex[0];
-    		double diffI = FactorFunctionUtilities.toDouble(arguments[2]) - complex[1];
+    		final double diffR = arguments[1].getDouble() - complex[0];
+    		final double diffI = arguments[2].getDouble() - complex[1];
     		return _beta * ((diffR*diffR) + (diffI*diffI));
     	}
     	else
     	{
-			if (FactorFunctionUtilities.toDouble(arguments[1]) != complex[0])
+			if (arguments[1].getDouble() != complex[0])
 				return Double.POSITIVE_INFINITY;
-			else if (FactorFunctionUtilities.toDouble(arguments[2]) != complex[1])
+			else if (arguments[2].getDouble() != complex[1])
 				return Double.POSITIVE_INFINITY;
 			else
 				return 0;
@@ -84,12 +84,12 @@ public class RealAndImaginaryToComplex extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
     	// Output Complex
-		final double[] complex = ((double[])arguments[0]);
+		final double[] complex = arguments[0].getDoubleArray();
 
-		complex[0] = (Double)arguments[1];
-		complex[1] = (Double)arguments[2];
+		complex[0] = arguments[1].getDouble();
+		complex[1] = arguments[2].getDouble();
     }
 }

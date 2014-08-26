@@ -16,12 +16,8 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
-import java.util.Arrays;
-
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -61,61 +57,13 @@ public class Multiplexer extends FactorFunction
 		}
 	}
 	
-	
-    @Override
-    public double evalEnergy(Object ... arguments)
-    {
-    	Object output = arguments[0];
-    	int selector = FactorFunctionUtilities.toInteger(arguments[1]);
-    	Object selectedInput = arguments[selector + 2];
-    	
-    	boolean isEqual = false;
-    	double diff = 0;
-    	if (selectedInput instanceof Double)
-    	{
-    		if (_smoothingSpecified)
-    			diff = (((Double)selectedInput).doubleValue() - ((Double)output).doubleValue());
-    		else
-    			isEqual = (((Double)selectedInput).doubleValue() == ((Double)output).doubleValue());
-    	}
-    	else if (selectedInput instanceof Integer)
-    	{
-    		if (_smoothingSpecified)
-    			diff = (((Integer)selectedInput).doubleValue() - ((Integer)output).doubleValue());
-    		else
-    			isEqual = (((Integer)selectedInput).intValue() == ((Integer)output).intValue());
-    	}
-    	else if (selectedInput instanceof Boolean)
-    	{
-    		if (_smoothingSpecified) throw smoothingNonNumber();
-    		isEqual = (((Boolean)selectedInput).booleanValue() == ((Boolean)output).booleanValue());
-    	}
-    	else if (selectedInput instanceof double[])
-    	{
-    		if (_smoothingSpecified) throw smoothingNonNumber();
-    		isEqual = Arrays.equals((double[])selectedInput, (double[])output);
-    	}
-    	else if (selectedInput instanceof int[])
-    	{
-    		if (_smoothingSpecified) throw smoothingNonNumber();
-    		isEqual = Arrays.equals((int[])selectedInput, (int[])output);
-    	}
-    	else
-    		throw new DimpleException("Unsupported input data type.");
-
-    	
-    	if (_smoothingSpecified)
-    		return diff*diff*_beta;
-    	else
-    		return isEqual ? 0 : Double.POSITIVE_INFINITY;
-    }
     
     @Override
-    public double evalEnergy(Value[] values)
+    public final double evalEnergy(Value[] arguments)
     {
-    	final Value output = values[0];
-    	final int selector = values[1].getInt();
-    	final Value selectedInput = values[selector + 2];
+    	final Value output = arguments[0];
+    	final int selector = arguments[1].getInt();
+    	final Value selectedInput = arguments[selector + 2];
     	
     	if (_smoothingSpecified)
     	{
@@ -133,22 +81,15 @@ public class Multiplexer extends FactorFunction
     }
     
     @Override
-    public final boolean isDirected()	{return true;}
+    public final boolean isDirected() {return true;}
     @Override
 	public final int[] getDirectedToIndices() {return new int[]{0};}
     @Override
 	public final boolean isDeterministicDirected() {return true;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+    public final void evalDeterministic(Value[] arguments)
     {
-    	int selector = FactorFunctionUtilities.toInteger(arguments[1]);
-    	arguments[0] = arguments[selector + 2];		// Replace the output value
-    }
-    
-    @Override
-    public final void evalDeterministic(Factor factor, Value[] values)
-    {
-    	values[0].setFrom(values[values[1].getInt() + 2]);
+    	arguments[0].setFrom(arguments[arguments[1].getInt() + 2]);
     }
     
     // Factor-specific methods

@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -52,46 +52,46 @@ public class ComplexSubtract extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object ... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
-    	int length = arguments.length;
-		double[] out = ((double[])arguments[0]);
-		double rOut = out[0];
-		double iOut = out[1];
+    	final int length = arguments.length;
+    	final double[] out = arguments[0].getDoubleArray();
+    	final double rOut = out[0];
+    	final double iOut = out[1];
 
 		double rSum = 0;
 		double iSum = 0;
 
 		// Positive input
-		Object argPosIn = arguments[1];
-		if (argPosIn instanceof double[])	// Complex input
+		final Value argPosIn = arguments[1];
+		if (argPosIn.getObject() instanceof double[])	// Complex input
 		{
-			double[] posIn = ((double[])argPosIn);
+			final double[] posIn = argPosIn.getDoubleArray();
 			rSum = posIn[0];
 			iSum = posIn[1];
 		}
 		else	// Real input
-			rSum = FactorFunctionUtilities.toDouble(argPosIn);
+			rSum = argPosIn.getDouble();
 		
 		// Negative inputs
     	for (int i = 2; i < length; i++)
     	{
-    		Object arg = arguments[i];
-    		if (arg instanceof double[])	// Input is complex
+    		final Value arg = arguments[i];
+    		if (arg.getObject() instanceof double[])	// Input is complex
     		{
-    			double[] in = ((double[])arg);
+    			final double[] in = arg.getDoubleArray();
     			rSum -= in[0];
     			iSum -= in[1];
     		}
     		else	// Input is real
-    			rSum -= FactorFunctionUtilities.toDouble(arg);
+    			rSum -= arg.getDouble();
     	}
     	
     	if (_smoothingSpecified)
     	{
-    		double rDiff = rSum - rOut;
-    		double iDiff = iSum - iOut;
-    		double potential = rDiff*rDiff + iDiff*iDiff;
+    		final double rDiff = rSum - rOut;
+    		final double iDiff = iSum - iOut;
+    		final double potential = rDiff*rDiff + iDiff*iDiff;
     		return potential*_beta;
     	}
     	else
@@ -102,45 +102,45 @@ public class ComplexSubtract extends FactorFunction
     
     
     @Override
-    public final boolean isDirected()	{return true;}
+    public final boolean isDirected() {return true;}
     @Override
 	public final int[] getDirectedToIndices() {return new int[]{0};}
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
-    	int length = arguments.length;
+    	final int length = arguments.length;
 
 		double rSum = 0;
 		double iSum = 0;
 
 		// Positive input
-		Object argPosIn = arguments[1];
-		if (argPosIn instanceof double[])	// Complex input
+		final Value argPosIn = arguments[1];
+		if (argPosIn.getObject() instanceof double[])	// Complex input
 		{
-			double[] posIn = ((double[])argPosIn);
+			final double[] posIn = argPosIn.getDoubleArray();
 			rSum = posIn[0];
 			iSum = posIn[1];
 		}
 		else	// Real input
-			rSum = FactorFunctionUtilities.toDouble(argPosIn);
+			rSum = argPosIn.getDouble();
 		
 		// Negative inputs
     	for (int i = 2; i < length; i++)
     	{
-    		Object arg = arguments[i];
-    		if (arg instanceof double[])	// Input is complex
+    		final Value arg = arguments[i];
+    		if (arg.getObject() instanceof double[])	// Input is complex
     		{
-    			double[] in = ((double[])arg);
+    			final double[] in = arg.getDoubleArray();
     			rSum -= in[0];
     			iSum -= in[1];
     		}
     		else	// Input is real
-    			rSum -= FactorFunctionUtilities.toDouble(arg);
+    			rSum -= arg.getDouble();
     	}
     	
-		double[] out = ((double[])arguments[0]);
+    	final double[] out = arguments[0].getDoubleArray();
 		out[0] = rSum;		// Replace the output value
 		out[1] = iSum;		// Replace the output value
     }

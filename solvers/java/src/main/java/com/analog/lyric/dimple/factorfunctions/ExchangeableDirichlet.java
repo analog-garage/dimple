@@ -70,68 +70,31 @@ public class ExchangeableDirichlet extends FactorFunction
 		if (_alpha <= 0) throw new DimpleException("Non-positive alpha parameter. Domain must be restricted to positive values.");
 	}
 	
-    @Override
-	public double evalEnergy(Object ... arguments)
-	{
-    	int index = 0;
-    	if (!_parametersConstant)
-    	{
-    		_alpha = (Double)arguments[index++];		// First variable is parameter value
-    		if (_alpha <= 0)
-    			return Double.POSITIVE_INFINITY;
-    		_logBetaAlpha = logBeta(_alpha);
-    	}
 
-    	double sum = 0;
-    	int length = arguments.length;
-    	int N = length - index;			// Number of non-parameter variables
-    	for (; index < length; index++)
-    	{
-    		double[] x = (double[])arguments[index];	// Remaining inputs are Dirichlet distributed random variable vectors
-    		if (x.length != _dimension)
-	    		throw new DimpleException("Dimension of variable does not equal to the dimension of the parameter vector.");
-    		double xSum = 0;
-    		for (int i = 0; i < _dimension; i++)
-    		{
-    			double xi = x[i];
-    			if (xi <= 0)
-    				return Double.POSITIVE_INFINITY;
-    			else
-    				sum -= Math.log(xi);	// -log(x_i ^ (a_i-1))
-    			xSum += xi;
-    		}
-    		
-    		if (!almostEqual(xSum, 1, SIMPLEX_THRESHOLD * _dimension))	// Values must be on the probability simplex
-    			return Double.POSITIVE_INFINITY;
-    	}
-
-    	return sum * (_alpha - 1) + N * _logBetaAlpha;
-	}
-    
     @Override
-    public double evalEnergy(Value[] values)
+    public final double evalEnergy(Value[] arguments)
     {
     	int index = 0;
     	if (!_parametersConstant)
     	{
-    		_alpha = values[index++].getDouble();		// First variable is parameter value
+    		_alpha = arguments[index++].getDouble();		// First variable is parameter value
     		if (_alpha <= 0)
     			return Double.POSITIVE_INFINITY;
     		_logBetaAlpha = logBeta(_alpha);
     	}
 
     	double sum = 0;
-    	int length = values.length;
-    	int N = length - index;			// Number of non-parameter variables
+    	final int length = arguments.length;
+    	final int N = length - index;			// Number of non-parameter variables
     	for (; index < length; index++)
     	{
-    		double[] x = values[index].getDoubleArray();	// Remaining inputs are Dirichlet distributed random variable vectors
+    		final double[] x = arguments[index].getDoubleArray();	// Remaining inputs are Dirichlet distributed random variable vectors
     		if (x.length != _dimension)
 	    		throw new DimpleException("Dimension of variable does not equal to the dimension of the parameter vector.");
     		double xSum = 0;
     		for (int i = 0; i < _dimension; i++)
     		{
-    			double xi = x[i];
+    			final double xi = x[i];
     			if (xi <= 0)
     				return Double.POSITIVE_INFINITY;
     			else

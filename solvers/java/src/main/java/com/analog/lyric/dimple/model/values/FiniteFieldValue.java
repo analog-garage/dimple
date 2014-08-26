@@ -18,10 +18,12 @@ package com.analog.lyric.dimple.model.values;
 
 import java.util.Objects;
 
-import com.analog.lyric.dimple.model.domains.DiscreteDomain;
-import com.analog.lyric.dimple.model.domains.FiniteFieldNumber;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.FiniteFieldDomain;
+import com.analog.lyric.dimple.model.domains.FiniteFieldNumber;
 
 public class FiniteFieldValue extends DiscreteValue
 {
@@ -32,6 +34,11 @@ public class FiniteFieldValue extends DiscreteValue
 	public FiniteFieldValue(FiniteFieldNumber value)
 	{
 		_value = value;
+	}
+	
+	public FiniteFieldValue(FiniteFieldDomain domain)
+	{
+		_value = new FiniteFieldNumber(0, domain);
 	}
 
 	public FiniteFieldValue(FiniteFieldValue other)	// Copy constructor
@@ -49,6 +56,18 @@ public class FiniteFieldValue extends DiscreteValue
 	public DiscreteDomain getDomain()
 	{
 		return _value.getDomain();
+	}
+	
+	@Override
+	public FiniteFieldNumber getFiniteField()
+	{
+		return _value;
+	}
+	
+	@Override
+	public void setFiniteField(FiniteFieldNumber value)
+	{
+		_value = value;
 	}
 	
 	@Override

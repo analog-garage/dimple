@@ -28,14 +28,16 @@ import java.util.concurrent.ExecutionException;
 
 import net.jcip.annotations.Immutable;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.Tuple2;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.util.misc.Internal;
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.cache.AbstractLoadingCache;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -247,6 +249,26 @@ public class JointFactorFunction extends FactorFunction
 	 */
 	
 	@Override
+	public double evalEnergy(Value[] input)
+	{
+		//Make sure length of inputs is correct
+		if (input.length != _newNumInputs)
+			throw new DimpleException("expected " + _newNumInputs + " args");
+		
+		double energy = 0.0;
+		
+		for (Tuple2<FactorFunction, int[]> tuple : _functions._functions)
+		{
+			final FactorFunction function = tuple.first;
+			final int[] inputIndicesForFunction = tuple.second;
+			// TODO: Use a cache of reusable array objects instead of allocating every time.
+			energy += function.evalEnergy(ArrayUtil.copyFromIndices(input, inputIndicesForFunction));
+		}
+	
+		return energy;
+	}
+	
+	@Override
 	public double evalEnergy(Object... input)
 	{
 		//Make sure length of inputs is correct
@@ -265,6 +287,7 @@ public class JointFactorFunction extends FactorFunction
 	
 		return energy;
 	}
+
 
 	@Override
 	protected IFactorTable createTableForDomains(JointDomainIndexer domains)

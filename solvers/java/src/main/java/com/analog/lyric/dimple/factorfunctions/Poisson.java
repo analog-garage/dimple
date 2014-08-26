@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.factorfunctions;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 /**
  * @since 0.06
@@ -55,28 +56,27 @@ public class Poisson extends FactorFunction
 		_lambda = lambda;
 		_logLambda = Math.log(lambda);
 		_lambdaParameterConstant=true;
-		_firstDirectedToIndex=0;	
+		_firstDirectedToIndex=0;
 	}
 	
 	
-	//Evaluating the energy
 	@Override
-	public double evalEnergy(Object... arguments)
+	public final double evalEnergy(Value[] arguments)
 	{
 		int index = 0;
 		
 		// First argument of the factor: lambda
 		if (!_lambdaParameterConstant)
 		{
-			_lambda = FactorFunctionUtilities.toDouble(arguments[index++]);
+			_lambda = arguments[index++].getDouble();
 			if (_lambda < 0)
 				return Double.POSITIVE_INFINITY;
 			_logLambda = Math.log(_lambda);
 		}
 		
 		// Second argument of the factor: k
-		int k = FactorFunctionUtilities.toInteger(arguments[index++]);
-		double negativeLogFactorialK = -org.apache.commons.math3.special.Gamma.logGamma(k + 1);
+		final int k = arguments[index++].getInt();
+		final double negativeLogFactorialK = -org.apache.commons.math3.special.Gamma.logGamma(k + 1);
 
 		if (_lambda > 0)
 			return -(-_lambda + k*_logLambda + negativeLogFactorialK);

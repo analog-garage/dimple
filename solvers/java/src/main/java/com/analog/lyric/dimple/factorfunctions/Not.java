@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -32,29 +32,25 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 public class Not extends FactorFunction
 {
     @Override
-    public double evalEnergy(Object... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
-    	boolean outValue = FactorFunctionUtilities.toBoolean(arguments[0]);
-    	boolean inValue = FactorFunctionUtilities.toBoolean(arguments[1]);
-    	boolean notValue = !inValue;
+    	final boolean outValue = arguments[0].getBoolean();
+    	final boolean inValue = arguments[1].getBoolean();
+    	final boolean notValue = !inValue;
     	
     	return (notValue == outValue) ? 0 : Double.POSITIVE_INFINITY;
     }
     
     
     @Override
-    public final boolean isDirected()	{return true;}
+    public final boolean isDirected() {return true;}
     @Override
 	public final int[] getDirectedToIndices() {return new int[]{0};}
     @Override
 	public final boolean isDeterministicDirected() {return true;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
-    	boolean inValue = FactorFunctionUtilities.toBoolean(arguments[1]);
-    	boolean notValue = !inValue;
-    	
-    	// Replace the output value
-    	arguments[0] = FactorFunctionUtilities.booleanToClass(notValue,  arguments[1].getClass());
+    	arguments[0].setBoolean(!arguments[1].getBoolean());
     }
 }

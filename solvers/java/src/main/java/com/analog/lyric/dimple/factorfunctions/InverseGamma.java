@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.factorfunctions;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -56,24 +57,24 @@ public class InverseGamma extends FactorFunction
 	}
 	
     @Override
-	public double evalEnergy(Object... arguments)
+	public final double evalEnergy(Value[] arguments)
     {
     	int index = 0;
     	if (!_parametersConstant)
     	{
-    		_alpha = FactorFunctionUtilities.toDouble(arguments[index++]);	// First input is alpha parameter (must be non-negative)
+    		_alpha = arguments[index++].getDouble();			// First input is alpha parameter (must be non-negative)
     		if (_alpha <= 0) return Double.POSITIVE_INFINITY;
-    		_beta = FactorFunctionUtilities.toDouble(arguments[index++]);	// Second input is beta parameter (must be non-negative)
+    		_beta = arguments[index++].getDouble();				// Second input is beta parameter (must be non-negative)
     		if (_beta <= 0) return Double.POSITIVE_INFINITY;
     		_alphaPlusOne = _alpha + 1;
     		_logGammaAlphaMinusAlphaLogBeta = org.apache.commons.math3.special.Gamma.logGamma(_alpha) - _alpha * Math.log(_beta);
     	}
-    	int length = arguments.length;
-    	int N = length - index;			// Number of non-parameter variables
+    	final int length = arguments.length;
+    	final int N = length - index;			// Number of non-parameter variables
     	double sum = 0;
     	for (; index < length; index++)
     	{
-    		double x = FactorFunctionUtilities.toDouble(arguments[index]);				// Remaining inputs are Inverse Gamma variables
+    		final double x = arguments[index].getDouble();		// Remaining inputs are Inverse Gamma variables
         	if (x < 0)
         		return Double.POSITIVE_INFINITY;
         	else

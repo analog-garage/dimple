@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.model.domains.FiniteFieldNumber;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -36,17 +36,17 @@ import com.analog.lyric.dimple.model.domains.FiniteFieldNumber;
 public class FiniteFieldProjection extends FactorFunction
 {
     @Override
-    public double evalEnergy(Object ... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
     	int index = 0;
     	
-    	int finiteFieldValue = ((FiniteFieldNumber)arguments[index++]).intValue();
-    	int[] bitIndices = FactorFunctionUtilities.toIntArray(arguments[index++]);
+    	final int finiteFieldValue = arguments[index++].getInt();
+    	final int[] bitIndices = FactorFunctionUtilities.toIntArray(arguments[index++].getObject());
     	
     	for (int i = 0; index < arguments.length; i++, index++)
     	{
-    		int bitIndex = bitIndices[i];
-    		if (((finiteFieldValue >> bitIndex) & 1) != FactorFunctionUtilities.toInteger(arguments[index]))
+    		final int bitIndex = bitIndices[i];
+    		if (((finiteFieldValue >> bitIndex) & 1) != arguments[index].getInt())
     			return Double.POSITIVE_INFINITY;
     	}
     	
@@ -54,7 +54,7 @@ public class FiniteFieldProjection extends FactorFunction
     }
     
     @Override
-    public final boolean isDirected()	{return true;}
+    public final boolean isDirected() {return true;}
     @Override
 	public int[] getDirectedToIndices(int numEdges)
 	{
@@ -65,17 +65,17 @@ public class FiniteFieldProjection extends FactorFunction
     
     
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
     	int index = 0;
     	
-    	int finiteFieldValue = ((FiniteFieldNumber)arguments[index++]).intValue();
-    	int[] bitIndices = FactorFunctionUtilities.toIntArray(arguments[index++]);
+    	final int finiteFieldValue = arguments[index++].getInt();
+    	final int[] bitIndices = FactorFunctionUtilities.toIntArray(arguments[index++].getObject());
     	
     	for (int i = 0; index < arguments.length; i++, index++)
     	{
-    		int bitIndex = bitIndices[i];
-    		arguments[index] = (finiteFieldValue >> bitIndex) & 1;		// Replace output values
+    		final int bitIndex = bitIndices[i];
+    		arguments[index].setInt((finiteFieldValue >> bitIndex) & 1);		// Replace output values
     	}
     }
 }

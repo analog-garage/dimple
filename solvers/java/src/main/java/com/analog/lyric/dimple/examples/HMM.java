@@ -16,15 +16,15 @@
 
 package com.analog.lyric.dimple.examples;
 
-import static java.util.Objects.*;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import cern.colt.Arrays;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import org.eclipse.jdt.annotation.NonNullByDefault;
 
 public class HMM
 {
@@ -37,29 +37,30 @@ public class HMM
 			super("TransitionFactorFunction");
 		}
 		
+		@SuppressWarnings("null")
 		@Override
-		public double eval(Object ... args)
+		public final double evalEnergy(Value[] args)
 		{
-			String state1 = (String)args[0];
-			String state2 = (String)args[1];
+			String state1 = (String)args[0].getObject();
+			String state2 = (String)args[1].getObject();
+			double value;
 			
 			if (state1.equals("sunny"))
 			{
 				if (state2.equals("sunny"))
 				{
-					return 0.8;
+					value = 0.8;
 				}
 				else
 				{
-					return 0.2;
+					value = 0.2;
 				}
-				
 			}
 			else
 			{
-				return 0.5;
+				value = 0.5;
 			}
-			
+			return -Math.log(value);
 		}
 	}
 	
@@ -71,29 +72,38 @@ public class HMM
 			super("ObservationFactorFunction");
 		}
 		
+		@SuppressWarnings("null")
 		@Override
-		public double eval(Object ... args)
+		public final double evalEnergy(Value[] args)
 		{
-			String state = (String)args[0];
-			String observation = (String)args[1];
+			String state = (String)args[0].getObject();
+			String observation = (String)args[1].getObject();
+			double value;
 			
 			if (state.equals("sunny"))
+			{
 				if (observation.equals("walk"))
-					return 0.7;
+					value = 0.7;
 				else if (observation.equals("book"))
-					return 0.1;
+					value = 0.1;
 				else // cook
-					return 0.2;
+					value = 0.2;
+			}
 			else
+			{
 				if (observation.equals("walk"))
-					return 0.2;
+					value = 0.2;
 				else if (observation.equals("book"))
-					return 0.4;
+					value = 0.4;
 				else // cook
-					return 0.4;
+					value = 0.4;
+			}
+			
+			return -Math.log(value);
 		}
 	}
 	
+	@SuppressWarnings("null")
 	public static void main(String[] args)
 	{
 		FactorGraph HMM = new FactorGraph();
@@ -113,7 +123,7 @@ public class HMM
 		HMM.addFactor(trans, WednesdayWeather,ThursdayWeather);
 		HMM.addFactor(trans, ThursdayWeather,FridayWeather);
 		HMM.addFactor(trans, FridayWeather,SaturdayWeather);
-		HMM.addFactor(trans, FridayWeather,SundayWeather);
+		HMM.addFactor(trans, SaturdayWeather,SundayWeather);
 		
 		ObservationFactorFunction obs = new ObservationFactorFunction();
 		HMM.addFactor(obs,MondayWeather,"walk");
@@ -127,14 +137,11 @@ public class HMM
 		
 		MondayWeather.setInput(0.7,0.3);
 		
-		ISolverFactorGraph solver = requireNonNull(HMM.getSolver());
-		solver.setNumIterations(20);
+		HMM.getSolver().setNumIterations(20);
 		HMM.solve();
 		
 		double [] belief = TuesdayWeather.getBelief();
 		System.out.println(Arrays.toString(belief));
-		solver.iterate();
-		solver.iterate(5);
 	}
 
 }

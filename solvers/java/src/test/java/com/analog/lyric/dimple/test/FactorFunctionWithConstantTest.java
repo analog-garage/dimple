@@ -25,6 +25,7 @@ import org.junit.Test;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Bit;
 
 
@@ -71,7 +72,7 @@ public class FactorFunctionWithConstantTest extends DimpleTestBase
 	public static class FF1 extends FactorFunction
 	{
 		@Override
-	    public double evalEnergy(Object ... input)
+	    public final double evalEnergy(Value[] input)
 	    {
 	    	return 0;
 	    }

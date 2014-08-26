@@ -16,21 +16,27 @@
 
 package com.analog.lyric.dimple.model.values;
 
+import static java.util.Objects.*;
+
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.Objects;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.domains.DomainList;
 import com.analog.lyric.dimple.model.domains.DoubleRangeDomain;
+import com.analog.lyric.dimple.model.domains.FiniteFieldDomain;
+import com.analog.lyric.dimple.model.domains.FiniteFieldNumber;
 import com.analog.lyric.dimple.model.domains.IntRangeDomain;
 import com.analog.lyric.dimple.model.domains.ObjectDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Holder for a values for a given {@link Domain}.
@@ -115,6 +121,10 @@ public abstract class Value implements Cloneable, Serializable
 					return new IntRangeValue(rangeDomain);
 				}
 			}
+			else if (domain instanceof FiniteFieldDomain)
+			{
+				return new FiniteFieldValue((FiniteFieldDomain)domain);
+			}
 			@SuppressWarnings("unchecked")
 			TypedDiscreteDomain<Integer> intDomain = (TypedDiscreteDomain<Integer>) domain;
 			return new GenericIntDiscreteValue(intDomain);
@@ -141,6 +151,14 @@ public abstract class Value implements Cloneable, Serializable
 		{
 			return new GenericDiscreteValue(domain.asDiscrete());
 		}
+	}
+	
+	/**
+	 * Creates a {@link FiniteFieldValue} instance for given {@code domain}.
+	 */
+	public static FiniteFieldValue create(FiniteFieldDomain domain)
+	{
+		return new FiniteFieldValue(domain);
 	}
 	
 	/**
@@ -196,6 +214,10 @@ public abstract class Value implements Cloneable, Serializable
 			if (number instanceof Integer || number instanceof Short || number instanceof Byte)
 			{
 				return new IntValue(number.intValue());
+			}
+			else if (number instanceof FiniteFieldNumber)
+			{
+				return new FiniteFieldValue((FiniteFieldNumber)number);
 			}
 			else
 			{
@@ -280,7 +302,25 @@ public abstract class Value implements Cloneable, Serializable
 	{
 		setObject(value);
 	}
+	
+	
+	/**
+	 * Gets the current value as a {@code FiniteFieldNumber}
+	 */
+	public FiniteFieldNumber getFiniteField()
+	{
+		return (FiniteFieldNumber)requireNonNull(getObject());
+	}
+	
+	/**
+	 * Sets the current value from a {@code FiniteFieldNumber}
+	 */
+	public void setFiniteField(FiniteFieldNumber value)
+	{
+		setObject(value);
+	}
 
+	
 	/**
 	 * If value is known to be a member of a {@link DiscreteDomain}, returns its index within its domain otherwise -1.
 	 */
@@ -321,6 +361,15 @@ public abstract class Value implements Cloneable, Serializable
 	 * Sets contents from a {@code int}.
 	 */
 	public void setInt(int value)
+	{
+		setObject(value);
+	}
+	
+	/**
+	 * Sets contents from a {@code boolean}
+	 * Subclasses should override this to set a boolean in the appropriate form
+	 */
+	public void setBoolean(boolean value)
 	{
 		setObject(value);
 	}
@@ -396,6 +445,46 @@ public abstract class Value implements Cloneable, Serializable
 	public static Value[] createFromObjects(Object[] objs, Domain ... domains)
 	{
 		return createFromObjects(objs, Value.class, domains);
+	}
+
+	/**
+	 * Creates {@code Value} array with empty or default content from array of Domains.
+	 * 
+	 * @param domains specifies the domains of the objects. This must have between 1 and {@code objs.length}
+	 * elements. If less than the maximum, the last domain will be applied to all remaining objects.
+	 * @return array of {@code Value} instances each with the corresponding domain.
+	 */
+	public static Value[] createFromDomains(Domain... domains)
+	{
+		final int nDomains = domains.length;
+		
+		final Value[] output = new Value[nDomains];
+		for (int i = 0; i < nDomains; ++i)
+		{
+			Value value = create(domains[i]);
+			output[i] = value;
+		}
+		return output;
+	}
+
+	/**
+	 * Creates {@code Value} array with empty or default content from a DomainList.
+	 * 
+	 * @param domains specifies the domains of the objects. This must have between 1 and {@code objs.length}
+	 * elements. If less than the maximum, the last domain will be applied to all remaining objects.
+	 * @return array of {@code Value} instances each with the corresponding domain.
+	 */
+	public static Value[] createFromDomains(DomainList<?> domains)
+	{
+		final int nDomains = domains.size();
+		
+		final Value[] output = new Value[nDomains];
+		for (int i = 0; i < nDomains; ++i)
+		{
+			Value value = create(domains.get(i));
+			output[i] = value;
+		}
+		return output;
 	}
 
 	/**

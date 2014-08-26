@@ -19,11 +19,12 @@ package com.analog.lyric.dimple.factorfunctions.core;
 import java.io.Serializable;
 import java.util.BitSet;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.values.Value;
-import org.eclipse.jdt.annotation.Nullable;
 
 public interface IFactorTableBase extends Cloneable, Serializable, Iterable<FactorTableEntry>
 {
@@ -76,7 +77,7 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	 * from them.
 	 * @throws DimpleException not {@link #isDeterministicDirected()}.
 	 */
-	public abstract void evalDeterministic(Object[] arguments);
+	public abstract void evalDeterministic(Value[] arguments);
 	
 	
 	/**
@@ -288,7 +289,7 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	/**
 	 * True if table {@link #isDirected()} and has exactly one entry for each combination of
 	 * input indices with a non-zero weight.
-	 * @see #evalDeterministic(Object[])
+	 * @see #evalDeterministic(Value[])
 	 */
 	public abstract boolean isDeterministicDirected();
 	

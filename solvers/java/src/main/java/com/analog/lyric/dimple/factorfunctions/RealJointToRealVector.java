@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -54,12 +54,12 @@ public class RealJointToRealVector extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object ... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
     	final int dimension = arguments.length - 1;
 
     	// Input RealJoint
-		final double[] joint = ((double[])arguments[dimension]);
+		final double[] joint = arguments[dimension].getDoubleArray();
 		if (dimension != joint.length) throw new DimpleException("RealJoint argument does not have the correct dimension");
     	
     	if (_smoothingSpecified)
@@ -67,7 +67,7 @@ public class RealJointToRealVector extends FactorFunction
     		double potential = 0;
     		for (int d = 0; d < dimension; d++)
     		{
-    			double diff = FactorFunctionUtilities.toDouble(arguments[d]) - joint[d];
+    			final double diff = arguments[d].getDouble() - joint[d];
     			potential += diff*diff;
     		}
     		return potential*_beta;
@@ -76,7 +76,7 @@ public class RealJointToRealVector extends FactorFunction
     	{
     		boolean equal = true;
     		for (int d = 0; d < dimension; d++)
-    			if (FactorFunctionUtilities.toDouble(arguments[d]) != joint[d])
+    			if (arguments[d].getDouble() != joint[d])
     				equal = false;
     		return (equal) ? 0 : Double.POSITIVE_INFINITY;
     	}
@@ -97,15 +97,15 @@ public class RealJointToRealVector extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
     	final int dimension = arguments.length - 1;
 
     	// Input RealJoint
-		final double[] joint = ((double[])arguments[dimension]);
+		final double[] joint = arguments[dimension].getDoubleArray();
 		if (dimension != joint.length) throw new DimpleException("RealJoint argument does not have the correct dimension");
 
 		for (int d = 0; d < dimension; d++)
-			arguments[d] = joint[d];
+			arguments[d].setDouble(joint[d]);
     }
 }

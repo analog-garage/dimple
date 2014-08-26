@@ -17,12 +17,12 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 /*
  * Function for testing kbestminsum works
  */
-public class SumOfInputs extends FactorFunction 
+public class SumOfInputs extends FactorFunction
 {
 
 	public SumOfInputs()
@@ -31,13 +31,13 @@ public class SumOfInputs extends FactorFunction
 	}
 
 	@Override
-	public double evalEnergy(Object... arguments) 
+	public final double evalEnergy(Value[] arguments)
 	{
 		double sum = 0;
 		for (int i = 0; i < arguments.length; i++)
 		{
-			sum += FactorFunctionUtilities.toDouble(arguments[i]);
+			sum += arguments[i].getDouble();
 		}
-		return -Math.log(sum); 
+		return -Math.log(sum);
 	}
 }

@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -38,29 +38,29 @@ public class Xor extends FactorFunction
 	public Xor(String name)	{super(name);}
 	
     @Override
-    public double evalEnergy(Object ... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
     	boolean total = false;
     	for(int i = 0; i < arguments.length; ++i)
-    		total ^= FactorFunctionUtilities.toBoolean(arguments[i]);
+    		total ^= arguments[i].getBoolean();
 
     	return !total ? 0 : Double.POSITIVE_INFINITY;
     }
     
     
     @Override
-    public final boolean isDirected()	{return true;}
+    public final boolean isDirected() {return true;}
     @Override
 	public final int[] getDirectedToIndices() {return new int[]{0};}
     @Override
 	public final boolean isDeterministicDirected() {return true;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
     	boolean total = false;
     	for(int i = 1; i < arguments.length; ++i)
-    		total ^= FactorFunctionUtilities.toBoolean(arguments[i]);
+    		total ^= arguments[i].getBoolean();
     	
-    	arguments[0] = FactorFunctionUtilities.booleanToClass(total, arguments[1].getClass());
+    	arguments[0].setBoolean(total);
     }
 }

@@ -33,6 +33,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverNodeGibbs;
@@ -260,22 +261,22 @@ public class TestGibbsNeighborList extends DimpleTestBase
 		}
 		
 		@Override
-		public double evalEnergy(Object ... arguments)
+		public final double evalEnergy(Value[] arguments)
 		{
-			Object value = arguments[0];
+			Value value = arguments[0];
 			for (int i = arguments.length; --i>=1;)
-				if (!value.equals(arguments[i]))
+				if (!value.valueEquals(arguments[i]))
 					return Double.POSITIVE_INFINITY;
 			
 			return 0.0;
 		}
 		
 		@Override
-		public void evalDeterministic(Object[] arguments)
+		public void evalDeterministic(Value[] arguments)
 		{
-			Object value = arguments[0];
+			Value value = arguments[0];
 			for (int i = arguments.length; --i>=1;)
-				arguments[i] = value;
+				arguments[i].setFrom(value);
 		}
 		
 		@Override

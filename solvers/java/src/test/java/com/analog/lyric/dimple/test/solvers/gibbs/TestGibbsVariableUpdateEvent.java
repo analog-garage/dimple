@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.events.DimpleEvent;
@@ -35,17 +36,17 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Complex;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.schedulers.GibbsSequentialScanScheduler;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsScoredVariableUpdateEvent;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsVariableUpdateEvent;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
-import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.test.DimpleTestBase;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Test generation of {@link GibbsVariableUpdateEvent}s.
@@ -59,12 +60,13 @@ public class TestGibbsVariableUpdateEvent extends DimpleTestBase
 	static class BogoFunction extends FactorFunction
 	{
 		@Override
-		public double evalEnergy(Object... arguments)
+		public final double evalEnergy(Value[] arguments)
 		{
 			double energy = 0.0;
 			
-			for (Object arg : arguments)
+			for (Value argValue : arguments)
 			{
+				Object arg = requireNonNull(argValue.getObject());
 				energy += 1.0;
 				if (arg instanceof Number)
 				{

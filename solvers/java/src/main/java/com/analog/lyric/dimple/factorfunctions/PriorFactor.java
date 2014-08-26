@@ -17,14 +17,15 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.values.Value;
 
 public class PriorFactor extends FactorFunction
 {
 	@Override
-	public double evalEnergy(Object... input) 
+	public final double evalEnergy(Value[] input)
 	{
-		double [] prior = (double[])input[1];
-		int index = (int)(double)(Double)input[0];
+		final double[] prior = input[1].getDoubleArray();
+		final int index = input[0].getInt();
 		return -Math.log(prior[index]);
 	}
 

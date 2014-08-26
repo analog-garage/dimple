@@ -19,11 +19,11 @@ package com.analog.lyric.dimple.factorfunctions;
 import java.util.Arrays;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+import com.analog.lyric.dimple.model.values.Value;
 
 /**
  * Deterministic equality constraint.  Values must be numeric or boolean.
@@ -56,19 +56,19 @@ public class Equality extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
     	if (arguments.length == 0)
     		return 0;
     	
-    	double firstVal = FactorFunctionUtilities.toDouble(arguments[0]);
+    	final double firstVal = arguments[0].getDouble();
 
     	if (_smoothingSpecified)
     	{
     		double potential = 0;
     		for (int i = 1; i < arguments.length; i++)
     		{
-    			double diff = firstVal - FactorFunctionUtilities.toDouble(arguments[i]);
+    			final double diff = firstVal - arguments[i].getDouble();
     			potential += diff*diff;
     		}
         	return potential*_beta;
@@ -76,7 +76,7 @@ public class Equality extends FactorFunction
     	else
     	{
     		for (int i = 1; i < arguments.length; i++)
-    			if (FactorFunctionUtilities.toDouble(arguments[i]) != firstVal)
+    			if (arguments[i].getDouble() != firstVal)
     				return Double.POSITIVE_INFINITY;
         	return 0;
     	}

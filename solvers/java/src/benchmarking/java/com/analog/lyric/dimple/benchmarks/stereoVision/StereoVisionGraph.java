@@ -21,6 +21,7 @@ import com.analog.lyric.benchmarking.utils.doublespace.DoubleSpaceFactory;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 
 public class StereoVisionGraph
@@ -127,11 +128,11 @@ public class StereoVisionGraph
 	private static class rho_p extends FactorFunction
 	{
 		@Override
-		public double eval(Object... args)
+		public final double evalEnergy(Value[] args)
 		{
-			int ds = (Integer) args[0];
-			int dt = (Integer) args[1];
-			return (1 - ep) * Math.exp(-Math.abs(ds - dt) / sigmaP) + ep;
+			int ds = args[0].getInt();
+			int dt = args[1].getInt();
+			return -Math.log( (1 - ep) * Math.exp(-Math.abs(ds - dt) / sigmaP) + ep );
 		}
 	}
 

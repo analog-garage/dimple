@@ -16,10 +16,11 @@
 
 package com.analog.lyric.dimple.model.values;
 
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.model.domains.IntDomain;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.domains.IntDomain;
 
 /**
  * Holder for {@code int} values.
@@ -121,6 +122,12 @@ public class IntValue extends Value
 	public void setInt(int value)
 	{
 		_value = value;
+	}
+	
+	@Override
+	public void setBoolean(boolean value)
+	{
+		_value = value ? 1 : 0;
 	}
 	
 	@Override

@@ -288,9 +288,9 @@ public class FactorFunctionWithConstants extends FactorFunction
 	}
 	
 	@Override
-	public void evalDeterministic(Object[] arguments)
+	public void evalDeterministic(Value[] arguments)
 	{
-		Object[] expandedArgumentList = expandInputList(arguments);
+		Value[] expandedArgumentList = expandValues(arguments);
 		_factorFunction.evalDeterministic(expandedArgumentList);
 		
 		// Replace the original argument list entries, leaving out constant indices
@@ -299,7 +299,7 @@ public class FactorFunctionWithConstants extends FactorFunction
 		for (int iExp = 0, iOrig = 0, iConst = 0; iExp < numExpandedArguments; iExp++)
 		{
 			if (iExp != ((iConst >= numConsts) ? -1 : _constantIndices[iConst]))
-				arguments[iOrig++] = expandedArgumentList[iExp];
+				arguments[iOrig++].setFrom(expandedArgumentList[iExp]);
 			else
 				iConst++;
 		}
@@ -364,7 +364,7 @@ public class FactorFunctionWithConstants extends FactorFunction
 	
 	// Expand list of inputs to include the constants
 	// Assumes constant index list is already sorted
-	protected Object[] expandInputList(Object... input)
+	private Object[] expandInputList(Object... input)
 	{
 		int inputLength = input.length;
 		int constantLength = _constants.length;
@@ -386,7 +386,7 @@ public class FactorFunctionWithConstants extends FactorFunction
 		return expandedInputs;
 	}
 	
-	protected Value[] expandValues(Value[] values)
+	private Value[] expandValues(Value[] values)
 	{
 		int inputLength = values.length;
 		int constantLength = _constants.length;

@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.factorfunctions;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -52,21 +53,21 @@ public class Rayleigh extends FactorFunction
 	}
 	
     @Override
-	public double evalEnergy(Object... arguments)
+	public final double evalEnergy(Value[] arguments)
     {
     	int index = 0;
     	if (!_parametersConstant)
     	{
-    		_sigma = FactorFunctionUtilities.toDouble(arguments[index++]);				// First variable is sigma
+    		_sigma = arguments[index++].getDouble();				// First variable is sigma
     		_inverseSigmaSquared = 1/(_sigma*_sigma);
     		_halfInverseSigmaSquared = _inverseSigmaSquared * 0.5;
     		if (_sigma < 0) return Double.POSITIVE_INFINITY;
     	}
-    	int length = arguments.length;
+    	final int length = arguments.length;
     	double sum = 0;
     	for (; index < length; index++)
     	{
-    		double x = FactorFunctionUtilities.toDouble(arguments[index]);				// Remaining inputs are Rayleigh variables
+    		final double x = arguments[index].getDouble();				// Remaining inputs are Rayleigh variables
         	if (x < 0)
         		return Double.POSITIVE_INFINITY;
         	else

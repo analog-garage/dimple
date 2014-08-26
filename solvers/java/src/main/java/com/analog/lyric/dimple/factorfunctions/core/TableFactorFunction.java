@@ -18,10 +18,12 @@ package com.analog.lyric.dimple.factorfunctions.core;
 
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import org.eclipse.jdt.annotation.Nullable;
 
 
 public class TableFactorFunction extends FactorFunction
@@ -70,6 +72,24 @@ public class TableFactorFunction extends FactorFunction
     	return true;
 	}
 
+	@Override
+	public double evalEnergy(Value[] input)
+	{
+		return _factorTable.getEnergyForValues(input);
+	}
+
+	@Override
+	public double evalEnergy(Object... input)
+	{
+		return _factorTable.getEnergyForElements(input);
+	}
+	
+	@Override
+	public double eval(Value[] input)
+	{
+		return _factorTable.getWeightForValues(input);
+	}
+	
 	@Override
 	public double eval(Object... input)
 	{
@@ -120,12 +140,6 @@ public class TableFactorFunction extends FactorFunction
 	// For deterministic directed factors, evaluate the deterministic function output(s) given only the inputs
 	// The arguments are in the same order as eval and evalEnergy, but in this case the output values should be overridden by new values
 	@Override
-	public void evalDeterministic(Object[] arguments){_factorTable.evalDeterministic(arguments);}
+	public void evalDeterministic(Value[] arguments){_factorTable.evalDeterministic(arguments);}
 	
-	@Override
-	public boolean verifyValidForDirectionality(int [] directedTo, int [] directedFrom)
-	{
-		return true;
-	}
-
 }

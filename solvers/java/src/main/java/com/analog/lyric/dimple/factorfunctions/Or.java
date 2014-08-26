@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -32,32 +32,32 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 public class Or extends FactorFunction
 {
     @Override
-    public double evalEnergy(Object ... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
-    	boolean outValue = FactorFunctionUtilities.toBoolean(arguments[0]);
+    	final boolean outValue = arguments[0].getBoolean();
     	
     	boolean orValue = false;
     	for(int i = 1; i < arguments.length; ++i)
-    		orValue |= FactorFunctionUtilities.toBoolean(arguments[i]);
+    		orValue |= arguments[i].getBoolean();
 
     	return (orValue == outValue) ? 0 : Double.POSITIVE_INFINITY;
     }
     
     
     @Override
-    public final boolean isDirected()	{return true;}
+    public final boolean isDirected() {return true;}
     @Override
 	public final int[] getDirectedToIndices() {return new int[]{0};}
     @Override
 	public final boolean isDeterministicDirected() {return true;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
     	boolean orValue = false;
     	for(int i = 1; i < arguments.length; ++i)
-    		orValue |= FactorFunctionUtilities.toBoolean(arguments[i]);
+    		orValue |= arguments[i].getBoolean();
     	
     	// Replace the output value
-    	arguments[0] = FactorFunctionUtilities.booleanToClass(orValue, arguments[1].getClass());
+    	arguments[0].setBoolean(orValue);
     }
 }

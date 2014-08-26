@@ -18,10 +18,11 @@ package com.analog.lyric.dimple.model.domains;
 
 import java.util.Comparator;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.Comparators;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.values.Value;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class LargeJointDomainIndexer extends JointDomainIndexer
 {
@@ -115,6 +116,12 @@ public class LargeJointDomainIndexer extends JointDomainIndexer
 
 	@Override
 	public <T> T[] undirectedJointIndexToElements(int jointIndex, @Nullable T[] elements)
+	{
+		throw noJointIndexing("undirectedJointIndexToElements");
+	}
+
+	@Override
+	public Value[] undirectedJointIndexToValues(int jointIndex, Value[] elements)
 	{
 		throw noJointIndexing("undirectedJointIndexToElements");
 	}

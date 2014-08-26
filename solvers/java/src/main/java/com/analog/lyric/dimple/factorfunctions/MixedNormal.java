@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 public class MixedNormal extends FactorFunction
@@ -36,18 +36,18 @@ public class MixedNormal extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
-    	double a = FactorFunctionUtilities.toDouble(arguments[0]);
-    	int b = FactorFunctionUtilities.toInteger(arguments[1]);
+    	final double a = arguments[0].getDouble();
+    	final int b = arguments[1].getInt();
     	if (b == 0)
     	{
-    		double aRel = a - _mean0;
+    		final double aRel = a - _mean0;
     		return (aRel*aRel*_precision0 - Math.log(_precision0) ) * 0.5;
     	}
     	else
     	{
-    		double aRel = a - _mean1;
+    		final double aRel = a - _mean1;
     		return (aRel*aRel*_precision1 - Math.log(_precision1) ) * 0.5;
     	}
     }

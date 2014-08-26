@@ -24,6 +24,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.jcip.annotations.ThreadSafe;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
 
@@ -34,8 +37,9 @@ import com.analog.lyric.dimple.model.domains.DomainList;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
+import com.analog.lyric.dimple.model.values.RealValue;
 import com.analog.lyric.dimple.model.values.Value;
-import org.eclipse.jdt.annotation.Nullable;
+import com.analog.lyric.util.misc.Matlab;
 
 @ThreadSafe
 public abstract class FactorFunction
@@ -64,81 +68,61 @@ public abstract class FactorFunction
 	}
 
     /*------------------------
+     * Abstract methods
+     */
+    
+    // Evaluate the factor function with the specified values and return the energy
+    // All factor functions must implement this method
+	public abstract double evalEnergy(Value[] values);
+
+
+    /*------------------------
      * FactorFunction methods
      */
     
-    public boolean convertFactorTable(@Nullable JointDomainIndexer oldDomains, @Nullable JointDomainIndexer newDomains)
-    {
-    	boolean converted = false;
-    	
-    	if (oldDomains != null && newDomains != null)
-    	{
-    		ConcurrentMap<JointDomainIndexer, IFactorTable> tables = _factorTables.get();
-    		
-    		if (tables != null)
-    		{
-    			IFactorTable table = tables.get(oldDomains);
-    			if (table != null)
-    			{
-    				table.setConditional(Objects.requireNonNull(newDomains.getOutputSet()));
-    			}
-    		}
-    	}
-    	
-    	return converted;
-    }
-    
-	// WARNING WARNING WARNING
-	// At least one or the other of these must be overridden in a derived class.
-	// SHOULD override evalEnergy instead of eval, but for now can override one or the other.
-	// TODO: Eventually eval should be made final and so that only evalEnergy can be overridden.
+	// Evaluate the factor function energy using unwrapped object arguments
+	@Matlab
+	public double evalEnergy(Object... arguments)
+	{
+		final int size = arguments.length;
+		final Value[] values = new Value[size];
+		for (int i = 0; i < size; ++i)
+			values[i] = Value.create(arguments[i]);
+
+		return evalEnergy(values);
+	}
+
+	// Evaluate the factor and return a weight rather than an energy value
+	public double eval(Value[] values)
+	{
+		return Math.exp(-evalEnergy(values));
+	}
+
+	// Evaluate the factor and return a weight value using unwrapped object arguments
+	@Matlab
 	public double eval(Object... arguments)
 	{
 		return Math.exp(-evalEnergy(arguments));
 	}
-	public double evalEnergy(Object... arguments)
+	
+	// For deterministic-directed factor functions, set the value of the output variables given the input variables
+	// The default implementation does nothing; any deterministic-directed factor function must override this method
+	public void evalDeterministic(Value[] arguments)
 	{
-		return -Math.log(eval(arguments));
+	}
+	
+	// Used by MATLAB core Dimple code for discrete variables only
+    @Matlab
+	public @Nullable Object getDeterministicFunctionValue(Object... arguments)
+	{
+		Value[] fullArgumentList = new Value[arguments.length + 1];
+		for (int i = 0; i < arguments.length; i++)
+			fullArgumentList[i + 1] = Value.create(arguments[i]);
+		fullArgumentList[0] = RealValue.create();	// Ok to use RealValue since it will be a number, but we don't know what
+		evalDeterministic(fullArgumentList);
+		return fullArgumentList[0].getObject();
 	}
 
-	/**
-	 * Default version of evalEnergy that takes values; can be overridden to implement
-	 * a more efficient version that doesn't require copying the input array
-	 * @since 0.05
-	 */
-	public double evalEnergy(Value[] values)
-	{
-		final int size = values.length;
-		final Object[] objects = new Object[size];
-		for (int i = 0; i < size; ++i)
-			objects[i] = values[i].getObject();
-
-		return evalEnergy(objects);
-	}
-
-
-	/**
-	 * @since 0.05
-	 */
-	public void evalDeterministic(Object[] arguments)
-	{ }
-
-	/**
-	 * @since 0.05
-	 */
-	public void evalDeterministic(Factor factor, Value[] values)
-	{
-		final Object[] objects = Value.toObjects(values);
-		evalDeterministic(objects);
-		final int[] directedTo = factor.getDirectedTo();
-		if (directedTo != null)
-		{
-			for (int to : directedTo)
-			{
-				values[to].setObject(objects[to]);
-			}
-		}
-	}
 
 	
 	/**
@@ -163,15 +147,28 @@ public abstract class FactorFunction
 		return factorTableExists(factor.getDomainList().asJointDomainIndexer());
 	}
 
-
-	public Object getDeterministicFunctionValue(Object... arguments)
-	{
-		Object[] fullArgumentList = new Object[arguments.length + 1];
-		System.arraycopy(arguments, 0, fullArgumentList, 1, arguments.length);
-		evalDeterministic(fullArgumentList);
-		return fullArgumentList[0];
-	}
-
+	
+    public boolean convertFactorTable(@Nullable JointDomainIndexer oldDomains, @Nullable JointDomainIndexer newDomains)
+    {
+    	boolean converted = false;
+    	
+    	if (oldDomains != null && newDomains != null)
+    	{
+    		ConcurrentMap<JointDomainIndexer, IFactorTable> tables = _factorTables.get();
+    		
+    		if (tables != null)
+    		{
+    			IFactorTable table = tables.get(oldDomains);
+    			if (table != null)
+    			{
+    				table.setConditional(Objects.requireNonNull(newDomains.getOutputSet()));
+    			}
+    		}
+    	}
+    	
+    	return converted;
+    }
+    
 	public @Nullable int[] getDirectedToIndices(int numEdges)
 	{return getDirectedToIndices();}	// May depend on the number of edges
 
@@ -303,7 +300,7 @@ public abstract class FactorFunction
      * inputs and or outputs and only a small subset of inputs have changed (e.g. one when doing a single
      * Gibbs update).
      * <p>
-     * The default implementation delegates back to {@link #evalDeterministic(Object[])}, which
+     * The default implementation delegates back to {@link #evalDeterministic(Value[])}, which
      * will do a full update.
      * <p>
      * @param values is the array of output and input values that are maintained persistently. When this
@@ -323,18 +320,11 @@ public abstract class FactorFunction
     public boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues,
     	AtomicReference<int[]> changedOutputsHolder)
     {
-		Object[] tmp = Value.toObjects(values);
-		evalDeterministic(tmp);
-		Value.copyFromObjects(tmp, values);
+		evalDeterministic(values);
 		changedOutputsHolder.set(null);
 		return false;
     }
     
-    // REFACTOR: does anyone use this anymore. Should we remove?
-	public boolean verifyValidForDirectionality(int [] directedTo, int [] directedFrom)
-	{
-		return true;
-	}
 
     /*-------------------
      * Protected methods
@@ -350,7 +340,7 @@ public abstract class FactorFunction
     {
     	final FactorTable table = new FactorTable(domains);
 
-    	final Object[] elements = new Object[domains.size()];
+    	final Value[] elements = Value.createFromDomains(domains);
 
     	if (isDeterministicDirected() && domains.isDirected())
     	{
@@ -359,9 +349,9 @@ public abstract class FactorFunction
 
     		for (int inputIndex = 0; inputIndex < maxInput; ++inputIndex)
     		{
-    			domains.inputIndexToElements(inputIndex, elements);
+    			domains.inputIndexToValues(inputIndex, elements);
     			evalDeterministic(elements);
-    			outputs[inputIndex] = domains.outputIndexFromElements(elements);
+    			outputs[inputIndex] = domains.outputIndexFromValues(elements);
     		}
 
     		table.setDeterministicOutputIndices(outputs);
@@ -374,7 +364,7 @@ public abstract class FactorFunction
     		final int maxJoint = domains.getCardinality();
     		for (int jointIndex = 0; jointIndex < maxJoint; ++ jointIndex)
     		{
-    			domains.jointIndexToElements(jointIndex, elements);
+    			domains.jointIndexToValues(jointIndex, elements);
     			double energy = evalEnergy(elements);
     			if (!Double.isInfinite(energy))
     			{

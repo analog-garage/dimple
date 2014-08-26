@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -52,20 +52,20 @@ public class Subtract extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object ... arguments)
+    public final double evalEnergy(Value[] arguments)
     {
-    	int length = arguments.length;
-    	double out = FactorFunctionUtilities.toDouble(arguments[0]);
-    	double posIn = FactorFunctionUtilities.toDouble(arguments[1]);
+    	final int length = arguments.length;
+    	final double out = arguments[0].getDouble();
+    	final double posIn = arguments[1].getDouble();
 
     	double sum = posIn;
     	for (int i = 2; i < length; i++)
-    		sum -= FactorFunctionUtilities.toDouble(arguments[i]);
+    		sum -= arguments[i].getDouble();
     	
     	if (_smoothingSpecified)
     	{
-    		double diff = sum - out;
-    		double potential = diff*diff;
+    		final double diff = sum - out;
+    		final double potential = diff*diff;
     		return potential*_beta;
     	}
     	else
@@ -76,21 +76,21 @@ public class Subtract extends FactorFunction
     
     
     @Override
-    public final boolean isDirected()	{return true;}
+    public final boolean isDirected() {return true;}
     @Override
 	public final int[] getDirectedToIndices() {return new int[]{0};}
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministic(Object[] arguments)
+	public final void evalDeterministic(Value[] arguments)
     {
-    	int length = arguments.length;
+    	final int length = arguments.length;
 
-    	double posIn = FactorFunctionUtilities.toDouble(arguments[1]);
+    	final double posIn = arguments[1].getDouble();
     	double sum = posIn;
     	for (int i = 2; i < length; i++)
-    		sum -= FactorFunctionUtilities.toDouble(arguments[i]);
+    		sum -= arguments[i].getDouble();
     	
-    	arguments[0] = sum;		// Replace the output value
+    	arguments[0].setDouble(sum);		// Replace the output value
     }
 }

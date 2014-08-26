@@ -29,6 +29,8 @@ import java.util.Objects;
 import net.jcip.annotations.Immutable;
 import net.jcip.annotations.NotThreadSafe;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
@@ -39,8 +41,6 @@ import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer.Indices;
 import com.analog.lyric.dimple.model.values.Value;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import com.google.common.math.DoubleMath;
 
 /**
@@ -308,7 +308,7 @@ public class SparseFactorTable extends SparseFactorTableBase implements IFactorT
 	}
 
 	@Override
-	public void evalDeterministic(Object[] arguments)
+	public void evalDeterministic(Value[] arguments)
 	{
 		throw notDeterministic("evalDeterministic");
 	}
