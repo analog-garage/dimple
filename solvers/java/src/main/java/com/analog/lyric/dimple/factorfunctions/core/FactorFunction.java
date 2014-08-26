@@ -340,7 +340,7 @@ public abstract class FactorFunction
     {
     	final FactorTable table = new FactorTable(domains);
 
-    	final Value[] elements = Value.createFromDomains(domains);
+    	final Value[] values = Value.createFromDomains(domains);
 
     	if (isDeterministicDirected() && domains.isDirected())
     	{
@@ -349,9 +349,9 @@ public abstract class FactorFunction
 
     		for (int inputIndex = 0; inputIndex < maxInput; ++inputIndex)
     		{
-    			domains.inputIndexToValues(inputIndex, elements);
-    			evalDeterministic(elements);
-    			outputs[inputIndex] = domains.outputIndexFromValues(elements);
+    			domains.inputIndexToValues(inputIndex, values);
+    			evalDeterministic(values);
+    			outputs[inputIndex] = domains.outputIndexFromValues(values);
     		}
 
     		table.setDeterministicOutputIndices(outputs);
@@ -364,8 +364,8 @@ public abstract class FactorFunction
     		final int maxJoint = domains.getCardinality();
     		for (int jointIndex = 0; jointIndex < maxJoint; ++ jointIndex)
     		{
-    			domains.jointIndexToValues(jointIndex, elements);
-    			double energy = evalEnergy(elements);
+    			domains.jointIndexToValues(jointIndex, values);
+    			double energy = evalEnergy(values);
     			if (!Double.isInfinite(energy))
     			{
     				indexes.add(jointIndex);

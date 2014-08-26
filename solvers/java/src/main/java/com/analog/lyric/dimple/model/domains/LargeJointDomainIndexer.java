@@ -121,7 +121,7 @@ public class LargeJointDomainIndexer extends JointDomainIndexer
 	}
 
 	@Override
-	public Value[] undirectedJointIndexToValues(int jointIndex, Value[] elements)
+	public Value[] undirectedJointIndexToValues(int jointIndex, Value[] values)
 	{
 		throw noJointIndexing("undirectedJointIndexToElements");
 	}

@@ -199,7 +199,7 @@ public class StandardJointDomainIndexer extends JointDomainIndexer
 	}
 	
 	@Override
-	public final Value[] undirectedJointIndexToValues(int jointIndex, Value[] elements)
+	public final Value[] undirectedJointIndexToValues(int jointIndex, Value[] values)
 	{
 		final DiscreteDomain[] domains = _domains;
 		final int[] products = _products;
@@ -207,12 +207,25 @@ public class StandardJointDomainIndexer extends JointDomainIndexer
 		int product;
 		for (int i = products.length; --i >= 0;)
 		{
+			final Value value = values[i];
+			final DiscreteDomain domain = domains[i];
 			final int index = jointIndex / (product = products[i]);
-			Object element = domains[i].getElement(index);
-			elements[i].setObject(element);
+			if (value.getDomain() == domain)
+			{
+				// If domain matches, then use the faster setIndex method.
+				//
+				// Because domains are interned, the == check should be sufficient the vast
+				// majority of the time, and in the unlikely event it is not, setObject will
+				// still do the right thing.
+				value.setIndex(index);
+			}
+			else
+			{
+				value.setObject(domain.getElement(index));
+			}
 			jointIndex -= index * product;
 		}
-		return elements;
+		return values;
 	}
 	
 

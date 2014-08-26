@@ -391,7 +391,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		}
 		return indices;
 	}
-
+	
 	public final int[] elementsToIndices(Object[] elements)
 	{
 		return elementsToIndices(elements, null);
@@ -716,9 +716,10 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * if not {@link #isDirected()}.
 	 * <p>
 	 * @param inputIndex must be in range [0, {@link #getInputCardinality()}-1].
-	 * @param elements must have length equal to {@link #size()}.
+	 * @param values must have length equal to {@link #size()} and must be fully populated (i.e. no null entries)
+	 *   with {@link Value} objects with domain compatible with corresponding indexer domains.
 	 */
-	public void inputIndexToValues(int inputIndex, Value[] elements)
+	public void inputIndexToValues(int inputIndex, Value[] values)
 	{
 	}
 	
@@ -813,12 +814,12 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * Computes domain values corresponding to given joint index.
 	 * <p>
 	 * @param jointIndex a unique joint table index in the range [0,{@link #getCardinality()}).
-	 * @param elements if this is an array of length {@link #size()}, the computed values will
-	 * be placed in this array, otherwise a new array will be allocated.
+	 * @param values must have length equal to {@link #size()} and must be fully populated (i.e. no null entries)
+	 *   with {@link Value} objects with domain compatible with corresponding indexer domains.
 	 */
-	public Value[] jointIndexToValues(int jointIndex, Value[] elements)
+	public Value[] jointIndexToValues(int jointIndex, Value[] values)
 	{
-		return undirectedJointIndexToValues(jointIndex, elements);
+		return undirectedJointIndexToValues(jointIndex, values);
 	}
 	
 	/**
@@ -834,7 +835,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	/**
 	 * Computes domain values corresponding to given joint index.
 	 * <p>
-	 * Same as {@link #jointIndexToValues(int, Value[])} with null second argument.
+	 * @see #jointIndexToValues(int, Value[])
 	 */
 	public final Value[] jointIndexToValues(int jointIndex)
 	{
@@ -955,11 +956,12 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * of the elements if not {@link #isDirected()}.
 	 * <p>
 	 * @param outputIndex must be in range [0, {@link #getOutputCardinality()}-1].
-	 * @param elements must have length equal to {@link #size()}.
+	 * @param values must have length equal to {@link #size()} and must be fully populated (i.e. no null entries)
+	 *   with {@link Value} objects with domain compatible with corresponding indexer domains.
 	 */
-	public void outputIndexToValues(int outputIndex, Value[] elements)
+	public void outputIndexToValues(int outputIndex, Value[] values)
 	{
-		undirectedJointIndexToValues(outputIndex, elements);
+		undirectedJointIndexToValues(outputIndex, values);
 	}
 	
 	/**
@@ -1254,12 +1256,21 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		{
 			int j = subindices[i];
 			index = location / (product = products[j]);
-			Value elementsJ = elements[j];
-			DiscreteDomain domainsJ = domains[j];
-			if (elementsJ != null)
-				elementsJ.setObject(domainsJ.getElement(index));
+			final DiscreteDomain domain = domains[j];
+			final Value value = elements[j];
+			if (value.getDomain() == domain)
+			{
+				// If domain matches, then use the faster setIndex method.
+				//
+				// Because domains are interned, the == check should be sufficient the vast
+				// majority of the time, and in the unlikely event it is not, setObject will
+				// still do the right thing.
+				value.setIndex(index);
+			}
 			else
-				elementsJ = Value.create(domainsJ, domainsJ.getElement(index));
+			{
+				value.setObject(domain.getElement(index));
+			}
 			location -= index * product;
 		}
 	}
