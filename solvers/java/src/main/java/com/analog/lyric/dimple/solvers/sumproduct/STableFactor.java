@@ -21,6 +21,8 @@ import static com.analog.lyric.math.Utilities.*;
 import java.util.Arrays;
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.Selection;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
@@ -38,10 +40,15 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessag
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import org.eclipse.jdt.annotation.Nullable;
+import com.analog.lyric.dimple.solvers.optimizedupdate.FactorTableUpdateSettings;
+import com.analog.lyric.dimple.solvers.optimizedupdate.FactorUpdatePlan;
+import com.analog.lyric.dimple.solvers.optimizedupdate.ISTableFactorSupportingOptimizedUpdate;
+import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateApproach;
+import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateOptions;
+import com.analog.lyric.util.misc.Internal;
 
 
-public class STableFactor extends STableFactorDoubleArray implements IKBestFactor
+public class STableFactor extends STableFactorDoubleArray implements IKBestFactor, ISTableFactorSupportingOptimizedUpdate
 {
 	/*
 	 * We cache all of the double arrays we use during the update.  This saves
@@ -57,6 +64,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	protected boolean _updateDerivative = false;
 	protected boolean _dampingInUse = false;
 	
+	
 	/*--------------
 	 * Construction
 	 */
@@ -64,7 +72,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	public STableFactor(Factor factor)
 	{
 		super(factor);
-		
+
 		//TODO: should I recheck for factor table every once in a while?
 		if (factor.getFactorFunction().factorTableExists(getFactor()))
 		{
@@ -84,16 +92,37 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
     	configureDampingFromOptions();
 	    updateK(getOptionOrDefault(SumProductOptions.maxMessageSize));
 		
-		if (isOptimizedUpdateEnabled() && _factor.getSiblingCount() > 1)
+	    FactorUpdatePlan updatePlan = null;
+	    final FactorTableUpdateSettings factorTableUpdateSettings = getFactorTableUpdateSettings();
+	    if (factorTableUpdateSettings != null)
+	    {
+	    	updatePlan = factorTableUpdateSettings.getOptimizedUpdatePlan();
+	    }
+		if (updatePlan != null)
 		{
-			_tableFactorEngine = new TableFactorEngineOptimized(this);
+			_tableFactorEngine = new TableFactorEngineOptimized(this, updatePlan);
 		}
 		else
 		{
 			_tableFactorEngine = new TableFactorEngine(this);
 		}
 	}
-	
+
+	@Internal
+	@Nullable FactorTableUpdateSettings getFactorTableUpdateSettings()
+	{
+		ISolverFactorGraph rootGraph = getRootGraph();
+		if (rootGraph instanceof SFactorGraph)
+		{
+			final SFactorGraph sfg = (SFactorGraph) getRootGraph();
+			if (sfg != null)
+			{
+				return sfg.getFactorTableUpdateSettings(getFactor());
+			}
+		}
+		return null;
+	}
+
 	/*---------------------
 	 * ISolverNode methods
 	 */
@@ -227,83 +256,91 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		configureDampingFromOptions();
 	}
 	
+	@Override
 	public double getDamping(int index)
 	{
 		return _dampingParams.length > 0 ? _dampingParams[index] : 0.0;
 	}
-	
+
 	/**
 	 * Enables use of the optimized update algorithm on this factor, if its degree is greater than
 	 * 1. The optimized update algorithm is employed only when all of the factor's edges are updated
 	 * together with an update call. If the schedule instead uses update_edge, the algorithm is not
 	 * used.
+	 * <p>
+	 * This method is deprecated; instead set UpdateOptions.updateApproach.
 	 * 
 	 * @since 0.06
 	 */
+	@Deprecated
 	public void enableOptimizedUpdate()
 	{
-		setOption(SumProductOptions.enableOptimizedUpdate, true);
+		setOption(UpdateOptions.updateApproach, UpdateApproach.UPDATE_APPROACH_OPTIMIZED);
 	}
 
 	/**
 	 * Disables use of the optimized update algorithm on this factor.
+	 * <p>
+	 * This method is deprecated; instead set UpdateOptions.updateApproach.
 	 * 
 	 * @see #enableOptimizedUpdate()
 	 * @since 0.06
 	 */
+	@Deprecated
 	public void disableOptimizedUpdate()
 	{
-		setOption(SumProductOptions.enableOptimizedUpdate, false);
+		setOption(UpdateOptions.updateApproach, UpdateApproach.UPDATE_APPROACH_NORMAL);
 	}
 
 	/**
 	 * Reverts to the default setting for enabling of the optimized update algorithm, eliminating
 	 * the effect of previous calls to {@link #enableOptimizedUpdate()} or
 	 * {@link #disableOptimizedUpdate()}.
+	 * <p>
+	 * This method is deprecated; instead reset UpdateOptions.updateApproach.
 	 * 
 	 * @since 0.06
 	 */
+	@Deprecated
 	public void useDefaultOptimizedUpdateEnable()
 	{
-		unsetOption(SumProductOptions.enableOptimizedUpdate);
+		unsetOption(UpdateOptions.updateApproach);
 	}
 
 	/**
-	 * Indicates if the optimized update algorithm is enabled for this factor. If
-	 * {@link #enableOptimizedUpdate()} or {@link #disableOptimizedUpdate()} has been called,
-	 * returns accordingly. If neither has been called, or if their effect has been reset by
-	 * {@link #useDefaultOptimizedUpdateEnable()}, returns the default setting. Only the sum-product
-	 * solver supports the tree update algorithm; if the root graph is for a different solver,
-	 * always returns false.
+	 * Returns the effective update approach for the factor. If the update approach is set to
+	 * automatic, this value is not valid until the graph is initialized. Note that a factor
+	 * with only one edge always employs the normal update approach.
 	 * 
-	 * @return True if the tree update algorithm is enabled on this factor.
-	 * @since 0.06
+	 * @since 0.07
 	 */
-	public boolean isOptimizedUpdateEnabled()
+	public UpdateApproach getEffectiveUpdateApproach()
 	{
-		ISolverFactorGraph rootGraph = getRootGraph();
-		if (rootGraph instanceof SFactorGraph)
+		FactorTableUpdateSettings updateSettings = getFactorTableUpdateSettings();
+		if (updateSettings != null && updateSettings.useOptimizedUpdate())
 		{
-			SFactorGraph sfg = (SFactorGraph) rootGraph;
-			if (sfg.isOptimizedUpdateSupported())
-			{
-				return getOptionOrDefault(SumProductOptions.enableOptimizedUpdate);
-			}
+			return UpdateApproach.UPDATE_APPROACH_OPTIMIZED;
 		}
-		return false;
-	}
-
-	/**
-	 * Indicates if the optimized update algorithm enable has been explicitly set.
-	 * 
-	 * @return True if using an explicit setting. False if using the default.
-	 * @since 0.06
-	 */
-	protected boolean isOptimizedUpdateExplicitlySet()
-	{
-		return getOption(SumProductOptions.enableOptimizedUpdate) != null;
+		else
+		{
+			return UpdateApproach.UPDATE_APPROACH_NORMAL;
+		}
 	}
 	
+	@Internal
+	public boolean isAutomaticOptimizationDecisionMade()
+	{
+		FactorTableUpdateSettings updateSettings = getFactorTableUpdateSettings();
+		if (updateSettings != null)
+		{
+			return updateSettings.isAutomaticOptimizationDecisionMade();
+		}
+		else
+		{
+			return false;
+		}
+	}
+
 	public int getK()
 	{
 		return _k;
@@ -726,6 +763,18 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	public double[][] getOutPortMsgs()
 	{
 		return _outputMsgs;
+	}
+
+	@Override
+	public boolean isDampingInUse()
+	{
+		return _dampingInUse;
+	}
+
+	@Override
+	public double[] getSavedOutMsgArray(int _outPortNum)
+	{
+		return _savedOutMsgArray[_outPortNum];
 	}
 
 	/*------------------

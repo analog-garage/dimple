@@ -22,6 +22,7 @@ import java.util.Comparator;
 
 import cern.colt.list.IntArrayList;
 
+import com.analog.lyric.util.misc.Internal;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.math.DoubleMath;
@@ -559,5 +560,21 @@ public abstract class ArrayUtil
 		}
 
 		return null;
+	}
+
+	/**
+	 * Returns a copy of an int array, without the element at the specified index.
+	 * 
+	 * @param array The original array.
+	 * @param index The zero-based index of the element to exclude from the copy.
+	 * @since 0.06
+	 */
+	@Internal
+	public static int[] removeIntArrayEntry(final int[] array, final int index)
+	{
+		final int[] result = new int[array.length - 1];
+		System.arraycopy(array, 0, result, 0, index);
+		System.arraycopy(array, index + 1, result, index, result.length - index);
+		return result;
 	}
 }

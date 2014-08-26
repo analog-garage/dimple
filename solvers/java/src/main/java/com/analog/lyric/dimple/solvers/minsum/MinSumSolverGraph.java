@@ -16,10 +16,15 @@
 
 package com.analog.lyric.dimple.solvers.minsum;
 
+import java.util.Map;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Xor;
 import com.analog.lyric.dimple.factorfunctions.core.CustomFactorFunctionWrapper;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
@@ -27,6 +32,17 @@ import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.minsum.customFactors.CustomXor;
+import com.analog.lyric.dimple.solvers.optimizedupdate.CostEstimationTableWrapper;
+import com.analog.lyric.dimple.solvers.optimizedupdate.CostType;
+import com.analog.lyric.dimple.solvers.optimizedupdate.Costs;
+import com.analog.lyric.dimple.solvers.optimizedupdate.FactorTableUpdateSettings;
+import com.analog.lyric.dimple.solvers.optimizedupdate.FactorUpdatePlan;
+import com.analog.lyric.dimple.solvers.optimizedupdate.IMarginalizationStepEstimator;
+import com.analog.lyric.dimple.solvers.optimizedupdate.ISFactorGraphToCostEstimationTableWrapperAdapter;
+import com.analog.lyric.dimple.solvers.optimizedupdate.ISFactorGraphToCostOptimizerAdapter;
+import com.analog.lyric.dimple.solvers.optimizedupdate.ITableWrapperAdapter;
+import com.analog.lyric.dimple.solvers.optimizedupdate.IUpdateStepEstimator;
+import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateCostOptimizer;
 
 /**
  * Solver-specific factor graph for min-sum solver.
@@ -48,6 +64,7 @@ public class MinSumSolverGraph extends SFactorGraphBase
 	@Override
 	public void initialize()
 	{
+		UpdateCostOptimizer.optimize(_factorGraph, _costOptimizerHelper);
 		_damping = getOptionOrDefault(MinSumOptions.damping);
 		super.initialize();
 	}
@@ -111,12 +128,154 @@ public class MinSumSolverGraph extends SFactorGraphBase
 		return _damping;
 	}
 
+	/**
+	 * Indicates if this solver supports the optimized update algorithm.
+	 * 
+	 * @since 0.06
+	 */
+	public boolean isOptimizedUpdateSupported()
+	{
+		return true;
+	}
+
 	/*
 	 * 
 	 */
 	@Override
 	protected void doUpdateEdge(int edge)
 	{
+	}
+
+	private final ISFactorGraphToCostOptimizerAdapter _costOptimizerHelper = new ISFactorGraphToCostOptimizerAdapter() {
+
+		private final ISFactorGraphToCostEstimationTableWrapperAdapter _helper = new ISFactorGraphToCostEstimationTableWrapperAdapter() {
+
+			@Override
+			public IUpdateStepEstimator createSparseOutputStepEstimator(CostEstimationTableWrapper tableWrapper)
+			{
+				return new TableFactorEngineOptimized.SparseOutputStepEstimator(tableWrapper);
+			}
+
+			@Override
+			public IUpdateStepEstimator createDenseOutputStepEstimator(CostEstimationTableWrapper tableWrapper)
+			{
+				return new TableFactorEngineOptimized.DenseOutputStepEstimator(tableWrapper);
+			}
+
+			@Override
+			public IMarginalizationStepEstimator
+				createSparseMarginalizationStepEstimator(CostEstimationTableWrapper tableWrapper,
+					int inPortNum,
+					int dimension,
+					CostEstimationTableWrapper g)
+			{
+				return new TableFactorEngineOptimized.SparseMarginalizationStepEstimator(tableWrapper, inPortNum,
+					dimension, g);
+			}
+
+			@Override
+			public IMarginalizationStepEstimator
+				createDenseMarginalizationStepEstimator(CostEstimationTableWrapper tableWrapper,
+					int inPortNum,
+					int dimension,
+					CostEstimationTableWrapper g)
+			{
+				return new TableFactorEngineOptimized.DenseMarginalizationStepEstimator(tableWrapper, inPortNum,
+					dimension, g);
+			}
+		};
+
+		@Override
+		public Costs estimateCostOfNormalUpdate(IFactorTable factorTable)
+		{
+			Costs result = new Costs();
+			int numPorts = factorTable.getDimensions();
+			for (int outPortNum = 0; outPortNum < numPorts; outPortNum++)
+			{
+				result.add(estimateCost_updateEdge(factorTable, outPortNum));
+			}
+			return result;
+		}
+
+		private Costs estimateCost_updateEdge(IFactorTable factorTable, int outPortNum)
+		{
+			long accesses = 0;
+			int nonZeroEntries = factorTable.countNonZeroWeights();
+			int numPorts = factorTable.getDimensions();
+			int outputMsg_length = factorTable.getDomainIndexer().getDomainSize(outPortNum);
+			// 1. set each output message entry to +infinity
+			// 2. read each output message value to find the minimum
+			// 3. read each output message, subtract the minimum, and
+			// 4. rewrite it
+			accesses += 4 * outputMsg_length;
+			// for each table entry:
+			// 1. read the entry's indices
+			accesses += nonZeroEntries;
+			// 2. read the entry's value
+			accesses += nonZeroEntries;
+			// 3. for each port:
+			// 3.1. read the input message from the port
+			// 3.2. read the index for the port
+			// 3.3. read the input message value at the port's index
+			// 3.4. read the output message from each port
+			// 3.5. read the output message index for the port
+			// 3.6. read the input message for the port
+			// 3.7. read the value from the input message
+			// 3.8. read the value from the output message
+			accesses += nonZeroEntries * numPorts * 8;
+			// 3.9. if smaller, store the new output message value
+			// ignored in the estimate, but much smaller than the above values
+			Costs result = new Costs();
+			result.put(CostType.ACCESSES, (double) accesses);
+			return result;
+		}
+
+		@Override
+		public Costs estimateCostOfOptimizedUpdate(IFactorTable factorTable, final double sparseThreshold)
+		{
+			return FactorUpdatePlan.estimateCosts(factorTable, _helper, sparseThreshold);
+		}
+
+		@Override
+		public int getWorkers(FactorGraph factorGraph)
+		{
+			MinSumSolverGraph sfg = (MinSumSolverGraph) factorGraph.getSolver();
+			if (sfg != null && sfg.useMultithreading())
+			{
+				return sfg.getMultithreadingManager().getNumWorkers();
+			}
+			else
+			{
+				return 1;
+			}
+		}
+
+		@Override
+		public void
+			putFactorTableUpdateSettings(Map<IFactorTable, FactorTableUpdateSettings> optionsValueByFactorTable)
+		{
+			_factorTableUpdateSettings = optionsValueByFactorTable;
+		}
+
+		@Override
+		public ITableWrapperAdapter getTableWrapperAdapter(double sparseThreshold)
+		{
+			return TableFactorEngineOptimized.getHelper(sparseThreshold);
+		}
+	};
+	
+	private @Nullable Map<IFactorTable, FactorTableUpdateSettings> _factorTableUpdateSettings;
+
+	@Nullable FactorTableUpdateSettings getFactorTableUpdateSettings(Factor factor)
+	{
+		final Map<IFactorTable, FactorTableUpdateSettings> map = _factorTableUpdateSettings;
+		FactorTableUpdateSettings result = null;
+		if (map != null && factor.hasFactorTable())
+		{
+			IFactorTable factorTable = factor.getFactorTable();
+			result = map.get(factorTable);
+		}
+		return result;
 	}
 
 }

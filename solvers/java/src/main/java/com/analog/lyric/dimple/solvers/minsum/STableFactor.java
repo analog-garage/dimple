@@ -18,9 +18,12 @@ package com.analog.lyric.dimple.solvers.minsum;
 
 import java.util.Arrays;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.Selection;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
@@ -30,9 +33,15 @@ import com.analog.lyric.dimple.solvers.core.kbest.IKBestFactor;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorEngine;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorTableEngine;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergyMessage;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.dimple.solvers.optimizedupdate.FactorTableUpdateSettings;
+import com.analog.lyric.dimple.solvers.optimizedupdate.FactorUpdatePlan;
+import com.analog.lyric.dimple.solvers.optimizedupdate.ISTableFactorSupportingOptimizedUpdate;
+import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateApproach;
+import com.analog.lyric.util.misc.Internal;
 
-public class STableFactor extends STableFactorDoubleArray implements IKBestFactor
+public class STableFactor extends STableFactorDoubleArray implements IKBestFactor, ISTableFactorSupportingOptimizedUpdate
 {
 	/*
 	 * We cache all of the double arrays we use during the update.  This saves
@@ -41,7 +50,8 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
     protected double [][] _savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
     protected double [] _dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
     protected int _k;
-    protected TableFactorEngine _tableFactorEngine;
+    @Nullable
+    private TableFactorEngine _tableFactorEngine;
     protected KBestFactorEngine _kbestFactorEngine;
     protected boolean _kIsSmallerThanDomain;
     protected boolean _dampingInUse = false;
@@ -53,8 +63,6 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
     public STableFactor(Factor factor)
 	{
     	super(factor);
-    	
-		_tableFactorEngine = new TableFactorEngine(this);
 		
 		if (factor.getFactorFunction().factorTableExists(getFactor()))
 			_kbestFactorEngine = new KBestFactorTableEngine(this);
@@ -62,19 +70,48 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 			_kbestFactorEngine = new KBestFactorEngine(this);
 	}
     
+	@Override
+	public void initialize()
+	{
+		super.initialize();
+    	configureDampingFromOptions();
+	    updateK(getOptionOrDefault(MinSumOptions.maxMessageSize));
+	    
+	    FactorUpdatePlan updatePlan = null;
+	    final FactorTableUpdateSettings factorTableUpdateSettings = getFactorTableUpdateSettings();
+	    if (factorTableUpdateSettings != null)
+	    {
+	    	updatePlan = factorTableUpdateSettings.getOptimizedUpdatePlan();
+	    }
+		if (updatePlan != null)
+		{
+			_tableFactorEngine = new TableFactorEngineOptimized(this, updatePlan);
+		}
+		else
+		{
+			_tableFactorEngine = new TableFactorEngine(this);
+		}
+	}
+
+	@Internal
+	@Nullable FactorTableUpdateSettings getFactorTableUpdateSettings()
+	{
+		ISolverFactorGraph rootGraph = getRootGraph();
+		if (rootGraph instanceof MinSumSolverGraph)
+		{
+			final MinSumSolverGraph sfg = (MinSumSolverGraph) getRootGraph();
+			if (sfg != null)
+			{
+				return sfg.getFactorTableUpdateSettings(getFactor());
+			}
+		}
+		return null;
+	}
+
     /*---------------------
      * ISolverNode methods
      */
-
-    @Override
-    public void initialize()
-    {
-    	super.initialize();
-    	
-    	configureDampingFromOptions();
-	    updateK(getOptionOrDefault(MinSumOptions.maxMessageSize));
-    }
-    
+   
 	@Override
 	public void moveMessages(ISolverNode other, int portNum, int otherPort)
 	{
@@ -83,14 +120,27 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	    	_savedOutMsgArray[portNum] = ((STableFactor)other)._savedOutMsgArray[otherPort];
 	    
 	}
-	
+
+	private TableFactorEngine getTableFactorEngine()
+	{
+		final TableFactorEngine tableFactorEngine = _tableFactorEngine;
+		if (tableFactorEngine != null)
+		{
+			return tableFactorEngine;
+		}
+		else
+		{
+			throw new DimpleException("The solver was not initialized. Use solve() or call initialize() before iterate().");
+		}
+	}
+
 	@Override
 	protected void doUpdate()
 	{
 		if (_kIsSmallerThanDomain)
 			_kbestFactorEngine.update();
 		else
-			_tableFactorEngine.update();
+			getTableFactorEngine().update();
 	}
 	
 	@Override
@@ -99,7 +149,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		if (_kIsSmallerThanDomain)
 			_kbestFactorEngine.updateEdge(outPortNum);
 		else
-			_tableFactorEngine.updateEdge(outPortNum);
+			getTableFactorEngine().updateEdge(outPortNum);
 
 	}
 	
@@ -152,10 +202,30 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		table.setRepresentation(FactorTableRepresentation.SPARSE_ENERGY_WITH_INDICES);
 	}
 	
+	/**
+	 * Returns the effective update approach for the factor. If the update approach is set to
+	 * automatic, this value is not valid until the graph is initialized. Note that factors
+	 * with only one edge, and factors that do not update all edges together according to the
+	 * schedule, always employ the normal update approach.
+	 * 
+	 * @since 0.07
+	 */
+	public UpdateApproach getEffectiveUpdateApproach()
+	{
+		final FactorTableUpdateSettings factorTableUpdateSettings = getFactorTableUpdateSettings();
+		if (factorTableUpdateSettings != null && factorTableUpdateSettings.useOptimizedUpdate())
+		{
+			return UpdateApproach.UPDATE_APPROACH_OPTIMIZED;
+		}
+		else
+		{
+			return UpdateApproach.UPDATE_APPROACH_NORMAL;
+		}
+	}
+    
 	/*----------------------
 	 * IKBestFactor methods
 	 */
-    
 	@Override
 	public FactorFunction getFactorFunction()
 	{
@@ -273,10 +343,23 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		MinSumOptions.nodeSpecificDamping.set(this, params);
 		configureDampingFromOptions();
 	}
-	
+		
+	@Override
 	public double getDamping(int index)
 	{
 		return _dampingParams.length > 0 ? _dampingParams[index] : 0.0;
+	}
+
+	@Override
+	public boolean isDampingInUse()
+	{
+		return _dampingInUse;
+	}
+
+	@Override
+	public double[] getSavedOutMsgArray(int _outPortNum)
+	{
+		return _savedOutMsgArray[_outPortNum];
 	}
 
 	/*------------------
