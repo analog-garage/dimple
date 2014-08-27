@@ -375,7 +375,6 @@ public class TestValue extends DimpleTestBase
 		Value value2 = value.clone();
 		assertNotSame(value, value2);
 		assertSame(value.getClass(), value2.getClass());
-		assertEquals(value.getObject(), value2.getObject());
 		assertEquals(value.getIndex(), value2.getIndex());
 		assertTrue(value.valueEquals(value2));
 		

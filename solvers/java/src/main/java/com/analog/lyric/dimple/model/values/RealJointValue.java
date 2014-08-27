@@ -19,9 +19,10 @@ package com.analog.lyric.dimple.model.values;
 import java.util.Arrays;
 import java.util.Objects;
 
-import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.model.domains.RealJointDomain;
 
 public class RealJointValue extends Value
 {
@@ -45,7 +46,7 @@ public class RealJointValue extends Value
 
 	RealJointValue(RealJointValue that)
 	{
-		_value = that._value; // should we deep copy?
+		_value = that._value.clone();
 	}
 	
 	/*----------------

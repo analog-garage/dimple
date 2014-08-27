@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.factorfunctions.core;
 
+import static java.util.Objects.*;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
@@ -122,6 +124,30 @@ public abstract class FactorFunction
 		evalDeterministic(fullArgumentList);
 		return fullArgumentList[0].getObject();
 	}
+    
+    // Run evalDeterministic without overwriting the arguments; instead copying the arguments and returning the result as an output
+    public Value[] evalDeterministicToCopy(Value[] arguments)
+    {
+    	final int argumentsLength = arguments.length;
+    	final int[] outputIndices = requireNonNull(getDirectedToIndices(argumentsLength));
+    	final int outputIndicesLength = outputIndices.length;
+    	final Value[] copy = new Value[argumentsLength];
+    	
+    	// Clone the Values for output indices only
+    	for (int i = 0; i < outputIndicesLength; i++)
+    	{
+    		final int index = outputIndices[i];
+    		copy[index] = arguments[i].clone();	// Assumes a deep clone
+    	}
+    	
+    	// Copy the Values for other indices
+    	for (int i = 0; i < argumentsLength; i++)
+    		if (copy[i] == null)
+    			copy[i] = arguments[i];
+    	
+    	evalDeterministic(copy);
+    	return copy;
+    }
 
 
 	
