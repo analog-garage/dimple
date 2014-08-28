@@ -18,6 +18,8 @@ package com.analog.lyric.options;
 
 import net.jcip.annotations.Immutable;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 
 /**
  * Option key for an enumerated type.
@@ -78,11 +80,9 @@ public class EnumOptionKey<E extends Enum<E>> extends OptionKey<E>
 	 * @throws ClassCastException if value is not a string or an instance of {@code E}.
 	 */
 	@Override
-	public E convertToValue(Object value)
+	public E convertToValue(@Nullable Object value)
 	{
-		final Class<?> valueClass = value.getClass();
-		
-		if (valueClass == String.class)
+		if (value instanceof String)
 		{
 			value = Enum.valueOf(_enumClass, (String)value);
 		}

@@ -34,6 +34,12 @@ public class PFactorFunction extends PObject
 	 */
 
 	@Override
+	public FactorFunction getDelegate()
+	{
+		return  _factorFunction;
+	}
+	
+	@Override
 	public FactorFunction getModelerObject()
 	{
 		return _factorFunction;

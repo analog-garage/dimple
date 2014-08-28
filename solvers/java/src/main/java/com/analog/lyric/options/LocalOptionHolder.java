@@ -17,6 +17,8 @@
 package com.analog.lyric.options;
 
 import java.io.Serializable;
+import java.util.AbstractCollection;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
@@ -60,7 +62,7 @@ public class LocalOptionHolder extends AbstractOptionHolder
 	}
 	
 	@Override
-	public Iterable<IOption<? extends Serializable>> getLocalOptions()
+	public Collection<IOption<? extends Serializable>> getLocalOptions()
 	{
 		final ConcurrentMap<IOptionKey<?>,Object> localOptions = _localOptions;
 		
@@ -69,7 +71,7 @@ public class LocalOptionHolder extends AbstractOptionHolder
 			return Collections.emptyList();
 		}
 
-		return new Iterable<IOption<? extends Serializable>>() {
+		return new AbstractCollection<IOption<? extends Serializable>>() {
 
 			@Override
 			public Iterator<IOption<? extends Serializable>> iterator()
@@ -91,6 +93,12 @@ public class LocalOptionHolder extends AbstractOptionHolder
 						return Option.create(entry.getKey(), entry.getValue());
 					}
 				};
+			}
+
+			@Override
+			public int size()
+			{
+				return localOptions.size();
 			}
 			
 		};

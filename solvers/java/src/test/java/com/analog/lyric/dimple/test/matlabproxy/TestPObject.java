@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.test.matlabproxy;
 
 import static org.junit.Assert.*;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.matlabproxy.PDomain;
@@ -37,7 +38,13 @@ public class TestPObject extends DimpleTestBase
 	public void test()
 	{
 		// Test defaults
-		PObject obj = new PObject() {};
+		PObject obj = new PObject() {
+			@Override
+			public @Nullable Object getDelegate()
+			{
+				return null;
+			}
+		};
 		assertInvariants(obj);
 		assertNull(obj.getModelerObject());
 		assertFalse(obj.isDiscrete());

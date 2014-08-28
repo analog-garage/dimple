@@ -127,7 +127,7 @@ classdef EventLogger < handle
             %        are given by the listEvents() method.
             % source: the Dimple object for which events of the given type
             %         are to be logged. Typically this will be a
-            %         FactorGraph object, but it could be a subgraph,
+            %         FactorGraph or the DimpleEnvironment object, but it could be a subgraph,
             %         variable, or factor as well.
             %
             % Enables logging of the specified event type over the set of
@@ -139,6 +139,8 @@ classdef EventLogger < handle
             % See also listEvents, unlog, clear
             if (isa(source,'MatrixObject'))
                 source = source.VectorObject;
+            elseif isa(source,'DimpleEnvironment')
+                source = source.PEnvironment;
             end
             obj.IEventLogger.log(event,source);
         end
@@ -152,6 +154,8 @@ classdef EventLogger < handle
             % See also log, clear.
             if (isa(source,'MatrixObject'))
                 source = source.VectorObject;
+            elseif isa(source,'DimpleEnvironment')
+                source = source.PEnvironment;
             end
             obj.IEventLogger.unlog(event,source);
         end

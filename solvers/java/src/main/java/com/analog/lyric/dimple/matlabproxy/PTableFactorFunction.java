@@ -52,6 +52,12 @@ public class PTableFactorFunction extends PFactorFunction
 	 */
 	
 	@Override
+	public TableFactorFunction getDelegate()
+	{
+		return (TableFactorFunction)super.getDelegate();
+	}
+	
+	@Override
 	public boolean isDiscrete()
 	{
 		return true;

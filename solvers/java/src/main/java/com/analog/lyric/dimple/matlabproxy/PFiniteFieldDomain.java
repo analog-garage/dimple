@@ -33,6 +33,12 @@ public class PFiniteFieldDomain extends PDiscreteDomain
 	/*-----------------
 	 * PObject methods
 	 */
+
+	@Override
+	public FiniteFieldDomain getDelegate()
+	{
+		return (FiniteFieldDomain)super.getDelegate();
+	}
 	
 	@Override
 	public FiniteFieldDomain getModelerObject()

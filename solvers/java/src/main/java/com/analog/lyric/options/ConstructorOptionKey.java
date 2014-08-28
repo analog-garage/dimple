@@ -85,7 +85,7 @@ public abstract class ConstructorOptionKey<SuperClass> extends ClassOptionKey<Su
 	 * with context class loader.
 	 */
 	@Override
-	public Class<? extends SuperClass> convertToValue(Object value)
+	public Class<? extends SuperClass> convertToValue(@Nullable Object value)
 	{
 		if (value instanceof String)
 		{

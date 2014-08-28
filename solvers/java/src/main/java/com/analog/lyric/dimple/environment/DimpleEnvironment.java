@@ -21,12 +21,13 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ConstructorRegistry;
-import com.analog.lyric.dimple.events.IDimpleEventListener;
+import com.analog.lyric.dimple.events.DimpleEventListener;
 import com.analog.lyric.dimple.events.IDimpleEventSource;
 import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
@@ -102,6 +103,10 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	
 	@SuppressWarnings("deprecation")
 	private final DimpleOptionRegistry _optionRegistry = new DimpleOptionRegistry();
+	
+	@GuardedBy("_eventListenerLock")
+	private volatile @Nullable DimpleEventListener _eventListener = null;
+	private final Object _eventListenerLock = new Object();
 	
 	/*--------------
 	 * Construction
@@ -201,13 +206,74 @@ public class DimpleEnvironment extends DimpleOptionHolder
 		return null;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * @see #setEventListener(DimpleEventListener)
+	 * @see #createEventListener()
+	 */
 	@Override
-	public @Nullable IDimpleEventListener getEventListener()
+	public @Nullable DimpleEventListener getEventListener()
 	{
-		// TODO: move event listener here from FactorGraph
-		return null;
+		// For speed, we do not synchronize reads.
+		return _eventListener;
+	}
+	
+	/**
+	 * Sets event listener to specified value.
+	 * <p>
+	 * If you just want to force creation of a default listener instance, then use
+	 * {@link #createEventListener()} instead.
+	 * <p>
+	 * This will invoke notify all event sources registered in the previous and
+	 * new listeners that the listener has changed by invoking their
+	 * {@link IDimpleEventSource#notifyListenerChanged()} methods.
+	 * <p>
+	 * @param listener
+	 * @see #getEventListener()
+	 * @see #createEventListener()
+	 * @since 0.07
+	 */
+	public synchronized void setEventListener(@Nullable DimpleEventListener listener)
+	{
+		synchronized(_eventListenerLock)
+		{
+			DimpleEventListener prevListener = _eventListener;
+			if (prevListener != listener)
+			{
+				_eventListener = listener;
+				if (prevListener != null)
+				{
+					prevListener.notifyListenerChanged();
+				}
+				if (listener != null)
+				{
+					listener.notifyListenerChanged();
+				}
+				notifyListenerChanged();
+			}
+		}
 	}
 
+	/**
+	 * Returns event listener, creating it if previously null.
+	 * @see #setEventListener(DimpleEventListener)
+	 * @since 0.07
+	 */
+	public synchronized DimpleEventListener createEventListener()
+	{
+		synchronized(_eventListenerLock)
+		{
+			DimpleEventListener listener = _eventListener;
+			if (listener == null)
+			{
+				_eventListener = listener = new DimpleEventListener();
+			}
+			
+			return listener;
+		}
+	}
+	
 	@Override
 	public @Nullable IDimpleEventSource getEventParent()
 	{
@@ -231,9 +297,16 @@ public class DimpleEnvironment extends DimpleOptionHolder
 		return null;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * <b>Currently this method does not do anything on {@code DimpleEnvironment}.</b>
+	 */
 	@Override
 	public void notifyListenerChanged()
 	{
+		// TODO: this does not do anything right now. But if the environment ever ends up storing
+		// references to the models it contains, we might want to pass this on to them...
 	}
 	
 	/*----------------------------

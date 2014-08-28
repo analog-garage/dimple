@@ -28,8 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
 
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.events.DimpleEvent;
 import com.analog.lyric.dimple.events.DimpleEventHandler;
 import com.analog.lyric.dimple.events.DimpleEventListener;
@@ -50,7 +52,6 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
 import com.analog.lyric.dimple.test.DimpleTestBase;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Unit test for {@link SNode} base class.
@@ -334,8 +335,7 @@ public class TestSNode extends DimpleTestBase
 		// Test message events
 		//
 		
-		DimpleEventListener listener = new DimpleEventListener();
-		fg.setEventListener(listener);
+		DimpleEventListener listener = DimpleEnvironment.active().createEventListener();
 		assertSame(listener, fg.getEventListener());
 		assertSame(listener, n1.getEventListener());
 		assertFalse(listener.isListeningFor(TestEvent.class, n1));
@@ -369,7 +369,7 @@ public class TestSNode extends DimpleTestBase
 		assertSame(n1, n1._createdEvents.get(0).getSource());
 		n1._createdEvents.clear();
 		
-		fg.setEventListener(null);
+		DimpleEnvironment.active().setEventListener(null);
 		n1.notifyListenerChanged();
 		n1.updateEdge(0);
 		n1.updateEdge(1);

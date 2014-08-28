@@ -25,8 +25,10 @@ import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
 
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.events.DimpleEvent;
 import com.analog.lyric.dimple.events.DimpleEventListener;
 import com.analog.lyric.dimple.events.DimpleEventLogger;
@@ -37,7 +39,6 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.test.DimpleTestBase;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.io.Files;
 
 /**
@@ -46,18 +47,22 @@ import com.google.common.io.Files;
  * @since 0.06
  * @author Christopher Barber
  */
+@SuppressWarnings({"null", "deprecation"})
 public class TestDimpleEventLogger extends DimpleTestBase
 {
-	@SuppressWarnings("null")
 	@Test
 	public void test() throws IOException
 	{
+		final DimpleEnvironment env = DimpleEnvironment.active();
+		assertNull(env.getEventListener());
+		
 		DimpleEventLogger logger = new DimpleEventLogger();
 		assertTrue(logger.isClear());
 		assertSame(System.err, logger.out());
 		assertEquals(0, logger.verbosity());
 		assertNull(logger.file());
 		assertTrue(logger.isOpen());
+		assertSame(env, logger.getEnvironment());
 		
 		logger.close();
 		assertFalse(logger.isOpen());
@@ -120,8 +125,8 @@ public class TestDimpleEventLogger extends DimpleTestBase
 		assertTrue(logger.isClear());
 		logger.log(TestEvent.class, fg);
 		assertFalse(logger.isClear());
-		DimpleEventListener listener = fg.getEventListener();
-		assertTrue(listener.isDefault());
+		DimpleEventListener listener = env.getEventListener();
+		assertSame(listener, fg.getEventListener());
 		listener.raiseEvent(new TestEvent(fg));
 
 		List<DimpleEventLogger.LogEntry> entries = logger.logEntries();
@@ -179,24 +184,13 @@ public class TestDimpleEventLogger extends DimpleTestBase
 		assertSame(listener, fg.getEventListener());
 
 		logger.log(TestEvent.class, d);
+		assertTrue(listener.isListeningFor(TestEvent.class, d));
 		fg.setEventListener(null);
+		assertTrue(listener.isListeningFor(TestEvent.class, d));
 		// No entry removed because listener has changed.
 		assertEquals(0, logger.unlog(TestEvent.class,  d));
 		assertEquals(1, logger.logEntries().size());
-		assertTrue(listener.isListeningFor(TestEvent.class, d));
 		logger.clear();
-		assertFalse(listener.isListeningFor(TestEvent.class, d));
-		
-		FactorGraph fg2 = new FactorGraph();
-		fg2.setEventListener(listener);
-		
-		logger.log(TestEvent.class, fg);
-		fg.getEventListener().block(FactorAddEvent.class, false, fg);
-		logger.log(TestEvent.class, fg2);
-		logger.clear();
-		assertTrue(fg.getEventListener().isDefault());
-		assertFalse(fg2.getEventListener().isDefault());
-		assertSame(listener, fg2.getEventListener());
 	}
 	
 	private static class TestEvent extends DimpleEvent

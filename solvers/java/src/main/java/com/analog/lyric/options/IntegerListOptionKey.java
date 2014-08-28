@@ -16,6 +16,8 @@
 
 package com.analog.lyric.options;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 
 /**
  * Key for options with list of integer values.
@@ -64,7 +66,7 @@ public class IntegerListOptionKey extends OptionKey<OptionIntegerList>
 	}
 
 	@Override
-	public OptionIntegerList convertToValue(Object value)
+	public OptionIntegerList convertToValue(@Nullable Object value)
 	{
 		return OptionIntegerList.fromObject(value);
 	}

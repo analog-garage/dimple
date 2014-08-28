@@ -30,10 +30,13 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import net.jcip.annotations.ThreadSafe;
 
-import com.analog.lyric.collect.ReleasableIterator;
-import com.analog.lyric.collect.Supers;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.collect.ReleasableIterator;
+import com.analog.lyric.collect.Supers;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
+import com.analog.lyric.util.misc.Internal;
 import com.google.common.collect.MapMaker;
 
 
@@ -118,6 +121,7 @@ public class DimpleEventListener implements IDimpleEventListener
 	
 	private final ConcurrentMap<IDimpleEventSource, Entry[]> _handlersForSource;
 	
+	@Deprecated
 	private static final AtomicReference<DimpleEventListener> _defaultListener =
 		new AtomicReference<DimpleEventListener>();
 	
@@ -137,10 +141,10 @@ public class DimpleEventListener implements IDimpleEventListener
 	}
 
 	/**
-	 * Gets a global default instance of this class, creating it if necessary.
-	 * @since 0.06
-	 * @see #setDefault(DimpleEventListener)
+	 * @deprecated As of release 0.07 the default listener is no longer used and will be removed
+	 * in a future release.
 	 */
+	@Deprecated
 	public static DimpleEventListener getDefault()
 	{
 		DimpleEventListener listener;
@@ -152,24 +156,20 @@ public class DimpleEventListener implements IDimpleEventListener
 	}
 
 	/**
-	 * True if this is the default listener.
-	 * 
-	 * @since 0.06
-	 * @see #getDefault()
+	 * @deprecated As of release 0.07 the default listener is no longer used and will be removed
+	 * in a future release.
 	 */
+	@Deprecated
 	public boolean isDefault()
 	{
 		return this == _defaultListener.get();
 	}
 	
 	/**
-	 * Sets global default listener.
-	 * @param listener is the new value to return from {@link #getDefault()}.
-	 * If null, then the next call to {@link #getDefault()} will construct
-	 * a new default listener.
-	 * @return the previous value.
-	 * @since 0.06
+	 * @deprecated As of release 0.07 the default listener is no longer used and will be removed
+	 * in a future release.
 	 */
+	@Deprecated
 	public static @Nullable DimpleEventListener setDefault(@Nullable DimpleEventListener listener)
 	{
 		return _defaultListener.getAndSet(listener);
@@ -385,6 +385,23 @@ public class DimpleEventListener implements IDimpleEventListener
 	public boolean isEmpty()
 	{
 		return _handlersForSource.isEmpty();
+	}
+	
+	/**
+	 * Notifies all registered sources that listener has changed.
+	 * <p>
+	 * Invokes {@link IDimpleEventSource#notifyListenerChanged()} on every source with a registered
+	 * handler. This is used by {@link DimpleEnvironment} when changing the environment's listener.
+	 * <p>
+	 * @since 0.07
+	 */
+	@Internal
+	public synchronized void notifyListenerChanged()
+	{
+		for (IDimpleEventSource source : _handlersForSource.keySet())
+		{
+			source.notifyListenerChanged();
+		}
 	}
 	
 	/**

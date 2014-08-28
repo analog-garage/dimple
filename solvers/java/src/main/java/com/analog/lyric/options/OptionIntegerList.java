@@ -18,6 +18,8 @@ package com.analog.lyric.options;
 
 import java.lang.reflect.Array;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.google.common.primitives.Ints;
 
 
@@ -47,8 +49,13 @@ public class OptionIntegerList extends AbstractOptionValueList<Integer>
 		super(Ints.asList(elements).toArray(new Integer[elements.length]));
 	}
 	
-	public static OptionIntegerList fromObject(Object object)
+	public static OptionIntegerList fromObject(@Nullable Object object)
 	{
+		if (object == null)
+		{
+			return EMPTY;
+		}
+		
 		Class<?> objectClass = object.getClass();
 		
 		if (object instanceof OptionIntegerList)

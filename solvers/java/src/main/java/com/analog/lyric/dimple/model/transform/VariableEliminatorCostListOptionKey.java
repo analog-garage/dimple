@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.transform;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.transform.VariableEliminator.CostFunction;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.VariableCost;
 import com.analog.lyric.options.IOptionHolder;
@@ -102,7 +104,7 @@ public class VariableEliminatorCostListOptionKey extends OptionKey<OptionVariabl
 	 * </ul>
 	 */
 	@Override
-	public OptionVariableEliminatorCostList convertToValue(Object value)
+	public OptionVariableEliminatorCostList convertToValue(@Nullable Object value)
 	{
 		return OptionVariableEliminatorCostList.fromObject(value);
 	}

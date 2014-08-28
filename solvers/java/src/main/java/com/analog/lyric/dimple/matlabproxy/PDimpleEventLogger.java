@@ -22,12 +22,13 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.events.DimpleEvent;
 import com.analog.lyric.dimple.events.DimpleEventLogger;
 import com.analog.lyric.dimple.events.IDimpleEventSource;
 import com.analog.lyric.dimple.events.StandardDimpleEvents;
 import com.analog.lyric.util.misc.Matlab;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Proxy wrapper for {@link DimpleEventLogger}.
@@ -65,8 +66,24 @@ public class PDimpleEventLogger extends PObject implements Closeable
 		_logger.close();
 	}
 	
-	/*---------
-	 * Methods
+	/*-----------------
+	 * PObject methods
+	 */
+	
+	@Override
+	public DimpleEventLogger getDelegate()
+	{
+		return _logger;
+	}
+	
+	@Override
+	public DimpleEventLogger getModelerObject()
+	{
+		return _logger;
+	}
+	
+	/*----------------------------
+	 * PDimpleEventLogger methods
 	 */
 	
 	public @Nullable String filename()
@@ -90,6 +107,11 @@ public class PDimpleEventLogger extends PObject implements Closeable
 		}
 	}
 	
+	public boolean isOpen()
+	{
+		return _logger.isOpen();
+	}
+	
 	public String[] listStandardEvents()
 	{
 		final int size = StandardDimpleEvents.INSTANCE.size();
@@ -109,9 +131,11 @@ public class PDimpleEventLogger extends PObject implements Closeable
 			throw new IllegalArgumentException(String.format("No such event type '%s'", eventTypeName));
 		}
 
-		if (obj instanceof IDimpleEventSource)
+		Object delegate = PObject.unwrap(obj);
+		
+		if (delegate instanceof IDimpleEventSource)
 		{
-			_logger.log(eventType, (IDimpleEventSource)obj);
+			_logger.log(eventType, (IDimpleEventSource)delegate);
 		}
 		else if (obj instanceof PNodeVector)
 		{
@@ -124,6 +148,27 @@ public class PDimpleEventLogger extends PObject implements Closeable
 		}
 	}
 		
+	public void unlog(String eventTypeName, Object obj)
+	{
+		Class<? extends DimpleEvent> eventType = StandardDimpleEvents.INSTANCE.get(eventTypeName);
+		if (eventType == null)
+		{
+			throw new IllegalArgumentException(String.format("No such event type '%s'", eventTypeName));
+		}
+
+		Object delegate = PObject.unwrap(obj);
+		
+		if (delegate instanceof IDimpleEventSource)
+		{
+			_logger.unlog(eventType, (IDimpleEventSource)delegate);
+		}
+		else if (obj instanceof PNodeVector)
+		{
+			PNodeVector nodes = (PNodeVector)obj;
+			_logger.unlog(eventType, nodes.getModelerNodes());
+		}
+	}
+
 	public void open(String workingDir, String filename) throws FileNotFoundException
 	{
 		if (filename.equals("stdout"))

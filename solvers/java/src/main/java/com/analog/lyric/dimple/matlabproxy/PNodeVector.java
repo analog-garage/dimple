@@ -25,19 +25,15 @@ import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.Port;
+import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.options.AbstractOptionValueList;
-import com.analog.lyric.options.IOptionKey;
-import com.analog.lyric.options.Option;
 import com.analog.lyric.util.misc.Matlab;
-import com.google.common.collect.Iterables;
 
 @Matlab
-public abstract class PNodeVector extends PObject
+public abstract class PNodeVector extends POptionHolder
 {
 	/*
 	 * State
@@ -61,90 +57,30 @@ public abstract class PNodeVector extends PObject
 	 */
 	
 	@Override
+	public Node[] getDelegate()
+	{
+		return _nodes;
+	}
+	
+	@Override
 	public boolean isVector()
 	{
 		return true;
 	}
 	
+	/*-----------------------
+	 * POptionHolder methods
+	 */
+	
+	@Override
+	public final DimpleOptionHolder getOptionHolder(int i)
+	{
+		return _nodes[i];
+	}
+	
 	/*---------------------
 	 * PNodeVector methods
 	 */
-
-	public Object[][] getLocallySetOptions()
-	{
-		final Object[][] options = new Object[_nodes.length][];
-		for (int i = _nodes.length; --i>=0;)
-		{
-			final Node node = _nodes[i];
-			options[i] = Iterables.toArray(node.getLocalOptions(),Object.class);
-		}
-		return options;
-	}
-	
-	public Object[] getOptions(Object optionKey, boolean localOnly)
-	{
-		final int size = _nodes.length;
-		
-		if (size == 0)
-		{
-			return ArrayUtil.EMPTY_OBJECT_ARRAY;
-		}
-		
-		final IOptionKey<?> key = _nodes[0].getEnvironment().optionRegistry().asKey(optionKey);
-		final Object[] optionValues = new Object[_nodes.length];
-		for (int i = _nodes.length; --i>=0;)
-		{
-			Node node = _nodes[i];
-			Object value = localOnly? node.getLocalOption(key) : node.getOption(key);
-			if (value instanceof AbstractOptionValueList)
-			{
-				// Convert to primitive array so that MATLAB will automatically convert
-				// to appropriate type.
-				value = ((AbstractOptionValueList<?>)value).toPrimitiveArray();
-			}
-			optionValues[i] = value;
-		}
-		return optionValues;
-	}
-	
-	public void unsetOption(Object optionKey)
-	{
-		if (_nodes.length > 0)
-		{
-			final IOptionKey<?> key = _nodes[0].getEnvironment().optionRegistry().asKey(optionKey);
-			for (Node node : _nodes)
-			{
-				node.unsetOption(key);
-			}
-		}
-	}
-		
-	public void setOption(Object optionKey, @Nullable Object value)
-	{
-		if (_nodes.length > 0)
-		{
-			final IOptionKey<?> key = _nodes[0].getEnvironment().optionRegistry().asKey(optionKey);
-			Option<?> option = Option.create(key, value);
-			for (Node node : _nodes)
-			{
-				Option.setOptions(node, option);
-			}
-		}
-	}
-	
-	public void setOptions(Object optionKey, Object[] values)
-	{
-		final int size = _nodes.length;
-		if (size > 0)
-		{
-			final IOptionKey<?> key = _nodes[0].getEnvironment().optionRegistry().asKey(optionKey);
-			for (int i = 0; i < size; ++i)
-			{
-				Option<?> option = Option.create(key, values[i]);
-				Option.setOptions(_nodes[i], option);
-			}
-		}
-	}
 
 	public void setNodes(Node [] nodes)
 	{
@@ -217,6 +153,7 @@ public abstract class PNodeVector extends PObject
 		return _nodes;
 	}
 	
+	@Override
 	public int size()
 	{
 		return _nodes.length;
@@ -469,4 +406,5 @@ public abstract class PNodeVector extends PObject
 		
 		throw new DimpleException("method not found");
 	}
+	
 }

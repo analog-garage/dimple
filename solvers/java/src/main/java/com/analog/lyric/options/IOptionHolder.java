@@ -17,9 +17,11 @@
 package com.analog.lyric.options;
 
 import java.io.Serializable;
+import java.util.Collection;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ReleasableIterator;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Interface for object that can hold option values.
@@ -44,7 +46,7 @@ public interface IOptionHolder
 	 * 
 	 * @since 0.07
 	 */
-	public Iterable<IOption<? extends Serializable>> getLocalOptions();
+	public Collection<IOption<? extends Serializable>> getLocalOptions();
 	
 	/**
 	 * Iterates over option holders in order in of lookup precedence.

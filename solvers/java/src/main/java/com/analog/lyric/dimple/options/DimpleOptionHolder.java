@@ -18,18 +18,20 @@ package com.analog.lyric.dimple.options;
 
 import java.util.Arrays;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.environment.IDimpleEnvironmentHolder;
 import com.analog.lyric.dimple.events.EventSourceIterator;
+import com.analog.lyric.dimple.events.IDimpleEventListener;
 import com.analog.lyric.dimple.events.IDimpleEventSource;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.LocalOptionHolder;
 import com.analog.lyric.options.OptionDoubleList;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Base class for dimple objects that can hold options and generate events.
@@ -62,7 +64,17 @@ public abstract class DimpleOptionHolder
 		return getEventParent();
 	}
 	
-	/**
+	/*-----------------------------
+	 * IDimpleEventSource methods
+	 */
+	
+	@Override
+	public @Nullable IDimpleEventListener getEventListener()
+	{
+		return getEnvironment().getEventListener();
+	}
+	
+	/*
 	 * IDimpleEnvironmentHolder methods
 	 */
 

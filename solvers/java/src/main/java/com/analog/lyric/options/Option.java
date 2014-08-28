@@ -183,4 +183,10 @@ public class Option<T extends Serializable> implements IOption<T>
 		return _value;
 	}
 	
+	@Override
+	public @Nullable Object externalValue()
+	{
+		T value = _value;
+		return value == null ? null : _key.convertToExternal(value);
+	}
 }

@@ -35,6 +35,12 @@ public class PDiscreteDomain extends PDomain
 	 */
 	
 	@Override
+	public DiscreteDomain getDelegate()
+	{
+		return (DiscreteDomain)super.getDelegate();
+	}
+	
+	@Override
 	public DiscreteDomain getModelerObject()
 	{
 		return (DiscreteDomain)super.getModelerObject();

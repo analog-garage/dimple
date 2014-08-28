@@ -43,6 +43,12 @@ public class PDomain extends PObject
 	}
 	
 	@Override
+	public Domain getDelegate()
+	{
+		return _domain;
+	}
+	
+	@Override
 	public Domain getModelerObject()
 	{
 		return _domain;

@@ -24,6 +24,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.events.DimpleEventHandler;
 import com.analog.lyric.dimple.events.DimpleEventListener;
 import com.analog.lyric.dimple.events.SolverEvent;
@@ -44,7 +47,6 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * {@link DimpleEventHandler} for testing {@link IMessageUpdateEvent}.
@@ -61,8 +63,7 @@ public class TestMessageUpdateEventHandler extends DimpleEventHandler<SolverEven
 	public static TestMessageUpdateEventHandler setUpListener(ISolverFactorGraph solver)
 	{
 		FactorGraph model = solver.getModelObject();
-		DimpleEventListener listener = new DimpleEventListener();
-		model.setEventListener(listener);
+		DimpleEventListener listener = DimpleEnvironment.active().createEventListener();
 		TestMessageUpdateEventHandler handler = new TestMessageUpdateEventHandler();
 		listener.register(handler, VariableToFactorMessageEvent.class, false, model);
 		listener.register(handler, FactorToVariableMessageEvent.class, false, model);

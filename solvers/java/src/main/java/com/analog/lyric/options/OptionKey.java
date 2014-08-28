@@ -144,7 +144,7 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 	 */
 	
 	@Override
-	public T convertToValue(Object value)
+	public T convertToValue(@Nullable Object value)
 	{
 		return type().cast(value);
 	}

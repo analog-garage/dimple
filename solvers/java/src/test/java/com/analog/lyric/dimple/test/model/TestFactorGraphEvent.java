@@ -65,7 +65,7 @@ public class TestFactorGraphEvent extends DimpleTestBase
 		root.setName("root");
 		
 		// Initially listen for all factor graph events
-		root.setEventListener(listener);
+		root.getEnvironment().setEventListener(listener);
 		assertFalse(listener.isListeningFor(VariableAddEvent.class, root));
 		assertFalse(listener.isListeningFor(VariableRemoveEvent.class, root));
 		assertFalse(listener.isListeningFor(BoundaryVariableAddEvent.class, root));

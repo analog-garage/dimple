@@ -45,4 +45,13 @@ public interface IOption<T extends Serializable>
 	 * @since 0.07
 	 */
 	public abstract @Nullable T value();
+
+	/**
+	 * The value associated with the option with the given {@link #key} converted to an external representation.
+	 * <p>
+	 * Converts {@link #value} using {@link #key}'s {@linkplain IOptionKey#convertToExternal convertToExternal}
+	 * method.
+	 * @since 0.07
+	 */
+	public abstract @Nullable Object externalValue();
 }

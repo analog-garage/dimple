@@ -26,10 +26,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
+import com.analog.lyric.dimple.environment.IDimpleEnvironmentHolder;
 
 /**
  * Provides basic logging of dimple events.
@@ -56,28 +59,32 @@ import org.eclipse.jdt.annotation.Nullable;
  * @author Christopher Barber
  */
 @ThreadSafe
-public class DimpleEventLogger implements Closeable
+public class DimpleEventLogger implements Closeable, IDimpleEnvironmentHolder
 {
 	/*-------
 	 * State
 	 */
 	
+	private final DimpleEnvironment _env;
+	
 	/**
 	 * Events will be printed on this stream, if non-null.
 	 */
+	@GuardedBy("this")
 	private volatile @Nullable PrintStream _out;
 	
 	/**
 	 * The file used for {@link #_out}, if opened by {@link #open(File)}.
 	 */
+	@GuardedBy("this")
 	private volatile @Nullable File _file = null;
 	
 	private volatile int _verbosity;
 	
-	private final Set<DimpleEventListener> _listeners = new HashSet<DimpleEventListener>();
-	private final Set<FactorGraph> _graphs = new HashSet<FactorGraph>();
-
 	private final DimpleEventHandler<DimpleEvent> _handler = new EventPrinter();
+
+	@GuardedBy("this")
+	private final Set<LogEntry> _logEntries = new HashSet<LogEntry>();
 	
 	private class EventPrinter extends DimpleEventHandler<DimpleEvent>
 	{
@@ -93,16 +100,53 @@ public class DimpleEventLogger implements Closeable
 		}
 	}
 	
+	/**
+	 * A simple pairing of event source and event type.
+	 * <p>
+	 * @see DimpleEventLogger#logEntries()
+	 * @since 0.06
+	 */
 	public static class LogEntry
 	{
 		private final Class<? extends DimpleEvent> _eventClass;
 		private final IDimpleEventSource _eventSource;
 		
-		private LogEntry(DimpleEventListener.IHandlerEntry entry)
+		private LogEntry(Class<? extends DimpleEvent> eventType, IDimpleEventSource eventSource)
 		{
-			_eventClass = entry.eventClass();
-			_eventSource = entry.eventSource();
+			_eventClass = eventType;
+			_eventSource = eventSource;
 		}
+		
+		/*----------------
+		 * Object methods
+		 */
+		
+		@Override
+		public boolean equals(@Nullable Object other)
+		{
+			if (this == other)
+			{
+				return true;
+			}
+			
+			if (other instanceof LogEntry)
+			{
+				LogEntry that = (LogEntry)other;
+				return this._eventClass == that._eventClass && this._eventSource == that._eventSource;
+			}
+			
+			return false;
+		}
+		
+		@Override
+		public int hashCode()
+		{
+			return _eventClass.hashCode() * 11 + _eventSource.hashCode();
+		}
+		
+		/*------------------
+		 * LogEntry methods
+		 */
 		
 		public Class<? extends DimpleEvent> eventClass()
 		{
@@ -122,11 +166,15 @@ public class DimpleEventLogger implements Closeable
 	/**
 	 * Constructs logger with output going to {@link System#err} and
 	 * {@link #verbosity()} set to zero.
-	 * 
+	 * <p>
+	 * The {@linkplain #getEnvironment environment} will be set to the
+	 * {@linkplain DimpleEnvironment#active active environment}.
+	 * <p>
 	 * @since 0.06
 	 */
 	public DimpleEventLogger()
 	{
+		_env = DimpleEnvironment.active();
 		_out = System.err;
 		_verbosity = 0;
 	}
@@ -155,6 +203,21 @@ public class DimpleEventLogger implements Closeable
 		}
 	}
 	
+	/*----------------------------------
+	 * IDimpleEnvironmentHolder methods
+	 */
+	
+	/**
+	 * {@inheritDoc}
+	 * @see #DimpleEventLogger()
+	 * @since 0.07
+	 */
+	@Override
+	public DimpleEnvironment getEnvironment()
+	{
+		return _env;
+	}
+	
 	/*---------
 	 * Methods
 	 */
@@ -176,9 +239,9 @@ public class DimpleEventLogger implements Closeable
 	 * 
 	 * @since 0.06
 	 */
-	public boolean isClear()
+	public synchronized boolean isClear()
 	{
-		return _listeners.isEmpty();
+		return _logEntries.isEmpty();
 	}
 	
 	/**
@@ -194,9 +257,9 @@ public class DimpleEventLogger implements Closeable
 	/**
 	 * Enable logging of given event type on specified targets.
 	 * <p>
-	 * Enables logging by registering an event handler with the {@link FactorGraph#getEventListener()}
-	 * for the root graph containing each source. If a root graph does not currently have a listener,
-	 * its listener will automatically be set to {@link DimpleEventListener#getDefault()}.
+	 * Enables logging by registering an event handler with the event listener of the
+	 * {@linkplain #getEnvironment() environment} creating a new one if necessary. It
+	 * is assumed that all of the listed {@code sources} have the same environment.
 	 * <p>
 	 * @param eventType is the superclass of the type of events that will be logged. If {@code eventType}
 	 * is abstract then all subtypes will be logged, otherwise only that specific type will be logged.
@@ -206,13 +269,11 @@ public class DimpleEventLogger implements Closeable
 	 */
 	public synchronized void log(Class<? extends DimpleEvent> eventType, IDimpleEventSource ... sources)
 	{
+		final DimpleEventListener listener = _env.createEventListener();
 		for (IDimpleEventSource source : sources)
 		{
-			DimpleEventListener listener = listenerForSource(source);
-			if (listener != null)
-			{
-				listener.register(_handler, eventType, source);
-			}
+			listener.register(_handler, eventType, source);
+			_logEntries.add(new LogEntry(eventType, source));
 		}
 	}
 	
@@ -223,22 +284,7 @@ public class DimpleEventLogger implements Closeable
 	 */
 	public synchronized List<LogEntry> logEntries()
 	{
-		ArrayList<LogEntry> entries = new ArrayList<LogEntry>();
-		for (DimpleEventListener listener : _listeners)
-		{
-			for (DimpleEventListener.IHandlersForSource handlersForSource : listener.allHandlerPerSource())
-			{
-				for (DimpleEventListener.IHandlerEntry entry : handlersForSource.handlerEntries())
-				{
-					if (entry.eventHandler() == _handler)
-					{
-						entries.add(new LogEntry(entry));
-					}
-				}
-			}
-		}
-		
-		return entries;
+		return new ArrayList<LogEntry>(_logEntries);
 	}
 	
 	/**
@@ -257,22 +303,27 @@ public class DimpleEventLogger implements Closeable
 	public synchronized int unlog(Class<? extends DimpleEvent> eventType, IDimpleEventSource ... sources)
 	{
 		int nRemoved = 0;
-		for (IDimpleEventSource source : sources)
+		
+		DimpleEventListener listener = _env.getEventListener();
+		
+		if (listener != null)
 		{
-			FactorGraph containingGraph = source.getContainingGraph();
-			if (containingGraph != null)
+			for (IDimpleEventSource source : sources)
 			{
-				FactorGraph rootGraph = containingGraph.getRootGraph();
-				DimpleEventListener listener = rootGraph.getEventListener();
-				if (listener!= null)
+				_logEntries.remove(new LogEntry(eventType, source));
+				if (listener.unregister(_handler, eventType, source))
 				{
-					if (listener.unregister(_handler, eventType, source))
-					{
-						++nRemoved;
-					}
+					++nRemoved;
 				}
 			}
+			
+			if (listener.isEmpty())
+			{
+				// Remove the listener from the environment if it contains no more entries.
+				_env.setEventListener(null);
+			}
 		}
+		
 		return nRemoved;
 	}
 	
@@ -332,27 +383,22 @@ public class DimpleEventLogger implements Closeable
 	 */
 	public synchronized void clear()
 	{
-		DimpleEventListener defaultListener = null;
-		for (DimpleEventListener listener : _listeners)
+		DimpleEventListener listener = _env.getEventListener();
+		
+		if (listener != null)
 		{
-			listener.unregisterAll(_handler);
-			if (listener.isDefault())
+			for (LogEntry entry : _logEntries)
 			{
-				defaultListener = listener;
+				listener.unregister(_handler, entry.eventClass(), entry.eventSource());
+			}
+			
+			if (listener.isEmpty())
+			{
+				_env.setEventListener(null);
 			}
 		}
-		_listeners.clear();
-		if (defaultListener != null && defaultListener.isEmpty())
-		{
-			for (FactorGraph graph : _graphs)
-			{
-				if (graph.getEventListener() == defaultListener)
-				{
-					graph.setEventListener(null);
-				}
-			}
-		}
-		_graphs.clear();
+		
+		_logEntries.clear();
 	}
 	
 	/**
@@ -384,34 +430,6 @@ public class DimpleEventLogger implements Closeable
 	public void verbosity(int verbosity)
 	{
 		_verbosity = verbosity;
-	}
-	
-	/*-----------------
-	 * Private methods
-	 */
-	
-	private @Nullable DimpleEventListener listenerForSource(IDimpleEventSource source)
-	{
-		DimpleEventListener listener = null;
-		
-		final FactorGraph containingGraph = source.getContainingGraph();
-		if (containingGraph != null)
-		{
-
-			final FactorGraph rootGraph = containingGraph.getRootGraph();
-
-			listener = rootGraph.getEventListener();
-			if (listener == null)
-			{
-				listener = DimpleEventListener.getDefault();
-				rootGraph.setEventListener(listener);
-			}
-
-			_graphs.add(rootGraph);
-			_listeners.add(listener);
-		}
-		
-		return listener;
 	}
 	
 }

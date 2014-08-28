@@ -16,6 +16,8 @@
 
 package com.analog.lyric.options;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * Key for options with list of double values.
  * @since 0.07
@@ -68,7 +70,7 @@ public class DoubleListOptionKey extends OptionKey<OptionDoubleList>
 	}
 	
 	@Override
-	public OptionDoubleList convertToValue(Object value)
+	public OptionDoubleList convertToValue(@Nullable Object value)
 	{
 		return OptionDoubleList.fromObject(value);
 	}

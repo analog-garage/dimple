@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
 
 import com.analog.lyric.collect.ReleasableIterator;
@@ -47,12 +48,11 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
-import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
+import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.test.DimpleTestBase;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 
@@ -253,7 +253,7 @@ public class TestDimpleEventListener extends DimpleTestBase
 		
 		// sourceHasListenerFor
 		assertFalse(DimpleEventListener.sourceHasListenerFor(model, TestModelEvent.class));
-		model.setEventListener(listener);
+		model.getEnvironment().setEventListener(listener);
 		assertTrue(DimpleEventListener.sourceHasListenerFor(model, TestModelEvent.class));
 		assertFalse(DimpleEventListener.sourceHasListenerFor(model, TestSolverEvent.class));
 		
@@ -352,11 +352,17 @@ public class TestDimpleEventListener extends DimpleTestBase
 				assertNotSame(anotherHandler, e.eventHandler());
 			}
 		}
-		
+	}
+	
+	@Test
+	@SuppressWarnings("deprecation")
+	public void testDefaultListener()
+	{
 		//
 		// Test defaultListener
 		//
 		
+		DimpleEventListener listener = new DimpleEventListener();
 		DimpleEventListener defaultListener = DimpleEventListener.getDefault();
 		assertTrue(defaultListener.isDefault());
 		assertTrue(defaultListener.isEmpty());

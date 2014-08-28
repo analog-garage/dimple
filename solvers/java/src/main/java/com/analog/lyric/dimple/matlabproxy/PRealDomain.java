@@ -32,6 +32,12 @@ public class PRealDomain extends PDomain
 	 */
 	
 	@Override
+	public RealDomain getDelegate()
+	{
+		return (RealDomain)super.getDelegate();
+	}
+	
+	@Override
 	public RealDomain getModelerObject()
 	{
 		return (RealDomain)super.getModelerObject();

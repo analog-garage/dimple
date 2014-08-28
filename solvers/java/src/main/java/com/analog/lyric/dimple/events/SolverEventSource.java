@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.events;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
@@ -23,7 +25,6 @@ import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.Internal;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * 
@@ -75,13 +76,6 @@ public abstract class SolverEventSource extends DimpleOptionHolder implements IS
     	return node != null ? node.getContainingGraph() : null;
 	}
 
-    @Override
-    public @Nullable IDimpleEventListener getEventListener()
-    {
-    	final INode node = getModelObject();
-    	return node != null ? node.getEventListener() : null;
-    }
-    
     @Override
     public @Nullable ISolverFactorGraph getEventParent()
     {

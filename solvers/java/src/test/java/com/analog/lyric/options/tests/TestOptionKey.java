@@ -113,13 +113,13 @@ public class TestOptionKey
 		private Option(Serializable defaultValue) { _defaultValue = defaultValue; }
 
 		@Override
-		public Object convertToExternal(Serializable value)
+		public @Nullable Object convertToExternal(Serializable value)
 		{
 			return value;
 		}
 
 		@Override
-		public Serializable convertToValue(Object value)
+		public Serializable convertToValue(@Nullable Object value)
 		{
 			return type().cast(value);
 		}

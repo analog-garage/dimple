@@ -88,7 +88,7 @@ public class ClassOptionKey<SuperClass> extends OptionKey<Class<? extends SuperC
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public Class<? extends SuperClass> convertToValue(Object value)
+	public Class<? extends SuperClass> convertToValue(@Nullable Object value)
 	{
 		if (value instanceof String)
 		{

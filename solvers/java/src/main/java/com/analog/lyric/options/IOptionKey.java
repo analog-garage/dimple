@@ -71,7 +71,7 @@ public interface IOptionKey<T extends Serializable> extends Serializable
 	 * @throws RuntimeException if value cannot be converted
 	 * @since 0.07
 	 */
-	public abstract T convertToValue(Object value);
+	public abstract T convertToValue(@Nullable Object value);
 	
 	/**
 	 * Converts value to an external representation
@@ -86,7 +86,7 @@ public interface IOptionKey<T extends Serializable> extends Serializable
 	 * @param value
 	 * @since 0.07
 	 */
-	public abstract Object convertToExternal(T value);
+	public abstract @Nullable Object convertToExternal(T value);
 	
 	/**
 	 * Should be the class that contains the declaration of this instance.

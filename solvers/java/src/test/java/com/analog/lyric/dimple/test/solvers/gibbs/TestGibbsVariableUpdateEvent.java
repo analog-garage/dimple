@@ -173,18 +173,18 @@ public class TestGibbsVariableUpdateEvent extends DimpleTestBase
 		assertTrue(listener.isListeningFor(GibbsVariableUpdateEvent.class, sc1));
 		assertFalse(listener.isListeningFor(GibbsScoredVariableUpdateEvent.class, sc1));
 
-		model.setEventListener(listener);
+		model.getEnvironment().setEventListener(listener);
 		assertSame(listener, model.getEventListener());
 		assertSame(listener, sd1.getEventListener());
 
 		model.solve();
 		assertEvents(handler, GibbsVariableUpdateEvent.class, sd1, sr1, sc1);
 
-		model.setEventListener(null);
+		model.getEnvironment().setEventListener(null);
 		model.solve();
 		assertEvents(handler, GibbsVariableUpdateEvent.class);
 
-		model.setEventListener(listener);
+		model.getEnvironment().setEventListener(listener);
 		listener.block(GibbsVariableUpdateEvent.class, false,  sr1);
 		model.solve();
 		assertEvents(handler, GibbsVariableUpdateEvent.class, sd1, sc1);

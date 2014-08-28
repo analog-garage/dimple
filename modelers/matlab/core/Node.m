@@ -55,6 +55,11 @@ classdef Node < MatrixObject
             obj.VectorObject.setLabel(name);
         end
         
+        function clearOptions(obj)
+            %clearOptions Unsets all options on these objects.
+            obj.VectorObject.clearOptions();
+        end
+        
         function value = getOption(obj,option)
             %getOption Returns current value of specified option.
             %
@@ -70,7 +75,7 @@ classdef Node < MatrixObject
             % the corresponding option setting for each element.
             %
             % See also setOption, dimpleOptions
-        	value = obj.VectorObject.getOptions(option,false);
+        	value = obj.VectorObject.getOption(option);
             if numel(value) == 1
                 value = value(1);
             else
@@ -93,7 +98,7 @@ classdef Node < MatrixObject
         end
         
         function setOption(obj,option,value)
-            %setOption Returns current value of specified option.
+            %setOption Sets value of specified option.
             %
             % setOption(name,value)
             %
@@ -107,12 +112,98 @@ classdef Node < MatrixObject
             %            the that of the Node matrix it is being invoked
             %            on.
             %
-            % See also getOption, unsetOption, dimpleOptions
+            % See also getOption, getLocalOptions, unsetOption, dimpleOptions
             if numel(value) == 1
-                obj.VectorObject.setOption(option,value);
+                obj.VectorObject.setOptionOnAll(option,value);
             else
                 assert(iscell(value));
-                obj.VectorObject.setOptions(option,value(:));
+                obj.VectorObject.setOptionAcrossAll(option,value(:));
+            end
+        end
+        
+        function options = getLocalOptions(obj)
+            %getLocalOptions Returns values of options set directly on
+            %this object.
+            %
+            %  getLocalOptions()
+            %
+            % Returns a cell array containing values of options that are
+            % set directly on the node(s). If there is only one node in
+            % the expression, this will return a simple nx2 cell array with
+            % each row containing a key and value. If there is more
+            % than one nodes this will return a cell array with same
+            % dimensions as the lhs where each cell contains a cell array
+            % with the option settings for that node.
+            %
+            % See also setOption, setOptions, unsetOption
+            array = obj.VectorObject.getLocallySetOptions();
+            length = array.length;
+            if (length == 1)
+                nodeOptions = array(1);
+                options = reshape(cell(nodeOptions), 2, nodeOptions.length/2)';
+            else
+                options = cell(length,1);
+                for i = 1:length
+                    nodeOptions = array(i);
+                    options{i} = reshape(cell(nodeOptions), 2, nodeOptions.length/2)';
+                end
+                options = reshape(options, size(obj.VectorIndices));
+            end
+        end
+        
+        function setOptions(obj,options)
+            %setOptions Sets options from a cell array
+            %
+            %  setOptions(optionVector)
+            %
+            %    optionVector is a cell array vector with an even number of
+            %       entries containing alternating keys and values. The
+            %       specified options will be set on all nodes in the left
+            %       hand side of the expression.
+            %
+            %  setOptions(optionMatrix)
+            %      
+            %    optionMatrix is a nx2 cell array where each row contains a
+            %       string option key name followed by the corresponding
+            %       value. The specified options will be set on all nodes
+            %       in the left hand side of the expression.
+            %
+            %  setOptions(optionArray)
+            %
+            %     optionArray is a cell array with dimensions matching the
+            %        dimensions of the left hand side of the expression.
+            %        Each cell will contain options to be set on the
+            %        corresponding node in either optionVector or
+            %        optionMatrix form as described above.
+            %
+            % Examples:
+            %    
+            %    % These two variants are equivalent. Both set the
+            %    % specified options on all nodes.
+            %    nodes.setOptions({'SolverOptions.iterations', 10,
+            %                      'SumProductOptions.damping' , .9});
+            %    nodes.setOptions({'SolverOptions.iterations', 10;
+            %                      'SumProductOptions.damping', .9);
+            %
+            %    % Sets options on a 2x2 node.    
+            %    options = cell(2,2);
+            %    options{1,1} = {'SolverOptions.iterations', 10;
+            %                    'SumProductOptions.damping', .85)
+            %    options{2,2} = {'SolverOptions.iterations', 12};
+            %    nodes.setOptions(options);
+            %
+            % See also getLocalOptions, setOption
+            assert(iscell(options), 'Options must be specified in a cell array');
+            if isvector(options)
+                assert(rem(numel(options),2) == 0, 'Options vector must have even length');
+                options = reshape(options, 2, numel(options)/2)';
+            end
+            if ndims(options) == 2 && iscellstr(options(:,1))
+                % Single set of options to be applied to all nodes.
+                assert(size(options,2) == 2);
+                obj.VectorObject.setOptionsOnAll(options(:,1),options(:,2));
+            else
+                obj.VectorObject.setOptionsAcrossAll(options(:));
             end
         end
         

@@ -16,9 +16,10 @@
 
 package com.analog.lyric.dimple.matlabproxy;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.util.misc.Matlab;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Base class for Dimple MATLAB proxy objects.
@@ -26,6 +27,33 @@ import org.eclipse.jdt.annotation.Nullable;
 @Matlab
 public abstract class PObject
 {
+	/**
+	 * Convert object to its delegate.
+	 * <p>
+	 * If {@code obj} is a {@code PObject} and its {@linkplain #getDelegate() delegate} is
+	 * non-null, the delegate will be returned. Otherwise returns {@code obj} itself.
+	 * @since 0.07
+	 */
+	public static Object unwrap(Object obj)
+	{
+		if (obj instanceof PObject)
+		{
+			Object delegate = ((PObject)obj).getDelegate();
+			if (delegate != null)
+			{
+				return delegate;
+			}
+		}
+		
+		return obj;
+	}
+	
+	/**
+	 * Returns the object(s) to which this proxy delegates.
+	 * @since 0.07
+	 */
+	public abstract @Nullable Object getDelegate();
+	
 	/**
 	 * Returns the modeler object wrapped by this proxy or null
 	 * if not applicable for this type of object.

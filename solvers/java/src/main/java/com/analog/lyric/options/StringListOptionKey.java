@@ -18,6 +18,8 @@ package com.analog.lyric.options;
 
 import net.jcip.annotations.Immutable;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * Key for options with list of String values.
  * @since 0.07
@@ -66,7 +68,7 @@ public class StringListOptionKey extends OptionKey<OptionStringList>
 	}
 	
 	@Override
-	public OptionStringList convertToValue(Object value)
+	public OptionStringList convertToValue(@Nullable Object value)
 	{
 		return OptionStringList.fromObject(value);
 	}

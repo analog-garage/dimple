@@ -48,6 +48,12 @@ public class PRealJointDomain extends PDomain
 	 */
 	
 	@Override
+	public RealJointDomain getDelegate()
+	{
+		return (RealJointDomain)super.getDelegate();
+	}
+	
+	@Override
 	public RealJointDomain getModelerObject()
 	{
 		return (RealJointDomain)super.getModelerObject();

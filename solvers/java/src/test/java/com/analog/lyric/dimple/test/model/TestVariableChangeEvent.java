@@ -21,8 +21,10 @@ import static org.junit.Assert.*;
 import java.util.ArrayDeque;
 import java.util.Queue;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
 
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.events.DimpleEventHandler;
 import com.analog.lyric.dimple.events.DimpleEventListener;
 import com.analog.lyric.dimple.factorfunctions.Normal;
@@ -36,7 +38,6 @@ import com.analog.lyric.dimple.model.variables.VariableChangeEvent;
 import com.analog.lyric.dimple.model.variables.VariableFixedValueChangeEvent;
 import com.analog.lyric.dimple.model.variables.VariableInputChangeEvent;
 import com.analog.lyric.dimple.test.DimpleTestBase;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Test for {@link VariableChangeEvent}s on {@link VariableBase}.
@@ -70,8 +71,7 @@ public class TestVariableChangeEvent extends DimpleTestBase
 		FixedValueChangeHandler fixedHandler = new FixedValueChangeHandler();
 		InputChangeHandler inputHandler = new InputChangeHandler();
 		
-		DimpleEventListener listener = new DimpleEventListener();
-		fg.setEventListener(listener);
+		DimpleEventListener listener = DimpleEnvironment.active().createEventListener();
 		listener.register(fixedHandler, VariableFixedValueChangeEvent.class, false, fg);
 		listener.register(inputHandler, VariableInputChangeEvent.class, false, fg);
 		fg.initialize();
@@ -150,8 +150,7 @@ public class TestVariableChangeEvent extends DimpleTestBase
 		inputHandler.assertNoEvent();
 		fixedHandler.assertEvent(r, VariableFixedValueChangeEvent.Type.REMOVED, 1.0, null);
 		
-		fg.setEventListener(null);
-		r.notifyListenerChanged();
+		DimpleEnvironment.active().setEventListener(null);
 		
 		r.setFixedValue(2.3);
 		inputHandler.assertNoEvent();

@@ -79,7 +79,7 @@ public class LongOptionKey extends OptionKey<Long>
 	}
 
 	@Override
-	public Long convertToValue(Object value)
+	public Long convertToValue(@Nullable Object value)
 	{
 		if (value instanceof Long)
 		{

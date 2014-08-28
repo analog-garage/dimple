@@ -91,7 +91,7 @@ public class IntegerOptionKey extends OptionKey<Integer>
 	}
 	
 	@Override
-	public Integer convertToValue(Object value)
+	public Integer convertToValue(@Nullable Object value)
 	{
 		if (value instanceof Number)
 		{

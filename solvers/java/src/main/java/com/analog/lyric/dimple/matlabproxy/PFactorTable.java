@@ -56,6 +56,12 @@ public class PFactorTable extends PObject
 	 */
 	
 	@Override
+	public IFactorTable getDelegate()
+	{
+		return _table;
+	}
+	
+	@Override
 	public IFactorTable getModelerObject()
 	{
 		return _table;

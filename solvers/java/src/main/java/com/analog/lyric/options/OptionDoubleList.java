@@ -20,6 +20,8 @@ import java.lang.reflect.Array;
 
 import net.jcip.annotations.Immutable;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.google.common.primitives.Doubles;
 
 
@@ -49,8 +51,13 @@ public class OptionDoubleList extends AbstractOptionValueList<Double>
 		super(Doubles.asList(elements).toArray(new Double[elements.length]));
 	}
 	
-	public static OptionDoubleList fromObject(Object object)
+	public static OptionDoubleList fromObject(@Nullable Object object)
 	{
+		if (object == null)
+		{
+			return EMPTY;
+		}
+		
 		Class<?> objectClass = object.getClass();
 		
 		if (object instanceof OptionDoubleList)

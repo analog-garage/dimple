@@ -27,6 +27,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import cern.colt.map.OpenIntIntHashMap;
 
 import com.analog.lyric.collect.ArrayUtil;
@@ -42,8 +45,6 @@ import com.analog.lyric.math.Utilities;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.MapList;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.Iterators;
 
 public abstract class Node extends DimpleOptionHolder implements INode, Cloneable
@@ -203,13 +204,6 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	public @Nullable FactorGraph getContainingGraph()
 	{
 		return _parentGraph;
-	}
-	
-	@Override
-	public @Nullable IDimpleEventListener getEventListener()
-	{
-		FactorGraph fg = getContainingGraph();
-		return fg != null ? fg.getEventListener() : null;
 	}
 	
 	@Override

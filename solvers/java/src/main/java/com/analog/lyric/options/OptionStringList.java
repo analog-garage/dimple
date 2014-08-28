@@ -20,6 +20,8 @@ import java.lang.reflect.Array;
 
 import net.jcip.annotations.Immutable;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.ArrayUtil;
 
 /**
@@ -43,8 +45,13 @@ public final class OptionStringList extends AbstractOptionValueList<String>
 		super(String.class, elements);
 	}
 	
-	public static OptionStringList fromObject(Object object)
+	public static OptionStringList fromObject(@Nullable Object object)
 	{
+		if (object == null)
+		{
+			return EMPTY;
+		}
+		
 		Class<?> objectClass = object.getClass();
 		
 		if (object instanceof OptionStringList)

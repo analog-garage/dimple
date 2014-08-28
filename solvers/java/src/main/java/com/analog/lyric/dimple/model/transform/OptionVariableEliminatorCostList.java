@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.model.transform;
 
 import net.jcip.annotations.Immutable;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.transform.VariableEliminator.CostFunction;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.VariableCost;
 import com.analog.lyric.options.AbstractOptionValueList;
@@ -70,8 +72,13 @@ public class OptionVariableEliminatorCostList extends AbstractOptionValueList<Va
 		this(VariableCost.toFunctions(costs));
 	}
 	
-	public static OptionVariableEliminatorCostList fromObject(Object object)
+	public static OptionVariableEliminatorCostList fromObject(@Nullable Object object)
 	{
+		if (object == null)
+		{
+			return new OptionVariableEliminatorCostList();
+		}
+		
 		if ((object instanceof OptionVariableEliminatorCostList))
 		{
 			return (OptionVariableEliminatorCostList)object;

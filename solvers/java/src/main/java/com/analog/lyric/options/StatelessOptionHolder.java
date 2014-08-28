@@ -17,6 +17,7 @@
 package com.analog.lyric.options;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -44,7 +45,7 @@ public abstract class StatelessOptionHolder extends AbstractOptionHolder
 	}
 
 	@Override
-	public Iterable<IOption<? extends Serializable>> getLocalOptions()
+	public Collection<IOption<? extends Serializable>> getLocalOptions()
 	{
 		return Collections.emptyList();
 	}

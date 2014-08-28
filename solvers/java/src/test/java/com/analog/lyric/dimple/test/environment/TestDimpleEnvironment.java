@@ -22,10 +22,23 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.environment.ExtendedLevel;
+import com.analog.lyric.dimple.events.DimpleEvent;
+import com.analog.lyric.dimple.events.DimpleEventListener;
+import com.analog.lyric.dimple.events.EventPrinter;
+import com.analog.lyric.dimple.events.IDimpleEventHandler;
+import com.analog.lyric.dimple.events.IDimpleEventSource;
+import com.analog.lyric.dimple.events.IModelEventSource;
+import com.analog.lyric.dimple.factorfunctions.Normal;
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.options.DimpleOptionHolder;
+import com.analog.lyric.dimple.options.SolverOptions;
+import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.SliceSampler;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.util.test.TestLogger;
 
@@ -102,7 +115,71 @@ public class TestDimpleEnvironment extends DimpleTestBase
 
 		assertEquals("DimpleEnvironment", global.getEventSourceName());
 		
+		class TestSource extends DimpleOptionHolder
+		{
+			int notifyCount = 0;
+			
+			@Override
+			public @Nullable FactorGraph getContainingGraph()
+			{
+				return null;
+			}
+
+			@Override
+			public @Nullable IDimpleEventSource getEventParent()
+			{
+				return null;
+			}
+
+			@Override
+			public String getEventSourceName()
+			{
+				return "test";
+			}
+
+			@Override
+			public @Nullable IModelEventSource getModelEventSource()
+			{
+				return null;
+			}
+
+			@Override
+			public void notifyListenerChanged()
+			{
+				++notifyCount;
+			}
+		}
+		
+		TestSource source1 = new TestSource();
+		TestSource source2 = new TestSource();
+		IDimpleEventHandler<DimpleEvent> handler = new EventPrinter();
+		
 		assertNull(global.getEventListener());
+		DimpleEventListener listener = global.createEventListener();
+		assertNotNull(listener);
+		assertSame(listener, global.createEventListener());
+		assertSame(listener, global.getEventListener());
+		
+		
+		listener.register(handler, DimpleEvent.class, source1);
+		
+		global.setEventListener(null);
+		global.setEventListener(null);
+		assertNull(global.getEventListener());
+		assertEquals(1, source1.notifyCount);
+		
+		global.setEventListener(listener);
+		global.setEventListener(listener);
+		assertSame(listener, global.getEventListener());
+		assertEquals(2, source1.notifyCount);
+		
+		DimpleEventListener listener2 = new DimpleEventListener();
+		listener2.register(handler, DimpleEvent.class, source2);
+		global.setEventListener(listener2);
+		global.setEventListener(listener2);
+		assertSame(listener2, global.getEventListener());
+		assertEquals(3, source1.notifyCount);
+		assertEquals(1, source2.notifyCount);
 	}
 	
 	@Test
@@ -133,4 +210,21 @@ public class TestDimpleEnvironment extends DimpleTestBase
 		assertTrue(testLogger.loggedRecords().isEmpty());
 	}
 	
+	@Test
+	public void testRegistries()
+	{
+		DimpleEnvironment env = DimpleEnvironment.active();
+		
+		assertEquals(Normal.class, env.factorFunctions().getClass("Normal"));
+		assertSame(env.factorFunctions(), env.factorFunctions());
+		
+		assertEquals(SliceSampler.class, env.genericSamplers().getClass("SliceSampler"));
+		assertSame(env.genericSamplers(), env.genericSamplers());
+		
+		assertEquals(SolverOptions.iterations, env.optionRegistry().get("SolverOptions.iterations"));
+		assertSame(env.optionRegistry(), env.optionRegistry());
+		
+		assertEquals(NormalProposalKernel.class, env.proposalKernels().getClass("NormalProposalKernel"));
+		assertSame(env.proposalKernels(), env.proposalKernels());
+	}
 }
