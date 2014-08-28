@@ -17,8 +17,7 @@
 function testConstMult()
 
     % Skip this test if the Communications Toolbox is unavailable.
-    if isempty(which('gf'))
-        dtrace(true, 'WARNING: testConstMult was skipped because Communications Toolbox not installed');
+    if ~hasCommunicationToolbox('testConstMult')
         return;
     end
     

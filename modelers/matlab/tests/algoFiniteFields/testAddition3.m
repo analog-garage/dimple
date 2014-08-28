@@ -19,8 +19,7 @@ function testAddition3()
     % Version of testAddition that uses string to specify custom factor
 
     % Skip this test if the Communications Toolbox is unavailable.
-    if isempty(which('gf'))
-        dtrace(true, 'WARNING: testAddition3 was skipped because Communications Toolbox not installed');
+    if ~hasCommunicationToolbox('testAddition3')
         return;
     end
     
