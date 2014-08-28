@@ -68,54 +68,20 @@ public class MatrixRealJointVectorProduct extends FactorFunction
     @Override
     public final double evalEnergy(Value[] arguments)
     {
-    	int argIndex = 0;
+    	// Compute the expected output
+		final Value[] expectedResult = evalDeterministicToCopy(arguments);
+
+		// Compare the output to the expected output
+		final double[] outValue = arguments[0].getDoubleArray();
+		final double[] expectedOutValue = expectedResult[0].getDoubleArray();
+		final int outLength = _outLength;
 		double error = 0;
+		for (int i = 0; i < outLength; i++)
+		{
+			final double diff = outValue[i] - expectedOutValue[i];
+			error += diff*diff;
+		}
 
-    	final int inLength = _inLength;
-    	final int outLength = _outLength;
-
-    	// Get the output vector values
-		final double[] outVector = arguments[argIndex++].getDoubleArray();
-
-    	// How is the matrix passed?
-    	if (arguments[argIndex].getObject() instanceof double[][])
-    	{
-    		// Constant matrix is passed as a single argument; get the matrix values
-    		final double[][] matrix = (double[][])requireNonNull(arguments[argIndex++].getObject());
-    		
-        	// Get the input vector values
-    		final double[] inVector = arguments[argIndex++].getDoubleArray();
-        	
-        	// Compute the expected output and the total error
-        	for (int row = 0; row < outLength; row++)
-        	{
-        		double sum = 0;
-        		final double[] rowValues = matrix[row];
-        		for (int col = 0; col < inLength; col++)
-        			sum += rowValues[col] * inVector[col];
-        		final double diff = outVector[row] - sum;
-        		error += diff*diff;
-        	}
-    	}
-    	else
-    	{
-    		// Variable matrix is passed as individual elements
-    		final int numMatrixElements = inLength * outLength;
-    		
-        	// Get the input vector values
-    		final double[] inVector = arguments[argIndex + numMatrixElements].getDoubleArray();
-        	
-        	// Compute the expected output and the total error
-        	for (int row = 0, rowOffset = argIndex; row < outLength; row++, rowOffset++)
-        	{
-        		double sum = 0;
-        		for (int col = 0, offset = rowOffset; col < inLength; col++, offset += outLength)
-        			sum += arguments[offset].getDouble() * inVector[col];
-        		final double diff = outVector[row] - sum;
-        		error += diff*diff;
-        	}
-    	}
-    	
     	if (_smoothingSpecified)
     		return error*_beta;
     	else

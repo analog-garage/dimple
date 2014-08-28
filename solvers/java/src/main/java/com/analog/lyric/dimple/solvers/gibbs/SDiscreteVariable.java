@@ -84,6 +84,8 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	private boolean _holdSampleValue = false;
 	private @Nullable IGenericSampler _sampler;
 	private boolean _samplerSpecificallySpecified = false;
+	private long _updateCount;
+	private long _rejectCount;
 
 	/**
 	 * List of neighbors for sample scoring. Instantiated during initialization.
@@ -195,6 +197,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		
 		// Sample from the conditional distribution
 		boolean rejected = false;
+		_updateCount++;
 		if (_sampler instanceof IDiscreteDirectSampler)
 		{
 			((IDiscreteDirectSampler)Objects.requireNonNull(_sampler)).nextSample(_outputMsg.clone(),
@@ -203,6 +206,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		else if (_sampler instanceof IMCMCSampler)
 		{
 			rejected = !((IMCMCSampler)Objects.requireNonNull(_sampler)).nextSample(_outputMsg.clone(), this);
+			if (rejected) _rejectCount++;
 		}
 		
 		switch (updateEventFlags)
@@ -617,6 +621,31 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     	
     	return Arrays.copyOf(sampleIndexArray.elements(), sampleIndexArray.size());
     }
+    
+	@Override
+	public final double getRejectionRate()
+	{
+		return (_updateCount > 0) ? (double)_rejectCount / (double)_updateCount : 0;
+	}
+	
+	@Override
+	public final void resetRejectionRateStats()
+	{
+		_updateCount = 0;
+		_rejectCount = 0;
+	}
+	
+	@Override
+	public final long getUpdateCount()
+	{
+		return _updateCount;
+	}
+	
+	@Override
+	public final long getRejectionCount()
+	{
+		return _rejectCount;
+	}
 
 	public final void setAndHoldSampleValue(Object value)
 	{
@@ -885,7 +914,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			}
 		}
 		_sampleIndexArray = sampleIndexArray;
-
+		
 		Arrays.fill(_beliefHistogram, 0);
 		
 		if (_var.hasFixedValue())
@@ -900,5 +929,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			sampler = _sampler = GibbsOptions.discreteSampler.instantiate(this);
 		}
 		sampler.initializeFromVariable(this);
+
+		resetRejectionRateStats();
 	}
 }

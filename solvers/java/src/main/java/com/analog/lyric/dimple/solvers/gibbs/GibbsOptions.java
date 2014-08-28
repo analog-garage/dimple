@@ -171,4 +171,21 @@ public class GibbsOptions extends SolverOptions
 	 */
 	public static final BooleanOptionKey saveAllScores =
 		new BooleanOptionKey(GibbsOptions.class, "saveAllScores", false);
+	
+	/**
+	 * Specifies whether to compute belief moments for RealJoint variables in Gibbs solver.
+	 * <p>
+	 * If true, the belief moments are computed for each sample on-the-fly (without saving all samples)
+	 * The computed moments can later be retrieved by {@link SRealJointVariable#getSampleMean()} and
+	 * {@link SRealJointVariable#getSampleCovariance()}.  (Note that this option applies to RealJoint
+	 * and Complex variables.  Real variables always compute the similar statistics, and do not
+	 * have a corresponding option to enable them.)
+	 * 
+	 * <p>
+	 * Defaults to false.
+	 * <p>
+	 * @since 0.07
+	 */
+	public static final BooleanOptionKey computeRealJointBeliefMoments =
+		new BooleanOptionKey(GibbsOptions.class, "computeRealJointBeliefMoments", false);
 }

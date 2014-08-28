@@ -103,10 +103,15 @@ public class SRealVariable extends SRealVariableBase
 	private @Nullable IRealConjugateSampler _conjugateSampler = null;
 	private boolean _samplerSpecificallySpecified = false;
 	private @Nullable DoubleArrayList _sampleArray;
+	private double _sampleSum;
+	private double _sampleSumSquare;
+	private long _sampleCount;
 	private double _bestSampleValue;
 	private double _beta = 1;
 	private boolean _holdSampleValue = false;
 	private boolean _visited = false;
+	private long _updateCount;
+	private long _rejectCount;
 	
 	/**
 	 * List of neighbors for sample scoring. Instantiated during initialization.
@@ -179,12 +184,14 @@ public class SRealVariable extends SRealVariableBase
 
 		// Get the next sample value from the sampler
 		boolean rejected = false;
+		_updateCount++;
 		final IRealConjugateSampler conjugateSampler = _conjugateSampler;
 		if (conjugateSampler == null)
 		{
 			// Use MCMC sampler
 			RealValue nextSample = RealValue.create(_sampleValue);
 			rejected = !Objects.requireNonNull(_sampler).nextSample(nextSample, this);
+			if (rejected) _rejectCount++;
 		}
 		else
 		{
@@ -414,15 +421,29 @@ public class SRealVariable extends SRealVariableBase
 	}
 
 	@Override
-	public void updateBelief()
+	public final void updateBelief()
 	{
-		// TODO -- not clear if it's practical to compute beliefs for real variables, or if so, how they should be represented
+		// Update the sums for computing moments
+		final double currentSampleValue = _sampleValue;
+		_sampleSum += currentSampleValue;
+		_sampleSumSquare += currentSampleValue * currentSampleValue;
+		_sampleCount++;
 	}
 
 	@Override
 	public Object getBelief()
 	{
 		return 0d;
+	}
+	
+	public final double getSampleMean()
+	{
+		return _sampleSum / _sampleCount;
+	}
+	
+	public final double getSampleVariance()
+	{
+		return (_sampleSumSquare - (_sampleSum * (_sampleSum / _sampleCount)) ) / (_sampleCount - 1);
 	}
 
 	@Override
@@ -595,6 +616,31 @@ public class SRealVariable extends SRealVariableBase
 		return Arrays.copyOf(sampleArray.elements(), sampleArray.size());
 	}
 	
+	@Override
+	public final double getRejectionRate()
+	{
+		return (_updateCount > 0) ? (double)_rejectCount / (double)_updateCount : 0;
+	}
+	
+	@Override
+	public final void resetRejectionRateStats()
+	{
+		_updateCount = 0;
+		_rejectCount = 0;
+	}
+	
+	@Override
+	public final long getUpdateCount()
+	{
+		return _updateCount;
+	}
+	
+	@Override
+	public final long getRejectionCount()
+	{
+		return _rejectCount;
+	}
+
 	// This is meant for internal use, not as a user accessible method
 	@Internal
 	public final @Nullable DoubleArrayList _getSampleArrayUnsafe()
@@ -889,6 +935,11 @@ public class SRealVariable extends SRealVariableBase
 		}
 		_sampleArray = sampleArray;
 		
+		// Clear out the Belief statistics
+		_sampleSum = 0;
+		_sampleSumSquare = 0;
+		_sampleCount = 0;
+
 		//
 		// Determine which sampler to use
 		//
@@ -929,6 +980,8 @@ public class SRealVariable extends SRealVariableBase
 				}
 
 				sampler.initializeFromVariable(this);
+				
+				resetRejectionRateStats();
 			}
 		}
 	}
@@ -963,10 +1016,17 @@ public class SRealVariable extends SRealVariableBase
 		_sampleArray = ovar._sampleArray;
 		_bestSampleValue = ovar._bestSampleValue;
 		_beta = ovar._beta;
-		_sampler = ovar._sampler;
-		_conjugateSampler = ovar._conjugateSampler;
-		_samplerSpecificallySpecified = ovar._samplerSpecificallySpecified;
 		_holdSampleValue = ovar._holdSampleValue;
+		_sampleSum = ovar._sampleSum;
+		_sampleSumSquare = ovar._sampleSumSquare;
+		_sampleCount = ovar._sampleCount;
+		
+		// Field values intentionally NOT moved:
+		// _sampler
+		// _conjugateSampler
+		// _samplerSpecificallySpecified
+		// _updateCount
+		// _rejectCount
     }
 	
 	// Find a single conjugate sampler consistent with all neighboring factors and the Input
@@ -990,7 +1050,7 @@ public class SRealVariable extends SRealVariableBase
 	{
 		Set<IRealConjugateSamplerFactory> commonSamplers = new HashSet<IRealConjugateSamplerFactory>();
 
-		// Check all the adjacent factors to see if they all support a common cojugate factor
+		// Check all the adjacent factors to see if they all support a common conjugate factor
 		int numFactors = factors.size();
 		for (int i = 0; i < numFactors; i++)
 		{

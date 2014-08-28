@@ -539,7 +539,7 @@ Examples:
 
 Read-only.  The behavior of this property for Real variables is solver specific.  Some solvers do not support this property at all and will return an error when read.  See section~\ref{sec:SolversAPI} for more detail on each of the supported solvers.
 
-For the SumProduct solver, this property returns the estimated marginal distribution of the variable in the form of a NormalParameters object (see section~\ref{sec:NormalParameters}), which includes a mean and precision value\ifmatlab\footnote{For backward compatibility with Dimple version 0.04 and earlier, the Belief can be treated as a two-dimensional array where the first element is the mean and the second is the standard deviation.}\fi.  \ifmatlab For an array of RealJoint variables, this property returns a cell array of NormalParameters objects, each corresponding to the estimated marginal distribution of the corresponding variable. \fi The results are undefined if called prior to running a solver.
+For the SumProduct solver, this property returns the estimated marginal distribution of the variable in the form of a NormalParameters object (see section~\ref{sec:NormalParameters}), which includes a mean and precision value\ifmatlab\footnote{For backward compatibility with Dimple version 0.04 and earlier, the Belief can be treated as a two-dimensional array where the first element is the mean and the second is the standard deviation.}\fi.  \ifmatlab For an array of Real variables, this property returns a cell array of NormalParameters objects, each corresponding to the estimated marginal distribution of the corresponding variable. \fi The results are undefined if called prior to running a solver.
 
 
 \subpara{Value}

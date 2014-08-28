@@ -20,6 +20,9 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.domains.Domain;
@@ -31,18 +34,17 @@ import com.analog.lyric.dimple.solvers.core.proposalKernels.BlockProposal;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.BlockProposalKernelRegistry;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IBlockProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsNeighbors;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverNodeGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
-import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.math.DimpleRandomGenerator;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
+import com.analog.lyric.util.misc.Internal;
 
 /**
  * @since 0.06
  * @author jeffb
  */
-public class BlockMHSampler implements IBlockSampler, IBlockInitializer
+public class BlockMHSampler implements IBlockMCMCSampler, IBlockInitializer
 {
 	private @Nullable IBlockProposalKernel _proposalKernel;
 	private VariableBase[] _variables = new VariableBase[0];
@@ -51,6 +53,8 @@ public class BlockMHSampler implements IBlockSampler, IBlockInitializer
 	private @Nullable Domain[] _domains;
 	private int _numVariables = 0;
 	private @Nullable Set<ISolverNodeGibbs> _neighbors;
+	private long _updateCount;
+	private long _rejectCount;
 	
 	
 	public BlockMHSampler()
@@ -132,9 +136,15 @@ public class BlockMHSampler implements IBlockSampler, IBlockInitializer
 				rejectionThreshold = 0;
 		}
 		if (DimpleRandomGenerator.rand.nextDouble() < rejectionThreshold)
+		{
 			setNextSampleValue(proposalValue);		// Accept
+		}
 		else
+		{
 			setNextSampleValue(sampleValue);		// Reject
+			_rejectCount++;
+		}
+		_updateCount++;
 	}
 
 	@Override
@@ -215,6 +225,43 @@ public class BlockMHSampler implements IBlockSampler, IBlockInitializer
 			sRootGraph.processDeferredDeterministicUpdates();
 		}
 	}
+	
+	/**
+	 * Get the rejection rate of the sampler
+	 * @return rejection rate
+	 * @since 0.07
+	 */
+	@Override
+	public final double getRejectionRate()
+	{
+		return (_updateCount > 0) ? (double)_rejectCount / (double)_updateCount : 0;
+	}
+	
+	/**
+	 * Clear the rejection rate statistics
+	 * @since 0.07
+	 */
+	@Override
+	public final void resetRejectionRateStats()
+	{
+		_updateCount = 0;
+		_rejectCount = 0;
+	}
+	
+	@Override
+	@Internal
+	public final long getUpdateCount()
+	{
+		return _updateCount;
+	}
+	
+	@Override
+	@Internal
+	public final long getRejectionCount()
+	{
+		return _rejectCount;
+	}
+
 
 	// Make a new block updater of the same type, but with different variables
 	@Override
@@ -245,6 +292,8 @@ public class BlockMHSampler implements IBlockSampler, IBlockInitializer
 		final Value[] proposalValue = proposal.value;
 
 		setNextSampleValue(proposalValue);
+		
+		resetRejectionRateStats();
 	}
 
 }

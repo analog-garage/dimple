@@ -92,49 +92,17 @@ public class MatrixVectorProduct extends FactorFunction
     @Override
     public final double evalEnergy(Value[] arguments)
     {
-    	int argIndex = 0;
-    	
-    	final int inLength = _inLength;
-    	final int outLength = _outLength;
-    	double[][] matrix = _matrix;
+    	// Compute the expected output
+		final Value[] expectedResult = evalDeterministicToCopy(arguments);
 
-    	// Get the output vector values
-    	final double[] outVector = _outVector;
-    	for (int i = 0; i < outLength; i++)
-    		outVector[i] = arguments[argIndex++].getDouble();
-
-		// Get the matrix values
-    	if (arguments[argIndex].getObject() instanceof double[][])	// Constant matrix is passed as a single argument
-    		matrix = (double[][])requireNonNull(arguments[argIndex++].getObject());
-    	else
-    	{
-    		for (int col = 0; col < _inLength; col++)
-    			for (int row = 0; row < outLength; row++)
-    				matrix[row][col] = arguments[argIndex++].getDouble();
-    	}
-    	
-    	// Get the input vector values
-    	double[] inVector = _inVector;
-    	if (arguments[argIndex].getObject() instanceof double[])	// Constant matrix is passed as a single argument
-    		inVector = arguments[argIndex++].getDoubleArray();
-    	else
-    	{
-    		for (int i = 0; i < inLength; i++)
-    			inVector[i] = arguments[argIndex++].getDouble();
-    	}
-    	
-    	// Compute the expected output and the total error
-    	double error = 0;
-    	for (int row = 0; row < outLength; row++)
-    	{
-    		double sum = 0;
-    		final double[] rowValues = matrix[row];
-    		for (int col = 0; col < inLength; col++)
-    			sum += rowValues[col] * inVector[col];
-    		final double diff = outVector[row] - sum;
-    		error += diff*diff;
-    	}
-
+		// Compare the output to the expected output
+		final int outLength = _outLength;
+		double error = 0;
+		for (int i = 0; i < outLength; i++)
+		{
+			final double diff = arguments[i].getDouble() - expectedResult[i].getDouble();
+			error += diff*diff;
+		}
     	
     	if (_smoothingSpecified)
     		return error*_beta;

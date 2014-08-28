@@ -93,54 +93,17 @@ public class MatrixProduct extends FactorFunction
     @Override
     public final double evalEnergy(Value[] arguments)
     {
-    	final int Nr = _Nr;
-    	final int Nx = _Nx;
-    	final int Nc = _Nc;
-    	final double[][] out = _out;
-    	double[][] in1 = _in1;
-    	double[][] in2 = _in2;
+    	// Compute the expected output
+		final Value[] expectedResult = evalDeterministicToCopy(arguments);
 
-    	int argIndex = 0;
-    	
-		// Get the output matrix values
-    	for (int c = 0; c < Nc; c++)		// Scan by columns
-    		for (int r = 0; r < Nr; r++)
-    			out[r][c] = arguments[argIndex++].getDouble();
-    	
-		// Get the first input matrix values
-    	if (arguments[argIndex].getObject() instanceof double[][])	// Constant matrix is passed as a single argument
-    		in1 = (double[][])requireNonNull(arguments[argIndex++].getObject());
-    	else
-    	{
-    		for (int x = 0; x < Nx; x++)		// Scan by columns
-    			for (int r = 0; r < Nr; r++)
-    				in1[r][x] = arguments[argIndex++].getDouble();
-    	}
-
-		// Get the second input matrix values
-    	if (arguments[argIndex].getObject() instanceof double[][])	// Constant matrix is passed as a single argument
-    		in2 = (double[][])requireNonNull(arguments[argIndex++].getObject());
-    	else
-    	{
-    		for (int c = 0; c < Nc; c++)		// Scan by columns
-    			for (int x = 0; x < Nx; x++)
-    				in2[x][c] = arguments[argIndex++].getDouble();
-    	}
-    	
-    	// Compute the expected output and total error
+		// Compare the output to the expected output
+		final int numOutputArguments = _Nr * _Nc;
     	double error = 0;
-    	for (int c = 0; c < Nc; c++)
-    	{
-    		for (int r = 0; r < Nr; r++)
-    		{
-    			final double[] in1r = in1[r];
-    			double sum = 0;
-    			for (int x = 0; x < Nx; x++)
-    				sum += in1r[x] * in2[x][c];
-    			final double diff = out[r][c] - sum;
-    			error += diff*diff;
-    		}
-    	}
+		for (int i = 0; i < numOutputArguments; i++)
+		{
+			final double diff = arguments[i].getDouble() - expectedResult[i].getDouble();
+			error += diff*diff;
+		}
 
     	if (_smoothingSpecified)
     		return error*_beta;

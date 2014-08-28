@@ -1031,6 +1031,35 @@ graph.getSolver().burnIn()
 
 Run the burn-in samples independently of using solve (which automatically runs the burn-in samples).  This may be run before using sample() or iterate().
 
+\ifmatlab
+\begin{lstlisting}
+graph.Solver.getRejectionRate()
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().getRejectionRate()
+\end{lstlisting}
+\fi
+
+Get the overall rejection rate over the entire graph.  The rejection rate is the ratio of the number of MCMC proposals that were rejected to the total number of sampler updates.  Rejections only occur in MCMC samplers, such as the MHSampler.  In other samplers, such as conjugate samplers or the CDFSampler, rejection doesn't occur and the rate for variables that use these samplers is zero (in these cases, sampling the same value twice in a row is not considered rejection).  When getting the rejection rate for the entire graph, both the number of rejections and number of updates is counted for all variables, as well as all blocks of variables over which a block sampler is used.  These counts are accumulated from the time the graph is initialized, which automatically occurs when running solve().  This includes both burn-in and subsequent sampling.  These counts can also be reset explicitly using the resetRejectionRateStats method (see below), which allows these values to be determined, for example, during a specific set of samples.
+
+\ifmatlab
+\begin{lstlisting}
+graph.Solver.resetRejectionRateStats()
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().resetRejectionRateStats()
+\end{lstlisting}
+\fi
+
+Explicitly reset the rejection-rate statistics.  These are automatically reset when the graph is initialized, which automatically occurs when running solve(), but may be reset manually at other times using this method.
+
+
 \para{Variable Methods}
 
 \ifmatlab
@@ -1141,10 +1170,39 @@ Set/get the sampler to be used for this variable.  Setting the sampler for a giv
 
 The getSampler method returns the sampler object, while the getSamplerName method returns a string indicating the name of the sampler being used for this variable.  Automatic assignment of a conjugate sampler is done at graph initialization time, so in order to determine what sampler will actually be used, these methods must be called either after a call to the graph initialize method, or after running the solver.
 
+\ifmatlab
+\begin{lstlisting}
+variable.Solver.getRejectionRate()
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().getRejectionRate()
+\end{lstlisting}
+\fi
+
+Get the rejection rate for the sampler used for a specific variable.  The rejection rate is the ratio of the number of MCMC proposals that were rejected to the total number of sampler updates.  Rejections only occur in MCMC samplers, such as the MHSampler.  In other samplers, such as conjugate samplers or the CDFSampler, rejection doesn't occur and the rate for variables that use these samplers is zero (in these cases, sampling the same value twice in a row is not considered rejection).  These counts are accumulated from the time the graph is initialized, which automatically occurs when running solve().  This includes both  burn-in and subsequent sampling.  These counts can also be reset explicitly using the resetRejectionRateStats method (see below), which allows these values to be determined, for example, during a specific set of samples.
+
+\ifmatlab
+\begin{lstlisting}
+variable.Solver.resetRejectionRateStats()
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().resetRejectionRateStats()
+\end{lstlisting}
+\fi
+
+Explicitly reset the rejection-rate statistics for a specific variable.  These are automatically reset when the graph is initialized, which automatically occurs when running solve(), but may be reset manually at other times using this method.
+
+
 
 \para{Discrete-Variable-Specific Methods}
 
-The following methods apply to Discrete or Bit variables when using the Gibbs solver.
+The following methods apply only to Discrete, Bit, and FiniteField variables when using the Gibbs solver.
 
 \ifmatlab
 \begin{lstlisting}
@@ -1204,6 +1262,71 @@ variable.getSolver().getInitialSampleIndex()
 \fi
 
 Set/get the initial sample index associated with the starting value for this variable.  The value associated with this index is used only on the first run (not subsequent restarts).  Setting this index overrides any randomization of the starting value on the first run.
+
+\para{Real-Variable-Specific Methods}
+
+The following methods apply only to Real variables when using the Gibbs solver.
+
+\ifmatlab
+\begin{lstlisting}
+variable.Solver.getSampleMean;
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().getSampleMean();
+\end{lstlisting}
+\fi
+
+Returns the mean value of all samples that have been collected.  This is and estimate of the mean of the belief for the corresponding variable.
+
+\ifmatlab
+\begin{lstlisting}
+variable.Solver.getSampleVariance;
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().getSampleVariance();
+\end{lstlisting}
+\fi
+
+Returns the variance of all samples that have been collected.  This is and estimate of the variance of the belief for the corresponding variable.
+
+\para{RealJoint-Variable-Specific Methods}
+
+The following methods apply only to RealJoint and Complex variables when using the Gibbs solver.
+
+\ifmatlab
+\begin{lstlisting}
+variable.Solver.getSampleMean;
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().getSampleMean();
+\end{lstlisting}
+\fi
+
+Returns the mean vector of all samples that have been collected.  This is and estimate of the mean of the belief for the corresponding variable.  This method is only available if, prior to performing inference, the option GibbsOptions.computeRealJointBeliefMoments is set to true.
+
+\ifmatlab
+\begin{lstlisting}
+variable.Solver.getSampleCovariance;
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().getSampleCovariance();
+\end{lstlisting}
+\fi
+
+Returns the covariance matrix computed over all samples that have been collected.  This is and estimate of the covariance of the belief for the corresponding variable.  This method is only available if, prior to performing inference, the option GibbsOptions.computeRealJointBeliefMoments is set to true.
+
 
 
 \para{Sampler-Specific Methods}

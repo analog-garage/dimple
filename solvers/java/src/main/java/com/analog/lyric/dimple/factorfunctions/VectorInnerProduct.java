@@ -61,57 +61,14 @@ public class VectorInnerProduct extends FactorFunction
 	@Override
 	public final double evalEnergy(Value[] arguments)
 	{
-		double expectedOutValue = 0;
-		double[] firstInput = null;
-		double[] secondInput = null;
-		
-		// Figure out the type of inputs (array or list of arguments)
-		final int numArgs = arguments.length;
-		final Value firstInputArg = arguments[1];
-		final Value lastInputArg = arguments[numArgs-1];
-		if (firstInputArg.getObject() instanceof double[])
-		{
-			firstInput = firstInputArg.getDoubleArray();
-		}
-		if (lastInputArg.getObject() instanceof double[])
-		{
-			secondInput = lastInputArg.getDoubleArray();
-		}
-		
-		// Compute the output
-		if (firstInput != null && secondInput != null)
-		{
-			final int vectorLength = firstInput.length;
-			for (int i = 0; i < vectorLength; i++)
-				expectedOutValue += firstInput[i] * secondInput[i];
-		}
-		else if (firstInput != null)
-		{
-			final int vectorLength = firstInput.length;
-			int secondIndex = 2;
-			for (int i = 0; i < vectorLength; i++)
-				expectedOutValue += firstInput[i] * arguments[secondIndex++].getDouble();
-		}
-		else if (secondInput != null)
-		{
-			final int vectorLength = secondInput.length;
-			int firstIndex = 1;
-			for (int i = 0; i < vectorLength; i++)
-				expectedOutValue += arguments[firstIndex++].getDouble() * secondInput[i];
-		}
-		else	// Neither input is array
-		{
-			final int vectorLength = (numArgs - 1) >> 1;
-			int firstIndex = 1;
-			int secondIndex = 1 + vectorLength;
-			for (int i = 0; i < vectorLength; i++)
-				expectedOutValue += arguments[firstIndex++].getDouble() * arguments[secondIndex++].getDouble();
-		}
+    	// Compute the expected output
+		final Value[] expectedResult = evalDeterministicToCopy(arguments);
 
-		// Get the output value
+		// Compare the output to the expected output
 		final double outValue = arguments[0].getDouble();
+		final double expectedOutValue = expectedResult[0].getDouble();
 
-		final double diff = (outValue - expectedOutValue);
+		final double diff = outValue - expectedOutValue;
 		final double error = diff*diff;
 
 		if (_smoothingSpecified)

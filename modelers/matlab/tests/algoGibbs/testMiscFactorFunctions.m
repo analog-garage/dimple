@@ -29,6 +29,7 @@ if (repeatable)
 end
 
 test1(debugPrint, repeatable);
+test2(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testMiscFactorFunctions');
 
@@ -146,4 +147,93 @@ end
 end
 
 
+% Test scores for some deterministic factors
+function test2(debugPrint, repeatable)
 
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+L = 3;
+N = 4;
+M = 5;
+
+j = RealJoint(N);
+k = RealJoint(N);
+l = RealJoint(M);
+A = Real(M, N);
+B = Real(N, L);
+C = Real(M, L);
+r = Real(1, N);
+s = Real(1, N);
+t = Real(1, M);
+a = Real;
+b = Real;
+
+f1 = fg.addFactor('VectorInnerProduct', a, j, k);
+f2 = fg.addFactor('VectorInnerProduct', b, r, s);
+f3 = fg.addFactor({'MatrixProduct', M, N, L}, C, A, B);
+f4 = fg.addFactor({'MatrixRealJointVectorProduct',N, M}, l, A, j);
+f5 = fg.addFactor({'MatrixVectorProduct',N, M}, t, A, r);
+
+j.Input = {'ExchangeableDirichlet', N, 1};
+k.Input = {'ExchangeableDirichlet', N, 1};
+A.Input = {'Normal', 0, 1};
+B.Input = {'Normal', 0, 1};
+r.Input = {'Normal', 0, 1};
+s.Input = {'Normal', 0, 1};
+
+fg.Solver.setNumSamples(100);
+fg.Solver.setBurnInScans(10);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+
+fg.solve();
+
+assert(all(fg.Solver.getAllScores < 100) && all(fg.Solver.getAllScores >= 0));
+
+ff1 = f1.VectorObject.getFactorFunction;
+assert(ff1.evalEnergy({4, 1, 1, 1, 1, 1, 1, 1, 1}) == 0);
+assert(ff1.evalEnergy({4, 1, 1, 1, 1, 1, 1, 1, 1.000001}) == Inf);
+
+ff2 = f2.VectorObject.getFactorFunction;
+assert(ff2.evalEnergy({4, [1, 1, 1, 1], [1, 1, 1, 1]}) == 0);
+assert(ff2.evalEnergy({4, [1, 1, 1, 1], [1, 1, 1, 1.000001]}) == Inf);
+
+ff3 = f3.VectorObject.getFactorFunction;
+Am = randi(10,M,N);
+Bm = randi(10,N,L);
+Cm = Am * Bm;
+Amm = Am + 0.0000001;
+Ac = num2cell(Am);
+Bc = num2cell(Bm);
+Cc = num2cell(Cm);
+Acm = num2cell(Amm);
+assert(ff3.evalEnergy({Cc{:}, Ac{:}, Bc{:}}) == 0);
+assert(ff3.evalEnergy({Cc{:}, Acm{:}, Bc{:}}) == Inf);
+assert(ff3.evalEnergy({Cc{:}, Am, Bc{:}}) == 0);
+assert(ff3.evalEnergy({Cc{:}, Am, Bm}) == 0);
+assert(ff3.evalEnergy({Cc{:}, Amm, Bc{:}}) == Inf);
+assert(ff3.evalEnergy({Cc{:}, Amm, Bm}) == Inf);
+
+ff4 = f4.VectorObject.getFactorFunction;
+jm = randi(10,N,1);
+lm = Am * jm;
+assert(ff4.evalEnergy({lm, Ac{:}, jm}) == 0);
+assert(ff4.evalEnergy({lm, Acm{:}, jm}) == Inf);
+assert(ff4.evalEnergy({lm, Am, jm}) == 0);
+assert(ff4.evalEnergy({lm, Amm, jm}) == Inf);
+
+ff5 = f5.VectorObject.getFactorFunction;
+jc = num2cell(jm);
+lc = num2cell(lm);
+assert(ff5.evalEnergy({lc{:}, Ac{:}, jc{:}}) == 0);
+assert(ff5.evalEnergy({lc{:}, Acm{:}, jc{:}}) == Inf);
+assert(ff5.evalEnergy({lc{:}, Am, jc{:}}) == 0);
+assert(ff5.evalEnergy({lc{:}, Amm, jc{:}}) == Inf);
+assert(ff5.evalEnergy({lc{:}, Am, jm}) == 0);
+assert(ff5.evalEnergy({lc{:}, Amm, jm}) == Inf);
+
+end

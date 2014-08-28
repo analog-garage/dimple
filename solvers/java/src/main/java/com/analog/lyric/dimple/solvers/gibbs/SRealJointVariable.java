@@ -20,6 +20,7 @@ import static com.analog.lyric.dimple.solvers.gibbs.GibbsSolverVariableEvent.*;
 import static java.util.Objects.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -94,13 +95,18 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	private @Nullable IRealJointConjugateSampler _conjugateSampler = null;
 	private boolean _samplerSpecificallySpecified = false;
 	private @Nullable ArrayList<double[]> _sampleArray;
+	private @Nullable double[] _sampleSum;
+	private @Nullable double[][] _sampleSumSquare;
+	private long _sampleCount;
 	private double[] _bestSampleValue;
 	private double _beta = 1;
 	private boolean _holdSampleValue = false;
 	private int _numRealVars;
 	private int _tempIndex = 0;
 	private boolean _visited = false;
-	
+	private long _updateCount;
+	private long _rejectCount;
+
 	/**
 	 * List of neighbors for sample scoring. Instantiated during initialization.
 	 */
@@ -187,6 +193,8 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 				{
 					++rejectCount;
 				}
+				_updateCount++;	// Updates count each real variable when using an MCMC sampler
+				_rejectCount += rejectCount;
 			}
 		}
 		else
@@ -204,6 +212,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
 			}
 			setCurrentSample(conjugateSampler.nextSample(ports, _inputJoint));
+			_updateCount++;
 		}
 
 		switch (updateEventFlags)
@@ -491,9 +500,19 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	}
 
 	@Override
-	public void updateBelief()
+	public final void updateBelief()
 	{
-		// TODO -- not clear if it's practical to compute beliefs for real variables, or if so, how they should be represented
+		if (_sampleSum != null)
+		{
+			// Update the sums for computing moments
+			for (int i = 0; i < _numRealVars; i++)
+			{
+				requireNonNull(_sampleSum)[i] += _sampleValue[i];
+				for (int j = i; j < _numRealVars; j++)
+					requireNonNull(_sampleSumSquare)[i][j] += _sampleValue[i] * _sampleValue[j];
+			}
+		}
+		_sampleCount++;
 	}
 
 	@Override
@@ -501,6 +520,52 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	{
 		return 0d;
 	}
+	
+	public final double[] getSampleMean()
+	{
+		if (_sampleSum != null)
+		{
+			final double[] mean = new double[_numRealVars];
+			for (int i = 0; i < _numRealVars; i++)
+				mean[i] = requireNonNull(_sampleSum)[i] / requireNonNull(_sampleCount);
+			return mean;
+		}
+		else
+		{
+			throw new DimpleException("The sample mean is only computed if the option GibbsOptions.computeRealJointBeliefMoments has been set to true");
+		}
+	}
+	
+	public final double[][] getSampleCovariance()
+	{
+		if (_sampleSum != null)
+		{
+			// For all sample values, compute the covariance matrix
+			// For now, use the naive algorithm; could be improved
+			final double[][] covariance = new double[_numRealVars][_numRealVars];
+			final double sampleCount = _sampleCount;
+			final double sampleCountMinusOne = (sampleCount - 1);
+			for (int i = 0; i < _numRealVars; i++)
+			{
+				for (int j = i; j < _numRealVars; j++)
+				{
+					final double sumi = requireNonNull(_sampleSum)[i];
+					final double sumj = requireNonNull(_sampleSum)[j];
+					final double sumij = requireNonNull(_sampleSumSquare)[i][j];
+					final double value = (sumij - sumi * (sumj / sampleCount) ) / sampleCountMinusOne;
+					covariance[i][j] = value;
+					covariance[j][i] = value;	// Fill in lower triangular half
+				}
+			}
+			return covariance;
+		}
+		else
+		{
+			throw new DimpleException("The sample covariance is only computed if the option GibbsOptions.computeRealJointBeliefMoments has been set to true");
+		}
+
+	}
+
 
 	@Override
 	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixedValue)
@@ -681,8 +746,8 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 			oldValue = _outputMsg.clone();
 		}
 		
-		_sampleValue = value;
-		_outputMsg.setValue(value);
+		_sampleValue = value.clone();
+		_outputMsg.setValue(_sampleValue);
 		
 		if (hasDeterministicDependents)
 		{
@@ -744,6 +809,31 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		for (int i = 0; i < length; i++)
 			retval[i] = sampleArray.get(i);
 		return retval;
+	}
+	
+	@Override
+	public final double getRejectionRate()
+	{
+		return (_updateCount > 0) ? (double)_rejectCount / (double)_updateCount : 0;
+	}
+	
+	@Override
+	public final void resetRejectionRateStats()
+	{
+		_updateCount = 0;
+		_rejectCount = 0;
+	}
+	
+	@Override
+	public final long getUpdateCount()
+	{
+		return _updateCount;
+	}
+	
+	@Override
+	public final long getRejectionCount()
+	{
+		return _rejectCount;
 	}
 
 	// This is meant for internal use, not as a user accessible method
@@ -942,14 +1032,14 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 
 	public RealJointValue createDefaultMessage()
 	{
-		return Value.create(_domain, _var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue);
+		return Value.create(_domain, _var.hasFixedValue() ? _varReal.getFixedValue().clone() : _initialSampleValue.clone());
 	}
 
 	// TODO Move to ISolverVariable
 	@Override
 	public Object resetInputMessage(Object message)
 	{
-		((RealJointValue)message).setValue(_var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue);
+		((RealJointValue)message).setValue(_var.hasFixedValue() ? _varReal.getFixedValue().clone() : _initialSampleValue.clone());
 		return message;
 	}
 
@@ -1026,6 +1116,25 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		}
 		_sampleArray = sampleArray;
 		
+		// Clear out the Belief statistics
+		if (getOptionOrDefault(GibbsOptions.computeRealJointBeliefMoments))
+		{
+			if (_sampleSum == null)
+				_sampleSum = new double[_numRealVars];
+			if (_sampleSumSquare == null)
+				_sampleSumSquare = new double[_numRealVars][_numRealVars];
+	
+			Arrays.fill(_sampleSum, 0);
+			for (int i = 0; i < _numRealVars; i++)
+				Arrays.fill(requireNonNull(_sampleSumSquare)[i], 0);
+		}
+		else
+		{
+			_sampleSum = null;
+			_sampleSumSquare = null;
+		}
+		_sampleCount = 0;
+
 		//
 		// Determine which sampler to use
 		//
@@ -1066,6 +1175,8 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 				}
 
 				sampler.initializeFromVariable(this);
+				
+				resetRejectionRateStats();
 			}
 		}
 	}
@@ -1100,11 +1211,18 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		_sampleArray = ovar._sampleArray;
 		_bestSampleValue = ovar._bestSampleValue;
 		_beta = ovar._beta;
-		_sampler = ovar._sampler;
-		_conjugateSampler = ovar._conjugateSampler;
-		_samplerSpecificallySpecified = ovar._samplerSpecificallySpecified;
 		_holdSampleValue = ovar._holdSampleValue;
 		_numRealVars = ovar._numRealVars;
+		_sampleSum = ovar._sampleSum;
+		_sampleSumSquare = ovar._sampleSumSquare;
+		_sampleCount = ovar._sampleCount;
+		
+		// Field values intentionally NOT moved:
+		// _sampler
+		// _conjugateSampler
+		// _samplerSpecificallySpecified
+		// _updateCount
+		// _rejectCount
     }
 	
 	// Get the dimension of the joint variable
@@ -1135,7 +1253,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	{
 		Set<IRealJointConjugateSamplerFactory> commonSamplers = new HashSet<IRealJointConjugateSamplerFactory>();
 
-		// Check all the adjacent factors to see if they all support a common cojugate factor
+		// Check all the adjacent factors to see if they all support a common conjugate factor
 		int numFactors = factors.size();
 		for (int i = 0; i < numFactors; i++)
 		{

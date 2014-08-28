@@ -62,6 +62,8 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.schedulers.GibbsDefaultScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.IGibbsSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.IBlockUpdater;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomBernoulli;
@@ -81,7 +83,9 @@ import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomMultiplexer;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNegativeExpGamma;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNormal;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomPoisson;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockInitializer;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockMCMCSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -545,6 +549,66 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		else
 			return null;
 	}
+	
+	/**
+	 * Get the rejection rate of the sampler for variables and block entries for which it applies
+	 * @return rejection rate
+	 * @since 0.07
+	 */
+	public final double getRejectionRate()
+	{
+		long updateCount = 0;
+		long rejectCount = 0;
+		
+		// Accumulate the rejection statistics for all variables
+		for (VariableBase v : _factorGraph.getVariables())
+		{
+			ISolverVariableGibbs variable = requireNonNull(getSolverVariable(v));
+			updateCount += variable.getUpdateCount();
+			rejectCount += variable.getRejectionCount();
+		}
+		
+		// Accumulate the rejection statistics for any BlockMHSamplers in the schedule
+		ISchedule schedule = _factorGraph.getSchedule();
+		for (IScheduleEntry s : schedule)
+		{
+			if (s instanceof BlockScheduleEntry)
+			{
+				IBlockUpdater b = ((BlockScheduleEntry)s).getBlockUpdater();
+				if (b instanceof IBlockMCMCSampler)
+				{
+					updateCount += ((BlockMHSampler)b).getUpdateCount();
+					rejectCount += ((BlockMHSampler)b).getRejectionCount();
+				}
+			}
+		}
+		
+		return (updateCount > 0) ? (double)rejectCount / (double)updateCount : 0;
+	}
+	
+	/**
+	 * Clear the rejection rate statistics
+	 * @since 0.07
+	 */
+	public final void resetRejectionRateStats()
+	{
+		// Reset the rejection statistics for all variables
+		for (VariableBase v : _factorGraph.getVariables())
+			requireNonNull(getSolverVariable(v)).resetRejectionRateStats();
+		
+		// Reset the rejection statistics for any BlockMHSamplers in the schedule
+		ISchedule schedule = _factorGraph.getSchedule();
+		for (IScheduleEntry s : schedule)
+		{
+			if (s instanceof BlockScheduleEntry)
+			{
+				IBlockUpdater b = ((BlockScheduleEntry)s).getBlockUpdater();
+				if (b instanceof IBlockMCMCSampler)
+					((BlockMHSampler)b).resetRejectionRateStats();
+			}
+		}
+	}
+	
 	
 	// Set/get the current temperature for all variables in the graph (for tempering)
 	@SuppressWarnings("null")
