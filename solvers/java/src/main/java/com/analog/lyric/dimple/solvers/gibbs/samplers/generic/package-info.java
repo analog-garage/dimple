@@ -7,6 +7,10 @@
  * for the specific language governing permissions and limitations under the License.
  ********************************************************************************/
 
+/**
+ * Non-conjugate single-variable samplers for Gibbs solver.
+ */
 @NonNullByDefault
 package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+

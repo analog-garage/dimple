@@ -7,6 +7,10 @@
  * for the specific language governing permissions and limitations under the License.
  ********************************************************************************/
 
+/**
+ * Block samplers for Gibbs solver.
+ */
 @NonNullByDefault
 package com.analog.lyric.dimple.solvers.gibbs.samplers.block;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+
