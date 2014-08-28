@@ -1202,7 +1202,7 @@ Explicitly reset the rejection-rate statistics for a specific variable.  These a
 
 \para{Discrete-Variable-Specific Methods}
 
-The following methods apply to Discrete or Bit variables when using the Gibbs solver.
+The following methods apply only to Discrete, Bit, and FiniteField variables when using the Gibbs solver.
 
 \ifmatlab
 \begin{lstlisting}
@@ -1262,6 +1262,71 @@ variable.getSolver().getInitialSampleIndex()
 \fi
 
 Set/get the initial sample index associated with the starting value for this variable.  The value associated with this index is used only on the first run (not subsequent restarts).  Setting this index overrides any randomization of the starting value on the first run.
+
+\para{Real-Variable-Specific Methods}
+
+The following methods apply only to Real variables when using the Gibbs solver.
+
+\ifmatlab
+\begin{lstlisting}
+variable.Solver.getSampleMean;
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().getSampleMean();
+\end{lstlisting}
+\fi
+
+Returns the mean value of all samples that have been collected.  This is and estimate of the mean of the belief for the corresponding variable.
+
+\ifmatlab
+\begin{lstlisting}
+variable.Solver.getSampleVariance;
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().getSampleVariance();
+\end{lstlisting}
+\fi
+
+Returns the variance of all samples that have been collected.  This is and estimate of the variance of the belief for the corresponding variable.
+
+\para{RealJoint-Variable-Specific Methods}
+
+The following methods apply only to RealJoint and Complex variables when using the Gibbs solver.
+
+\ifmatlab
+\begin{lstlisting}
+variable.Solver.getSampleMean;
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().getSampleMean();
+\end{lstlisting}
+\fi
+
+Returns the mean vector of all samples that have been collected.  This is and estimate of the mean of the belief for the corresponding variable.  This method is only available if, prior to performing inference, the option GibbsOptions.computeRealJointBeliefMoments is set to true.
+
+\ifmatlab
+\begin{lstlisting}
+variable.Solver.getSampleCovariance;
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().getSampleCovariance();
+\end{lstlisting}
+\fi
+
+Returns the covariance matrix computed over all samples that have been collected.  This is and estimate of the covariance of the belief for the corresponding variable.  This method is only available if, prior to performing inference, the option GibbsOptions.computeRealJointBeliefMoments is set to true.
+
 
 
 \para{Sampler-Specific Methods}
