@@ -38,6 +38,10 @@ end
 % Test RealJoint and Complex to Real vector conversaion factor functions
 function test1(debugPrint, repeatable)
 
+if ~hasStatisticsToolbox('testMiscFactorFunctions:test1')
+    return;
+end
+
 for trial = 1:2
     
     fg = FactorGraph;
