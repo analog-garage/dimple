@@ -20,9 +20,56 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import com.analog.lyric.collect.UnmodifiableReleasableIterator;
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.collect.UnmodifiableReleasableIterator;
+
+/**
+ * Iterates over Dimple event sources, which are also Dimple option holders.
+ * <p>
+ * This provides the iterator returned by both the
+ * {@link com.analog.lyric.dimple.options.DimpleOptionHolder#getOptionDelegates DimpleOptionHolder.getOptionDelegates}
+ * and {@link com.analog.lyric.dimple.events.DimpleEventListener#eventSources DimpleEventListener.eventSources}
+ * methods. It is used for both option lookup and event dispatching.
+ * <p>
+ * The iterator visits objects starting from an initial <em>source</em> using the following recursive ordering:
+ * <ol>
+ * <li>Visit <em>source</em>
+ * <li>Visit <em>source</em>'s corresponding {@linkplain IDimpleEventSource#getModelEventSource model event source}
+ * if not null and not the same as the <em>source</em> itself. For instance, if <em>source</em> were a Dimple solver
+ * variable, this step would visit the corresponding model variable.
+ * <li>If the <em>source</em> has a non-null {@linkplain IDimpleEventSource#getEventParent() parent}, then
+ * recursively visit's sources starting with the parent.
+ * <li>Otherwise, if the <em>source</em> has no parent, but visited a <em>model source</em> in step 2 with
+ * a non-null parent, then the algorithm will recursively visit sources from the model's parent.
+ * </ol>
+ * Or written in pseudocode:
+ * <blockquote>
+ * <pre>
+ * void visitSources(IDimpleEventSource source)
+ * {
+ *     visit(source);
+ * 
+ *     IDimpleEventSource modelSource = source.getModelEventSource();
+ *     boolean hasModel = modelSource != null && modelSource != source;
+ *     if (hasModel)
+ *         visit(modelSource);
+ * 
+ *     IDimpleEventSource parent = source.getEventParent();
+ *     if (parent == null && hasModel)
+ *         parent = model.getEventParent();
+ * 
+ *     if (parent != null)
+ *     {
+ *         visitSources(parent);
+ *     }
+ * }
+ * </pre>
+ * </blockquote>
+ * <p>
+ * @since 0.07
+ * @author Christopher Barber
+ */
 @NotThreadSafe
 public class EventSourceIterator extends UnmodifiableReleasableIterator<IDimpleEventSource>
 {
@@ -39,6 +86,14 @@ public class EventSourceIterator extends UnmodifiableReleasableIterator<IDimpleE
 	{
 	}
 	
+	/**
+	 * Create iterator starting with given source.
+	 * <p>
+	 * Most users should instead use {@link IDimpleEventSource#getOptionDelegates()}.
+	 * <p>
+	 * @param source if null will create an empty iterator.
+	 * @since 0.07
+	 */
 	public static EventSourceIterator create(@Nullable IDimpleEventSource source)
 	{
 		EventSourceIterator iter = _reusableInstance.getAndSet(null);
@@ -109,11 +164,16 @@ public class EventSourceIterator extends UnmodifiableReleasableIterator<IDimpleE
 	@Override
 	public void release()
 	{
-		_next = null;
-		_prev = null;
+		reset(null);
 		_reusableInstance.set(this);
 	}
 
+	/**
+	 * Resets the iterator to start iteration at given {@code source}.
+	 * 
+	 * @param source is the first source to visit. If null, the iterator will be empty.
+	 * @since 0.07
+	 */
 	public void reset(@Nullable IDimpleEventSource source)
 	{
 		_next = source;

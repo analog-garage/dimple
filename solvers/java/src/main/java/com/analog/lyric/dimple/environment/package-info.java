@@ -16,6 +16,15 @@
 
 /**
  * Shared environment for Dimple library.
+ * <p>
+ * The Dimple environment package defines the
+ * {@linkplain com.analog.lyric.dimple.environment.DimpleEnvironment DimpleEnvironment} class
+ * that Dimple uses to share certain global state across multiple models including global configuration
+ * of Dimple options and Dimple's event system. The package also provides
+ * {@linkplain com.analog.lyric.dimple.environment.DimpleThread DimpleThread} and
+ * {@linkplain com.analog.lyric.dimple.environment.DimpleThreadFactory DimpleThreadFactory} classes that
+ * will properly set up the Dimple environment for a new thread.
+ * <p>
  * @since 0.07
  * @author Christopher Barber
  */

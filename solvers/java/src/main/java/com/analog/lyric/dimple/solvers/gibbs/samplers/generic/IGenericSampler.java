@@ -21,6 +21,9 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.options.IOptionConfigurable;
 
+/**
+ * Base interface for non-conjugate single-variable sampler for Gibbs solver.
+ */
 public interface IGenericSampler extends ISampler, IOptionConfigurable
 {
 	/**

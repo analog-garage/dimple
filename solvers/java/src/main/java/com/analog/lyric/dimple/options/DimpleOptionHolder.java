@@ -21,7 +21,6 @@ import java.util.Arrays;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
-import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.environment.IDimpleEnvironmentHolder;
 import com.analog.lyric.dimple.events.EventSourceIterator;
@@ -35,6 +34,13 @@ import com.analog.lyric.options.OptionDoubleList;
 
 /**
  * Base class for dimple objects that can hold options and generate events.
+ * <p>
+ * This extends {@link LocalOptionHolder} in the following ways:
+ * <ul>
+ * <li>It also implements the {@link IDimpleEventSource} interface, so that all Dimple objects
+ * on which you can set options are also event sources.
+ * <li>It overrides the {@link #getOptionDelegates()} method
+ * </ul>
  * 
  * @since 0.07
  * @author Christopher Barber
@@ -47,8 +53,15 @@ public abstract class DimpleOptionHolder
 	 * IOptionHolder methods
 	 */
 	
+	/**
+	 * Iterates over option holders in the order in which options should be looked up.
+	 * <p>
+	 * Unlike the default implementation, which simply walks up the chain of {@linkplain #getOptionParent option
+	 * parents}, this will visit both the option parent and the corresponding model object. This is described in
+	 * more detail in {@link EventSourceIterator}.
+	 */
 	@Override
-	public ReleasableIterator<IDimpleEventSource> getOptionDelegates()
+	public EventSourceIterator getOptionDelegates()
 	{
 		return EventSourceIterator.create(this);
 	}
@@ -74,7 +87,7 @@ public abstract class DimpleOptionHolder
 		return getEnvironment().getEventListener();
 	}
 	
-	/*
+	/*----------------------------------
 	 * IDimpleEnvironmentHolder methods
 	 */
 

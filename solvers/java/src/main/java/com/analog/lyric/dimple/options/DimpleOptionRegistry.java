@@ -89,6 +89,8 @@ public final class DimpleOptionRegistry extends OptionRegistry
 	{
 		super(true);
 		
+		// NOTE: if you add to this list, make sure to add the same classes to the documentation above.
+		
 		addFromClasses(
 			DimpleOptions.class,
 			SolverOptions.class,

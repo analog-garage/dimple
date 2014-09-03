@@ -18,11 +18,12 @@ package com.analog.lyric.dimple.model.domains;
 
 import net.jcip.annotations.Immutable;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.WeakInterner;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.variables.Bit;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.Interner;
 import com.google.common.math.DoubleMath;
 
@@ -225,11 +226,27 @@ public abstract class DiscreteDomain extends Domain
 		return joint(JointDomainIndexer.create(domains));
 	}
 
+	/**
+	 * Returns discrete domain containing all integers from {@code low} to {@code high}.
+	 * @param low is the first element of the domain
+	 * @param high is the last element of the domain, which must be greater than or equal to {@code low}
+	 * @see #range(int, int, int)
+	 */
 	public static IntRangeDomain range(int low, int high)
 	{
 		return intern(new IntRangeDomain(low, high, 1));
 	}
 	
+	/**
+	 * Returns discrete domain containing all integers from {@code low} to {@code high} in increments of
+	 * specified interval.
+	 * <p>
+	 * @param low is the first element of the domain
+	 * @param high is the upper bound of the domain, which must be greater than {@code low}. Will only
+	 * be included in the domain itself if {@code (high - low)} is a multiple of {@code interval}.
+	 * @param interval is a positive integer specifying the increment between adjacent elements in the domain.
+	 * @see #range(int, int)
+	 */
 	public static IntRangeDomain range(int low, int high, int interval)
 	{
 		return intern(new IntRangeDomain(low, high, interval));

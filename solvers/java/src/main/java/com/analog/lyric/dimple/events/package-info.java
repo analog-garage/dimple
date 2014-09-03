@@ -141,8 +141,9 @@
  * serializing the entire graph. This means that deserialized event objects will contain null references for
  * any such object. Instead of serializing the actual object, the name and id of the object will be serialized.
  * <p>
- * @since 0.07 - support for DimpleEnvironment
- * @since 0.06 - package was first introduced
+ * @since
+ * <li>0.07 - support for DimpleEnvironment
+ * <li>0.06 - package was first introduced
  * @author Christopher Barber
  */
 @org.eclipse.jdt.annotation.NonNullByDefault

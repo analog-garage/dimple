@@ -68,7 +68,7 @@ public class TestDimpleThread extends DimpleTestBase
 			public void run()
 			{
 				DimpleThread thread = (DimpleThread)Thread.currentThread();
-				assertSame(thread.environment(), DimpleEnvironment.active());
+				assertSame(thread.getEnvironment(), DimpleEnvironment.active());
 			}
 		};
 		
@@ -96,7 +96,7 @@ public class TestDimpleThread extends DimpleTestBase
 			DimpleEnvironment.setDefaultEnvironment(new DimpleEnvironment());
 			assertNotSame(prevEnv, DimpleEnvironment.defaultEnvironment());
 		
-			assertSame(expectedEnvironment, thread.environment());
+			assertSame(expectedEnvironment, thread.getEnvironment());
 			assertSame(expectedGroup, thread.getThreadGroup());
 			if (expectedName != null)
 			{
@@ -147,16 +147,16 @@ public class TestDimpleThread extends DimpleTestBase
 		};
 		
 		DimpleThreadFactory factory = new DimpleThreadFactory();
-		assertSame(expectedEnv, factory.environment());
+		assertSame(expectedEnv, factory.getEnvironment());
 		DimpleThread thread = factory.newThread(runnable);
-		assertSame(expectedEnv, thread.environment());
+		assertSame(expectedEnv, thread.getEnvironment());
 		thread.run();
 		
 		DimpleEnvironment.setActive(DimpleEnvironment.defaultEnvironment());
 		factory = new DimpleThreadFactory(expectedEnv);
-		assertSame(expectedEnv, factory.environment());
+		assertSame(expectedEnv, factory.getEnvironment());
 		thread = factory.newThread(runnable);
-		assertSame(expectedEnv, thread.environment());
+		assertSame(expectedEnv, thread.getEnvironment());
 		thread.run();
 	}
 }

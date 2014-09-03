@@ -36,16 +36,81 @@ import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.options.DimpleOptionRegistry;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IGenericSampler;
+import com.analog.lyric.options.IOptionHolder;
+import com.analog.lyric.options.IOptionKey;
 
 /**
  * Shared environment for Dimple
- * <p>
+ * 
+ * <h2>Overview</h2>
+ * 
  * This object holds shared state for a Dimple session. Typically
  * there will only be one instance of this class that is global across
  * all threads, but it is possible to configure different instances in
- * different threads in the rare case where multiple segregated instances
- * of Dimple need to be run at the same time.
+ * different threads in the rare case where multiple segregated Dimple
+ * sessions need to be run at the same time.
+ * 
+ * <h2>Accessing the environment</h2>
+ * 
+ * When working with an object that implements the {@link IDimpleEnvironmentHolder} interface,
+ * which includes both model and solver factor graph, variable and factor objects, you can
+ * reference the appropriate environment through its {@linkplain IDimpleEnvironmentHolder#getEnvironment()}
+ * method. Root {@link FactorGraph} objects store a pointer to the active environment when they
+ * are constructed, and children of a graph will return the environment of the root graph.
+ * If the environment is not otherwise available, you can access the active environment for the current thread
+ * using the static {@link DimpleEnvironment#active()} method.
+ * 
+ * <h2>Options</h2>
+ * 
+ * The environment is the root of the option hierarchy for Dimple. It implements
+ * the {@link IOptionHolder} interface, and you can set options on it that will be
+ * inherited by all graphs that share that environment. You can use this to set default
+ * option values without having to explicitly set them on newly created graphs. For instance,
+ * in order to enable multi-threading for all graphs, you could simply write:
+ * <blockquote>
+ * <pre>
+ * DimpleEnvironment env = DimpleEnvironment.active();
+ * env.setOption(SolverOptions.enableMultithreading, true);
+ * </pre>
+ * </blockquote>
+ * Any options that are set on the graph objects will override the values set on the environment.
  * <p>
+ * For more details options see the {@link com.analog.lyric.options} and {@link com.analog.lyric.dimple.options}
+ * packages as well as the Dimple User Manual.
+ * 
+ * <h2>Event handling</h2>
+ * 
+ * Likewise, the environment is also the root of the event source hierarchy for Dimple and holds the
+ * instance of the {@link DimpleEventListener} responsible for dispatching events. Event handling is
+ * activated by {@linkplain #createEventListener() creating an event listener} on the environment and
+ * {@linkplain DimpleEventListener#register(com.analog.lyric.dimple.events.IDimpleEventHandler, Class, IDimpleEventSource)
+ * registering} it to dispatch specified events to designated handlers. For instance, the following
+ * code gets the listener for the environment, creating if necessary, and registers a handler for
+ * variable creation events on the given graph:
+ * <blockquote>
+ * <pre>
+ * env.createEventListener().register(handler, VariableAddEvent.class, factorGraph);
+ * </pre>
+ * </blockquote>
+ * For more details on events, see the {@link com.analog.lyric.dimple.events} package and the Dimple User Manual.
+ * 
+ * <h2>Logging</h2>
+ * 
+ * The environment also provides a simple logging interface that may be used by Dimple solver implementations to
+ * log various non-fatal conditions. Although intended primarily for use in implementations of solvers and custom
+ * factors, it is also available for use by by users of Dimple. The environment provides an instance of the
+ * standard Java {@link Logger} class that is created using {@link Logger#getLogger} with the string
+ * {@code "com.analog.lyric.dimple"}. This may be configured using Java system properties and config files
+ * as described in the Java {@linkplain java.util.logging.LogManager LogManager} class documentation; relevant
+ * properties are documented in the various handler classes (e.g.
+ * {@linkplain java.util.logging.ConsoleHandler ConsoleHandler},
+ * {@linkplain java.util.logging.FileHandler FileHandler}). The default configuration usually will just log
+ * to {@link System#err}.
+ * <p>
+ * This class provides some simple methods for logging {@linkplain #logError(String, Object...) errors} and
+ * {@linkplain #logWarning(String, Object...) warnings}. The environment's {@link #logger()} instance can
+ * be used directly for cases when these methods are not sufficient.
+ * 
  * @since 0.07
  * @author Christopher Barber
  */
@@ -67,6 +132,8 @@ public class DimpleEnvironment extends DimpleOptionHolder
 		}
 	};
 	
+	// Hack to determine if class was loaded from within the MATLAB environment. We do this by
+	// checking to see if class loader comes from a package whose name starts with "com.mathworks".
 	private static enum LoadedFromMATLAB
 	{
 		INSTANCE;
@@ -145,7 +212,8 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 * The default global instance of the dimple environment.
 	 * <p>
 	 * This is used as the initial value of the {@link #active} environment
-	 * for newly created threads. Most users should use {@link #active} instead of this.
+	 * for newly created threads that are not {@link DimpleThread}s.
+	 * Most users should use {@link #active} instead of this.
 	 * <p>
 	 * @see #setDefaultEnvironment(DimpleEnvironment)
 	 * @since 0.07
@@ -447,16 +515,43 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 * Various registries
 	 */
 	
+	/**
+	 * Registry of factor function classes for this environment.
+	 * <p>
+	 * Supports lookup of {@link FactorFunction} implementations by class name.
+	 * Primarily for use in dynamic language implementations of Dimple.
+	 * <p>
+	 * @see ConstructorRegistry
+	 * @since 0.07
+	 */
 	public ConstructorRegistry<FactorFunction> factorFunctions()
 	{
 		return _factorFunctions;
 	}
 	
+	/**
+	 * Registry of generic sampler classes for this environment.
+	 * <p>
+	 * Supports lookup of {@link IGenericSampler} implementations by class name.
+	 * Primarily for use in dynamic language implementations of Dimple.
+	 * <p>
+	 * @see ConstructorRegistry
+	 * @since 0.07
+	 */
 	public ConstructorRegistry<IGenericSampler> genericSamplers()
 	{
 		return _genericSamplers;
 	}
 	
+	/**
+	 * Registry of known option keys for this environment.
+	 * <p>
+	 * Supports lookup of Dimple {@linkplain IOptionKey option key} instances by name.
+	 * Primarily for use in dynamic language implementations of Dimple.
+	 * <p>
+	 * @see DimpleOptionRegistry
+	 * @since 0.07
+	 */
 	public DimpleOptionRegistry optionRegistry()
 	{
 		return _optionRegistry;
@@ -464,6 +559,12 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	
 	/**
 	 * Registry of proposal kernel classes for this environment.
+	 * <p>
+	 * Supports lookup of {@link IProposalKernel} implementations by class name.
+	 * Primarily for use in dynamic language implementations of Dimple.
+	 * <p>
+	 * @see ConstructorRegistry
+	 * @since 0.07
 	 */
 	public ConstructorRegistry<IProposalKernel> proposalKernels()
 	{

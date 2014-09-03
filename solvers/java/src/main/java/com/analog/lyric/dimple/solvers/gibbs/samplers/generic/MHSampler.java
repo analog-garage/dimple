@@ -31,6 +31,12 @@ import com.analog.lyric.dimple.solvers.core.proposalKernels.UniformDiscretePropo
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.IOptionHolder;
 
+/**
+ * Single-variable Metropolis-Hastings sampler.
+ * 
+ * @since 0.07
+ * @author Christopher Barber
+ */
 public class MHSampler extends AbstractGenericSampler implements IMCMCSampler
 {
 	protected @Nullable IProposalKernel _proposalKernel;

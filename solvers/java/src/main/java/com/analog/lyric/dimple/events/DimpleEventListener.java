@@ -372,7 +372,7 @@ public class DimpleEventListener implements IDimpleEventListener
 	 * 
 	 * @since 0.06
 	 */
-	public ReleasableIterator<IDimpleEventSource> eventSources(@Nullable IDimpleEventSource source)
+	public EventSourceIterator eventSources(@Nullable IDimpleEventSource source)
 	{
 		return EventSourceIterator.create(source);
 	}

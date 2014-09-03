@@ -16,9 +16,10 @@
 
 package com.analog.lyric.dimple.events;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.options.IOptionHolder;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Interface for classes of objects that may produce {@link DimpleEvent}s.
@@ -44,6 +45,11 @@ public interface IDimpleEventSource extends IOptionHolder
 	public @Nullable IDimpleEventListener getEventListener();
 
 	/**
+	 * The parent of this object in the event hierarchy or null if at root.
+	 * <p>
+	 * Unless otherwise noted, this will always have the same value as {@link #getOptionParent()}.
+	 * <p>
+	 * @since 0.06
 	 */
 	public @Nullable IDimpleEventSource getEventParent();
 	

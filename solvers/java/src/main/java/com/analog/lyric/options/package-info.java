@@ -48,12 +48,13 @@
  * class.
  * <p>
  * Classes that support getting and setting options must implement the
- * {@linkplain com.analog.lyric.options.IOptionHolder} interface and will
+ * {@linkplain com.analog.lyric.options.IOptionHolder IOptionHolder} interface and will
  * typically extend {@linkplain com.analog.lyric.options.LocalOptionHolder LocalOptionHolder},
  * which provides the ability to store options locally in the object.
  * <p>
  * Options can be get or set using the corresponding key with an option holder and can
- * be done either through methods on the key or the holder:
+ * be done either through methods on the key or the holder. Here are two equivalent ways
+ * to set a color option on a widget object:
  * <p>
  * <blockquote>
  * <pre>
@@ -69,7 +70,8 @@
  * </pre>
  * </blockquote>
  * <p>
- * Some option key classes may support additional variants of the {@linkplain com.analog.lyric.options.IOptionKey#set}
+ * Some option key classes may support additional variants of the
+ * {@linkplain com.analog.lyric.options.IOptionKey#set set}
  * method to automatically combine or convert arguments, which may make is desirable to set the option through
  * the key's method rather than {@linkplain com.analog.lyric.options.IOptionHolder#setOption setOption}. For instance,
  * the {@linkplain com.analog.lyric.options.StringListOptionKey StringListOptionKey} class overloads the {@code set}

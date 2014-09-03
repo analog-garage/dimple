@@ -19,15 +19,16 @@ package com.analog.lyric.dimple.environment;
 import org.eclipse.jdt.annotation.Nullable;
 
 /**
- * An extension of standard {@link Thread} class that inherits dimple environment from parent thread.
+ * An extension of standard {@link Thread} class that inherits its active dimple environment from its parent thread.
  * <p>
  * Use this in place of the standard {@link Thread} class to ensure that new threads inherit
- * the same {@link DimpleEnvironment} as their creating thread.
+ * the same {@link DimpleEnvironment#active()} value as their creating thread.
  * <p>
+ * @see DimpleThreadFactory
  * @since 0.07
  * @author Christopher Barber
  */
-public class DimpleThread extends Thread
+public class DimpleThread extends Thread implements IDimpleEnvironmentHolder
 {
 	private final DimpleEnvironment _env;
 	
@@ -36,7 +37,7 @@ public class DimpleThread extends Thread
 	 */
 	
 	/**
-	 * Sets {@link #environment} to {@link DimpleEnvironment#active()}.
+	 * Sets {@linkplain #getEnvironment environment} to {@link DimpleEnvironment#active()}.
 	 * Otherwise is the same as {@link Thread#Thread()} constructor.
 	 * @since 0.07
 	 */
@@ -47,7 +48,7 @@ public class DimpleThread extends Thread
 	}
 	
 	/**
-	 * Sets {@link #environment} to {@link DimpleEnvironment#active()}.
+	 * Sets {@linkplain #getEnvironment environment} to {@link DimpleEnvironment#active()}.
 	 * Otherwise is the same as {@link Thread#Thread(Runnable)} constructor.
 	 * @since 0.07
 	 */
@@ -57,7 +58,7 @@ public class DimpleThread extends Thread
 	}
 	
 	/**
-	 * Sets {@link #environment} to specified value.
+	 * Sets {@linkplain #getEnvironment environment} to specified value.
 	 * Otherwise is the same as {@link Thread#Thread(Runnable)} constructor.
 	 * @since 0.07
 	 */
@@ -68,7 +69,7 @@ public class DimpleThread extends Thread
 	}
 	
 	/**
-	 * Sets {@link #environment} to {@link DimpleEnvironment#active()}.
+	 * Sets {@linkplain #getEnvironment environment} to {@link DimpleEnvironment#active()}.
 	 * Otherwise is the same as {@link Thread#Thread(ThreadGroup, Runnable)} constructor.
 	 * @since 0.07
 	 */
@@ -78,7 +79,7 @@ public class DimpleThread extends Thread
 	}
 	
 	/**
-	 * Sets {@link #environment} to specified value.
+	 * Sets {@linkplain #getEnvironment environment} to specified value.
 	 * Otherwise is the same as {@link Thread#Thread(ThreadGroup, Runnable)} constructor.
 	 * @since 0.07
 	 */
@@ -89,7 +90,7 @@ public class DimpleThread extends Thread
 	}
 
 	/**
-	 * Sets {@link #environment} to {@link DimpleEnvironment#active()}.
+	 * Sets {@linkplain #getEnvironment environment} to {@link DimpleEnvironment#active()}.
 	 * Otherwise is the same as {@link Thread#Thread(String)} constructor.
 	 * @since 0.07
 	 */
@@ -99,7 +100,7 @@ public class DimpleThread extends Thread
 	}
 	
 	/**
-	 * Sets {@link #environment} to {@link DimpleEnvironment#active()}.
+	 * Sets {@linkplain #getEnvironment environment} to {@link DimpleEnvironment#active()}.
 	 * Otherwise is the same as {@link Thread#Thread(ThreadGroup,String)} constructor.
 	 * @since 0.07
 	 */
@@ -109,7 +110,7 @@ public class DimpleThread extends Thread
 	}
 	
 	/**
-	 * Sets {@link #environment} to {@link DimpleEnvironment#active()}.
+	 * Sets {@linkplain #getEnvironment environment} to {@link DimpleEnvironment#active()}.
 	 * Otherwise is the same as {@link Thread#Thread(Runnable,String)} constructor.
 	 * @since 0.07
 	 */
@@ -119,7 +120,7 @@ public class DimpleThread extends Thread
 	}
 
 	/**
-	 * Sets {@link #environment} to specified value.
+	 * Sets {@linkplain #getEnvironment environment} to specified value.
 	 * Otherwise is the same as {@link Thread#Thread(Runnable,String)} constructor.
 	 * @since 0.07
 	 */
@@ -129,7 +130,7 @@ public class DimpleThread extends Thread
 	}
 
 	/**
-	 * Sets {@link #environment} to {@link DimpleEnvironment#active()}.
+	 * Sets {@linkplain #getEnvironment environment} to {@link DimpleEnvironment#active()}.
 	 * Otherwise is the same as {@link Thread#Thread(ThreadGroup,Runnable,String)} constructor.
 	 * @since 0.07
 	 */
@@ -139,7 +140,7 @@ public class DimpleThread extends Thread
 	}
 	
 	/**
-	 * Sets {@link #environment} to specified value.
+	 * Sets {@linkplain #getEnvironment environment} to specified value.
 	 * Otherwise is the same as {@link Thread#Thread(ThreadGroup,Runnable,String)} constructor.
 	 * @since 0.07
 	 */
@@ -149,7 +150,7 @@ public class DimpleThread extends Thread
 	}
 
 	/**
-	 * Sets {@link #environment} to {@link DimpleEnvironment#active()}.
+	 * Sets {@linkplain #getEnvironment environment} to {@link DimpleEnvironment#active()}.
 	 * Otherwise is the same as {@link Thread#Thread(ThreadGroup,Runnable,String,long)} constructor.
 	 * @since 0.07
 	 */
@@ -159,7 +160,7 @@ public class DimpleThread extends Thread
 	}
 
 	/**
-	 * Sets {@link #environment} to specified value.
+	 * Sets {@linkplain #getEnvironment environment} to specified value.
 	 * Otherwise is the same as {@link Thread#Thread(ThreadGroup,Runnable,String,long)} constructor.
 	 * @since 0.07
 	 */
@@ -179,6 +180,24 @@ public class DimpleThread extends Thread
 		_env = env != null ? env : DimpleEnvironment.active();
 	}
 	
+	/*----------------------------------
+	 * IDimpleEnvironmentHolder methods
+	 */
+	
+	/**
+	 * The {@linkplain DimpleEnvironment#active active dimple environment} for this thread.
+	 * <p>
+	 * This is set during construction and is either an explicitly specified environment or is
+	 * the active environment of the thread in which this thread object was created.
+	 * @see #run
+	 * @since 0.07
+	 */
+	@Override
+	public DimpleEnvironment getEnvironment()
+	{
+		return _env;
+	}
+	
 	/*----------------
 	 * Thread methods
 	 */
@@ -187,7 +206,7 @@ public class DimpleThread extends Thread
 	 * Runs the body of the thread.
 	 * <p>
 	 * Sets the thread's {@linkplain DimpleEnvironment#active active dimple environment} to
-	 * {@linkplain #environment() environment specified in constructor} and then invokes
+	 * {@linkplain #getEnvironment() environment specified in constructor} and then invokes
 	 * {@link Thread#run}.
 	 * <p>
 	 * If overridden, the implementation must begin with:
@@ -202,22 +221,5 @@ public class DimpleThread extends Thread
 	{
 		DimpleEnvironment.setActive(_env);
 		super.run();
-	}
-	
-	/*----------------------
-	 * DimpleThread methods
-	 */
-	
-	/**
-	 * The {@linkplain DimpleEnvironment#active active dimple environment} for this thread.
-	 * <p>
-	 * This is set during construction and is either an explicitly specified environment or is
-	 * the active environment of the thread in which this thread object was created.
-	 * @see #run
-	 * @since 0.07
-	 */
-	public final DimpleEnvironment environment()
-	{
-		return _env;
 	}
 }
