@@ -18,8 +18,9 @@ package com.analog.lyric.options;
 
 import java.io.Serializable;
 
-import com.analog.lyric.collect.ReleasableIterator;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.collect.ReleasableIterator;
 
 /**
  * Provides default implementation of some {@link IOptionHolder} methods.
@@ -96,4 +97,41 @@ public abstract class AbstractOptionHolder implements IOptionHolder
 
 		return result;
 	}
+
+    /**
+     * Returns value and source of option with up to specified depth in delegation chain.
+     * <p>
+     * @param key is a non-null option key.
+     * @param maxDepth is the maximum number of {@linkplain #getOptionDelegates option delegates} to examine.
+     * If zero, then only the current object will be examined.
+     * @param depthReference is a non-empty array whose first entry will be set to the depth of the option
+     * setting in the delegation chain or else set to Integer.MAX_VALUE if no option setting was found.
+     * @return option value set for given {@code key}. Will be null if option is not set within the first
+     * 1 + {@code maxDepth} delegates.
+     * @since 0.07
+     */
+    @Nullable
+    public <T extends Serializable> T getOptionUptoDepth(IOptionKey<T> key, int maxDepth, int[] depthReference)
+    {
+        T result = null;
+        final ReleasableIterator<? extends IOptionHolder> delegates = getOptionDelegates();
+        
+        int depth = 0;
+        for (; depth < maxDepth && delegates.hasNext(); ++depth)
+        {
+            final IOptionHolder delegate = delegates.next();
+        
+            result = delegate.getLocalOption(key);
+            if (result != null)
+            {
+                break;
+            }
+        }
+        
+        delegates.release();
+
+        depthReference[0] = result != null ? depth : Integer.MAX_VALUE;
+        
+        return result;
+    }
 }

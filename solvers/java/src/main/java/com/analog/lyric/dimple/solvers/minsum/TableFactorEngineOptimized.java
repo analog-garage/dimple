@@ -7,12 +7,11 @@
  * for the specific language governing permissions and limitations under the License.
  ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.sumproduct;
+package com.analog.lyric.dimple.solvers.minsum;
 
 import java.util.Arrays;
 
 import com.analog.lyric.collect.Tuple2;
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.solvers.optimizedupdate.CostEstimationTableWrapper;
@@ -26,15 +25,17 @@ import com.analog.lyric.dimple.solvers.optimizedupdate.ITableWrapperAdapter;
 import com.analog.lyric.dimple.solvers.optimizedupdate.IUpdateStep;
 import com.analog.lyric.dimple.solvers.optimizedupdate.IUpdateStepEstimator;
 import com.analog.lyric.dimple.solvers.optimizedupdate.TableWrapper;
+import com.analog.lyric.util.misc.Internal;
 
 /**
  * Implements a factor update approach for sum-product that optimally shares partial results. Since
  * it computes all output edges, it only overrides the update method, and does not override the
  * update_edge method.
  * 
- * @since 0.06
+ * @since 0.07
  * @author jking
  */
+@Internal
 public class TableFactorEngineOptimized extends TableFactorEngine
 {
 	/**
@@ -42,12 +43,6 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 	 */
 	private final FactorUpdatePlan _updatePlan;
 
-	/**
-	 * Dimple creates an instance of this class per factor.
-	 * 
-	 * @param tableFactor
-	 * @since 0.06
-	 */
 	public TableFactorEngineOptimized(STableFactor tableFactor, FactorUpdatePlan updatePlan)
 	{
 		super(tableFactor);
@@ -60,65 +55,75 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		_updatePlan.apply(_tableFactor);
 	}
 
-	public static ITableWrapperAdapter getHelper(final double sparseThreshold)
+	static int getStride(int[] dimensions, int dimension)
+	{
+		int result = 1;
+		for (int i = 0; i < dimension; i++)
+		{
+			result *= dimensions[i];
+		}
+		return result;
+	}
+
+	static ITableWrapperAdapter getHelper(final double sparseThreshold)
 	{
 		return new ITableWrapperAdapter() {
 
-				@Override
+			@Override
 			public double[] getSparseValues(IFactorTable factorTable)
-				{
-				return factorTable.getWeightsSparseUnsafe();
-				}
+			{
+				return factorTable.getEnergiesSparseUnsafe();
+			}
 
 			@Override
 			public double[] getDenseValues(IFactorTable factorTable)
-		{
-				return factorTable.getWeightsDenseUnsafe();
-		}
+			{
+				return factorTable.getEnergiesDenseUnsafe();
+			}
 
 			@Override
 			public IUpdateStep createSparseOutputStep(int outPortNum, TableWrapper tableWrapper)
-		{
+			{
 				return new TableFactorEngineOptimized.SparseOutputStep(outPortNum, tableWrapper);
 			}
 
 			@Override
 			public IUpdateStep createDenseOutputStep(int outPortNum, TableWrapper tableWrapper)
-		{
+			{
 				return new TableFactorEngineOptimized.DenseOutputStep(outPortNum, tableWrapper);
-						}
+			}
 
-				@Override
+			@Override
 			public IMarginalizationStep createSparseMarginalizationStep(TableWrapper tableWrapper,
 				int inPortNum,
 				int dimension,
 				IFactorTable g_factorTable,
 				Tuple2<int[][], int[]> g_and_msg_indices)
-				{
-				return new TableFactorEngineOptimized.SparseMarginalizationStep(tableWrapper, this, inPortNum, dimension,
-					g_factorTable, g_and_msg_indices);
-				}
+			{
+				return new TableFactorEngineOptimized.SparseMarginalizationStep(tableWrapper, this, inPortNum,
+					dimension, g_factorTable, g_and_msg_indices);
+			}
 
-				@Override
+			@Override
 			public IMarginalizationStep createDenseMarginalizationStep(TableWrapper tableWrapper,
 				int inPortNum,
 				int dimension,
 				IFactorTable g_factorTable)
-				{
-				return new TableFactorEngineOptimized.DenseMarginalizationStep(tableWrapper, this, inPortNum, dimension,
-					g_factorTable);
-				}
-			
-				@Override
+			{
+				return new TableFactorEngineOptimized.DenseMarginalizationStep(tableWrapper, this, inPortNum,
+					dimension, g_factorTable);
+			}
+
+			@Override
 			public double getSparseThreshold()
-				{
+			{
 				return sparseThreshold;
-				}
-			};
-		}
+			}
+		};
+	}
 
 	static final class DenseMarginalizationStep implements IMarginalizationStep
-		{
+	{
 		private final TableWrapper _f;
 
 		private final TableWrapper _g;
@@ -149,7 +154,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 			final double[] f_values = _f.getValues().get();
 			final double[] g_values = _g.getValues().get();
 			final double[] inputMsg = tableFactor.getInPortMsgs()[_inPortNum];
-			Arrays.fill(g_values, 0.0);
+			Arrays.fill(g_values, Double.POSITIVE_INFINITY);
 			int c = 0;
 			int msg_index = 0;
 			int g_index = 0;
@@ -157,7 +162,11 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 			double input_value = inputMsg[0];
 			for (final double value : f_values)
 			{
-				g_values[g_index] += value * input_value;
+				double v = value + input_value;
+				if (v < g_values[g_index])
+				{
+					g_values[g_index] = v;
+				}
 				if (++g_index == g_index_limit)
 				{
 					if (++msg_index == _d)
@@ -227,12 +236,17 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 			final double[] f_values = _f.getValues().get();
 			final double[] g_values = _g.getValues().get();
 			final double[] inputMsg = tableFactor.getInPortMsgs()[_inPortNum];
-			Arrays.fill(g_values, 0.0);
+			Arrays.fill(g_values, Double.POSITIVE_INFINITY);
 			int n = 0;
 			for (final double value : f_values)
 			{
 				final double input_value = inputMsg[_msg_indices[n]];
-				g_values[_g_sparse_indices[n]] += value * input_value;
+				final double v = value + input_value;
+				final int index = _g_sparse_indices[n];
+				if (v < g_values[index])
+				{
+					g_values[index] = v;
+				}
 				n += 1;
 			}
 		}
@@ -241,6 +255,64 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		public TableWrapper getAuxiliaryTable()
 		{
 			return _g;
+		}
+	}
+
+	static final class SparseOutputStep implements IUpdateStep
+	{
+		private final TableWrapper _f;
+
+		private final int _outPortNum;
+
+		private final IFactorTable _factorTable;
+
+		SparseOutputStep(int outPortNum, final TableWrapper f)
+		{
+			_outPortNum = outPortNum;
+			_f = f;
+			_factorTable = _f.getFactorTable();
+		}
+
+		@Override
+		public void apply(ISTableFactorSupportingOptimizedUpdate tableFactor)
+		{
+			final double[] outputMsg = tableFactor.getOutPortMsgs()[_outPortNum];
+
+			final double damping = tableFactor.getDamping(_outPortNum);
+			if (tableFactor.isDampingInUse() && damping != 0)
+			{
+				final double[] saved = tableFactor.getSavedOutMsgArray(_outPortNum);
+				System.arraycopy(outputMsg, 0, saved, 0, outputMsg.length);
+			}
+
+			Arrays.fill(outputMsg, Double.POSITIVE_INFINITY);
+			int sparseIndex = 0;
+			double minPotential = Double.POSITIVE_INFINITY;
+			for (final double prob : _f.getValues().get())
+			{
+				final int f_index = _factorTable.sparseIndexToJointIndex(sparseIndex);
+				outputMsg[f_index] = prob;
+				if (prob < minPotential)
+				{
+					minPotential = prob;
+				}
+				sparseIndex += 1;
+			}
+
+			final int outputMsgLength = outputMsg.length;
+			if (tableFactor.isDampingInUse() && damping != 0)
+			{
+				final double[] saved = tableFactor.getSavedOutMsgArray(_outPortNum);
+				for (int i = 0; i < outputMsgLength; i++)
+				{
+					outputMsg[i] = (1 - damping) * outputMsg[i] + damping * saved[i];
+				}
+			}
+
+			for (int i = 0; i < outputMsgLength; i++)
+			{
+				outputMsg[i] -= minPotential;
+			}
 		}
 	}
 
@@ -262,107 +334,43 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 			final double[] outputMsg = tableFactor.getOutPortMsgs()[_outPortNum];
 
 			final double damping = tableFactor.getDamping(_outPortNum);
-			if (damping != 0)
+			if (tableFactor.isDampingInUse())
 			{
+				if (damping != 0)
+				{
 					final double[] saved = tableFactor.getSavedOutMsgArray(_outPortNum);
-				System.arraycopy(outputMsg, 0, saved, 0, outputMsg.length);
+					System.arraycopy(outputMsg, 0, saved, 0, outputMsg.length);
+				}
 			}
 
-			double sum = 0.0;
+			double minPotential = Double.POSITIVE_INFINITY;
 			int f_index = 0;
 			for (final double prob : _f.getValues().get())
 			{
 				outputMsg[f_index] = prob;
-				sum += prob;
+				if (prob < minPotential)
+				{
+					minPotential = prob;
+				}
 				f_index += 1;
 			}
 
-			if (sum == 0)
-			{
-				throw new DimpleException(
-					"Update failed in SumProduct Solver.  All probabilities were zero when calculating message for port "
-						+ _outPortNum + " on factor " + tableFactor.getFactor().getLabel());
-			}
-
 			final int outputMsgLength = outputMsg.length;
-			for (int i = 0; i < outputMsgLength; i++)
+			if (tableFactor.isDampingInUse())
 			{
-				outputMsg[i] /= sum;
-			}
-
-			if (damping != 0)
-			{
+				if (damping != 0)
+				{
 					final double[] saved = tableFactor.getSavedOutMsgArray(_outPortNum);
-				for (int i = 0; i < outputMsgLength; i++)
-				{
-					outputMsg[i] = (1 - damping) * outputMsg[i] + damping * saved[i];
+					for (int i = 0; i < outputMsgLength; i++)
+					{
+						outputMsg[i] = (1 - damping) * outputMsg[i] + damping * saved[i];
+					}
 				}
 			}
-		}
-	}
 
-	static final class SparseOutputStep implements IUpdateStep
-	{
-		private final TableWrapper _f;
-
-		private final int _outPortNum;
-
-		private final IFactorTable _factorTable;
-
-		/**
-		 * @param outPortNum
-		 * @since 0.06
-		 */
-		SparseOutputStep(int outPortNum, final TableWrapper f)
-		{
-			_outPortNum = outPortNum;
-			_f = f;
-			_factorTable = _f.getFactorTable();
-		}
-
-		@Override
-		public void apply(ISTableFactorSupportingOptimizedUpdate tableFactor)
-		{
-			final double[] outputMsg = tableFactor.getOutPortMsgs()[_outPortNum];
-
-			final double damping = tableFactor.getDamping(_outPortNum);
-			if (damping != 0)
-			{
-				final double[] saved = tableFactor.getSavedOutMsgArray(_outPortNum);
-				System.arraycopy(outputMsg, 0, saved, 0, outputMsg.length);
-			}
-
-			double sum = 0.0;
-			Arrays.fill(outputMsg, 0);
-			int sparseIndex = 0;
-			for (final double prob : _f.getValues().get())
-			{
-				final int f_index = _factorTable.sparseIndexToJointIndex(sparseIndex);
-				outputMsg[f_index] = prob;
-				sum += prob;
-				sparseIndex += 1;
-			}
-
-			if (sum == 0)
-			{
-				throw new DimpleException(
-					"Update failed in SumProduct Solver.  All probabilities were zero when calculating message for port "
-						+ _outPortNum + " on factor " + tableFactor.getFactor().getLabel());
-			}
-
-			final int outputMsgLength = outputMsg.length;
 			for (int i = 0; i < outputMsgLength; i++)
 			{
-				outputMsg[i] /= sum;
-			}
-
-			if (damping != 0)
-			{
-				final double[] saved = tableFactor.getSavedOutMsgArray(_outPortNum);
-				for (int i = 0; i < outputMsgLength; i++)
-				{
-					outputMsg[i] = (1 - damping) * outputMsg[i] + damping * saved[i];
-				}
+				outputMsg[i] -= minPotential;
 			}
 		}
 	}
@@ -373,6 +381,8 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 
 		private final CostEstimationTableWrapper _g;
 
+		private final int _d;
+
 		private final int _p;
 
 		DenseMarginalizationStepEstimator(final CostEstimationTableWrapper f,
@@ -381,30 +391,35 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 			final CostEstimationTableWrapper g)
 		{
 			_f = f;
-			_p = getStride(_f.getDimensions(), dimension);
+			final int[] dimensions = _f.getDimensions();
+			_d = dimensions[dimension];
+			_p = TableFactorEngineOptimized.getStride(dimensions, dimension);
 			_g = g;
-				}
+		}
 
 		@Override
 		public CostEstimationTableWrapper getAuxiliaryTable()
-				{
+		{
 			return _g;
-				}
+		}
 
-					@Override
+		@Override
 		public Costs estimateCosts()
-					{
+		{
 			long accesses = 0;
 			final double g_size = _g.getSize();
 			final double f_size = _f.getSize();
 
-			// fill g with 0.0
+			// fill g with +infinity
 			accesses += g_size;
 
-			// 1. read each f value,
+			// 1. read each f value
 			// 2. read a g value
-			// 3. store their sum in g
-			accesses += 3 * f_size;
+			accesses += 2 * f_size;
+
+			// store a g value if new minimum
+			// (always on 1st per message entry, then 50% chance)
+			accesses += _d * (1 + (_p - 1) / 2);
 
 			// read an input value each time the message index changes
 			accesses += f_size / _p;
@@ -412,29 +427,21 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 			Costs result = new Costs();
 			result.put(CostType.ACCESSES, (double) accesses);
 
-			// add costs from auxiliary table
+			// include auxiliary table costs
 			result.add(_g.estimateCosts());
 			return result;
-					}
-
-		private static int getStride(int[] dimensions, int dimension)
-			{
-			int result = 1;
-			for (int i = 0; i < dimension; i++)
-				{
-				result *= dimensions[i];
-				}
-			return result;
-				}
-					}
+		}
+	}
 
 	static final class SparseMarginalizationStepEstimator implements IMarginalizationStepEstimator
-		{
+	{
 		private final CostEstimationTableWrapper _f;
 
 		private final CostEstimationTableWrapper _g;
 
-		private final int _msg_indices_length;
+		private final int _d;
+
+		private final int _p;
 
 		SparseMarginalizationStepEstimator(final CostEstimationTableWrapper f,
 			final int inPortNum,
@@ -443,14 +450,16 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		{
 			_f = f;
 			_g = g;
-			_msg_indices_length = _f.getDimensions()[dimension];
-			}
+			final int[] dimensions = _f.getDimensions();
+			_d = dimensions[dimension];
+			_p = getStride(dimensions, dimension);
+		}
 
 		@Override
 		public CostEstimationTableWrapper getAuxiliaryTable()
-			{
+		{
 			return _g;
-			}
+		}
 
 		@Override
 		public Costs estimateCosts()
@@ -459,89 +468,93 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 			final double g_size = _g.getSize();
 			final double f_size = _f.getSize();
 
-			// fill g with zero
+			// fill g with +infinity
 			accesses += g_size;
 
 			// 1. read each f value
 			// 2. read a message index
-			// 3. read the input message from the message index
-			// 4. read a g sparse index
-			// 5. read the value of g at that index
-			// 6. store the product of the read input value and the read g value in g
-			accesses += f_size * 6;
+			// 3. read the input value at the message index
+			// 4. read a g index
+			// 5. read a g value at the g index
+			accesses += f_size * 5;
+
+			// write the g value if new minimum
+			// (always on 1st per message entry, then 50% chance)
+			accesses += _d * (1 + (_p - 1) / 2);
 
 			Costs result = new Costs();
 			result.put(CostType.ACCESSES, (double) accesses);
 
-			// allocate 4 bytes each entry (int arrays) for 1. message indices and 2. g indices
-			double allocations = (_msg_indices_length + g_size) * 4;
-
+			// 4 bytes each entry for int arrays for message indices and g indices
+			double allocations = (_d + g_size) * 4;
 			result.put(CostType.ALLOCATED_BYTES, allocations);
 
-			// add costs from auxiliary table
+			// include costs for auxiliary table
 			result.add(_g.estimateCosts());
+
 			return result;
 		}
 	}
 
 	static final class DenseOutputStepEstimator implements IUpdateStepEstimator
-		{
+	{
 		private final CostEstimationTableWrapper _f;
 
 		DenseOutputStepEstimator(final CostEstimationTableWrapper f)
-			{
+		{
 			_f = f;
-				}
+		}
 
 		@Override
 		public Costs estimateCosts()
-			{
+		{
 			long accesses = 0;
 			final int outputMsg_length = _f.getDimensions()[0];
 			final double f_size = _f.getSize();
 
 			// 1. read each f value
-			// 2. store f value in output message
+			// 2. write it to the output message
 			accesses += f_size * 2;
 
-			// 1. read and 2. write each output message entry to divide them by "sum"
+			// read each output value
+			// write it less minPotential
 			accesses += outputMsg_length * 2;
 
 			Costs result = new Costs();
 			result.put(CostType.ACCESSES, (double) accesses);
 			return result;
-			}
 		}
+	}
 
 	static final class SparseOutputStepEstimator implements IUpdateStepEstimator
-		{
+	{
 		private final CostEstimationTableWrapper _f;
 
 		SparseOutputStepEstimator(final CostEstimationTableWrapper f)
-	{
+		{
 			_f = f;
-	}
+		}
 
 		@Override
 		public Costs estimateCosts()
-	{
+		{
 			long accesses = 0;
 			final int outputMsg_length = _f.getDimensions()[0];
 			final double f_size = _f.getSize();
 
 			// 1. read each f value
-			// 2. look up joint index from sparse index
-			// 3. store f value in output message
+			// 2. convert f sparse to joint index
+			// 3. write output message entry
 			accesses += f_size * 3;
 
-			// 1. fill output message with zero
-			// 2. read each output message value, divide it by "sum", and
-			// 3. write it
+			// 1. fill output message with +infinity
+			// 2. read output message entry
+			// 3. write output message entry less minPotential
 			accesses += outputMsg_length * 3;
 
 			Costs result = new Costs();
 			result.put(CostType.ACCESSES, (double) accesses);
-		return result;
-	}
+			return result;
+		}
 	}
 }

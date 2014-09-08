@@ -16,7 +16,10 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
+import java.util.Map;
 import java.util.Random;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.ComplexNegate;
 import com.analog.lyric.dimple.factorfunctions.ComplexSubtract;
@@ -51,6 +54,17 @@ import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.dimple.solvers.optimizedupdate.CostEstimationTableWrapper;
+import com.analog.lyric.dimple.solvers.optimizedupdate.CostType;
+import com.analog.lyric.dimple.solvers.optimizedupdate.Costs;
+import com.analog.lyric.dimple.solvers.optimizedupdate.FactorTableUpdateSettings;
+import com.analog.lyric.dimple.solvers.optimizedupdate.FactorUpdatePlan;
+import com.analog.lyric.dimple.solvers.optimizedupdate.IMarginalizationStepEstimator;
+import com.analog.lyric.dimple.solvers.optimizedupdate.ISFactorGraphToCostEstimationTableWrapperAdapter;
+import com.analog.lyric.dimple.solvers.optimizedupdate.ISFactorGraphToCostOptimizerAdapter;
+import com.analog.lyric.dimple.solvers.optimizedupdate.ITableWrapperAdapter;
+import com.analog.lyric.dimple.solvers.optimizedupdate.IUpdateStepEstimator;
+import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateCostOptimizer;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomComplexGaussianPolynomial;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomFiniteFieldAdd;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomFiniteFieldConstantMult;
@@ -71,14 +85,12 @@ import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultivaria
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomNormalConstantParameters;
 import com.analog.lyric.dimple.solvers.sumproduct.sampledfactor.SampledFactor;
 import com.analog.lyric.math.DimpleRandomGenerator;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class SumProductSolverGraph extends SFactorGraphBase
 {
 	private double _damping = 0;
 	private @Nullable IFactorTable _currentFactorTable = null;
 	private static Random _rand = new Random();
-	private boolean _defaultOptimizedUpdateEnabled;
 
 
 	public SumProductSolverGraph(FactorGraph factorGraph)
@@ -260,7 +272,6 @@ public class SumProductSolverGraph extends SFactorGraphBase
 	/**
 	 * Indicates if this solver supports the optimized update algorithm.
 	 * 
-	 * @return True if this solver does support the optimized update algorithm.
 	 * @since 0.06
 	 */
 	public boolean isOptimizedUpdateSupported()
@@ -268,25 +279,130 @@ public class SumProductSolverGraph extends SFactorGraphBase
 		return true;
 	}
 
-	/**
-	 * Gets the default optimized update algorithm enable. Factors for which the enable is not explicitly set use this value.
-	 * 
-	 * @since 0.06
-	 */
-	public boolean getDefaultOptimizedUpdateEnabled()
-	{
-		return _defaultOptimizedUpdateEnabled;
-	}
+	private final ISFactorGraphToCostOptimizerAdapter _costOptimizerHelper = new ISFactorGraphToCostOptimizerAdapter() {
+
+		private final ISFactorGraphToCostEstimationTableWrapperAdapter _helper =
+			new ISFactorGraphToCostEstimationTableWrapperAdapter() {
+
+				@Override
+				public IUpdateStepEstimator createSparseOutputStepEstimator(CostEstimationTableWrapper tableWrapper)
+				{
+					return new TableFactorEngineOptimized.SparseOutputStepEstimator(tableWrapper);
+				}
+
+				@Override
+				public IUpdateStepEstimator createDenseOutputStepEstimator(CostEstimationTableWrapper tableWrapper)
+				{
+					return new TableFactorEngineOptimized.DenseOutputStepEstimator(tableWrapper);
+				}
+
+				@Override
+				public IMarginalizationStepEstimator
+					createSparseMarginalizationStepEstimator(CostEstimationTableWrapper tableWrapper,
+						int inPortNum,
+						int dimension,
+						CostEstimationTableWrapper g)
+				{
+					return new TableFactorEngineOptimized.SparseMarginalizationStepEstimator(tableWrapper, inPortNum,
+						dimension, g);
+				}
+
+				@Override
+				public IMarginalizationStepEstimator
+					createDenseMarginalizationStepEstimator(CostEstimationTableWrapper tableWrapper,
+						int inPortNum,
+						int dimension,
+						CostEstimationTableWrapper g)
+				{
+					return new TableFactorEngineOptimized.DenseMarginalizationStepEstimator(tableWrapper, inPortNum,
+						dimension, g);
+				}
+			};
+
+		@Override
+		public Costs estimateCostOfNormalUpdate(IFactorTable factorTable)
+		{
+			Costs result = new Costs();
+			int numPorts = factorTable.getDimensions();
+			for (int outPortNum = 0; outPortNum < numPorts; outPortNum++)
+			{
+				result.add(estimateCost_updateEdge(factorTable, outPortNum));
+			}
+			return result;
+		}
+
+		private Costs estimateCost_updateEdge(IFactorTable factorTable, int outPortNum)
+		{
+			long accesses = 0;
+			int nonZeroEntries = factorTable.countNonZeroWeights();
+			int numPorts = factorTable.getDimensions();
+			int outputMsg_length = factorTable.getDomainIndexer().getDomainSize(outPortNum);
+			// 1. fill output message with zero
+			// 2. read each output message entry to compute sum
+			// 3. scale each entry by the sum
+			accesses += 3 * outputMsg_length;
+			// for each entry,
+			// 1. read the value
+			// 2. read the entry indices
+			// 3. read the output index from the entry indices
+			// 4. for each port other than the output port,
+			// 4.1 read the input message
+			// 4.2 read the input message index
+			// 4.3 read the input message entry
+			// 4.4 read the output message entry
+			// 4.5 store the updated output message entry
+			accesses += nonZeroEntries * (3 + (numPorts - 1) * 5);
+			Costs result = new Costs();
+			result.put(CostType.ACCESSES, (double) accesses);
+			return result;
+		}
+
+		@Override
+		public Costs estimateCostOfOptimizedUpdate(IFactorTable factorTable, final double sparseThreshold)
+		{
+			return FactorUpdatePlan.estimateCosts(factorTable, _helper, sparseThreshold);
+		}
+
+		@Override
+		public int getWorkers(FactorGraph factorGraph)
+		{
+			SumProductSolverGraph sfg = (SumProductSolverGraph) factorGraph.getSolver();
+			if (sfg != null && sfg.useMultithreading())
+			{
+				return sfg.getMultithreadingManager().getNumWorkers();
+			}
+			else
+			{
+				return 1;
+			}
+		}
+
+		@Override
+		public void
+			putFactorTableUpdateSettings(Map<IFactorTable, FactorTableUpdateSettings> optionsValueByFactorTable)
+		{
+			_factorTableUpdateSettings = optionsValueByFactorTable;
+		}
+
+		@Override
+		public ITableWrapperAdapter getTableWrapperAdapter(double sparseThreshold)
+		{
+			return TableFactorEngineOptimized.getHelper(sparseThreshold);
+		}
+	};
 	
-	/**
-	 * Sets the default optimized update algorithm enable. Factors for which the enable is not explicitly set use this value.
-	 * 
-	 * @since 0.06
-	 */
-	public void setDefaultOptimizedUpdateEnabled(boolean value)
+	private @Nullable Map<IFactorTable, FactorTableUpdateSettings> _factorTableUpdateSettings;
+
+	@Nullable FactorTableUpdateSettings getFactorTableUpdateSettings(Factor factor)
 	{
-		_defaultOptimizedUpdateEnabled = value;
-		setOption(SumProductOptions.enableOptimizedUpdate, value);
+		final Map<IFactorTable, FactorTableUpdateSettings> map = _factorTableUpdateSettings;
+		FactorTableUpdateSettings result = null;
+		if (map != null && factor.hasFactorTable())
+		{
+			IFactorTable factorTable = factor.getFactorTable();
+			result = map.get(factorTable);
+		}
+		return result;
 	}
 
 	/**
@@ -489,8 +605,7 @@ public class SumProductSolverGraph extends SFactorGraphBase
 	@Override
 	public void initialize()
 	{
-		TableFactorEngineOptimized.clearUpdatePlans(this);
-		
+		UpdateCostOptimizer.optimize(_factorGraph, _costOptimizerHelper);
 		super.initialize();
 		for (Factor f : getModelObject().getFactors())
 		{
@@ -514,10 +629,7 @@ public class SumProductSolverGraph extends SFactorGraphBase
 		}
 		
 		_damping = getOptionOrDefault(SumProductOptions.damping);
-		
-		_defaultOptimizedUpdateEnabled = getOptionOrDefault(SumProductOptions.enableOptimizedUpdate);
 	}
-
 
 	/*
 	 * 
