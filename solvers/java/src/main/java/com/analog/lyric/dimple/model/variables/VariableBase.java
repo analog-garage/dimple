@@ -21,6 +21,10 @@ import static java.util.Objects.*;
 import java.util.Comparator;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.events.IDataEventSource;
 import com.analog.lyric.dimple.events.IDimpleEventListener;
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -36,9 +40,6 @@ import com.analog.lyric.dimple.solvers.core.SNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Internal;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.primitives.Ints;
 
 
@@ -313,7 +314,7 @@ public abstract class VariableBase extends Node implements Cloneable, IDataEvent
     }
 
 	/**
-	 * True if variable is an ouput from a directed deterministic function.
+	 * True if variable is an output from a directed deterministic function.
 	 * <p>
 	 * This attribute is not valid until after graph initialization has occurred
 	 * (see {@link FactorGraph#initialize()}).
