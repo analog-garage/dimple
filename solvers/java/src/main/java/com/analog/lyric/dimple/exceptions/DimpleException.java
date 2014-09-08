@@ -17,12 +17,12 @@
 package com.analog.lyric.dimple.exceptions;
 
 /**
- * Base class for all exceptions thrown by Dimple library.
+ * Base class for new exception types thrown by Dimple library.
  * <p>
  * Note that since it is derived from {@link RuntimeException} these exceptions
  * are not checked and do not have to be listed in throws clauses for methods.
  */
-public class DimpleException extends RuntimeException implements IDimpleException
+public class DimpleException extends RuntimeException
 {
 
 	private static final long serialVersionUID = 1L;
@@ -101,12 +101,4 @@ public class DimpleException extends RuntimeException implements IDimpleExceptio
 	{
 		return new DimpleException("Operation '%s' not supported by '%s' solver", operation, solver);
 	}
-	
-	@Override
-	public Exception getException()
-	{
-		return this;
-	}
-	
-	
 }

@@ -16,7 +16,8 @@
 
 package com.analog.lyric.dimple.exceptions;
 
-public interface IDimpleException 
+@Deprecated
+public interface IDimpleException
 {
 	public Exception getException();
 }
