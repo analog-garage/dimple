@@ -64,11 +64,14 @@ import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.IOptionHolder;
 import com.google.common.primitives.Doubles;
 
-/**** WARNING: Whenever editing this class, also make the corresponding edit to SRealVariable.
+/*
+ * WARNING: Whenever editing this class, also make the corresponding edit to SRealVariable.
  * The two are nearly identical, but unfortunately couldn't easily be shared due to the class hierarchy
- *
  */
 
+/**
+ * RealJoint-valued solver variable for Gibbs solver.
+ */
 public class SRealJointVariable extends SRealJointVariableBase implements ISolverVariableGibbs, ISolverRealVariableGibbs, IRealSamplerClient
 {
 	/*-----------

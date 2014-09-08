@@ -64,11 +64,15 @@ import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.util.misc.Internal;
 import com.google.common.primitives.Doubles;
 
-/**** WARNING: Whenever editing this class, also make the corresponding edit to SRealJointVariable.
+/*
+ * WARNING: Whenever editing this class, also make the corresponding edit to SRealJointVariable.
  * The two are nearly identical, but unfortunately couldn't easily be shared due to the class hierarchy
  *
  */
 
+/**
+ * Real-valued solver variable for Gibbs solver.
+ */
 public class SRealVariable extends SRealVariableBase
 	implements ISolverVariableGibbs, ISolverRealVariableGibbs, IRealSamplerClient
 {
