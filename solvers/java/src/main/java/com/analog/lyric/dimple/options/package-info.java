@@ -39,7 +39,8 @@
  * <h2>Option lookup</h2>
  * <p>
  * The {@linkplain com.analog.lyric.dimple.options.DimpleOptionHolder DimpleOptionHolder} class extends
- * the core {@link LocalOptionHolder} implementation to use a more complex option lookup strategy than
+ * the core {@linkplain com.analog.lyric.options.LocalOptionHolder LocalOptionHolder} implementation to use a more
+ * complex option lookup strategy than
  * the default one, which simply iterates over the {@linkplain IOptionHolder#getOptionParent option parent} chain.
  * Instead Dimple solver objects will look for options set on the corresponding model object before recursing
  * to look at the option parent. This allows users to set options on model factors and variables that will
@@ -53,7 +54,8 @@
  * environment object will serve as the root object in the option hierarchy and can be used to set default values
  * for options to be shared across all graphs in the environment.
  * <p>
- * The exact lookup iteration algorithm is described in more detail in {@link EventSourceIterator}, but can
+ * The exact lookup iteration algorithm is described in more detail in
+ * {@linkplain com.analog.lyric.dimple.events.EventSourceIterator EventSourceIterator}, but can
  * be summarized succinctly considering how an option value for a solver variable is found. In that case, the following
  * objects are examined in order until one is found that contains a local setting for that option:
  * <ol>
@@ -146,5 +148,4 @@
  */
 @org.eclipse.jdt.annotation.NonNullByDefault
 package com.analog.lyric.dimple.options;
-
 
