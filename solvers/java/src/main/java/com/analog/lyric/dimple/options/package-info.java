@@ -20,6 +20,8 @@
  * This package extends the core option functionality provided by the {@link com.analog.lyric.options} package
  * for use with Dimple.
  * 
+ * <a href="{@docRoot}/com/analog/lyric/options/package-summary.html">com.analog.lyric.options</a>.
+ * 
  * <h2>Option definitions</h2>
  * <p>
  * Most Dimple option keys are declared in classes specifically created for that purpose and that are
@@ -41,16 +43,17 @@
  * The {@linkplain com.analog.lyric.dimple.options.DimpleOptionHolder DimpleOptionHolder} class extends
  * the core {@linkplain com.analog.lyric.options.LocalOptionHolder LocalOptionHolder} implementation to use a more
  * complex option lookup strategy than
- * the default one, which simply iterates over the {@linkplain IOptionHolder#getOptionParent option parent} chain.
+ * the default one, which simply iterates over the
+ * {@linkplain com.analog.lyric.options.IOptionHolder#getOptionParent option parent} chain.
  * Instead Dimple solver objects will look for options set on the corresponding model object before recursing
  * to look at the option parent. This allows users to set options on model factors and variables that will
  * take effect on their corresponding solver variables and have those options take priority over those set
  * on the solver graph or model graph. Users may set solver options directly on solver variables or factors that will
  * take precedence over those set on the model, but that will rarely be needed.
  * <p>
- * {@linkplain com.analog.lyric.dimple.core.model.FactorGraph FactorGraph} objects that are not subgraphs of
+ * {@linkplain com.analog.lyric.dimple.model.core.FactorGraph FactorGraph} objects that are not subgraphs of
  * another graph will return their {@linkplain com.analog.lyric.dimple.environment.DimpleEnvironment DimpleEnvironment}
- * as their {@linkplain com.analog.lyric.options.IOptionHolder.getOptionParent option parent}, consequently the
+ * as their {@linkplain com.analog.lyric.options.IOptionHolder#getOptionParent option parent}, consequently the
  * environment object will serve as the root object in the option hierarchy and can be used to set default values
  * for options to be shared across all graphs in the environment.
  * <p>

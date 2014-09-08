@@ -158,7 +158,7 @@ public class OptionRegistry implements Iterable<IOptionKey<?>>
 	/**
 	 * Adds option keys to registry.
 	 * <p>
-	 * @returns true if registry was changed (keys were not already in registry).
+	 * @return true if registry was changed (keys were not already in registry).
 	 * @since 0.07
 	 */
 	public boolean add(OptionKeys keys)
