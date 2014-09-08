@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import cern.colt.list.IntArrayList;
 
 import com.analog.lyric.collect.ArrayUtil;
@@ -40,14 +42,18 @@ import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.util.misc.Internal;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class Factor extends FactorBase implements Cloneable
 {
+	/**
+	 * Sentinel value for {@link #_directedTo} indicating it has not yet been set.
+	 */
+	private static final int[] NOT_YET_SET = new int[0];
+	
 	private String _modelerFunctionName = "";
 	protected @Nullable ISolverFactor _solverFactor = null;
 	private FactorFunction _factorFunction;
-	@Nullable int [] _directedTo = null;
+	protected @Nullable int [] _directedTo = NOT_YET_SET;
 	@Nullable int [] _directedFrom = null;
 	
 	
@@ -131,8 +137,11 @@ public class Factor extends FactorBase implements Cloneable
 	public void setFactorFunction(FactorFunction function)
 	{
 		_factorFunction = function;
-		if (_factorFunction.isDirected())	// Automatically set direction if inherent in factor function
+		if (_factorFunction.isDirected())
+		{
+			// Automatically set direction if inherent in factor function
 			setDirectedTo(Objects.requireNonNull(_factorFunction.getDirectedToIndices(getSiblingCount())));
+		}
 	}
 	
 	protected void addVariable(VariableBase variable)
@@ -198,6 +207,7 @@ public class Factor extends FactorBase implements Cloneable
 	 */
 	public final int removeFixedVariables()
 	{
+		final int[] oldDirectedTo = getDirectedTo();
 		final int nEdges = getSiblingCount();
 		final ArrayList<VariableBase> constantVariables = new ArrayList<VariableBase>(nEdges);
 		final IntArrayList constantIndices = new IntArrayList(nEdges);
@@ -233,7 +243,6 @@ public class Factor extends FactorBase implements Cloneable
 				removeFixedVariablesImpl(oldFunction, oldFactorTable, constantVariables, constantIndices.elements());
 			
 			int[] newDirectedTo = null;
-			final int[] oldDirectedTo = _directedTo;
 			if (oldDirectedTo != null && !oldFunction.isDirected())
 			{
 				// If factor function is not inherently directed, then update the directed indices.
@@ -303,8 +312,7 @@ public class Factor extends FactorBase implements Cloneable
 			domains[i] = getSibling(i).getDomain();
 		}
 		
-		// FIXME: do we need to ensure that _directedTo has been set?
-		return DomainList.create(_directedTo, domains);
+		return DomainList.create(getDirectedTo(), domains);
 	}
 	
 
@@ -419,38 +427,52 @@ public class Factor extends FactorBase implements Cloneable
 
 	public boolean isDirected()
 	{
-		if (_directedTo != null)
-			return true;
-		else
-			return false;
+		ensureDirectedToSet();
+		return _directedTo != null;
 	}
 
 	private void ensureDirectedToSet()
 	{
-		if(_directedTo==null)
-			setFactorFunction(getFactorFunction());
+		if (_directedTo == NOT_YET_SET)
+		{
+			_directedTo = null;
+			if (canBeDirected())
+			{
+				setFactorFunction(getFactorFunction());
+			}
+		}
+	}
+	
+	/**
+	 * Return true if factor supports setting direction through one of the
+	 * {@link #setDirectedTo} methods.
+	 * <p>
+	 * Returns true by default.
+	 * <p>
+	 * @since 0.07
+	 */
+	@Internal
+	protected boolean canBeDirected()
+	{
+		return true;
 	}
 	
 	public @Nullable int [] getDirectedTo()
 	{
-		// FIXME: this may change the value of isDirected()!
 		ensureDirectedToSet();
 		return _directedTo;
 	}
 	public @Nullable int [] getDirectedFrom()
 	{
-		// FIXME: this may change the value of isDirected()!
 		ensureDirectedToSet();
 		return _directedFrom;
 	}
 	
 	public VariableList getDirectedToVariables()
 	{
-		ensureDirectedToSet();
-		
 		VariableList vl = null;
 		
-		final int[] directedTo = _directedTo;
+		final int[] directedTo = getDirectedTo();
 		if (directedTo != null)
 		{
 			vl = new VariableList(directedTo.length);
@@ -468,7 +490,7 @@ public class Factor extends FactorBase implements Cloneable
 
 	}
 
-	public void setDirectedTo(VariableList vl)
+	public final void setDirectedTo(VariableList vl)
 	{
 		int [] directedTo = new int[vl.size()];
 		for (int i = 0; i < directedTo.length; i++)
@@ -478,7 +500,7 @@ public class Factor extends FactorBase implements Cloneable
 
 	}
 
-	public void setDirectedTo(VariableBase ... variables)
+	public final void setDirectedTo(VariableBase ... variables)
 	{
 		int [] directedTo = new int[variables.length];
 		for (int i = 0; i < directedTo.length; i++)
@@ -488,6 +510,12 @@ public class Factor extends FactorBase implements Cloneable
 	
 	public void setDirectedTo(int [] directedTo)
 	{
+		if (!canBeDirected())
+		{
+			throw new UnsupportedOperationException(String.format("'%s' does not support setting direction",
+				getClass().getSimpleName()));
+		}
+		
 		final JointDomainIndexer curDomains = getDomainList().asJointDomainIndexer();
 
 		BitSet toSet = new BitSet(directedTo.length);
@@ -543,9 +571,7 @@ public class Factor extends FactorBase implements Cloneable
 	
 	public boolean isDirectedTo(int edge)
 	{
-		ensureDirectedToSet();
-		
-		final int[] to = _directedTo;
+		final int[] to = getDirectedTo();
 		
 		if (to == null)
 			return false;

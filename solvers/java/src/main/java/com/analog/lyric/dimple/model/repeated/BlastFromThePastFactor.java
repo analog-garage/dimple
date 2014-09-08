@@ -16,12 +16,13 @@
 
 package com.analog.lyric.dimple.model.repeated;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class BlastFromThePastFactor extends Factor
 {
@@ -68,6 +69,9 @@ public class BlastFromThePastFactor extends Factor
 		clearFlags();
 	}
 
-		
-	
+	@Override
+	protected boolean canBeDirected()
+	{
+		return false;
+	}
 }

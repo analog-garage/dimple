@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
@@ -30,7 +32,6 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * A factor with only {@link Discrete} variables.
@@ -97,7 +98,7 @@ public class DiscreteFactor extends Factor
 				domains[i] = getSibling(i).getDomain();
 			}
 
-			domainList = JointDomainIndexer.create(_directedTo, domains);
+			domainList = JointDomainIndexer.create(getDirectedTo(), domains);
 			_domainList = domainList;
 		}
 		
