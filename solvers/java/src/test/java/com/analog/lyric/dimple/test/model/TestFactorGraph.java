@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.factorfunctions.Sum;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Bit;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
@@ -105,7 +105,7 @@ public class TestFactorGraph extends DimpleTestBase
 		
 		VariableList vars = fg.getVariables();
 		assertEquals(vars.size(), fg.getVariableCount());
-		for (VariableBase var : vars)
+		for (Variable var : vars)
 		{
 			assertSame(var, fg.getVariableByUUID(var.getUUID()));
 		}

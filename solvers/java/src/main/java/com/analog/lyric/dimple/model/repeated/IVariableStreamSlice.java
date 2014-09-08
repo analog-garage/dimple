@@ -16,11 +16,11 @@
 
 package com.analog.lyric.dimple.model.repeated;
 
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 public interface IVariableStreamSlice 
 {
-	public VariableBase get(int i);
-	public VariableBase get(int i,boolean createVariable);
+	public Variable get(int i);
+	public Variable get(int i,boolean createVariable);
 	public VariableStreamBase getStream();
 }

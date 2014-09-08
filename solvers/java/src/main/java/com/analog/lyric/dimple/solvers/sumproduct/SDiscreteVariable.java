@@ -24,7 +24,7 @@ import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -45,7 +45,7 @@ public class SDiscreteVariable extends SDiscreteVariableDoubleArray
 	protected boolean _dampingInUse = false;
     @Nullable private double [][][] _outMessageDerivative;
 
-	public SDiscreteVariable(VariableBase var)
+	public SDiscreteVariable(Variable var)
     {
 		super(var);
 		
@@ -61,7 +61,7 @@ public class SDiscreteVariable extends SDiscreteVariableDoubleArray
 		configureDampingFromOptions();
 	}
 
-	public VariableBase getVariable()
+	public Variable getVariable()
 	{
 		return _var;
 	}

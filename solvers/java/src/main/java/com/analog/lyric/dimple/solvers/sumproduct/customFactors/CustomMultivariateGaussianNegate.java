@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 
 public class CustomMultivariateGaussianNegate extends MultivariateGaussianFactorBase
@@ -48,7 +48,7 @@ public class CustomMultivariateGaussianNegate extends MultivariateGaussianFactor
 	{
 		for (int i = 0, end = factor.getSiblingCount(); i < end; i++)
 		{
-			VariableBase v = factor.getSibling(i);
+			Variable v = factor.getSibling(i);
 			Domain domain = v.getDomain();
 			
 			// Must be unbounded multivariate real

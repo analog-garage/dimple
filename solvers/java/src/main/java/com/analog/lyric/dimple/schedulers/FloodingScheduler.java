@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.schedulers;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
@@ -51,12 +51,12 @@ public class FloodingScheduler implements IScheduler
 		FixedSchedule schedule = new FixedSchedule();
 
 		// Update all the variables
-		for (VariableBase v : factorGraph.getVariablesTop())
+		for (Variable v : factorGraph.getVariablesTop())
 			schedule.add(new NodeScheduleEntry(v));
 		
 		// Include boundary variables only if there's no parent to do it
 		if (!factorGraph.hasParentGraph())
-			for (VariableBase v : factorGraph.getBoundaryVariables())
+			for (Variable v : factorGraph.getBoundaryVariables())
 				schedule.add(new NodeScheduleEntry(v));
 		
 		// Update all the function nodes

@@ -22,7 +22,7 @@ import com.analog.lyric.collect.Supers;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.FactorBase;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.util.misc.Matlab;
 
 
@@ -50,8 +50,8 @@ public class PVariableVector extends PNodeVector
 		
 		for (int i = 0; i < nodes.length; i++)
 		{
-			if (! (nodes[i] instanceof VariableBase))
-				throw new DimpleException("expected VariableBases");
+			if (! (nodes[i] instanceof Variable))
+				throw new DimpleException("expected Variables");
 		}
 	}
 	
@@ -79,14 +79,14 @@ public class PVariableVector extends PNodeVector
 	 * PVariableVector methods
 	 */
 	
-	public VariableBase getVariable(int index)
+	public Variable getVariable(int index)
 	{
-		return (VariableBase)getModelerNode(index);
+		return (Variable)getModelerNode(index);
 	}
 	
-	public VariableBase [] getVariableArray()
+	public Variable [] getVariableArray()
 	{
-		return (VariableBase[]) Supers.narrowArrayOf(VariableBase.class, 1, getModelerNodes());
+		return (Variable[]) Supers.narrowArrayOf(Variable.class, 1, getModelerNodes());
 	}
 	
 	public String getModelerClassName()
@@ -104,7 +104,7 @@ public class PVariableVector extends PNodeVector
 		
 		ArrayList<Node> retval = new ArrayList<Node>();
 		
-		for (VariableBase v : getVariableArray())
+		for (Variable v : getVariableArray())
 		{
 			FactorBase [] funcs = v.getFactors(relativeNestingDepth);
 			for (FactorBase fb : funcs)
@@ -136,7 +136,7 @@ public class PVariableVector extends PNodeVector
 	public Object [] getGuess()
 	{
 		Object [] retval = new Object[size()];
-		VariableBase [] vars = getVariableArray();
+		Variable [] vars = getVariableArray();
 		for (int i = 0; i < vars.length; i++)
 		{
 			retval[i] = vars[i].getGuess();
@@ -149,12 +149,12 @@ public class PVariableVector extends PNodeVector
 		return PHelpers.wrapDomain(getVariable(0).getDomain());
 	}
 	
-	VariableBase [] getModelerVariables()
+	Variable [] getModelerVariables()
 	{
 		Node [] nodes = getModelerNodes();
-		VariableBase [] retval = new VariableBase[nodes.length];
+		Variable [] retval = new Variable[nodes.length];
 		for (int i = 0; i < retval.length; i++)
-			retval[i] = (VariableBase)nodes[i];
+			retval[i] = (Variable)nodes[i];
 		return retval;
 	}
 

@@ -951,8 +951,8 @@ FactorGraph fg = new FactorGraph();
 NotEquals ne = new NotEquals();
 Factor f = fg.addFactor(ne,a,b);
 		   
-VariableBase b2 = fg.split(b);
-VariableBase a2 = fg.split(a,f);
+Variable b2 = fg.split(b);
+Variable a2 = fg.split(a,f);
 \end{lstlisting}
 
 \fi
@@ -1004,7 +1004,7 @@ ThreeBitXor xor = new ThreeBitXor();
 XorYequalsZ xoryequalsz = new XorYequalsZ();
 Factor f1 = fg.addFactor(xor,a,b,c);
 Factor f2 = fg.addFactor(xoryequalsz ,a,b,d);
-VariableBase newvar = fg.join(a,b);
+Variable newvar = fg.join(a,b);
 \end{lstlisting}
 \fi
 

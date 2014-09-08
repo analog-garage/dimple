@@ -33,7 +33,7 @@ import com.analog.lyric.dimple.events.SolverEvent;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
@@ -68,7 +68,7 @@ public class TestMessageUpdateEventHandler extends DimpleEventHandler<SolverEven
 		listener.register(handler, VariableToFactorMessageEvent.class, false, model);
 		listener.register(handler, FactorToVariableMessageEvent.class, false, model);
 		
-		for (VariableBase var : model.getVariables())
+		for (Variable var : model.getVariables())
 		{
 			ISolverVariable svar = requireNonNull(solver.getSolverVariable(var));
 			assertTrue(listener.isListeningFor(VariableToFactorMessageEvent.class, svar));
@@ -154,9 +154,9 @@ public class TestMessageUpdateEventHandler extends DimpleEventHandler<SolverEven
 				INode edgeNode = edgeEntry.getNode();
 				int edge = edgeEntry.getPortNum();
 				
-				if (edgeNode instanceof VariableBase)
+				if (edgeNode instanceof Variable)
 				{
-					VariableBase edgeVar = (VariableBase)edgeNode;
+					Variable edgeVar = (Variable)edgeNode;
 					ISolverVariable svar = solver.getSolverVariable(edgeVar);
 					assertEdgeMessageEvent(svar, edge, eventIter);
 				}
@@ -172,9 +172,9 @@ public class TestMessageUpdateEventHandler extends DimpleEventHandler<SolverEven
 				NodeScheduleEntry nodeEntry = (NodeScheduleEntry)scheduleEntry;
 				INode node = nodeEntry.getNode();
 				
-				if (node instanceof VariableBase)
+				if (node instanceof Variable)
 				{
-					VariableBase edgeVar = (VariableBase)node;
+					Variable edgeVar = (Variable)node;
 					ISolverVariable svar = solver.getSolverVariable(edgeVar);
 					for (int edge = 0, n = edgeVar.getSiblingCount(); edge < n; ++edge)
 					{

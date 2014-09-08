@@ -23,7 +23,7 @@ import java.util.Objects;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Normal;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -42,7 +42,7 @@ public class SRealVariable extends SRealVariableBase
 	private NormalParameters[] _inputMsgs = new NormalParameters[0];
 	private NormalParameters[] _outputMsgs = new NormalParameters[0];
     
-	public SRealVariable(VariableBase var)
+	public SRealVariable(Variable var)
     {
 		super(var);
 	}

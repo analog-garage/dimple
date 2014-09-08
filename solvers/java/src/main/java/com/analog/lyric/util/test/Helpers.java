@@ -38,7 +38,7 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.IntRangeDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
@@ -137,7 +137,7 @@ public class Helpers
 			Collections.shuffle(shuffledVariables);
 
 			int degree = Math.max(r.nextInt(maxDegree), 2);
-			Object[] edges = new VariableBase[degree];
+			Object[] edges = new Variable[degree];
 			for(int i = 0; i < edges.length; ++i)
 			{
 				edges[i] = discretes[shuffledVariables.get(i)];
@@ -735,7 +735,7 @@ public class Helpers
 		return diffSum;
 	}
 	
-	static @Nullable VariableBase[] ordered_vars;
+	static @Nullable Variable[] ordered_vars;
 	
 	public static void initFgForDecode(FactorGraph fg, IFactorGraphFactory<?> solver, ISchedule schedule, int iterations)
 			
@@ -762,15 +762,15 @@ public class Helpers
 		
 		VariableList variables = fg.getVariables();
 		
-		VariableBase namedVar = fg.getVariableByName("order_vv0");
+		Variable namedVar = fg.getVariableByName("order_vv0");
 		// Some graphs have explicitNames of "order_vv#" so that this routine can work on
 		// graphs such as fec
 		boolean hasOrderNames = (namedVar != null);
 		if (hasOrderNames && ordered_vars == null)
 		{
-			final VariableBase[] vars = ordered_vars = new VariableBase[variables.size()];
+			final Variable[] vars = ordered_vars = new Variable[variables.size()];
 			for(int i = 0; i < variables.size(); ++i) {
-				VariableBase thisVar;
+				Variable thisVar;
 				String orderName = "order_vv" + i;
 				thisVar = fg.getVariableByName(orderName);
 				vars[i] = thisVar;
@@ -780,7 +780,7 @@ public class Helpers
 
 		for(int i = 0; i < variables.size(); ++i)
 		{
-			VariableBase thisVar;
+			Variable thisVar;
 			if (hasOrderNames) {
 				//String orderName = "order_vv" + i;
 				//thisVar = fg.getVariableByName(orderName);
@@ -798,7 +798,7 @@ public class Helpers
 		double[][] beliefs = new double[vs.size()][];
 		for(int i = 0; i < vs.size(); ++i)
 		{
-			VariableBase thisVar;
+			Variable thisVar;
 			if (hasOrderNames) {
 				//String orderName = "order_vv" + i;
 				//thisVar = fg.getVariableByName(orderName);
@@ -871,7 +871,7 @@ public class Helpers
 		long initialStartDBG = System.currentTimeMillis();
 		long diffDBG = 0;
 
-		ArrayList<VariableBase>	variables = (ArrayList<VariableBase>) fg.getVariables().values();
+		ArrayList<Variable>	variables = (ArrayList<Variable>) fg.getVariables().values();
 		IFactorGraphFactory<?>	solver = Objects.requireNonNull(fg.getFactorGraphFactory());
 		ISchedule schedule = fg.getSchedule();
 		

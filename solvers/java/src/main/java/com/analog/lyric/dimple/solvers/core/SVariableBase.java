@@ -21,7 +21,7 @@ import java.util.Objects;
 import com.analog.lyric.dimple.events.SolverEvent;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
@@ -45,13 +45,13 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	 * State
 	 */
 	
-	protected VariableBase _var;
+	protected Variable _var;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	public SVariableBase(VariableBase var)
+	public SVariableBase(Variable var)
 	{
 		super(var);
 		_var = var;
@@ -62,7 +62,7 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	 */
 
 	@Override
-	public VariableBase getModelObject()
+	public Variable getModelObject()
 	{
 		return _var;
 	}

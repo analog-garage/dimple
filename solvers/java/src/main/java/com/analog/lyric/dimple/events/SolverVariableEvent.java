@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.events;
 
 import net.jcip.annotations.Immutable;
 
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -56,7 +56,7 @@ public abstract class SolverVariableEvent extends SolverEvent
 	 */
 	
 	@Override
-	public @Nullable VariableBase getModelObject()
+	public @Nullable Variable getModelObject()
 	{
 		return getSource().getModelObject();
 	}

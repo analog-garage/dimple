@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.factorfunctions.XorDelta;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
@@ -77,7 +77,7 @@ public class ScheduleTest extends DimpleTestBase
 		double[][] beliefsA = Helpers.beliefs(fg, true);
 
 		FixedSchedule fs = new FixedSchedule();
-		for(VariableBase vb : fg.getVariables())
+		for(Variable vb : fg.getVariables())
 		{
 			fs.add(new NodeScheduleEntry(vb));
 		}
@@ -105,7 +105,7 @@ public class ScheduleTest extends DimpleTestBase
 		beliefsA = Helpers.beliefs(fg, true);
 
 		fs = new FixedSchedule();
-		for(VariableBase vb : fg.getVariables())
+		for(Variable vb : fg.getVariables())
 		{
 			fs.add(new NodeScheduleEntry(vb));
 		}

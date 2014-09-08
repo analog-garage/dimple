@@ -36,7 +36,7 @@ import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
 import com.analog.lyric.dimple.model.repeated.IVariableStreamSlice;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.schedulers.IScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
@@ -363,7 +363,7 @@ public class PFactorGraphVector extends PFactorVector
     	if (getGraph().isSolverRunning())
     		throw new DimpleException("No changes allowed while the solver is running.");
     	
-		VariableBase [] vars = varVector.getVariableArray();
+		Variable [] vars = varVector.getVariableArray();
 		Factor f = getGraph().addFactor(new CustomFactorFunctionWrapper(funcName), vars);
 		return new PFactorVector(f);
 	}
@@ -665,7 +665,7 @@ public class PFactorGraphVector extends PFactorVector
 
 	public @Nullable PVariableVector getVariableByName(String name)
 	{
-		VariableBase mo = getGraph().getVariableByName(name);
+		Variable mo = getGraph().getVariableByName(name);
 		if (mo != null)
 			return (PVariableVector)PHelpers.wrapObject(mo);
 		else
@@ -692,7 +692,7 @@ public class PFactorGraphVector extends PFactorVector
 	
 	public @Nullable PVariableVector getVariableByUUID(UUID uuid)
 	{
-		VariableBase mo = getGraph().getVariableByUUID(uuid);
+		Variable mo = getGraph().getVariableByUUID(uuid);
 		if(mo != null)
 			return (PVariableVector)PHelpers.wrapObject(mo);
 		else
@@ -770,14 +770,14 @@ public class PFactorGraphVector extends PFactorVector
 	
 	public PVariableVector joinVariables(Object [] variables)
 	{
-		VariableBase [] vars = new VariableBase[variables.length];
+		Variable [] vars = new Variable[variables.length];
 		
 		for (int i = 0; i < variables.length; i++)
 		{
 			if (! (variables[i] instanceof PVariableVector))
 				throw new DimpleException("only variable bases supported");
 			
-			vars[i] = (VariableBase)PHelpers.convertToNode(variables[i]);
+			vars[i] = (Variable)PHelpers.convertToNode(variables[i]);
 			
 		}
 		return (PVariableVector)PHelpers.wrapObject(getGraph().join(vars));
@@ -794,9 +794,9 @@ public class PFactorGraphVector extends PFactorVector
 		Node n = PHelpers.convertToNode(variable);
 
 		if (n instanceof Discrete)
-			return new PDiscreteVariableVector(getGraph().split((VariableBase)n,pfactors));
+			return new PDiscreteVariableVector(getGraph().split((Variable)n,pfactors));
 		else
-			return new PRealVariableVector((Real)(getGraph().split((VariableBase)n,pfactors)));
+			return new PRealVariableVector((Real)(getGraph().split((Variable)n,pfactors)));
 			
 	}
 	
@@ -809,10 +809,10 @@ public class PFactorGraphVector extends PFactorVector
 	// For operating collectively on groups of variables that are not already part of a variable vector
 	public int defineVariableGroup(Object[] variables)
 	{
-		ArrayList<VariableBase> variableList = new ArrayList<VariableBase>();
+		ArrayList<Variable> variableList = new ArrayList<Variable>();
 		for (int i = 0; i < variables.length; i++)
 		{
-			VariableBase[] modelerVariables = ((PVariableVector)variables[i]).getModelerVariables();
+			Variable[] modelerVariables = ((PVariableVector)variables[i]).getModelerVariables();
 			for (int j = 0; j < modelerVariables.length; j++)
 				variableList.add(modelerVariables[j]);
 		}

@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.learning;
 
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 
 /**
@@ -28,7 +28,7 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
  * <dt>VALUE
  * <dd>The training sample contains a value for the variable.
  * <dt>INPUTS
- * <dd>The variable has value for its inputs ({@link VariableBase#getInputObject()}).
+ * <dd>The variable has value for its inputs ({@link Variable#getInputObject()}).
  * <dt>FIXED
  * <dd>The variable has a fixed value across the training set. Fixed values are represented in the {@link ITrainingSet}
  * and not directly in the sample.

@@ -20,7 +20,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
@@ -28,12 +28,12 @@ public class BlastFromThePastFactor extends Factor
 {
 	
 	private Port _portForOtherVariable;
-	private VariableBase _variableConnectedToBlast;
+	private Variable _variableConnectedToBlast;
 	
-	public BlastFromThePastFactor(int id, VariableBase varConnectedToBlast,
+	public BlastFromThePastFactor(int id, Variable varConnectedToBlast,
 			Port portForOtherVar)
 	{
-		super(id,((Factor)portForOtherVar.getSibling()).getFactorFunction(),new VariableBase[]{varConnectedToBlast});
+		super(id,((Factor)portForOtherVar.getSibling()).getFactorFunction(),new Variable[]{varConnectedToBlast});
 		
 		_portForOtherVariable = portForOtherVar;
 		_variableConnectedToBlast = varConnectedToBlast;

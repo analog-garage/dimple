@@ -33,7 +33,7 @@ import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.factors.DiscreteFactor;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolver;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolverGraphBase;
@@ -163,9 +163,9 @@ public class TestJunctionTree extends DimpleTestBase
 		model2.solve();
 		
 		// Compare marginal variable beliefs and scores
-		for (VariableBase variable : model.getVariables())
+		for (Variable variable : model.getVariables())
 		{
-			final VariableBase variable2 = (VariableBase)old2new.get(variable);
+			final Variable variable2 = (Variable)old2new.get(variable);
 			final Object belief1 = variable.getBeliefObject();
 			final Object belief2 = variable2.getBeliefObject();
 			
@@ -220,11 +220,11 @@ public class TestJunctionTree extends DimpleTestBase
 				final int[][] beliefIndices = discreteFactor.getPossibleBeliefIndices();
 				
 				// Marginalize corresponding beliefs from full table.
-				final List<? extends VariableBase> factorVars = discreteFactor.getSiblings();
+				final List<? extends Variable> factorVars = discreteFactor.getSiblings();
 				
 				for (int from = 0, remove = nFactorDomains; from < nFullDomains; ++from)
 				{
-					final VariableBase fromVar = discreteFactor2.getSibling(from);
+					final Variable fromVar = discreteFactor2.getSibling(from);
 					final int to = factorVars.indexOf(new2old.get(fromVar));
 					fullToMarginal[from] = to >= 0 ? to : remove++;
 				}

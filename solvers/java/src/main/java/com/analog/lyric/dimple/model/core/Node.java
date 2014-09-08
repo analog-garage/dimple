@@ -39,7 +39,7 @@ import com.analog.lyric.dimple.events.IDimpleEventListener;
 import com.analog.lyric.dimple.events.IDimpleEventSource;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.math.Utilities;
 import com.analog.lyric.util.misc.IMapList;
@@ -270,7 +270,7 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	@Override
 	public @Nullable FactorGraph asFactorGraph() { return null; }
 	@Override
-	public @Nullable VariableBase asVariable() { return null;}
+	public @Nullable Variable asVariable() { return null;}
 	
 	@Override
 	public boolean isFactor() { return false; }

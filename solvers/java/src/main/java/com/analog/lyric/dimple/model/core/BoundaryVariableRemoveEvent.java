@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.model.core;
 import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.dimple.events.FactorGraphVariableEvent;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 // BUG 84: there is no way to remove boundary variables so this event is never raised.
 
@@ -39,7 +39,7 @@ public final class BoundaryVariableRemoveEvent extends FactorGraphVariableEvent
 	 * @param variable is the boundary variable that was removed.
 	 * @since 0.06
 	 */
-	BoundaryVariableRemoveEvent(FactorGraph source, VariableBase variable)
+	BoundaryVariableRemoveEvent(FactorGraph source, Variable variable)
 	{
 		super(source, variable);
 	}

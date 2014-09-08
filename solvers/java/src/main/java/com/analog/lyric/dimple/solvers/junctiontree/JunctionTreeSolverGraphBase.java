@@ -29,7 +29,7 @@ import com.analog.lyric.dimple.model.transform.OptionVariableEliminatorCostList;
 import com.analog.lyric.dimple.model.transform.VariableEliminator;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.CostFunction;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.VariableCost;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.DimpleOptions;
 import com.analog.lyric.dimple.solvers.core.proxy.ProxySolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
@@ -88,7 +88,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 		}
 		
 		// The following would be unnecessary if we implemented inputs as single node factors
-		for (VariableBase variable : sourceModel.getVariablesFlat())
+		for (Variable variable : sourceModel.getVariablesFlat())
 		{
 			entropy -= variable.getBetheEntropy() * (variable.getSiblingCount() - 1);
 		}
@@ -120,7 +120,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 		}
 		
 		//The following would be unnecessary if we implemented inputs as single node factors
-		for (VariableBase variable : getModelObject().getVariablesFlat())
+		for (Variable variable : getModelObject().getVariablesFlat())
 		{
 			energy += variable.getInternalEnergy();
 		}
@@ -144,7 +144,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 		
 		double energy = 0.0;
 		
-		for (VariableBase variable : getModelObject().getVariables())
+		for (Variable variable : getModelObject().getVariables())
 		{
 			energy += variable.getScore();
 		}
@@ -198,7 +198,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 		@Nullable IFactorGraphFactory<?> factory);
 
 	@Override
-	public ISolverVariable createVariable(VariableBase var)
+	public ISolverVariable createVariable(Variable var)
 	{
 		return new JunctionTreeSolverVariable(var, getRootGraph());
 	}
@@ -234,7 +234,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	}
 	
 	@Override
-	public @Nullable JunctionTreeSolverVariable getSolverVariable(VariableBase variable)
+	public @Nullable JunctionTreeSolverVariable getSolverVariable(Variable variable)
 	{
 		return (JunctionTreeSolverVariable)variable.getSolver();
 	}
@@ -260,12 +260,12 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 			final JunctionTreeTransformMap transformMap = requireNonNull(_transformMap);
 			
 			// Copy inputs/fixed values to transformed model in case they have changed.
-			for (Entry<VariableBase,VariableBase> entry : transformMap.sourceToTargetVariables().entrySet())
+			for (Entry<Variable,Variable> entry : transformMap.sourceToTargetVariables().entrySet())
 			{
-				final VariableBase sourceVar = entry.getKey();
+				final Variable sourceVar = entry.getKey();
 				if (sourceVar != null)
 				{
-					final VariableBase targetVar = entry.getValue();
+					final Variable targetVar = entry.getValue();
 					if (sourceVar.hasFixedValue())
 					{
 						targetVar.setFixedValueObject(sourceVar.getFixedValueObject());

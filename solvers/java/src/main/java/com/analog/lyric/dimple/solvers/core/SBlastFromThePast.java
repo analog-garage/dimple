@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -98,7 +98,7 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 	}
 
 	@Override
-	public void createMessages(VariableBase varConnectedToBlast, Port portForOtherVar)
+	public void createMessages(Variable varConnectedToBlast, Port portForOtherVar)
 	{
 		final Factor factor = _factor;
 	    for (int index = 0, nVars = factor.getSiblingCount(); index < nVars; index++)
@@ -190,7 +190,7 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 	@Override
 	public void setOutputMsg(int portIndex, Object obj)
 	{
-		VariableBase var = _factor.getSibling(portIndex);
+		Variable var = _factor.getSibling(portIndex);
 		int index = var.getPortNum(getModelObject());
 		var.requireSolver("setOutputMsg").setInputMsg(index,obj);
 	}

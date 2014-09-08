@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.template;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -46,7 +46,7 @@ public class SFactorGraph  extends SFactorGraphBase
 	 * createVariable creates a solver object for a model variable object.
 	 */
 	@Override
-	public ISolverVariable createVariable(VariableBase var) 
+	public ISolverVariable createVariable(Variable var) 
 	{
 		return new SVariable(var);
 	}

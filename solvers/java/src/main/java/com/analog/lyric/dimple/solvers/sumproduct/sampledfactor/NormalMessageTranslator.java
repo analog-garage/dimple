@@ -28,7 +28,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.sumproduct.SRealVariable;
@@ -40,7 +40,7 @@ public class NormalMessageTranslator extends MessageTranslatorBase
 	private Normal _variableInput;
 	private @Nullable com.analog.lyric.dimple.solvers.gibbs.SRealVariable _solverVariable;
 
-	public NormalMessageTranslator(Port port, VariableBase variable)
+	public NormalMessageTranslator(Port port, Variable variable)
 	{
 		super(port, variable);
 		

@@ -20,7 +20,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 
 public class CustomMultivariateGaussianProduct extends MultivariateGaussianFactorBase
@@ -51,8 +51,8 @@ public class CustomMultivariateGaussianProduct extends MultivariateGaussianFacto
 			throw new DimpleException("Expect matrix to be second arg");
 		
 		
-		VariableBase a = _factor.getSibling(0);
-		VariableBase b = _factor.getSibling(1);
+		Variable a = _factor.getSibling(0);
+		Variable b = _factor.getSibling(1);
 		
 		if (a.getDomain().isDiscrete() || b.getDomain().isDiscrete())
 			throw new DimpleException("Variables must be reals");
@@ -91,8 +91,8 @@ public class CustomMultivariateGaussianProduct extends MultivariateGaussianFacto
 		if (ff.getConstantCount() != 1)
 			return false;
 		
-		VariableBase y = factor.getSibling(0);
-		VariableBase x = factor.getSibling(1);
+		Variable y = factor.getSibling(0);
+		Variable x = factor.getSibling(1);
 
 		RealJointDomain yDomain = y.getDomain().asRealJoint();
 		RealJointDomain xDomain = x.getDomain().asRealJoint();

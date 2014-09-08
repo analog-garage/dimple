@@ -23,7 +23,7 @@ import java.util.Objects;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.Domain;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -31,7 +31,7 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 {
 	private Domain _domain;
 	
-	private ArrayList<VariableBase> _variables = new ArrayList<VariableBase>();
+	private ArrayList<Variable> _variables = new ArrayList<Variable>();
 	private @Nullable IDataSource _dataSource = null;
 	private @Nullable IDataSink _dataSink = null;
 	private ArrayList<VariableStreamSlice> _slices = new ArrayList<VariableStreamSlice>();
@@ -50,14 +50,14 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 		return _variables.size();
 	}
 	
-	public VariableBase [] getVariables()
+	public Variable [] getVariables()
 	{
-		VariableBase [] vars = new VariableBase[_variables.size()];
+		Variable [] vars = new Variable[_variables.size()];
 		_variables.toArray(vars);
 		return vars;
 	}
 	
-	public boolean contains(VariableBase vb)
+	public boolean contains(Variable vb)
 	{
 		return _variables.contains(vb);
 	}
@@ -121,7 +121,7 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 		_dataSource = source;
 		
 		//fill variables with data
-		for (VariableBase vb : _variables)
+		for (Variable vb : _variables)
 		{
 			if (!source.hasNext())
 				throw new DimpleException("not enough data in data source");
@@ -136,11 +136,11 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 	}
 
 	
-	abstract protected VariableBase instantiateVariable(Domain domain) ;
+	abstract protected Variable instantiateVariable(Domain domain) ;
 	
-	protected VariableBase createVariable()
+	protected Variable createVariable()
 	{
-		VariableBase tmp;
+		Variable tmp;
 		
 		tmp = instantiateVariable(_domain);
 		
@@ -183,13 +183,13 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 	
 	
 	@Override
-	public VariableBase get(int index)
+	public Variable get(int index)
 	{
 		return get(index,false);
 	}
 	
 	@Override
-	public VariableBase get(int index,boolean createIfDoesntExist)
+	public Variable get(int index,boolean createIfDoesntExist)
 	{
 		if (index < 0)
 			throw new DimpleException("negative indexing not allowed");
@@ -230,7 +230,7 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 	}
 	
 
-	int indexOf(VariableBase vb)
+	int indexOf(Variable vb)
 	{
 		return _variables.indexOf(vb);
 	}

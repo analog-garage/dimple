@@ -42,7 +42,7 @@ import com.analog.lyric.dimple.model.values.RealJointValue;
 import com.analog.lyric.dimple.model.values.RealValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.RealJoint;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SRealJointVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
@@ -119,7 +119,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	 * Construction
 	 */
 
-	public SRealJointVariable(VariableBase var)
+	public SRealJointVariable(Variable var)
 	{
 		super(var);
 

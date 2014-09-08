@@ -20,7 +20,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 
 
@@ -47,8 +47,8 @@ public class CustomGaussianProduct extends GaussianFactorBase
 		if (_constant == 0)
 			throw new DimpleException("Constant of 0 not supported");
 		
-		VariableBase a = factor.getSibling(0);
-		VariableBase b = factor.getSibling(1);
+		Variable a = factor.getSibling(0);
+		Variable b = factor.getSibling(1);
 		
 		if (a.getDomain().isDiscrete() || b.getDomain().isDiscrete())
 			throw new DimpleException("Variables must be reals");
@@ -101,8 +101,8 @@ public class CustomGaussianProduct extends GaussianFactorBase
 			return false;
 		
 		// Variables must be real and univariate
-		VariableBase a = factor.getSibling(0);
-		VariableBase b = factor.getSibling(1);
+		Variable a = factor.getSibling(0);
+		Variable b = factor.getSibling(1);
 		
 		Domain aDomain = a.getDomain();
 		Domain bDomain = b.getDomain();

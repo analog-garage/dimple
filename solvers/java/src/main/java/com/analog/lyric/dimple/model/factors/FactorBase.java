@@ -20,7 +20,7 @@ import java.util.List;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import org.eclipse.jdt.annotation.Nullable;
 
 
@@ -69,24 +69,24 @@ public abstract class FactorBase extends Node
 	//public abstract void initialize();
 	
 	@Override
-	public VariableBase getConnectedNodeFlat(int i)
+	public Variable getConnectedNodeFlat(int i)
 	{
 		// Factors may only be connected to variables so this cast should be safe.
-		return (VariableBase)super.getConnectedNodeFlat(i);
+		return (Variable)super.getConnectedNodeFlat(i);
 	}
 	
 	@Override
-	public VariableBase getSibling(int i)
+	public Variable getSibling(int i)
 	{
 		// Factors may only be connected to variables so this cast should be safe.
-		return (VariableBase)super.getSibling(i);
+		return (Variable)super.getSibling(i);
 	}
 
 	@Override
-	public List<? extends VariableBase> getSiblings()
+	public List<? extends Variable> getSiblings()
 	{
 		@SuppressWarnings("unchecked")
-		List<? extends VariableBase> siblings = (List<VariableBase>)super.getSiblings();
+		List<? extends Variable> siblings = (List<Variable>)super.getSiblings();
 		return siblings;
 	}
 	

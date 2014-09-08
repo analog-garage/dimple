@@ -31,7 +31,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Model;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.multithreading.ThreadPool;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
@@ -168,17 +168,17 @@ public class ModelFactory
 	// Create graph
 	public PFactorGraphVector createGraph(Object [] vector)
 	{
-		ArrayList<VariableBase> alVars = new ArrayList<VariableBase>();
+		ArrayList<Variable> alVars = new ArrayList<Variable>();
 
 		for (int i = 0; i < vector.length; i++)
 		{
 			PVariableVector tmp = (PVariableVector)vector[i];
-			VariableBase [] vars = tmp.getVariableArray();
+			Variable [] vars = tmp.getVariableArray();
 			for (int j = 0; j <vars.length; j++)
 				alVars.add(vars[j]);
 		}
 
-		VariableBase [] input = new VariableBase[alVars.size()];
+		Variable [] input = new Variable[alVars.size()];
 		alVars.toArray(input);
 		FactorGraph f = new FactorGraph(input);
 

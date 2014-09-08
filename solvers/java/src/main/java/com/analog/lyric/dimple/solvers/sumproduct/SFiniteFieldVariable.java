@@ -20,7 +20,7 @@ import java.util.HashMap;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.FiniteFieldDomain;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 
 /*
@@ -42,7 +42,7 @@ public class SFiniteFieldVariable extends SDiscreteVariable
 	private final LookupTables _tables;
 	private final int _numBits;
 
-	public SFiniteFieldVariable(VariableBase var)
+	public SFiniteFieldVariable(Variable var)
 	{
 		super(var);
 		

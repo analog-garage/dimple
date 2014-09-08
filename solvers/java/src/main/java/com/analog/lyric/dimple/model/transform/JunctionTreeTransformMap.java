@@ -33,7 +33,7 @@ import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.util.misc.Internal;
 import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.Iterables;
@@ -57,9 +57,9 @@ public class JunctionTreeTransformMap
 	private final long _sourceVersion;
 	private final FactorGraph _targetModel;
 	private final @Nullable Map<Factor,Factor> _sourceToTargetFactors;
-	private final @Nullable Map<VariableBase, VariableBase> _sourceToTargetVariables;
-	private final LinkedHashMap<VariableBase, AddedJointVariable<?>> _addedDeterministicVariables;
-	private final Set<VariableBase> _conditionedVariables;
+	private final @Nullable Map<Variable, Variable> _sourceToTargetVariables;
+	private final LinkedHashMap<Variable, AddedJointVariable<?>> _addedDeterministicVariables;
+	private final Set<Variable> _conditionedVariables;
 	
 	/**
 	 * Represents a variable that joins two or more other variables along an edge between
@@ -70,7 +70,7 @@ public class JunctionTreeTransformMap
 	 * @since 0.05
 	 * @author Christopher Barber
 	 */
-	public static abstract class AddedJointVariable<Var extends VariableBase>
+	public static abstract class AddedJointVariable<Var extends Variable>
 	{
 		protected final Var _variable;
 		protected final Var[] _inputs;
@@ -184,10 +184,10 @@ public class JunctionTreeTransformMap
 		_sourceModel = source;
 		_sourceVersion = source.getVersionId();
 		_targetModel = target;
-		_sourceToTargetVariables = identity? null : new HashMap<VariableBase,VariableBase>(source.getVariableCount());
+		_sourceToTargetVariables = identity? null : new HashMap<Variable,Variable>(source.getVariableCount());
 		_sourceToTargetFactors = identity? null : new HashMap<Factor,Factor>(source.getFactorCount());
-		_addedDeterministicVariables = new LinkedHashMap<VariableBase, AddedJointVariable<?>>();
-		_conditionedVariables = new LinkedHashSet<VariableBase>();
+		_addedDeterministicVariables = new LinkedHashMap<Variable, AddedJointVariable<?>>();
+		_conditionedVariables = new LinkedHashSet<Variable>();
 	}
 	
 	protected JunctionTreeTransformMap(FactorGraph source)
@@ -214,7 +214,7 @@ public class JunctionTreeTransformMap
 		return Iterables.unmodifiableIterable(_addedDeterministicVariables.values());
 	}
 	
-	public @Nullable <Var extends VariableBase> AddedJointVariable<Var> getAddedDeterministicVariable(Var targetVariable)
+	public @Nullable <Var extends Variable> AddedJointVariable<Var> getAddedDeterministicVariable(Var targetVariable)
 	{
 		@SuppressWarnings("unchecked")
 		AddedJointVariable<Var> var = (AddedJointVariable<Var>) _addedDeterministicVariables.get(targetVariable);
@@ -225,7 +225,7 @@ public class JunctionTreeTransformMap
 	 * Unmodifiable set of source variables that have been conditioned out of
 	 * the target graph.
 	 */
-	public Set<VariableBase> conditionedVariables()
+	public Set<Variable> conditionedVariables()
 	{
 		return Collections.unmodifiableSet(_conditionedVariables);
 	}
@@ -249,11 +249,11 @@ public class JunctionTreeTransformMap
 			return false;
 		}
 		
-		for (VariableBase sourceVar : _conditionedVariables)
+		for (Variable sourceVar : _conditionedVariables)
 		{
 			if (!sourceVar.hasFixedValue())
 				return false;
-			VariableBase targetVar = sourceToTargetVariable(sourceVar);
+			Variable targetVar = sourceToTargetVariable(sourceVar);
 			if (!targetVar.hasFixedValue())
 				return false;
 			if (!requireNonNull(sourceVar.getFixedValueObject()).equals(targetVar.getFixedValueObject()))
@@ -276,7 +276,7 @@ public class JunctionTreeTransformMap
 	 * <p>
 	 * As long as the transform {@link #isValid()} this is guaranteed to return a
 	 * non-null variable in {@link #target()} for every variable in {@link #source()}.
-	 * Note that unlike {@link #sourceToTargetVariable(VariableBase)} the target factor
+	 * Note that unlike {@link #sourceToTargetVariable(Variable)} the target factor
 	 * may not exactly correspond to the source factor. Instead it may represent the
 	 * product of multiple factors.
 	 * <p>
@@ -315,9 +315,9 @@ public class JunctionTreeTransformMap
 	 * <p>
 	 * @see #sourceToTargetVariables()
 	 */
-	public VariableBase sourceToTargetVariable(VariableBase sourceVariable)
+	public Variable sourceToTargetVariable(Variable sourceVariable)
 	{
-		final Map<VariableBase, VariableBase> sourceToTargetVariables = _sourceToTargetVariables;
+		final Map<Variable, Variable> sourceToTargetVariables = _sourceToTargetVariables;
 		if (sourceToTargetVariables == null)
 		{
 			return sourceVariable;
@@ -329,9 +329,9 @@ public class JunctionTreeTransformMap
 	 * Returns a read-only mapping from variables in {@link #source()} to variables
 	 * in {@link #target()}.
 	 * 
-	 * @see #sourceToTargetVariable(VariableBase)
+	 * @see #sourceToTargetVariable(Variable)
 	 */
-	public Map<VariableBase,VariableBase> sourceToTargetVariables()
+	public Map<Variable,Variable> sourceToTargetVariables()
 	{
 		if (_sourceToTargetVariables == null)
 		{
@@ -354,7 +354,7 @@ public class JunctionTreeTransformMap
 	 * <p>
 	 * As long as {@link #isValid()} this will have variables corresponding to the ones in the source model.
 	 * <p>
-	 * @see #sourceToTargetVariable(VariableBase)
+	 * @see #sourceToTargetVariable(Variable)
 	 * @see #sourceToTargetFactor(Factor)
 	 */
 	public FactorGraph target()
@@ -382,7 +382,7 @@ public class JunctionTreeTransformMap
 	 * Package methods
 	 */
 
-	void addConditionedVariable(VariableBase variable)
+	void addConditionedVariable(Variable variable)
 	{
 		assert(variable.hasFixedValue());
 		_conditionedVariables.add(variable);
@@ -398,7 +398,7 @@ public class JunctionTreeTransformMap
 		Objects.requireNonNull(_sourceToTargetFactors).put(sourceFactor, targetFactor);
 	}
 
-	void addVariableMapping(VariableBase sourceVariable, VariableBase targetVariable)
+	void addVariableMapping(Variable sourceVariable, Variable targetVariable)
 	{
 		Objects.requireNonNull(_sourceToTargetVariables).put(sourceVariable, targetVariable);
 	}

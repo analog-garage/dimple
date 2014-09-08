@@ -67,7 +67,7 @@ import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
 import com.analog.lyric.dimple.model.repeated.IVariableStreamSlice;
 import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.schedulers.DefaultScheduler;
 import com.analog.lyric.dimple.schedulers.IScheduler;
@@ -161,24 +161,24 @@ public class FactorGraph extends FactorBase
 
 	public FactorGraph()
 	{
-		this(new VariableBase[0], "");
+		this(new Variable[0], "");
 	}
 	public FactorGraph(@Nullable String name)
 	{
 		this(null, name);
 	}
-	public FactorGraph(@Nullable VariableBase ... boundaryVariables)
+	public FactorGraph(@Nullable Variable ... boundaryVariables)
 	{
 		this(boundaryVariables, "");
 	}
 
-	public FactorGraph(@Nullable VariableBase[] boundaryVariables, @Nullable String name)
+	public FactorGraph(@Nullable Variable[] boundaryVariables, @Nullable String name)
 	{
 		this(boundaryVariables, name, Model.getInstance().getDefaultGraphFactory());
 	}
 
 	public FactorGraph(
-		@Nullable VariableBase[] boundaryVariables,
+		@Nullable Variable[] boundaryVariables,
 		@Nullable String name,
 		@Nullable IFactorGraphFactory<?> solver)
 	{
@@ -432,7 +432,7 @@ public class FactorGraph extends FactorBase
 		_solverFactory = factory;
 		_solverFactorGraph = solverGraph;
 
-		for (VariableBase var : getVariablesFlat())
+		for (Variable var : getVariablesFlat())
 			var.createSolverObject(_solverFactorGraph);
 
 		for (FactorGraph fg : getNestedGraphs())
@@ -457,7 +457,7 @@ public class FactorGraph extends FactorBase
 	//
 	//========================
 
-	public static boolean allDomainsAreDiscrete(VariableBase [] vars)
+	public static boolean allDomainsAreDiscrete(Variable [] vars)
 	{
 		for (int i = 0; i < vars.length; i++)
 		{
@@ -468,7 +468,7 @@ public class FactorGraph extends FactorBase
 		return true;
 	}
 
-    public BlastFromThePastFactor addBlastFromPastFactor(VariableBase var,Port factorPort)
+    public BlastFromThePastFactor addBlastFromPastFactor(Variable var,Port factorPort)
     {
 
             setVariableSolver(var);
@@ -476,7 +476,7 @@ public class FactorGraph extends FactorBase
             BlastFromThePastFactor f;
             f = new BlastFromThePastFactor(NodeId.getNext(), var,factorPort);
 
-            addFactor(f,new VariableBase[]{var});
+            addFactor(f,new Variable[]{var});
 
     		if (_solverFactorGraph != null)
     			f.createSolverObject(_solverFactorGraph);
@@ -564,12 +564,12 @@ public class FactorGraph extends FactorBase
 		return addFactor(FactorTable.create(indices, weights, vars),vars);
 	}
 
-	public Factor addFactor(IFactorTable ft, VariableBase ... vars)
+	public Factor addFactor(IFactorTable ft, Variable ... vars)
 	{
 		return addFactor(new TableFactorFunction("TableFactorFunction",ft),vars);
 	}
 
-	public Factor addFactor(FactorFunction factorFunction, VariableBase ... vars)
+	public Factor addFactor(FactorFunction factorFunction, Variable ... vars)
 	{
 		return addFactor(factorFunction, (Object[])vars);
 	}
@@ -585,7 +585,7 @@ public class FactorGraph extends FactorBase
 		}
 	}
 	
-	public Factor addFactor(String factorFunctionName, VariableBase...vars)
+	public Factor addFactor(String factorFunctionName, Variable...vars)
 	{
 		return addFactor(factorFunctionName, (Object[])vars);
 	}
@@ -596,11 +596,11 @@ public class FactorGraph extends FactorBase
 
 		for (int i = 0; i < vars.length; i++)
 		{
-			if (!(vars[i] instanceof VariableBase))
+			if (!(vars[i] instanceof Variable))
 				numConstants++;
 		}
 
-		VariableBase [] newvars = new VariableBase[vars.length - numConstants];
+		Variable [] newvars = new Variable[vars.length - numConstants];
 		Object [] constants = new Object[numConstants];
 		int [] constantIndices = new int[numConstants];
 
@@ -609,9 +609,9 @@ public class FactorGraph extends FactorBase
 
 		for (int i = 0; i < vars.length; i++)
 		{
-			if (vars[i] instanceof VariableBase)
+			if (vars[i] instanceof Variable)
 			{
-				newvars[varIndex] = (VariableBase)vars[i];
+				newvars[varIndex] = (Variable)vars[i];
 				varIndex++;
 			}
 			else
@@ -634,12 +634,12 @@ public class FactorGraph extends FactorBase
 
 	}
 
-	private Factor addFactorNoConstants(FactorFunction factorFunction, VariableBase ... vars)
+	private Factor addFactorNoConstants(FactorFunction factorFunction, Variable ... vars)
 	{
 		if (vars.length == 0)
 			throw new DimpleException("must pass at least one variable to addFactor");
 
-		for (VariableBase v : vars)
+		for (Variable v : vars)
 			setVariableSolver(v);
 
 		//TODO: where did the name go?
@@ -666,7 +666,7 @@ public class FactorGraph extends FactorBase
 	}
 
 
-	private void setVariableSolver(VariableBase v)
+	private void setVariableSolver(Variable v)
 	{
 		if (_solverFactorGraph != null)
 		{
@@ -685,7 +685,7 @@ public class FactorGraph extends FactorBase
 	 * True if variable is one of this graph's boundary variables or is
 	 * owned by this graph or one of its subgraphs.
 	 */
-	private boolean variableBelongs(VariableBase v)
+	private boolean variableBelongs(Variable v)
 	{
 		// TODO: apart from the boundary variable case, it seems that it would probably be
 		// more efficient to simply walk the ancestor chain from v to see if it hits this graph.
@@ -740,13 +740,13 @@ public class FactorGraph extends FactorBase
 	/**
 	 * Removes variables from the graph.
 	 * <p>
-	 * This simply invokes {@link #remove(VariableBase)} on each.
+	 * This simply invokes {@link #remove(Variable)} on each.
 	 * 
 	 * @param variables are the variables to be removed.
 	 */
-	public void removeVariables(VariableBase ... variables)
+	public void removeVariables(Variable ... variables)
 	{
-		for (VariableBase v : variables)
+		for (Variable v : variables)
 		{
 			remove(v);
 		}
@@ -759,7 +759,7 @@ public class FactorGraph extends FactorBase
 	 * is not owned by this graph.
 	 * @see #remove(Factor)
 	 */
-	public void remove(VariableBase v)
+	public void remove(Variable v)
 	{
 		if (v.getSiblingCount() != 0)
 			throw new DimpleException("can only remove a variable if it is no longer connected to a factor");
@@ -779,9 +779,9 @@ public class FactorGraph extends FactorBase
 		}
 	}
 		
-	public void addBoundaryVariables(VariableBase ... vars)
+	public void addBoundaryVariables(Variable ... vars)
 	{
-		for (VariableBase v : vars)
+		for (Variable v : vars)
 		{
 			setVariableSolver(v);
 	
@@ -820,7 +820,7 @@ public class FactorGraph extends FactorBase
 
 		if ((_flags & BOUNDARY_VARIABLE_ADD_EVENT) != 0)
 		{
-			for (VariableBase v : vars)
+			for (Variable v : vars)
 			{
 				raiseEvent(new BoundaryVariableAddEvent(this, v));
 			}
@@ -828,9 +828,9 @@ public class FactorGraph extends FactorBase
 	}
 
 	
-	public void addVariables(VariableBase... variables)
+	public void addVariables(Variable... variables)
 	{
-		for (VariableBase v : variables)
+		for (Variable v : variables)
 		{
 			if (_boundaryVariables.contains(v))
 			{
@@ -857,24 +857,24 @@ public class FactorGraph extends FactorBase
 	 * variables in order from each remaining factor in turn.
 	 * <p>
 	 * @return the new joint factor
-	 * @see #join(VariableBase[], Factor...)
+	 * @see #join(Variable[], Factor...)
 	 */
 	public Factor join(Factor ... factors)
 	{
-		Set<VariableBase> variables = new LinkedHashSet<VariableBase>();
+		Set<Variable> variables = new LinkedHashSet<Variable>();
 		for (Factor factor : factors)
 		{
 			final int nVarsInFactor = factor.getSiblingCount();
 			for (int i = 0; i < nVarsInFactor; ++i)
 			{
-				final VariableBase variable = factor.getSibling(i);
+				final Variable variable = factor.getSibling(i);
 				if (!variables.contains(variable))
 				{
 					variables.add(variable);
 				}
 			}
 		}
-		return join(variables.toArray(new VariableBase[variables.size()]), factors);
+		return join(variables.toArray(new Variable[variables.size()]), factors);
 	}
 	
 	/**
@@ -889,7 +889,7 @@ public class FactorGraph extends FactorBase
 	 * {@code variables} in the specified order, this will simply return that factor without
 	 * modifying the graph.
 	 */
-	public Factor join(VariableBase[] variables, Factor ... factors)
+	public Factor join(Variable[] variables, Factor ... factors)
 	{
 		final int nFactors = factors.length;
 		final int nVariables = variables.length;
@@ -918,7 +918,7 @@ public class FactorGraph extends FactorBase
 		}
 	
 		// Build map of variables in all factors to its index in the merged factor.
-		final Map<VariableBase, Integer> varToIndex = new HashMap<VariableBase, Integer>();
+		final Map<Variable, Integer> varToIndex = new HashMap<Variable, Integer>();
 		for (int i = 0; i < nVariables; ++i)
 		{
 			varToIndex.put(variables[i], i);
@@ -933,7 +933,7 @@ public class FactorGraph extends FactorBase
 			final int[] oldToNewIndex = new int[nVarsInFactor];
 			for (int i = 0; i < nVarsInFactor; ++i)
 			{
-				final VariableBase variable = factor.getSibling(i);
+				final Variable variable = factor.getSibling(i);
 				final Integer oldIndex = varToIndex.get(variable);
 				if (oldIndex == null)
 				{
@@ -1006,7 +1006,7 @@ public class FactorGraph extends FactorBase
 	 * Joining variables creates one joint and discards the originals and modifies
 	 * factors to refer to the joints.
 	 */
-	public VariableBase join(VariableBase ... variables)
+	public Variable join(Variable ... variables)
 	{
 		if (variables.length < 2)
 			throw new DimpleException("need at least two variables");
@@ -1022,7 +1022,7 @@ public class FactorGraph extends FactorBase
 		HashSet<Factor> factors = new HashSet<Factor>();
 
 		//Go through variables and find affected factors.
-		for (VariableBase v : variables)
+		for (Variable v : variables)
 		{
 			for (int i = 0, endi = v.getSiblingCount(); i < endi; i++)
 			{
@@ -1032,7 +1032,7 @@ public class FactorGraph extends FactorBase
 		}
 
 		//Create joint variable
-		VariableBase joint = variables[0].createJointNoFactors(variables);
+		Variable joint = variables[0].createJointNoFactors(variables);
 
 		//Variables must first be part of the graph before the factor can join them.
 		addVariables(joint);
@@ -1062,7 +1062,7 @@ public class FactorGraph extends FactorBase
 	/*
 	 * Splitting a variable creates a copy and an equals node between the two.
 	 */
-	public VariableBase split(VariableBase variable)
+	public Variable split(Variable variable)
 	{
 		return split(variable,new Factor[]{});
 	}
@@ -1072,16 +1072,16 @@ public class FactorGraph extends FactorBase
 	 * The Factor array specifies which factors should connect to the new variable.
 	 * All factors left out of hte array remain pointing to the original variable.
 	 */
-	public VariableBase split(VariableBase variable,Factor ... factorsToBeMovedToCopy)
+	public Variable split(Variable variable,Factor ... factorsToBeMovedToCopy)
 	{
 		return variable.split(this,factorsToBeMovedToCopy);
 	}
 
 
-	private FactorBase addFactor(Factor function, VariableBase[] variables)
+	private FactorBase addFactor(Factor function, Variable[] variables)
 	{
 		// Add variables to owned variable list if not a boundary variable
-		for (VariableBase v : variables)
+		for (Variable v : variables)
 		{
 
 			if (!_boundaryVariables.contains(v))
@@ -1247,7 +1247,7 @@ public class FactorGraph extends FactorBase
 	//
 	//============================
 
-	public FactorGraph addFactor(FactorGraph subGraph, VariableBase ... boundaryVariables)
+	public FactorGraph addFactor(FactorGraph subGraph, Variable ... boundaryVariables)
 	{
 		return addGraph(subGraph,boundaryVariables);
 	}
@@ -1260,12 +1260,12 @@ public class FactorGraph extends FactorBase
 	 * @param boundaryVariables
 	 * @return newly created subgraph
 	 */
-	public FactorGraph addGraph(FactorGraph subGraphTemplate, VariableBase ... boundaryVariables)
+	public FactorGraph addGraph(FactorGraph subGraphTemplate, Variable ... boundaryVariables)
 	{
 
 		//TODO: helper function
 		//TODO: or do I do this below constructor?
-		for (VariableBase v : boundaryVariables)
+		for (Variable v : boundaryVariables)
 			setVariableSolver(v);
 
 		//copy the graph
@@ -1279,7 +1279,7 @@ public class FactorGraph extends FactorBase
 		//tell us about it
 		addOwnedSubgraph(subGraphCopy, false);
 
-		for (VariableBase v : boundaryVariables)			// Add variables to owned variable list if not a boundary variable
+		for (Variable v : boundaryVariables)			// Add variables to owned variable list if not a boundary variable
 			if (!_boundaryVariables.contains(v))
 			{
 				addOwnedVariable(v, false);
@@ -1300,7 +1300,7 @@ public class FactorGraph extends FactorBase
 		//		stop references names/UUIDs of boundary variables.
 		if(noLongerRoot)
 		{
-			for(VariableBase v : _boundaryVariables)
+			for(Variable v : _boundaryVariables)
 			{
 				_UUID2object.remove(v.getUUID());
 				String explicitName = v.getExplicitName();
@@ -1317,7 +1317,7 @@ public class FactorGraph extends FactorBase
 	}
 
 
-	private FactorGraph(@Nullable VariableBase[] boundaryVariables,
+	private FactorGraph(@Nullable Variable[] boundaryVariables,
 			FactorGraph templateGraph,
 			@Nullable FactorGraph parentGraph)
 			{
@@ -1329,7 +1329,7 @@ public class FactorGraph extends FactorBase
 			}
 
 	// Copy constructor -- create a graph incorporating all of the variables, functions, and sub-graphs of the template graph
-	private FactorGraph(@Nullable VariableBase[] boundaryVariables,
+	private FactorGraph(@Nullable Variable[] boundaryVariables,
 			FactorGraph templateGraph,
 			@Nullable FactorGraph parentGraph,
 			boolean copyToRoot,
@@ -1340,9 +1340,9 @@ public class FactorGraph extends FactorBase
 				null);
 
 		// Copy owned variables
-		for (VariableBase vTemplate : templateGraph._ownedVariables)
+		for (Variable vTemplate : templateGraph._ownedVariables)
 		{
-			VariableBase vCopy = vTemplate.clone();
+			Variable vCopy = vTemplate.clone();
 
 			//old2newIds.put(vTemplate.getId(), vCopy.getId());
 			old2newObjs.put(vTemplate,vCopy);
@@ -1364,9 +1364,9 @@ public class FactorGraph extends FactorBase
 
 		{
 			int i = 0;
-			for (VariableBase vTemplate : templateGraph._boundaryVariables)
+			for (Variable vTemplate : templateGraph._boundaryVariables)
 			{
-				VariableBase vBoundary = boundaryVariables[i++];
+				Variable vBoundary = boundaryVariables[i++];
 				if (!vBoundary.getDomain().equals(vTemplate.getDomain()))
 					throw new DimpleException("Boundary variable does not have the same domain as template graph.  Index: " + (i-1));
 
@@ -1381,11 +1381,11 @@ public class FactorGraph extends FactorBase
 			if (subGraph != null)
 			{
 
-				VariableBase[] vBoundary = new VariableBase[subGraph._boundaryVariables.size()];
+				Variable[] vBoundary = new Variable[subGraph._boundaryVariables.size()];
 				{
 					int i = 0;
-					for (VariableBase v : subGraph._boundaryVariables)
-						vBoundary[i++] = (VariableBase)old2newObjs.get(v);
+					for (Variable v : subGraph._boundaryVariables)
+						vBoundary[i++] = (Variable)old2newObjs.get(v);
 				}
 				FactorGraph newGraph = addGraph(subGraph, vBoundary);	// Add the graph using the appropriate boundary variables
 				old2newObjs.put(subGraph,newGraph);
@@ -1405,8 +1405,8 @@ public class FactorGraph extends FactorBase
 					_ownedFactors.add(fCopy);
 					for (INode n : fTemplate.getSiblings())
 					{
-						VariableBase vTemplate = (VariableBase)n;
-						VariableBase var = (VariableBase)old2newObjs.get(vTemplate);
+						Variable vTemplate = (Variable)n;
+						Variable var = (Variable)old2newObjs.get(vTemplate);
 						fCopy.connect(var);
 						if (templateGraph._boundaryVariables.contains(vTemplate))
 						{
@@ -1453,11 +1453,11 @@ public class FactorGraph extends FactorBase
 	{
 		FactorGraph root = getRootGraph();
 
-		Collection<VariableBase> rootBoundaryVariablesCollection = root.getBoundaryVariables().values();
+		Collection<Variable> rootBoundaryVariablesCollection = root.getBoundaryVariables().values();
 		int numBoundaryVariables = rootBoundaryVariablesCollection.size();
-		VariableBase[] rootBoundaryVariables
-		= rootBoundaryVariablesCollection.toArray(new VariableBase[numBoundaryVariables]);
-		VariableBase[] boundaryVariables = new VariableBase[numBoundaryVariables];
+		Variable[] rootBoundaryVariables
+		= rootBoundaryVariablesCollection.toArray(new Variable[numBoundaryVariables]);
+		Variable[] boundaryVariables = new Variable[numBoundaryVariables];
 		for(int i = 0; i < numBoundaryVariables; ++i)
 		{
 			boundaryVariables[i] = rootBoundaryVariables[i].clone();
@@ -1508,7 +1508,7 @@ public class FactorGraph extends FactorBase
 	}
 
 	@Override
-	public List<? extends VariableBase> getSiblings()
+	public List<? extends Variable> getSiblings()
 	{
 		updateSiblings();
 		return super.getSiblings();
@@ -1522,7 +1522,7 @@ public class FactorGraph extends FactorBase
 	}
 	
 	@Override
-	public VariableBase getSibling(int index)
+	public Variable getSibling(int index)
 	{
 		updateSiblings();
 		return super.getSibling(index);
@@ -1646,7 +1646,7 @@ public class FactorGraph extends FactorBase
 		}
 	}
 	
-	private void addOwnedVariable(VariableBase variable, boolean absorbedFromSubgraph)
+	private void addOwnedVariable(Variable variable, boolean absorbedFromSubgraph)
 	{
 		//Only insert if not already there.
 		if(addNameAndUUID(variable))
@@ -1671,7 +1671,7 @@ public class FactorGraph extends FactorBase
 
 	public void recreateMessages()
 	{
-		for (VariableBase v : getVariablesFlat())
+		for (Variable v : getVariablesFlat())
 		{
 			final ISolverVariable sv = v.getSolver();
 			if (sv != null)
@@ -1698,7 +1698,7 @@ public class FactorGraph extends FactorBase
 	 * <ol>
 	 * <li>Invokes {@link #notifyListenerChanged()} to reconfigure event notifications.
 	 * <li>Initializes non-boundary model variables contained directly in the graph (not in subgraphs)
-	 * by calling {@link VariableBase#initialize()} on each.
+	 * by calling {@link Variable#initialize()} on each.
 	 * <li>If not {@link #hasParentGraph()}, initializes boundary variables in the same fashion.
 	 * <li>Initializes all model factors contained directly in the graph by calling
 	 * {@link Factor#initialize()} on each.
@@ -1714,10 +1714,10 @@ public class FactorGraph extends FactorBase
 		super.initialize();
 		notifyListenerChanged();
 		
-		for (VariableBase v : _ownedVariables)
+		for (Variable v : _ownedVariables)
 			v.initialize();
 		if (!hasParentGraph())			// Initialize boundary variables only if there's no parent to do it
-			for (VariableBase v : _boundaryVariables)
+			for (Variable v : _boundaryVariables)
 				v.initialize();
 
 		for (Factor f : getNonGraphFactorsTop())
@@ -1825,7 +1825,7 @@ public class FactorGraph extends FactorBase
 
 		VariableList boundary = subgraph.getBoundaryVariables();
 
-		VariableBase [] arr = varList.toArray(new VariableBase[varList.size()]);
+		Variable [] arr = varList.toArray(new Variable[varList.size()]);
 
 		for (FactorBase f : factors)
 		{
@@ -1849,7 +1849,7 @@ public class FactorGraph extends FactorBase
 		_ownedFactors.remove(subgraph);
 		_ownedSubGraphs.remove(subgraph);
 		
-		for (VariableBase v : boundary)
+		for (Variable v : boundary)
 		{
 			if (v.getSiblingCount() == 0)
 				remove(v);
@@ -1889,7 +1889,7 @@ public class FactorGraph extends FactorBase
 		
 		for (int i = 0, nVars = factor.getSiblingCount(); i < nVars; ++i)
 		{
-			VariableBase var = factor.getSibling(i);
+			Variable var = factor.getSibling(i);
 			var.remove(factor);
 		}
 
@@ -1992,7 +1992,7 @@ public class FactorGraph extends FactorBase
 		// all sub-graphs. Since this is a bipartite graph, we can just count
 		// all ports associated with the variables in the graph
 		int numEdges = 0;
-		for (VariableBase v : allIncludedVariables)
+		for (Variable v : allIncludedVariables)
 			numEdges += v.getSiblingCount();
 
 
@@ -2279,7 +2279,7 @@ public class FactorGraph extends FactorBase
 	 * @param i an index in the range [0, {@link #getBoundaryVariableCount()} - 1].
 	 * @since 0.05
 	 */
-	public VariableBase getBoundaryVariable(int i)
+	public Variable getBoundaryVariable(int i)
 	{
 		return _boundaryVariables.getByIndex(i);
 	}
@@ -2301,7 +2301,7 @@ public class FactorGraph extends FactorBase
 	 * @param i an index int he range [0,{@link #getOwnedVariableCount()} - 1]
 	 * @since 0.05
 	 */
-	public VariableBase getOwnedVariable(int i)
+	public Variable getOwnedVariable(int i)
 	{
 		return _ownedVariables.getByIndex(i);
 	}
@@ -2408,14 +2408,14 @@ public class FactorGraph extends FactorBase
 	}
 
 
-	public boolean isBoundaryVariable(VariableBase mv)
+	public boolean isBoundaryVariable(Variable mv)
 	{
 		return _boundaryVariables.contains(mv);
 	}
 
-	public @Nullable VariableBase getVariable(int id)
+	public @Nullable Variable getVariable(int id)
 	{
-		VariableBase v;
+		Variable v;
 		v = _ownedVariables.getByKey(id);
 		if (v != null) return v;
 		v = _boundaryVariables.getByKey(id);
@@ -2622,7 +2622,7 @@ public class FactorGraph extends FactorBase
 
 		MapList<INode> retval = new MapList<INode>();
 
-		for (VariableBase v : vars)
+		for (Variable v : vars)
 			retval.add(v);
 
 		for (FactorBase fb : factors)
@@ -2844,13 +2844,13 @@ public class FactorGraph extends FactorBase
 		return _UUID2object.get(uuid);
 	}
 
-	public @Nullable VariableBase 	getVariableByName(String name)
+	public @Nullable Variable 	getVariableByName(String name)
 	{
-		VariableBase v = null;
+		Variable v = null;
 		Object o = getObjectByName(name);
-		if(o instanceof VariableBase)
+		if(o instanceof Variable)
 		{
-			v = (VariableBase) o;
+			v = (Variable) o;
 		}
 
 		return v;
@@ -2875,13 +2875,13 @@ public class FactorGraph extends FactorBase
 		}
 		return fg;
 	}
-	public @Nullable VariableBase getVariableByUUID(UUID uuid)
+	public @Nullable Variable getVariableByUUID(UUID uuid)
 	{
-		VariableBase v = null;
+		Variable v = null;
 		Object o = getObjectByUUID(uuid);
-		if (o instanceof VariableBase)
+		if (o instanceof Variable)
 		{
-			v = (VariableBase) o;
+			v = (Variable) o;
 		}
 		return v;
 	}
@@ -2972,7 +2972,7 @@ public class FactorGraph extends FactorBase
 		sb.append(tabString);
 		sb.append("Boundary variables:\n");
 		VariableList vList = getBoundaryVariables();
-		for(VariableBase v : vList)
+		for(Variable v : vList)
 		{
 			sb.append(tabString);
 			sb.append("\t");
@@ -2984,7 +2984,7 @@ public class FactorGraph extends FactorBase
 		sb.append(tabString);
 		sb.append("Owned variables:\n");
 		vList = getVariablesTop();
-		for(VariableBase v : vList)
+		for(Variable v : vList)
 		{
 			sb.append(tabString);
 			sb.append("\t");
@@ -3022,7 +3022,7 @@ public class FactorGraph extends FactorBase
 
 			for(int i = 0, end = fn.getSiblingCount(); i < end; i++)
 			{
-				VariableBase v = fn.getSibling(i);
+				Variable v = fn.getSibling(i);
 
 				String vName = v.getLabel();
 				final FactorGraph vParent = v.getParentGraph();
@@ -3036,7 +3036,7 @@ public class FactorGraph extends FactorBase
 		}
 		VariableList allVariables = getVariablesFlat();
 		sb.append(String.format("--Variables (%d)--\n", allVariables.size()));
-		for(VariableBase v : allVariables)
+		for(Variable v : allVariables)
 		{
 			String vName = v.getLabel();
 			final FactorGraph vParent = v.getParentGraph();
@@ -3084,8 +3084,8 @@ public class FactorGraph extends FactorBase
 	public String getDomainSizeString()
 	{
 		StringBuilder sb = new StringBuilder("------Domains------\n");
-		TreeMap<Integer, ArrayList<VariableBase>> variablesByDomain = getVariablesByDomainSize();
-		for(Entry<Integer, ArrayList<VariableBase>> entry : variablesByDomain.entrySet())
+		TreeMap<Integer, ArrayList<Variable>> variablesByDomain = getVariablesByDomainSize();
+		for(Entry<Integer, ArrayList<Variable>> entry : variablesByDomain.entrySet())
 		{
 			sb.append(String.format("\tdomain:[%03d]  count:%03d\n", entry.getKey(), entry.getValue().size()));
 		}
@@ -3096,10 +3096,10 @@ public class FactorGraph extends FactorBase
 	public String getDomainString()
 	{
 		StringBuilder sb = new StringBuilder("------Domains------\n");
-		TreeMap<Integer, ArrayList<VariableBase>> variablesByDomain = getVariablesByDomainSize();
-		for(Entry<Integer, ArrayList<VariableBase>> entry : variablesByDomain.entrySet())
+		TreeMap<Integer, ArrayList<Variable>> variablesByDomain = getVariablesByDomainSize();
+		for(Entry<Integer, ArrayList<Variable>> entry : variablesByDomain.entrySet())
 		{
-			for(VariableBase vb : entry.getValue())
+			for(Variable vb : entry.getValue())
 			{
 				sb.append(String.format("\t[%-20s]  Domain [%-40s]\n", vb.getLabel(), vb.getDomain().toString()));
 			}
@@ -3151,7 +3151,7 @@ public class FactorGraph extends FactorBase
 		//If root, clear boundary variables
 		if(!hasParentGraph())
 		{
-			for(VariableBase v : getBoundaryVariables().values())
+			for(Variable v : getBoundaryVariables().values())
 			{
 				v.setName(null);
 			}
@@ -3188,7 +3188,7 @@ public class FactorGraph extends FactorBase
 		//If root, set boundary variables
 		if(!hasParentGraph())
 		{
-			ArrayList<VariableBase> boundaryVariables = (ArrayList<VariableBase>)getBoundaryVariables().values();
+			ArrayList<Variable> boundaryVariables = (ArrayList<Variable>)getBoundaryVariables().values();
 			for(int i = 0; i < boundaryVariables.size(); ++i)
 			{
 				boundaryVariables.get(i).setName(String.format("%s%d", boundaryString, i));
@@ -3200,7 +3200,7 @@ public class FactorGraph extends FactorBase
 			}
 		}
 
-		ArrayList<VariableBase> ownedVariables = (ArrayList<VariableBase>)getVariablesTop().values();
+		ArrayList<Variable> ownedVariables = (ArrayList<Variable>)getVariablesTop().values();
 		for(int i = 0; i < ownedVariables.size(); ++i)
 		{
 			ownedVariables.get(i).setName(String.format("%s%d", ownedString, i));
@@ -3259,12 +3259,12 @@ public class FactorGraph extends FactorBase
 		nodes.addAll(getNonGraphFactorsFlat().values());
 		return getNodesByDegree(nodes);
 	}
-	public TreeMap<Integer, ArrayList<VariableBase>> getVariablesByDomainSize()
+	public TreeMap<Integer, ArrayList<Variable>> getVariablesByDomainSize()
 	{
-		ArrayList<VariableBase> variables = new ArrayList<VariableBase>();
+		ArrayList<Variable> variables = new ArrayList<Variable>();
 		variables.addAll(getVariablesFlat());
-		TreeMap<Integer, ArrayList<VariableBase>> variablesByDomain = new TreeMap<Integer, ArrayList<VariableBase>>();
-		for(VariableBase vb : variables)
+		TreeMap<Integer, ArrayList<Variable>> variablesByDomain = new TreeMap<Integer, ArrayList<Variable>>();
+		for(Variable vb : variables)
 		{
 			if(!(vb.getDomain() instanceof DiscreteDomain))
 			{
@@ -3274,7 +3274,7 @@ public class FactorGraph extends FactorBase
 			int size = domain.size();
 			if(!variablesByDomain.containsKey(size))
 			{
-				ArrayList<VariableBase> variablesForDomain = new ArrayList<VariableBase>();
+				ArrayList<Variable> variablesForDomain = new ArrayList<Variable>();
 				variablesByDomain.put(size, variablesForDomain);
 			}
 			variablesByDomain.get(size).add(vb);
@@ -3328,22 +3328,22 @@ public class FactorGraph extends FactorBase
 
 
 	// For operating collectively on groups of variables that are not already part of a variable vector
-	protected @Nullable HashMap<Integer, ArrayList<VariableBase>> _variableGroups;
+	protected @Nullable HashMap<Integer, ArrayList<Variable>> _variableGroups;
 	protected int _variableGroupID = 0;
-	public int defineVariableGroup(ArrayList<VariableBase> variableList)
+	public int defineVariableGroup(ArrayList<Variable> variableList)
 	{
-		HashMap<Integer, ArrayList<VariableBase>> variableGroups = _variableGroups;
+		HashMap<Integer, ArrayList<Variable>> variableGroups = _variableGroups;
 		if (variableGroups == null)
 		{
-			variableGroups = _variableGroups = new HashMap<Integer, ArrayList<VariableBase>>();
+			variableGroups = _variableGroups = new HashMap<Integer, ArrayList<Variable>>();
 		}
 		variableGroups.put(_variableGroupID, variableList);
 		return _variableGroupID++;
 	}
 
-	public @Nullable ArrayList<VariableBase> getVariableGroup(int variableGroupID)
+	public @Nullable ArrayList<Variable> getVariableGroup(int variableGroupID)
 	{
-		final HashMap<Integer, ArrayList<VariableBase>> groups = _variableGroups;
+		final HashMap<Integer, ArrayList<Variable>> groups = _variableGroups;
 		return groups != null ? groups.get(variableGroupID) : null;
 	}
 

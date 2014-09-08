@@ -36,7 +36,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -83,7 +83,7 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 	 */
 	public static @Nullable GibbsNeighbors create(ISolverVariableGibbs svar)
 	{
-		final VariableBase var = requireNonNull(svar.getModelObject());
+		final Variable var = requireNonNull(svar.getModelObject());
 		final int nSiblings = var.getSiblingCount();
 
 		// Neighbors at front of list, other visited nodes at end. The counter indicates
@@ -185,7 +185,7 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 		protected @Nullable Queue<Work> handle(Deque<ISolverNodeGibbs> visited, int[] counterHolder,
 			@Nullable Queue<Work> queue)
 		{
-			final VariableBase variable = requireNonNull(_varNode.getModelObject());
+			final Variable variable = requireNonNull(_varNode.getModelObject());
 			final int nSiblings = variable.getSiblingCount();
 			
 			int counter = counterHolder[0];
@@ -266,7 +266,7 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 			{
 				for (int edge : outputEdges)
 				{
-					VariableBase variable = factor.getSibling(edge);
+					Variable variable = factor.getSibling(edge);
 					ISolverVariableGibbs svariable = requireNonNull((ISolverVariableGibbs)variable.getSolver());
 					if (svariable.setVisited(true))
 					{

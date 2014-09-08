@@ -70,7 +70,7 @@ public class MinSumSolverGraph extends SFactorGraphBase
 	}
 	
 	@Override
-	public ISolverVariable createVariable(com.analog.lyric.dimple.model.variables.VariableBase var)
+	public ISolverVariable createVariable(com.analog.lyric.dimple.model.variables.Variable var)
 	{
 		if (!var.getDomain().isDiscrete())
 			throw new DimpleException("only support discrete variables");

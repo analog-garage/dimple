@@ -21,7 +21,7 @@ import java.util.Arrays;
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergyMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -41,7 +41,7 @@ public class SVariable extends SDiscreteVariableDoubleArray
 	protected boolean _dampingInUse = false;
 
 	
-	public SVariable(VariableBase var)
+	public SVariable(Variable var)
 	{
 		super(var);
 	}

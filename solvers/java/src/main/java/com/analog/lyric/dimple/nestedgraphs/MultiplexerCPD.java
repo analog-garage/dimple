@@ -23,7 +23,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 public class MultiplexerCPD extends FactorGraph
 {
@@ -163,7 +163,7 @@ public class MultiplexerCPD extends FactorGraph
 		addBoundaryVariables(Zs);
 		
 		//Make all of those boundary variables
-		VariableBase [] vars = new VariableBase[Zs.length+2];
+		Variable [] vars = new Variable[Zs.length+2];
 		vars[0] = Y;
 		vars[1] = A;
 		for (int i = 0; i < Zs.length; i++)

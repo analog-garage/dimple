@@ -22,7 +22,7 @@ import java.io.ObjectOutputStream;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import org.eclipse.jdt.annotation.Nullable;
 
 /**
@@ -40,7 +40,7 @@ public abstract class FactorGraphVariableEvent extends FactorGraphEvent
 	 * State
 	 */
 	
-	private transient final VariableBase _variable;
+	private transient final Variable _variable;
 	private final @Nullable String _variableName;
 	
 	/*--------------
@@ -52,7 +52,7 @@ public abstract class FactorGraphVariableEvent extends FactorGraphEvent
 	 * @param variable involved in the event
 	 * @since 0.06
 	 */
-	protected FactorGraphVariableEvent(FactorGraph source, VariableBase variable)
+	protected FactorGraphVariableEvent(FactorGraph source, Variable variable)
 	{
 		super(source);
 		_variable = variable;
@@ -104,7 +104,7 @@ public abstract class FactorGraphVariableEvent extends FactorGraphEvent
 	 * @since 0.06
 	 * @see #getVariableName()
 	 */
-	public @Nullable VariableBase getVariable()
+	public @Nullable Variable getVariable()
 	{
 		return _variable;
 	}

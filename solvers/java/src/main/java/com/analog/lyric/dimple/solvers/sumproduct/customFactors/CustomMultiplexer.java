@@ -23,7 +23,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
 import org.eclipse.jdt.annotation.NonNull;
 
@@ -58,8 +58,8 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 		if (nVars < 2)
 			throw new DimpleException("Must specify at least Y and A");
 		
-		final VariableBase y = factor.getSibling(0);
-		final VariableBase a = factor.getSibling(1);
+		final Variable y = factor.getSibling(0);
+		final Variable a = factor.getSibling(1);
 		
 		factor.setDirectedTo(y);
 		

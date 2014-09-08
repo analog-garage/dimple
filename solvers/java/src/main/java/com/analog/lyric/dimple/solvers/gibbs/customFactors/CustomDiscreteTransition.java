@@ -24,7 +24,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
@@ -133,7 +133,7 @@ public class CustomDiscreteTransition extends SRealFactor implements IRealJointC
 		_constantXValue = -1;
 		_yDimension = 1;
 		_startingParameterEdge = 0;
-		List<? extends VariableBase> siblings = _factor.getSiblings();
+		List<? extends Variable> siblings = _factor.getSiblings();
 
 		_hasConstantY = factorFunction.isConstantIndex(Y_INDEX);
 		if (_hasConstantY)

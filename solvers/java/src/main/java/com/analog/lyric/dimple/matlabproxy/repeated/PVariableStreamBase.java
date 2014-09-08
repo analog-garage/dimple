@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.model.repeated.IDataSink;
 import com.analog.lyric.dimple.model.repeated.IDataSource;
 import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
 import com.analog.lyric.dimple.model.repeated.VariableStreamSlice;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 public abstract class PVariableStreamBase implements IPVariableStreamSlice
 {
@@ -75,7 +75,7 @@ public abstract class PVariableStreamBase implements IPVariableStreamSlice
 	
 	public PVariableVector get(int index) 
 	{
-		VariableBase [] vars = new VariableBase[_modelObjects.length];
+		Variable [] vars = new Variable[_modelObjects.length];
 		for (int i = 0; i < vars.length; i++)
 			vars[i] = _modelObjects[i].get(index);
 		return PHelpers.convertToVariableVector(vars);

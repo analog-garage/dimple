@@ -23,7 +23,7 @@ import java.util.UUID;
 import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import org.eclipse.jdt.annotation.Nullable;
@@ -58,7 +58,7 @@ public abstract class TrainingAssignment implements ITrainingAssignment, Seriali
 		}
 
 		@Override
-		public VariableBase getVariable(FactorGraph model)
+		public Variable getVariable(FactorGraph model)
 		{
 			return Objects.requireNonNull(model.getVariableByUUID(_varId));
 		}
@@ -78,7 +78,7 @@ public abstract class TrainingAssignment implements ITrainingAssignment, Seriali
 		}
 
 		@Override
-		public VariableBase getVariable(FactorGraph model)
+		public Variable getVariable(FactorGraph model)
 		{
 			return Objects.requireNonNull(model.getVariableByName(_varName));
 		}
@@ -98,7 +98,7 @@ public abstract class TrainingAssignment implements ITrainingAssignment, Seriali
 		}
 
 		@Override
-		public VariableBase getVariable(FactorGraph model)
+		public Variable getVariable(FactorGraph model)
 		{
 			return Objects.requireNonNull(model.getVariable(_varId));
 		}
@@ -109,16 +109,16 @@ public abstract class TrainingAssignment implements ITrainingAssignment, Seriali
 	{
 		private static final long serialVersionUID = 1L;
 		
-		private final transient VariableBase _var;
+		private final transient Variable _var;
 		
-		private ByVariableBase(TrainingAssignmentType type, @Nullable Object value, VariableBase var)
+		private ByVariableBase(TrainingAssignmentType type, @Nullable Object value, Variable var)
 		{
 			super(type, value);
 			_var = var;
 		}
 		
 		@Override
-		public VariableBase getVariable(FactorGraph model)
+		public Variable getVariable(FactorGraph model)
 		{
 			return _var;
 		}
@@ -160,7 +160,7 @@ public abstract class TrainingAssignment implements ITrainingAssignment, Seriali
 		return new ByName(type, value, varName);
 	}
 	
-	public static TrainingAssignment create(VariableBase var, TrainingAssignmentType type, @Nullable Object value)
+	public static TrainingAssignment create(Variable var, TrainingAssignmentType type, @Nullable Object value)
 	{
 		return new ByVariableBase(type, value, var);
 	}
@@ -175,7 +175,7 @@ public abstract class TrainingAssignment implements ITrainingAssignment, Seriali
 		applyToModelVariable(getVariable(model), getAssignmentType(), getValue());
 	}
 	
-	public static void applyToModelVariable(VariableBase var, TrainingAssignmentType type, @Nullable Object value)
+	public static void applyToModelVariable(Variable var, TrainingAssignmentType type, @Nullable Object value)
 	{
 		switch (type)
 		{

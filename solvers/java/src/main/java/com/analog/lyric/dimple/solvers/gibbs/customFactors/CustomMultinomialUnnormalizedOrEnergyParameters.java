@@ -29,7 +29,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.schedulers.IGibbsScheduler;
 import com.analog.lyric.dimple.schedulers.IScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
@@ -225,7 +225,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 			throw new DimpleException("Invalid factor function");
 		
 		// Pre-determine whether or not the parameters are constant
-		List<? extends VariableBase> siblings = _factor.getSiblings();
+		List<? extends Variable> siblings = _factor.getSiblings();
 		_NVariable = null;
 		_hasConstantOutputs = false;
 		_outputVariables = null;

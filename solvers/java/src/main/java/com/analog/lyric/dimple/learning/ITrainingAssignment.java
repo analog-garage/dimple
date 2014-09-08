@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.learning;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import org.eclipse.jdt.annotation.Nullable;
@@ -49,7 +49,7 @@ public interface ITrainingAssignment
 	 * applied. The assignment does not necessarily contain a direct
 	 * pointer to the variable.
 	 */
-	public VariableBase getVariable(FactorGraph model);
+	public Variable getVariable(FactorGraph model);
 	
 	/**0
 	 * Lookup the solver variable to which the assignment should be
@@ -69,7 +69,7 @@ public interface ITrainingAssignment
 	 * For discrete variables, this should return the index of the domain element,
 	 * not the element itself.
 	 * <dt>INPUTS
-	 * <dd>Returns an inputs object suitable for use with {@link VariableBase#setInputObject(Object)}
+	 * <dd>Returns an inputs object suitable for use with {@link Variable#setInputObject(Object)}
 	 * on this variable.
 	 * <dt>FIXED
 	 * <dd>Returns a value compatible with the variable's domain and inputs.

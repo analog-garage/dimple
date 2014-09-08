@@ -67,7 +67,7 @@ public class VariableFixedValueChangeEvent extends VariableChangeEvent
 	 * @param variable
 	 * @since 0.06
 	 */
-	VariableFixedValueChangeEvent(VariableBase variable, @Nullable Object oldValue, @Nullable Object newValue)
+	VariableFixedValueChangeEvent(Variable variable, @Nullable Object oldValue, @Nullable Object newValue)
 	{
 		super(variable);
 		_oldValue = oldValue;

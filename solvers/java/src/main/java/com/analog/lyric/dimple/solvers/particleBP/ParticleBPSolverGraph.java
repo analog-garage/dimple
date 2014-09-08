@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.particleBP;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -67,7 +67,7 @@ public class ParticleBPSolverGraph extends SFactorGraphBase
 	
 
 	@Override
-	public ISolverVariable createVariable(VariableBase var)
+	public ISolverVariable createVariable(Variable var)
 	{
 		if (var.getModelerClassName().equals("Real"))
 		{
@@ -102,7 +102,7 @@ public class ParticleBPSolverGraph extends SFactorGraphBase
 		{
 			if (--iterationsBeforeResampling <= 0)
 			{
-				for (VariableBase v : vars)
+				for (Variable v : vars)
 				{
 					ISolverVariable vs = v.getSolver();
 					if (vs instanceof SRealVariable)
@@ -146,7 +146,7 @@ public class ParticleBPSolverGraph extends SFactorGraphBase
 				((SRealFactor)fs).setBeta(beta);
 		}
 		
-		for (VariableBase v : _factorGraph.getVariables())
+		for (Variable v : _factorGraph.getVariables())
 		{
 			ISolverVariable vs = v.getSolver();
 			if (vs instanceof SRealVariable)

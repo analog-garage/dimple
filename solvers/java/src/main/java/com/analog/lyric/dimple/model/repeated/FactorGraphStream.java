@@ -25,7 +25,7 @@ import java.util.Objects;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Port;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import org.eclipse.jdt.annotation.Nullable;
@@ -93,7 +93,7 @@ public class FactorGraphStream
 		{
 		
 			//figure out which variable stream this is connected to
-			VariableBase var = (VariableBase)p.getSibling();
+			Variable var = (Variable)p.getSibling();
 			VariableStreamBase vsb = getVariableStream(var);
 
 			if (vsb == null)
@@ -132,7 +132,7 @@ public class FactorGraphStream
 					for (int i = index-1; i >= 0; i--)
 					{
 						//add blast from the past
-						VariableBase var2 = vsb.get(i);
+						Variable var2 = vsb.get(i);
 	
 						//Initalize the input msg
 						BlastFromThePastFactor f = fg.addBlastFromPastFactor(var2,nextPort.getSiblingPort());
@@ -181,17 +181,17 @@ public class FactorGraphStream
 		}
 	}
 
-	private HashMap<VariableBase, ParameterBlastFromThePastHandler> _parameter2blastFromThePastHandler = new HashMap<VariableBase, FactorGraphStream.ParameterBlastFromThePastHandler>();
+	private HashMap<Variable, ParameterBlastFromThePastHandler> _parameter2blastFromThePastHandler = new HashMap<Variable, FactorGraphStream.ParameterBlastFromThePastHandler>();
 	
 	private class ParameterBlastFromThePastHandler
 	{
-		private VariableBase _otherVar;
-		private VariableBase _myVar;
+		private Variable _otherVar;
+		private Variable _myVar;
 		private FactorGraph _fg;
 		private BlastFromThePastFactor _mainFlastFromThePast;
 		private ArrayList<BlastFromThePastFactor> _allBlastFromThePasts = new ArrayList<BlastFromThePastFactor>();
 		
-		public ParameterBlastFromThePastHandler(VariableBase var,FactorGraph fg,
+		public ParameterBlastFromThePastHandler(Variable var,FactorGraph fg,
 				BlastFromThePastFactor originalPlastFromPast)
 		{
 			_otherVar = var;
@@ -277,20 +277,20 @@ public class FactorGraphStream
 
 	private void addStep()
 	{
-		VariableBase [] boundaryVariables = new VariableBase[_args.length];
+		Variable [] boundaryVariables = new Variable[_args.length];
 		for (int j = 0; j < _args.length; j++)
 		{
 			if (_args[j] instanceof IVariableStreamSlice)
 				boundaryVariables[j] = ((IVariableStreamSlice)_args[j]).get(_nestedGraphs.size(),true);
 			else
-				boundaryVariables[j] = (VariableBase)_args[j];
+				boundaryVariables[j] = (Variable)_args[j];
 		}
 		//Add nested graph
 		FactorGraph ng = _graph.addFactor(_repeatedGraph, boundaryVariables);
 		_nestedGraphs.add(ng);
 	}
 
-	private @Nullable VariableStreamBase getVariableStream(VariableBase var)
+	private @Nullable VariableStreamBase getVariableStream(Variable var)
 	{
 		for (int i = 0; i < _variableStreams.size(); i++)
 		{

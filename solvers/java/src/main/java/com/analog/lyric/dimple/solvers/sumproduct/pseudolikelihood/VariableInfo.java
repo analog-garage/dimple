@@ -26,7 +26,7 @@ import java.util.Set;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.util.misc.IMapList;
 
 /*
@@ -39,7 +39,7 @@ import com.analog.lyric.util.misc.IMapList;
 public class VariableInfo extends NodeInfo
 {
 	private HashSet<LinkedList<Integer>> _uniqueSamplesPerValue = new HashSet<LinkedList<Integer>>();
-	private VariableBase [] _neighbors;
+	private Variable [] _neighbors;
 	private Discrete _var;
 	private HashMap<LinkedList<Integer>,double[]> _neighbors2distributions = new HashMap<LinkedList<Integer>, double[]>();
 	private HashMap<Factor, int []> _factor2mapping = new java.util.HashMap<Factor, int[]>();
@@ -47,12 +47,12 @@ public class VariableInfo extends NodeInfo
 	//This is a factory method for creating a variable.  This is necessary since
 	//the parent class's constructor requires we already know the mapping from all variables
 	//to variables of interest.
-	public static VariableInfo createVariableInfo(VariableBase var,
-			HashMap<VariableBase,Integer> var2index)
+	public static VariableInfo createVariableInfo(Variable var,
+			HashMap<Variable,Integer> var2index)
 	{
 		
 		//Find the variables neighboring variables.
-		VariableBase [] neighbors = getNeighbors(var);
+		Variable [] neighbors = getNeighbors(var);
 		
 		//Get the indices of interest for this variable.
 		int [] indices = getIndices(var,var2index);
@@ -61,8 +61,8 @@ public class VariableInfo extends NodeInfo
 	}
 	
 
-	private VariableInfo(VariableBase var,int [] indices, VariableBase [] neighbors,
-			HashMap<VariableBase,Integer> var2index)
+	private VariableInfo(Variable var,int [] indices, Variable [] neighbors,
+			HashMap<Variable,Integer> var2index)
 	{
 		super(indices);
 		
@@ -80,7 +80,7 @@ public class VariableInfo extends NodeInfo
 			
 			for (int i = 0; i < nVars; i++)
 			{
-				VariableBase tmp = f.getSibling(i);
+				Variable tmp = f.getSibling(i);
 				
 				if (var == tmp)
 					//This is a special case
@@ -118,7 +118,7 @@ public class VariableInfo extends NodeInfo
 	}
 	
 	
-	public VariableBase getVariable()
+	public Variable getVariable()
 	{
 		return _var;
 	}
@@ -238,28 +238,28 @@ public class VariableInfo extends NodeInfo
 	}
 	
 	//uses a breadth first search to find all neighboring variables.
-	private static VariableBase [] getNeighbors(VariableBase var)
+	private static Variable [] getNeighbors(Variable var)
 	{
 		IMapList<INode> ml = requireNonNull(var.getRootGraph()).depthFirstSearchFlat(var, 2);
-		HashSet<VariableBase> neighbors = new HashSet<VariableBase>();
+		HashSet<Variable> neighbors = new HashSet<Variable>();
 		for (INode n : ml)
 		{
 			if (n.isVariable() && n != var)
 				neighbors.add(n.asVariable());
 		}
-		VariableBase [] retVal = new VariableBase[neighbors.size()];
+		Variable [] retVal = new Variable[neighbors.size()];
 		return neighbors.toArray(retVal);
 	}
 
 	
 	//uses a breadth first search to find all neighboring variables and then builds
 	//the map.
-	private static int [] getIndices(VariableBase var,HashMap<VariableBase,Integer> var2index)
+	private static int [] getIndices(Variable var,HashMap<Variable,Integer> var2index)
 	{
-		VariableBase [] neighbors = getNeighbors(var);
+		Variable [] neighbors = getNeighbors(var);
 		int [] indices = new int[neighbors.length];
 		int i = 0;
-		for (VariableBase n : neighbors)
+		for (Variable n : neighbors)
 		{
 			indices[i] = var2index.get(n);
 			i++;

@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.matlabproxy;
 
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.variables.RealJoint;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.util.misc.Matlab;
 
 @Matlab
@@ -45,7 +45,7 @@ public class PRealJointVariableVector extends PVariableVector
 		setNodes(nodes);
 	}
 	
-	public PRealJointVariableVector(VariableBase [] variables)
+	public PRealJointVariableVector(Variable [] variables)
 	{
 		super(variables);
 	}

@@ -22,7 +22,7 @@ import java.util.List;
 import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
@@ -49,10 +49,10 @@ public interface INode  extends INameable, IModelEventSource
 	public @Nullable FactorGraph asFactorGraph();
 	
 	/**
-	 * If node is a {@link VariableBase} returns it, otherwise null.
+	 * If node is a {@link Variable} returns it, otherwise null.
 	 * @see #isVariable()
 	 */
-	public @Nullable VariableBase asVariable();
+	public @Nullable Variable asVariable();
 	
 	/**
 	 * True if this is a {@link Factor}.
@@ -67,7 +67,7 @@ public interface INode  extends INameable, IModelEventSource
 	public boolean isFactorGraph();
 	
 	/**
-	 * True if this is a {@link VariableBase}
+	 * True if this is a {@link Variable}
 	 * @see #asVariable()
 	 */
 	public boolean isVariable();

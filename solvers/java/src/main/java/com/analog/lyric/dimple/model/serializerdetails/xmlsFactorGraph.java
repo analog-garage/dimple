@@ -19,15 +19,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 class xmlsFactorGraph
 {
 	public UUID _uuid = java.util.UUID.randomUUID();
 	public String _explicitName = "";
 	public String _solverClass = "";
-	public HashMap<UUID, VariableBase> _variables = new HashMap<UUID, VariableBase>();
-	public ArrayList<VariableBase> _boundaryVariables = new ArrayList<VariableBase>();
+	public HashMap<UUID, Variable> _variables = new HashMap<UUID, Variable>();
+	public ArrayList<Variable> _boundaryVariables = new ArrayList<Variable>();
 	public HashMap<UUID, xmlsFactor> _factors = new HashMap<UUID, xmlsFactor>();
 	public HashMap<Integer, xmlsFactorTable> _factorTables = new HashMap<Integer, xmlsFactorTable>(); 		
 	public HashMap<Integer, Integer> _ephemeralToSequentialId = new HashMap<Integer, Integer>(); 		

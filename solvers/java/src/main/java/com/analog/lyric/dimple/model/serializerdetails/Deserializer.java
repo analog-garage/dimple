@@ -43,7 +43,7 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -190,7 +190,7 @@ public class Deserializer
 		UUID factorUUID = java.util.UUID.fromString(factorUUIDString);
 		UUID variableUUID = java.util.UUID.fromString(variableUUIDString);
 		xmlsFactor f = _xFg._factors.get(factorUUID);
-		VariableBase v = _xFg._variables.get(variableUUID);
+		Variable v = _xFg._variables.get(variableUUID);
 		
 		if(edgeIdx >= f.getNumEdges())
 		{
@@ -198,7 +198,7 @@ public class Deserializer
 								" >= num edges in factor " + Integer.toString(f.getNumEdges()) +
 								"  factor uuid:" + f.getUUID().toString());
 		}
-		ArrayList<VariableBase> fvariables = f.getVariables();
+		ArrayList<Variable> fvariables = f.getVariables();
 		if(fvariables.get(edgeIdx) != null)
 		{
 			throw new DimpleException("ERROR: edgeIdx, " + Integer.toString(edgeIdx) +
@@ -387,7 +387,7 @@ public class Deserializer
 		if(_dbg)
 		{
 			int i = 0;
-			for(VariableBase v :  _xFg._variables.values())
+			for(Variable v :  _xFg._variables.values())
 			{
 				trace(String.format("\t%d: {%s}", i, v.toString()));
 				i++;
@@ -438,7 +438,7 @@ public class Deserializer
 	{
 		deserializeFromXMLToMemory(docName);
 		
-		VariableBase[] boundaryVariables = new VariableBase[_xFg._boundaryVariables.size()];
+		Variable[] boundaryVariables = new Variable[_xFg._boundaryVariables.size()];
 		for(int i = 0; i < _xFg._boundaryVariables.size(); ++i)
 		{
 			boundaryVariables[i] = _xFg._boundaryVariables.get(i);
@@ -477,7 +477,7 @@ public class Deserializer
 			String qualifiedHack = prefix + lastPart;
 			
 			//.... what if matlab name is different??? use combo table?
-			VariableBase[] arguments = new VariableBase[xF.getNumEdges()];
+			Variable[] arguments = new Variable[xF.getNumEdges()];
 			for(int i = 0; i < arguments.length; ++i)
 			{
 				arguments[i] = xF.getVariables().get(i);

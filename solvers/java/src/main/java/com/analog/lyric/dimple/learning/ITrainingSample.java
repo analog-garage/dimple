@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.learning;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import org.eclipse.jdt.annotation.Nullable;
@@ -33,7 +33,7 @@ public interface ITrainingSample
 	
 	public Iterable<ITrainingAssignment> getAssignments();
 	
-	public @Nullable ITrainingAssignment getAssignmentForVariable(VariableBase variable);
+	public @Nullable ITrainingAssignment getAssignmentForVariable(Variable variable);
 	
 	public @Nullable ITrainingAssignment getAssignmentForSolverVariable(ISolverVariable variable);
 	

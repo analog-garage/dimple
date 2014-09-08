@@ -29,7 +29,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorList;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
 import org.eclipse.jdt.annotation.NonNull;
@@ -44,16 +44,16 @@ public class PseudoLikelihood extends ParameterEstimator
 
 	private double _scaleFactor;
 	private HashMap<Factor,FactorInfo> _factor2factorInfo = new HashMap<Factor, FactorInfo>();
-	private HashMap<VariableBase, VariableInfo> _var2varInfo = new HashMap<VariableBase, VariableInfo>();
+	private HashMap<Variable, VariableInfo> _var2varInfo = new HashMap<Variable, VariableInfo>();
 	private @Nullable int [][] _data;
-	private HashMap<VariableBase,Integer> _var2index = new HashMap<VariableBase, Integer>();
-	private VariableBase [] _vars;
+	private HashMap<Variable,Integer> _var2index = new HashMap<Variable, Integer>();
+	private Variable [] _vars;
 	
 	//The constructor saves the factor graph, the tables of interest, and the variables
 	//It also builds the NodeInfo object mappings.
 	public PseudoLikelihood(FactorGraph fg,
 			IFactorTable[] tables,
-			VariableBase [] vars)
+			Variable [] vars)
 	{
 		super(fg, tables, new Random());
 	
@@ -72,7 +72,7 @@ public class PseudoLikelihood extends ParameterEstimator
 			_factor2factorInfo.put(f,new FactorInfo(f,_var2index));
 
 		//Retrieve all the variables that are connected to factors in the graph.
-		HashSet<VariableBase> varsConnectedToFactors = new HashSet<VariableBase>();
+		HashSet<Variable> varsConnectedToFactors = new HashSet<Variable>();
 		for (Factor f : fl)
 			for (int vi = 0, endvi = f.getSiblingCount(); vi < endvi; ++vi)
 				varsConnectedToFactors.add(f.getSibling(vi));
@@ -82,7 +82,7 @@ public class PseudoLikelihood extends ParameterEstimator
 		//variable's neighbors.
 		//Additionally it will be used to calculate the probability of a setting of a variable given
 		//the emperical distribution and the current factor weights.
-		for (VariableBase v : varsConnectedToFactors)
+		for (Variable v : varsConnectedToFactors)
 			_var2varInfo.put(v,VariableInfo.createVariableInfo(v, _var2index));
 
 	}
@@ -203,7 +203,7 @@ public class PseudoLikelihood extends ParameterEstimator
 					//for each variable
 					for (int vindex = 0, size = f.getSiblingCount(); vindex < size; ++vindex)
 					{
-						VariableBase v = f.getSibling(vindex);
+						Variable v = f.getSibling(vindex);
 						VariableInfo vi = _var2varInfo.get(v);
 						
 						//for each element of the variables domain
@@ -317,7 +317,7 @@ public class PseudoLikelihood extends ParameterEstimator
 		for (int m = 0; m < size; m++)
 		{
 			//for each variable
-			for (VariableBase v : vl)
+			for (Variable v : vl)
 			{
 				//for each factor associated with the variable
 				for (Factor f : v.getFactorsFlat())
@@ -343,7 +343,7 @@ public class PseudoLikelihood extends ParameterEstimator
 		for (int m = 0; m < size; m++)
 		{
 			//for each variable
-			for (VariableBase v : vl)
+			for (Variable v : vl)
 			{
 				double sum = 0;
 				
@@ -360,7 +360,7 @@ public class PseudoLikelihood extends ParameterEstimator
 						int [] indices = new int[nVars];
 						for (int i = 0; i < indices.length; i++)
 						{
-							VariableBase fv = f.getSibling(i);
+							Variable fv = f.getSibling(i);
 							if (fv == v)
 								indices[i] = d;
 							else

@@ -26,7 +26,7 @@ import com.analog.lyric.dimple.learning.TrainingAssignmentType;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.dimple.test.dummySolver.DummySolver;
 import com.analog.lyric.util.test.SerializationTester;
@@ -42,7 +42,7 @@ public class TestTrainingSet extends DimpleTestBase
 		
 		FactorGraph model = makeModel();
 		
-		for (VariableBase var : model.getVariables())
+		for (Variable var : model.getVariables())
 		{
 			TrainingAssignment missing = TrainingAssignment.create(var, TrainingAssignmentType.MISSING, null);
 			assertEquals(TrainingAssignmentType.MISSING, missing.getAssignmentType());
@@ -73,7 +73,7 @@ public class TestTrainingSet extends DimpleTestBase
 	
 	private void assertTrainingAssignmentInvariants(FactorGraph model, TrainingAssignment assignment)
 	{
-		VariableBase var = assignment.getVariable(model);
+		Variable var = assignment.getVariable(model);
 		TrainingAssignmentType type = assignment.getAssignmentType();
 		Object value = assignment.getValue();
 		

@@ -20,7 +20,7 @@ import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.util.misc.Matlab;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -40,7 +40,7 @@ public interface ISolverFactorGraph extends ISolverNode
 	/**
 	 * Create a new solver-specific variable representing the given model variable.
 	 */
-	public ISolverVariable createVariable(VariableBase var);
+	public ISolverVariable createVariable(Variable var);
 	
 	/**
 	 * @return solver-specific factor representing the given model factor or else null.
@@ -50,7 +50,7 @@ public interface ISolverFactorGraph extends ISolverNode
 	/**
 	 * @return solver-specific variable representing the given model variable or else null.
 	 */
-	public @Nullable ISolverVariable getSolverVariable(VariableBase var);
+	public @Nullable ISolverVariable getSolverVariable(Variable var);
 
 	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor factor);
 	public ISolverFactor createFactor(Factor factor);

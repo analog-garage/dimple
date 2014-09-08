@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INameable;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
@@ -189,7 +189,7 @@ public class Misc
 	static public double[][] getBeliefs(FactorGraph fg)
 	{
 		VariableList vs = fg.getVariablesFlat();
-		ArrayList<VariableBase> vbs = (ArrayList<VariableBase>)vs.values();
+		ArrayList<Variable> vbs = (ArrayList<Variable>)vs.values();
 		double[][] beliefs = new double[vbs.size()][];
 		for(int i = 0; i < vbs.size(); ++i)
 		{
@@ -201,7 +201,7 @@ public class Misc
 	static public FixedSchedule nodeFloodingSchedule(FactorGraph fg)
 	{
 		FixedSchedule fs = new FixedSchedule();
-		for(VariableBase vb : fg.getVariablesFlat().values())
+		for(Variable vb : fg.getVariablesFlat().values())
 		{
 			fs.add(new NodeScheduleEntry(vb));
 		}

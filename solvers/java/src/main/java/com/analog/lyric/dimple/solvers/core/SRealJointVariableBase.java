@@ -22,7 +22,7 @@ import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.variables.RealJoint;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 /**
  * @since 0.05
@@ -33,7 +33,7 @@ public abstract class SRealJointVariableBase extends SVariableBase
 	protected boolean _guessWasSet = false;
 
     
-	public SRealJointVariableBase(VariableBase var)
+	public SRealJointVariableBase(Variable var)
 	{
 		super(var);
 	}

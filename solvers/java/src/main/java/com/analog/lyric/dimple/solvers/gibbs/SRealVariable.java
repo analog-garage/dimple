@@ -43,7 +43,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.RealValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
@@ -127,7 +127,7 @@ public class SRealVariable extends SRealVariableBase
 	 */
 	
 	// Primary constructor
-	public SRealVariable(VariableBase var)
+	public SRealVariable(Variable var)
 	{
 		super(var);
 
@@ -140,7 +140,7 @@ public class SRealVariable extends SRealVariableBase
 	}
 
 	// Alternative constructor for creating from a joint domain
-	public SRealVariable(VariableBase var, Real realVar, RealDomain domain)
+	public SRealVariable(Variable var, Real realVar, RealDomain domain)
 	{
 		super(var);
 

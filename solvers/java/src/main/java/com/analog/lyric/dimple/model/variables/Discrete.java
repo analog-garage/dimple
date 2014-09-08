@@ -20,6 +20,8 @@ import static java.util.Objects.*;
 
 import java.util.Arrays;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
@@ -27,7 +29,6 @@ import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.IDiscreteSolverVariable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Internal;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class Discrete extends VariableBase
 {
@@ -171,7 +172,7 @@ public class Discrete extends VariableBase
 	 */
 	@Internal
     @Override
-	public VariableBase createJointNoFactors(VariableBase ... variables)
+	public Variable createJointNoFactors(Variable ... variables)
     {
     	final boolean thisIsFirst = (variables[0] == this);
     	final int dimensions = thisIsFirst ? variables.length: variables.length + 1;

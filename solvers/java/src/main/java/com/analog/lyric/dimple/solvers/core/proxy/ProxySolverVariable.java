@@ -21,7 +21,7 @@ import java.util.Objects;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.domains.Domain;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -32,7 +32,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 public abstract class ProxySolverVariable<Delegate extends ISolverVariable>
 	extends ProxySolverNode<Delegate> implements ISolverVariable
 {
-	protected final VariableBase _modelVariable;
+	protected final Variable _modelVariable;
 	
 	/*--------------
 	 * Construction
@@ -41,7 +41,7 @@ public abstract class ProxySolverVariable<Delegate extends ISolverVariable>
 	/**
 	 * @param modelVariable
 	 */
-	protected ProxySolverVariable(VariableBase modelVariable)
+	protected ProxySolverVariable(Variable modelVariable)
 	{
 		_modelVariable = modelVariable;
 	}
@@ -57,7 +57,7 @@ public abstract class ProxySolverVariable<Delegate extends ISolverVariable>
 	}
 	
 	@Override
-	public VariableBase getModelObject()
+	public Variable getModelObject()
 	{
 		return _modelVariable;
 	}

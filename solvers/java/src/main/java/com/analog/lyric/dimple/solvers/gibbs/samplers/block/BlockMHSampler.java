@@ -28,7 +28,7 @@ import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IBlockUpdater;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.BlockProposal;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.BlockProposalKernelRegistry;
@@ -47,7 +47,7 @@ import com.analog.lyric.util.misc.Internal;
 public class BlockMHSampler implements IBlockMCMCSampler, IBlockInitializer
 {
 	private @Nullable IBlockProposalKernel _proposalKernel;
-	private VariableBase[] _variables = new VariableBase[0];
+	private Variable[] _variables = new Variable[0];
 	private @Nullable ISolverVariableGibbs[] _sVariables;
 	private @Nullable GibbsSolverGraph _sRootGraph;
 	private @Nullable Domain[] _domains;
@@ -71,12 +71,12 @@ public class BlockMHSampler implements IBlockMCMCSampler, IBlockInitializer
 	public void attachNodes(@NonNull INode[] nodes)			// Nodes must all be variables
 	{
 		_numVariables = nodes.length;
-		_variables = new VariableBase[_numVariables];
+		_variables = new Variable[_numVariables];
 		final ISolverVariableGibbs[] sVariables = _sVariables = new ISolverVariableGibbs[_numVariables];
 		final Domain[] domains = _domains = new Domain[_numVariables];
 		for (int i = 0; i < _numVariables; i++)
 		{
-			VariableBase variable = (VariableBase)nodes[i];
+			Variable variable = (Variable)nodes[i];
 			_variables[i] = variable;
 			sVariables[i] = (ISolverVariableGibbs)variable.getSolver();
 			domains[i] = variable.getDomain();
@@ -154,7 +154,7 @@ public class BlockMHSampler implements IBlockMCMCSampler, IBlockInitializer
 	}
 	
 	@Override
-	public VariableBase[] getVariableList()
+	public Variable[] getVariableList()
 	{
 		return _variables.clone();
 	}

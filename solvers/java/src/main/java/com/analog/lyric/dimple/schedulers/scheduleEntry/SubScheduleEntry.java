@@ -23,7 +23,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -90,7 +90,7 @@ public class SubScheduleEntry implements IScheduleEntry
 		
 		//Get all the non boundary variables associated with this sub graph
 		//and add their ports.  subGraph getVariables does not return boundary variables.
-		for (VariableBase v : subGraph.getVariables())
+		for (Variable v : subGraph.getVariables())
 		{
 			for (int index = 0, end = v.getSiblingCount(); index < end; index++)
 			

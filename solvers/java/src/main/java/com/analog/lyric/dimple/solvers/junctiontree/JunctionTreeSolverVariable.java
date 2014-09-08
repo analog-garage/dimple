@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.junctiontree;
 
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.proxy.ProxySolverFactorGraph;
 import com.analog.lyric.dimple.solvers.core.proxy.ProxySolverVariable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -42,7 +42,7 @@ public class JunctionTreeSolverVariable extends ProxySolverVariable<ISolverVaria
 	/**
 	 * @param modelVariable
 	 */
-	protected JunctionTreeSolverVariable(VariableBase modelVariable, JunctionTreeSolverGraphBase<?> root)
+	protected JunctionTreeSolverVariable(Variable modelVariable, JunctionTreeSolverGraphBase<?> root)
 	{
 		super(modelVariable);
 		_root = root;

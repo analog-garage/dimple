@@ -24,7 +24,7 @@ import com.analog.lyric.dimple.factorfunctions.LinearEquation;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 
 public class CustomGaussianLinearEquation extends GaussianFactorBase
@@ -118,7 +118,7 @@ public class CustomGaussianLinearEquation extends GaussianFactorBase
 	{
 		for (int i = 0, end = factor.getSiblingCount(); i < end; i++)
 		{
-			VariableBase v = factor.getSibling(i);
+			Variable v = factor.getSibling(i);
 			
 			Domain domain = v.getDomain();
 			

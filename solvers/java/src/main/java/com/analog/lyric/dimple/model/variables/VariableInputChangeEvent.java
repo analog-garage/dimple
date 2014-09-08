@@ -54,7 +54,7 @@ public class VariableInputChangeEvent extends VariableChangeEvent
 	/**
 	 * @since 0.06
 	 */
-	VariableInputChangeEvent(VariableBase variable, @Nullable Object oldInput, @Nullable Object newInput)
+	VariableInputChangeEvent(Variable variable, @Nullable Object oldInput, @Nullable Object newInput)
 	{
 		super(variable);
 		_oldInput = oldInput;

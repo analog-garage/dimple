@@ -35,7 +35,7 @@ import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverNodeGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.Solver;
@@ -192,7 +192,7 @@ public class TestGibbsNeighborList extends DimpleTestBase
 	 * Helper methods
 	 */
 	
-	private void assertScoreNodes(VariableBase var, Node ... scoreNodes)
+	private void assertScoreNodes(Variable var, Node ... scoreNodes)
 	{
 		Set<ISolverNodeGibbs> expectedNodes = new HashSet<ISolverNodeGibbs>(scoreNodes.length);
 		for (Node node : scoreNodes)

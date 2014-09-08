@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 
 // Same as CustomGaussianSum, except the second edge is treated as the output instead of the first
@@ -35,7 +35,7 @@ public class CustomGaussianSubtract extends CustomGaussianSum
 	{
 		for (int i = 0, end = factor.getSiblingCount(); i < end; i++)
 		{
-			VariableBase v = factor.getSibling(i);
+			Variable v = factor.getSibling(i);
 			Domain domain = v.getDomain();
 			
 			// Must be unbounded univariate real

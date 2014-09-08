@@ -53,7 +53,7 @@ import com.analog.lyric.dimple.model.transform.VariableEliminator.Ordering;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.Stats;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.VariableCost;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -98,7 +98,7 @@ import com.google.common.collect.SetMultimap;
  * of one of the cliques, then instead of adding the edge, the two cliques are merged into one.
  * 
  * <li>For each clique, create a new factor that connects all of its variables by combining all of the
- * factors that have been assigned to it using {@link FactorGraph#join(VariableBase[], Factor...)}.
+ * factors that have been assigned to it using {@link FactorGraph#join(Variable[], Factor...)}.
  * 
  * <li>Create half-edges for variables that are in only one clique and therefore will not be in any edge
  * created during spanning tree construction.
@@ -151,7 +151,7 @@ public class JunctionTreeTransform
 	/**
 	 * Orders variables by id.
 	 */
-	private static final Comparator<VariableBase> _variableComparator = VariableBase.orderById;
+	private static final Comparator<Variable> _variableComparator = Variable.orderById;
 	
 	/*--------------
 	 * Construction
@@ -631,7 +631,7 @@ public class JunctionTreeTransform
 	 * @see #transform(FactorGraph)
 	 * @see #transform(FactorGraph, VariableEliminator.Ordering)
 	 */
-	public JunctionTreeTransformMap transform(FactorGraph model, ArrayList<VariableBase> eliminationOrder)
+	public JunctionTreeTransformMap transform(FactorGraph model, ArrayList<Variable> eliminationOrder)
 	{
 		// Validate variables
 		final VariableList variables = model.getVariables();
@@ -645,17 +645,17 @@ public class JunctionTreeTransform
 		if (_useConditioning)
 		{
 			// Make sure conditioned variables are at front of the ordering.
-			Collections.sort(eliminationOrder, new Comparator<VariableBase>() {
+			Collections.sort(eliminationOrder, new Comparator<Variable>() {
 				@Override
 				@NonNullByDefault(false)
-				public int compare(VariableBase var1, VariableBase var2)
+				public int compare(Variable var1, Variable var2)
 				{
 					return var1.hasFixedValue() ? (var2.hasFixedValue() ? 0 : -1) : (var2.hasFixedValue() ? 1 : 0);
 				}
 			});
 			
 			int nConditioned = 0;
-			for (VariableBase var : eliminationOrder)
+			for (Variable var : eliminationOrder)
 			{
 				if (var.hasFixedValue())
 				{
@@ -707,7 +707,7 @@ public class JunctionTreeTransform
 		
 		// 2) Make copy of the factor graph
 		
-		final ArrayList<VariableBase> variables = eliminationOrder.variables;
+		final ArrayList<Variable> variables = eliminationOrder.variables;
 		final int nVariables = variables.size();
 		final int nFactors = model.getFactorCount();
 
@@ -720,7 +720,7 @@ public class JunctionTreeTransform
 		for (Entry<Node,Node> entry : old2new.entrySet())
 		{
 			final Node source = entry.getKey();
-			final VariableBase var = source.asVariable();
+			final Variable var = source.asVariable();
 			if (var != null)
 			{
 				transformMap.addVariableMapping(var, Objects.requireNonNull(entry.getValue().asVariable()));
@@ -812,8 +812,8 @@ public class JunctionTreeTransform
 			// should be discrete.
 			for (int i = 0; i < nConditioned; ++i)
 			{
-				VariableBase sourceVariable = eliminationOrder.variables.get(i);
-				VariableBase variable = transformMap.sourceToTargetVariable(sourceVariable);
+				Variable sourceVariable = eliminationOrder.variables.get(i);
+				Variable variable = transformMap.sourceToTargetVariable(sourceVariable);
 				transformMap.addConditionedVariable(sourceVariable);
 				for (int j = 0, endj = variable.getSiblingCount(); j < endj; ++j)
 				{
@@ -834,7 +834,7 @@ public class JunctionTreeTransform
 	private List<Clique> createCliques(Ordering eliminationOrder, JunctionTreeTransformMap transformMap)
 	{
 		final List<Clique> cliques = new LinkedList<Clique>();
-		final ArrayList<VariableBase> variables = eliminationOrder.variables;
+		final ArrayList<Variable> variables = eliminationOrder.variables;
 		final int nVariables = variables.size();
 		final int nConditioned = eliminationOrder.stats.conditionedVariables();
 		final FactorGraph targetModel = transformMap.target();

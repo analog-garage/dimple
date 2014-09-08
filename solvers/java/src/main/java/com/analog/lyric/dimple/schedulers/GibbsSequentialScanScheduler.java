@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.schedulers;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
@@ -50,7 +50,7 @@ public class GibbsSequentialScanScheduler implements IGibbsScheduler
 		FixedSchedule schedule = _schedule = new FixedSchedule();
 
 		// Update all owned variables
-		for (VariableBase v : g.getVariablesFlat())
+		for (Variable v : g.getVariablesFlat())
 			schedule.add(new NodeScheduleEntry(v));
 
 		return schedule;

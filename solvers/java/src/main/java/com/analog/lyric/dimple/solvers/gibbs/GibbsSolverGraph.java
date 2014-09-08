@@ -58,7 +58,7 @@ import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.schedulers.GibbsDefaultScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.IGibbsSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
@@ -141,7 +141,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	}
 
 	@Override
-	public ISolverVariable createVariable(VariableBase var)
+	public ISolverVariable createVariable(Variable var)
 	{
 		if (var.getModelerClassName().equals("RealJoint") || var.getModelerClassName().equals("Complex"))
 			return new SRealJointVariable(var);
@@ -228,7 +228,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	}
 	
 	@Override
-	public @Nullable ISolverVariableGibbs getSolverVariable(VariableBase variable)
+	public @Nullable ISolverVariableGibbs getSolverVariable(Variable variable)
 	{
 		return (ISolverVariableGibbs)super.getSolverVariable(variable);
 	}
@@ -414,7 +414,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	protected void oneSample()
 	{
 		iterate(_updatesPerSample);
-		for (VariableBase v : _factorGraph.getVariables())
+		for (Variable v : _factorGraph.getVariables())
 		{
 			ISolverVariableGibbs vs = getSolverVariable(v);
 			vs.updateBelief();
@@ -425,7 +425,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		double totalPotential = getTotalPotential();
 		if (totalPotential < _minPotential || _firstSample)
 		{
-			for (VariableBase v : _factorGraph.getVariables())
+			for (Variable v : _factorGraph.getVariables())
 				getSolverVariable(v).saveBestSample();
 			_minPotential = totalPotential;
 			_firstSample = false;
@@ -457,7 +457,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		{
 			
 			FactorGraph ng = fgs.getNestedGraphs().get(fgs.getNestedGraphs().size()-1);
-			for (VariableBase vb : ng.getBoundaryVariables())
+			for (Variable vb : ng.getBoundaryVariables())
 			{
 				getSolverVariable(vb).randomRestart(0);
 			}
@@ -469,7 +469,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	{
 		deferDeterministicUpdates();
 		
-		for (VariableBase v : _factorGraph.getVariables())
+		for (Variable v : _factorGraph.getVariables())
 			getSolverVariable(v).randomRestart(restartCount);
 		
 		final ArrayList<IBlockInitializer> blockInitializers = _blockInitializers;
@@ -491,7 +491,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		double totalPotential = 0;
 		for (Factor f : _factorGraph.getNonGraphFactors())
 			totalPotential += getSolverFactor(f).getPotential();
-		for (VariableBase v : _factorGraph.getVariables())		// Variables contribute too because they have inputs, which are factors
+		for (Variable v : _factorGraph.getVariables())		// Variables contribute too because they have inputs, which are factors
 			totalPotential += getSolverVariable(v).getPotential();
 		return totalPotential;
 	}
@@ -561,7 +561,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		long rejectCount = 0;
 		
 		// Accumulate the rejection statistics for all variables
-		for (VariableBase v : _factorGraph.getVariables())
+		for (Variable v : _factorGraph.getVariables())
 		{
 			ISolverVariableGibbs variable = requireNonNull(getSolverVariable(v));
 			updateCount += variable.getUpdateCount();
@@ -593,7 +593,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	public final void resetRejectionRateStats()
 	{
 		// Reset the rejection statistics for all variables
-		for (VariableBase v : _factorGraph.getVariables())
+		for (Variable v : _factorGraph.getVariables())
 			requireNonNull(getSolverVariable(v)).resetRejectionRateStats();
 		
 		// Reset the rejection statistics for any BlockMHSamplers in the schedule
@@ -616,7 +616,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	{
 		_temperature = T;
 		double beta = 1/T;
-		for (VariableBase v : _factorGraph.getVariables())
+		for (Variable v : _factorGraph.getVariables())
 			getSolverVariable(v).setBeta(beta);
 	}
 	public double getTemperature() {return _temperature;}
@@ -884,7 +884,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	// Helpers for operating on pre-specified groups of variables in the graph
 	public double[] getVariableSampleValues(int variableGroupID)
 	{
-		ArrayList<VariableBase> variableList = _factorGraph.getVariableGroup(variableGroupID);
+		ArrayList<Variable> variableList = _factorGraph.getVariableGroup(variableGroupID);
 		if (variableList == null)
 		{
 			return ArrayUtil.EMPTY_DOUBLE_ARRAY;
@@ -907,7 +907,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	public void setAndHoldVariableSampleValues(int variableGroupID, Object[] values) {setAndHoldVariableSampleValues(variableGroupID, (double[])values[0]);}	// Due to the way MATLAB passes objects
 	public void setAndHoldVariableSampleValues(int variableGroupID, double[] values)
 	{
-		ArrayList<VariableBase> variableList = _factorGraph.getVariableGroup(variableGroupID);
+		ArrayList<Variable> variableList = _factorGraph.getVariableGroup(variableGroupID);
 		if (variableList != null)
 		{
 			int numVariables = variableList.size();
@@ -926,7 +926,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	}
 	public void holdVariableSampleValues(int variableGroupID)
 	{
-		ArrayList<VariableBase> variableList = _factorGraph.getVariableGroup(variableGroupID);
+		ArrayList<Variable> variableList = _factorGraph.getVariableGroup(variableGroupID);
 		if (variableList != null)
 		{
 			int numVariables = variableList.size();
@@ -944,7 +944,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	}
 	public void releaseVariableSampleValues(int variableGroupID)
 	{
-		ArrayList<VariableBase> variableList = _factorGraph.getVariableGroup(variableGroupID);
+		ArrayList<Variable> variableList = _factorGraph.getVariableGroup(variableGroupID);
 		if (variableList != null)
 		{
 			int numVariables = variableList.size();
@@ -988,7 +988,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	{
 		deferDeterministicUpdates();
 
-		for(VariableBase vb : getModel().getVariablesFlat())
+		for(Variable vb : getModel().getVariablesFlat())
 		{
 			getSolverVariable(vb).postAddFactor(null);
 		}

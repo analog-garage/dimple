@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.model.core;
 
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 /**
  * Identifies type of {@link Node}.
@@ -38,7 +38,7 @@ public enum NodeType
 	GRAPH,
 	
 	/**
-	 * Node is a {@link VariableBase}.
+	 * Node is a {@link Variable}.
 	 */
 	VARIABLE;
 }

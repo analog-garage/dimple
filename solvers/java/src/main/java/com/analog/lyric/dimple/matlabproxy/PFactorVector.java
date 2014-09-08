@@ -22,7 +22,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.util.misc.Matlab;
 
@@ -82,7 +82,7 @@ public class PFactorVector extends PNodeVector
 	
 	public PVariableVector getVariables()
 	{
-		ArrayList<VariableBase> retval = new ArrayList<VariableBase>();
+		ArrayList<Variable> retval = new ArrayList<Variable>();
 		
 		for (Node v : getModelerNodes())
 		{
@@ -94,7 +94,7 @@ public class PFactorVector extends PNodeVector
 			}
 		}
 		
-		VariableBase [] realRetVal = new VariableBase[retval.size()];
+		Variable [] realRetVal = new Variable[retval.size()];
 		retval.toArray(realRetVal);
 		return PHelpers.convertToVariableVector(realRetVal);
 		
@@ -134,7 +134,7 @@ public class PFactorVector extends PNodeVector
 				
 			for (int j = 0; j < vlsize; j++)
 			{
-				VariableBase [] tmp = ((PVariableVector)nodeVectorsi[j]).getVariableArray();
+				Variable [] tmp = ((PVariableVector)nodeVectorsi[j]).getVariableArray();
 				vl.addAll(tmp);
 			}
 			f.setDirectedTo(vl);

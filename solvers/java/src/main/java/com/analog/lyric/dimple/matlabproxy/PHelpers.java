@@ -44,6 +44,7 @@ import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
 
@@ -52,17 +53,17 @@ import com.analog.lyric.dimple.model.variables.VariableList;
 public class PHelpers
 {
 	
-	public static VariableBase [] convertToVariableArray(Object [] vlVectors)
+	public static Variable [] convertToVariableArray(Object [] vlVectors)
 	{
-		ArrayList<VariableBase> al = new ArrayList<VariableBase>();
+		ArrayList<Variable> al = new ArrayList<Variable>();
 		for (Object o : vlVectors)
 		{
 			PVariableVector vec = (PVariableVector)o;
-			for (VariableBase vb : vec.getVariableArray())
+			for (Variable vb : vec.getVariableArray())
 				al.add(vb);
 		}
 		
-		VariableBase [] retval = new VariableBase[al.size()];
+		Variable [] retval = new Variable[al.size()];
 		return al.toArray(retval);
 	}
 	
@@ -141,18 +142,20 @@ public class PHelpers
 	
 	public static PVariableVector convertToVariableVector(VariableList vars)
 	{
-		VariableBase [] array = new VariableBase[vars.size()];
+		Variable [] array = new Variable[vars.size()];
 		vars.toArray(array);
 		return convertToVariableVector(array);
 		
 	}
 	
-	static public PVariableVector convertToVariableVector(VariableBase [] variables)
+	@SuppressWarnings("deprecation")
+	static public PVariableVector convertToVariableVector(Variable [] variables)
 	{
 		final int n = variables.length;
 		if (n == 0)
 			return new PVariableVector();
 
+		// TODO: When VariableBase is removed, change this to Variable.class
 		variables = Supers.narrowArrayOf(VariableBase.class, 1, variables);
 		
 		Class<?> commonVarClass = variables.getClass().getComponentType();

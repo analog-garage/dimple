@@ -31,7 +31,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.lp.IntegerEquation;
 import com.analog.lyric.dimple.solvers.lp.LPFactorMarginalConstraint;
@@ -107,7 +107,7 @@ public class LPSolverTestCase extends DimpleTestBase
 		
 		int nVarsUsed = 0;
 		
-		for (VariableBase var : model.getVariables())
+		for (Variable var : model.getVariables())
 		{
 			SVariable svar = requireNonNull(solver.getSolverVariable(var));
 			assertSame(svar, solver.createVariable(var));
@@ -297,7 +297,7 @@ public class LPSolverTestCase extends DimpleTestBase
 			solution[i] = rand.nextDouble();
 		}
 		solver.setSolution(solution);
-		for (VariableBase var : model.getVariables())
+		for (Variable var : model.getVariables())
 		{
 			SVariable svar = requireNonNull(solver.getSolverVariable(var));
 			double[] belief = svar.getBelief();
@@ -347,7 +347,7 @@ public class LPSolverTestCase extends DimpleTestBase
 		assertEquals(-1, solver.getNumberOfVariableConstraints());
 		assertEquals(-1, solver.getNumberOfMarginalConstraints());
 		
-		for (VariableBase var : model.getVariables())
+		for (Variable var : model.getVariables())
 		{
 			assertNull(solver.getSolverVariable(var));
 		}

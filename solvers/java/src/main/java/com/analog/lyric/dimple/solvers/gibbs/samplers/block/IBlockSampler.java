@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers.block;
 
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IBlockUpdater;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 
@@ -29,5 +29,5 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
  */
 public interface IBlockSampler extends ISampler, IBlockUpdater
 {
-	public VariableBase[] getVariableList();
+	public Variable[] getVariableList();
 }

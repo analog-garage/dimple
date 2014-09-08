@@ -31,7 +31,7 @@ import com.analog.lyric.dimple.model.transform.JunctionTreeTransformMap;
 import com.analog.lyric.dimple.model.transform.JunctionTreeTransformMap.AddedJointVariable;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
@@ -158,9 +158,9 @@ public class TestJunctionTreeTransform extends DimpleTestBase
 			source.solve();
 			
 			// Copy sample values to new graph
-			for (VariableBase sourceVar : source.getVariables())
+			for (Variable sourceVar : source.getVariables())
 			{
-				VariableBase targetVar = transformMap.sourceToTargetVariable(sourceVar);
+				Variable targetVar = transformMap.sourceToTargetVariable(sourceVar);
 				
 				ISolverVariableGibbs sourceSVar = sourceGibbs.getSolverVariable(sourceVar);
 				ISolverVariableGibbs targetSVar = targetGibbs.getSolverVariable(targetVar);
@@ -176,7 +176,7 @@ public class TestJunctionTreeTransform extends DimpleTestBase
 				final Value[] inputs = new Value[added.getInputCount()];
 				for (int i = inputs.length; --i>=0;)
 				{
-					final VariableBase inputVar = added.getInput(i);
+					final Variable inputVar = added.getInput(i);
 					final ISolverVariableGibbs inputSVar = targetGibbs.getSolverVariable(inputVar);
 					inputs[i] = inputSVar.getCurrentSampleValue();
 				}
@@ -255,7 +255,7 @@ public class TestJunctionTreeTransform extends DimpleTestBase
 		VariableList variables = model.getVariables();
 		for (int i = 0; i < 100000; ++i)
 		{
-			VariableBase variable = variables.getByIndex(rand.nextInt(variables.size()));
+			Variable variable = variables.getByIndex(rand.nextInt(variables.size()));
 			if (variable instanceof Discrete)
 			{
 				Discrete discrete = (Discrete)variable;

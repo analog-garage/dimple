@@ -19,14 +19,14 @@ package com.analog.lyric.dimple.solvers.interfaces;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.domains.Domain;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 public interface ISolverVariable extends ISolverNode
 {
 	public Domain getDomain();
 	
 	@Override
-	public @Nullable VariableBase getModelObject();
+	public @Nullable Variable getModelObject();
 	
 	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixedValue);
 	public @Nullable Object getBelief();

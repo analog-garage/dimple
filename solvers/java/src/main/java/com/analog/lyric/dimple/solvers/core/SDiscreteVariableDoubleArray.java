@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import org.eclipse.jdt.annotation.NonNull;
@@ -43,7 +43,7 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	 * Construction
 	 */
 	
-	public SDiscreteVariableDoubleArray(VariableBase var)
+	public SDiscreteVariableDoubleArray(Variable var)
 	{
 		super(var);
 		_input = createDefaultMessage();

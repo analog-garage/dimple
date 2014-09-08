@@ -31,7 +31,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorBase;
 import com.analog.lyric.dimple.model.factors.FactorList;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.options.SolverOptions;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
@@ -113,13 +113,13 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	/**
 	 * {@inheritDoc}
 	 * <p>
-	 * The default implementation simply returns {@link VariableBase#getSolver()}, which
+	 * The default implementation simply returns {@link Variable#getSolver()}, which
 	 * assumes that the {@code variable}'s model is currently attached to this solver graph.
 	 * Subclasses may override this to return a more precise type or to support solvers that
 	 * can still be used when they are detached from the model.
 	 */
 	@Override
-	public @Nullable ISolverVariable getSolverVariable(VariableBase variable)
+	public @Nullable ISolverVariable getSolverVariable(Variable variable)
 	{
 		return variable.getSolver();
 	}
@@ -316,7 +316,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 			sum += f.getBetheEntropy();
 		
 		// The following would be unnecessary if we implemented inputs as single node factors
-		for (VariableBase v : _factorGraph.getVariablesFlat())
+		for (Variable v : _factorGraph.getVariablesFlat())
 			sum -= v.getBetheEntropy() * (v.getSiblingCount() - 1);
 		
 		return sum;
@@ -331,7 +331,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		// FIXME: get*Top() methods copy all the objects into a new collection.
 		// That should not be necessary.
 		
-		for (VariableBase v : getModel().getVariablesTop())
+		for (Variable v : getModel().getVariablesTop())
 			energy += v.getScore();
 
 		for (FactorBase f : getModel().getFactorsTop())
@@ -351,7 +351,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 			sum += f.getInternalEnergy();
 		
 		//The following would be unnecessary if we implemented inputs as single node factors
-		for (VariableBase v : _factorGraph.getVariablesFlat())
+		for (Variable v : _factorGraph.getVariablesFlat())
 			sum += v.getInternalEnergy();
 		
 		return sum;

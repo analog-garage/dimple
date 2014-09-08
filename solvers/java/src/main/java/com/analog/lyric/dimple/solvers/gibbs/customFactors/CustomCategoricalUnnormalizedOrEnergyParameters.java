@@ -27,7 +27,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
@@ -147,7 +147,7 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends SRealFactor
 			throw new DimpleException("Invalid factor function");
 
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		List<? extends VariableBase> siblings = _factor.getSiblings();
+		List<? extends Variable> siblings = _factor.getSiblings();
 		_numParameterEdges = _parameterDimension;
 		_hasConstantOutputs = false;
 		if (hasFactorFunctionConstructorConstants)

@@ -21,7 +21,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 public abstract class SRealVariableBase extends SVariableBase
 {
@@ -46,7 +46,7 @@ public abstract class SRealVariableBase extends SVariableBase
      * Construction
      */
     
-	public SRealVariableBase(VariableBase var)
+	public SRealVariableBase(Variable var)
 	{
 		super(var);
 	}

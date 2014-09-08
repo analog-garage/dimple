@@ -31,7 +31,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -160,7 +160,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 			{
 				for (int outputIndex : directedTo)
 				{
-					VariableBase variable = requireNonNull(factor.getSibling(outputIndex));
+					Variable variable = requireNonNull(factor.getSibling(outputIndex));
 					Value newValue = inputMsgs[outputIndex];
 					((ISolverVariableGibbs)variable.requireSolver("updateNeighborVariableValuesNow")).setCurrentSample(newValue);
 				}
@@ -177,7 +177,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 				// Full update
 				for (int outputIndex : directedTo)
 				{
-					VariableBase variable = requireNonNull(factor.getSibling(outputIndex));
+					Variable variable = requireNonNull(factor.getSibling(outputIndex));
 					Value newValue = inputMsgs[outputIndex];
 					// FIXME: is sample already set? Just need to handle side-effects?
 					((ISolverVariableGibbs)variable.requireSolver("updateNeighborVariableValuesNow")).setCurrentSample(newValue);

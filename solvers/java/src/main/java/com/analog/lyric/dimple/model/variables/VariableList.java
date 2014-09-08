@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.model.variables;
 import com.analog.lyric.util.misc.IVariableMapList;
 import com.analog.lyric.util.misc.MapList;
 
-public class VariableList extends MapList<VariableBase> implements IVariableMapList
+public class VariableList extends MapList<Variable> implements IVariableMapList
 {
 	public VariableList()
 	{
@@ -31,14 +31,14 @@ public class VariableList extends MapList<VariableBase> implements IVariableMapL
 		super(initialCapacity);
 	}
 
-	public VariableList(VariableBase [] vars)
+	public VariableList(Variable [] vars)
 	{
 		super(vars.length);
-		for (VariableBase v : vars)
+		for (Variable v : vars)
 			add(v);
 	}
 
-	public VariableList(Iterable<VariableBase> vars)
+	public VariableList(Iterable<Variable> vars)
 	{
 		super(vars);
 	}

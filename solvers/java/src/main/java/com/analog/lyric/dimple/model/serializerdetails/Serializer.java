@@ -42,7 +42,7 @@ import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.factors.DiscreteFactor;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorList;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 
 public class Serializer
@@ -54,7 +54,7 @@ public class Serializer
 		_dbg = dbg;
 	}
 	
-	private void addVariableElement(VariableBase v, int boundaryIdx, Element Parent, Document Doc)
+	private void addVariableElement(Variable v, int boundaryIdx, Element Parent, Document Doc)
 	{
 		Element e = Doc.createElement("node");
 		e.setAttribute("type", "Variable");
@@ -149,7 +149,7 @@ public class Serializer
 		for (int i = 0; i < nEdges; i++)
 		{
 			Element edgeElement = Doc.createElement("edge");
-			VariableBase targetV = (f.getConnectedNodeFlat(i));
+			Variable targetV = (f.getConnectedNodeFlat(i));
 
 			edgeElement.setAttribute("source", f.getUUID().toString());
 			edgeElement.setAttribute("target", targetV.getUUID().toString());
@@ -280,12 +280,12 @@ public class Serializer
 	        graph.setAttribute("solverClass", requireNonNull(fg.getFactorGraphFactory()).getClass().getName());
 	        //Variables
 	        int i = 0;
-	        for(VariableBase v : bl)
+	        for(Variable v : bl)
 	        {
         		addVariableElement(v, i, graph, doc);
         		i++;
 	        }
-	        for(VariableBase v : vl)
+	        for(Variable v : vl)
 	        {
 	        	if(!bl.contains(v))
 	        	{

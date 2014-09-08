@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.model.core;
 import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.dimple.events.FactorGraphVariableEvent;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 /**
 * Event raised for newly added boundary variables.
@@ -37,7 +37,7 @@ public final class BoundaryVariableAddEvent extends FactorGraphVariableEvent
 	 * @param variable is the variable that was added.
 	 * @since 0.06
 	 */
-	BoundaryVariableAddEvent(FactorGraph source, VariableBase variable)
+	BoundaryVariableAddEvent(FactorGraph source, Variable variable)
 	{
 		super(source, variable);
 	}

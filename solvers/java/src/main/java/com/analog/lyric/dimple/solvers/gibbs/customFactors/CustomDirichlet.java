@@ -25,7 +25,7 @@ import java.util.Set;
 import com.analog.lyric.dimple.factorfunctions.Dirichlet;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
@@ -137,7 +137,7 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 			{
 				_numParameterEdges = 1;
 				_constantAlphaMinusOne = null;
-				List<? extends VariableBase> siblings = _factor.getSiblings();
+				List<? extends Variable> siblings = _factor.getSiblings();
 				_alphaVariable =
 					(SRealJointVariable)((siblings.get(factorFunction.getEdgeByIndex(PARAMETER_INDEX))).getSolver());
 				_dimension = requireNonNull(_alphaVariable).getDimension();
@@ -190,7 +190,7 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 			int numOutputEdges = _numPorts - _numParameterEdges;
 			if (numOutputEdges > 0)
 			{
-				List<? extends VariableBase> siblings = _factor.getSiblings();
+				List<? extends Variable> siblings = _factor.getSiblings();
 				double[] value = new double[_dimension];
 				for (int edge = _numParameterEdges; edge < _numPorts; edge++)
 				{

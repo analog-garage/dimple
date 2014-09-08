@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.model.core;
 import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.dimple.events.FactorGraphVariableEvent;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 /**
  * Event raised for newly added variables.
@@ -39,7 +39,7 @@ public final class VariableAddEvent extends FactorGraphVariableEvent
 	 * @param variable is the newly added variable.
 	 * @since 0.06
 	 */
-	VariableAddEvent(FactorGraph source, VariableBase variable, boolean absorbedFromSubgraph)
+	VariableAddEvent(FactorGraph source, Variable variable, boolean absorbedFromSubgraph)
 	{
 		super(source, variable);
 		_absorbedFromSubgraph = absorbedFromSubgraph;

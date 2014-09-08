@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.model.repeated;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 public class DiscreteStream extends VariableStreamBase
 {
@@ -33,7 +33,7 @@ public class DiscreteStream extends VariableStreamBase
 		this(DiscreteDomain.create(domain));
 	}
 	@Override
-	protected VariableBase instantiateVariable(Domain domain)
+	protected Variable instantiateVariable(Domain domain)
 	{
 		return new Discrete((DiscreteDomain)domain);
 	}

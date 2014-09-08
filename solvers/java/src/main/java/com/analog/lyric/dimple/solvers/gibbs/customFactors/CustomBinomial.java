@@ -25,7 +25,7 @@ import java.util.Set;
 import com.analog.lyric.dimple.factorfunctions.Binomial;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
@@ -125,7 +125,7 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		List<? extends VariableBase> siblings = _factor.getSiblings();
+		List<? extends Variable> siblings = _factor.getSiblings();
 		_hasConstantNParameter = false;
 		_hasConstantOutput = false;
 		_constantNParameterValue = -1;

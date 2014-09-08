@@ -37,7 +37,7 @@ import com.analog.lyric.dimple.model.core.NodeType;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.DomainList;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
@@ -80,7 +80,7 @@ public class Factor extends FactorBase implements Cloneable
 		return _modelerFunctionName;
 	}
 	
-	public Factor(int id,FactorFunction factorFunc, VariableBase [] variables)
+	public Factor(int id,FactorFunction factorFunc, Variable [] variables)
 	{
 		super(id);
 
@@ -118,7 +118,7 @@ public class Factor extends FactorBase implements Cloneable
 	{
 		for (INode p : getSiblings())
 		{
-			VariableBase vb = (VariableBase)p;
+			Variable vb = (Variable)p;
 			if (! vb.getDomain().isDiscrete())
 			{
 				return false;
@@ -144,7 +144,7 @@ public class Factor extends FactorBase implements Cloneable
 		}
 	}
 	
-	protected void addVariable(VariableBase variable)
+	protected void addVariable(Variable variable)
 	{
 		connect(variable);
 		variable.connect(this);
@@ -203,20 +203,20 @@ public class Factor extends FactorBase implements Cloneable
 	 * </p>
 	 * @return the number of variable edges that were removed.
 	 * 
-	 * @see VariableBase#hasFixedValue()
+	 * @see Variable#hasFixedValue()
 	 */
 	public final int removeFixedVariables()
 	{
 		final int[] oldDirectedTo = getDirectedTo();
 		final int nEdges = getSiblingCount();
-		final ArrayList<VariableBase> constantVariables = new ArrayList<VariableBase>(nEdges);
+		final ArrayList<Variable> constantVariables = new ArrayList<Variable>(nEdges);
 		final IntArrayList constantIndices = new IntArrayList(nEdges);
 		IFactorTable oldFactorTable = null;
 		
 		// Visit in reverse order so that disconnect is safe.
 		for (int i = nEdges; --i>=0;)
 		{
-			final VariableBase var = getSibling(i);
+			final Variable var = getSibling(i);
 			if (var.hasFixedValue())
 			{
 				if (constantIndices.isEmpty() && isDiscrete())
@@ -274,13 +274,13 @@ public class Factor extends FactorBase implements Cloneable
 	protected FactorFunction removeFixedVariablesImpl(
 		FactorFunction oldFunction,
 		@Nullable IFactorTable oldFactorTable,
-		ArrayList<VariableBase> constantVariables,
+		ArrayList<Variable> constantVariables,
 		int[] constantIndices)
 	{
 		final Object[] constantValues = new Object[constantVariables.size()];
 		for (int i = constantValues.length; --i>=0;)
 		{
-			final VariableBase variable = constantVariables.get(i);
+			final Variable variable = constantVariables.get(i);
 			if (variable.getDomain().isDiscrete())
 			{
 				// FIXME: clean up fixed value methods so there is a base class method for getting
@@ -296,7 +296,7 @@ public class Factor extends FactorBase implements Cloneable
 		return new FactorFunctionWithConstants(oldFunction,	constantValues,	constantIndices);
 	}
 	
-	public void replace(VariableBase oldVariable, VariableBase newVariable)
+	public void replace(Variable oldVariable, Variable newVariable)
 	{
 		replaceSibling(oldVariable, newVariable);
 	}
@@ -399,7 +399,7 @@ public class Factor extends FactorBase implements Cloneable
 	}
 	
 	@Internal
-	public void replaceVariablesWithJoint(VariableBase [] variablesToJoin, VariableBase newJoint)
+	public void replaceVariablesWithJoint(Variable [] variablesToJoin, Variable newJoint)
 	{
 		throw new DimpleException("not implemented");
 	}
@@ -500,7 +500,7 @@ public class Factor extends FactorBase implements Cloneable
 
 	}
 
-	public final void setDirectedTo(VariableBase ... variables)
+	public final void setDirectedTo(Variable ... variables)
 	{
 		int [] directedTo = new int[variables.length];
 		for (int i = 0; i < directedTo.length; i++)

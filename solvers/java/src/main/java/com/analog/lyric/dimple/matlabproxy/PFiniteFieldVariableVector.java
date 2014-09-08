@@ -21,7 +21,7 @@ import static java.util.Objects.*;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.domains.FiniteFieldNumber;
 import com.analog.lyric.dimple.model.variables.FiniteFieldVariable;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.util.misc.Matlab;
 
 
@@ -56,7 +56,7 @@ public class PFiniteFieldVariableVector extends PDiscreteVariableVector
 		setNodes(nodes);
 	}
 	
-	public PFiniteFieldVariableVector(VariableBase [] variables)
+	public PFiniteFieldVariableVector(Variable [] variables)
 	{
 		super(variables);
 	}
@@ -85,7 +85,7 @@ public class PFiniteFieldVariableVector extends PDiscreteVariableVector
 	public Object [] getGuess()
 	{
 		Object[] retval = new Object[size()];
-		VariableBase [] vars = getVariableArray();
+		Variable [] vars = getVariableArray();
 		for (int i = 0; i < vars.length; i++)
 		{
 			retval[i] = ((FiniteFieldNumber)requireNonNull(vars[i].getGuess())).intValue();

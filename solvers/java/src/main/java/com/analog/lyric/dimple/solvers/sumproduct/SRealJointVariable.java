@@ -23,7 +23,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.MultivariateNormal;
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SRealJointVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -38,7 +38,7 @@ public class SRealJointVariable extends SRealJointVariableBase
 	private MultivariateNormalParameters [] _outputMsgs = new MultivariateNormalParameters[0];
 	private MultivariateNormalParameters [] _inputMsgs = new MultivariateNormalParameters[0];
 
-	public SRealJointVariable(VariableBase var)
+	public SRealJointVariable(Variable var)
 	{
 		super(var);
 		

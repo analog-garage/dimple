@@ -21,7 +21,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.IDiscreteSolverVariable;
 
 public abstract class SDiscreteVariableBase extends SVariableBase implements IDiscreteSolverVariable
@@ -30,7 +30,7 @@ public abstract class SDiscreteVariableBase extends SVariableBase implements IDi
 	protected boolean _guessWasSet = false;
 
     
-	public SDiscreteVariableBase(VariableBase var)
+	public SDiscreteVariableBase(Variable var)
 	{
 		super(var);
 	}

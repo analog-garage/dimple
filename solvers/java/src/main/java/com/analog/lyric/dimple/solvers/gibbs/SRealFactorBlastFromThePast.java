@@ -26,7 +26,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SBlastFromThePast;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import org.eclipse.jdt.annotation.Nullable;
@@ -44,7 +44,7 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 	}
 	
 	@Override
-	public void createMessages(VariableBase var, Port port)
+	public void createMessages(Variable var, Port port)
 	{
 		super.createMessages(var,port);
 		getMessages();
@@ -53,7 +53,7 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 	private void getMessages()
 	{
 		@SuppressWarnings("null")
-		VariableBase vb = (VariableBase)_portForOtherVar.node;
+		Variable vb = (Variable)_portForOtherVar.node;
 		@SuppressWarnings("null")
 		int index = _portForOtherVar.index;
 		Factor f = vb.getSibling(index);

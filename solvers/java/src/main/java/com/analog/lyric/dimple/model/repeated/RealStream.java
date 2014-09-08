@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.model.repeated;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 public class RealStream extends VariableStreamBase
 {
@@ -46,7 +46,7 @@ public class RealStream extends VariableStreamBase
 	}
 
 	@Override
-	protected VariableBase instantiateVariable(Domain domain)
+	protected Variable instantiateVariable(Domain domain)
 	{
 		return new Real((RealDomain)domain);
 	}

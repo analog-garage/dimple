@@ -24,7 +24,7 @@ import org.junit.Test;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -40,9 +40,9 @@ public class SolverMiscSmallTest extends DimpleTestBase
 		FactorGraph fgMid  = fgRoot.getGraphByName("Mid");
 		FactorGraph fgLeaf = fgRoot.getGraphByName("Mid.Leaf");
 				
-		VariableBase vRootO1 = fgRoot.getVariableByName("vRootO1");
-		VariableBase vMidO1 = fgRoot.getVariableByName("Mid.vMidO1");
-		VariableBase vLeafO1 = fgRoot.getVariableByName("Mid.Leaf.vLeafO1");
+		Variable vRootO1 = fgRoot.getVariableByName("vRootO1");
+		Variable vMidO1 = fgRoot.getVariableByName("Mid.vMidO1");
+		Variable vLeafO1 = fgRoot.getVariableByName("Mid.Leaf.vLeafO1");
 		Factor fRoot = fgRoot.getFactorByName("fRoot");
 		Factor fMid = fgRoot.getFactorByName("Mid.fMid");
 		Factor fLeaf = fgRoot.getFactorByName("Mid.Leaf.fLeaf");

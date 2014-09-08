@@ -24,7 +24,7 @@ import com.analog.lyric.collect.PrimitiveIterator;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.Domain;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import org.eclipse.jdt.annotation.Nullable;
@@ -67,7 +67,7 @@ public class DoubleListTrainingSample implements IVariableListTrainingSample
 	public void applyAssignmentsThroughModel(FactorGraph model)
 	{
 		PrimitiveIterator.OfDouble assignmentIter = _assignments.iterator();
-		for (VariableBase var : _trainingSet.getVariableList())
+		for (Variable var : _trainingSet.getVariableList())
 		{
 			applyToVariable(var, assignmentIter.nextDouble());
 		}
@@ -77,7 +77,7 @@ public class DoubleListTrainingSample implements IVariableListTrainingSample
 	public void applyAssignmentsThroughSolver(ISolverFactorGraph solver)
 	{
 		PrimitiveIterator.OfDouble assignmentIter = _assignments.iterator();
-		for (VariableBase var : _trainingSet.getVariableList())
+		for (Variable var : _trainingSet.getVariableList())
 		{
 			applyToVariable(var, assignmentIter.nextDouble());
 		}
@@ -90,14 +90,14 @@ public class DoubleListTrainingSample implements IVariableListTrainingSample
 	}
 
 	@Override
-	public @Nullable ITrainingAssignment getAssignmentForVariable(VariableBase variable)
+	public @Nullable ITrainingAssignment getAssignmentForVariable(Variable variable)
 	{
-		Iterator<VariableBase> variables = getTrainingSet().getVariableList().iterator();
+		Iterator<Variable> variables = getTrainingSet().getVariableList().iterator();
 		PrimitiveIterator.OfDouble assignments = _assignments.iterator();
 
 		while (variables.hasNext())
 		{
-			VariableBase curVar = variables.next();
+			Variable curVar = variables.next();
 			double assignment = assignments.nextDouble();
 			if (curVar == variable)
 			{
@@ -111,7 +111,7 @@ public class DoubleListTrainingSample implements IVariableListTrainingSample
 	@Override
 	public @Nullable ITrainingAssignment getAssignmentForSolverVariable(ISolverVariable variable)
 	{
-		final VariableBase modelVar = variable.getModelObject();
+		final Variable modelVar = variable.getModelObject();
 		return modelVar != null ? getAssignmentForVariable(modelVar) : null;
 	}
 
@@ -129,7 +129,7 @@ public class DoubleListTrainingSample implements IVariableListTrainingSample
 	 * AllDoubleTrainingSample methods
 	 */
 	
-	public static void applyToVariable(VariableBase var, double value)
+	public static void applyToVariable(Variable var, double value)
 	{
 		TrainingAssignmentType type = assignmentTypeForVariable(var, value);
 		Object objValue = type != TrainingAssignmentType.MISSING ? value : null;
@@ -143,7 +143,7 @@ public class DoubleListTrainingSample implements IVariableListTrainingSample
 	 * {@link TrainingAssignmentType#VALUE}.
 	 * @throws DimpleException if {@code value} is not a valid member of {@code variable}'s domain.
 	 */
-	public static TrainingAssignmentType assignmentTypeForVariable(VariableBase variable, double value)
+	public static TrainingAssignmentType assignmentTypeForVariable(Variable variable, double value)
 	{
 		TrainingAssignmentType type = TrainingAssignmentType.MISSING;
 		
@@ -160,7 +160,7 @@ public class DoubleListTrainingSample implements IVariableListTrainingSample
 		return type;
 	}
 	
-	protected ITrainingAssignment makeAssignment(VariableBase var, double value)
+	protected ITrainingAssignment makeAssignment(Variable var, double value)
 	{
 		TrainingAssignmentType type = assignmentTypeForVariable(var, value);
 		Object objValue = type != TrainingAssignmentType.MISSING ? value : null;
@@ -173,7 +173,7 @@ public class DoubleListTrainingSample implements IVariableListTrainingSample
 	
 	private class AssignmentIterator implements Iterator<ITrainingAssignment>
 	{
-		private final Iterator<VariableBase> _variables = getTrainingSet().getVariableList().iterator();
+		private final Iterator<Variable> _variables = getTrainingSet().getVariableList().iterator();
 		private final PrimitiveIterator.OfDouble _values = _assignments.iterator();
 		
 		@Override

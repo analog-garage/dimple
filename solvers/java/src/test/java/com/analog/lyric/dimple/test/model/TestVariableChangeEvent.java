@@ -33,14 +33,14 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableChangeEvent;
 import com.analog.lyric.dimple.model.variables.VariableFixedValueChangeEvent;
 import com.analog.lyric.dimple.model.variables.VariableInputChangeEvent;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
 /**
- * Test for {@link VariableChangeEvent}s on {@link VariableBase}.
+ * Test for {@link VariableChangeEvent}s on {@link Variable}.
  * 
  * @since 0.06
  * @author Christopher Barber
@@ -164,7 +164,7 @@ public class TestVariableChangeEvent extends DimpleTestBase
 		@Override
 		public void handleEvent(VariableFixedValueChangeEvent event)
 		{
-			VariableBase var = event.getModelObject();
+			Variable var = event.getModelObject();
 			assertEquals(var.getFixedValueObject(), event.getNewValue());
 			switch (event.getType())
 			{
@@ -185,7 +185,7 @@ public class TestVariableChangeEvent extends DimpleTestBase
 			_events.add(event);
 		}
 		
-		void assertEvent(VariableBase var, VariableFixedValueChangeEvent.Type type,
+		void assertEvent(Variable var, VariableFixedValueChangeEvent.Type type,
 			@Nullable Object oldValue, @Nullable Object newValue)
 		{
 			VariableFixedValueChangeEvent event = _events.poll();
@@ -208,7 +208,7 @@ public class TestVariableChangeEvent extends DimpleTestBase
 		@Override
 		public void handleEvent(VariableInputChangeEvent event)
 		{
-			VariableBase var = event.getModelObject();
+			Variable var = event.getModelObject();
 			if (event.getNewInput() != null)
 			{
 				assertEquals(var.getInputObject(), event.getNewInput());
@@ -230,7 +230,7 @@ public class TestVariableChangeEvent extends DimpleTestBase
 			_events.add(event);
 		}
 		
-		void assertEvent(VariableBase var, VariableInputChangeEvent.Type type,
+		void assertEvent(Variable var, VariableInputChangeEvent.Type type,
 			@Nullable Object oldInput, @Nullable Object newInput)
 		{
 			VariableInputChangeEvent event = _events.poll();

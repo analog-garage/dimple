@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.test.dummySolver;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -55,7 +55,7 @@ public class DummyFactorGraph extends SFactorGraphBase
 
 	
 	@Override
-	public ISolverVariable createVariable(VariableBase var)
+	public ISolverVariable createVariable(Variable var)
 	{
 		if (var instanceof Discrete)
 		{

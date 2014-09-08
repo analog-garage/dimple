@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.model.repeated;
 
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 
 public class VariableStreamSlice implements IVariableStreamSlice
@@ -39,12 +39,12 @@ public class VariableStreamSlice implements IVariableStreamSlice
 		return _stream;
 	}
 	@Override
-	public VariableBase get(int i) 
+	public Variable get(int i) 
 	{
 		return getStream().get(_start+i);
 	}
 	@Override
-	public VariableBase get(int i,boolean createVar) 
+	public Variable get(int i,boolean createVar) 
 	{
 		return getStream().get(_start+i,createVar);
 	}

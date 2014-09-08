@@ -34,7 +34,7 @@ public abstract class VariableChangeEvent extends DataEvent
 	 * Construction
 	 */
 	
-	VariableChangeEvent(VariableBase variable)
+	VariableChangeEvent(Variable variable)
 	{
 		super(variable);
 	}
@@ -44,8 +44,8 @@ public abstract class VariableChangeEvent extends DataEvent
 	 */
 	
 	@Override
-	public VariableBase getModelObject()
+	public Variable getModelObject()
 	{
-		return (VariableBase)source;
+		return (Variable)source;
 	}
 }

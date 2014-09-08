@@ -46,7 +46,7 @@ import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
@@ -83,7 +83,7 @@ public class TestDimpleEventListener extends DimpleTestBase
 	{
 		private static final long serialVersionUID = 1L;
 
-		TestVariableEvent(VariableBase source)
+		TestVariableEvent(Variable source)
 		{
 			super(source);
 		}
@@ -158,12 +158,12 @@ public class TestDimpleEventListener extends DimpleTestBase
 		model.setName("model");
 		assertSame(env, model.getEnvironment());
 		
-		VariableBase v1 = new Real();
+		Variable v1 = new Real();
 		model.addVariables(v1);
 		v1.setName("v1");
 		
 		FactorGraph template = new FactorGraph();
-		VariableBase b1 = new Real();
+		Variable b1 = new Real();
 		template.addBoundaryVariables(b1);
 		template.addFactor(new Normal(0.0, 1.0), b1).setName("normal");
 		

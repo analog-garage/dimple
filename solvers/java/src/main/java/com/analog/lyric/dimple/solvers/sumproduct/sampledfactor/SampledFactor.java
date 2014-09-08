@@ -20,7 +20,7 @@ import static java.util.Objects.*;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
@@ -60,7 +60,7 @@ import org.eclipse.jdt.annotation.Nullable;
 public class SampledFactor extends SFactorBase
 {
 	private final MessageTranslatorBase[] _messageTranslator;
-	private final VariableBase[] _privateVariables;
+	private final Variable[] _privateVariables;
 	private final FactorGraph _messageGraph;
 	
 	public final static int DEFAULT_SAMPLES_PER_UPDATE = 1000;
@@ -73,12 +73,12 @@ public class SampledFactor extends SFactorBase
 				
 		int numSiblings = factor.getSiblingCount();
 		_messageTranslator = new MessageTranslatorBase[numSiblings];
-		_privateVariables = new VariableBase[numSiblings];
+		_privateVariables = new Variable[numSiblings];
 
 		for (int edge = 0; edge < numSiblings; edge++)
 		{
 			// Create a private copy of each sibling variable to use in the message graph
-			VariableBase var = factor.getSibling(edge);
+			Variable var = factor.getSibling(edge);
 			_privateVariables[edge] = var.clone();
 
 			// Create a message translator based on the variable type

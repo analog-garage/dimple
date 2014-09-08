@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import org.eclipse.jdt.annotation.Nullable;
@@ -251,7 +251,7 @@ public class SRealFactor extends SFactorBase
 
 		for (int iPort = 0; iPort < _numPorts; iPort++)
 	    {
-	    	VariableBase var = factor.getSibling(iPort);
+	    	Variable var = factor.getSibling(iPort);
 	    	@SuppressWarnings("null")
 			Object [] messages = requireNonNull(var.getSolver().createMessages(this));
 

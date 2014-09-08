@@ -42,7 +42,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorBase;
 import com.analog.lyric.dimple.model.factors.FactorList;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.Iterators;
@@ -214,7 +214,7 @@ public class VariableEliminator
 	 * @param rand is the random number generator used to randomly
 	 * break ties for variables with the same cost. If null, then
 	 * ties will be broken deterministically by favoring the variable
-	 * with the lower id ({@link VariableBase#getId()}), which is useful
+	 * with the lower id ({@link Variable#getId()}), which is useful
 	 * for testing.
 	 */
 	public VariableEliminator(FactorGraph model, boolean useConditioning, @Nullable Random rand)
@@ -385,8 +385,8 @@ public class VariableEliminator
 			nAttempts = nFunctions;
 		}
 		
-		ArrayList<VariableBase> curList = new ArrayList<VariableBase>(eliminator._nVariables);
-		ArrayList<VariableBase> bestList = new ArrayList<VariableBase>(eliminator._nVariables);
+		ArrayList<Variable> curList = new ArrayList<Variable>(eliminator._nVariables);
+		ArrayList<Variable> bestList = new ArrayList<Variable>(eliminator._nVariables);
 		Stats bestStats = null;
 		
 		Random rand = eliminator.getRandomizer();
@@ -438,7 +438,7 @@ public class VariableEliminator
 			
 			if (bestStats == null || curStats.compareTo(bestStats, threshold) < 0)
 			{
-				ArrayList<VariableBase> tmp = curList;
+				ArrayList<Variable> tmp = curList;
 				curList = bestList;
 				curList.clear();
 				bestList = tmp;
@@ -534,10 +534,10 @@ public class VariableEliminator
 	@Immutable
 	public static class Ordering
 	{
-		public final ArrayList<VariableBase> variables;
+		public final ArrayList<Variable> variables;
 		public final Stats stats;
 		
-		Ordering(ArrayList<VariableBase> variables, Stats stats)
+		Ordering(ArrayList<Variable> variables, Stats stats)
 		{
 			this.variables = variables;
 			this.stats = stats;
@@ -557,7 +557,7 @@ public class VariableEliminator
 	 * <p>
 	 * @see VariableEliminator#orderIterator(VariableCost)
 	 */
-	public static class OrderIterator implements Iterator<VariableBase>
+	public static class OrderIterator implements Iterator<Variable>
 	{
 		private final VariableEliminator _eliminator;
 		private final CostFunction _costFunction;
@@ -595,7 +595,7 @@ public class VariableEliminator
 		}
 
 		@Override
-		public @Nullable VariableBase next()
+		public @Nullable Variable next()
 		{
 			final CostFunction costFunction = _costFunction;
 			final IHeap<Var> heap = _heap;
@@ -918,7 +918,7 @@ public class VariableEliminator
 		 * <p>
 		 * Note: this attribute is not used by {@link #compareTo} or {@link #meetsThreshold}.
 		 * <p>
-		 * @see VariableBase#hasFixedValue()
+		 * @see Variable#hasFixedValue()
 		 * @see VariableEliminator#usesConditioning()
 		 */
 		public int conditionedVariables()
@@ -1052,13 +1052,13 @@ public class VariableEliminator
 			_maxClique = Math.max(_maxClique, size);
 			_maxCliqueCardinality = Math.max(_maxCliqueCardinality, cardinality);
 			
-			final VariableBase variable = var._variable;
+			final Variable variable = var._variable;
 			final int nFactors = variable.getSiblingCount();
 			if (nFactors > 1)
 			{
 				// If there is more than one factor whose variables are wholly contained by this clique,
 				// they will need to be merged.
-				final Set<VariableBase> variables = Sets.newHashSetWithExpectedSize(size);
+				final Set<Variable> variables = Sets.newHashSetWithExpectedSize(size);
 				variables.add(variable);
 				for (VarLink link = var._neighborList._next; link.hasVar(); link = link._next)
 				{
@@ -1098,7 +1098,7 @@ public class VariableEliminator
 			++_factorsWithDuplicateVariables;
 		}
 
-		private void addVariableWithDuplicateEdges(VariableBase variable)
+		private void addVariableWithDuplicateEdges(Variable variable)
 		{
 			++_variablesWithDuplicateEdges;
 		}
@@ -1111,7 +1111,7 @@ public class VariableEliminator
 	 */
 	public static class Var
 	{
-		final VariableBase _variable;
+		final Variable _variable;
 		final VarLink _neighborList = new VarLink();
 		final Map<Var, VarLink> _neighborMap;
 		
@@ -1133,7 +1133,7 @@ public class VariableEliminator
 		 * Construction
 		 */
 		
-		private Var(VariableBase variable, double incrementalCost, boolean isConditioned)
+		private Var(Variable variable, double incrementalCost, boolean isConditioned)
 		{
 			_variable = variable;
 			_incrementalCost = incrementalCost;
@@ -1212,7 +1212,7 @@ public class VariableEliminator
 		/**
 		 * The underlying variable.
 		 */
-		public VariableBase variable()
+		public Variable variable()
 		{
 			return _variable;
 		}
@@ -1502,9 +1502,9 @@ public class VariableEliminator
 	{
 		final List<Var> list = new LinkedList<Var>();
 		final VariableList variables = _model.getVariables();
-		final Map<VariableBase,Var> map = new LinkedHashMap<VariableBase,Var>(variables.size());
+		final Map<Variable,Var> map = new LinkedHashMap<Variable,Var>(variables.size());
 
-		for (VariableBase variable : variables)
+		for (Variable variable : variables)
 		{
 			if (!variable.getDomain().isDiscrete() && !isConditioned(variable))
 			{
@@ -1523,14 +1523,14 @@ public class VariableEliminator
 		}
 
 		Set<Factor> factorsWithDuplicateVars = new HashSet<Factor>();
-		Set<VariableBase> variablesWithDuplicateEdges = new HashSet<VariableBase>();
+		Set<Variable> variablesWithDuplicateEdges = new HashSet<Variable>();
 		
 		for (Var var : map.values())
 		{
 			if (var._isConditioned)
 				continue;
 			
-			final VariableBase variable = var._variable;
+			final Variable variable = var._variable;
 
 			for (int fi = 0, nFactors = variable.getSiblingCount(); fi < nFactors; ++fi)
 			{
@@ -1544,7 +1544,7 @@ public class VariableEliminator
 
 				for (int vi = 0, nVariables = factor.getSiblingCount(); vi < nVariables; ++vi)
 				{
-					final VariableBase neighborVariable = factor.getSibling(vi);
+					final Variable neighborVariable = factor.getSibling(vi);
 					if (neighborVariable == variable)
 						continue;
 					
@@ -1582,7 +1582,7 @@ public class VariableEliminator
 			stats.addFactorWithDuplicateVars(factor);
 		}
 		
-		for (VariableBase variable : variablesWithDuplicateEdges)
+		for (Variable variable : variablesWithDuplicateEdges)
 		{
 			stats.addVariableWithDuplicateEdges(variable);
 		}
@@ -1594,7 +1594,7 @@ public class VariableEliminator
 	 * Generates a cost-increment in the range [0, 1) to break ties between
 	 * variables with same integer cost.
 	 */
-	private double generateCostIncrement(VariableBase variable)
+	private double generateCostIncrement(Variable variable)
 	{
 		final Random rand = _rand;
 		if (rand == null)
@@ -1607,7 +1607,7 @@ public class VariableEliminator
 		}
 	}
 	
-	private boolean isConditioned(VariableBase variable)
+	private boolean isConditioned(Variable variable)
 	{
 		return _useConditioning && variable.hasFixedValue();
 	}

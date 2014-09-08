@@ -46,7 +46,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.DimpleOptions;
 import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
@@ -106,7 +106,7 @@ public class SumProductSolverGraph extends SFactorGraphBase
 	
 
 	@Override
-	public ISolverVariable createVariable(VariableBase var)
+	public ISolverVariable createVariable(Variable var)
 	{
 		if (var.getModelerClassName().equals("FiniteFieldVariable"))
 			return new SFiniteFieldVariable(var);
@@ -505,7 +505,7 @@ public class SumProductSolverGraph extends SFactorGraphBase
 	}
 	
 	public void pseudoLikelihood(IFactorTable [] fts,
-			VariableBase [] vars,
+			Variable [] vars,
 			Object [][] data,
 			int numSteps,
 			double stepScaleFactor)
@@ -513,7 +513,7 @@ public class SumProductSolverGraph extends SFactorGraphBase
 		
 	}
 	
-	public static @Nullable int [][] convertObjects2Indices(VariableBase [] vars, Object [][] data)
+	public static @Nullable int [][] convertObjects2Indices(Variable [] vars, Object [][] data)
 	{
 		
 		return null;
@@ -548,7 +548,7 @@ public class SumProductSolverGraph extends SFactorGraphBase
 		{
 			((STableFactor)f.getSolver()).initializeDerivativeMessages(ft.sparseSize());
 		}
-		for (VariableBase vb : _factorGraph.getVariablesFlat())
+		for (Variable vb : _factorGraph.getVariablesFlat())
 			((SDiscreteVariable)vb.getSolver()).initializeDerivativeMessages(ft.sparseSize());
 		
 		setCalculateDerivative(true);
@@ -564,7 +564,7 @@ public class SumProductSolverGraph extends SFactorGraphBase
 				result -= stf.calculateDerivativeOfBetheEntropyWithRespectToWeight(weightIndex);
 						
 			}
-			for (VariableBase v : _factorGraph.getVariablesFlat())
+			for (Variable v : _factorGraph.getVariablesFlat())
 			{
 				SDiscreteVariable sv = (SDiscreteVariable)v.getSolver();
 				result += sv.calculateDerivativeOfInternalEnergyWithRespectToWeight(weightIndex);
@@ -587,7 +587,7 @@ public class SumProductSolverGraph extends SFactorGraphBase
 			STableFactor stf = (STableFactor)f.getSolver();
 			stf.setUpdateDerivative(val);
 		}
-		for (VariableBase vb : _factorGraph.getVariablesFlat())
+		for (Variable vb : _factorGraph.getVariablesFlat())
 		{
 			SDiscreteVariable sv = (SDiscreteVariable)vb.getSolver();
 			sv.setCalculateDerivative(val);

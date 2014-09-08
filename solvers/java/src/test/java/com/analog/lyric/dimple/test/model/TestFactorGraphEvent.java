@@ -43,7 +43,7 @@ import com.analog.lyric.dimple.model.core.VariableAddEvent;
 import com.analog.lyric.dimple.model.core.VariableRemoveEvent;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.util.test.SerializationTester;
 
@@ -125,11 +125,11 @@ public class TestFactorGraphEvent extends DimpleTestBase
 		assertFalse(subgraphAddEvent.wasAbsorbedFromSubgraph());
 		handler.assertNoEvents();
 		
-		VariableBase x = subgraph.getVariableByName("x");
+		Variable x = subgraph.getVariableByName("x");
 		assertNotNull(x);
-		VariableBase y = subgraph.getVariableByName("y");
+		Variable y = subgraph.getVariableByName("y");
 		assertNotNull(y);
-		VariableBase z = subgraph.getVariableByName("z");
+		Variable z = subgraph.getVariableByName("z");
 		assertNull(z); // boundary variable from template is not instantiated in generated graph
 
 		Factor f2 = subgraph.getFactorByName("f2");

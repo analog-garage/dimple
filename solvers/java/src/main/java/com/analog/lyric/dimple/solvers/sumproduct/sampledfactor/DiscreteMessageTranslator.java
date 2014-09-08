@@ -21,7 +21,7 @@ import java.util.Objects;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.sumproduct.SDiscreteVariable;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -30,7 +30,7 @@ public class DiscreteMessageTranslator extends MessageTranslatorBase
 	private @Nullable double[] _inputMessage;
 	private @Nullable double[] _outputMessage;
 
-	public DiscreteMessageTranslator(Port port, VariableBase variable)
+	public DiscreteMessageTranslator(Port port, Variable variable)
 	{
 		super(port, variable);
 	

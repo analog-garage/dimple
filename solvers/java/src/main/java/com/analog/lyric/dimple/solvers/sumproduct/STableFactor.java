@@ -31,7 +31,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
 import com.analog.lyric.dimple.solvers.core.kbest.IKBestFactor;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorEngine;
@@ -592,7 +592,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 				msgs[i][j] = new double[_inputMsgs[j].length];
 	}
 	
-	public double [] getMessageDerivative(int wn, VariableBase var)
+	public double [] getMessageDerivative(int wn, Variable var)
 	{
 		int index = getFactor().getPortNum(var);
 		return Objects.requireNonNull(_outPortDerivativeMsgs)[wn][index];

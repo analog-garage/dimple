@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.model.core;
 import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.dimple.events.FactorGraphVariableEvent;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 /**
  * Event raised when a variable is removed from a graph.
@@ -37,7 +37,7 @@ public final class VariableRemoveEvent extends FactorGraphVariableEvent
 	 * @param variable is the variable that was removed.
 	 * @since 0.06
 	 */
-	VariableRemoveEvent(FactorGraph source, VariableBase variable)
+	VariableRemoveEvent(FactorGraph source, Variable variable)
 	{
 		super(source, variable);
 	}

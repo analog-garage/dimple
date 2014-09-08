@@ -21,7 +21,7 @@ import static java.util.Objects.*;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -45,7 +45,7 @@ public class DummyDiscreteVariable extends SDiscreteVariableBase
 		_input = (double[])getDefaultMessage(null);
 	}
 	
-	public VariableBase getVariable()
+	public Variable getVariable()
 	{
 		return _var;
 	}

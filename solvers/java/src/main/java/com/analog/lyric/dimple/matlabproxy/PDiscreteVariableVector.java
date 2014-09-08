@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.matlabproxy;
 
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.util.misc.Matlab;
 
 
@@ -62,7 +62,7 @@ public class PDiscreteVariableVector extends PVariableVector
 		setNodes(nodes);
 	}
 	
-	public PDiscreteVariableVector(VariableBase [] variables)
+	public PDiscreteVariableVector(Variable [] variables)
 	{
 		super(variables);
 	}

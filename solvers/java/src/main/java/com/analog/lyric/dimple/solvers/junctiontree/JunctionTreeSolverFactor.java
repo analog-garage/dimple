@@ -35,7 +35,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.transform.JunctionTreeTransformMap;
 import com.analog.lyric.dimple.model.transform.JunctionTreeTransformMap.AddedJointVariable;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -258,12 +258,12 @@ public class JunctionTreeSolverFactor extends SFactorBase
 
 			// Create mapping from target vars to their index in source factor
 			final int nSourceVars = sourceFactor.getSiblingCount();
-			final Map<VariableBase,Integer> targetVarToSourceIndex =
-				new LinkedHashMap<VariableBase, Integer>(nSourceVars);
+			final Map<Variable,Integer> targetVarToSourceIndex =
+				new LinkedHashMap<Variable, Integer>(nSourceVars);
 			for (int si = 0; si < nSourceVars; ++si)
 			{
-				final VariableBase sourceVar = sourceFactor.getSibling(si);
-				final VariableBase targetVar = transformMap.sourceToTargetVariable(sourceVar);
+				final Variable sourceVar = sourceFactor.getSibling(si);
+				final Variable targetVar = transformMap.sourceToTargetVariable(sourceVar);
 				
 				if (null != targetVarToSourceIndex.put(targetVar, si))
 				{
@@ -279,7 +279,7 @@ public class JunctionTreeSolverFactor extends SFactorBase
 			final IntArrayList targetVarsToSplit = new IntArrayList();
 			for (int ti = 0; ti < nTargetVars; ++ti)
 			{
-				final VariableBase targetVar = targetFactor.getSibling(ti);
+				final Variable targetVar = targetFactor.getSibling(ti);
 				final AddedJointVariable<?> addedJointVar =
 					transformMap.getAddedDeterministicVariable(targetVar);
 				if (addedJointVar == null)
@@ -299,7 +299,7 @@ public class JunctionTreeSolverFactor extends SFactorBase
 					final int nInputs = addedJointVar.getInputCount();
 					for (int i = 0; i < nInputs; ++i)
 					{
-						final VariableBase inputVar = addedJointVar.getInput(i);
+						final Variable inputVar = addedJointVar.getInput(i);
 						Integer index = targetVarToSourceIndex.remove(inputVar);
 						if (index != null)
 						{
@@ -338,7 +338,7 @@ public class JunctionTreeSolverFactor extends SFactorBase
 				final DiscreteDomain[] conditionedDomains = new DiscreteDomain[nConditioned];
 				
 				int i = 0;
-				for (Entry<VariableBase, Integer> entry : targetVarToSourceIndex.entrySet())
+				for (Entry<Variable, Integer> entry : targetVarToSourceIndex.entrySet())
 				{
 					final Discrete variable = entry.getKey().asDiscreteVariable();
 					final int sourceIndex = entry.getValue();

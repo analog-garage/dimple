@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.solvers.sumproduct.pseudolikelihood;
 import java.util.HashMap;
 
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 /*
  * The factor info is used to build an empirical distribution over the samples
@@ -29,7 +29,7 @@ public class FactorInfo extends NodeInfo
 {
 
 	//Given a variable-to-index map, create the indices of interest.
-	public static int [] getVarIndices(Factor f,HashMap<VariableBase,Integer> var2index )
+	public static int [] getVarIndices(Factor f,HashMap<Variable,Integer> var2index )
 	{
 		final int nVars = f.getSiblingCount();
 		int [] retval = new int[nVars];
@@ -42,7 +42,7 @@ public class FactorInfo extends NodeInfo
 		return retval;
 	}
 	
-	public FactorInfo(Factor f, HashMap<VariableBase,Integer> var2index)
+	public FactorInfo(Factor f, HashMap<Variable,Integer> var2index)
 	{
 		super(getVarIndices(f, var2index));
 	}

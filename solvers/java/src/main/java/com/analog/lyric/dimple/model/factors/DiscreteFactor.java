@@ -31,7 +31,7 @@ import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 /**
  * A factor with only {@link Discrete} variables.
@@ -48,7 +48,7 @@ public class DiscreteFactor extends Factor
 	 * Construction
 	 */
 	
-	public DiscreteFactor(int id, FactorFunction factorFunc, VariableBase[] variables)
+	public DiscreteFactor(int id, FactorFunction factorFunc, Variable[] variables)
 	{
 		super(id, factorFunc, variables);
 		
@@ -114,7 +114,7 @@ public class DiscreteFactor extends Factor
 	protected FactorFunction removeFixedVariablesImpl(
 		FactorFunction oldFunction,
 		@Nullable IFactorTable oldFactorTable,
-		ArrayList<VariableBase> constantVariables,
+		ArrayList<Variable> constantVariables,
 		int[] constantIndices)
 	{
 		requireNonNull(oldFactorTable);
@@ -131,11 +131,11 @@ public class DiscreteFactor extends Factor
 	}
 	
 	@Override
-	public void replaceVariablesWithJoint(VariableBase [] variablesToJoin, VariableBase newJoint)
+	public void replaceVariablesWithJoint(Variable [] variablesToJoin, Variable newJoint)
 	{
 		//Support a mixture of variables referred to in this factor and previously not referred to in this factor
-		List<? extends VariableBase> ports = getSiblings();
-		ArrayList<VariableBase> newVariables = new ArrayList<VariableBase>();
+		List<? extends Variable> ports = getSiblings();
+		ArrayList<Variable> newVariables = new ArrayList<Variable>();
 		
 
 		//First we figure out which variables are not currently referred to in this factor.
@@ -167,7 +167,7 @@ public class DiscreteFactor extends Factor
 			IFactorTable newTable = getFactorTable().createTableWithNewVariables(newDomains);
 			setFactorFunction(new TableFactorFunction(getFactorFunction().getName(), newTable));
 			
-			for (VariableBase v : newVariables)
+			for (Variable v : newVariables)
 				addVariable(v);
 		}
 
@@ -215,7 +215,7 @@ public class DiscreteFactor extends Factor
 		addVariable(newJoint);
 
 		//Tell all old variables to remove this factor graph.
-		for (VariableBase v : variablesToJoin)
+		for (Variable v : variablesToJoin)
 			v.remove(this);
 		
 		

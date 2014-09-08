@@ -36,7 +36,7 @@ import com.analog.lyric.dimple.model.transform.VariableEliminator.VariableCost;
 import com.analog.lyric.dimple.model.transform.VariableEliminatorCostListOptionKey;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.options.LocalOptionHolder;
 
@@ -589,7 +589,7 @@ public class TestVariableEliminator extends DimpleTestBase
 	 * Helper methods
 	 */
 	
-	private void addClique(FactorGraph model, VariableBase ... variables)
+	private void addClique(FactorGraph model, Variable ... variables)
 	{
 		model.addFactor(factorFunction, variables);
 	}
@@ -608,13 +608,13 @@ public class TestVariableEliminator extends DimpleTestBase
 	}
 
 	private void testEliminator(FactorGraph model, VariableCost cost,
-		Stats expectedStats, VariableBase ... expectedOrder)
+		Stats expectedStats, Variable ... expectedOrder)
 	{
 		testEliminator(model, false, cost, expectedStats, expectedOrder);
 	}
 	
 	private void testEliminator(FactorGraph model, boolean useConditioning, VariableCost cost,
-		Stats expectedStats, VariableBase ... expectedOrder)
+		Stats expectedStats, Variable ... expectedOrder)
 	{
 		final boolean deterministic = expectedOrder.length != 0;
 		final VariableEliminator eliminator =
@@ -642,10 +642,10 @@ public class TestVariableEliminator extends DimpleTestBase
 		
 		if (deterministic)
 		{
-			for (VariableBase expectedVariable : expectedOrder)
+			for (Variable expectedVariable : expectedOrder)
 			{
 				assertTrue(iterator.hasNext());
-				VariableBase actualVariable = iterator.next();
+				Variable actualVariable = iterator.next();
 				assertSame(expectedVariable, actualVariable);
 				assertEquals(--nVariables, iterator.size());
 			}
@@ -676,8 +676,8 @@ public class TestVariableEliminator extends DimpleTestBase
 			assertEquals(expectedOrder.length, ordering.variables.size());
 			for (int i = 0, end = expectedOrder.length; i < end; ++i)
 			{
-				VariableBase expectedVariable = expectedOrder[i];
-				VariableBase actualVariable = ordering.variables.get(i);
+				Variable expectedVariable = expectedOrder[i];
+				Variable actualVariable = ordering.variables.get(i);
 				assertSame(expectedVariable, actualVariable);
 			}
 		}
@@ -688,7 +688,7 @@ public class TestVariableEliminator extends DimpleTestBase
 		boolean useConditioning,
 		Stats thresholdStats,
 		Stats expectedStats,
-		VariableBase ... expectedOrder)
+		Variable ... expectedOrder)
 	{
 		Ordering ordering = VariableEliminator.generate(model, useConditioning, -1, thresholdStats);
 		assertStats(expectedStats, ordering.stats);

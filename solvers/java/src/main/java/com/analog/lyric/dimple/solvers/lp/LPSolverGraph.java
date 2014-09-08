@@ -35,7 +35,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.DiscreteFactor;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -61,7 +61,7 @@ public class LPSolverGraph extends SFactorGraphBase
 	 * Maps model variables to their corresponding solver variable. Iterators will return
 	 * variables in the order in which they were first added to the map.
 	 */
-	private final LinkedHashMap<VariableBase, SVariable> _varMap;
+	private final LinkedHashMap<Variable, SVariable> _varMap;
 	
 	/**
 	 * Maps model factors to their corresponding solver factor. Iterators will return
@@ -113,7 +113,7 @@ public class LPSolverGraph extends SFactorGraphBase
 	LPSolverGraph(FactorGraph model)
 	{
 		super(model);
-		_varMap = new LinkedHashMap<VariableBase, SVariable>(model.getVariableCount());
+		_varMap = new LinkedHashMap<Variable, SVariable>(model.getVariableCount());
 		_factorMap = new LinkedHashMap<Factor, STableFactor>(model.getFactorCount());
 	}
 	
@@ -287,12 +287,12 @@ public class LPSolverGraph extends SFactorGraphBase
 	}
 
 	@Override
-	public SVariable createVariable(VariableBase var)
+	public SVariable createVariable(Variable var)
 	{
 		return createVariable(var, false);
 	}
 
-	private SVariable createVariable(VariableBase var, boolean copyInputs)
+	private SVariable createVariable(Variable var, boolean copyInputs)
 	{
 		SVariable svar = _varMap.get(var);
 		
@@ -610,7 +610,7 @@ public class LPSolverGraph extends SFactorGraphBase
 		int nLPVars = 0;
 		
 		// Create solver variables, if not already created
-		for (VariableBase var : model.getVariables())
+		for (Variable var : model.getVariables())
 		{
 
 			SVariable svar = createVariable(var, true);
@@ -682,7 +682,7 @@ public class LPSolverGraph extends SFactorGraphBase
 	 * associated with input model variable or else null.
 	 */
 	@Override
-	public @Nullable SVariable getSolverVariable(VariableBase var)
+	public @Nullable SVariable getSolverVariable(Variable var)
 	{
 		return _varMap.get(var);
 	}

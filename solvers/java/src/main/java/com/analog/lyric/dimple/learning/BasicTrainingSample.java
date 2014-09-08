@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.learning;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import org.eclipse.jdt.annotation.Nullable;
@@ -81,7 +81,7 @@ public class BasicTrainingSample implements ITrainingSample
 	 * 
 	 */
 	@Override
-	public @Nullable ITrainingAssignment getAssignmentForVariable(VariableBase variable)
+	public @Nullable ITrainingAssignment getAssignmentForVariable(Variable variable)
 	{
 		FactorGraph fg = variable.getParentGraph();
 		
@@ -105,7 +105,7 @@ public class BasicTrainingSample implements ITrainingSample
 	@Override
 	public @Nullable ITrainingAssignment getAssignmentForSolverVariable(ISolverVariable variable)
 	{
-		final VariableBase modelVar = variable.getModelObject();
+		final Variable modelVar = variable.getModelObject();
 		return modelVar != null ? getAssignmentForVariable(modelVar) : null;
 	}
 

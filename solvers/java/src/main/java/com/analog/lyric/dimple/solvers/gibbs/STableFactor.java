@@ -30,7 +30,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -140,7 +140,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 		{
 			for (int outputIndex : directedTo)
 			{
-				VariableBase variable = factor.getSibling(outputIndex);
+				Variable variable = factor.getSibling(outputIndex);
 				// FIXME: is sample value already set? Just need to handle side effects?
 				ISolverVariableGibbs svar =
 					(ISolverVariableGibbs)variable.requireSolver("updateNeighborVariableValuesNow");

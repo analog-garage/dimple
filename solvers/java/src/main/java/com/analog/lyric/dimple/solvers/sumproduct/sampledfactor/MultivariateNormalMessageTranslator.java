@@ -27,7 +27,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.MultivariateNormal;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.RealJoint;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.sumproduct.SRealJointVariable;
@@ -39,7 +39,7 @@ public class MultivariateNormalMessageTranslator extends MessageTranslatorBase
 	private @Nullable MultivariateNormal _variableInput;
 	private @Nullable com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable _solverVariable;
 
-	public MultivariateNormalMessageTranslator(Port port, VariableBase variable)
+	public MultivariateNormalMessageTranslator(Port port, Variable variable)
 	{
 		super(port, variable);
 		

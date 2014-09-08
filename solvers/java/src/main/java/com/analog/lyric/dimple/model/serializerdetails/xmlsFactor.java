@@ -18,14 +18,14 @@ package com.analog.lyric.dimple.model.serializerdetails;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 class xmlsFactor
 {
 	private UUID _uuid = java.util.UUID.randomUUID();
 	private String _explicitName = "";
 	private String _modelerClass = "";
-	private ArrayList<VariableBase> _variables = new ArrayList<VariableBase>();
+	private ArrayList<Variable> _variables = new ArrayList<Variable>();
 	private int _factorTableId = -1;
 	
 	public xmlsFactor()
@@ -35,7 +35,7 @@ class xmlsFactor
 	public String toString()
 	{
 		String variables = "[";
-		for(VariableBase v : _variables)
+		for(Variable v : _variables)
 		{
 			variables += v.toString();
 			variables += " ";
@@ -76,13 +76,13 @@ class xmlsFactor
 	}
 	public void setNumEdges(int numEdges)
 	{
-		_variables = new ArrayList<VariableBase>(numEdges);
+		_variables = new ArrayList<Variable>(numEdges);
 		for(int i = 0; i < numEdges; ++i)
 		{
 			_variables.add(null);
 		}
 	}
-	public ArrayList<VariableBase> getVariables()
+	public ArrayList<Variable> getVariables()
 	{
 		return _variables;
 	}
