@@ -19,9 +19,9 @@ package com.analog.lyric.dimple.solvers.optimizedupdate;
 import com.analog.lyric.util.misc.Internal;
 
 /**
- * Represents the computation performed by a marginalization step.
+ * Represents the computation performed by a marginalization step, for cost estimation purposes.
  * 
- * @since 0.06
+ * @since 0.07
  * @author jking
  */
 @Internal

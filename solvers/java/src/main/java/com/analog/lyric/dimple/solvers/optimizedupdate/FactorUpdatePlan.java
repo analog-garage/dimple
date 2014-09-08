@@ -41,12 +41,12 @@ public final class FactorUpdatePlan
 	 * @since 0.06
 	 */
 	public static FactorUpdatePlan
-		create(final IFactorTable factorTable, final ITableWrapperAdapter tableWrapperAdapter)
+		create(final IFactorTable factorTable, final ISFactorGraphToOptimizedUpdateAdapter tableWrapperAdapter, double sparseThreshold)
 	{
 		final int n = factorTable.getDimensions();
 		// Initial capacity is just an estimate.
 		final List<IUpdateStep> steps = new ArrayList<IUpdateStep>((int) (n * Utilities.log2(n)));
-		ITreeBuilder<TableWrapper> builder = new TreeBuilder(steps, tableWrapperAdapter);
+		ITreeBuilder<TableWrapper> builder = new TreeBuilder(steps, tableWrapperAdapter, sparseThreshold);
 		TreeWalker<TableWrapper> treeWalker = new TreeWalker<TableWrapper>(factorTable);
 		treeWalker.accept(builder);
 		return new FactorUpdatePlan(steps);
@@ -56,18 +56,21 @@ public final class FactorUpdatePlan
 	{
 		private final List<IUpdateStep> _steps;
 
-		private final ITableWrapperAdapter _tableWrapperHelper;
+		private final ISFactorGraphToOptimizedUpdateAdapter _tableWrapperHelper;
+		
+		private final double _sparseThreshold;
 
-		public TreeBuilder(List<IUpdateStep> steps, final ITableWrapperAdapter tableWrapperHelper)
+		public TreeBuilder(List<IUpdateStep> steps, final ISFactorGraphToOptimizedUpdateAdapter tableWrapperAdapter, double sparseThreshold)
 		{
 			_steps = steps;
-			_tableWrapperHelper = tableWrapperHelper;
+			_tableWrapperHelper = tableWrapperAdapter;
+			_sparseThreshold = sparseThreshold;
 		}
 
 		@Override
 		public TableWrapper createRootT(IFactorTable rootFactorTable)
 		{
-			return new TableWrapper(rootFactorTable, _tableWrapperHelper);
+			return new TableWrapper(rootFactorTable, _tableWrapperHelper, _sparseThreshold);
 		}
 
 		@Override
@@ -111,7 +114,7 @@ public final class FactorUpdatePlan
 	 * @since 0.07
 	 */
 	public static Costs estimateCosts(IFactorTable factorTable,
-		final ISFactorGraphToCostEstimationTableWrapperAdapter tableWrapperHelper,
+		final ISFactorGraphToOptimizedUpdateAdapter tableWrapperHelper,
 		final double sparseThrehsold)
 	{
 		final Costs result = new Costs();
@@ -124,14 +127,14 @@ public final class FactorUpdatePlan
 
 	private static class EstimationTreeBuilder implements ITreeBuilder<CostEstimationTableWrapper>
 	{
-		private final ISFactorGraphToCostEstimationTableWrapperAdapter _tableWrapperHelper;
+		private final ISFactorGraphToOptimizedUpdateAdapter _tableWrapperHelper;
 
 		private final Costs _result;
 
 		private final double _sparseThreshold;
 
 		public EstimationTreeBuilder(Costs result,
-			ISFactorGraphToCostEstimationTableWrapperAdapter tableWrapperHelper,
+			ISFactorGraphToOptimizedUpdateAdapter tableWrapperHelper,
 			double sparseThreshold)
 		{
 			_result = result;

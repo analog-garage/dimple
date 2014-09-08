@@ -347,8 +347,8 @@ public class TestSumProductOptimizedUpdate extends DimpleTestBase
 			STableFactor sft = (STableFactor) factor.getSolver();
 			if (sft != null)
 			{
-				boolean isAutomaticOptimizationDecisionMade = sft.isAutomaticOptimizationDecisionMade();
-				assertEquals(false, isAutomaticOptimizationDecisionMade);
+				UpdateApproach automaticUpdateApproach = sft.getAutomaticUpdateApproach();
+				assertNull(automaticUpdateApproach);
 			}
 		}
 		sfg.initialize();
@@ -358,8 +358,8 @@ public class TestSumProductOptimizedUpdate extends DimpleTestBase
 			STableFactor sft = (STableFactor) factor.getSolver();
 			if (sft != null)
 			{
-				boolean isAutomaticOptimizationDecisionMade = sft.isAutomaticOptimizationDecisionMade();
-				assertEquals(true, isAutomaticOptimizationDecisionMade);
+				UpdateApproach automaticUpdateApproach = sft.getAutomaticUpdateApproach();
+				assertNotNull(automaticUpdateApproach);
 			}
 		}
 	}

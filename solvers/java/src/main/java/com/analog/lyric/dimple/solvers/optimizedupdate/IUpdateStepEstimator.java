@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.solvers.optimizedupdate;
 import com.analog.lyric.util.misc.Internal;
 
 /**
- * Cost estimator for a step in an update plan.
+ * Cost estimator for a step in an update plan, for cost estimation purposes.
  * 
  * @since 0.07
  * @author jking

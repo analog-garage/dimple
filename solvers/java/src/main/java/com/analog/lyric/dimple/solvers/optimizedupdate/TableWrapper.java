@@ -56,13 +56,16 @@ public final class TableWrapper
 
 	private final boolean _isSparse;
 
-	private final ITableWrapperAdapter _helper;
+	private final ISFactorGraphToOptimizedUpdateAdapter _helper;
+	
+	private final double _sparseThreshold;
 
-	public TableWrapper(IFactorTable factorTable, boolean useThreadLocalValues, ITableWrapperAdapter helper)
+	public TableWrapper(IFactorTable factorTable, boolean useThreadLocalValues, ISFactorGraphToOptimizedUpdateAdapter isFactorGraphToCostOptimizerAdapter, double sparseThreshold)
 	{
 		_factorTable = factorTable;
 		_isSparse = factorTable.hasSparseRepresentation();
-		_helper = helper;
+		_helper = isFactorGraphToCostOptimizerAdapter;
+		_sparseThreshold = sparseThreshold;
 		if (!useThreadLocalValues)
 		{
 			final double[] values;
@@ -109,9 +112,9 @@ public final class TableWrapper
 		}
 	}
 
-	public TableWrapper(final IFactorTable factorTable, ITableWrapperAdapter helper)
+	public TableWrapper(final IFactorTable factorTable, ISFactorGraphToOptimizedUpdateAdapter helper, double sparseThreshold)
 	{
-		this(factorTable, false, helper);
+		this(factorTable, false, helper, sparseThreshold);
 	}
 
 	public IUpdateStep createOutputStep(final int outPortNum)
@@ -162,7 +165,7 @@ public final class TableWrapper
 		{
 			Tuple2<int[][], int[]> g_and_msg_indices = processIndices(dimension, g_factorTable);
 			if (g_indexer.supportsJointIndexing()
-				&& (g_factorTable.countNonZeroWeights() >= g_indexer.getCardinality() * _helper.getSparseThreshold()))
+				&& (g_factorTable.countNonZeroWeights() >= g_indexer.getCardinality() * _sparseThreshold))
 			{
 				g_factorTable.setRepresentation(FactorTableRepresentation.DENSE_WEIGHT);
 			}
@@ -184,5 +187,10 @@ public final class TableWrapper
 	public ThreadLocal<double[]> getValues()
 	{
 		return _values;
+	}
+
+	public double getSparseThreshold()
+	{
+		return _sparseThreshold;
 	}
 }

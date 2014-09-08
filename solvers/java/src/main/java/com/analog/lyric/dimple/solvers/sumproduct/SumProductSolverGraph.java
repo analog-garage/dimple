@@ -21,6 +21,7 @@ import java.util.Random;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.collect.Tuple2;
 import com.analog.lyric.dimple.factorfunctions.ComplexNegate;
 import com.analog.lyric.dimple.factorfunctions.ComplexSubtract;
 import com.analog.lyric.dimple.factorfunctions.ComplexSum;
@@ -59,11 +60,12 @@ import com.analog.lyric.dimple.solvers.optimizedupdate.CostType;
 import com.analog.lyric.dimple.solvers.optimizedupdate.Costs;
 import com.analog.lyric.dimple.solvers.optimizedupdate.FactorTableUpdateSettings;
 import com.analog.lyric.dimple.solvers.optimizedupdate.FactorUpdatePlan;
+import com.analog.lyric.dimple.solvers.optimizedupdate.IMarginalizationStep;
 import com.analog.lyric.dimple.solvers.optimizedupdate.IMarginalizationStepEstimator;
-import com.analog.lyric.dimple.solvers.optimizedupdate.ISFactorGraphToCostEstimationTableWrapperAdapter;
-import com.analog.lyric.dimple.solvers.optimizedupdate.ISFactorGraphToCostOptimizerAdapter;
-import com.analog.lyric.dimple.solvers.optimizedupdate.ITableWrapperAdapter;
+import com.analog.lyric.dimple.solvers.optimizedupdate.ISFactorGraphToOptimizedUpdateAdapter;
+import com.analog.lyric.dimple.solvers.optimizedupdate.IUpdateStep;
 import com.analog.lyric.dimple.solvers.optimizedupdate.IUpdateStepEstimator;
+import com.analog.lyric.dimple.solvers.optimizedupdate.TableWrapper;
 import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateCostOptimizer;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomComplexGaussianPolynomial;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomFiniteFieldAdd;
@@ -279,45 +281,41 @@ public class SumProductSolverGraph extends SFactorGraphBase
 		return true;
 	}
 
-	private final ISFactorGraphToCostOptimizerAdapter _costOptimizerHelper = new ISFactorGraphToCostOptimizerAdapter() {
+	private final ISFactorGraphToOptimizedUpdateAdapter _optimizedUpdateAdapter = new ISFactorGraphToOptimizedUpdateAdapter() {
 
-		private final ISFactorGraphToCostEstimationTableWrapperAdapter _helper =
-			new ISFactorGraphToCostEstimationTableWrapperAdapter() {
+		@Override
+		public IUpdateStepEstimator createSparseOutputStepEstimator(CostEstimationTableWrapper tableWrapper)
+		{
+			return new TableFactorEngineOptimized.SparseOutputStepEstimator(tableWrapper);
+		}
 
-				@Override
-				public IUpdateStepEstimator createSparseOutputStepEstimator(CostEstimationTableWrapper tableWrapper)
-				{
-					return new TableFactorEngineOptimized.SparseOutputStepEstimator(tableWrapper);
-				}
+		@Override
+		public IUpdateStepEstimator createDenseOutputStepEstimator(CostEstimationTableWrapper tableWrapper)
+		{
+			return new TableFactorEngineOptimized.DenseOutputStepEstimator(tableWrapper);
+		}
 
-				@Override
-				public IUpdateStepEstimator createDenseOutputStepEstimator(CostEstimationTableWrapper tableWrapper)
-				{
-					return new TableFactorEngineOptimized.DenseOutputStepEstimator(tableWrapper);
-				}
+		@Override
+		public IMarginalizationStepEstimator
+			createSparseMarginalizationStepEstimator(CostEstimationTableWrapper tableWrapper,
+				int inPortNum,
+				int dimension,
+				CostEstimationTableWrapper g)
+		{
+			return new TableFactorEngineOptimized.SparseMarginalizationStepEstimator(tableWrapper, inPortNum,
+				dimension, g);
+		}
 
-				@Override
-				public IMarginalizationStepEstimator
-					createSparseMarginalizationStepEstimator(CostEstimationTableWrapper tableWrapper,
-						int inPortNum,
-						int dimension,
-						CostEstimationTableWrapper g)
-				{
-					return new TableFactorEngineOptimized.SparseMarginalizationStepEstimator(tableWrapper, inPortNum,
-						dimension, g);
-				}
-
-				@Override
-				public IMarginalizationStepEstimator
-					createDenseMarginalizationStepEstimator(CostEstimationTableWrapper tableWrapper,
-						int inPortNum,
-						int dimension,
-						CostEstimationTableWrapper g)
-				{
-					return new TableFactorEngineOptimized.DenseMarginalizationStepEstimator(tableWrapper, inPortNum,
-						dimension, g);
-				}
-			};
+		@Override
+		public IMarginalizationStepEstimator
+			createDenseMarginalizationStepEstimator(CostEstimationTableWrapper tableWrapper,
+				int inPortNum,
+				int dimension,
+				CostEstimationTableWrapper g)
+		{
+			return new TableFactorEngineOptimized.DenseMarginalizationStepEstimator(tableWrapper, inPortNum,
+				dimension, g);
+		}
 
 		@Override
 		public Costs estimateCostOfNormalUpdate(IFactorTable factorTable)
@@ -360,7 +358,7 @@ public class SumProductSolverGraph extends SFactorGraphBase
 		@Override
 		public Costs estimateCostOfOptimizedUpdate(IFactorTable factorTable, final double sparseThreshold)
 		{
-			return FactorUpdatePlan.estimateCosts(factorTable, _helper, sparseThreshold);
+			return FactorUpdatePlan.estimateCosts(factorTable, this, sparseThreshold);
 		}
 
 		@Override
@@ -384,10 +382,50 @@ public class SumProductSolverGraph extends SFactorGraphBase
 			_factorTableUpdateSettings = optionsValueByFactorTable;
 		}
 
+
 		@Override
-		public ITableWrapperAdapter getTableWrapperAdapter(double sparseThreshold)
+		public double[] getSparseValues(IFactorTable factorTable)
 		{
-			return TableFactorEngineOptimized.getHelper(sparseThreshold);
+			return factorTable.getWeightsSparseUnsafe();
+		}
+
+		@Override
+		public double[] getDenseValues(IFactorTable factorTable)
+		{
+			return factorTable.getWeightsDenseUnsafe();
+		}
+
+		@Override
+		public IUpdateStep createSparseOutputStep(int outPortNum, TableWrapper tableWrapper)
+		{
+			return new TableFactorEngineOptimized.SparseOutputStep(outPortNum, tableWrapper);
+		}
+
+		@Override
+		public IUpdateStep createDenseOutputStep(int outPortNum, TableWrapper tableWrapper)
+		{
+			return new TableFactorEngineOptimized.DenseOutputStep(outPortNum, tableWrapper);
+		}
+
+		@Override
+		public IMarginalizationStep createSparseMarginalizationStep(TableWrapper tableWrapper,
+			int inPortNum,
+			int dimension,
+			IFactorTable g_factorTable,
+			Tuple2<int[][], int[]> g_and_msg_indices)
+		{
+			return new TableFactorEngineOptimized.SparseMarginalizationStep(tableWrapper, this, inPortNum, dimension,
+				g_factorTable, g_and_msg_indices);
+		}
+
+		@Override
+		public IMarginalizationStep createDenseMarginalizationStep(TableWrapper tableWrapper,
+			int inPortNum,
+			int dimension,
+			IFactorTable g_factorTable)
+		{
+			return new TableFactorEngineOptimized.DenseMarginalizationStep(tableWrapper, this, inPortNum, dimension,
+				g_factorTable);
 		}
 	};
 	
@@ -605,7 +643,8 @@ public class SumProductSolverGraph extends SFactorGraphBase
 	@Override
 	public void initialize()
 	{
-		UpdateCostOptimizer.optimize(_factorGraph, _costOptimizerHelper);
+		UpdateCostOptimizer optimizer = new UpdateCostOptimizer(_optimizedUpdateAdapter);
+		optimizer.optimize(_factorGraph);
 		super.initialize();
 		for (Factor f : getModelObject().getFactors())
 		{
