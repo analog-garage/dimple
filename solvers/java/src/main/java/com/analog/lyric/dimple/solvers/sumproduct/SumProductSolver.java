@@ -23,8 +23,9 @@ import com.analog.lyric.dimple.solvers.core.SolverBase;
  * @since 0.05
  * @author Christopher Barber
  */
-public class SumProductSolver extends SolverBase<SFactorGraph>
+public class SumProductSolver extends SolverBase<SumProductSolverGraph>
 {
+	@SuppressWarnings("deprecation")
 	@Override
 	public SFactorGraph createFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph)
 	{

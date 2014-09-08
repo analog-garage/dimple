@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 import com.analog.lyric.dimple.solvers.sumproduct.STableFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.TableFactorEngineOptimized;
 import com.analog.lyric.dimple.test.DimpleTestBase;
@@ -50,7 +50,7 @@ public class TestSumProductOptimizedUpdate extends DimpleTestBase
 		{
 			solver.useMultithreading(useMultithreading);
 			TableFactorEngineOptimized.setSparseThreshold(sparsityControl);
-			SFactorGraph ssolver = (SFactorGraph) solver;
+			SumProductSolverGraph ssolver = (SumProductSolverGraph) solver;
 			ssolver.setDamping(damping);
 			ssolver.setDefaultOptimizedUpdateEnabled(true);
 			fg.solve();

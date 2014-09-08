@@ -282,9 +282,9 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	public boolean isOptimizedUpdateEnabled()
 	{
 		ISolverFactorGraph rootGraph = getRootGraph();
-		if (rootGraph instanceof SFactorGraph)
+		if (rootGraph instanceof SumProductSolverGraph)
 		{
-			SFactorGraph sfg = (SFactorGraph) rootGraph;
+			SumProductSolverGraph sfg = (SumProductSolverGraph) rootGraph;
 			if (sfg.isOptimizedUpdateSupported())
 			{
 				return getOptionOrDefault(SumProductOptions.enableOptimizedUpdate);
@@ -465,7 +465,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	@SuppressWarnings("null")
 	public double calculateDerivativeOfInternalEnergyWithRespectToWeight(int weightIndex)
 	{
-		SFactorGraph sfg = (SFactorGraph)getRootGraph();
+		SumProductSolverGraph sfg = (SumProductSolverGraph)getRootGraph();
 		
 		boolean isFactorOfInterest = sfg.getCurrentFactorTable() == getFactor().getFactorTable();
 		
@@ -686,7 +686,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	
 	public void updateDerivative(int outPortNum)
 	{
-		SFactorGraph sfg = (SFactorGraph)getRootGraph();
+		SumProductSolverGraph sfg = (SumProductSolverGraph)getRootGraph();
 		@SuppressWarnings("null")
 		IFactorTable ft = sfg.getCurrentFactorTable();
 		@SuppressWarnings("null")
@@ -702,7 +702,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	{
 		
 		@SuppressWarnings("null")
-		boolean isFactorOfInterest = ((SFactorGraph)getRootGraph()).getCurrentFactorTable() == getFactor().getFactorTable();
+		boolean isFactorOfInterest = ((SumProductSolverGraph)getRootGraph()).getCurrentFactorTable() == getFactor().getFactorTable();
 				
 		//Belief'(weightIndex)*(-log(Belief(weightIndex))) + Belief(weightIndex)*(-log(Belief(weightIndex)))'
 		double [] beliefs = getBelief();

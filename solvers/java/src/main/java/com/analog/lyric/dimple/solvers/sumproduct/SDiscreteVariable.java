@@ -563,7 +563,7 @@ public class SDiscreteVariable extends SDiscreteVariableDoubleArray
     
     public void updateDerivative(int outPortNum)
     {
-    	SFactorGraph sfg = (SFactorGraph)getRootGraph();
+    	SumProductSolverGraph sfg = (SumProductSolverGraph)getRootGraph();
     	@SuppressWarnings("null")
 		int numWeights = sfg.getCurrentFactorTable().sparseSize();
     	

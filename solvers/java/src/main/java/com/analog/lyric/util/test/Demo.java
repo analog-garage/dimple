@@ -26,7 +26,7 @@ import com.analog.lyric.dimple.factorfunctions.XorDelta;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 
 public class Demo {
 	public static void main(String[] args)  {
@@ -55,7 +55,7 @@ public class Demo {
 		XorDelta xorFF = new XorDelta();
 		Factor f = fg.addFactor(xorFF,v1,v2,v3);
 				
-		((SFactorGraph)requireNonNull(fg.getSolver())).setNumIterations(1);
+		((SumProductSolverGraph)requireNonNull(fg.getSolver())).setNumIterations(1);
 
 
 		fg.solve();

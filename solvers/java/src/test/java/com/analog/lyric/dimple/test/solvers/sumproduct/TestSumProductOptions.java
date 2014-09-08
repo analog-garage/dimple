@@ -29,7 +29,7 @@ import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.sumproduct.SDiscreteVariable;
-import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 import com.analog.lyric.dimple.solvers.sumproduct.STableFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductOptions;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolver;
@@ -66,7 +66,7 @@ public class TestSumProductOptions extends DimpleTestBase
 		Factor f2 = fg.addFactor(new And(), vars);
 		
 		// Check initial defaults
-		SFactorGraph sfg = requireNonNull(fg.setSolverFactory(new SumProductSolver()));
+		SumProductSolverGraph sfg = requireNonNull(fg.setSolverFactory(new SumProductSolver()));
 		assertEquals(0.0, sfg.getDamping(), 0.0);
 		STableFactor sf1 = (STableFactor)requireNonNull(f1.getSolver());
 		assertEquals(0, sf1.getK());

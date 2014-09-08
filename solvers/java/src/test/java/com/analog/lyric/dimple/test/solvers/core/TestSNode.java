@@ -50,7 +50,7 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterized
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.ParameterizedMessageBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
 /**
@@ -297,7 +297,7 @@ public class TestSNode extends DimpleTestBase
 		expectThrow(DimpleException.class, "Not supported.*", n1, "setInputMsgValues", 42, null);
 		expectThrow(DimpleException.class, "Not supported.*", n1, "setOutputMsgValues", 42, null);
 		
-		ISolverFactorGraph sfg = new SFactorGraph(fg);
+		ISolverFactorGraph sfg = new SumProductSolverGraph(fg);
 		n1._parent = sfg;
 		assertSame(sfg, n1.getParentGraph());
 		assertSame(sfg, n1.getOptionParent());

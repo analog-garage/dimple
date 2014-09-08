@@ -34,7 +34,7 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.FiniteFieldVariable;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
-import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolver;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.dimple.test.solvers.core.TestMessageUpdateEventHandler;
@@ -81,7 +81,7 @@ public class TestSumProductMessageEvents extends DimpleTestBase
 			factor.setName(String.format("factor%d-%d",i,j));
 		}
 		
-		SFactorGraph solver = model.createSolver(new SumProductSolver());
+		SumProductSolverGraph solver = model.createSolver(new SumProductSolver());
 		
 		//
 		// Test events
@@ -129,7 +129,7 @@ public class TestSumProductMessageEvents extends DimpleTestBase
 		Factor factor = model.addFactor(new FiniteFieldAdd(), vars[0], vars[1], vars[2]);
 		factor.setName("ff-add");
 		
-		SFactorGraph solver = model.createSolver(new SumProductSolver());
+		SumProductSolverGraph solver = model.createSolver(new SumProductSolver());
 		
 		//
 		// Test events
@@ -169,7 +169,7 @@ public class TestSumProductMessageEvents extends DimpleTestBase
 			factor.setName(String.format("factor%d-%d",i,j));
 		}
 		
-		SFactorGraph solver = model.createSolver(new SumProductSolver());
+		SumProductSolverGraph solver = model.createSolver(new SumProductSolver());
 		
 		//
 		// Test events
@@ -210,7 +210,7 @@ public class TestSumProductMessageEvents extends DimpleTestBase
 			factor.setName(String.format("factor%d-%d",i,j));
 		}
 		
-		SFactorGraph solver = model.createSolver(new SumProductSolver());
+		SumProductSolverGraph solver = model.createSolver(new SumProductSolver());
 		
 		//
 		// Test events

@@ -28,7 +28,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Model;
 import com.analog.lyric.dimple.model.variables.FiniteFieldVariable;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
-import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 import org.eclipse.jdt.annotation.Nullable;
 
 
@@ -89,7 +89,7 @@ public class FiniteFieldTest extends DimpleTestBase
 		fg.addFactor("finiteFieldAdd", ffx);
 		fg.addFactor("finiteFieldAdd", ffx);
 		
-		((SFactorGraph)fg.getSolver()).setNumIterations(10);
+		((SumProductSolverGraph)fg.getSolver()).setNumIterations(10);
 		fg.solve();
 		
 		

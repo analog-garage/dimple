@@ -73,7 +73,7 @@ import com.analog.lyric.dimple.solvers.sumproduct.sampledfactor.SampledFactor;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import org.eclipse.jdt.annotation.Nullable;
 
-public class SFactorGraph extends SFactorGraphBase
+public class SumProductSolverGraph extends SFactorGraphBase
 {
 	private double _damping = 0;
 	private @Nullable IFactorTable _currentFactorTable = null;
@@ -81,7 +81,7 @@ public class SFactorGraph extends SFactorGraphBase
 	private boolean _defaultOptimizedUpdateEnabled;
 
 
-	public SFactorGraph(FactorGraph factorGraph)
+	public SumProductSolverGraph(FactorGraph factorGraph)
 	{
 		super(factorGraph);
 		setMultithreadingManager(new MultiThreadingManager(getModelObject()));
@@ -352,7 +352,7 @@ public class SFactorGraph extends SFactorGraphBase
 	@Override
 	public void baumWelch(IFactorTable [] fts, int numRestarts, int numSteps)
 	{
-		ParameterEstimator pe = new ParameterEstimator.BaumWelch(_factorGraph, fts, SFactorGraph.getRandom());
+		ParameterEstimator pe = new ParameterEstimator.BaumWelch(_factorGraph, fts, SumProductSolverGraph.getRandom());
 		pe.run(numRestarts, numSteps);
 	}
 	

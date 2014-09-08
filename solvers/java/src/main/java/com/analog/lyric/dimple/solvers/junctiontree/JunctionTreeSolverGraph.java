@@ -18,14 +18,14 @@ package com.analog.lyric.dimple.solvers.junctiontree;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
-import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * @since 0.05
  * @author Christopher Barber
  */
-public class JunctionTreeSolverGraph extends JunctionTreeSolverGraphBase<SFactorGraph>
+public class JunctionTreeSolverGraph extends JunctionTreeSolverGraphBase<SumProductSolverGraph>
 {
 	private final @Nullable JunctionTreeSolverGraph _parent;
 	private final JunctionTreeSolverGraph _root;

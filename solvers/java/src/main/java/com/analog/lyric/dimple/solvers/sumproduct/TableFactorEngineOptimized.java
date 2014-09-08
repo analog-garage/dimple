@@ -44,8 +44,8 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 	 * A table of existing update plans, per solver graph, keyed by factor table. Factors that share
 	 * a factor table share an update plan.
 	 */
-	private static HashMap<SFactorGraph, HashMap<IFactorTable, FactorUpdatePlan>> _updatePlans =
-		new HashMap<SFactorGraph, HashMap<IFactorTable, FactorUpdatePlan>>();
+	private static HashMap<SumProductSolverGraph, HashMap<IFactorTable, FactorUpdatePlan>> _updatePlans =
+		new HashMap<SumProductSolverGraph, HashMap<IFactorTable, FactorUpdatePlan>>();
 
 	/**
 	 * When a solver graph is initialized, we create an update plan for each factor table. This
@@ -54,7 +54,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 	 * 
 	 * @since 0.06
 	 */
-	public static void clearUpdatePlans(SFactorGraph factorGraph)
+	public static void clearUpdatePlans(SumProductSolverGraph factorGraph)
 	{
 		HashMap<IFactorTable, FactorUpdatePlan> table = _updatePlans.get(factorGraph);
 		if (table != null)
@@ -116,7 +116,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 	 */
 	private FactorUpdatePlan lookupOrCreateUpdatePlan(final IFactorTable factorTable)
 	{
-		SFactorGraph factorGraph = (SFactorGraph) _tableFactor.getParentGraph();
+		SumProductSolverGraph factorGraph = (SumProductSolverGraph) _tableFactor.getParentGraph();
 		HashMap<IFactorTable, FactorUpdatePlan> table = _updatePlans.get(factorGraph);
 		if (table == null)
 		{
