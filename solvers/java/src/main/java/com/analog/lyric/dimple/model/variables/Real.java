@@ -23,6 +23,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 
 
+@SuppressWarnings("deprecation")
 public class Real extends VariableBase
 {
 	// Constructors...

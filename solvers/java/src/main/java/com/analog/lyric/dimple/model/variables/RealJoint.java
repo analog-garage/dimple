@@ -23,6 +23,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 
+@SuppressWarnings("deprecation")
 public class RealJoint extends VariableBase
 {
 	// Constructors...

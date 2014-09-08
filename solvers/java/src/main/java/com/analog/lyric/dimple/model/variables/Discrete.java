@@ -30,6 +30,7 @@ import com.analog.lyric.dimple.solvers.interfaces.IDiscreteSolverVariable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Internal;
 
+@SuppressWarnings("deprecation")
 public class Discrete extends VariableBase
 {
 	/*--------------

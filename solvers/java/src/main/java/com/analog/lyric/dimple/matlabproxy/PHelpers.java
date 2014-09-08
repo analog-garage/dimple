@@ -45,7 +45,6 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.Variable;
-import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
 
 // TODO: how many of these functions are intended to be invoked from MATLAB? And how many don't need to be public?
@@ -156,7 +155,7 @@ public class PHelpers
 			return new PVariableVector();
 
 		// TODO: When VariableBase is removed, change this to Variable.class
-		variables = Supers.narrowArrayOf(VariableBase.class, 1, variables);
+		variables = Supers.narrowArrayOf(com.analog.lyric.dimple.model.variables.VariableBase.class, 1, variables);
 		
 		Class<?> commonVarClass = variables.getClass().getComponentType();
 			
