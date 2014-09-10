@@ -152,10 +152,6 @@ public class TestSumProductOptions extends DimpleTestBase
 		assertArrayEquals(new double[] { .4,.23,.6,.7},
 			SumProductOptions.nodeSpecificDamping.get(sf1).toPrimitiveArray(), 0.0);
 
-		// TODO
-//		sfg.setDefaultOptimizedUpdateEnabled(false);
-//		assertFalse(sfg.getDefaultOptimizedUpdateEnabled());
-
 		sfg.setSampledFactorSamplesPerUpdate(142);
 		sfg.setSampledFactorScansPerSample(24);
 		sfg.setSampledFactorBurnInScansPerUpdate(11);
@@ -164,15 +160,17 @@ public class TestSumProductOptions extends DimpleTestBase
 		assertEquals(11, sfg.getSampledFactorBurnInScansPerUpdate());
 		assertEquals((Integer)142, sfg.getLocalOption(GibbsOptions.numSamples));
 		assertEquals((Integer)24, sfg.getLocalOption(GibbsOptions.scansPerSample));
-//		assertEquals(false, sfg.getOption(SumProductOptions.enableOptimizedUpdate));
-//
-//		assertNull(sf1.getLocalOption(SumProductOptions.enableOptimizedUpdate));
-//		sf1.enableOptimizedUpdate();
-//		assertTrue(sf1.isOptimizedUpdateEnabled());
-//		assertEquals(true, sf1.getLocalOption(SumProductOptions.enableOptimizedUpdate));
-//		sf1.disableOptimizedUpdate();
-//		assertFalse(sf1.isOptimizedUpdateEnabled());
-//		assertEquals(false, sf1.getLocalOption(SumProductOptions.enableOptimizedUpdate));
+
+		assertEquals(UpdateApproach.UPDATE_APPROACH_AUTOMATIC, sfg.getOption(UpdateOptions.updateApproach));
+
+		assertNull(sf1.getLocalOption(UpdateOptions.updateApproach));
+		sf1.setOption(UpdateOptions.updateApproach, UpdateApproach.UPDATE_APPROACH_OPTIMIZED);
+		assertEquals(UpdateApproach.UPDATE_APPROACH_OPTIMIZED, sf1.getOption(UpdateOptions.updateApproach));
+		assertEquals(UpdateApproach.UPDATE_APPROACH_OPTIMIZED, sf1.getLocalOption(UpdateOptions.updateApproach));
+		sf1.setOption(UpdateOptions.updateApproach, UpdateApproach.UPDATE_APPROACH_NORMAL);
+		assertEquals(UpdateApproach.UPDATE_APPROACH_NORMAL, sf1.getOption(UpdateOptions.updateApproach));
+		assertEquals(UpdateApproach.UPDATE_APPROACH_NORMAL, sf1.getLocalOption(UpdateOptions.updateApproach));
+
 		assertEquals((Integer)11, sfg.getLocalOption(GibbsOptions.burnInScans));
 	}
 }

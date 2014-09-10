@@ -89,14 +89,14 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	{
 		super.initialize();
 		
-    	configureDampingFromOptions();
-	    updateK(getOptionOrDefault(SumProductOptions.maxMessageSize));
-		
-	    FactorUpdatePlan updatePlan = null;
-	    final FactorTableUpdateSettings factorTableUpdateSettings = getFactorTableUpdateSettings();
-	    if (factorTableUpdateSettings != null)
+		configureDampingFromOptions();
+		updateK(getOptionOrDefault(SumProductOptions.maxMessageSize));
+
+		FactorUpdatePlan updatePlan = null;
+		final FactorTableUpdateSettings factorTableUpdateSettings = getFactorTableUpdateSettings();
+		if (factorTableUpdateSettings != null)
 		{
-	    	updatePlan = factorTableUpdateSettings.getOptimizedUpdatePlan();
+			updatePlan = factorTableUpdateSettings.getOptimizedUpdatePlan();
 		}
 		if (updatePlan != null)
 		{
@@ -132,9 +132,9 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	{
 		super.moveMessages(other,portNum,otherPort);
 		STableFactor sother = (STableFactor)other;
-	    if (_dampingInUse)
-	    	_savedOutMsgArray[portNum] = sother._savedOutMsgArray[otherPort];
-	    
+		if (_dampingInUse)
+			_savedOutMsgArray[portNum] = sother._savedOutMsgArray[otherPort];
+
 	}
 	
 	private TableFactorEngine getTableFactorEngine()
@@ -322,23 +322,20 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 			return UpdateApproach.UPDATE_APPROACH_OPTIMIZED;
 		}
 		else
-			{
+		{
 			return UpdateApproach.UPDATE_APPROACH_NORMAL;
-			}
 		}
+	}
 	
 	@Internal
-	public boolean isAutomaticOptimizationDecisionMade()
+	public @Nullable UpdateApproach getAutomaticUpdateApproach()
 	{
 		FactorTableUpdateSettings updateSettings = getFactorTableUpdateSettings();
 		if (updateSettings != null)
 		{
-			return updateSettings.isAutomaticOptimizationDecisionMade();
+			return updateSettings.getAutomaticUpdateApproach();
 		}
-		else
-		{
-		return false;
-	}
+		return null;
 	}
 
 	public int getK()
@@ -436,9 +433,9 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 			throw new DimpleException("Update failed in SumProduct Solver.  All probabilities were zero when calculating message for port "
 					+ " on factor " +_factor.getLabel());
 
-    	for (int i = 0; i < outputMsg.length; i++)
-    		
-    		outputMsg[i] /= sum;
+		for (int i = 0; i < outputMsg.length; i++)
+
+			outputMsg[i] /= sum;
 	}
 
 	@Override
@@ -781,41 +778,41 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	 * Internal methods
 	 */
 	
-    protected void configureDampingFromOptions()
-    {
-     	final int size = getSiblingCount();
-    	
-    	_dampingParams =
-    		getReplicatedNonZeroListFromOptions(SumProductOptions.nodeSpecificDamping, SumProductOptions.damping,
-    			size, _dampingParams);
- 
-    	if (_dampingParams.length > 0 && _dampingParams.length != size)
-    	{
+	protected void configureDampingFromOptions()
+	{
+		final int size = getSiblingCount();
+
+		_dampingParams =
+			getReplicatedNonZeroListFromOptions(SumProductOptions.nodeSpecificDamping, SumProductOptions.damping, size,
+				_dampingParams);
+
+		if (_dampingParams.length > 0 && _dampingParams.length != size)
+		{
 			DimpleEnvironment.logWarning("%s has wrong number of parameters for %s\n",
 				SumProductOptions.nodeSpecificDamping, this);
-    		_dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
-    	}
-    	
-    	_dampingInUse = _dampingParams.length > 0;
-    	
-    	configureSavedMessages(size);
-    }
-    
-    protected void configureSavedMessages(int size)
-    {
-    	if (!_dampingInUse)
-    	{
-    		_savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
-    	}
-    	else if (_savedOutMsgArray.length != size)
-    	{
-    		_savedOutMsgArray = new double[size][];
-    		for (int i = 0; i < size; i++)
-    	    {
-    			_savedOutMsgArray[i] = new double[_inputMsgs[i].length];
-    	    }
-    	}
-    }
+			_dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+		}
+
+		_dampingInUse = _dampingParams.length > 0;
+
+		configureSavedMessages(size);
+	}
+
+	protected void configureSavedMessages(int size)
+	{
+		if (!_dampingInUse)
+		{
+			_savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+		}
+		else if (_savedOutMsgArray.length != size)
+		{
+			_savedOutMsgArray = new double[size][];
+			for (int i = 0; i < size; i++)
+			{
+				_savedOutMsgArray[i] = new double[_inputMsgs[i].length];
+			}
+		}
+	}
 
 
 }

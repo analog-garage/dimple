@@ -20,8 +20,8 @@ import com.analog.lyric.dimple.solvers.optimizedupdate.Costs;
 import com.analog.lyric.dimple.solvers.optimizedupdate.FactorUpdatePlan;
 import com.analog.lyric.dimple.solvers.optimizedupdate.IMarginalizationStep;
 import com.analog.lyric.dimple.solvers.optimizedupdate.IMarginalizationStepEstimator;
+import com.analog.lyric.dimple.solvers.optimizedupdate.ISFactorGraphToOptimizedUpdateAdapter;
 import com.analog.lyric.dimple.solvers.optimizedupdate.ISTableFactorSupportingOptimizedUpdate;
-import com.analog.lyric.dimple.solvers.optimizedupdate.ITableWrapperAdapter;
 import com.analog.lyric.dimple.solvers.optimizedupdate.IUpdateStep;
 import com.analog.lyric.dimple.solvers.optimizedupdate.IUpdateStepEstimator;
 import com.analog.lyric.dimple.solvers.optimizedupdate.TableWrapper;
@@ -65,63 +65,6 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		return result;
 	}
 
-	static ITableWrapperAdapter getHelper(final double sparseThreshold)
-	{
-		return new ITableWrapperAdapter() {
-
-			@Override
-			public double[] getSparseValues(IFactorTable factorTable)
-			{
-				return factorTable.getEnergiesSparseUnsafe();
-			}
-
-			@Override
-			public double[] getDenseValues(IFactorTable factorTable)
-			{
-				return factorTable.getEnergiesDenseUnsafe();
-			}
-
-			@Override
-			public IUpdateStep createSparseOutputStep(int outPortNum, TableWrapper tableWrapper)
-			{
-				return new TableFactorEngineOptimized.SparseOutputStep(outPortNum, tableWrapper);
-			}
-
-			@Override
-			public IUpdateStep createDenseOutputStep(int outPortNum, TableWrapper tableWrapper)
-			{
-				return new TableFactorEngineOptimized.DenseOutputStep(outPortNum, tableWrapper);
-			}
-
-			@Override
-			public IMarginalizationStep createSparseMarginalizationStep(TableWrapper tableWrapper,
-				int inPortNum,
-				int dimension,
-				IFactorTable g_factorTable,
-				Tuple2<int[][], int[]> g_and_msg_indices)
-			{
-				return new TableFactorEngineOptimized.SparseMarginalizationStep(tableWrapper, this, inPortNum,
-					dimension, g_factorTable, g_and_msg_indices);
-			}
-
-			@Override
-			public IMarginalizationStep createDenseMarginalizationStep(TableWrapper tableWrapper,
-				int inPortNum,
-				int dimension,
-				IFactorTable g_factorTable)
-			{
-				return new TableFactorEngineOptimized.DenseMarginalizationStep(tableWrapper, this, inPortNum,
-					dimension, g_factorTable);
-			}
-
-			@Override
-			public double getSparseThreshold()
-			{
-				return sparseThreshold;
-			}
-		};
-	}
-
 	static final class DenseMarginalizationStep implements IMarginalizationStep
 	{
 		private final TableWrapper _f;
@@ -135,7 +78,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		private final int _p;
 
 		DenseMarginalizationStep(final TableWrapper f,
-			final ITableWrapperAdapter helper,
+			final ISFactorGraphToOptimizedUpdateAdapter helper,
 			final int inPortNum,
 			final int dimension,
 			final IFactorTable g_factorTable)
@@ -144,7 +87,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 			JointDomainIndexer f_indexer = f.getFactorTable().getDomainIndexer();
 			_p = f_indexer.getStride(dimension);
 			_d = f_indexer.getDomainSize(dimension);
-			_g = new TableWrapper(g_factorTable, true, helper);
+			_g = new TableWrapper(g_factorTable, true, helper, f.getSparseThreshold());
 			_inPortNum = inPortNum;
 		}
 
@@ -201,7 +144,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		private final int[] _g_sparse_indices;
 
 		SparseMarginalizationStep(final TableWrapper f,
-			final ITableWrapperAdapter helper,
+			final ISFactorGraphToOptimizedUpdateAdapter isFactorGraphToCostOptimizerAdapter,
 			final int inPortNum,
 			final int dimension,
 			final IFactorTable g_factorTable,
@@ -209,7 +152,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		{
 			_f = f;
 			_inPortNum = inPortNum;
-			_g = new TableWrapper(g_factorTable, true, helper);
+			_g = new TableWrapper(g_factorTable, true, isFactorGraphToCostOptimizerAdapter, f.getSparseThreshold());
 			final int[][] g_indices = g_and_msg_indices.first;
 			_msg_indices = g_and_msg_indices.second;
 			_g_sparse_indices = new int[g_indices.length];

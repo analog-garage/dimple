@@ -50,7 +50,7 @@ public final class CostEstimationTableWrapper
 	/**
 	 * Provides solver-specific facilities.
 	 */
-	private final ISFactorGraphToCostEstimationTableWrapperAdapter _sFactorGraphAdapter;
+	private final ISFactorGraphToOptimizedUpdateAdapter _sFactorGraphAdapter;
 
 	/**
 	 * The quantity of entries in the represented factor table.
@@ -64,7 +64,7 @@ public final class CostEstimationTableWrapper
 	private final double _sparseThreshold;
 
 	public CostEstimationTableWrapper(final IFactorTable factorTable,
-		ISFactorGraphToCostEstimationTableWrapperAdapter sFactorGraphAdapter,
+		ISFactorGraphToOptimizedUpdateAdapter sFactorGraphAdapter,
 		final double sparseThreshold)
 	{
 		this(getFactorTableDimensions(factorTable), factorTable.density(), sFactorGraphAdapter, sparseThreshold);
@@ -72,7 +72,7 @@ public final class CostEstimationTableWrapper
 
 	public CostEstimationTableWrapper(final int[] dimensions,
 		final double density,
-		ISFactorGraphToCostEstimationTableWrapperAdapter sFactorGraphAdapter,
+		ISFactorGraphToOptimizedUpdateAdapter sFactorGraphAdapter,
 		double sparseThreshold)
 	{
 		_dimensions = dimensions;

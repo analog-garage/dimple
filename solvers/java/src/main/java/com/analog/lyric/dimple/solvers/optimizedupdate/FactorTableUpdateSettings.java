@@ -20,56 +20,96 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.util.misc.Internal;
 
+/**
+ * Stores information related to the optimized update algorithm for a given factor table. Various
+ * factors in a graph that share a factor table may have different option settings. During solver
+ * graph initialization, the schedule is iterated to find the factors that shall have update applied
+ * to them, and their option values. These option values are analyzed in order to set up an instance
+ * of this class for each unique factor table. Later, during solver factor initialization, the
+ * information is used to configure each factor's update.
+ * 
+ * @since 0.07
+ * @author jking
+ */
 @Internal
 final public class FactorTableUpdateSettings
 {
-	private boolean _automaticOptimizationDecision;
+	/**
+	 * The update approach for the factor as specified in the options, which may include
+	 * {@link UpdateApproach#UPDATE_APPROACH_AUTOMATIC}.
+	 */
+	private @Nullable UpdateApproach _approach = null;
 
+	/**
+	 * Valid (non-null) only for those factors that have their update approach set to
+	 * {@link UpdateApproach#UPDATE_APPROACH_AUTOMATIC}, and only after the solver graph has
+	 * initialized. Indicates the update approach selected.
+	 */
+	private @Nullable UpdateApproach _automaticApproachDecision = null;
+
+	/**
+	 * Valid (non-null) only for those factors that employ the optimized update algorithm, and only
+	 * after the solver graph has been initialized.
+	 */
 	private @Nullable FactorUpdatePlan _updatePlan;
 
-	private @Nullable UpdateApproach approach = null;
+	/**
+	 * Quantity of factors that share the represented factor table.
+	 */
+	private int _factorCount = 0;
 
-	// quantity of factors employing the associated factor table
-	private int count = 0;
+	/**
+	 * Execution time scaling factor for weighing execution time and memory allocation costs.
+	 */
+	private double _executionTimeScalingFactor;
 
-	private double executionTimeScalingFactor;
+	/**
+	 * Users may set options at various levels, such as on the solver factor, the solver graph, the
+	 * model factor, the model graph, or perhaps others. When multiple factors share a factor table,
+	 * we track the level in order to retain the most specific settings. The lower the value, the
+	 * more specific it is.
+	 */
+	private int _optionLevel = -1;
 
-	private int level = -1;
+	/**
+	 * Memory allocation scaling factor for weighing execution time and memory allocation costs.
+	 */
+	private double _memoryAllocationScalingFactor;
 
-	private double memoryAllocationScalingFactor;
-
-	private double sparseThreshold;
-
-	private boolean _automaticOptimizationDecisionMade = false;
+	/**
+	 * Density, below which the optimized update algorithm will use a sparse representation for its
+	 * auxiliary factor tables.
+	 */
+	private double _sparseThreshold;
 
 	public @Nullable UpdateApproach getApproach()
 	{
-		return approach;
+		return _approach;
 	}
 
-	public boolean getAutomaticOptimizationDecision()
+	public @Nullable UpdateApproach getAutomaticUpdateApproach()
 	{
-		return _automaticOptimizationDecision;
+		return _automaticApproachDecision;
 	}
 
 	public int getCount()
 	{
-		return count;
+		return _factorCount;
 	}
 
 	public double getExecutionTimeScalingFactor()
 	{
-		return executionTimeScalingFactor;
+		return _executionTimeScalingFactor;
 	}
 
 	public int getLevel()
 	{
-		return level;
+		return _optionLevel;
 	}
 
 	public double getMemoryAllocationScalingFactor()
 	{
-		return memoryAllocationScalingFactor;
+		return _memoryAllocationScalingFactor;
 	}
 
 	public @Nullable FactorUpdatePlan getOptimizedUpdatePlan()
@@ -79,38 +119,37 @@ final public class FactorTableUpdateSettings
 
 	public double getSparseThreshold()
 	{
-		return sparseThreshold;
+		return _sparseThreshold;
 	}
 
 	public void setApproach(UpdateApproach approach)
 	{
-		this.approach = approach;
+		this._approach = approach;
 	}
 
-	public void setAutomaticOptimizationDecision(boolean useOptimizedUpdate)
+	public void setAutomaticUpdateApproach(@Nullable UpdateApproach updateApproach)
 	{
-		_automaticOptimizationDecision = useOptimizedUpdate;
-		_automaticOptimizationDecisionMade  = true;
+		_automaticApproachDecision = updateApproach;
 	}
 
 	public void setCount(int count)
 	{
-		this.count = count;
+		this._factorCount = count;
 	}
 
 	public void setExecutionTimeScalingFactor(double executionTimeScalingFactor)
 	{
-		this.executionTimeScalingFactor = executionTimeScalingFactor;
+		this._executionTimeScalingFactor = executionTimeScalingFactor;
 	}
 
 	public void setLevel(int level)
 	{
-		this.level = level;
+		this._optionLevel = level;
 	}
 
 	public void setMemoryAllocationScalingFactor(double memoryAllocationScalingFactor)
 	{
-		this.memoryAllocationScalingFactor = memoryAllocationScalingFactor;
+		this._memoryAllocationScalingFactor = memoryAllocationScalingFactor;
 	}
 
 	public void setOptimizedUpdatePlan(@Nullable FactorUpdatePlan updatePlan)
@@ -120,24 +159,26 @@ final public class FactorTableUpdateSettings
 
 	public void setSparseThreshold(double sparseThreshold)
 	{
-		this.sparseThreshold = sparseThreshold;
+		this._sparseThreshold = sparseThreshold;
 	}
 
+	/**
+	 * Indicates if a factor using the represented factor table should use the optimized update
+	 * algorithm or not.
+	 * 
+	 * @return true if the optimized update algorithm should be used.
+	 * @since 0.07
+	 */
 	public boolean useOptimizedUpdate()
 	{
-		if (approach == UpdateApproach.UPDATE_APPROACH_OPTIMIZED)
+		if (_approach == UpdateApproach.UPDATE_APPROACH_OPTIMIZED)
 		{
 			return true;
 		}
-		if (approach == UpdateApproach.UPDATE_APPROACH_AUTOMATIC)
+		if (_approach == UpdateApproach.UPDATE_APPROACH_AUTOMATIC)
 		{
-			return getAutomaticOptimizationDecision();
+			return _automaticApproachDecision == UpdateApproach.UPDATE_APPROACH_OPTIMIZED;
 		}
 		return false;
-	}
-
-	public boolean isAutomaticOptimizationDecisionMade()
-	{
-		return _automaticOptimizationDecisionMade;
 	}
 }
