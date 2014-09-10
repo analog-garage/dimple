@@ -29,7 +29,7 @@ function result = dimpleOptions(varargin)
     else
         regexp = '.*';
     end
-    keys = com.analog.lyric.dimple.matlabproxy.POptionRegistry.getOptionKeysMatching(regexp);
+    keys = DimpleEnvironment.active.PEnvironment.getOptionKeysMatching(regexp);
     result = cellfun(@(opt) cell(opt.qualifiedName()), cell(keys));
 end
 
