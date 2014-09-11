@@ -20,6 +20,7 @@ import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import org.junit.Test;
@@ -267,10 +268,32 @@ public class TestJunctionTree extends DimpleTestBase
 			}
 		}
 		
-		double score = model.getScore();
-		double score2 = model2.getScore();
-		assertEquals(score, score2, 1e-10);
-
+		// Compare scores for two versions with same guesses
+		for (int i = 0; i < 10; ++i)
+		{
+			// Randomly set guesses
+			for (Map.Entry<Node,Node> entry : old2new.entrySet())
+			{
+				Node node = entry.getKey();
+				if (node instanceof Discrete)
+				{
+					Discrete var = (Discrete)node;
+					Discrete var2 = (Discrete)entry.getValue();
+					if (!var.hasFixedValue())
+					{
+						int guessIndex = _rand.nextInt(var.getDomain().size());
+						var.setGuessIndex(guessIndex);
+						var2.setGuessIndex(guessIndex);
+						assertEquals(var.getScore(), var2.getScore(), 1e-14);
+					}
+				}
+			}
+			
+			double score = model.getScore();
+			double score2 = model2.getScore();
+			assertEquals(score, score2, 1e-10);
+		}
+			
 		if (!useMap)
 		{
 			double internalEnergy = model.getInternalEnergy();

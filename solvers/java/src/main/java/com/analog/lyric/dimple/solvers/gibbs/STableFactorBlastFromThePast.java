@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.solvers.gibbs;
 
 import java.util.Collection;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
@@ -26,7 +28,6 @@ import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SBlastFromThePast;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class STableFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs
 {
@@ -34,6 +35,7 @@ public class STableFactorBlastFromThePast extends SBlastFromThePast implements I
 	private @Nullable double [] _outputMsg;
 	private @Nullable DiscreteValue _inputMsg;
 	private boolean _visited = false;
+	private int _topologicalOrder = 0;
 	
 	public STableFactorBlastFromThePast(BlastFromThePastFactor f)
 	{
@@ -69,6 +71,18 @@ public class STableFactorBlastFromThePast extends SBlastFromThePast implements I
 		final DiscreteValue inputMsg = _inputMsg;
 		final double[] outputMsg = _outputMsg;
 		return inputMsg != null & outputMsg != null ? outputMsg[inputMsg.getIndex()] : Double.POSITIVE_INFINITY;
+	}
+	
+	@Override
+	public final int getTopologicalOrder()
+	{
+		return _topologicalOrder ;
+	}
+	
+	@Override
+	public final void setTopologicalOrder(int order)
+	{
+		_topologicalOrder = order;
 	}
 	
 	@Override

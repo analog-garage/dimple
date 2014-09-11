@@ -44,6 +44,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	//	private Object[] _scratchValues;
 	protected int _numPorts;
 	protected boolean _isDeterministicDirected;
+	private int _topologicalOrder = 0;
 	/**
 	 * True if output samples in {@link #_inputMsgs} have been computed.
 	 */
@@ -126,7 +127,17 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	    return _realFactor.getFactorFunction().evalEnergy(inputs);
 	}
 
+	@Override
+	public final int getTopologicalOrder()
+	{
+		return _topologicalOrder;
+	}
 	
+	@Override
+	public final void setTopologicalOrder(int order)
+	{
+		_topologicalOrder = order;
+	}
 	
 	@SuppressWarnings("null")
 	@Override

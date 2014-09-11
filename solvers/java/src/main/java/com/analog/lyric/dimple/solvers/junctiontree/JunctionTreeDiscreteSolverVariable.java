@@ -18,18 +18,18 @@ package com.analog.lyric.dimple.solvers.junctiontree;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.model.variables.Variable;
-import com.analog.lyric.dimple.solvers.core.proxy.ProxySolverVariable;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.solvers.core.proxy.ProxyDiscreteSolverVariable;
+import com.analog.lyric.dimple.solvers.interfaces.IDiscreteSolverVariable;
 
 /**
- * @since 0.05
+ * 
+ * @since 0.07
  * @author Christopher Barber
- *
  */
-public class JunctionTreeSolverVariable
-	extends ProxySolverVariable<ISolverVariable>
-	implements IJunctionTreeSolverVariable<ISolverVariable>
+public class JunctionTreeDiscreteSolverVariable
+	extends ProxyDiscreteSolverVariable<IDiscreteSolverVariable>
+	implements IJunctionTreeSolverVariable<IDiscreteSolverVariable>
 {
 	/*-------
 	 * State
@@ -44,7 +44,7 @@ public class JunctionTreeSolverVariable
 	/**
 	 * @param modelVariable
 	 */
-	protected JunctionTreeSolverVariable(Variable modelVariable, JunctionTreeSolverGraphBase<?> root)
+	protected JunctionTreeDiscreteSolverVariable(Discrete modelVariable, JunctionTreeSolverGraphBase<?> root)
 	{
 		super(modelVariable);
 		_root = root;
@@ -65,8 +65,8 @@ public class JunctionTreeSolverVariable
 	 */
 	
 	@Override
-	public @Nullable ISolverVariable getDelegate()
+	public @Nullable IDiscreteSolverVariable getDelegate()
 	{
-		return _root.getDelegateSolverVariable(this);
+		return (IDiscreteSolverVariable) _root.getDelegateSolverVariable(this);
 	}
 }

@@ -18,15 +18,19 @@ package com.analog.lyric.dimple.solvers.gibbs;
 
 import java.util.Collection;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
-import org.eclipse.jdt.annotation.Nullable;
 
 public interface ISolverFactorGibbs extends ISolverFactor, ISolverNodeGibbs
 {
 	@Override
 	public double getPotential();
+	
+	public int getTopologicalOrder();
+	public void setTopologicalOrder(int order);
 	
 	/**
 	 * Updates neighboring dependent variable sample values based on the current

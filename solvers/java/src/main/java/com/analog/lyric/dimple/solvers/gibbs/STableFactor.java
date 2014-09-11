@@ -47,6 +47,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
     protected int _numPorts;
     protected boolean _isDeterministicDirected;
     private boolean _visited = false;
+	private int _topologicalOrder = 0;
     
     /*--------------
      * Construction
@@ -120,6 +121,18 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 		return getFactorTable().getEnergyForIndices(inputs);
 	}
 		
+	@Override
+	public final int getTopologicalOrder()
+	{
+		return _topologicalOrder ;
+	}
+	
+	@Override
+	public final void setTopologicalOrder(int order)
+	{
+		_topologicalOrder = order;
+	}
+	
 	
 	@Override
 	public void updateNeighborVariableValue(int variableIndex, Value oldValue)

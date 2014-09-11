@@ -20,6 +20,8 @@ import static java.util.Objects.*;
 
 import java.util.Map.Entry;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
@@ -29,6 +31,7 @@ import com.analog.lyric.dimple.model.transform.OptionVariableEliminatorCostList;
 import com.analog.lyric.dimple.model.transform.VariableEliminator;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.CostFunction;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.VariableCost;
+import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.DimpleOptions;
 import com.analog.lyric.dimple.solvers.core.proxy.ProxySolverFactorGraph;
@@ -39,7 +42,6 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Matlab;
 import com.analog.lyric.util.misc.Misc;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Base class for solver graphs using junction tree algorithm to transform graph into a tree
@@ -143,12 +145,12 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 		transformMap.updateGuesses();
 		
 		double energy = 0.0;
-		
+
 		for (Variable variable : getModelObject().getVariables())
 		{
 			energy += variable.getScore();
 		}
-		
+
 		for (Factor factor : transformMap.target().getFactors())
 		{
 			energy += factor.getScore();
@@ -157,7 +159,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 				Misc.breakpoint();
 			}
 		}
-		
+
 		return energy;
 	}
 	
@@ -200,7 +202,14 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	@Override
 	public ISolverVariable createVariable(Variable var)
 	{
-		return new JunctionTreeSolverVariable(var, getRootGraph());
+		if (var instanceof Discrete)
+		{
+			return new JunctionTreeDiscreteSolverVariable((Discrete)var, getRootGraph());
+		}
+		else
+		{
+			return new JunctionTreeSolverVariable(var, getRootGraph());
+		}
 	}
 
 	@Override
@@ -450,7 +459,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	 * Package methods
 	 */
 	
-	@Nullable ISolverVariable getDelegateSolverVariable(JunctionTreeSolverVariable var)
+	@Nullable ISolverVariable getDelegateSolverVariable(IJunctionTreeSolverVariable<?> var)
 	{
 		final JunctionTreeTransformMap transformMap = _transformMap;
 		if (transformMap != null)

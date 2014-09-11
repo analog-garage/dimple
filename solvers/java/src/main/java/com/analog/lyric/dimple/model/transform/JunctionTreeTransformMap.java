@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
@@ -35,7 +37,6 @@ import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.util.misc.Internal;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.Iterables;
 
 /**
@@ -158,11 +159,22 @@ public class JunctionTreeTransformMap
 		{
 			final JointDomainIndexer indexer = getDomain().getDomainIndexer();
 			final int[] indices = indexer.allocateIndices(null);
+			boolean allWereSet = true;
 			for (int i = 0; i < _inputs.length; ++i)
 			{
+				Discrete input = getInput(i);
+				allWereSet &= input.guessWasSet() || input.hasFixedValue();
 				indices[i] = getInput(i).getGuessIndex();
 			}
-			getVariable().setGuessIndex(indexer.jointIndexFromIndices(indices));
+			Discrete var = getVariable();
+			if (allWereSet)
+			{
+				var.setGuessIndex(indexer.jointIndexFromIndices(indices));
+			}
+			else
+			{
+				var.setGuess(null);
+			}
 		}
 		
 		@Override
@@ -372,6 +384,29 @@ public class JunctionTreeTransformMap
 	@Internal
 	public void updateGuesses()
 	{
+		
+		for (Map.Entry<Variable,Variable> entry : sourceToTargetVariables().entrySet())
+		{
+			Variable sourceVar = entry.getKey();
+			Variable targetVar = entry.getValue();
+			
+			if (!sourceVar.guessWasSet())
+			{
+				targetVar.setGuess(null);
+			}
+			else
+			{
+				if (sourceVar instanceof Discrete)
+				{
+					((Discrete)targetVar).setGuessIndex(((Discrete)sourceVar).getGuessIndex());
+				}
+				else
+				{
+					targetVar.setGuess(sourceVar.getGuess());
+				}
+			}
+		}
+		
 		for (AddedJointVariable<?> added : addedJointVariables())
 		{
 			added.updateGuess();

@@ -20,6 +20,8 @@ import static java.util.Objects.*;
 
 import java.util.Collection;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -29,13 +31,13 @@ import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SBlastFromThePast;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class SRealFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs
 {
 	private Value [] _inputMsgs;
 	private Object[] _outputMsgs;
 	private boolean _visited;
+	private int _topologicalOrder = 0;
 	
 	@SuppressWarnings("null")
 	public SRealFactorBlastFromThePast(BlastFromThePastFactor f)
@@ -91,6 +93,18 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 		return getFactor().getFactorFunction().evalEnergy(inputs);
 	}
 
+	@Override
+	public final int getTopologicalOrder()
+	{
+		return _topologicalOrder ;
+	}
+	
+	@Override
+	public final void setTopologicalOrder(int order)
+	{
+		_topologicalOrder = order;
+	}
+	
 	@Override
 	public void updateNeighborVariableValue(int variableIndex, Value value)
 	{

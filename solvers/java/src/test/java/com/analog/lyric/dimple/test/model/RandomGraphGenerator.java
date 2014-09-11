@@ -18,11 +18,15 @@ package com.analog.lyric.dimple.test.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.Random;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import cern.colt.list.IntArrayList;
 
+import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
@@ -30,7 +34,6 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.ObjectArrays;
 
 /**
@@ -45,6 +48,11 @@ public class RandomGraphGenerator
 	 * State
 	 */
 	
+	public static enum Direction
+	{
+		NONE, BACKWARD, FORWARD;
+	}
+	
 	private static final DiscreteDomain[] _defaultDomains = { DiscreteDomain.bit() };
 
 	private final Random _rand;
@@ -52,6 +60,7 @@ public class RandomGraphGenerator
 	private DiscreteDomain[] _domains = _defaultDomains;
 	private int _maxBranches = 1;
 	private int _maxTreeWidth = 1;
+	private Direction _direction = Direction.NONE;
 	
 	/*--------------
 	 * Construction
@@ -65,6 +74,17 @@ public class RandomGraphGenerator
 	/*-------------------
 	 * Attribute methods
 	 */
+	
+	public Direction direction()
+	{
+		return _direction;
+	}
+	
+	public RandomGraphGenerator direction(Direction direction)
+	{
+		_direction = direction;
+		return this;
+	}
 	
 	public DiscreteDomain[] domains()
 	{
@@ -134,12 +154,12 @@ public class RandomGraphGenerator
 				if (i > 0)
 				{
 					Discrete prev = vars[i-1][j];
-					addClique(graph, prev, var);
+					addClique(graph, var, prev);
 				}
 				if (j > 0)
 				{
 					Discrete prev = vars[i][j-1];
-					addClique(graph, prev, var);
+					addClique(graph, var, prev);
 				}
 			}
 		}
@@ -181,7 +201,7 @@ public class RandomGraphGenerator
 			if (nCliques == 1)
 			{
 				// Just make one big clique
-				addClique(graph, ObjectArrays.concat(roots, vars, Discrete.class));
+				addClique(graph, roots.length, ObjectArrays.concat(roots, vars, Discrete.class));
 			}
 			else
 			{
@@ -213,7 +233,7 @@ public class RandomGraphGenerator
 						cliqueVars[i++] = randomVars.remove(randomVars.size() - 1);
 					}
 					
-					addClique(graph, cliqueVars);
+					addClique(graph, nRootsChosen, cliqueVars);
 				}
 			}
 
@@ -255,7 +275,7 @@ public class RandomGraphGenerator
 		for (int i = 0; i < nChildren; ++i)
 		{
 			Discrete child = newDiscrete();
-			addClique(graph, root, child);
+			addClique(graph, child, root);
 			addRandomTree(graph, childSize - 1, child);
 		}
 	}
@@ -288,18 +308,18 @@ public class RandomGraphGenerator
 		FactorGraph model = new FactorGraph();
 		Discrete c = newDiscrete(3, "c");
 		Discrete d = newDiscrete(3, "d");
-		addClique(model, d, c);
+		addDirectedClique(model, d, c);
 		Discrete i = newDiscrete(3, "i");
 		Discrete g = newDiscrete(5, "g");
 		Discrete s = newDiscrete(10, "s");
-		addClique(model, g, d, i);
-		addClique(model, s, i);
+		addDirectedClique(model, g, d, i);
+		addDirectedClique(model, s, i);
 		Discrete l = newDiscrete(2, "l");
-		addClique(model, l, g);
+		addDirectedClique(model, l, g);
 		Discrete j = newDiscrete(2, "j");
-		addClique(model, j, l, s);
+		addDirectedClique(model, j, l, s);
 		Discrete h = newDiscrete(2, "h");
-		addClique(model, h, g, j);
+		addDirectedClique(model, h, g, j);
 		return model;
 	}
 	
@@ -311,7 +331,7 @@ public class RandomGraphGenerator
 		Discrete c = newDiscrete("c");
 		addClique(model, a, b);
 		addClique(model, b, c);
-		addClique(model, c, a);
+		addClique(model, a, c);
 		return model;
 	}
 	
@@ -333,10 +353,59 @@ public class RandomGraphGenerator
 	 * RandomGraphGenerator methods
 	 */
 	
-	public void addClique(FactorGraph model, Discrete ... variables)
+	public Factor addClique(FactorGraph model, Discrete ... variables)
 	{
+		return addClique(model, 1, variables);
+	}
+	
+	public Factor addClique(FactorGraph model, int nOutputs, Discrete ... variables)
+	{
+		BitSet toSet = new BitSet(variables.length);
+		for (int i = 0; i < nOutputs; ++i)
+		{
+			toSet.set(i);
+		}
+
 		final Factor factor = model.addFactor(randomTable(variables), variables);
 		labelFactor(factor);
+		switch (_direction)
+		{
+		case NONE:
+			break;
+			
+		case BACKWARD:
+			toSet.flip(0, variables.length);
+			//$FALL-THROUGH$
+			
+		case FORWARD:
+			if (factor.hasFactorTable())
+			{
+				IFactorTable table = factor.getFactorTable();
+
+				table.setDirected(toSet);
+				table.normalizeConditional();
+			}
+			factor.setDirectedTo(BitSetUtil.bitsetToIndices(toSet));
+			break;
+		}
+		return factor;
+	}
+	
+	/**
+	 * Adds a directed factor with first variable as output (directedTo).
+	 */
+	public Factor addDirectedClique(FactorGraph model, Discrete ... variables)
+	{
+		Direction prevDirection = _direction;
+		try
+		{
+			_direction = Direction.FORWARD;
+			return addClique(model, variables);
+		}
+		finally
+		{
+			_direction = prevDirection;
+		}
 	}
 	
 	/**

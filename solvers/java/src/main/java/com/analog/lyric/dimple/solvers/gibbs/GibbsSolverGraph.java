@@ -21,6 +21,7 @@ import static java.util.Objects.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -51,7 +52,9 @@ import com.analog.lyric.dimple.factorfunctions.NegativeExpGamma;
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.factorfunctions.Poisson;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.core.DirectedNodeSorter;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
@@ -269,6 +272,13 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 				b.initialize();
 		processDeferredDeterministicUpdates();
 
+		Map<Node,Integer> nodeOrder = DirectedNodeSorter.orderDirectedNodes(fg);
+		for (Factor factor : fg.getFactorsFlat())
+		{
+			ISolverFactorGibbs sfactor = requireNonNull(getSolverFactor(factor));
+			Integer order = nodeOrder.get(factor);
+			sfactor.setTopologicalOrder(order != null ? order : 0);
+		}
 		
 		_scheduleIterator = schedule.iterator();
 		_minPotential = Double.POSITIVE_INFINITY;
@@ -1028,9 +1038,9 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		{
 			if (_deferredDeterministicFactorUpdates == null)
 			{
-				// TODO: Currently uses FIFO order. Instead calculate directed dependency order and use that.
 				_deferredDeterministicFactorUpdates =
-					new KeyedPriorityQueue<ISolverFactorGibbs, SFactorUpdate>(11, SFactorUpdate.Equal.INSTANCE);
+					new KeyedPriorityQueue<ISolverFactorGibbs, SFactorUpdate>(11,
+						SFactorUpdate.DeterministicOrder.INSTANCE);
 			}
 			SFactorUpdate update = requireNonNull(_deferredDeterministicFactorUpdates).get(sfactor);
 			if (update == null)

@@ -23,6 +23,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import cern.colt.list.IntArrayList;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -40,8 +43,6 @@ import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * @since 0.05
@@ -183,6 +184,7 @@ public class JunctionTreeSolverFactor extends SFactorBase
 		beliefTable.setWeightsSparse(delegateTable.getIndicesSparseUnsafe(), beliefs);
 		
 		final IFactorTable convertedTable = FactorTable.convert(beliefTable, reindexer);
+		convertedTable.setDirected(null);
 		convertedTable.normalize();
 		
 		return convertedTable.getWeightsSparseUnsafe();
@@ -219,12 +221,6 @@ public class JunctionTreeSolverFactor extends SFactorBase
 		throw unsupported("moveMessages");
 	}
 	
-	@Override
-	public void setDirectedTo(int[] indices)
-	{
-		throw unsupported("setDirectedTo");
-	}
-
 	/*-----------------
 	 * Private methods
 	 */

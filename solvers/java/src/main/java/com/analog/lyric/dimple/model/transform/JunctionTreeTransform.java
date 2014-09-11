@@ -31,6 +31,9 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BinaryHeap;
 import com.analog.lyric.collect.IHeap;
@@ -55,8 +58,6 @@ import com.analog.lyric.dimple.model.transform.VariableEliminator.VariableCost;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
@@ -714,6 +715,12 @@ public class JunctionTreeTransform
 		final BiMap<Node,Node> old2new = HashBiMap.create(nVariables * 2);
 		final FactorGraph targetModel = model.copyRoot(old2new);
 		targetModel.setSchedule(null); // don't use the copied schedule!
+		
+		// Make copied factors undirected.
+		for (Factor factor : targetModel.getFactorsFlat())
+		{
+			factor.setUndirected();
+		}
 		
 		final JunctionTreeTransformMap transformMap = JunctionTreeTransformMap.create(model, targetModel);
 		

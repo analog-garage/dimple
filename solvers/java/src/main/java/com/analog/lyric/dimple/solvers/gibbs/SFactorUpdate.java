@@ -24,12 +24,13 @@ import java.util.Set;
 
 import net.jcip.annotations.NotThreadSafe;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.IKeyed;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * @since 0.05
@@ -45,15 +46,15 @@ public final class SFactorUpdate implements IKeyed<ISolverFactorGibbs>
 	private @Nullable Set<IndexedValue> _updates;
 	private final int _incrementalUpdateThreshold;
 
-	static enum Equal implements Comparator<SFactorUpdate>
+	static enum DeterministicOrder implements Comparator<SFactorUpdate>
 	{
 		INSTANCE;
 		
 		@Override
 		@NonNullByDefault(false)
-		public int compare(SFactorUpdate o1, SFactorUpdate o2)
+		public int compare(SFactorUpdate u1, SFactorUpdate u2)
 		{
-			return 0;
+			return Integer.compare(u1._sfactor.getTopologicalOrder(), u2._sfactor.getTopologicalOrder());
 		}
 	}
 	
