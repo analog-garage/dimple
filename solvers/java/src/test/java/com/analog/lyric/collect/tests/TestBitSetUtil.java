@@ -33,10 +33,13 @@ public class TestBitSetUtil
 	{
 		BitSet bits = BitSetUtil.bitsetFromIndices(100, 1,4,7,50);
 		assertEquals(4, bits.cardinality());
+		assertArrayEquals(new int[] {1,4,7,50}, BitSetUtil.bitsetToIndices(bits));
 		assertTrue(bits.get(1));
 		assertTrue(bits.get(4));
 		assertTrue(bits.get(7));
 		assertTrue(bits.get(50));
+		
+		assertArrayEquals(new int[0], BitSetUtil.bitsetToIndices(new BitSet()));
 		
 		try
 		{

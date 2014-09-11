@@ -27,6 +27,7 @@ public class BitSetUtil
 	 * 
 	 * @throws IndexOutOfBoundsException if any index is negative or not less than {@code size}.
 	 * @throws IllegalArgumentException if any index is specified more than once.
+	 * @see #bitsetToIndices
 	 */
 	public static BitSet bitsetFromIndices(int size, int ... indices)
 	{
@@ -48,6 +49,22 @@ public class BitSetUtil
 		}
 		
 		return bitset;
+	}
+	
+	/**
+	 * Returns a newly constructed array containing the indices of the non-zero bits.
+	 * @since 0.07
+	 * @see #bitsetFromIndices
+	 */
+	public static int[] bitsetToIndices(BitSet bits)
+	{
+		final int[] indices = new int[bits.cardinality()];
+		for (int i = 0, index = -1, end = indices.length; i < end; ++i)
+		{
+			index = bits.nextSetBit(++index);
+			indices[i] = index;
+		}
+		return indices;
 	}
 
 	/**
