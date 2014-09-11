@@ -569,6 +569,16 @@ public class Factor extends FactorBase implements Cloneable
 		}
 	}
 	
+	public void setUndirected()
+	{
+		_directedTo = null;
+		_directedFrom = null;
+		if (hasFactorTable())
+		{
+			getFactorTable().setDirected(null);
+		}
+	}
+	
 	public boolean isDirectedTo(int edge)
 	{
 		final int[] to = getDirectedTo();
