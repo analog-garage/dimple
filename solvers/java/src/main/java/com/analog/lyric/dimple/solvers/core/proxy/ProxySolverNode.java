@@ -18,19 +18,22 @@ package com.analog.lyric.dimple.solvers.core.proxy;
 
 import net.jcip.annotations.NotThreadSafe;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.events.SolverEventSource;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * @since 0.0.5
  */
 @NotThreadSafe
-public abstract class ProxySolverNode<Delegate extends ISolverNode> extends SolverEventSource implements ISolverNode
+public abstract class ProxySolverNode<Delegate extends ISolverNode>
+	extends SolverEventSource
+	implements ISolverNode, IProxySolverNode<Delegate>
 {
 	/*--------------
 	 * Construction
@@ -177,6 +180,7 @@ public abstract class ProxySolverNode<Delegate extends ISolverNode> extends Solv
 	 * Local methods
 	 */
 	
+	@Override
 	public abstract @Nullable Delegate getDelegate();
 
 	/**

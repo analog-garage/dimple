@@ -331,6 +331,12 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
     	requireSolver("setGuess").setGuess(guess);
     }
 
+    public boolean guessWasSet()
+    {
+    	ISolverVariable svar = _solverVariable;
+    	return svar != null && svar.guessWasSet();
+    }
+    
     public @Nullable Object getGuess()
     {
     	return requireSolver("getGuess").getGuess();

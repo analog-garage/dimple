@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.solvers.core;
 
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.events.SolverEvent;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -27,7 +29,6 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import org.eclipse.jdt.annotation.Nullable;
 
 public abstract class SVariableBase extends SNode implements ISolverVariable
 {

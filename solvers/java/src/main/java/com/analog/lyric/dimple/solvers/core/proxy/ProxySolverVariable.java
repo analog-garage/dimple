@@ -30,7 +30,8 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
  * @since 0.05
  */
 public abstract class ProxySolverVariable<Delegate extends ISolverVariable>
-	extends ProxySolverNode<Delegate> implements ISolverVariable
+	extends ProxySolverNode<Delegate>
+	implements IProxySolverVariable<Delegate>
 {
 	protected final Variable _modelVariable;
 	
@@ -95,6 +96,12 @@ public abstract class ProxySolverVariable<Delegate extends ISolverVariable>
 		return delegate != null ? delegate.getBelief() : null;
 	}
 
+	@Override
+	public boolean guessWasSet()
+	{
+		return requireDelegate("guessWasSet").guessWasSet();
+	}
+	
 	@Override
 	public Object getGuess()
 	{

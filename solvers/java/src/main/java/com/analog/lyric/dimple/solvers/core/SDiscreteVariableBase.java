@@ -92,6 +92,12 @@ public abstract class SDiscreteVariableBase extends SVariableBase implements IDi
 		}
 		return maxBeliefIndex;
 	}
+
+	@Override
+	public boolean guessWasSet()
+	{
+		return _guessWasSet;
+	}
 	
 	@Override
 	public Object getGuess()

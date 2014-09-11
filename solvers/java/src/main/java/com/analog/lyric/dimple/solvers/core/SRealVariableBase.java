@@ -80,6 +80,12 @@ public abstract class SRealVariableBase extends SVariableBase
 	}
 	
 	@Override
+	public boolean guessWasSet()
+	{
+		return _guessWasSet;
+	}
+	
+	@Override
 	public Object getGuess()
 	{
 		if (_guessWasSet)

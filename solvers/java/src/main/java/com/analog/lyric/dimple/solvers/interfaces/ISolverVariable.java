@@ -21,8 +21,21 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.variables.Variable;
 
+/**
+ * Base interface for solver representation of a variable.
+ */
 public interface ISolverVariable extends ISolverNode
 {
+	/**
+	 * The domain of the variable.
+	 * <p>
+	 * Equivalent to:
+	 * <blockquote>
+	 * <pre>
+	 * getModelObject().getDomain();
+	 * </pre>
+	 * </blockquote>
+	 */
 	public Domain getDomain();
 	
 	@Override
@@ -30,9 +43,36 @@ public interface ISolverVariable extends ISolverNode
 	
 	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixedValue);
 	public @Nullable Object getBelief();
+	
 	public Object getValue();
+	
+	/**
+	 * Sets guess to specified value.
+	 * <p>
+	 * @param guess is either null to unset the guess or a valid value for the
+	 * {@linkplain #getDomain domain} of the variable.
+	 * @see #getGuess()
+	 * @see #guessWasSet()
+	 */
     public void setGuess(@Nullable Object guess);
+    
+    /**
+     * Current value of guess for this variable.
+     * <p>
+     * Returns value previously assigned by {@link #setGuess(Object)} or else
+     * returns result of {@link #getValue()}.
+     * @since 0.07
+     */
     public Object getGuess();
+    
+    /**
+     * True if guess has been set.
+     * <p>
+     * @see #getGuess()
+     * @see #setGuess(Object)
+     * @since 0.07
+     */
+    public boolean guessWasSet();
     
     @Override
     public ISolverFactor getSibling(int edge);
