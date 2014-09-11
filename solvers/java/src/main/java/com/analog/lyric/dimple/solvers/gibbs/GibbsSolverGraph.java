@@ -251,9 +251,17 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		// Make sure the schedule is created before factor initialization to allow custom factors to modify the schedule if needed
 		final IGibbsSchedule schedule = _schedule = (IGibbsSchedule)_factorGraph.getSchedule();
 
+		FactorGraph fg = _factorGraph;
+		Map<Node,Integer> nodeOrder = DirectedNodeSorter.orderDirectedNodes(fg);
+		for (Factor factor : fg.getFactorsFlat())
+		{
+			ISolverFactorGibbs sfactor = requireNonNull(getSolverFactor(factor));
+			Integer order = nodeOrder.get(factor);
+			sfactor.setTopologicalOrder(order != null ? order : 0);
+		}
+		
 		// Same as SFactorGraphBase.initialize() but with deferral of deterministic updates
 		_blockInitializers = null;
-		FactorGraph fg = _factorGraph;
 		deferDeterministicUpdates();
 		for (int i = 0, end = fg.getOwnedVariableCount(); i < end; ++i)
 			fg.getOwnedVariable(i).requireSolver("initialize").initialize();
@@ -272,14 +280,6 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 				b.initialize();
 		processDeferredDeterministicUpdates();
 
-		Map<Node,Integer> nodeOrder = DirectedNodeSorter.orderDirectedNodes(fg);
-		for (Factor factor : fg.getFactorsFlat())
-		{
-			ISolverFactorGibbs sfactor = requireNonNull(getSolverFactor(factor));
-			Integer order = nodeOrder.get(factor);
-			sfactor.setTopologicalOrder(order != null ? order : 0);
-		}
-		
 		_scheduleIterator = schedule.iterator();
 		_minPotential = Double.POSITIVE_INFINITY;
 		_firstSample = true;
