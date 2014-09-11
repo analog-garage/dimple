@@ -16,8 +16,10 @@
 
 package com.analog.lyric.dimple.solvers.interfaces;
 
-import com.analog.lyric.dimple.model.variables.Discrete;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.variables.Discrete;
 
 /**
  * 
@@ -27,8 +29,30 @@ import org.eclipse.jdt.annotation.Nullable;
 public interface IDiscreteSolverVariable extends ISolverVariable
 {
 	@Override
+	public DiscreteDomain getDomain();
+	
+	@Override
 	public @Nullable Discrete getModelObject();
 	
+	/**
+	 * Returns index of guess within its domain.
+	 * <p>
+	 * Functionally equivalent to:
+	 * <blockquote>
+	 * <pre>
+	 * getDomain().getIndex(getGuess());
+	 * </pre>
+	 * <blockquote>
+	 * <p>
+	 * @see #getGuess()
+	 */
 	public int getGuessIndex();
-	public void setGuessIndex(int guess);
+
+	/**
+	 * Sets the guess for this variable by its domain index.
+	 * <p>
+	 * @param guessIndex is a valid index for the variable's {@linkplain #getDomain domain}.
+	 * @see #setGuess(Object)
+	 */
+	public void setGuessIndex(int guessIndex);
 }
