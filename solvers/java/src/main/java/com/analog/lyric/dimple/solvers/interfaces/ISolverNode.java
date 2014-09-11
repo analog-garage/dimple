@@ -19,10 +19,11 @@
  */
 package com.analog.lyric.dimple.solvers.interfaces;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.events.ISolverEventSource;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.options.IOptionHolder;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * @author schweitz
@@ -36,7 +37,11 @@ public interface ISolverNode extends IOptionHolder, ISolverEventSource
 	//Update output messages for the specified port number
 	public void updateEdge(int outPortNum) ;
 	
-	//This method is called before solve.  It can be used to reset messages.
+	/**
+	 * Initialize the solver node.
+	 * <p>
+	 * This method is called before solve. It can be used to reset messages.
+	 */
 	public void initialize() ;
 	
 	//This method is called for every edge during initialize.
@@ -47,7 +52,9 @@ public interface ISolverNode extends IOptionHolder, ISolverEventSource
 	 */
 	public @Nullable ISolverFactorGraph getParentGraph();
 	
-	//Gets the highest level graph to which this node belongs.
+	/**
+	 * Gets the highest level solver graph to which this node belongs.
+	 */
 	public @Nullable ISolverFactorGraph getRootGraph();
 
 	/**
@@ -69,7 +76,9 @@ public interface ISolverNode extends IOptionHolder, ISolverEventSource
     public double getInternalEnergy() ;
     public double getBetheEntropy() ;
     
-    //Return the model object associated with this solver node.
+    /**
+     * Return the model object associated with this solver node.
+     */
     public @Nullable INode getModelObject();
     
     //Returns the input messages for a specified port
