@@ -1,0 +1,68 @@
+project.description = 'Javascript front-end'
+
+ext {
+	libDir = new File(rootDir, '/solvers/lib/')
+	jnlpFile = file("dimple-${dimpleVersion}.jnlp")
+	jnlpTemplate = file('jnlp-template.xml')
+	testApplet = file('applet-test.html')
+}
+
+task assemble(dependsOn: 'copyJavaScriptFiles') {
+	group = 'Build'
+}
+
+task copyJavaScriptFiles(dependsOn: 'generateJNLP', type:Copy) {
+	group = 'Build'
+	from(projectDir) { 
+		include('*.html')
+		include('*.js')
+		include('*.jnlp')
+	}
+	into libDir
+}
+
+task generateJNLP(dependsOn: ':solvers:java:copyJars') {
+	group = 'Build'
+	inputs.file(jnlpTemplate)
+	outputs.file(jnlpFile)
+
+	doLast {
+		generateJNLPFromTemplate(jnlpTemplate, jnlpFile, '.')
+	}
+}
+
+def generateJNLPFromTemplate(template, jnlpFile, codebase) {
+
+	// Parse XML template file with no validation, no namespace and allowing DOCTYPE
+    def root = new XmlParser(false, false, true).parse(file(template))
+
+    // Setting values in the jnlp template
+    // Setting root values
+    root.@codebase = codebase
+    root.@href = jnlpFile.name
+
+    // Add jars
+    def resource = root.resources[0]
+    def jars = fileTree(libDir).include('**/*.jar')
+    jars.each {
+        def resourceValues = [href: it.name]
+        if (it.name == "dimple-${dimpleVersion}.jar") {
+            resourceValues = [href: it.name, main: 'true']
+        }
+        resource.appendNode('jar', resourceValues)
+    }
+
+    // Writing the jnlp file filled
+    new XmlNodePrinter(new PrintWriter(jnlpFile)).print(root)
+}
+
+task cleanJavaScript (type:Delete) {
+	group = 'Cleanup'
+
+	delete fileTree(dir: projectDir, include: '*.jnlp')
+	delete fileTree(dir: libDir, includes: ['*.jnlp', '*.js', '*.html'])
+}
+
+task clean(dependsOn: cleanJavaScript) {
+	group = 'Cleanup'
+}

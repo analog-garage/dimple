@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--DOCTYPE jnlp PUBLIC "-//Sun Microsystems, Inc//DTD JNLP Descriptor 6.0//EN" "http://java.sun.com/dtd/JNLP-6.0.dtd"-->
+<jnlp spec="6.0+" codebase="." href="dimple.jnlp">
+	<information>
+		<title>Dimple applet</title>
+		<vendor>Analog Devices Lyric Labs</vendor>
+		<description>Java library for probabilistic inference</description>
+		<offline-allowed/>
+	</information>
+	<resources>
+		<j2se version="1.7+"
+		java-vm-args="-agentlib:jdwp=transport=dt_socket,address=4444,server=y,suspend=n"
+		/>
+	</resources>
+	<applet-desc 
+	 	documentbase = "."
+		height="10" width="10"
+		name="dimple" 
+		main-class="com.analog.lyric.dimple.jsproxy.DimpleApplet" >
+	</applet-desc>
+</jnlp>

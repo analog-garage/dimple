@@ -1,4 +1,4 @@
 
 // Include subprojects
-include 'solvers:java', 'doc', 'modelers:matlab'
+include 'solvers:java', 'doc', 'modelers:matlab', 'modelers:javascript'
 
