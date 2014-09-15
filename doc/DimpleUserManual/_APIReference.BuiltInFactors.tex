@@ -38,6 +38,8 @@ Categorical\newline Unnormalized\newline Parameters & [$\alpha$]...(R)  \newline
 In this alternative version of the Categorical distribution, the $\alpha$ parameters are represented as a vector of unnormalized probability values. The conjugate prior for this representation is such that each entry of $\alpha$ is independently distributed according to a Gamma distribution, all with a common $\beta$ parameter\textsuperscript{\ref{ftn:conugatePrior}}.  \newline
 In the current implementation, the domain of the x variable must be zero-based contiguous integers, $0...N-1$\textsuperscript{\ref{ftn:zeroBaseRestriction}}. \\
 %
+ComplexAbs & out(R) \newline in(C) & [smoothing] & Deterministic complex absolute value, where out = $\sqrt{Re(\mathrm{in}) + Im(\mathrm{in})}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
 ComplexConjugate & out(C) \newline in(C,R) & [smoothing] & Deterministic complex conjugate function, where out = in$^{*}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
 ComplexDivide & quotient(C) \newline dividend(C,R) \newline divisor(C,R) & [smoothing] & Deterministic complex divide function, where $\mathrm{quotient} = \frac{\mathrm{dividend}}{\mathrm{divisor}}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
