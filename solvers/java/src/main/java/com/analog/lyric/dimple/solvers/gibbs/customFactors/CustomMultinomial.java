@@ -34,10 +34,10 @@ import com.analog.lyric.dimple.schedulers.IScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
-import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
-import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
-import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsRealJoint;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
@@ -45,12 +45,12 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-public class CustomMultinomial extends SRealFactor implements IRealJointConjugateFactor, MultinomialBlockProposal.ICustomMultinomial
+public class CustomMultinomial extends GibbsRealFactor implements IRealJointConjugateFactor, MultinomialBlockProposal.ICustomMultinomial
 {
 	private @Nullable Object[] _outputMsgs;
-	private @Nullable SDiscreteVariable[] _outputVariables;
-	private @Nullable SDiscreteVariable _NVariable;
-	private @Nullable SRealJointVariable _alphaVariable;
+	private @Nullable GibbsDiscrete[] _outputVariables;
+	private @Nullable GibbsDiscrete _NVariable;
+	private @Nullable GibbsRealJoint _alphaVariable;
 	private int _dimension;
 	private int _alphaParameterEdge;
 	private int _constantN;
@@ -155,7 +155,7 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 		
 		// Create a block schedule entry with a BlockMHSampler and a MultinomialBlockProposal kernel
 		BlockMHSampler blockSampler = new BlockMHSampler(new MultinomialBlockProposal(this));
-		final SDiscreteVariable[] outputVariables = Objects.requireNonNull(_outputVariables);
+		final GibbsDiscrete[] outputVariables = Objects.requireNonNull(_outputVariables);
 		INode[] nodeList = new INode[outputVariables.length + (_hasConstantN ? 0 : 1)];
 		int nodeIndex = 0;
 		if (!_hasConstantN)
@@ -208,7 +208,7 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 			if (_hasConstantN)
 				_constantN = requireNonNull((Integer)factorFunction.getConstantByIndex(N_PARAMETER_INDEX));
 			else
-				_NVariable = (SDiscreteVariable)((siblings.get(factorFunction.getEdgeByIndex(N_PARAMETER_INDEX))).getSolver());
+				_NVariable = (GibbsDiscrete)((siblings.get(factorFunction.getEdgeByIndex(N_PARAMETER_INDEX))).getSolver());
 			alphaParameterIndex = ALPHA_PARAMETER_INDEX;
 			outputMinIndex = OUTPUT_MIN_INDEX;
 		}
@@ -226,12 +226,12 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 		else
 		{
 			_alphaParameterEdge = factorFunction.getEdgeByIndex(alphaParameterIndex);
-			_alphaVariable = (SRealJointVariable)((siblings.get(_alphaParameterEdge)).getSolver());
+			_alphaVariable = (GibbsRealJoint)((siblings.get(_alphaParameterEdge)).getSolver());
 		}
 		
 		// Save the output constant or variables as well
 		int numOutputEdges = _numPorts - factorFunction.getEdgeByIndex(outputMinIndex);
-		final SDiscreteVariable[] outputVariables = _outputVariables = new SDiscreteVariable[numOutputEdges];
+		final GibbsDiscrete[] outputVariables = _outputVariables = new GibbsDiscrete[numOutputEdges];
 		_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(outputMinIndex);
 		_constantOutputCounts = null;
 		_hasConstantOutput = null;
@@ -253,7 +253,7 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 				{
 					hasConstantOutput[i] = false;
 					int outputEdge = factorFunction.getEdgeByIndex(index);
-					outputVariables[i] = (SDiscreteVariable)((siblings.get(outputEdge)).getSolver());
+					outputVariables[i] = (GibbsDiscrete)((siblings.get(outputEdge)).getSolver());
 				}
 			}
 		}
@@ -263,7 +263,7 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 			for (int i = 0, index = outputMinIndex; i < _dimension; i++, index++)
 			{
 				int outputEdge = factorFunction.getEdgeByIndex(index);
-				outputVariables[i] = (SDiscreteVariable)((siblings.get(outputEdge)).getSolver());
+				outputVariables[i] = (GibbsDiscrete)((siblings.get(outputEdge)).getSolver());
 			}
 		}
 

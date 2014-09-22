@@ -31,10 +31,10 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverRealVariableGibbs;
-import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
-import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
-import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
-import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsRealJoint;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
@@ -45,11 +45,11 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-public class CustomMultiplexer extends SRealFactor implements IRealConjugateFactor, IRealJointConjugateFactor
+public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugateFactor, IRealJointConjugateFactor
 {
 	private @Nullable ISampler[] _conjugateSampler;
 	private @Nullable Object[] _outputMsgs;
-	private @Nullable SDiscreteVariable _selectorVariable;
+	private @Nullable GibbsDiscrete _selectorVariable;
 	private @Nullable ISolverRealVariableGibbs _outputVariable;
 	private int _outputPortNumber;
 	private int _selectorPortNumber;
@@ -107,7 +107,7 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 		if (isPortInputVariable(portNumber))
 		{
 			// If an input variable, then check conjugacy for the output variable among all of its neighbors except this factor
-			SRealVariable outputVariable = ((SRealVariable)_outputVariable);
+			GibbsReal outputVariable = ((GibbsReal)_outputVariable);
 			List<Factor> outputNeighboringFactors = new ArrayList<Factor>();
 			for (Factor n : outputVariable.getModelObject().getSiblings())
 				if (!n.equals(_factor))		// Don't include this factor to test conjugacy
@@ -129,7 +129,7 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 		if (isPortInputVariable(portNumber))
 		{
 			// If an input variable, then check conjugacy for the output variable among all of its neighbors except this factor
-			SRealJointVariable outputVariable = ((SRealJointVariable)_outputVariable);
+			GibbsRealJoint outputVariable = ((GibbsRealJoint)_outputVariable);
 			List<Factor> outputNeighboringFactors = new ArrayList<Factor>();
 			for (Factor n : outputVariable.getModelObject().getSiblings())
 				if (!n.equals(_factor))		// Don't include this factor to test conjugacy
@@ -159,7 +159,7 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 			int varPortNum = _factor.getSiblingPortIndex(port);
 			if (var instanceof Real)
 			{
-				SRealVariable svar = (SRealVariable)var.getSolver();
+				GibbsReal svar = (GibbsReal)var.getSolver();
 				conjugateSampler[port] = svar.getConjugateSampler();
 				
 				if (conjugateSampler[port] != null)
@@ -171,7 +171,7 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 			}
 			else if (var instanceof RealJoint)
 			{
-				SRealJointVariable svar = (SRealJointVariable)var.getSolver();
+				GibbsRealJoint svar = (GibbsRealJoint)var.getSolver();
 				conjugateSampler[port] = svar.getConjugateSampler();
 
 				if (conjugateSampler[port] != null)
@@ -259,7 +259,7 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 		else
 		{
 			_selectorPortNumber = factorFunction.getEdgeByIndex(SELECTOR_INDEX);
-			_selectorVariable = (SDiscreteVariable)(_factor.getSibling(_selectorPortNumber).getSolver());
+			_selectorVariable = (GibbsDiscrete)(_factor.getSibling(_selectorPortNumber).getSolver());
 			_firstInputPortNumber = FIRST_INPUT_PORT_INDEX;
 		}
 	}

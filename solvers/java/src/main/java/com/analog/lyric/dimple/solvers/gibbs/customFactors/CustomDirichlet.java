@@ -28,8 +28,8 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
-import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
-import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsRealJoint;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockInitializer;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
@@ -38,11 +38,11 @@ import com.analog.lyric.math.DimpleRandomGenerator;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-public class CustomDirichlet extends SRealFactor implements IRealJointConjugateFactor
+public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjugateFactor
 {
 	private @Nullable Object[] _outputMsgs;
 	private @Nullable double[] _constantAlphaMinusOne;
-	private @Nullable SRealJointVariable _alphaVariable;
+	private @Nullable GibbsRealJoint _alphaVariable;
 	private int _dimension;
 	private int _numParameterEdges;
 	private boolean _hasConstantParameters;
@@ -139,7 +139,7 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 				_constantAlphaMinusOne = null;
 				List<? extends Variable> siblings = _factor.getSiblings();
 				_alphaVariable =
-					(SRealJointVariable)((siblings.get(factorFunction.getEdgeByIndex(PARAMETER_INDEX))).getSolver());
+					(GibbsRealJoint)((siblings.get(factorFunction.getEdgeByIndex(PARAMETER_INDEX))).getSolver());
 				_dimension = requireNonNull(_alphaVariable).getDimension();
 			}
 		}
@@ -206,7 +206,7 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 						value[i] /= sum;												// Normalize
 
 					// Set the output variable value
-					SRealJointVariable svar = ((SRealJointVariable)((siblings.get(edge)).getSolver()));
+					GibbsRealJoint svar = ((GibbsRealJoint)((siblings.get(edge)).getSolver()));
 					requireNonNull(svar).setCurrentSample(value);
 				}
 			}

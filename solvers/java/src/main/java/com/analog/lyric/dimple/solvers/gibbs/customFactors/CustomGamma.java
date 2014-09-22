@@ -27,20 +27,20 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
-import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
-import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-public class CustomGamma extends SRealFactor implements IRealConjugateFactor
+public class CustomGamma extends GibbsRealFactor implements IRealConjugateFactor
 {
 	private @Nullable Object[] _outputMsgs;
-	private @Nullable SRealVariable[] _outputVariables;
-	private @Nullable SRealVariable _alphaVariable;
-	private @Nullable SRealVariable _betaVariable;
+	private @Nullable GibbsReal[] _outputVariables;
+	private @Nullable GibbsReal _alphaVariable;
+	private @Nullable GibbsReal _betaVariable;
 	private boolean _hasConstantAlpha;
 	private boolean _hasConstantBeta;
 	private boolean _hasConstantOutputs;
@@ -165,7 +165,7 @@ public class CustomGamma extends SRealFactor implements IRealConjugateFactor
 			else					// Variable mean
 			{
 				_alphaParameterPort = factorFunction.getEdgeByIndex(ALPHA_PARAMETER_INDEX);
-				_alphaVariable = (SRealVariable)((siblings.get(_alphaParameterPort)).getSolver());
+				_alphaVariable = (GibbsReal)((siblings.get(_alphaParameterPort)).getSolver());
 				_numParameterEdges++;
 			}
 			
@@ -175,7 +175,7 @@ public class CustomGamma extends SRealFactor implements IRealConjugateFactor
 			else 						// Variable precision
 			{
 				_betaParameterPort = factorFunction.getEdgeByIndex(BETA_PARAMETER_INDEX);
-				_betaVariable = (SRealVariable)((siblings.get(_betaParameterPort)).getSolver());
+				_betaVariable = (GibbsReal)((siblings.get(_betaParameterPort)).getSolver());
 				_numParameterEdges++;
 			}
 		}
@@ -206,7 +206,7 @@ public class CustomGamma extends SRealFactor implements IRealConjugateFactor
 		for (int edge = _numParameterEdges; edge < _numPorts; edge++)
 			if (!(siblings.get(edge).hasFixedValue()))
 				numVariableOutputs++;
-		final SRealVariable[] outputVariables = _outputVariables = new SRealVariable[numVariableOutputs];
+		final GibbsReal[] outputVariables = _outputVariables = new GibbsReal[numVariableOutputs];
 		for (int edge = _numParameterEdges, index = 0; edge < _numPorts; edge++)
 		{
 			Real outputVariable = (Real)siblings.get(edge);
@@ -217,7 +217,7 @@ public class CustomGamma extends SRealFactor implements IRealConjugateFactor
 				_hasConstantOutputs = true;
 			}
 			else
-				outputVariables[index++] = (SRealVariable)outputVariable.getSolver();
+				outputVariables[index++] = (GibbsReal)outputVariable.getSolver();
 		}
 	}
 	

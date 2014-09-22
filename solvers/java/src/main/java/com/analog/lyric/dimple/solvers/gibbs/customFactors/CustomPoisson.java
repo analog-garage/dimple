@@ -27,18 +27,18 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
-import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
-import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-public class CustomPoisson extends SRealFactor implements IRealConjugateFactor
+public class CustomPoisson extends GibbsRealFactor implements IRealConjugateFactor
 {
 	private @Nullable Object[] _outputMsgs;
-	private @Nullable SDiscreteVariable _outputVariable;
+	private @Nullable GibbsDiscrete _outputVariable;
 	private int _lambdaParameterEdge;
 	private int _constantOutputValue;
 	private boolean _hasConstantOutput;
@@ -125,7 +125,7 @@ public class CustomPoisson extends SRealFactor implements IRealConjugateFactor
 			else
 			{
 				int outputEdge = factorFunction.getEdgeByIndex(OUTPUT_INDEX_FIXED_LAMBDA);
-				_outputVariable = (SDiscreteVariable)((siblings.get(outputEdge)).getSolver());
+				_outputVariable = (GibbsDiscrete)((siblings.get(outputEdge)).getSolver());
 			}
 		}
 		else	// Variable or constant lambda parameter
@@ -141,7 +141,7 @@ public class CustomPoisson extends SRealFactor implements IRealConjugateFactor
 			else
 			{
 				int outputEdge = factorFunction.getEdgeByIndex(OUTPUT_INDEX);
-				_outputVariable = (SDiscreteVariable)((siblings.get(outputEdge)).getSolver());
+				_outputVariable = (GibbsDiscrete)((siblings.get(outputEdge)).getSolver());
 			}
 		}
 	}

@@ -29,18 +29,18 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
-import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
-import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
+public class CustomBernoulli extends GibbsRealFactor implements IRealConjugateFactor
 {
 	private @Nullable Object[] _outputMsgs;
-	private @Nullable SDiscreteVariable[] _outputVariables;
+	private @Nullable GibbsDiscrete[] _outputVariables;
 	private int _numParameterEdges;
 	private int _constantOutputZeroCount;
 	private int _constantOutputOneCount;
@@ -64,7 +64,7 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 			@SuppressWarnings("null")
 			BetaParameters outputMsg = (BetaParameters)_outputMsgs[portNum];
 
-			final SDiscreteVariable[] outputVariables = requireNonNull(_outputVariables);
+			final GibbsDiscrete[] outputVariables = requireNonNull(_outputVariables);
 			
 			// Start with the ports to variable outputs
 			int numZeros = 0;
@@ -171,7 +171,7 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 		for (int edge = _numParameterEdges; edge < _numPorts; edge++)
 			if (!(siblings.get(edge).hasFixedValue()))
 				numVariableOutputs++;
-		final SDiscreteVariable[] outputVariables = _outputVariables = new SDiscreteVariable[numVariableOutputs];
+		final GibbsDiscrete[] outputVariables = _outputVariables = new GibbsDiscrete[numVariableOutputs];
 		for (int edge = _numParameterEdges, index = 0; edge < _numPorts; edge++)
 		{
 			Discrete outputVariable = (Discrete)siblings.get(edge);
@@ -185,7 +185,7 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 				_hasConstantOutputs = true;
 			}
 			else
-				outputVariables[index++] = (SDiscreteVariable)outputVariable.getSolver();
+				outputVariables[index++] = (GibbsDiscrete)outputVariable.getSolver();
 		}
 	}
 	

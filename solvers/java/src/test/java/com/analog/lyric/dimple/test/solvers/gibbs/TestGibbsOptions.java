@@ -28,9 +28,9 @@ import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
-import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
-import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
-import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsRealJoint;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
 /**
@@ -70,12 +70,12 @@ public class TestGibbsOptions extends DimpleTestBase
 		
 		// Test default initialization
 		GibbsSolverGraph sfg = requireNonNull(fg.setSolverFactory(new GibbsSolver()));
-		SDiscreteVariable sb1 = (SDiscreteVariable)sfg.getSolverVariable(b1);
-		SDiscreteVariable sb2 = (SDiscreteVariable)sfg.getSolverVariable(b2);
-		SRealVariable sr1 = (SRealVariable)sfg.getSolverVariable(r1);
-		SRealVariable sr2 = (SRealVariable)sfg.getSolverVariable(r2);
-		SRealJointVariable sj1 = (SRealJointVariable)sfg.getSolverVariable(j1);
-		SRealJointVariable sj2 = (SRealJointVariable)sfg.getSolverVariable(j2);
+		GibbsDiscrete sb1 = (GibbsDiscrete)sfg.getSolverVariable(b1);
+		GibbsDiscrete sb2 = (GibbsDiscrete)sfg.getSolverVariable(b2);
+		GibbsReal sr1 = (GibbsReal)sfg.getSolverVariable(r1);
+		GibbsReal sr2 = (GibbsReal)sfg.getSolverVariable(r2);
+		GibbsRealJoint sj1 = (GibbsRealJoint)sfg.getSolverVariable(j1);
+		GibbsRealJoint sj2 = (GibbsRealJoint)sfg.getSolverVariable(j2);
 		
 		assertEquals(GibbsOptions.numSamples.defaultIntValue(), sfg.getNumSamples());
 		assertEquals(GibbsOptions.numRandomRestarts.defaultIntValue(), sfg.getNumRestarts());
@@ -93,12 +93,12 @@ public class TestGibbsOptions extends DimpleTestBase
 		// Test initialization from options
 		fg.setSolverFactory(null);
 		sfg = requireNonNull(fg.setSolverFactory(new GibbsSolver()));
-		sb1 = requireNonNull((SDiscreteVariable)sfg.getSolverVariable(b1));
-		sb2 = requireNonNull((SDiscreteVariable)sfg.getSolverVariable(b2));
-		sr1 = requireNonNull((SRealVariable)sfg.getSolverVariable(r1));
-		sr2 = requireNonNull((SRealVariable)sfg.getSolverVariable(r2));
-		sj1 = requireNonNull((SRealJointVariable)sfg.getSolverVariable(j1));
-		sj2 = requireNonNull((SRealJointVariable)sfg.getSolverVariable(j2));
+		sb1 = requireNonNull((GibbsDiscrete)sfg.getSolverVariable(b1));
+		sb2 = requireNonNull((GibbsDiscrete)sfg.getSolverVariable(b2));
+		sr1 = requireNonNull((GibbsReal)sfg.getSolverVariable(r1));
+		sr2 = requireNonNull((GibbsReal)sfg.getSolverVariable(r2));
+		sj1 = requireNonNull((GibbsRealJoint)sfg.getSolverVariable(j1));
+		sj2 = requireNonNull((GibbsRealJoint)sfg.getSolverVariable(j2));
 		fg.setOption(GibbsOptions.numSamples, 3);
 		fg.setOption(GibbsOptions.numRandomRestarts, 2);
 		fg.setOption(GibbsOptions.scansPerSample, 2);

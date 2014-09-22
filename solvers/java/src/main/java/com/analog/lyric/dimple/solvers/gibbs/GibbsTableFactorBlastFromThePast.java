@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2013 Analog Devices, Inc.
+*   Copyright 2012 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -16,35 +16,32 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
-import static java.util.Objects.*;
-
 import java.util.Collection;
 
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Port;
-import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
+import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SBlastFromThePast;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 
-public class SRealFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs
+public class GibbsTableFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs
 {
-	private Value [] _inputMsgs;
-	private Object[] _outputMsgs;
-	private boolean _visited;
+    protected int _numPorts;
+	private @Nullable double [] _outputMsg;
+	private @Nullable DiscreteValue _inputMsg;
+	private boolean _visited = false;
 	private int _topologicalOrder = 0;
 	
-	@SuppressWarnings("null")
-	public SRealFactorBlastFromThePast(BlastFromThePastFactor f)
+	public GibbsTableFactorBlastFromThePast(BlastFromThePastFactor f)
 	{
 		super(f);
 	}
-	
+
 	@Override
 	public void createMessages(Variable var, Port port)
 	{
@@ -52,22 +49,12 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 		getMessages();
 	}
 	
+	@SuppressWarnings("null")
 	private void getMessages()
 	{
-		@SuppressWarnings("null")
-		Variable vb = (Variable)_portForOtherVar.node;
-		@SuppressWarnings("null")
-		int index = _portForOtherVar.index;
-		Factor f = vb.getSibling(index);
-		ISolverFactor sf = requireNonNull(f.getSolver());
-		int numEdges = f.getSiblingCount();
-		_inputMsgs = new Value[numEdges];
-		_outputMsgs = new Object[numEdges];
-		for (int i = 0; i < numEdges; i++)
-		{
-			_inputMsgs[i] = (Value)sf.getInputMsg(i);
-			_outputMsgs[i] = sf.getOutputMsg(i);
-		}
+		_outputMsg = (double[])getOtherVariablePort().node.getSolver().getInputMsg(getOtherVariablePort().index);
+		_inputMsg = (DiscreteValue)getOtherVariablePort().node.getSolver().getOutputMsg(getOtherVariablePort().index);
+		
 	}
 	
 	@Override
@@ -77,22 +64,15 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 		getMessages();
 	}
 
+	@SuppressWarnings("null")
 	@Override
 	public double getPotential()
 	{
-	    int numPorts = _inputMsgs.length;
-	    Object[] inPortMsgs = new Object[numPorts];
-	    for (int port = 0; port < numPorts; port++)
-	    	inPortMsgs[port] = _inputMsgs[port].getObject();
-	    
-	    return getPotential(inPortMsgs);
+		final DiscreteValue inputMsg = _inputMsg;
+		final double[] outputMsg = _outputMsg;
+		return inputMsg != null & outputMsg != null ? outputMsg[inputMsg.getIndex()] : Double.POSITIVE_INFINITY;
 	}
 	
-	public double getPotential(Object[] inputs)
-	{
-		return getFactor().getFactorFunction().evalEnergy(inputs);
-	}
-
 	@Override
 	public final int getTopologicalOrder()
 	{
@@ -106,7 +86,7 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 	}
 	
 	@Override
-	public void updateNeighborVariableValue(int variableIndex, Value value)
+	public void updateNeighborVariableValue(int variableIndex, Value oldValue)
 	{
 		throw DimpleException.unsupportedMethod(getClass(), "updateNeighborVariableValue");
 	}
@@ -120,13 +100,7 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 	@Override
 	public void updateEdgeMessage(int portIndex)
 	{
-		// Do nothing
-	}
-	
-	@Override
-	public Object getOutputMsg(int portIndex)
-	{
-		return _outputMsgs[portIndex];
+		//NOP
 	}
 
 	@Override
@@ -136,4 +110,5 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 		_visited = visited;
 		return changed;
 	}
+
 }
