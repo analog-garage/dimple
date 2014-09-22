@@ -184,7 +184,11 @@ classdef VariableBase < Node
         end
         
         function z = abs(a)
-            z = addUnaryOperatorOverloadedFactor(a,@abs,com.analog.lyric.dimple.factorfunctions.Abs);
+            if (isa(a,'Complex')) % Must be a variable
+                z = addComplexToRealUnaryOperatorOverloadedFactor(a,com.analog.lyric.dimple.factorfunctions.ComplexAbs);
+            else
+                z = addUnaryOperatorOverloadedFactor(a,@abs,com.analog.lyric.dimple.factorfunctions.Abs);
+            end
         end
 
         function z = log(a)
@@ -552,6 +556,22 @@ classdef VariableBase < Node
             % output variable must be Complex
             vs = num2cell(vectorSize);
             z = Complex(vs{:});
+            fg = getFactorGraph();
+            fg.addFactorVectorized(factor,z,a);
+                
+        end
+        
+        
+        function z = addComplexToRealUnaryOperatorOverloadedFactor(a,factor)
+            vectorSize = size(a);
+
+            if (~isa(factor, 'com.analog.lyric.dimple.factorfunctions.core.FactorFunction'))
+                error('Can only override faction functions for complex-valued operators');
+            end
+            
+            % output variable must be Real
+            vs = num2cell(vectorSize);
+            z = Real(vs{:});
             fg = getFactorGraph();
             fg.addFactorVectorized(factor,z,a);
                 

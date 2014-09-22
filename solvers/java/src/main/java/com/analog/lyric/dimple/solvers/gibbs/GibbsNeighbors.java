@@ -28,17 +28,18 @@ import java.util.concurrent.atomic.AtomicReference;
 import net.jcip.annotations.Immutable;
 import net.jcip.annotations.NotThreadSafe;
 
-import com.analog.lyric.collect.UnmodifiableReleasableIterator;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.ReleasableArrayIterator;
 import com.analog.lyric.collect.ReleasableIterable;
 import com.analog.lyric.collect.ReleasableIterator;
+import com.analog.lyric.collect.UnmodifiableReleasableIterator;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Variable;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Represents the neighbors of a {@link ISolverVariableGibbs} that need to be included in the variable's
@@ -59,6 +60,7 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 	 */
 	
 	private final ISolverNodeGibbs[] _neighbors;
+	private final GibbsSolverGraph _rootSolverGraph;
 	
 	/**
 	 * Contains list of directed deterministic factors that are directed from the
@@ -70,10 +72,11 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 	 * Construction
 	 */
 	
-	private GibbsNeighbors(ISolverNodeGibbs[] neighbors, @Nullable FactorWork[] immediateDependentFactors)
+	private GibbsNeighbors(ISolverNodeGibbs[] neighbors, @Nullable FactorWork[] immediateDependentFactors, GibbsSolverGraph rootSolverGraph)
 	{
 		_neighbors = neighbors;
 		_adjacentDependentFactors = immediateDependentFactors;
+		_rootSolverGraph = rootSolverGraph;
 	}
 	
 	/**
@@ -145,7 +148,7 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 				}
 			}
 			
-			return new GibbsNeighbors(neighbors, adjacentDependentFactors);
+			return new GibbsNeighbors(neighbors, adjacentDependentFactors, (GibbsSolverGraph)requireNonNull(svar.getRootGraph()));
 		}
 		else
 		{
@@ -327,6 +330,7 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 		final FactorWork[] adjacentDependentFactors = _adjacentDependentFactors;
 		if (adjacentDependentFactors != null)
 		{
+			_rootSolverGraph.deferDeterministicUpdates();
 			ReleasableIterator<FactorWork> dependentFactors = ReleasableArrayIterator.create(adjacentDependentFactors);
 			while (dependentFactors.hasNext())
 			{
@@ -334,6 +338,7 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 				factor._factorNode.updateNeighborVariableValue(factor._incomingEdge, oldValue);
 			}
 			dependentFactors.release();
+			_rootSolverGraph.processDeferredDeterministicUpdates();
 		}
 	}
 	

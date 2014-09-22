@@ -1073,7 +1073,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	{
 		if (--_deferDeterministicFactorUpdatesCounter <= 0)
 		{
-			++_deferDeterministicFactorUpdatesCounter;
+			_deferDeterministicFactorUpdatesCounter = 1;
 			final KeyedPriorityQueue<ISolverFactorGibbs, SFactorUpdate> deferredUpdates =
 				_deferredDeterministicFactorUpdates;
 			if (deferredUpdates != null)
@@ -1084,8 +1084,8 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 					update.performUpdate();
 				}
 			}
+			_deferDeterministicFactorUpdatesCounter = 0;
 		}
-		--_deferDeterministicFactorUpdatesCounter;
 	}
 	
 	public void deferDeterministicUpdates()
