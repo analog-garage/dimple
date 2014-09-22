@@ -40,7 +40,7 @@ public interface IOptionHolder
 	public void clearLocalOptions();
 	
 	/**
-	 * Iterators over options set directly on this object.
+	 * Read-only collection describing options that are set directly on this object.
 	 * <p>
 	 * This does not include options set on {@linkplain #getOptionDelegates() delegates}.
 	 * 
@@ -117,9 +117,19 @@ public interface IOptionHolder
 	public <T extends Serializable> void setOption(IOptionKey<T> key, T value);
 	
 	/**
+	 * Indicates whether object supports local storage of options.
+	 * <p>
+	 * If true, then option values may be set directly on this object using the {@link #setOption} method;
+	 * otherwise that method will throw an exception.
+	 * <p>
+	 * @since 0.07
+	 */
+	public boolean supportsLocalOptions();
+	
+	/**
 	 * Unsets local option with given key.
 	 * <p>
-	 * Removes option setting on this object for given key. This does not affect
+	 * Removes option setting on this object for given key if such a setting exists. This does not affect
 	 * option settings on other objects.
 	 * <p>
 	 * @param key is a non-null option key.

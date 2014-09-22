@@ -127,6 +127,17 @@ public class LocalOptionHolder extends AbstractOptionHolder
 		createLocalOptionMap().put(key, key.validate(value, this));
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * This implementation returns true.
+	 */
+	@Override
+	public boolean supportsLocalOptions()
+	{
+		return true;
+	}
+	
 	@Override
 	public void unsetOption(IOptionKey<?> key)
 	{
