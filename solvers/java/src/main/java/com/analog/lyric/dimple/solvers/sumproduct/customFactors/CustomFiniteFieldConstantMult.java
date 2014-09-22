@@ -22,17 +22,18 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
-import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldVariable;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductFiniteFieldVariable;
 
 
 
+@SuppressWarnings("deprecation") // TODO remove when SFiniteFieldFactor removed
 public class CustomFiniteFieldConstantMult extends SFiniteFieldFactor
 {
 	
 	private int _constant;
 	private int _dlogConstant;
-	private SFiniteFieldVariable _varInput;
-	private SFiniteFieldVariable _varOutput;
+	private SumProductFiniteFieldVariable _varInput;
+	private SumProductFiniteFieldVariable _varOutput;
 	//private Port _varInputPort;
 	//private Port _varOutputPort;
 	
@@ -51,10 +52,10 @@ public class CustomFiniteFieldConstantMult extends SFiniteFieldFactor
 		
 		//ArrayList<Port> ports = _factor.getPorts();
 
-		_varInput = (SFiniteFieldVariable)Objects.requireNonNull(factor.getSibling(0).getSolver());
+		_varInput = (SumProductFiniteFieldVariable)Objects.requireNonNull(factor.getSibling(0).getSolver());
 		//_varInputPort = ports.get(0);
 
-		_varOutput = (SFiniteFieldVariable)Objects.requireNonNull(factor.getSibling(1).getSolver());
+		_varOutput = (SumProductFiniteFieldVariable)Objects.requireNonNull(factor.getSibling(1).getSolver());
 		
 		//_varOutputPort = ports.get(1);
 		assignConstant((int)(double)(Double)constants[0]);

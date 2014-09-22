@@ -30,9 +30,9 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateApproach;
 import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateOptions;
-import com.analog.lyric.dimple.solvers.sumproduct.SDiscreteVariable;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscrete;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
-import com.analog.lyric.dimple.solvers.sumproduct.STableFactor;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductTableFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductOptions;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolver;
 import com.analog.lyric.dimple.solvers.sumproduct.sampledfactor.SampledFactor;
@@ -73,10 +73,10 @@ public class TestSumProductOptions extends DimpleTestBase
 		// Check initial defaults
 		SumProductSolverGraph sfg = requireNonNull(fg.setSolverFactory(new SumProductSolver()));
 		assertEquals(0.0, sfg.getDamping(), 0.0);
-		STableFactor sf1 = (STableFactor)requireNonNull(f1.getSolver());
+		SumProductTableFactor sf1 = (SumProductTableFactor)requireNonNull(f1.getSolver());
 		assertEquals(0, sf1.getK());
 		assertEquals(0.0, sf1.getDamping(0), 0.0);
-		STableFactor sf2 = (STableFactor)requireNonNull(f2.getSolver());
+		SumProductTableFactor sf2 = (SumProductTableFactor)requireNonNull(f2.getSolver());
 		assertEquals(0.0, sf2.getDamping(0), 0.0);
 		assertEquals(0, sf2.getK());
 		assertEquals(UpdateApproach.UPDATE_APPROACH_NORMAL, sf1.getOptionOrDefault(UpdateOptions.updateApproach));
@@ -102,9 +102,9 @@ public class TestSumProductOptions extends DimpleTestBase
 		sfg = requireNonNull(fg.setSolverFactory(new SumProductSolver()));
 		assertEquals(0.0, sfg.getDamping(), 0.0);
 		assertEquals(0.0, sf1.getDamping(0), 0.0);
-		sf1 = (STableFactor)requireNonNull(f1.getSolver());
+		sf1 = (SumProductTableFactor)requireNonNull(f1.getSolver());
 		assertEquals(0, sf1.getK());
-		sf2 = (STableFactor)requireNonNull(f2.getSolver());
+		sf2 = (SumProductTableFactor)requireNonNull(f2.getSolver());
 		assertEquals(0, sf2.getK());
 		assertEquals(SampledFactor.DEFAULT_BURN_IN_SCANS_PER_UPDATE, sfg.getSampledFactorBurnInScansPerUpdate());
 		assertEquals(SampledFactor.DEFAULT_SAMPLES_PER_UPDATE, sfg.getSampledFactorSamplesPerUpdate());
@@ -113,7 +113,7 @@ public class TestSumProductOptions extends DimpleTestBase
 		assertEquals((Integer)SampledFactor.DEFAULT_SCANS_PER_SAMPLE, sfg.getLocalOption(GibbsOptions.scansPerSample));
 		assertEquals((Integer)SampledFactor.DEFAULT_BURN_IN_SCANS_PER_UPDATE,
 			sfg.getLocalOption(GibbsOptions.burnInScans));
-		SDiscreteVariable sv1 = (SDiscreteVariable)vars[0].getSolver();
+		SumProductDiscrete sv1 = (SumProductDiscrete)vars[0].getSolver();
 		assertEquals(0.0, sv1.getDamping(0), 0.0);
 		
 		sfg.initialize();

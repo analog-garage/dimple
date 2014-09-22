@@ -87,9 +87,9 @@ public class TestFactorGraph extends DimpleTestBase
 		
 		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
 		assertTrue(fg.getSolver() instanceof com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph);
-		assertTrue(b1.getSolver() instanceof com.analog.lyric.dimple.solvers.sumproduct.SDiscreteVariable);
-		assertTrue(b2.getSolver() instanceof com.analog.lyric.dimple.solvers.sumproduct.SDiscreteVariable);
-		assertTrue(sum1.getSolver() instanceof com.analog.lyric.dimple.solvers.sumproduct.STableFactor);
+		assertTrue(b1.getSolver() instanceof com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscrete);
+		assertTrue(b2.getSolver() instanceof com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscrete);
+		assertTrue(sum1.getSolver() instanceof com.analog.lyric.dimple.solvers.sumproduct.SumProductTableFactor);
 		
 		fg.setSolverFactory(null);
 		assertNull(fg.getSolver());

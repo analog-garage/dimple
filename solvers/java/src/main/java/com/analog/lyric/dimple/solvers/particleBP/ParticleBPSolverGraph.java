@@ -34,6 +34,7 @@ import com.analog.lyric.math.DimpleRandomGenerator;
  *  <p>
  * @since 0.07
  */
+@SuppressWarnings("deprecation") // TODO remove when SDiscreteVariable removed
 public class ParticleBPSolverGraph extends SFactorGraphBase
 {
 	protected int _numIterationsBetweenResampling = 1;
@@ -67,12 +68,12 @@ public class ParticleBPSolverGraph extends SFactorGraphBase
 	}
 	
 
+	@SuppressWarnings("deprecation") // TODO remove when S*Variable classes removed.
 	@Override
 	public ISolverVariable createVariable(Variable var)
 	{
 		if (var.getModelerClassName().equals("Real"))
 		{
-			@SuppressWarnings("deprecation")
 			ParticleBPReal v = new SRealVariable(var);
 //			v.setNumParticles(_defaultNumParticles);
 			return v;

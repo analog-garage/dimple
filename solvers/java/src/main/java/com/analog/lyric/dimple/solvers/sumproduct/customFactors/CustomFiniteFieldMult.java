@@ -23,11 +23,13 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldVariable;
-import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldVariable.LookupTables;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductFiniteFieldVariable;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductFiniteFieldVariable.LookupTables;
 
 //import edu.emory.mathcs.jtransforms.fft.DoubleFFT_1D;
 import edu.emory.mathcs.jtransforms.fft.DoubleFFT_1D;
 
+@SuppressWarnings("deprecation") // TODO remove when SFiniteFieldFactor removed
 public class CustomFiniteFieldMult extends SFiniteFieldFactor
 {
 	//TODO: store this here or cache somewhere else?
@@ -48,10 +50,10 @@ public class CustomFiniteFieldMult extends SFiniteFieldFactor
 		final Discrete v0 = requireNonNull((Discrete)factor.getSibling(0));
 		
 		//TODO: error check
-		int poly = ((SFiniteFieldVariable)v0.getSolver()).getTables().getPoly();
+		int poly = ((SumProductFiniteFieldVariable)v0.getSolver()).getTables().getPoly();
 		for (int i = 1; i < 3; i++)
 		{
-			if (((SFiniteFieldVariable)factor.getSibling(i).getSolver()).getTables().getPoly() != poly)
+			if (((SumProductFiniteFieldVariable)factor.getSibling(i).getSolver()).getTables().getPoly() != poly)
 			{
 				//TODO: better error message
 				throw new DimpleException("polys don't match");
@@ -164,7 +166,7 @@ public class CustomFiniteFieldMult extends SFiniteFieldFactor
 
 		
 		@SuppressWarnings("null")
-		final LookupTables tables = ((SFiniteFieldVariable)_factor.getSibling(0).getSolver()).getTables();
+		final LookupTables tables = ((SumProductFiniteFieldVariable)_factor.getSibling(0).getSolver()).getTables();
 		int [] dlogTable = tables.getDlogTable();
 		int [] powTable = tables.getPowerTable();
 		

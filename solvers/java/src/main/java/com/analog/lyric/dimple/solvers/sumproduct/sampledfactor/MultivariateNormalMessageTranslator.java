@@ -31,7 +31,7 @@ import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealJoint;
-import com.analog.lyric.dimple.solvers.sumproduct.SRealJointVariable;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductRealJoint;
 
 public class MultivariateNormalMessageTranslator extends MessageTranslatorBase
 {
@@ -140,7 +140,7 @@ public class MultivariateNormalMessageTranslator extends MessageTranslatorBase
 	@Override
 	public final void initialize()
 	{
-		SRealJointVariable var = (SRealJointVariable)_port.node.getSibling(_port.index).getSolver();
+		SumProductRealJoint var = (SumProductRealJoint)_port.node.getSibling(_port.index).getSolver();
 		_outputMessage = (MultivariateNormalParameters)var.resetInputMessage(_outputMessage);
 		_inputMessage = (MultivariateNormalParameters)var.resetInputMessage(_inputMessage);
 		_solverVariable = (GibbsRealJoint)_variable.getSolver();
