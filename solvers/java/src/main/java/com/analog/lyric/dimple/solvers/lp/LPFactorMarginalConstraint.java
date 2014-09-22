@@ -82,14 +82,14 @@ public final class LPFactorMarginalConstraint extends IntegerEquation
 	 * State
 	 */
 	
-	private final STableFactor _sfactor;
+	private final LPTableFactor _sfactor;
 	private final int[] _lpVars;
 	
 	/*---------------
 	 * Construction
 	 */
 	
-	public LPFactorMarginalConstraint(STableFactor sfactor, int...lpVars)
+	public LPFactorMarginalConstraint(LPTableFactor sfactor, int...lpVars)
 	{
 		_sfactor = sfactor;
 		_lpVars = lpVars;
@@ -158,7 +158,7 @@ public final class LPFactorMarginalConstraint extends IntegerEquation
 	/**
 	 * Returns the Dimple solver factor for which this constraint was generated.
 	 */
-	public STableFactor getSolverFactor()
+	public LPTableFactor getSolverFactor()
 	{
 		return _sfactor;
 	}

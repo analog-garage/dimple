@@ -84,7 +84,7 @@ public final class LPVariableConstraint extends IntegerEquation
 		}
 	}
 
-	private final SVariable _svar;
+	private final LPDiscrete _svar;
 	private final int _firstLpVar;
 	private final int _size;
 	
@@ -92,7 +92,7 @@ public final class LPVariableConstraint extends IntegerEquation
 	 * Construction
 	 */
 	
-	LPVariableConstraint(SVariable svar)
+	LPVariableConstraint(LPDiscrete svar)
 	{
 		_svar = svar;
 		_firstLpVar = svar.getLPVarIndex();
@@ -166,7 +166,7 @@ public final class LPVariableConstraint extends IntegerEquation
 	/**
 	 * Returns the Dimple solver variable for which this constraint was generated.
 	 */
-	public SVariable getSolverVariable()
+	public LPDiscrete getSolverVariable()
 	{
 		return _svar;
 	}
