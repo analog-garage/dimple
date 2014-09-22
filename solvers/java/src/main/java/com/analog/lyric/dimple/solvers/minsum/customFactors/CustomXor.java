@@ -18,14 +18,16 @@ package com.analog.lyric.dimple.solvers.minsum.customFactors;
 
 import static java.util.Objects.*;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import org.eclipse.jdt.annotation.NonNull;
 
+@SuppressWarnings("deprecation") // TODO remove when STableFactor removed
 public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFactor
 {
 	private double[][] _inPortMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;

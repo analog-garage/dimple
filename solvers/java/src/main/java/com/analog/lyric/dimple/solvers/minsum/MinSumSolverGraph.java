@@ -72,6 +72,7 @@ public class MinSumSolverGraph extends SFactorGraphBase
 		super.initialize();
 	}
 	
+	@SuppressWarnings("deprecation") // TODO remove when SVariable removed
 	@Override
 	public ISolverVariable createVariable(com.analog.lyric.dimple.model.variables.Variable var)
 	{
@@ -82,6 +83,7 @@ public class MinSumSolverGraph extends SFactorGraphBase
 	}
 
 
+	@SuppressWarnings("deprecation") // TODO remove when SVariable removed
 	@Override
 	public ISolverFactor createFactor(Factor factor)
 	{
@@ -95,10 +97,12 @@ public class MinSumSolverGraph extends SFactorGraphBase
 		{
 			return new CustomXor(factor);
 		}
-		else if (noFF && (factorName.equals("CustomXor") || factorName.equals("customXor")))		// For backward compatibility
+		else if (noFF && (factorName.equals("CustomXor") || factorName.equals("customXor")))
 		{
+			// For backward compatibility
 			return new CustomXor(factor);
-		}else			// No custom factor exists, so create a generic one
+		}
+		else // No custom factor exists, so create a generic one
 		{
 			return new STableFactor(factor);
 		}
