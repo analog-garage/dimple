@@ -29,6 +29,8 @@ import net.sf.javailp.Problem;
 import net.sf.javailp.Result;
 import net.sf.javailp.SolverFactory;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -41,7 +43,6 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.lp.IntegerEquation.TermIterator;
 import com.analog.lyric.util.misc.Matlab;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Solver-specific factor graph for LP solver.
@@ -266,6 +267,7 @@ public class LPSolverGraph extends SFactorGraphBase
 	 * ISolverFactorGraph methods
 	 */
 	
+	@SuppressWarnings("deprecation") // TODO remove when STableFactor removed
 	@Override
 	public LPTableFactor createFactor(Factor factor)
 	{
@@ -279,7 +281,7 @@ public class LPSolverGraph extends SFactorGraphBase
 					factor.getName());
 			}
 
-			sfactor = new LPTableFactor(this, (DiscreteFactor)factor);
+			sfactor = new STableFactor(this, (DiscreteFactor)factor);
 			_factorMap.put(factor,  sfactor);
 		}
 		
@@ -292,6 +294,7 @@ public class LPSolverGraph extends SFactorGraphBase
 		return createVariable(var, false);
 	}
 
+	@SuppressWarnings("deprecation") // TODO remove when SVariable removed
 	private LPDiscrete createVariable(Variable var, boolean copyInputs)
 	{
 		LPDiscrete svar = _varMap.get(var);
@@ -308,7 +311,7 @@ public class LPSolverGraph extends SFactorGraphBase
 			svar = var.getSolverIfTypeAndGraph(LPDiscrete.class, this);
 			if (svar == null)
 			{
-				svar = new LPDiscrete(this, (Discrete)var);
+				svar = new SVariable(this, (Discrete)var);
 			}
 			else
 			{

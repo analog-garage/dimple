@@ -30,7 +30,7 @@ import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel
 import com.analog.lyric.dimple.solvers.particleBP.ParticleBPOptions;
 import com.analog.lyric.dimple.solvers.particleBP.ParticleBPSolver;
 import com.analog.lyric.dimple.solvers.particleBP.ParticleBPSolverGraph;
-import com.analog.lyric.dimple.solvers.particleBP.SRealVariable;
+import com.analog.lyric.dimple.solvers.particleBP.ParticleBPReal;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
 /**
@@ -63,8 +63,8 @@ public class TestParticleBPOptions extends DimpleTestBase
 		
 		// Test default initialization on graph
 		ParticleBPSolverGraph sfg = requireNonNull(fg.setSolverFactory(new ParticleBPSolver()));
-		SRealVariable sr1 = (SRealVariable)sfg.getSolverVariable(r1);
-		SRealVariable sr2 = (SRealVariable)sfg.getSolverVariable(r2);
+		ParticleBPReal sr1 = (ParticleBPReal)sfg.getSolverVariable(r1);
+		ParticleBPReal sr2 = (ParticleBPReal)sfg.getSolverVariable(r2);
 		sfg.initialize();
 		assertFalse(sfg.isTemperingEnabled());
 		assertEquals(1.0, sfg.getInitialTemperature(), 0.0);
@@ -91,8 +91,8 @@ public class TestParticleBPOptions extends DimpleTestBase
 		r2.setOption(ParticleBPOptions.proposalKernel, NormalProposalKernel.class);
 		r2.setOption(NormalProposalKernel.standardDeviation, 1.2);
 		sfg = requireNonNull(fg.setSolverFactory(new ParticleBPSolver()));
-		sr1 = (SRealVariable)sfg.getSolverVariable(r1);
-		sr2 = (SRealVariable)sfg.getSolverVariable(r2);
+		sr1 = (ParticleBPReal)sfg.getSolverVariable(r1);
+		sr2 = (ParticleBPReal)sfg.getSolverVariable(r2);
 		
 		// These take effect on construction
 		assertEquals(2, sr1.getNumParticles());

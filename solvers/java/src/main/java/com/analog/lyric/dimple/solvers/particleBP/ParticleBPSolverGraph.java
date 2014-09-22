@@ -56,6 +56,7 @@ public class ParticleBPSolverGraph extends SFactorGraphBase
 	}
 
 
+	@SuppressWarnings("deprecation") // TODO remove when S*Factor classes removed.
 	@Override
 	public ISolverFactor createFactor(Factor factor)
 	{
@@ -71,7 +72,8 @@ public class ParticleBPSolverGraph extends SFactorGraphBase
 	{
 		if (var.getModelerClassName().equals("Real"))
 		{
-			SRealVariable v = new SRealVariable(var);
+			@SuppressWarnings("deprecation")
+			ParticleBPReal v = new SRealVariable(var);
 //			v.setNumParticles(_defaultNumParticles);
 			return v;
 		}
@@ -105,8 +107,8 @@ public class ParticleBPSolverGraph extends SFactorGraphBase
 				for (Variable v : vars)
 				{
 					ISolverVariable vs = v.getSolver();
-					if (vs instanceof SRealVariable)
-						((SRealVariable)vs).resample();
+					if (vs instanceof ParticleBPReal)
+						((ParticleBPReal)vs).resample();
 				}
 				iterationsBeforeResampling = _numIterationsBetweenResampling;
 			}
@@ -142,15 +144,15 @@ public class ParticleBPSolverGraph extends SFactorGraphBase
 		for (Factor f : _factorGraph.getNonGraphFactors())
 		{
 			ISolverFactor fs = f.getSolver();
-			if (fs instanceof SRealFactor)
-				((SRealFactor)fs).setBeta(beta);
+			if (fs instanceof ParticleBPRealFactor)
+				((ParticleBPRealFactor)fs).setBeta(beta);
 		}
 		
 		for (Variable v : _factorGraph.getVariables())
 		{
 			ISolverVariable vs = v.getSolver();
-			if (vs instanceof SRealVariable)
-				((SRealVariable)vs).setBeta(beta);
+			if (vs instanceof ParticleBPReal)
+				((ParticleBPReal)vs).setBeta(beta);
 		}
 
 		

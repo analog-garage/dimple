@@ -30,7 +30,7 @@ import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.particleBP.ParticleBPSolverGraph;
-import com.analog.lyric.dimple.solvers.particleBP.SRealVariable;
+import com.analog.lyric.dimple.solvers.particleBP.ParticleBPReal;
 
 // TODO: move to particleBP test directory
 
@@ -75,8 +75,8 @@ public class RealVariableParticleBPTest extends DimpleTestBase
 		double abR = 1/(abSigma*abSigma);
 		graph.addFactor(new Normal(0,1), a, b);
 		
-		SRealVariable sa = (SRealVariable)a.getSolver();
-		SRealVariable sb = (SRealVariable)b.getSolver();
+		ParticleBPReal sa = (ParticleBPReal)a.getSolver();
+		ParticleBPReal sb = (ParticleBPReal)b.getSolver();
 		
 		sa.setProposalStandardDeviation(0.5);
 		sb.setProposalStandardDeviation(0.5);
@@ -216,7 +216,7 @@ public class RealVariableParticleBPTest extends DimpleTestBase
 		double fR1 = 1/(fSigma1*fSigma1);
 		graph.addFactor(new MixedNormal(fMean0, fR0, fMean1, fR1), a, b);
 		
-		SRealVariable sa = (SRealVariable)a.getSolver();
+		ParticleBPReal sa = (ParticleBPReal)a.getSolver();
 		//SVariable sb = (SVariable)b.getSolver();
 		
 		sa.setProposalStandardDeviation(1.0);
@@ -313,10 +313,10 @@ public class RealVariableParticleBPTest extends DimpleTestBase
 		d.setName("d");
 		graph.addFactor(new Normal(0,1), a, b, c, d);
 		
-		SRealVariable sa = (SRealVariable)a.getSolver();
-		SRealVariable sb = (SRealVariable)b.getSolver();
-		SRealVariable sc = (SRealVariable)c.getSolver();
-		SRealVariable sd = (SRealVariable)d.getSolver();
+		ParticleBPReal sa = (ParticleBPReal)a.getSolver();
+		ParticleBPReal sb = (ParticleBPReal)b.getSolver();
+		ParticleBPReal sc = (ParticleBPReal)c.getSolver();
+		ParticleBPReal sd = (ParticleBPReal)d.getSolver();
 		sa.setInitialParticleRange(-11, 14);
 		sb.setInitialParticleRange(0, 7);
 		
@@ -395,9 +395,9 @@ public class RealVariableParticleBPTest extends DimpleTestBase
 		
 		graph.addFactor(new Sum(1.0),c,b,a);
 				
-		SRealVariable sa = requireNonNull((SRealVariable)a.getSolver());
-		SRealVariable sb = requireNonNull((SRealVariable)b.getSolver());
-		SRealVariable sc = requireNonNull((SRealVariable)c.getSolver());
+		ParticleBPReal sa = requireNonNull((ParticleBPReal)a.getSolver());
+		ParticleBPReal sb = requireNonNull((ParticleBPReal)b.getSolver());
+		ParticleBPReal sc = requireNonNull((ParticleBPReal)c.getSolver());
 		
 		sa.setProposalStandardDeviation(0.1);
 		sb.setProposalStandardDeviation(0.1);

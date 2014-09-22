@@ -67,7 +67,7 @@ public class ParticleBPOptions extends SolverOptions
 		new IntegerOptionKey(ParticleBPOptions.class, "iterationsBetweenResampling", 1, 1, Integer.MAX_VALUE);
 	
 	/**
-	 * Affects particle BP {@linkplain SRealVariable solver variable} objects.
+	 * Affects particle BP {@linkplain ParticleBPReal solver variable} objects.
 	 * <p>
 	 * Is evaluated both when solver variable is constructed and in {@link ISolverNode#initialize}.
 	 * <p>
@@ -79,7 +79,7 @@ public class ParticleBPOptions extends SolverOptions
 		new IntegerOptionKey(ParticleBPOptions.class, "numParticles", 1, 1, Integer.MAX_VALUE);
 	
 	/**
-	 * Affects particle BP {@linkplain SRealVariable solver variable} objects.
+	 * Affects particle BP {@linkplain ParticleBPReal solver variable} objects.
 	 * <p>
 	 * @since 0.07
 	 */
@@ -101,7 +101,7 @@ public class ParticleBPOptions extends SolverOptions
 	/**
 	 * Specifies proposal kernel for real variables in particle BP solver.
 	 * <p>
-	 * Affects particle BP {@linkplain SRealVariable solver variable} objects.
+	 * Affects particle BP {@linkplain ParticleBPReal solver variable} objects.
 	 * <p>
 	 * The proposal kernel instance can be configured by setting options on specific to that
 	 * kernel. See documentation for the specific kernel for details.
@@ -116,7 +116,7 @@ public class ParticleBPOptions extends SolverOptions
 	/**
 	 * Specifies the domain of initial particle values for real variables in particle BP solver.
 	 * <p>
-	 * Affects particle BP {@linkplain SRealVariable solver variable} objects.
+	 * Affects particle BP {@linkplain ParticleBPReal solver variable} objects.
 	 * <p>
 	 * The domain should be a subset of the variable's domain. If it is not, then this option is ignored
 	 * for that variable.
