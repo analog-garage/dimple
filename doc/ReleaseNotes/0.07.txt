@@ -17,6 +17,8 @@ Significant New Features Since v0.06
 
 - Added methods for the Gibbs solver to determine the rejection rate when using Metropolis-Hastings and related samplers.
 
+- Added methods for Real and RealJoint variables in the Gibbs solver to determine the sample mean and (co)variance.
+
 
 Significant Bug Fixes Since v0.06
 ---------------------------------
