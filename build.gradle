@@ -96,6 +96,10 @@ task installkit(type: Zip) {
 	from ('doc/') {
 		include 'ReleaseNotes/**'
 		include "DimpleUserManual_v${dimpleVersion}*.pdf"
+		into 'doc/'
+	}
+
+	from ('solvers/java/build/docs/') {
 		include "javadoc/**"
 		into 'doc/'
 	}
