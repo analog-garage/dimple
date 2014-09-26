@@ -47,6 +47,8 @@ public class SumProductOptions extends SolverOptions
 	/**
 	 * Maximum size of discrete belief messages.
 	 * <p>
+	 * This option may be set on entire graph or on individual discrete factors.
+	 * <p>
 	 * If less than the full domain size of the message, then messages will be truncated
 	 * to this number of dimensions with the lowest weight dimensions omitted.
 	 * <p>
