@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.options.SolverOptions;
 
 public class HMM
 {
@@ -137,7 +138,7 @@ public class HMM
 		
 		MondayWeather.setInput(0.7,0.3);
 		
-		HMM.getSolver().setNumIterations(20);
+		HMM.setOption(SolverOptions.iterations, 20);
 		HMM.solve();
 		
 		double [] belief = TuesdayWeather.getBelief();
