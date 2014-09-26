@@ -25,7 +25,6 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.SliceSampler;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeOptions;
 import com.analog.lyric.dimple.solvers.lp.LPOptions;
 import com.analog.lyric.dimple.solvers.minsum.MinSumOptions;
-import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateOptions;
 import com.analog.lyric.dimple.solvers.particleBP.ParticleBPOptions;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductOptions;
 import com.analog.lyric.options.OptionRegistry;
@@ -54,7 +53,6 @@ import com.analog.lyric.options.OptionRegistry;
  * <li>{@link MinSumOptions}
  * <li>{@link ParticleBPOptions}
  * <li>{@link SumProductOptions}
- * <li>{@link UpdateOptions}
  * </ul>
  * </dd>
  * <dt>Proposal kernels options</dt>
@@ -104,7 +102,6 @@ public final class DimpleOptionRegistry extends OptionRegistry
 			MinSumOptions.class,
 			ParticleBPOptions.class,
 			SumProductOptions.class,
-			UpdateOptions.class,
 		
 			// Proposal kernels
 			NormalProposalKernel.class,

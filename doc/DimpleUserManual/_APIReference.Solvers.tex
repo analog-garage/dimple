@@ -250,7 +250,7 @@ LinearEquation & Real & Linear equation.  All connected variables must be Real a
 
 For factors that are neither discrete-only or listed in the above table, an approximate computation is used in computing messages from such a factor.  This includes any factor that connects to both discrete and continuous variables as well as factors that connect only to continuous variables but do not appear in the list above.  The approximate method is sample based and uses Gibbs sampling to sample from the factor, allowing approximate messages to be computed from the sample statistics.  Several methods described below allow control over the behavior of these sampled factors.
 
-For discrete-only factors, it is possible to use an alternative algorithm, referred to as the optimized update algorithm, to compute all messages outbound from the factor with fewer operations than are required by the default algorithm, which decreases execution time. The optimized update algorithm has greater impact on factors of higher degree. The optimized update algorithm can be applied only when the schedule calls for all of a factor's outbound messages to be updated together. Because this algorithm uses more memory than the default algorithm, it must be programmatically-enabled in order to be used. See the solver-specific factor methods below for controlling enabling of the optimized update algorithm.
+For discrete-only factors, two factor update algorithms are available: normal and optimized. The optimized algorithm can be applied only to factors with more than one edge, and only when the schedule updates all of the factor's edges simultaneously. The optimized algorithm computes the outbound message update with fewer operations than the normal algorithm, which can decrease execution time; however, it also uses more memory and increases initialization time. Several options, described below, influence which algorithm is used. Key among them is the updateApproach option, which can be set to normal, optimized, or automatic. When set to automatic, Dimple makes an estimate of the memory usage and execution time of each algorithm in order to select one.
 
 \para{Sum-Product Options}
 \label{sec:SumProductOptions}
@@ -305,32 +305,31 @@ This option takes precedence over the simple damping option if both are specifie
 
 \dimpleOption{SumProductOptions.updateApproach}
 {\ifmatlab string\fi \ifjava UpdateApproach enum\fi}
-{NORMAL}
+{AUTOMATIC}
 {discrete factors}
-{This option controls the optimization of the update messages used by discrete factors. The optimization involves requires the construction of an extra datastructure for each factor table that uses it, which may require a significant amount of memory. The option can take one of three values:
+{This option controls which update algorithm is applied to discrete factors. The option can take one of three values:
 \begin{itemize}
 \item NORMAL - Perform updates using just the factor tables. Do not use the optimized update technique.
-\item OPTIMIZED - Use the optimized update algorithm on affected factors.
-\item AUTOMATIC - Automatically determine whether to use the optimized algorithm based on attributes of the factor tables and the graph. The automatic selection algorithm can be tuned through the \nameref{option:SumProductOptions.automaticExecutionTimeScalingFactor} and \nameref{option:SumProductOptions.automaticMemoryAllocationScalingFactor} options.
+\item OPTIMIZED - Use the optimized update algorithm. Note that factors that have only one edge, or factors that do not have all of their edges updated simultaneously by the schedule, ignore this setting and use the normal approach.
+\item AUTOMATIC - Automatically determine whether to use the optimized algorithm. The automatic selection algorithm can be tuned through the \nameref{option:SumProductOptions.automaticExecutionTimeScalingFactor} and \nameref{option:SumProductOptions.automaticMemoryAllocationScalingFactor} options.
 \end{itemize}
-
-Note that while the current default for this option is NORMAL, this is expected to change to AUTOMATIC in a future release.}
+}
 
 \subpara{SumProductOptions.automaticExecutionTimeScalingFactor}
 
 \dimpleOption{SumProductOptions.automaticExecutionTimeScalingFactor}
 {double}
-{100.0}
+{1.0}
 {discrete factors}
-{This option is an execution time scaling factor used when the \nameref{option:SumProductOptions.updateApproach} option is set to AUTOMATIC. It controls how execution time and memory allocation costs are weighed. The value must be a positive number.}
+{This option is an execution time scaling factor used when the \nameref{option:SumProductOptions.updateApproach} option is set to AUTOMATIC. It controls how execution time costs are weighed. The value must be a positive number.}
 
 \subpara{SumProductOptions.automaticMemoryAllocationScalingFactor}
 
 \dimpleOption{SumProductOptions.automaticMemoryAllocationScalingFactor}
 {double}
-{1.0}
+{10.0}
 {discrete factors}
-{This option is an memory allocation scaling factor used when the \nameref{option:SumProductOptions.updateApproach} option is set to AUTOMATIC. It controls how execution time and memory allocation costs are weighed. The value must be a positive number.}
+{This option is an memory allocation scaling factor used when the \nameref{option:SumProductOptions.updateApproach} option is set to AUTOMATIC. It controls how memory allocation costs are weighed. The value must be a positive number.}
 
 \subpara{SumProductOptions.optimizedUpdateSparseThreshold}
 
@@ -338,7 +337,7 @@ Note that while the current default for this option is NORMAL, this is expected 
 {double}
 {1.0}
 {discrete factors}
-{This option controls the representation of the auxiliary tables used by the optimized update algorithm, which is controlled through the \nameref{option:SumProductOptions.updateApproach}. This option specifies the density of the original factor table below a sparse representation will be used for auxiliary tables. It must be a number in the range [0.0, 1.0]. The value 1.0 (the default), indicates that a sparse representation should be used if there are any zero-entries in the original table. The value 0.0 will prevent the sparse representation from being used entirely.}
+{This option controls the representation of the auxiliary tables used by the optimized update algorithm, which is controlled through the \nameref{option:SumProductOptions.updateApproach}. Internally, the optimized algorithm creates multiple factor tables to perform the update. This option specifies a density, below which an auxiliary table uses a sparse representation. It must be a number in the range [0.0, 1.0]. The value 1.0 (the default), indicates that a sparse representation should be used if there are any zero-entries in the table. The value 0.0 will prevent the sparse representation from being used entirely. Sparse tables typically decrease execution time, but they use more memory. When the update approach is set to AUTOMATIC, this option impacts both the execution time and memory allocation estimates used to choose the update approach.}
 
 \subpara{GibbsOptions for sampled factors}
 
@@ -406,7 +405,7 @@ The following sections list the solver-specific options for the MinSum solver.
 
 \dimpleOption{MinSumOptions.updateApproach}
 {\ifmatlab string\fi \ifjava UpdateApproach enum\fi}
-{NORMAL}
+{AUTOMATIC}
 {discrete factors}
 {See \nameref{option:SumProductOptions.updateApproach}}
 
@@ -414,7 +413,7 @@ The following sections list the solver-specific options for the MinSum solver.
 
 \dimpleOption{MinSumOptions.automaticExecutionTimeScalingFactor}
 {double}
-{100.0}
+{1.0}
 {discrete factors}
 {See \nameref{option:SumProductOptions.automaticExecutionTimeScalingFactor}}
 
@@ -422,7 +421,7 @@ The following sections list the solver-specific options for the MinSum solver.
 
 \dimpleOption{MinSumOptions.automaticMemoryAllocationScalingFactor}
 {double}
-{1.0}
+{10.0}
 {discrete factors}
 {See \nameref{option:SumProductOptions.automaticMemoryAllocationScalingFactor}}
 

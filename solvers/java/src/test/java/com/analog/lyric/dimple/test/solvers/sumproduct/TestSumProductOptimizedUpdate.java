@@ -11,9 +11,15 @@ package com.analog.lyric.dimple.test.solvers.sumproduct;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.TreeMap;
 
+import org.eclipse.jdt.annotation.Nullable;
+import org.hamcrest.CustomTypeSafeMatcher;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
@@ -25,13 +31,16 @@ import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.VariableList;
+import com.analog.lyric.dimple.schedulers.FloodingScheduler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateApproach;
-import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateOptions;
-import com.analog.lyric.dimple.solvers.sumproduct.SumProductTableFactor;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductOptions;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductTableFactor;
 import com.analog.lyric.dimple.test.DimpleTestBase;
-import com.google.common.primitives.Ints;
+import com.analog.lyric.options.IOptionHolder;
 
 /**
  * @since 0.06
@@ -39,10 +48,32 @@ import com.google.common.primitives.Ints;
  */
 public class TestSumProductOptimizedUpdate extends DimpleTestBase
 {
-	static final UpdateApproach defaultApproach = UpdateApproach.UPDATE_APPROACH_NORMAL;
-	static final double defaultAllocationScale = 1.0;
-	static final double defaultExecutionTimeScale = 100.0;
+	static final UpdateApproach defaultApproach = UpdateApproach.AUTOMATIC;
+	static final double defaultAllocationScale = 10.0;
+	static final double defaultExecutionTimeScale = 1.0;
 	static final double defaultSparseThreshold = 1.0;
+	
+	private static SumProductSolverGraph getSumProductSolverGraph(FactorGraph fg)
+	{
+		SumProductSolverGraph sfg = (SumProductSolverGraph) fg.getSolver();
+		assertNotNull(sfg);
+		return sfg;
+	}
+	
+	private static SumProductTableFactor getSumProductFactorTable(Factor f)
+	{
+		SumProductTableFactor sft = (SumProductTableFactor) f.getSolver();
+		assertNotNull(sft);
+		return sft;
+	}
+	
+	private void checkDefaults(IOptionHolder optionHolder)
+	{
+		assertEquals(defaultApproach, optionHolder.getOptionOrDefault(SumProductOptions.updateApproach));
+		assertEquals(defaultAllocationScale, optionHolder.getOptionOrDefault(SumProductOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
+		assertEquals(defaultExecutionTimeScale, optionHolder.getOptionOrDefault(SumProductOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
+		assertEquals(defaultSparseThreshold, optionHolder.getOptionOrDefault(SumProductOptions.optimizedUpdateSparseThreshold), 1.0e-9);
+	}
 
 	/**
 	 * Verify that the solver graph has the correct default property values.
@@ -54,48 +85,16 @@ public class TestSumProductOptimizedUpdate extends DimpleTestBase
 	{
 		FactorGraph fg = new FactorGraph();
 		SumProductSolverGraph sfg = getSumProductSolverGraph(fg);
-		assertEquals(defaultApproach, sfg.getOptionOrDefault(UpdateOptions.updateApproach));
-		assertEquals(defaultAllocationScale, sfg.getOptionOrDefault(UpdateOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
-		assertEquals(defaultExecutionTimeScale, sfg.getOptionOrDefault(UpdateOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
-		assertEquals(defaultSparseThreshold, sfg.getOptionOrDefault(UpdateOptions.optimizedUpdateSparseThreshold), 1.0e-9);
+		checkDefaults(sfg);
 	}
-
-	private static SumProductSolverGraph getSumProductSolverGraph(FactorGraph fg)
+	
+	public static Factor add2BitFactor(Random rand, FactorGraph fg)
 	{
-		SumProductSolverGraph sfg = (SumProductSolverGraph) fg.getSolver();
-		assertNotNull(sfg);
-		return sfg;
-	}
-
-	/**
-	 * Verify that the solver factor has the correct default property values.
-	 * 
-	 * @since 0.07
-	 */
-	@Test
-	public void testFactorPropertiesDefaults()
-	{
-		Random rand = new Random();
-		rand.setSeed(0); // Don't be random
-		FactorGraph fg = new FactorGraph();
-		Factor f = define2bitFactor(rand, fg);
-		SumProductTableFactor sft = getSFactorTable(f);
-		assertEquals(defaultApproach, sft.getOptionOrDefault(UpdateOptions.updateApproach));
-		assertEquals(defaultAllocationScale, sft.getOptionOrDefault(UpdateOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
-		assertEquals(defaultExecutionTimeScale, sft.getOptionOrDefault(UpdateOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
-		assertEquals(defaultSparseThreshold, sft.getOptionOrDefault(UpdateOptions.optimizedUpdateSparseThreshold), 1.0e-9);
-	}
-
-	private static SumProductTableFactor getSFactorTable(Factor f)
-	{
-		SumProductTableFactor sft = (SumProductTableFactor) f.getSolver();
-		assertNotNull(sft);
-		return sft;
-	}
-
-	private static Factor define2bitFactor(Random rand, FactorGraph fg)
-	{
-		Bit[] vars = define2bits();
+		Bit[] vars = new Bit[2];
+		for (int i = 0; i < 2; i++)
+		{
+			vars[i] = new Bit();
+		}
 		IFactorTable table = FactorTable.create(vars[0].getDomain(), vars[1].getDomain());
 		table.setRepresentation(FactorTableRepresentation.DENSE_WEIGHT);
 		final JointDomainIndexer domainIndexer = table.getDomainIndexer();
@@ -107,15 +106,19 @@ public class TestSumProductOptimizedUpdate extends DimpleTestBase
 		Factor f = fg.addFactor(table, vars);
 		return f;
 	}
-
-	private static Bit[] define2bits()
+	
+	/**
+	 * Verify that the solver factor has the correct default property values.
+	 * 
+	 * @since 0.07
+	 */
+	@Test
+	public void testFactorPropertiesDefaults()
 	{
-		Bit[] vars = new Bit[2];
-		for (int i = 0; i < 2; i++)
-		{
-			vars[i] = new Bit();
-		}
-		return vars;
+		FactorGraph fg = new FactorGraph();
+		Factor f = add2BitFactor(new Random(), fg);
+		SumProductTableFactor sft = getSumProductFactorTable(f);
+		checkDefaults(sft);
 	}
 
 	/**
@@ -130,84 +133,147 @@ public class TestSumProductOptimizedUpdate extends DimpleTestBase
 		rand.setSeed(0); // Don't be random
 		FactorGraph fg = new FactorGraph();
 		SumProductSolverGraph sfg = getSumProductSolverGraph(fg);
-		Factor f = define2bitFactor(rand, fg);
-		SumProductTableFactor sft = getSFactorTable(f);
+		Factor f = add2BitFactor(rand, fg);
+		SumProductTableFactor sft = getSumProductFactorTable(f);
 		// Make sure the factor has the default values initially
-		assertEquals(defaultApproach, sft.getOptionOrDefault(UpdateOptions.updateApproach));
-		assertEquals(defaultAllocationScale, sft.getOptionOrDefault(UpdateOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
-		assertEquals(defaultExecutionTimeScale, sft.getOptionOrDefault(UpdateOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
-		assertEquals(defaultSparseThreshold, sft.getOptionOrDefault(UpdateOptions.optimizedUpdateSparseThreshold), 1.0e-9);
+		assertEquals(defaultApproach, sft.getOptionOrDefault(SumProductOptions.updateApproach));
+		assertEquals(defaultAllocationScale, sft.getOptionOrDefault(SumProductOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
+		assertEquals(defaultExecutionTimeScale, sft.getOptionOrDefault(SumProductOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
+		assertEquals(defaultSparseThreshold, sft.getOptionOrDefault(SumProductOptions.optimizedUpdateSparseThreshold), 1.0e-9);
 		// Set the properties at the graph to non-default values
-		final UpdateApproach graphApproach = UpdateApproach.UPDATE_APPROACH_OPTIMIZED;
+		final UpdateApproach graphApproach = UpdateApproach.OPTIMIZED;
 		final double graphAllocationScale = 2.0;
 		final double graphExecutionTimeScale = 50.0;
 		final double graphSparseThreshold = 0.6;
-		sfg.setOption(UpdateOptions.updateApproach, graphApproach);
-		sfg.setOption(UpdateOptions.automaticMemoryAllocationScalingFactor, graphAllocationScale);
-		sfg.setOption(UpdateOptions.automaticExecutionTimeScalingFactor, graphExecutionTimeScale);
-		sfg.setOption(UpdateOptions.optimizedUpdateSparseThreshold, graphSparseThreshold);
+		sfg.setOption(SumProductOptions.updateApproach, graphApproach);
+		sfg.setOption(SumProductOptions.automaticMemoryAllocationScalingFactor, graphAllocationScale);
+		sfg.setOption(SumProductOptions.automaticExecutionTimeScalingFactor, graphExecutionTimeScale);
+		sfg.setOption(SumProductOptions.optimizedUpdateSparseThreshold, graphSparseThreshold);
 		// Check that the factor returns the values programmed on the graph
-		assertEquals(graphApproach, sft.getOptionOrDefault(UpdateOptions.updateApproach));
-		assertEquals(graphAllocationScale, sft.getOptionOrDefault(UpdateOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
-		assertEquals(graphExecutionTimeScale, sft.getOptionOrDefault(UpdateOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
-		assertEquals(graphSparseThreshold, sft.getOptionOrDefault(UpdateOptions.optimizedUpdateSparseThreshold), 1.0e-9);
+		assertEquals(graphApproach, sft.getOptionOrDefault(SumProductOptions.updateApproach));
+		assertEquals(graphAllocationScale, sft.getOptionOrDefault(SumProductOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
+		assertEquals(graphExecutionTimeScale, sft.getOptionOrDefault(SumProductOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
+		assertEquals(graphSparseThreshold, sft.getOptionOrDefault(SumProductOptions.optimizedUpdateSparseThreshold), 1.0e-9);
 		// Set the properties at the factor to yet different values
-		final UpdateApproach factorApproach = UpdateApproach.UPDATE_APPROACH_AUTOMATIC;
+		final UpdateApproach factorApproach = UpdateApproach.AUTOMATIC;
 		final double factorAllocationScale = 3.0;
 		final double factorExecutionTimeScale = 60.0;
 		final double factorSparseThreshold = 0.7;
-		sft.setOption(UpdateOptions.updateApproach, factorApproach);
-		sft.setOption(UpdateOptions.automaticMemoryAllocationScalingFactor, factorAllocationScale);
-		sft.setOption(UpdateOptions.automaticExecutionTimeScalingFactor, factorExecutionTimeScale);
-		sft.setOption(UpdateOptions.optimizedUpdateSparseThreshold, factorSparseThreshold);
+		sft.setOption(SumProductOptions.updateApproach, factorApproach);
+		sft.setOption(SumProductOptions.automaticMemoryAllocationScalingFactor, factorAllocationScale);
+		sft.setOption(SumProductOptions.automaticExecutionTimeScalingFactor, factorExecutionTimeScale);
+		sft.setOption(SumProductOptions.optimizedUpdateSparseThreshold, factorSparseThreshold);
 		// Check that the factor returns the values programmed on the factor
-		assertEquals(factorApproach, sft.getOptionOrDefault(UpdateOptions.updateApproach));
-		assertEquals(factorAllocationScale, sft.getOptionOrDefault(UpdateOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
-		assertEquals(factorExecutionTimeScale, sft.getOptionOrDefault(UpdateOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
-		assertEquals(factorSparseThreshold, sft.getOptionOrDefault(UpdateOptions.optimizedUpdateSparseThreshold), 1.0e-9);
+		assertEquals(factorApproach, sft.getOptionOrDefault(SumProductOptions.updateApproach));
+		assertEquals(factorAllocationScale, sft.getOptionOrDefault(SumProductOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
+		assertEquals(factorExecutionTimeScale, sft.getOptionOrDefault(SumProductOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
+		assertEquals(factorSparseThreshold, sft.getOptionOrDefault(SumProductOptions.optimizedUpdateSparseThreshold), 1.0e-9);
 		// And that the graph returns its own values still
-		assertEquals(graphApproach, sfg.getOptionOrDefault(UpdateOptions.updateApproach));
-		assertEquals(graphAllocationScale, sfg.getOptionOrDefault(UpdateOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
-		assertEquals(graphExecutionTimeScale, sfg.getOptionOrDefault(UpdateOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
-		assertEquals(graphSparseThreshold, sfg.getOptionOrDefault(UpdateOptions.optimizedUpdateSparseThreshold), 1.0e-9);
+		assertEquals(graphApproach, sfg.getOptionOrDefault(SumProductOptions.updateApproach));
+		assertEquals(graphAllocationScale, sfg.getOptionOrDefault(SumProductOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
+		assertEquals(graphExecutionTimeScale, sfg.getOptionOrDefault(SumProductOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
+		assertEquals(graphSparseThreshold, sfg.getOptionOrDefault(SumProductOptions.optimizedUpdateSparseThreshold), 1.0e-9);
 		// "Unset" the factor properties
-		sft.unsetOption(UpdateOptions.updateApproach);
-		sft.unsetOption(UpdateOptions.automaticMemoryAllocationScalingFactor);
-		sft.unsetOption(UpdateOptions.automaticExecutionTimeScalingFactor);
-		sft.unsetOption(UpdateOptions.optimizedUpdateSparseThreshold);
+		sft.unsetOption(SumProductOptions.updateApproach);
+		sft.unsetOption(SumProductOptions.automaticMemoryAllocationScalingFactor);
+		sft.unsetOption(SumProductOptions.automaticExecutionTimeScalingFactor);
+		sft.unsetOption(SumProductOptions.optimizedUpdateSparseThreshold);
 		// And check that the factor again returns the graph values
-		assertEquals(graphApproach, sft.getOptionOrDefault(UpdateOptions.updateApproach));
-		assertEquals(graphAllocationScale, sft.getOptionOrDefault(UpdateOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
-		assertEquals(graphExecutionTimeScale, sft.getOptionOrDefault(UpdateOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
-		assertEquals(graphSparseThreshold, sft.getOptionOrDefault(UpdateOptions.optimizedUpdateSparseThreshold), 1.0e-9);
+		assertEquals(graphApproach, sft.getOptionOrDefault(SumProductOptions.updateApproach));
+		assertEquals(graphAllocationScale, sft.getOptionOrDefault(SumProductOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
+		assertEquals(graphExecutionTimeScale, sft.getOptionOrDefault(SumProductOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
+		assertEquals(graphSparseThreshold, sft.getOptionOrDefault(SumProductOptions.optimizedUpdateSparseThreshold), 1.0e-9);
 	}
 
-	private void doTest(final int zeroControl,
+	public static void runSolver(FactorGraph fg,
 		final double sparsityControl,
 		final double damping,
-		final boolean useMultithreading,
-		final int EXPECTED_HASH)
+		final boolean useMultithreading)
 	{
-		FactorGraph fg = new FactorGraph();
-		Graph g = new Graph(fg, zeroControl);
 		ISolverFactorGraph solver = fg.getSolver();
 		if (solver != null)
 		{
-			solver.useMultithreading(useMultithreading);
 			SumProductSolverGraph ssolver = (SumProductSolverGraph) solver;
-			ssolver.setOption(UpdateOptions.optimizedUpdateSparseThreshold, sparsityControl);
+
+			solver.useMultithreading(true);
+			ssolver.setOption(SumProductOptions.updateApproach, UpdateApproach.NORMAL);
 			ssolver.setDamping(damping);
-			ssolver.setOption(UpdateOptions.updateApproach, UpdateApproach.UPDATE_APPROACH_OPTIMIZED);
-			fg.solve();
-			int[][] values = g.getValues();
-			int[] flat = Ints.concat(values);
-			int hash = Arrays.hashCode(flat);
-			assertEquals(EXPECTED_HASH, hash);
+			fg.initialize();
+			ssolver.iterate(5);
+			List<Object> normalBeliefs = getBeliefs(fg);
+			
+			solver.useMultithreading(useMultithreading);
+			ssolver.setOption(SumProductOptions.optimizedUpdateSparseThreshold, sparsityControl);
+			ssolver.setDamping(damping);
+			ssolver.setOption(SumProductOptions.updateApproach, UpdateApproach.OPTIMIZED);
+			fg.initialize();
+			ssolver.iterate(5);
+			List<Object> optimizedBeliefs = getBeliefs(fg);
+
+			assertEqualListDoubleArray(normalBeliefs, optimizedBeliefs);
 		}
 		else
 		{
 			fail("solver was null");
 		}
+	}
+
+	/**
+	 * Asserts that two lists of arrays of doubles are equal.
+	 */
+	public static void assertEqualListDoubleArray(List<Object> expected, List<Object> actual)
+	{
+		int l = actual.size();
+		assertEquals(l, expected.size());
+		for (int i = 0; i < l; i++)
+		{
+			final double[] expectedArray = (double[]) expected.get(i);
+			CustomTypeSafeMatcher<double[]> closeEnough = new CustomTypeSafeMatcher<double[]>(Arrays.toString(expectedArray)) {
+				static final double EPSILON = 1.0e-6;
+				@Override
+				public boolean matchesSafely(@Nullable double[] actualArray) {
+					if (actualArray == null || actualArray.length != expectedArray.length)
+					{
+						return false;
+					}
+					for (int i1 = 0; i1 < actualArray.length; i1++)
+					{
+						if (Math.abs(actualArray[i1] - expectedArray[i1]) >= EPSILON)
+						{
+							return false;
+						}
+					}
+					return true;
+				}
+			};
+			assertThat((double[]) actual.get(i), closeEnough);
+		}
+	}
+
+	private void doTest(final int zeroControl,
+		final double sparsityControl,
+		final double damping,
+		final boolean useMultithreading)
+	{
+		FactorGraph fg = new FactorGraph();
+		@SuppressWarnings("unused")
+		Graph g = new Graph(fg, zeroControl);
+		runSolver(fg, sparsityControl, damping, useMultithreading);
+	}
+
+	public static List<Object> getBeliefs(FactorGraph fg)
+	{
+		VariableList variables = fg.getVariables();
+		List<Object> beliefs = new ArrayList<>(variables.size());
+		for (Variable v : variables)
+		{
+			if (v instanceof Discrete)
+			{
+				Discrete discrete = (Discrete) v;
+				beliefs.add(discrete.getBelief());
+			}
+		}
+		return beliefs;
 	}
 
 	@Test
@@ -217,8 +283,7 @@ public class TestSumProductOptimizedUpdate extends DimpleTestBase
 		final double sparsityControl = 0.9;
 		final double damping = 0.9;
 		final boolean useMultithreading = false;
-		final int EXPECTED_HASH = -1986825801;
-		doTest(zeroControl, sparsityControl, damping, useMultithreading, EXPECTED_HASH);
+		doTest(zeroControl, sparsityControl, damping, useMultithreading);
 	}
 
 	@Test
@@ -228,8 +293,7 @@ public class TestSumProductOptimizedUpdate extends DimpleTestBase
 		final double sparsityControl = 0.9;
 		final double damping = 0.0;
 		final boolean useMultithreading = true;
-		final int EXPECTED_HASH = -546108325;
-		doTest(zeroControl, sparsityControl, damping, useMultithreading, EXPECTED_HASH);
+		doTest(zeroControl, sparsityControl, damping, useMultithreading);
 	}
 
 	@Test
@@ -239,8 +303,7 @@ public class TestSumProductOptimizedUpdate extends DimpleTestBase
 		final double sparsityControl = 1.0;
 		final double damping = 0.9;
 		final boolean useMultithreading = false;
-		final int EXPECTED_HASH = 1898074408;
-		doTest(zeroControl, sparsityControl, damping, useMultithreading, EXPECTED_HASH);
+		doTest(zeroControl, sparsityControl, damping, useMultithreading);
 	}
 
 	@Test
@@ -250,8 +313,7 @@ public class TestSumProductOptimizedUpdate extends DimpleTestBase
 		final double sparsityControl = 1.0;
 		final double damping = 0.0;
 		final boolean useMultithreading = false;
-		final int EXPECTED_HASH = -1682890428;
-		doTest(zeroControl, sparsityControl, damping, useMultithreading, EXPECTED_HASH);
+		doTest(zeroControl, sparsityControl, damping, useMultithreading);
 	}
 
 	@Test
@@ -261,55 +323,13 @@ public class TestSumProductOptimizedUpdate extends DimpleTestBase
 		final double sparsityControl = 1.0;
 		final double damping = 0.0;
 		final boolean useMultithreading = true;
-		final int EXPECTED_HASH = -1682890428;
-		doTest(zeroControl, sparsityControl, damping, useMultithreading, EXPECTED_HASH);
-	}
-
-	/**
-	 * This test creates a factor connected to several discrete variables whose domain sizes vary.
-	 * 
-	 * @since 0.06
-	 */
-	@Test
-	public void testMixedDomainSizes()
-	{
-		Random rand = new Random();
-		rand.setSeed(0); // Don't be random
-		final FactorGraph fg = new FactorGraph();
-		DiscreteDomain[] domains = new DiscreteDomain[5];
-		Discrete[] vars = new Discrete[5];
-		for (int i = 0; i < domains.length; i++)
-		{
-			domains[i] = DiscreteDomain.range(1, Math.abs(2 - i) + 2);
-			vars[i] = new Discrete(domains[i]);
-		}
-		IFactorTable table = FactorTable.create(domains);
-		table.setRepresentation(FactorTableRepresentation.DENSE_WEIGHT);
-		table.randomizeWeights(rand);
-		Factor f = fg.addFactor(table, vars);
-		SumProductTableFactor stf = (SumProductTableFactor) f.getSolver();
-		if (stf == null)
-		{
-			fail("STableFactor is null");
-			return;
-		}
-		// stf.setOptimizedUpdateEnabled(true);
-		fg.solve();
-		int[] values = new int[vars.length];
-		for (int i = 0; i < values.length; i++)
-		{
-			values[i] = (Integer) vars[i].getValue();
-		}
-		int[] flat = Ints.concat(values);
-		int hash = Arrays.hashCode(flat);
-		final int EXPECTED_HASH = 31430530;
-		assertEquals(EXPECTED_HASH, hash);
+		doTest(zeroControl, sparsityControl, damping, useMultithreading);
 	}
 
 	/**
 	 * @since 0.07
 	 */
-	private void optimizeHelper(final double density, final boolean multithreaded)
+	private void automaticHelper(final double density, final boolean multithreaded)
 	{
 		Random rand = new Random();
 		rand.setSeed(0); // Don't be random
@@ -339,7 +359,7 @@ public class TestSumProductOptimizedUpdate extends DimpleTestBase
 			fail("SumProductSolverGraph is null");
 			return;
 		}
-		sfg.setOption(UpdateOptions.updateApproach, UpdateApproach.UPDATE_APPROACH_AUTOMATIC);
+		sfg.setOption(SumProductOptions.updateApproach, UpdateApproach.AUTOMATIC);
 		sfg.useMultithreading(multithreaded);
 		// Before optimize, all factors should not have their optimize enable explicitly set
 		for (Factor factor : fg.getFactors())
@@ -368,36 +388,36 @@ public class TestSumProductOptimizedUpdate extends DimpleTestBase
 	 * @since 0.07
 	 */
 	@Test
-	public void testOptimizeSparse()
+	public void testAutomaticSparse()
 	{
 		final boolean multithreaded = false;
 		final double density = 0.05;
-		optimizeHelper(density, multithreaded);
+		automaticHelper(density, multithreaded);
 	}
 
 	/**
 	 * @since 0.07
 	 */
 	@Test
-	public void testOptimizeDense()
+	public void testAutomaticDense()
 	{
 		final boolean multithreaded = false;
 		final double density = 1.0;
-		optimizeHelper(density, multithreaded);
+		automaticHelper(density, multithreaded);
 	}
 
 	/**
 	 * @since 0.07
 	 */
 	@Test
-	public void testOptimizeMultithreaded()
+	public void testAutomaticMultithreaded()
 	{
 		final double density = 1.0;
 		final boolean multithreaded = true;
-		optimizeHelper(density, multithreaded);
+		automaticHelper(density, multithreaded);
 	}
 
-	static private class Graph
+	static public class Graph
 	{
 		private static Random _rnd = new Random();
 		private final int _rows;
@@ -407,8 +427,8 @@ public class TestSumProductOptimizedUpdate extends DimpleTestBase
 		public Graph(final FactorGraph fg, int zeroControl)
 		{
 			_rnd.setSeed(0); // Don't be random
-			_rows = 20;
-			_cols = 20;
+			_rows = 7;
+			_cols = 7;
 			_vs = createVariables(_rows, _cols);
 			final int xBlockSize = 4;
 			final int yBlockSize = 4;
@@ -513,23 +533,255 @@ public class TestSumProductOptimizedUpdate extends DimpleTestBase
 			factorTable.setWeightsDense(factorTableValues);
 			return factorTable;
 		}
+	}
 
-		public int getValue(int row, int col)
+	private void doTest2(final double sparsityControl,
+		final double damping,
+		final boolean useMultithreading,
+		final Random rnd)
+	{
+		FactorGraph fg = new FactorGraph();
+		fg.setScheduler(new FloodingScheduler());
+		@SuppressWarnings("unused")
+		Graph2 g = new Graph2(fg, rnd);
+		runSolver(fg, sparsityControl, damping, useMultithreading);
+	}
+	
+	@Test
+	public void TestMixedFactorTablesDense()
+	{
+		final double sparsityControl = 0.2;
+		final double damping = 0.0;
+		final boolean useMultithreading = false;
+		Random rnd = new Random();
+		rnd.setSeed(0); // Don't be random
+		doTest2(sparsityControl, damping, useMultithreading, rnd);
+		doTest2(sparsityControl, damping, useMultithreading, rnd);
+		doTest2(sparsityControl, damping, useMultithreading, rnd);
+	}
+
+	static double[] randomlySplit(Sampler sampler, double total, int pieces)
+	{
+		double[] xs = new double[pieces];
+		double sum = 0.0;
+		for (int i = 0; i < pieces; i++)
 		{
-			return (Integer) (_vs[row][col].getValue());
+			double x = sampler.next();
+			xs[i] = x;
+			sum += x;
+		}
+		double[] result = new double[pieces];
+		int sumi = 0;
+		for (int i = 0; i < pieces - 1; i++)
+		{
+			double piece = total * xs[i] / sum;
+			result[i] = piece;
+			sumi += piece;
+		}
+		if (pieces > 0)
+		{
+			result[pieces - 1] = total - sumi;
+		}
+		return result;
+	}
+	
+	static double[] randomlySplit(final Random rnd, double total, int pieces)
+	{
+		Sampler sampler = new Sampler()
+		{
+			@Override
+			public double next()
+			{
+				return rnd.nextDouble();
+			}
+		};
+		return randomlySplit(sampler, total, pieces);
+	}
+
+	static int[] randomlySplit(Sampler sampler, int total, int pieces)
+	{
+		double[] ds = randomlySplit(sampler, (double) total, pieces);
+		int[] result = new int[pieces];
+		for (int i = 0; i < pieces; i++)
+		{
+			result[i] = (int) ds[i];
+		}
+		return result;
+	}
+	
+	interface Sampler
+	{
+		double next();
+	}
+	
+	static class ParetoDistributed implements Sampler
+	{
+		private final Random _rnd;
+		private final double _xm;
+		private final double _a;
+
+		public ParetoDistributed(Random rnd, double xm, double a)
+		{
+			_rnd = rnd;
+			_xm = xm;
+			_a = a;
+		}
+		
+		@Override
+		public double next()
+		{
+			double u = 1 - _rnd.nextDouble();
+			double result = _xm / (Math.pow(u, 1.0 / _a));
+			return result;
+		}
+	}
+	
+	static public class Graph2
+	{
+		private final Random _rnd;
+		
+		private final Map<Integer, List<Variable>> _vs;
+
+		public Graph2(final FactorGraph fg, final Random rnd)
+		{
+			_rnd = rnd;
+			_vs = new TreeMap<>();
+			
+			// How many factor tables.
+			final int factorTableCount = _rnd.nextInt(10) + 2;
+			
+			// How many entries to split across all of the factor tables.
+			final int totalEntries = Math.max(500, _rnd.nextInt((int) (0.05 * 1024 * 1024)));
+			
+			// Split the entries up across the factor tables, using a Pareto distribution so that there is likely to be
+			// fewer large tables and more smaller tables. Then ensure that no dimension has fewer than 1 entry, which may
+			// result in the actual total entry count differing from totalEntries.
+			final int[] factorTableSizes = randomlySplit(new ParetoDistributed(_rnd, 1.0, 1.0), totalEntries, factorTableCount);
+			for (int i = 0; i < factorTableCount; i++)
+			{
+				factorTableSizes[i] = Math.max(factorTableSizes[i], 1);
+			}
+
+			for (int i_factorTable = 0; i_factorTable < factorTableCount; i_factorTable++)
+			{
+				final IFactorTable factorTable = createFactorTable(factorTableSizes[i_factorTable]);
+				final JointDomainIndexer domainIndexer = factorTable.getDomainIndexer();
+				final int dimensions = domainIndexer.size();
+				Variable[] variables = new Variable[dimensions];
+				do
+				{
+					for (int dimension = 0; dimension < dimensions; dimension++)
+					{
+						final int domainSize = domainIndexer.getDomainSize(dimension);
+						List<Variable> candidateVariables = _vs.get(domainSize);
+						if (candidateVariables == null)
+						{
+							candidateVariables = new ArrayList<>();
+							_vs.put(domainSize, candidateVariables);
+						}
+						Variable candidateVariable;
+						do
+						{
+							int p = _rnd.nextInt(candidateVariables.size() + 1);
+							if (p == candidateVariables.size())
+							{
+								DiscreteDomain variableDomain = DiscreteDomain.range(0, domainSize - 1);
+								Discrete discreteVariable = new Discrete(variableDomain);
+								candidateVariable = discreteVariable;
+								candidateVariables.add(candidateVariable);
+								if (_rnd.nextDouble() < 0.2)
+								{
+									double[] inputValues = new double[domainSize];
+									for (int i = 0; i < domainSize; i++)
+									{
+										inputValues[i] = _rnd.nextDouble();
+									}
+									discreteVariable.setInput(inputValues);
+								}
+							}
+							else
+							{
+								candidateVariable = candidateVariables.get(p);
+								// Check to see if this variable is already selected for this factor
+								for (int i = 0; i < dimension; i++)
+								{
+									if (variables[i] == candidateVariable)
+									{
+										candidateVariable = null;
+										break;
+									}
+								}
+							}
+						} while (candidateVariable == null);
+						variables[dimension] = candidateVariable;
+					}
+					fg.addFactor(factorTable, variables);
+				} while (_rnd.nextDouble() < 0.9);
+			}
 		}
 
-		public int[][] getValues()
+		private IFactorTable createFactorTable(int factorTableSize)
 		{
-			int[][] result = new int[_rows][_cols];
-			for (int row = 0; row < _rows; row++)
+			// Choose a density, favoring low-density tables. This value will not be the actual density, as the table's
+			// yet-to-be-decided dimensions and the factorTableSize ultimately determine the actual density.
+			final double density = _rnd.nextDouble() * _rnd.nextDouble();
+
+			final int cardinality = (int) (factorTableSize / density);
+			
+			// Split the cardinality up into a product.
+			double logSize = Math.max(Math.log(cardinality), Math.log(2.0));
+			
+			// Choose the quantity of dimensions.
+			// Limit the quantity to the case where all domains are size 2.
+			final int maxDimensions = (int) (logSize / Math.log(2.0));
+			// Use a Pareto distribution to favor smaller dimension counts.
+			int dimensions = Math.min(maxDimensions, (int)(new ParetoDistributed(_rnd, 1.0, 1.0).next() * 3.0));
+			
+			// Create the domains
+			DiscreteDomain[] domains = new DiscreteDomain[dimensions];
+			// Assuming each dimension has at least domain size 2, split the remaining cardinality into a product
+			// with as many multiplicands as the quantity of dimensions. Use a Pareto distribution to favor smaller
+			// domain sizes.
+			double[] logSizeSplit = randomlySplit(new ParetoDistributed(_rnd, 1.0, 1.0), logSize - dimensions * Math.log(2.0), dimensions);
+			for (int dimension = 0; dimension < dimensions; dimension++)
 			{
-				for (int col = 0; col < _cols; col++)
+				logSizeSplit[dimension] += Math.log(2.0);
+				int domainSize = (int) Math.exp(logSizeSplit[dimension]);
+				domains[dimension] = DiscreteDomain.range(0, domainSize - 1);
+			}
+			IFactorTable factorTable = FactorTable.create(domains);
+			JointDomainIndexer indexer = factorTable.getDomainIndexer();
+			int[] indices = null;
+			if (indexer.supportsJointIndexing() && indexer.getCardinality() <= 1.0e6)
+			{
+				factorTable.setRepresentation(FactorTableRepresentation.DENSE_WEIGHT);
+			}
+			if (indexer.supportsJointIndexing() && indexer.getCardinality() <= 1.0e6 && density > 0.5)
+			{
+				factorTable.randomizeWeights(_rnd);
+				final int count = indexer.getCardinality() - factorTableSize;
+				for (int i = 0; i < count; i++)
 				{
-					result[row][col] = getValue(row, col);
+					do {
+						indices = indexer.randomIndices(_rnd, indices);
+					} while (factorTable.getWeightForIndices(indices) == 0.0);
+					factorTable.setWeightForIndices(0.0, indices);
 				}
 			}
-			return result;
+			else {
+				for (int i = 0; i < factorTableSize; i++)
+				{
+					do {
+						indices = indexer.randomIndices(_rnd, indices);
+					} while (factorTable.getWeightForIndices(indices) != 0.0);
+					factorTable.setWeightForIndices(_rnd.nextDouble(), indices);
+				}
+			}
+			if (indexer.supportsJointIndexing() && indexer.getCardinality() <= 1.0e6)
+			{
+				factorTable.setRepresentation(FactorTableRepresentation.SPARSE_WEIGHT);
+			}
+			return factorTable;
 		}
 	}
 }

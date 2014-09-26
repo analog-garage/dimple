@@ -316,15 +316,12 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 
 		private final CostEstimationTableWrapper _g;
 
-		private final int _p;
-
 		DenseMarginalizationStepEstimator(final CostEstimationTableWrapper f,
 			final int inPortNum,
 			final int dimension,
 			final CostEstimationTableWrapper g)
 		{
 			_f = f;
-			_p = getStride(_f.getDimensions(), dimension);
 			_g = g;
 		}
 
@@ -337,36 +334,9 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		@Override
 		public Costs estimateCosts()
 		{
-			long accesses = 0;
-			final double g_size = _g.getSize();
-			final double f_size = _f.getSize();
-
-			// fill g with 0.0
-			accesses += g_size;
-
-			// 1. read each f value,
-			// 2. read a g value
-			// 3. store their sum in g
-			accesses += 3 * f_size;
-
-			// read an input value each time the message index changes
-			accesses += f_size / _p;
-
 			Costs result = new Costs();
-			result.put(CostType.ACCESSES, (double) accesses);
-
-			// add costs from auxiliary table
+			result.put(CostType.DENSE_MARGINALIZATION_SIZE, _f.getSize());
 			result.add(_g.estimateCosts());
-			return result;
-		}
-
-		private static int getStride(int[] dimensions, int dimension)
-		{
-			int result = 1;
-			for (int i = 0; i < dimension; i++)
-			{
-				result *= dimensions[i];
-			}
 			return result;
 		}
 	}
@@ -386,7 +356,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		{
 			_f = f;
 			_g = g;
-			_msg_indices_length = _f.getDimensions()[dimension];
+			_msg_indices_length = (int) _f.getSize();
 		}
 
 		@Override
@@ -398,28 +368,13 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		@Override
 		public Costs estimateCosts()
 		{
-			long accesses = 0;
-			final double g_size = _g.getSize();
-			final double f_size = _f.getSize();
-
-			// fill g with zero
-			accesses += g_size;
-
-			// 1. read each f value
-			// 2. read a message index
-			// 3. read the input message from the message index
-			// 4. read a g sparse index
-			// 5. read the value of g at that index
-			// 6. store the product of the read input value and the read g value in g
-			accesses += f_size * 6;
-
 			Costs result = new Costs();
-			result.put(CostType.ACCESSES, (double) accesses);
+			result.put(CostType.SPARSE_MARGINALIZATION_SIZE, _f.getSize());
 
 			// allocate 4 bytes each entry (int arrays) for 1. message indices and 2. g indices
-			double allocations = (_msg_indices_length + g_size) * 4;
-
-			result.put(CostType.ALLOCATED_BYTES, allocations);
+			final double g_size = _g.getSize();
+			double allocations = (_msg_indices_length + g_size) * 4 / 1024.0 / 1024.0 / 1024.0;
+			result.put(CostType.MEMORY, allocations);
 
 			// add costs from auxiliary table
 			result.add(_g.estimateCosts());
@@ -439,19 +394,8 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		@Override
 		public Costs estimateCosts()
 		{
-			long accesses = 0;
-			final int outputMsg_length = _f.getDimensions()[0];
-			final double f_size = _f.getSize();
-
-			// 1. read each f value
-			// 2. store f value in output message
-			accesses += f_size * 2;
-
-			// 1. read and 2. write each output message entry to divide them by "sum"
-			accesses += outputMsg_length * 2;
-
 			Costs result = new Costs();
-			result.put(CostType.ACCESSES, (double) accesses);
+			result.put(CostType.OUTPUT_SIZE, _f.getSize());
 			return result;
 		}
 	}
@@ -468,22 +412,8 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		@Override
 		public Costs estimateCosts()
 		{
-			long accesses = 0;
-			final int outputMsg_length = _f.getDimensions()[0];
-			final double f_size = _f.getSize();
-
-			// 1. read each f value
-			// 2. look up joint index from sparse index
-			// 3. store f value in output message
-			accesses += f_size * 3;
-
-			// 1. fill output message with zero
-			// 2. read each output message value, divide it by "sum", and
-			// 3. write it
-			accesses += outputMsg_length * 3;
-
 			Costs result = new Costs();
-			result.put(CostType.ACCESSES, (double) accesses);
+			result.put(CostType.OUTPUT_SIZE, _f.getSize());
 			return result;
 		}
 	}

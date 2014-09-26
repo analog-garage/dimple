@@ -324,19 +324,12 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 
 		private final CostEstimationTableWrapper _g;
 
-		private final int _d;
-
-		private final int _p;
-
 		DenseMarginalizationStepEstimator(final CostEstimationTableWrapper f,
 			final int inPortNum,
 			final int dimension,
 			final CostEstimationTableWrapper g)
 		{
 			_f = f;
-			final int[] dimensions = _f.getDimensions();
-			_d = dimensions[dimension];
-			_p = TableFactorEngineOptimized.getStride(dimensions, dimension);
 			_g = g;
 		}
 
@@ -349,28 +342,8 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		@Override
 		public Costs estimateCosts()
 		{
-			long accesses = 0;
-			final double g_size = _g.getSize();
-			final double f_size = _f.getSize();
-
-			// fill g with +infinity
-			accesses += g_size;
-
-			// 1. read each f value
-			// 2. read a g value
-			accesses += 2 * f_size;
-
-			// store a g value if new minimum
-			// (always on 1st per message entry, then 50% chance)
-			accesses += _d * (1 + (_p - 1) / 2);
-
-			// read an input value each time the message index changes
-			accesses += f_size / _p;
-
 			Costs result = new Costs();
-			result.put(CostType.ACCESSES, (double) accesses);
-
-			// include auxiliary table costs
+			result.put(CostType.DENSE_MARGINALIZATION_SIZE, _f.getSize());
 			result.add(_g.estimateCosts());
 			return result;
 		}
@@ -382,9 +355,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 
 		private final CostEstimationTableWrapper _g;
 
-		private final int _d;
-
-		private final int _p;
+		private final int _msg_indices_length;
 
 		SparseMarginalizationStepEstimator(final CostEstimationTableWrapper f,
 			final int inPortNum,
@@ -393,9 +364,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		{
 			_f = f;
 			_g = g;
-			final int[] dimensions = _f.getDimensions();
-			_d = dimensions[dimension];
-			_p = getStride(dimensions, dimension);
+			_msg_indices_length = (int) _f.getSize();
 		}
 
 		@Override
@@ -407,34 +376,16 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		@Override
 		public Costs estimateCosts()
 		{
-			long accesses = 0;
-			final double g_size = _g.getSize();
-			final double f_size = _f.getSize();
-
-			// fill g with +infinity
-			accesses += g_size;
-
-			// 1. read each f value
-			// 2. read a message index
-			// 3. read the input value at the message index
-			// 4. read a g index
-			// 5. read a g value at the g index
-			accesses += f_size * 5;
-
-			// write the g value if new minimum
-			// (always on 1st per message entry, then 50% chance)
-			accesses += _d * (1 + (_p - 1) / 2);
-
 			Costs result = new Costs();
-			result.put(CostType.ACCESSES, (double) accesses);
+			result.put(CostType.SPARSE_MARGINALIZATION_SIZE, _f.getSize());
 
-			// 4 bytes each entry for int arrays for message indices and g indices
-			double allocations = (_d + g_size) * 4;
-			result.put(CostType.ALLOCATED_BYTES, allocations);
+			// allocate 4 bytes each entry (int arrays) for 1. message indices and 2. g indices
+			final double g_size = _g.getSize();
+			double allocations = (_msg_indices_length + g_size) * 4 / 1024.0 / 1024.0 / 1024.0;
+			result.put(CostType.MEMORY, allocations);
 
-			// include costs for auxiliary table
+			// add costs from auxiliary table
 			result.add(_g.estimateCosts());
-
 			return result;
 		}
 	}
@@ -451,20 +402,8 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		@Override
 		public Costs estimateCosts()
 		{
-			long accesses = 0;
-			final int outputMsg_length = _f.getDimensions()[0];
-			final double f_size = _f.getSize();
-
-			// 1. read each f value
-			// 2. write it to the output message
-			accesses += f_size * 2;
-
-			// read each output value
-			// write it less minPotential
-			accesses += outputMsg_length * 2;
-
 			Costs result = new Costs();
-			result.put(CostType.ACCESSES, (double) accesses);
+			result.put(CostType.OUTPUT_SIZE, _f.getSize());
 			return result;
 		}
 	}
@@ -481,22 +420,8 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		@Override
 		public Costs estimateCosts()
 		{
-			long accesses = 0;
-			final int outputMsg_length = _f.getDimensions()[0];
-			final double f_size = _f.getSize();
-
-			// 1. read each f value
-			// 2. convert f sparse to joint index
-			// 3. write output message entry
-			accesses += f_size * 3;
-
-			// 1. fill output message with +infinity
-			// 2. read output message entry
-			// 3. write output message entry less minPotential
-			accesses += outputMsg_length * 3;
-
 			Costs result = new Costs();
-			result.put(CostType.ACCESSES, (double) accesses);
+			result.put(CostType.OUTPUT_SIZE, _f.getSize());
 			return result;
 		}
 	}

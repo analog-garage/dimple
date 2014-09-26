@@ -44,7 +44,9 @@ import com.analog.lyric.dimple.solvers.optimizedupdate.ISFactorGraphToOptimizedU
 import com.analog.lyric.dimple.solvers.optimizedupdate.IUpdateStep;
 import com.analog.lyric.dimple.solvers.optimizedupdate.IUpdateStepEstimator;
 import com.analog.lyric.dimple.solvers.optimizedupdate.TableWrapper;
+import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateApproach;
 import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateCostOptimizer;
+import com.analog.lyric.options.IOptionKey;
 
 /**
  * Solver-specific factor graph for min-sum solver.
@@ -66,10 +68,19 @@ public class MinSumSolverGraph extends SFactorGraphBase
 	@Override
 	public void initialize()
 	{
-		UpdateCostOptimizer optimizer = new UpdateCostOptimizer(_optimizedUpdateAdapter);
-		optimizer.optimize(_factorGraph);
 		_damping = getOptionOrDefault(MinSumOptions.damping);
 		super.initialize();
+		UpdateCostOptimizer optimizer = new UpdateCostOptimizer(_optimizedUpdateAdapter);
+		optimizer.optimize(_factorGraph);
+		for (Factor f : getModelObject().getFactors())
+		{
+			ISolverFactor sf = f.getSolver();
+			if (sf instanceof MinSumTableFactor)
+			{
+				MinSumTableFactor tf = (MinSumTableFactor)sf;
+				tf.setupTableFactorEngine();
+			}
+		}
 	}
 	
 	@SuppressWarnings("deprecation") // TODO remove when SVariable removed
@@ -153,8 +164,17 @@ public class MinSumSolverGraph extends SFactorGraphBase
 	{
 	}
 
-	private final ISFactorGraphToOptimizedUpdateAdapter _optimizedUpdateAdapter = new ISFactorGraphToOptimizedUpdateAdapter() {
+	private final ISFactorGraphToOptimizedUpdateAdapter _optimizedUpdateAdapter = new SFactorGraphToOptimizedUpdateAdapter(this);
 
+	private static class SFactorGraphToOptimizedUpdateAdapter implements ISFactorGraphToOptimizedUpdateAdapter
+	{
+		final private MinSumSolverGraph _minSumSolverGraph;
+		
+		SFactorGraphToOptimizedUpdateAdapter(MinSumSolverGraph minSumSolverGraph)
+		{
+			_minSumSolverGraph = minSumSolverGraph;
+		}
+		
 		@Override
 		public IUpdateStepEstimator createSparseOutputStepEstimator(CostEstimationTableWrapper tableWrapper)
 		{
@@ -193,51 +213,34 @@ public class MinSumSolverGraph extends SFactorGraphBase
 		public Costs estimateCostOfNormalUpdate(IFactorTable factorTable)
 		{
 			Costs result = new Costs();
-			int numPorts = factorTable.getDimensions();
-			for (int outPortNum = 0; outPortNum < numPorts; outPortNum++)
-			{
-				result.add(estimateCost_updateEdge(factorTable, outPortNum));
-			}
-			return result;
-		}
-
-		private Costs estimateCost_updateEdge(IFactorTable factorTable, int outPortNum)
-		{
-			long accesses = 0;
-			int nonZeroEntries = factorTable.countNonZeroWeights();
-			int numPorts = factorTable.getDimensions();
-			int outputMsg_length = factorTable.getDomainIndexer().getDomainSize(outPortNum);
-			// 1. set each output message entry to +infinity
-			// 2. read each output message value to find the minimum
-			// 3. read each output message, subtract the minimum, and
-			// 4. rewrite it
-			accesses += 4 * outputMsg_length;
-			// for each table entry:
-			// 1. read the entry's indices
-			accesses += nonZeroEntries;
-			// 2. read the entry's value
-			accesses += nonZeroEntries;
-			// 3. for each port:
-			// 3.1. read the input message from the port
-			// 3.2. read the index for the port
-			// 3.3. read the input message value at the port's index
-			// 3.4. read the output message from each port
-			// 3.5. read the output message index for the port
-			// 3.6. read the input message for the port
-			// 3.7. read the value from the input message
-			// 3.8. read the value from the output message
-			accesses += nonZeroEntries * numPorts * 8;
-			// 3.9. if smaller, store the new output message value
-			// ignored in the estimate, but much smaller than the above values
-			Costs result = new Costs();
-			result.put(CostType.ACCESSES, (double) accesses);
+			final int size = factorTable.countNonZeroWeights();
+			final int dimensions = factorTable.getDimensions();
+			// Coefficients determined experimentally
+			double executionTime = 3.30461648566;
+			executionTime += 1.51472189501 * (size - 2397282.13878) / 4990159.0;
+			executionTime += 12.0304854157 * (dimensions * size - 24636832.1724) / 114805021.0;
+			result.put(CostType.EXECUTION_TIME, executionTime);
 			return result;
 		}
 
 		@Override
 		public Costs estimateCostOfOptimizedUpdate(IFactorTable factorTable, final double sparseThreshold)
 		{
-			return FactorUpdatePlan.estimateCosts(factorTable, this, sparseThreshold);
+			final Costs costs = FactorUpdatePlan.estimateOptimizedUpdateCosts(factorTable, this, sparseThreshold);
+			double dmf = costs.get(CostType.DENSE_MARGINALIZATION_SIZE);
+			double smf = costs.get(CostType.SPARSE_MARGINALIZATION_SIZE);
+			double fo = costs.get(CostType.OUTPUT_SIZE);
+			final double size = factorTable.countNonZeroWeights();
+			// Coefficients determined experimentally
+			double executionTime = 1.29764000525;
+			executionTime += 6.92791055163 * (dmf - 3705266.58065) / 25293812.93;
+			executionTime += 4.29121266133 * (smf - 3224351.19011) / 14900000.0;
+			executionTime += -0.330453110368 * (fo - 12588.026109) / 724853.0;
+			executionTime += -1.36970402596 * (size - 2397282.13878) / 4990159.0;
+			final Costs result = new Costs();
+			result.put(CostType.MEMORY, costs.get(CostType.MEMORY));
+			result.put(CostType.EXECUTION_TIME, executionTime);
+			return result;
 		}
 
 		@Override
@@ -258,7 +261,7 @@ public class MinSumSolverGraph extends SFactorGraphBase
 		public void
 			putFactorTableUpdateSettings(Map<IFactorTable, FactorTableUpdateSettings> optionsValueByFactorTable)
 		{
-			_factorTableUpdateSettings = optionsValueByFactorTable;
+			_minSumSolverGraph._factorTableUpdateSettings = optionsValueByFactorTable;
 		}
 
 		@Override
@@ -305,7 +308,31 @@ public class MinSumSolverGraph extends SFactorGraphBase
 			return new TableFactorEngineOptimized.DenseMarginalizationStep(tableWrapper, this, inPortNum,
 				dimension, g_factorTable);
 		}
-	};
+
+		@Override
+		public IOptionKey<UpdateApproach> getUpdateApproachOptionKey()
+		{
+			return MinSumOptions.updateApproach;
+		}
+
+		@Override
+		public IOptionKey<Double> getOptimizedUpdateSparseThresholdKey()
+		{
+			return MinSumOptions.optimizedUpdateSparseThreshold;
+		}
+
+		@Override
+		public IOptionKey<Double> getAutomaticExecutionTimeScalingFactorKey()
+		{
+			return MinSumOptions.automaticExecutionTimeScalingFactor;
+		}
+
+		@Override
+		public IOptionKey<Double> getAutomaticMemoryAllocationScalingFactorKey()
+		{
+			return MinSumOptions.automaticMemoryAllocationScalingFactor;
+		}
+	}
 	
 	private @Nullable Map<IFactorTable, FactorTableUpdateSettings> _factorTableUpdateSettings;
 

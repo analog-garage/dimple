@@ -29,12 +29,11 @@ import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateApproach;
-import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateOptions;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscrete;
-import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
-import com.analog.lyric.dimple.solvers.sumproduct.SumProductTableFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductOptions;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolver;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductTableFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.sampledfactor.SampledFactor;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
@@ -55,10 +54,10 @@ public class TestSumProductOptions extends DimpleTestBase
 		
 		assertEquals(Integer.MAX_VALUE, (int)SumProductOptions.maxMessageSize.defaultValue());
 
-		assertEquals(UpdateApproach.UPDATE_APPROACH_NORMAL, UpdateOptions.updateApproach.defaultValue());
-		assertEquals(100.0, UpdateOptions.automaticExecutionTimeScalingFactor.defaultValue(), 1.0e-9);
-		assertEquals(1.0, UpdateOptions.automaticMemoryAllocationScalingFactor.defaultValue(), 1.0e-9);
-		assertEquals(1.0, UpdateOptions.optimizedUpdateSparseThreshold.defaultValue(), 1.0e-9);
+		assertEquals(UpdateApproach.AUTOMATIC, SumProductOptions.updateApproach.defaultValue());
+		assertEquals(1.0, SumProductOptions.automaticExecutionTimeScalingFactor.defaultValue(), 1.0e-9);
+		assertEquals(10.0, SumProductOptions.automaticMemoryAllocationScalingFactor.defaultValue(), 1.0e-9);
+		assertEquals(1.0, SumProductOptions.optimizedUpdateSparseThreshold.defaultValue(), 1.0e-9);
 		
 		final int nVars = 4;
 		FactorGraph fg = new FactorGraph();
@@ -79,7 +78,7 @@ public class TestSumProductOptions extends DimpleTestBase
 		SumProductTableFactor sf2 = (SumProductTableFactor)requireNonNull(f2.getSolver());
 		assertEquals(0.0, sf2.getDamping(0), 0.0);
 		assertEquals(0, sf2.getK());
-		assertEquals(UpdateApproach.UPDATE_APPROACH_NORMAL, sf1.getOptionOrDefault(UpdateOptions.updateApproach));
+		assertEquals(UpdateApproach.AUTOMATIC, sf1.getOptionOrDefault(SumProductOptions.updateApproach));
 		
 		assertEquals(SampledFactor.DEFAULT_BURN_IN_SCANS_PER_UPDATE, sfg.getSampledFactorBurnInScansPerUpdate());
 		assertEquals(SampledFactor.DEFAULT_SAMPLES_PER_UPDATE, sfg.getSampledFactorSamplesPerUpdate());
@@ -95,8 +94,8 @@ public class TestSumProductOptions extends DimpleTestBase
 		fg.setOption(GibbsOptions.numSamples, 12); // will be overridden by default option in solver graph
 		SumProductOptions.nodeSpecificDamping.set(f1, .4, .5, .6, .7);
 		SumProductOptions.nodeSpecificDamping.set(f2, .3, .4, .5, .6);
-		fg.setOption(UpdateOptions.updateApproach, UpdateApproach.UPDATE_APPROACH_AUTOMATIC);
-		f2.setOption(UpdateOptions.updateApproach, UpdateApproach.UPDATE_APPROACH_NORMAL);
+		fg.setOption(SumProductOptions.updateApproach, UpdateApproach.AUTOMATIC);
+		f2.setOption(SumProductOptions.updateApproach, UpdateApproach.NORMAL);
 		
 		// Test options that are updated on initialize()
 		sfg = requireNonNull(fg.setSolverFactory(new SumProductSolver()));
@@ -132,8 +131,8 @@ public class TestSumProductOptions extends DimpleTestBase
 		
 		assertEquals(.9, sv1.getDamping(0), 0.0);
 
-		assertEquals(UpdateApproach.UPDATE_APPROACH_NORMAL, sf1.getEffectiveUpdateApproach());
-		assertEquals(UpdateApproach.UPDATE_APPROACH_NORMAL, sf2.getEffectiveUpdateApproach());
+		assertEquals(UpdateApproach.OPTIMIZED, sf1.getEffectiveUpdateApproach());
+		assertEquals(UpdateApproach.NORMAL, sf2.getEffectiveUpdateApproach());
 		
 		// Test using set methods
 		sfg.setDamping(.5);
@@ -161,15 +160,15 @@ public class TestSumProductOptions extends DimpleTestBase
 		assertEquals((Integer)142, sfg.getLocalOption(GibbsOptions.numSamples));
 		assertEquals((Integer)24, sfg.getLocalOption(GibbsOptions.scansPerSample));
 
-		assertEquals(UpdateApproach.UPDATE_APPROACH_AUTOMATIC, sfg.getOption(UpdateOptions.updateApproach));
+		assertEquals(UpdateApproach.AUTOMATIC, sfg.getOption(SumProductOptions.updateApproach));
 
-		assertNull(sf1.getLocalOption(UpdateOptions.updateApproach));
-		sf1.setOption(UpdateOptions.updateApproach, UpdateApproach.UPDATE_APPROACH_OPTIMIZED);
-		assertEquals(UpdateApproach.UPDATE_APPROACH_OPTIMIZED, sf1.getOption(UpdateOptions.updateApproach));
-		assertEquals(UpdateApproach.UPDATE_APPROACH_OPTIMIZED, sf1.getLocalOption(UpdateOptions.updateApproach));
-		sf1.setOption(UpdateOptions.updateApproach, UpdateApproach.UPDATE_APPROACH_NORMAL);
-		assertEquals(UpdateApproach.UPDATE_APPROACH_NORMAL, sf1.getOption(UpdateOptions.updateApproach));
-		assertEquals(UpdateApproach.UPDATE_APPROACH_NORMAL, sf1.getLocalOption(UpdateOptions.updateApproach));
+		assertNull(sf1.getLocalOption(SumProductOptions.updateApproach));
+		sf1.setOption(SumProductOptions.updateApproach, UpdateApproach.OPTIMIZED);
+		assertEquals(UpdateApproach.OPTIMIZED, sf1.getOption(SumProductOptions.updateApproach));
+		assertEquals(UpdateApproach.OPTIMIZED, sf1.getLocalOption(SumProductOptions.updateApproach));
+		sf1.setOption(SumProductOptions.updateApproach, UpdateApproach.NORMAL);
+		assertEquals(UpdateApproach.NORMAL, sf1.getOption(SumProductOptions.updateApproach));
+		assertEquals(UpdateApproach.NORMAL, sf1.getLocalOption(SumProductOptions.updateApproach));
 
 		assertEquals((Integer)11, sfg.getLocalOption(GibbsOptions.burnInScans));
 	}

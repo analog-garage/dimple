@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.sumproduct.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.sumproduct.STableFactor;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductTableFactor;
 import com.analog.lyric.math.DimpleRandomGenerator;
 
 /**
@@ -93,6 +94,17 @@ public class ParticleBPSolverGraph extends SFactorGraphBase
 		super.initialize();
 
 		if (_temper) setTemperature(_initialTemperature);
+		
+		for (Factor f : getModelObject().getFactors())
+		{
+			ISolverFactor sf = f.getSolver();
+			if (sf instanceof SumProductTableFactor)
+			{
+				SumProductTableFactor tf = (SumProductTableFactor)sf;
+				tf.setupTableFactorEngine();
+			}
+		}
+		
 	}
 	
 	@Override

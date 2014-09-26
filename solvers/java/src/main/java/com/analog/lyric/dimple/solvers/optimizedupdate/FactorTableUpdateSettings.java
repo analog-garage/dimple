@@ -36,13 +36,13 @@ final public class FactorTableUpdateSettings
 {
 	/**
 	 * The update approach for the factor as specified in the options, which may include
-	 * {@link UpdateApproach#UPDATE_APPROACH_AUTOMATIC}.
+	 * {@link UpdateApproach#AUTOMATIC}.
 	 */
 	private @Nullable UpdateApproach _approach = null;
 
 	/**
 	 * Valid (non-null) only for those factors that have their update approach set to
-	 * {@link UpdateApproach#UPDATE_APPROACH_AUTOMATIC}, and only after the solver graph has
+	 * {@link UpdateApproach#AUTOMATIC}, and only after the solver graph has
 	 * initialized. Indicates the update approach selected.
 	 */
 	private @Nullable UpdateApproach _automaticApproachDecision = null;
@@ -160,25 +160,5 @@ final public class FactorTableUpdateSettings
 	public void setSparseThreshold(double sparseThreshold)
 	{
 		this._sparseThreshold = sparseThreshold;
-	}
-
-	/**
-	 * Indicates if a factor using the represented factor table should use the optimized update
-	 * algorithm or not.
-	 * 
-	 * @return true if the optimized update algorithm should be used.
-	 * @since 0.07
-	 */
-	public boolean useOptimizedUpdate()
-	{
-		if (_approach == UpdateApproach.UPDATE_APPROACH_OPTIMIZED)
-		{
-			return true;
-		}
-		if (_approach == UpdateApproach.UPDATE_APPROACH_AUTOMATIC)
-		{
-			return _automaticApproachDecision == UpdateApproach.UPDATE_APPROACH_OPTIMIZED;
-		}
-		return false;
 	}
 }

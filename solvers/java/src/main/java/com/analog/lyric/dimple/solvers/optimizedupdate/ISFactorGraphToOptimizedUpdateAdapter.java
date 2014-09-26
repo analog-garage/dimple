@@ -21,6 +21,7 @@ import java.util.Map;
 import com.analog.lyric.collect.Tuple2;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.util.misc.Internal;
 
 /**
@@ -73,4 +74,12 @@ public interface ISFactorGraphToOptimizedUpdateAdapter
 	int getWorkers(FactorGraph factorGraph);
 
 	void putFactorTableUpdateSettings(Map<IFactorTable, FactorTableUpdateSettings> optionsValueByFactorTable);
+
+	IOptionKey<UpdateApproach> getUpdateApproachOptionKey();
+
+	IOptionKey<Double> getOptimizedUpdateSparseThresholdKey();
+
+	IOptionKey<Double> getAutomaticExecutionTimeScalingFactorKey();
+
+	IOptionKey<Double> getAutomaticMemoryAllocationScalingFactorKey();
 }

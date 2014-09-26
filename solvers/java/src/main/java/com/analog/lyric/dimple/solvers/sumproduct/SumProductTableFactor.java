@@ -44,7 +44,6 @@ import com.analog.lyric.dimple.solvers.optimizedupdate.FactorTableUpdateSettings
 import com.analog.lyric.dimple.solvers.optimizedupdate.FactorUpdatePlan;
 import com.analog.lyric.dimple.solvers.optimizedupdate.ISTableFactorSupportingOptimizedUpdate;
 import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateApproach;
-import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateOptions;
 import com.analog.lyric.util.misc.Internal;
 
 
@@ -92,7 +91,11 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 		
 		configureDampingFromOptions();
 		updateK(getOptionOrDefault(SumProductOptions.maxMessageSize));
-
+	}
+	
+	@Internal
+	public void setupTableFactorEngine()
+	{
 		FactorUpdatePlan updatePlan = null;
 		final FactorTableUpdateSettings factorTableUpdateSettings = getFactorTableUpdateSettings();
 		if (factorTableUpdateSettings != null)
@@ -276,7 +279,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	@Deprecated
 	public void enableOptimizedUpdate()
 	{
-		setOption(UpdateOptions.updateApproach, UpdateApproach.UPDATE_APPROACH_OPTIMIZED);
+		setOption(SumProductOptions.updateApproach, UpdateApproach.OPTIMIZED);
 	}
 
 	/**
@@ -290,7 +293,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	@Deprecated
 	public void disableOptimizedUpdate()
 	{
-		setOption(UpdateOptions.updateApproach, UpdateApproach.UPDATE_APPROACH_NORMAL);
+		setOption(SumProductOptions.updateApproach, UpdateApproach.NORMAL);
 	}
 
 	/**
@@ -305,7 +308,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	@Deprecated
 	public void useDefaultOptimizedUpdateEnable()
 	{
-		unsetOption(UpdateOptions.updateApproach);
+		unsetOption(SumProductOptions.updateApproach);
 	}
 
 	/**
@@ -317,14 +320,14 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	 */
 	public UpdateApproach getEffectiveUpdateApproach()
 	{
-		FactorTableUpdateSettings updateSettings = getFactorTableUpdateSettings();
-		if (updateSettings != null && updateSettings.useOptimizedUpdate())
+		FactorTableUpdateSettings factorTableUpdateSettings = getFactorTableUpdateSettings();
+		if (factorTableUpdateSettings != null && factorTableUpdateSettings.getOptimizedUpdatePlan() != null)
 		{
-			return UpdateApproach.UPDATE_APPROACH_OPTIMIZED;
+			return UpdateApproach.OPTIMIZED;
 		}
 		else
 		{
-			return UpdateApproach.UPDATE_APPROACH_NORMAL;
+			return UpdateApproach.NORMAL;
 		}
 	}
 	
