@@ -85,10 +85,10 @@ public class ParticleBPSolverGraph extends SFactorGraphBase
 	@Override
 	public void initialize()
 	{
-		_temper = getOptionOrDefault(ParticleBPOptions.enableTempering);
+		_temper = getOptionOrDefault(ParticleBPOptions.enableAnnealing);
 		_initialTemperature = getOptionOrDefault(ParticleBPOptions.initialTemperature);
 		_numIterationsBetweenResampling = getOptionOrDefault(ParticleBPOptions.iterationsBetweenResampling);
-		_temperingDecayConstant = 1 - LOG2/getOptionOrDefault(ParticleBPOptions.temperingHalfLife);
+		_temperingDecayConstant = 1 - LOG2/getOptionOrDefault(ParticleBPOptions.annealingHalfLife);
 		
 		super.initialize();
 
@@ -208,34 +208,34 @@ public class ParticleBPSolverGraph extends SFactorGraphBase
 	public double getInitialTemperature() {return _initialTemperature;}
 	
 	/**
-	 * @deprecated Instead set {@link ParticleBPOptions#temperingHalfLife} option using {@link #setOption}.
+	 * @deprecated Instead set {@link ParticleBPOptions#annealingHalfLife} option using {@link #setOption}.
 	 */
 	@Deprecated
 	public void setTemperingHalfLifeInIterations(double temperingHalfLifeInIterations)
 	{
-		setOption(ParticleBPOptions.temperingHalfLife, temperingHalfLifeInIterations);
+		setOption(ParticleBPOptions.annealingHalfLife, temperingHalfLifeInIterations);
 		setTempering(true);
 		_temperingDecayConstant = 1 - LOG2/temperingHalfLifeInIterations;
 	}
 	
 	/**
-	 * @deprecated Instead get {@link ParticleBPOptions#temperingHalfLife} option using {@link #getOption}.
+	 * @deprecated Instead get {@link ParticleBPOptions#annealingHalfLife} option using {@link #getOption}.
 	 */
 	@Deprecated
 	public double getTemperingHalfLifeInIterations() {return LOG2/(1 - _temperingDecayConstant);}
 	
 	/**
-	 * @deprecated Instead set {@link ParticleBPOptions#enableTempering} option using {@link #setOption}.
+	 * @deprecated Instead set {@link ParticleBPOptions#enableAnnealing} option using {@link #setOption}.
 	 */
 	@Deprecated
 	protected void setTempering(boolean temper)
 	{
-		setOption(ParticleBPOptions.enableTempering, temper);
+		setOption(ParticleBPOptions.enableAnnealing, temper);
 		_temper = temper;
 	}
 
 	/**
-	 * @deprecated Instead set {@link ParticleBPOptions#enableTempering} option to true using {@link #setOption}.
+	 * @deprecated Instead set {@link ParticleBPOptions#enableAnnealing} option to true using {@link #setOption}.
 	 */
 	@Deprecated
 	public final void enableTempering()
@@ -244,7 +244,7 @@ public class ParticleBPSolverGraph extends SFactorGraphBase
 	}
 
 	/**
-	 * @deprecated Instead set {@link ParticleBPOptions#enableTempering} option to false using {@link #setOption}.
+	 * @deprecated Instead set {@link ParticleBPOptions#enableAnnealing} option to false using {@link #setOption}.
 	 */
 	@Deprecated
 	public final void disableTempering()
@@ -253,7 +253,7 @@ public class ParticleBPSolverGraph extends SFactorGraphBase
 	}
 	
 	/**
-	 * @deprecated Instead get {@link ParticleBPOptions#enableTempering} option using {@link #getOption}.
+	 * @deprecated Instead get {@link ParticleBPOptions#enableAnnealing} option using {@link #getOption}.
 	 */
 	@Deprecated
 	public boolean isTemperingEnabled()

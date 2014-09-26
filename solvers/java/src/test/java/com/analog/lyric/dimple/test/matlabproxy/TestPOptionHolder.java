@@ -82,12 +82,12 @@ public class TestPOptionHolder extends DimpleTestBase
 		assertInvariants(proxy);
 		assertArrayEquals(new Object[] { 10, 10 }, proxy.getOption("SolverOptions.iterations"));
 		
-		proxy.setOptionOnAll("GibbsOptions.enableTempering", true);
+		proxy.setOptionOnAll("GibbsOptions.enableAnnealing", true);
 		assertInvariants(proxy);
-		assertArrayEquals(new Object[] { true, true }, proxy.getOption("GibbsOptions.enableTempering"));
+		assertArrayEquals(new Object[] { true, true }, proxy.getOption("GibbsOptions.enableAnnealing"));
 		
 		proxy.clearOptions();
-		assertArrayEquals(new Object[] { false, false }, proxy.getOption("GibbsOptions.enableTempering"));
+		assertArrayEquals(new Object[] { false, false }, proxy.getOption("GibbsOptions.enableAnnealing"));
 		assertInvariants(proxy);
 		
 		proxy.setOptionAcrossAll("SolverOptions.iterations", new Object[] { 14, 23 });
@@ -101,7 +101,7 @@ public class TestPOptionHolder extends DimpleTestBase
 			},
 			new Object[][] {
 				new Object[] { "SolverOptions.iterations", 9},
-				new Object[] { "GibbsOptions.enableTempering", true },
+				new Object[] { "GibbsOptions.enableAnnealing", true },
 			}
 		});
 		assertInvariants(proxy);

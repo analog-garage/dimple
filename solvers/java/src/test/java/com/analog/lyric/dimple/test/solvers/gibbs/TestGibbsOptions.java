@@ -51,9 +51,9 @@ public class TestGibbsOptions extends DimpleTestBase
 		assertEquals(0, GibbsOptions.burnInScans.defaultIntValue());
 		assertFalse(GibbsOptions.saveAllSamples.defaultBooleanValue());
 		assertFalse(GibbsOptions.saveAllScores.defaultBooleanValue());
-		assertFalse(GibbsOptions.enableTempering.defaultValue());
+		assertFalse(GibbsOptions.enableAnnealing.defaultValue());
 		assertEquals(1.0, GibbsOptions.initialTemperature.defaultDoubleValue(), 1.0);
-		assertEquals(1.0, GibbsOptions.temperingHalfLife.defaultDoubleValue(), 1.0);
+		assertEquals(1.0, GibbsOptions.annealingHalfLife.defaultDoubleValue(), 1.0);
 		
 		// Build test graph
 		FactorGraph fg = new FactorGraph();
@@ -88,7 +88,7 @@ public class TestGibbsOptions extends DimpleTestBase
 		assertEquals(nVars * GibbsOptions.burnInScans.defaultIntValue(), sfg.getBurnInUpdates());
 		assertFalse(sfg.isTemperingEnabled());
 		assertEquals(GibbsOptions.initialTemperature.defaultDoubleValue(), sfg.getInitialTemperature(), 0.0);
-		assertEquals(GibbsOptions.temperingHalfLife.defaultDoubleValue(), sfg.getTemperingHalfLifeInSamples(), 1e-9);
+		assertEquals(GibbsOptions.annealingHalfLife.defaultDoubleValue(), sfg.getTemperingHalfLifeInSamples(), 1e-9);
 		
 		// Test initialization from options
 		fg.setSolverFactory(null);
@@ -107,9 +107,9 @@ public class TestGibbsOptions extends DimpleTestBase
 		b2.setOption(GibbsOptions.saveAllSamples, false);
 		r2.setOption(GibbsOptions.saveAllSamples, false);
 		j2.setOption(GibbsOptions.saveAllSamples, false);
-		fg.setOption(GibbsOptions.enableTempering, true);
+		fg.setOption(GibbsOptions.enableAnnealing, true);
 		fg.setOption(GibbsOptions.initialTemperature, Math.PI);
-		fg.setOption(GibbsOptions.temperingHalfLife, 3.1);
+		fg.setOption(GibbsOptions.annealingHalfLife, 3.1);
 		
 		// These do not take effect until after initialization
 		assertEquals(GibbsOptions.numSamples.defaultIntValue(), sfg.getNumSamples());
@@ -185,22 +185,22 @@ public class TestGibbsOptions extends DimpleTestBase
 		
 		sfg.disableTempering();
 		assertFalse(sfg.isTemperingEnabled());
-		assertEquals(false, sfg.getLocalOption(GibbsOptions.enableTempering));
+		assertEquals(false, sfg.getLocalOption(GibbsOptions.enableAnnealing));
 		sfg.enableTempering();
 		assertTrue(sfg.isTemperingEnabled());
-		assertEquals(true, sfg.getLocalOption(GibbsOptions.enableTempering));
+		assertEquals(true, sfg.getLocalOption(GibbsOptions.enableAnnealing));
 		
 		sfg.disableTempering();
-		sfg.unsetOption(GibbsOptions.enableTempering);
+		sfg.unsetOption(GibbsOptions.enableAnnealing);
 		sfg.setInitialTemperature(2.345);
 		assertEquals((Double)2.345, sfg.getLocalOption(GibbsOptions.initialTemperature));
 		assertTrue(sfg.isTemperingEnabled()); // tempering implicitly enabled when setting initial temperature
 		
 		sfg.disableTempering();
-		sfg.unsetOption(GibbsOptions.enableTempering);
+		sfg.unsetOption(GibbsOptions.enableAnnealing);
 		sfg.setTemperingHalfLifeInSamples(4);
 		assertEquals(4, sfg.getTemperingHalfLifeInSamples(), 1e-9);
-		assertEquals(4.0, sfg.getLocalOption(GibbsOptions.temperingHalfLife), 0.0);
+		assertEquals(4.0, sfg.getLocalOption(GibbsOptions.annealingHalfLife), 0.0);
 		assertTrue(sfg.isTemperingEnabled()); // tempering implicitly enabled when setting tempering half life
 
 	}

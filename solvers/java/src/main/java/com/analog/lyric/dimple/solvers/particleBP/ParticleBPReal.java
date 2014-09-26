@@ -39,6 +39,7 @@ import com.analog.lyric.dimple.solvers.core.proposalKernels.Proposal;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.options.OptionDoubleList;
 import com.analog.lyric.options.OptionValidationException;
 
 public class ParticleBPReal extends SRealVariableBase
@@ -104,7 +105,8 @@ public class ParticleBPReal extends SRealVariableBase
 		}
 		requireNonNull(_proposalKernel).configureFromOptions(this);
 		
-		RealDomain initialDomain = getOptionOrDefault(ParticleBPOptions.initialParticleDomain);
+		OptionDoubleList range = getOptionOrDefault(ParticleBPOptions.initialParticleRange);
+		RealDomain initialDomain = RealDomain.create(range.get(0), range.get(1));
 		_initialParticleDomain = initialDomain.isSubsetOf(_domain) ? initialDomain : _domain;
 		
 		super.initialize();
@@ -533,7 +535,7 @@ public class ParticleBPReal extends SRealVariableBase
 			throw new OptionValidationException("Bounds [%g,%g] are not within variable bounds [%g,%g]",
 				min, max, _domain.getLowerBound(), _domain.getUpperBound());
 		}
-		setOption(ParticleBPOptions.initialParticleDomain, domain);
+		ParticleBPOptions.initialParticleRange.set(this, min, max);
 		_initialParticleDomain = domain;
 	}
 

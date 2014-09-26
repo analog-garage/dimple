@@ -246,9 +246,9 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		_scansPerSample = getOptionOrDefault(GibbsOptions.scansPerSample);
 		_burnInScans = getOptionOrDefault(GibbsOptions.burnInScans);
 		final boolean saveAllScores = getOptionOrDefault(GibbsOptions.saveAllScores);
-		_temper = getOptionOrDefault(GibbsOptions.enableTempering);
+		_temper = getOptionOrDefault(GibbsOptions.enableAnnealing);
 		_initialTemperature = getOptionOrDefault(GibbsOptions.initialTemperature);
-		_temperingDecayConstant = 1 - LOG2/getOptionOrDefault(GibbsOptions.temperingHalfLife);
+		_temperingDecayConstant = 1 - LOG2/getOptionOrDefault(GibbsOptions.annealingHalfLife);
 		
 		// Make sure the schedule is created before factor initialization to allow custom factors to modify the schedule if needed
 		final IGibbsSchedule schedule = _schedule = (IGibbsSchedule)_factorGraph.getSchedule();
@@ -840,34 +840,34 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	public double getInitialTemperature() {return _initialTemperature;}
 	
 	/**
-	 * @deprecated Instead set {@link GibbsOptions#temperingHalfLife} option using {@link #setOption}.
+	 * @deprecated Instead set {@link GibbsOptions#annealingHalfLife} option using {@link #setOption}.
 	 */
 	@Deprecated
 	public void setTemperingHalfLifeInSamples(double temperingHalfLifeInSamples)
 	{
-		setOption(GibbsOptions.temperingHalfLife, temperingHalfLifeInSamples);
+		setOption(GibbsOptions.annealingHalfLife, temperingHalfLifeInSamples);
 		setTempering(true);
 		_temperingDecayConstant = 1 - LOG2/temperingHalfLifeInSamples;
 	}
 	
 	/**
-	 * @deprecated Instead get {@link GibbsOptions#temperingHalfLife} option using {@link #getOption}.
+	 * @deprecated Instead get {@link GibbsOptions#annealingHalfLife} option using {@link #getOption}.
 	 */
 	@Deprecated
 	public double getTemperingHalfLifeInSamples() {return LOG2/(1 - _temperingDecayConstant);}
 	
 	/**
-	 * @deprecated Instead set {@link GibbsOptions#enableTempering} option using {@link #setOption}.
+	 * @deprecated Instead set {@link GibbsOptions#enableAnnealing} option using {@link #setOption}.
 	 */
 	@Deprecated
 	protected void setTempering(boolean temper)
 	{
-		setOption(GibbsOptions.enableTempering, temper);
+		setOption(GibbsOptions.enableAnnealing, temper);
 		_temper = temper;
 	}
 
 	/**
-	 * @deprecated Instead set {@link GibbsOptions#enableTempering} option to true using {@link #setOption}.
+	 * @deprecated Instead set {@link GibbsOptions#enableAnnealing} option to true using {@link #setOption}.
 	 */
 	@Deprecated
 	public final void enableTempering()
@@ -876,7 +876,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	}
 
 	/**
-	 * @deprecated Instead set {@link GibbsOptions#enableTempering} option to false using {@link #setOption}.
+	 * @deprecated Instead set {@link GibbsOptions#enableAnnealing} option to false using {@link #setOption}.
 	 */
 	@Deprecated
 	public final void disableTempering()
@@ -885,7 +885,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	}
 	
 	/**
-	 * @deprecated Instead get {@link GibbsOptions#enableTempering} option using {@link #getOption}.
+	 * @deprecated Instead get {@link GibbsOptions#enableAnnealing} option using {@link #getOption}.
 	 */
 	@Deprecated
 	public boolean isTemperingEnabled()

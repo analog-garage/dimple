@@ -106,8 +106,8 @@ public class GibbsOptions extends SolverOptions
 	 * <p>
 	 * @since 0.07
 	 */
-	public static final BooleanOptionKey enableTempering =
-		new BooleanOptionKey(GibbsOptions.class, "enableTempering", false);
+	public static final BooleanOptionKey enableAnnealing =
+		new BooleanOptionKey(GibbsOptions.class, "enableAnnealing", false);
 	
 	/**
 	 * Specifies the initial temperature for annealing in Gibbs solver.
@@ -130,8 +130,8 @@ public class GibbsOptions extends SolverOptions
 	 * <p>
 	 * @since 0.07
 	 */
-	public static final DoubleOptionKey temperingHalfLife =
-		new DoubleOptionKey(GibbsOptions.class, "temperingHalfLife", 1, 1.0, Double.MAX_VALUE);
+	public static final DoubleOptionKey annealingHalfLife =
+		new DoubleOptionKey(GibbsOptions.class, "annealingHalfLife", 1, 1.0, Double.MAX_VALUE);
 	
 	/**
 	 * Specifies which sampler to use for discrete variables in Gibbs solver.
