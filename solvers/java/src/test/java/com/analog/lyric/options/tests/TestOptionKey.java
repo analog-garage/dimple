@@ -29,6 +29,7 @@ import com.analog.lyric.options.BooleanOptionKey;
 import com.analog.lyric.options.ClassOptionKey;
 import com.analog.lyric.options.DoubleListOptionKey;
 import com.analog.lyric.options.DoubleOptionKey;
+import com.analog.lyric.options.DoubleRangeOptionKey;
 import com.analog.lyric.options.EnumOptionKey;
 import com.analog.lyric.options.GenericOptionKey;
 import com.analog.lyric.options.IOptionHolder;
@@ -74,6 +75,12 @@ public class TestOptionKey
 	
 	public static final DoubleListOptionKey DL2 =
 		new DoubleListOptionKey(TestOptionKey.class, "DL2", 2.3, 4.5);
+	
+	public static final DoubleRangeOptionKey UNBOUNDED =
+		new DoubleRangeOptionKey(TestOptionKey.class, "UNBOUNDED");
+	
+	public static final DoubleRangeOptionKey UNIT =
+		new DoubleRangeOptionKey(TestOptionKey.class, "UNIT", 0.0, 1.0);
 	
 	public static final IntegerListOptionKey IL0 =
 		new IntegerListOptionKey(TestOptionKey.class, "IL0");
@@ -262,6 +269,12 @@ public class TestOptionKey
 		assertSame(rogueKey.getDeclaringClass(), rogueKey2.getDeclaringClass());
 		assertEquals(rogueKey.name(), rogueKey2.name());
 		assertEquals(rogueKey.defaultValue(), rogueKey2.defaultValue());
+		
+		// DoubleRangeOptionKey
+		expectThrow(OptionValidationException.class, "Expected valid double range.*", UNBOUNDED, "validate",
+			new OptionDoubleList(1.0), null);
+		expectThrow(OptionValidationException.class, "Expected valid double range.*", UNBOUNDED, "validate",
+			new OptionDoubleList(1.0, 0.0), null);
 		
 		//
 		// Error cases
