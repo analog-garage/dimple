@@ -22,6 +22,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
+import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.options.DimpleOptionRegistry;
 import com.analog.lyric.options.IOption;
@@ -70,7 +71,7 @@ public abstract class POptionHolder extends PObject
 				IOption<?> option = nodeOptions.get(j);
 				IOptionKey<?> key = option.key();
 				keyValues[j * 2] = OptionKey.qualifiedName(key);
-				keyValues[j * 2 + 1] = option.externalValue();
+				keyValues[j * 2 + 1] = wrapValue(option.externalValue());
 			}
 			options[i] = keyValues;
 		}
@@ -93,7 +94,7 @@ public abstract class POptionHolder extends PObject
 		{
 			DimpleOptionHolder holder = getOptionHolder(i);
 			Object value = holder.getOptionOrDefault(key);
-			optionValues[i] = Option.create(key, value).externalValue();
+			optionValues[i] = wrapValue(Option.create(key, value).externalValue());
 		}
 		return optionValues;
 	}
@@ -126,7 +127,7 @@ public abstract class POptionHolder extends PObject
 		if (env != null)
 		{
 			final IOptionKey<?> key = env.optionRegistry().asKey(optionKey);
-			Option<?> option = Option.create(key, value);
+			Option<?> option = Option.create(key, unwrapValue(value));
 			for (int i = 0, size = size(); i < size; ++i)
 			{
 				Option.setOptions(getOptionHolder(i), option);
@@ -150,7 +151,7 @@ public abstract class POptionHolder extends PObject
 			final IOptionKey<?> key = env.optionRegistry().asKey(optionKey);
 			for (int i = 0, size = size(); i < size; ++i)
 			{
-				Option<?> option = Option.create(key, values[i]);
+				Option<?> option = Option.create(key, unwrapValue(values[i]));
 				Option.setOptions(getOptionHolder(i), option);
 			}
 		}
@@ -160,7 +161,7 @@ public abstract class POptionHolder extends PObject
 	{
 		for (int i = 0, n = Math.min(optionKeys.length, values.length); i < n; ++i)
 		{
-			setOptionOnAll(optionKeys[i], values[i]);
+			setOptionOnAll(optionKeys[i], unwrapValue(values[i]));
 		}
 	}
 
@@ -181,7 +182,7 @@ public abstract class POptionHolder extends PObject
 					for (Object[] keyValue : (Object[][])obj)
 					{
 						IOptionKey<?> key = registry.asKey(keyValue[0]);
-						Object value = keyValue[1];
+						Object value = unwrapValue(keyValue[1]);
 						Option.setOptions(holder, Option.create(key, value));
 					}
 				}
@@ -191,7 +192,7 @@ public abstract class POptionHolder extends PObject
 					for (int j = 0, endj = array.length; j < endj; j += 2)
 					{
 						IOptionKey<?> key = registry.asKey(array[j]);
-						Object value = array[j+1];
+						Object value = unwrapValue(array[j+1]);
 						Option.setOptions(holder, Option.create(key, value));
 					}
 				}
@@ -199,4 +200,23 @@ public abstract class POptionHolder extends PObject
 		}
 	}
 
+	private @Nullable Object unwrapValue(@Nullable Object value)
+	{
+		if (value instanceof PObject)
+		{
+			return ((PObject)value).getDelegate();
+		}
+		
+		return value;
+	}
+	
+	private @Nullable Object wrapValue(@Nullable Object value)
+	{
+		if (value instanceof Domain)
+		{
+			return PHelpers.wrapDomain((Domain)value);
+		}
+		
+		return value;
+	}
 }
