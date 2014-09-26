@@ -20,8 +20,6 @@
  * This package extends the core option functionality provided by the {@link com.analog.lyric.options} package
  * for use with Dimple.
  * 
- * <a href="{@docRoot}/com/analog/lyric/options/package-summary.html">com.analog.lyric.options</a>.
- * 
  * <h2>Option definitions</h2>
  * <p>
  * Most Dimple option keys are declared in classes specifically created for that purpose and that are
