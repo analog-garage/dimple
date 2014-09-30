@@ -27,6 +27,7 @@ test3(debugPrint, repeatable);
 test4(debugPrint, repeatable);
 test5(debugPrint, repeatable);
 test6(debugPrint, repeatable);
+test7(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testOperatorOverloadingGibbs');
 
@@ -1381,6 +1382,39 @@ assert(lJ1.Domain.NumElements == M);
 assert(lJ2.Domain.NumElements == N);
 assert(cmp(pJ1, 'Real', 'VectorInnerProduct', [1 1]));
 assert(cmp(pJ2, 'Real', 'VectorInnerProduct', [1 1]));
+
+end
+
+
+% Test that sub-graph creation doesn't change default factor of implicit factors
+function test7(debugPrint, repeatable)
+
+q = Real(1,10);
+x = Real;
+y = Real;
+
+a = Real;
+b = Real;
+sg = FactorGraph(a,b);
+sg.addFactor('Normal', a, 1, b);
+
+fg = FactorGraph;
+fg.addFactor(sg, x, y);
+
+assertEqual(getFactorGraph(), fg);
+
+fg.addFactorVectorized(sg, q(1:end-1), q(2:end));
+
+assertEqual(getFactorGraph(), fg);
+
+% Implicit factor creation should still use 'fg'
+z = Normal(y, 1);
+r = Normal(q(10), 1);
+
+fg.Solver = 'Gibbs';
+fg.setOption('GibbsOptions.numSamples', 100);
+
+fg.solve();
 
 end
 
