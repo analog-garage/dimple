@@ -49,7 +49,7 @@ The current set of valid solver names are:
 \fi
 
 \ifjava
-When setting the solver, the solver is given by an instance of \lstname{IFactorGraphFactory} specific to that kind of solver. By convention, these should have a name ending with the suffix \lstname{Solver} (e.g. \lstname{MinSumSolver} or \lstname{GibbsSolver}). The method \lstname{setSolverFactort()} sets the solver and returns a newly constructed \lstname{ISolverFactorGraph} instance specific to this graph and solver. The specific return type will depend on the solver.
+When setting the solver, the solver is given by an instance of \lstname{IFactorGraphFactory} specific to that kind of solver. By convention, these should have a name ending with the suffix \lstname{Solver} (e.g. \lstname{MinSumSolver} or \lstname{GibbsSolver}). The method \lstname{setSolverFactory()} sets the solver and returns a newly constructed \lstname{ISolverFactorGraph} instance specific to this graph and solver. The specific return type will depend on the solver.
 
 \begin{lstlisting}
 %*\textit{SolverGraph}* sgraph = fg.setSolverFactory(new %*\textit{SolverClass}*());

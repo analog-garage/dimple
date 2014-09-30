@@ -15,11 +15,12 @@
  ********************************************************************************/
 
 /**
- * 
+ * Optimized message update support for Sum-Product and Min-Sum solvers.
+ * <p>
  * @since 0.07
  * @author jking
  */
-@com.analog.lyric.util.misc.Internal
 @NonNullByDefault
 package com.analog.lyric.dimple.solvers.optimizedupdate;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+

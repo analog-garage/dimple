@@ -1,9 +1,28 @@
 \subsection{Solvers}
 \label{sec:SolversAPI}
 
+% TODO: make a separate file for each solver
+
+\subsubsection{Solver-Specific Options}
+
+Each solver supports a number of options specific to that solver. These are described in the following sections. Solver-specific options may be used to configure how overall inference works for that solver or may be used to configure the behavior of individual factors or variables for that solver. Solver-specific options are typically set on the applicable model object (factor graph, factor or variable) and the values will be observed and used to configure the corresponding solver objects:
+
+\ifmatlab
+\begin{lstlisting}
+%*\textit{model-object}*.setOption('%*\textit{SolverOptionClass.optionName}*', %*\textit{option-value}*)
+\end{lstlisting}
+\fi
+\ifjava
+\begin{lstlisting}
+%*\textit{model-object}*.setOption(%*\textit{SolverOptionClass.optionName}*, %*\textit{option-value}*)
+\end{lstlisting}
+\fi
+
+Options that are not applicable to the object on which it is set or that are not applicable to the active solver will simply be ignored. For more details on the options mechanism see \autoref{sec:Options} of this document.
+
 \subsubsection{Solver-Specific Methods}
 
-Each solver supports a series of solver-specific methods, which are described in the following sections.  Solver-specific methods may be available for various objects: a factor-graph, variable, or factor.  In each case, to call a solver-specific method, the method is applied to the solver object, returned by the Solver property.  For example:
+Each solver also may support solver-specific methods, which are described in the following sections. As with options, solver-specific methods may be available for various objects: a factor-graph, variable, or factor. In each case, to call a solver-specific method, the method is applied to the solver object, returned by the Solver property.  For example:
 
 \ifmatlab
 \begin{lstlisting}
@@ -63,25 +82,37 @@ In this case, returnArray is a cell-array of the return values of the method, wi
 
 \fi
 
+\subsubsection{Common Options}
+
+A few options are applicable to multiple solvers and are therefore described in this subsection.
+
+\para{DimpleOptions.randomSeed}
+
+\dimpleOption{DimpleOptions.randomSeed}
+{64-bit integer}
+{N/A}
+{graph}
+{When set, this option specifies a random seed that may be used by solvers that use a random number generator. The seed will only be used if explicitly set; the default value is not used. This can be used to ensure repeatable behavior during testing or profiling but should not be used for normal operation.}
+
+\para{SolverOptions.enableMultithreading}
+
+\dimpleOption{SolverOptions.enableMultithreading}
+{boolean}
+{false}
+{graph}
+{Controls whether to use multithreading for this solver. Multithreading is currently only supported by the MinSum and SumProduct solvers but will eventually be implemented in others. This value will be ignored if not applicable.}
+
+\para{SolverOptions.iterations}
+
+\dimpleOption{SolverOptions.iterations}
+{integer}
+{1}
+{graph}
+{Controls how many iterations to perform during solves. This is not applicable to all solvers. It is currently only used by Sum-Product, Min-Sum and Particle BP.}
+
 \subsubsection{Common Methods}
 
-\para{useMultithreading}
-
-Users can turn on and off multithreading with the useMultithreading method:
-
-\ifmatlab
-\begin{itemize}
-\item fg.Solver.useMultithreading(true);
-\item m = fg.Solver.useMultithreading();
-\end{itemize}
-\fi
-
-\ifjava
-\begin{itemize}
-\item fg.getSolver().useMultithreading(true);
-\item m = fg.getSolver().useMultithreading();
-\end{itemize}
-\fi
+There are also some methods that are common to all solvers. These are:
 
 \para{getMultithreadingManager}
 
@@ -173,7 +204,7 @@ The following global methods can be used to set the number of threads in the Thr
 \end{itemize}
 \fi
 
-
+\clearpage
 \subsubsection{Sum-Product Solver}
 \label{sec:SumProductSolver}
 
@@ -187,7 +218,7 @@ fg.Solver = 'SumProduct';
 
 \ifjava
 \begin{lstlisting}
-fg.setSolverFactory(new SumProductSolver());
+SumProductSolverGraph sfg = fg.setSolverFactory(new SumProductSolver());
 \end{lstlisting}
 \fi
 
@@ -221,221 +252,109 @@ For factors that are neither discrete-only or listed in the above table, an appr
 
 For discrete-only factors, it is possible to use an alternative algorithm, referred to as the optimized update algorithm, to compute all messages outbound from the factor with fewer operations than are required by the default algorithm, which decreases execution time. The optimized update algorithm has greater impact on factors of higher degree. The optimized update algorithm can be applied only when the schedule calls for all of a factor's outbound messages to be updated together. Because this algorithm uses more memory than the default algorithm, it must be programmatically-enabled in order to be used. See the solver-specific factor methods below for controlling enabling of the optimized update algorithm.
 
-The following sections list the solver-specific methods for the SumProduct solver.
+\para{Sum-Product Options}
+\label{sec:SumProductOptions}
 
-\para{Graph Methods}
+The following options can be used with the SumProduct solver.
 
-\subpara{setDamping}
+\subpara{SumProductOptions.damping}
 
-The SumProduct solver supports damping, in which messages are damped by replacing each message by a weighted sum of the computed message value and the previous value of that message (when the corresponding edge was most-recently updated).
-
-In the current version of Dimple, damping is supported only in discrete variables and factors that connect only to discrete variables\footnote{Support for damping for continuous variables may be added in a future release.}.
-
-The damping parameter sets the weighting value:
+\dimpleOption{SumProductOptions.damping}
+{double}
+{0.0}
+{variables and factors}
+{The SumProduct solver supports damping, in which messages are damped by replacing each message by a weighted sum of the computed message value and the previous value of that message (when the corresponding edge was most-recently updated). In the current version of Dimple, damping is supported only in discrete variables and factors that connect only to discrete variables\footnote{Support for damping for continuous variables may be added in a future release.}.
+\linebreak
+\linebreak
+The damping parameter specifies a weighting value in the range 0 through 1:
 
 \[
 \mathrm{message} = \mathrm{computedMessage} \cdot (1 - D) + \mathrm{previousMessage} \cdot D
 \]
 
-where $D$ is the damping value.  The set Damping method can be used to set the damping value.
+where $D$ is the damping value. So that a value of 0 means that the previous message will not be considered, effectively turning off damping.
+\linebreak
+\linebreak
+This option applies the same damping parameter to all edges connected to the variable or factor on which it is set. If you want different values for different edges, you need to use the \nameref{option:SumProductOptions.nodeSpecificDamping} option.
+}
 
-\ifmatlab
-\begin{lstlisting}
-fg.Solver.setDamping(dampingValue);
-\end{lstlisting}
-\fi
+\subpara{SumProductOptions.maxMessageSize}
 
-\ifjava
-\begin{lstlisting}
-SFactorGraph solver = ((SFactorGraph)fg.getSolver());
-solver.setDamping(dampingValue);
-\end{lstlisting}
-\fi
+\dimpleOption{SumProductOptions.maxMessageSize}
+{integer}
+{integer max}
+{discrete factors}
+{This specifies the maximum size of the outgoing messages on the discrete factors on which it is set. If this number K is less than the full size of the message (i.e. the size of the domain of the target variable), then only the K-best values -- those with the largest weights -- will be included in the message. This can results in a faster but more approximate form of inference and is most suited to graphs with very large-dimension variables.
+\linebreak
+\linebreak
+IMPORTANT: k-best and damping are not compatible with each other\footnote{This restriction may be removed in a future version of Dimple.}}
 
-The dampingValue argument must be in the range from 0 through 1.  If this method is never called, the default damping value of 0 is used.
+\subpara{SumProductOptions.nodeSpecificDamping}
 
-\subpara{setSampledFactorSamplesPerUpdate}
+\dimpleOption{SumProductOptions.nodeSpecificDamping}
+{\ifmatlab double vector\fi \ifjava OptionDoubleList\fi}
+{\textit{empty}}
+{variables and factors}
+{This is the similar to the \nameref{option:SumProductOptions.damping} option but allows you specify different weights for different edges. Unlike the simple damping option, this usually makes no sense to set on the graph itself since factors and variables will typically have different numbers and arrangements of edges. The value must either be an empty list, indicating that damping should be turned off, or a list of weights with the same length as the number of siblings of the affected variable and factor. The dmpaing weights will be applied in the order in which the siblings are declared.
+\linebreak
+\linebreak
+This option takes precedence over the simple damping option if both are specified for the same node.
+}
 
-Factors connected to continuous variables that do not support exact message computation, instead use a sampled approximation (see section~\ref{sec:SumProductSolver}).  For all such factors in a graph, this method sets the number of samples to generate to form the estimate of each output message.  Note that this sample generation is done separately for each edge of the factor.  The default number of samples used if this method is never called is 1000.
+\subpara{SumProductOptions.updateApproach}
 
-\ifmatlab
-\begin{lstlisting}
-fg.Solver.setSampledFactorSamplesPerUpdate(samplesPerUpdate);
-\end{lstlisting}
-\fi
+\dimpleOption{SumProductOptions.updateApproach}
+{\ifmatlab string\fi \ifjava UpdateApproach enum\fi}
+{NORMAL}
+{discrete factors}
+{This option controls the optimization of the update messages used by discrete factors. The optimization involves requires the construction of an extra datastructure for each factor table that uses it, which may require a significant amount of memory. The option can take one of three values:
+\begin{itemize}
+\item NORMAL - Perform updates using just the factor tables. Do not use the optimized update technique.
+\item OPTIMIZED - Use the optimized update algorithm on affected factors.
+\item AUTOMATIC - Automatically determine whether to use the optimized algorithm based on attributes of the factor tables and the graph. The automatic selection algorithm can be tuned through the \nameref{option:SumProductOptions.automaticExecutionTimeScalingFactor} and \nameref{option:SumProductOptions.automaticMemoryAllocationScalingFactor} options.
+\end{itemize}
 
-\ifjava
-\begin{lstlisting}
-SFactorGraph solver = ((SFactorGraph)fg.getSolver());
-solver.setSampledFactorSamplesPerUpdate(samplesPerUpdate);
-\end{lstlisting}
-\fi
+Note that while the current default for this option is NORMAL, this is expected to change to AUTOMATIC in a future release.}
 
+\subpara{SumProductOptions.automaticExecutionTimeScalingFactor}
 
-\subpara{getSampledFactorSamplesPerUpdate}
+\dimpleOption{SumProductOptions.automaticExecutionTimeScalingFactor}
+{double}
+{100.0}
+{discrete factors}
+{This option is an execution time scaling factor used when the \nameref{option:SumProductOptions.updateApproach} option is set to AUTOMATIC. It controls how execution time and memory allocation costs are weighed. The value must be a positive number.}
 
-This method retrieves the number of samples per update used for factors connected to continuous variables that use approximate sampled message computation.
+\subpara{SumProductOptions.automaticMemoryAllocationScalingFactor}
 
-\ifmatlab
-\begin{lstlisting}
-samplesPerUpdate = fg.Solver.getSampledFactorSamplesPerUpdate();
-\end{lstlisting}
-\fi
+\dimpleOption{SumProductOptions.automaticMemoryAllocationScalingFactor}
+{double}
+{1.0}
+{discrete factors}
+{This option is an memory allocation scaling factor used when the \nameref{option:SumProductOptions.updateApproach} option is set to AUTOMATIC. It controls how execution time and memory allocation costs are weighed. The value must be a positive number.}
 
-\ifjava
-\begin{lstlisting}
-SFactorGraph solver = ((SFactorGraph)fg.getSolver());
-int samplesPerUpdate = solver.getSampledFactorSamplesPerUpdate();
-\end{lstlisting}
-\fi
+\subpara{SumProductOptions.optimizedUpdateSparseThreshold}
 
+\dimpleOption{SumProductOptions.optimizedUpdateSparseThreshold}
+{double}
+{1.0}
+{discrete factors}
+{This option controls the representation of the auxiliary tables used by the optimized update algorithm, which is controlled through the \nameref{option:SumProductOptions.updateApproach}. This option specifies the density of the original factor table below a sparse representation will be used for auxiliary tables. It must be a number in the range [0.0, 1.0]. The value 1.0 (the default), indicates that a sparse representation should be used if there are any zero-entries in the original table. The value 0.0 will prevent the sparse representation from being used entirely.}
 
-\subpara{setSampledFactorBurnInScansPerUpdate}
+\subpara{GibbsOptions for sampled factors}
 
-For all factors connected to continuous variables that use approximate sampled message computation, this method sets the number of burn-in scans to perform prior to collecting samples used to compute the output messages.  The default number of burn-in samples used if this method is never called is 10.
+Factors connected to continuous variables that do not support exact message computation, instead use a sampled approximation (see section~\ref{sec:SumProductSolver}) where the sampling is performed using the Gibbs Solver.
 
-\ifmatlab
-\begin{lstlisting}
-fg.Solver.setSampledFactorBurnInScansPerUpdate(burnInScans);
-\end{lstlisting}
-\fi
+For all such factors in a graph, you may set any of the Gibbs solver options described in \autoref{sec:GibbsOptions} to control how the sampling will be done. The most important of these options have different default values when used with Sum-Product. This is accomplished by setting the options on the solver graph object when it is constructed. In order to override these defaults, it is necessary to set them on the solver graph, or on the factor model or solver objects.
 
-\ifjava
-\begin{lstlisting}
-SFactorGraph solver = ((SFactorGraph)fg.getSolver());
-solver.setSampledFactorBurnInScansPerUpdate(burnInScans);
-\end{lstlisting}
-\fi
+These options and their Sum-Product default values are:
 
+\begin{itemize}
+\item \nameref{option:GibbsOptions.numSamples}: 1000 \ifjava See SampledFactor.DEFAULT\_SAMPLES\_PER\_UPDATE\fi
+\item \nameref{option:GibbsOptions.burnInScans}: 10 \ifjava See SampledFactor.DEFAULT\_BURN\_IN\_SCANS\_PER\_UPDATE\fi
+\item \nameref{option:GibbsOptions.scansPerSample}: 1 \ifjava See SampledFactor.DEFAULT\_SCANS\_PER\_SAMPLE\fi
+\end{itemize}
 
-\subpara{getSampledFactorBurnInScansPerUpdate}
-
-This method retrieves the number of burn-in scans per update used for factors connected to continuous variables that use approximate sampled message computation.
-
-\ifmatlab
-\begin{lstlisting}
-burnInScans = fg.Solver.getSampledFactorBurnInScansPerUpdate();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-SFactorGraph solver = ((SFactorGraph)fg.getSolver());
-int burnInScans = solver.getSampledFactorBurnInScansPerUpdate();
-\end{lstlisting}
-\fi
-
-
-\subpara{setSampledFactorScansPerSample}
-
-For all factors connected to continuous variables that use approximate sampled message computation, this method sets the number of scans to perform for each sample used to compute the output messages.  The default number of scans per sample used if this method is never called is 1.  Setting this to a value larger than one allows thinning of the sampled output.
-
-\ifmatlab
-\begin{lstlisting}
-fg.Solver.setSampledFactorScansPerSample(scansPerSample);
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-SFactorGraph solver = ((SFactorGraph)fg.getSolver());
-solver.setSampledFactorScansPerSample(scansPerSample);
-\end{lstlisting}
-\fi
-
-\subpara{getSampledFactorScansPerSample}
-
-This method retrieves the scans per sample used for factors connected to continuous variables that use approximate sampled message computation.
-
-\ifmatlab
-\begin{lstlisting}
-scansPerSample = fg.Solver.getSampledFactorScansPerSample();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-SFactorGraph solver = ((SFactorGraph)fg.getSolver());
-int scansPerSample = solver.getSampledFactorScansPerSample();
-\end{lstlisting}
-\fi
-
-
-\para{Factor Methods}
-
-\subpara{setK}
-
-The SumProduct solver supports the k-best variant of the sum-product algorithm for discrete variables and factors connected only to discrete variables.  Users can set a K value on each factor:
-
-\ifmatlab
-\begin{lstlisting}
-factor.Solver.setK(K);
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-STableFactor sfactor = (STableFactor)f.getSolver();
-sfactor.setK(K);
-\end{lstlisting}
-\fi
-
-
-The solver will only use the K best values for each variable when calculating output messages on a factor node.
-
-IMPORTANT: k-best and damping are not compatible with each other\footnote{This restriction may be removed in a future version of Dimple.}.
-
-\subpara{enableOptimizedUpdate}
-
-Enables use of the optimized update algorithm for the factor.
-
-\ifmatlab
-\begin{lstlisting}
-factor.Solver.enableOptimizedUpdate();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-STableFactor sfactor = (STableFactor)f.getSolver();
-sfactor.enableOptimizedUpdate();
-\end{lstlisting}
-\fi
-
-\subpara{disableOptimizedUpdate}
-
-Disables use of the optimized update algorithm for the factor.
-
-\ifmatlab
-\begin{lstlisting}
-factor.Solver.disableOptimizedUpdate();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-STableFactor sfactor = (STableFactor)f.getSolver();
-sfactor.disableOptimizedUpdate();
-\end{lstlisting}
-\fi
-
-\subpara{useDefaultOptimizedUpdateEnable}
-
-Causes the factor to revert to the default setting for the optimized update algorithm enable. The default setting is False.
-
-\ifmatlab
-\begin{lstlisting}
-factor.Solver.useDefaultOptimizedUpdateEnable();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-STableFactor sfactor = (STableFactor)f.getSolver();
-sfactor.useDefaultOptimizedUpdateEnable();
-\end{lstlisting}
-\fi
-
+\clearpage
 \subsubsection{Min-Sum Solver}
 
 Use of the MinSum solver is specified by calling:
@@ -454,61 +373,68 @@ SFactorGraph sgraph = fg.setSolverFactory(new MinSumSolver());
 
 The MinSum solver supports only discrete variables.
 
-The following sections list the solver-specific methods for the MinSum solver.
+\para{Min-Sum Options}
+\label{sec:MinSumOptions}
 
-\para{Graph Methods}
+The following sections list the solver-specific options for the MinSum solver.
 
-\subpara{setDamping}
+\subpara{MinSumOptions.damping}
 
-The MinSum solver supports damping, in which messages are damped by replacing each message by a weighted sum of the computed message value and the previous value of that message (when the corresponding edge was most-recently updated).  The damping parameter sets the weighting value:
+\dimpleOption{MinSumOptions.damping}
+{double}
+{0.0}
+{variables and factors}
+{See \nameref{option:SumProductOptions.damping}}
 
-\[
-\mathrm{message} = \mathrm{computedMessage} \cdot (1 - D) + \mathrm{previousMessage} \cdot D
-\]
+\subpara{MinSumOptions.maxMessageSize}
 
-where $D$ is the damping value.  The set Damping method can be used to set the damping value.
+\dimpleOption{MinSumOptions.maxMessagesSize}
+{integer}
+{integer max}
+{discrete factors}
+{See \nameref{option:SumProductOptions.maxMessageSize}}
 
-\ifmatlab
-\begin{lstlisting}
-fg.Solver.setDamping(dampingValue);
-\end{lstlisting}
-\fi
+\subpara{MinSumOptions.nodeSpecificDamping}
 
-\ifjava
-\begin{lstlisting}
-SFactorGraph solver = ((SFactorGraph)fg.getSolver());
-solver.setDamping(dampingValue);
-\end{lstlisting}
-\fi
+\dimpleOption{MinSumOptions.nodeSpecificDamping}
+{\ifmatlab double vector\fi \ifjava OptionDoubleList\fi}
+{\textit{empty}}
+{variables and factors}
+{See \nameref{option:SumProductOptions.nodeSpecificDamping}}
 
+\subpara{MinSumOptions.updateApproach}
 
-The dampingValue argument must be in the range from 0 through 1.  If this method is never called, the default damping value of 0 is used.
+\dimpleOption{MinSumOptions.updateApproach}
+{\ifmatlab string\fi \ifjava UpdateApproach enum\fi}
+{NORMAL}
+{discrete factors}
+{See \nameref{option:SumProductOptions.updateApproach}}
 
-Note that damping in the MinSum solver is done on messages in the log-domain, which has slightly different behavior than damping in the probability domain, as is done in the SumProduct solver.
+\subpara{MinSumOptions.automaticExecutionTimeScalingFactor}
 
-\para{Factor Methods}
+\dimpleOption{MinSumOptions.automaticExecutionTimeScalingFactor}
+{double}
+{100.0}
+{discrete factors}
+{See \nameref{option:SumProductOptions.automaticExecutionTimeScalingFactor}}
 
-\subpara{setK}
+\subpara{MinSumOptions.automaticMemoryAllocationScalingFactor}
 
-The SumProduct solver supports the k-best variant of the sum-product algorithm.  Users can set a K value on each factor:
+\dimpleOption{MinSumOptions.automaticMemoryAllocationScalingFactor}
+{double}
+{1.0}
+{discrete factors}
+{See \nameref{option:SumProductOptions.automaticMemoryAllocationScalingFactor}}
 
-\ifmatlab
-\begin{lstlisting}
-factor.Solver.setK(K);
-\end{lstlisting}
-\fi
+\subpara{MinSumOptions.optimizedUpdateSparseThreshold}
 
-\ifjava
-\begin{lstlisting}
-STableFactor sfactor = (STableFactor)f.getSolver();
-sfactor.setK(K);
-\end{lstlisting}
-\fi
+\dimpleOption{MinSumOptions.optimizedUpdateSparseThreshold}
+{double}
+{1.0}
+{discrete factors}
+{See \nameref{option:SumProductOptions.optimizedUpdateSparseThreshold}}
 
-The solver will only use the K best values for each variable when calculating output messages on a factor node.
-
-IMPORTANT: k-best and damping are not compatible with each other\footnote{This restriction may be removed in a future version of Dimple.}.
-
+\clearpage
 \subsubsection{Junction Tree Solver}
 \label{sec:JunctionTreeSolverAPI}
 
@@ -562,49 +488,31 @@ useJunctionTree = !fg.isForest();
 
 One significant limitation when using this solver is that the cost of inference and amount of memory needed to store the factor tables is proportional to the size of the tables, which in turn is exponential in the number of variables represented in a table. The Junction Tree algorithm may be unable to determine an equivalent tree structure that has small enough factors either to fit in memory or to perform inference on in an acceptable amount of time. The typical failure mode in such cases is to get an \lstname{OutOfMemoryError} when attempting to run solve. The Junction Tree algorithm works best when used with smaller graphs or larger graphs that have few loops or are loopy but long and narrow.
 
-\para{Graph Methods}
+\para{Junction Tree Options}
+\label{sec:JunctionTreeOptions}
 
-The methods below are available to both versions of the Junction Tree solver.
+The following options are available for use with both versions of the Junction Tree solver.
 
 Because exact inference can be done in a single iteration, the Junction Tree solver fixes the number of iterations to one and will ignore attempts to set it to another value. Because damping would result in inexact inference, the Junction Tree solver does not provide options for using damping.
 
-\subpara{useConditioning}
+\subpara{JunctionTreeOptions.useConditioning}
 
-\ifmatlab
-\begin{lstlisting}
-fg.Solver.useConditioning(true);
-fg.Solver.useConditioning();
-\end{lstlisting}
-\fi
+\dimpleOption{JunctionTreeOptions.useConditioning}
+{boolean}
+{false}
+{graph}
+{Specifies whether to use conditioning when constructing the transformation of the model. When true, then any variables in the model that have a fixed value will be disconnected from the rest of the graph in the transformed version and its value will be incorporated in the factors of the transformed model. This will produce a more efficient transformed model when there are fixed values in the original model. Using this will require that a new transformation be computed every time a fixed value changes.}
 
-\ifjava
-\begin{lstlisting}
-sgraph.useConditioning(true);
-sgraph.useConditioning();
-\end{lstlisting}
-\fi
+\subpara{JunctionTreeOptions.maxTransformationAttempts}
 
-Set/get whether to use conditioning when constructing the transformation of the model. This is false by default. When true, then any variables in the model that have a fixed value will be disconnected from the rest of the graph in the transformed version and its value will be incorporated in the factors of the transformed model. This will produce a more efficient transformed model when there are fixed values in the original model. Using this will require that a new transformation be computed every time a fixed value changes.
+\dimpleOption{JunctionTreeOptions.maxTransformationAttempts}
+{integer}
+{1}
+{graph}
+{Specifies the maximum number of times the junction tree transformer should try to determine an optimal transformation. Each attempt uses a greedy "variable elimination" algorithm using a randomly chosen cost function and random choices to break ties, so more iterations could produce a more efficient tree transformation.}
 
-\subpara{maxTransformationAttempts}
 
-\ifmatlab
-\begin{lstlisting}
-fg.Solver.maxTransformationAttempts(42);
-fg.Solver.maxTransformationAttempts();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-sgraph.maxTransformationAttempts(42);
-sgraph.maxTransformationAttempts();
-\end{lstlisting}
-\fi
-
-Set/get the maximum number of times the junction tree transformer should try to determine an optimal transformation. Each attempt uses a greedy "variable elimination" algorithm using a randomly chosen cost function and random choices to break ties, so more iterations could produce a more efficient tree transformation.
-
-\textsl{}
+\clearpage
 \subsubsection{Gibbs Solver}
 \label{sec:GibbsSolverAPI}
 
@@ -619,13 +527,13 @@ fg.Solver = 'Gibbs';
 
 \ifjava
 \begin{lstlisting}
-fg.setSolverFactory(new GibbsSolver());
+GibbsSolverGraph sfg = fg.setSolverFactory(new GibbsSolver());
 \end{lstlisting}
 \fi
 
 The Gibbs solver supports both discrete and continuous variables.
 
-This solver performs Gibbs sampling on a factor graph.  It supports a variety of output information on the sampled graph, including the best joint sample (lowest energy), marginals of each variable (discrete variables only), and a full set of samples for a user-selected set of variables.  The solver supports both sequential and randomized scan, and it supports tempering with an exponential tempering schedule.
+This solver performs Gibbs sampling on a factor graph.  It supports a variety of output information on the sampled graph, including the best joint sample (lowest energy), marginals of each variable (discrete variables only), and a full set of samples for a user-selected set of variables.  The solver supports both sequential and randomized scan, and it supports tempering with an exponential annealing schedule.
 
 The Gibbs solver supports several user selectable generic samplers (those that don't require specific conjugacy relationships).  The following table lists the available generic samplers, and the variable types supported by each.
 
@@ -699,193 +607,116 @@ Most Dimple methods work more-or-less as normal when using the Gibbs solver, but
 
 NOTE: The setNumIterations() method is not supported by the Gibbs solver as the term ``iteration'' is ambiguous in this case. Instead, the method setNumSamples() should be used to set the length of the run. The Solver.iterate() method performs a single-variable update in the case of the Gibbs solver, rather than an entire scan of all variables.
 
-The following sections list the solver-specific methods for the Gibbs solver.
+The following sections list the solver-specific aspects of the API for the Gibbs solver.
+
+\para{Gibbs Options}
+\label{sec:GibbsOptions}
+
+The following options affect the behavior of various aspects of the Gibbs solver:
+
+\subpara{GibbsOptions.burnInScans}
+
+\dimpleOption{GibbsOptions.burnInScans}
+{integer}
+{0}
+{graph}
+{Specifies the number of full updates of all of the variables in the graph to perform during the burn-in phase before generating samples.}
+
+\subpara{GibbsOptions.discreteSampler}
+
+\dimpleOption{GibbsOptions.discreteSampler}
+{\ifmatlab string\fi \ifjava IGenericSampler class\fi}
+{CDFSampler}
+{variables}
+{Specifies the default sampler to use for discrete variables when a conjugate sampler is not  suitable. The sampler may be configured by use of additional options defined by each sampler type. See \autoref{sec:Samplers} for more details.}
+
+\subpara{GibbsOptions.enableAutomaticConjugateSampling}
+
+\dimpleOption{GibbsOptions.enableAutomaticConjugateSampling}
+{boolean}
+{true}
+{variables}
+{Specifies whether to use conjugate sampling when available for a given variable. Note that if a specific sampler has been specified for a particular variable (by setting the \nameref{option:GibbsOptions.realSampler} option directly on the model or solver variable object) then a conjugate sampler will not be used regardless.}
+
+\subpara{GibbsOptions.enableAnnealing}
+
+\dimpleOption{GibbsOptions.enableAnnealing}
+{boolean}
+{false}
+{graph}
+{Specifies whether to use a tempering and annealing process when running Gibbs.}
+
+\subpara{GibbsOptions.initialTemperature}
+
+\dimpleOption{GibbsOptions.initialTemperature}
+{double}
+{1.0}
+{graph}
+{Specifies the initial temperature to use when annealing is enabled (as specified by the enableAnnealing option).}
+
+\subpara{GibbsOptions.numSamples}
+
+\dimpleOption{GibbsOptions.numSamples}
+{integer}
+{1}
+{graph}
+{Specifies the number of samples to be generated when solving the graph post burn-in. This value times the value of \nameref{option:GibbsOptions.numRandomRestarts} plus one determines the number of samples that will be produced in a call to solveOneStep.}
+
+\subpara{GibbsOptions.numRandomRestarts}
+
+\dimpleOption{GibbsOptions.numRandomRestarts}
+{integer}
+{0}
+{graph}
+{Specifies the number of random restarts (zero by default, which means run once and don't restart). For a value greater than zero, the after running the specified number of samples, the solver is restarted with the variable values randomized, and re-run (including burn-in).  The sample values (the best sample value, or all samples, if requested) are extracted across all runs.
+}
+
+\subpara{GibbsOptions.realSampler}
+
+\dimpleOption{GibbsOptions.realSampler}
+{\ifmatlab string\fi \ifjava IGenericSampler class\fi}
+{SliceSampler}
+{variables}
+{Specifies the default sampler to use for real-valued variables (including Complex and RealJoint) when a conjugate sampler is not suitable. The sampler may be configured by use of additional options defined by each sampler type. See \autoref{sec:Samplers} for more details.}
+
+\subpara{GibbsOptions.scansPerSample}
+
+\dimpleOption{GibbsOptions.scansPerSample}
+{integer}
+{0}
+{graph}
+{Specifies sampling rate in terms of the number of updates of all of the variables in the graph to perform for each sample.}
+
+
+\subpara{GibbsOptions.saveAllSamples}
+
+\dimpleOption{GibbsOptions.saveAllSamples}
+{boolean}
+{false}
+{graph}
+{Specifies whether to save all sample values for variables when running Gibbs. Note that this is practical only if the number of variables in the graph times the number of samples per variable is reasonably sized.}
+
+\subpara{GibbsOptions.saveAllScores}
+
+\dimpleOption{GibbsOptions.saveAllScores}
+{boolean}
+{false}
+{graph}
+{Specifies whether to save scores for all generated samples in Gibbs. If true, then for each sample the total energy/log-likelihood aka \emph{score} of the graph will be saved. The saved scores can later be retrieved by the getAllScores() method described below.}
+
+\subpara{GibbsOptions.annealingHalfLife}
+
+\dimpleOption{GibbsOptions.annealingHalfLife}
+{double}
+{1.0}
+{graph}
+{Specifies the rate at which the temperature will be lowered during the tempering and annealing process. This rate is specified in terms of the number of iterations required for the temperature to be lowered by half. This value is only used if annealing has been enabled as specified by the enableAnnealing option.}
 
 \para{Graph Methods}
 
 The following methods are available on a graph set to use the Gibbs solver:
 
-\ifmatlab
-\begin{lstlisting}
-graph.Solver.setNumSamples(numSamples);
-graph.Solver.getNumSamples();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-graph.getSolver().setNumSamples(numSamples);
-graph.getSolver().getNumSamples();
-\end{lstlisting}
-\fi
-
-Set/get the number of samples to be run when solving the graph (post burn-in).
-
-\ifmatlab
-\begin{lstlisting}
-graph.Solver.setScansPerSample(scansPerSample);
-graph.Solver.getScansPerSample();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-graph.getSolver().setScansPerSample(scansPerSample);
-graph.getSolver().getScansPerSample();
-\end{lstlisting}
-\fi
-
-Set the number of scans between samples as an alternative means of specifying the sample rate. A scan is an update of the number of variables equal to the total number of variables in the graph.
-
-\ifmatlab
-\begin{lstlisting}
-graph.Solver.setUpdatesPerSample(updatesPerSample);
-graph.Solver.getUpdatesPerSample();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-graph.getSolver().setUpdatesPerSample(updatesPerSample);
-graph.getSolver().getUpdatesPerSample();
-\end{lstlisting}
-\fi
-
-
-Set/get the number of single-variable updates between samples.
-
-\ifmatlab
-\begin{lstlisting}
-graph.Solver.setBurnInScans(burnInScans);
-graph.Solver.getBurnInScans();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-graph.getSolver().setBurnInScans(burnInScans);
-graph.getSolver().getBurnInScans();
-\end{lstlisting}
-\fi
-
-Set the number of scans for burn-in as an alternative means of specifying the burn-in period.
-
-\ifmatlab
-\begin{lstlisting}
-graph.Solver.setBurnInUpdates(burnInUpdates);
-graph.Solver.getBurnInUpdates();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-graph.getSolver().setBurnInUpdates(burnInUpdates);
-graph.getSolver().getBurnInUpdates();
-\end{lstlisting}
-\fi
-
-Set/get the number of single-variable updates for the burn-in period prior to collecting samples.
-
-\ifmatlab
-\begin{lstlisting}
-graph.Solver.setNumRestarts(numRestarts)
-graph.Solver.getNumRestarts() 
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-graph.getSolver().setNumRestarts(numRestarts)
-graph.getSolver().getNumRestarts() 
-\end{lstlisting}
-\fi
-
-Set/get the number of random restarts (zero by default, which means run once and don't restart).  For a value greater than zero, the after running the specified number of samples, the solver is restarted with the variable values randomized, and re-run (including burn-in).  The sample values (the best sample value, or all samples, if requested) are extracted across all runs.
-
 Variable initialization (both on the first run and subsequent restarts) is randomized whenever possible.  For a discrete variable, the value is sampled from the Input (uniform if an input is not specified).  For a real variable, if an Input is specified and the Input supports one of the conjugate samplers listed above, that sampler is used to initialize the variable.  If bounds are also specified for the variable domain, the values is truncated to fall within the bounds.  If only bounds are specified (which are finite above and below), then the value is uniformly sampled from within the bounds.  If no finite bounds are specified and there is no input, the variable is initialized to zero (or the value specified by setInitialSampleValue) on the initial run, and left at the final value of the previous run on restart.
-
-
-\ifmatlab
-\begin{lstlisting}
-graph.Solver.setDefaultDiscreteSampler(samplerName);
-graph.Solver.getDefaultDiscreteSampler();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-graph.getSolver().setDefaultDiscreteSampler(samplerName);
-graph.getSolver().getDefaultDiscreteSampler();
-\end{lstlisting}
-\fi
-
-Set/get the default sampler for Discrete and Bit.  The default sampler can be set only to one of the generic samplers listed in the table of generic samplers, above.  The CDFSampler is the default sampler for discrete variables unless overridden by this method.  Note that for a particular variable, the default sampler is used only if the user has not overridden the default for that variable using the variable-specific setSampler method.
-
-\ifmatlab
-\begin{lstlisting}
-graph.Solver.setDefaultRealSampler(samplerName);
-graph.Solver.getDefaultRealSampler();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-graph.getSolver().setDefaultRealSampler(samplerName);
-graph.getSolver().getDefaultRealSampler();
-\end{lstlisting}
-\fi
-
-Set/get the default sampler for Real, Complex, and RealJoint variables.  The default sampler can be set only to one of the generic samplers listed in the table of generic samplers, above.  The SliceSampler is the default sampler for real variables unless overridden by this method.  Note that for a particular variable, the default sampler is used only if there is no available conjugate sampler and the user has not overridden the default for that variable using the variable-specific setSampler method.
-
-
-\ifmatlab
-\begin{lstlisting}
-graph.Solver.setInitialTemperature(initialTemperature);
-graph.Solver.getInitialTemperature();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-graph.getSolver().setInitialTemperature(initialTemperature);
-graph.getSolver().getInitialTemperature();
-\end{lstlisting}
-\fi
-
-Set/get the initial temperature when using tempering. Note that setting the initial temperature automatically enables the use of tempering if it had not been enabled already.
-
-\ifmatlab
-\begin{lstlisting}
-graph.Solver.setTemperingHalfLifeInSamples();
-graph.Solver.getTemperingHalfLifeInSamples();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-graph.getSolver().setTemperingHalfLifeInSamples();
-graph.getSolver().getTemperingHalfLifeInSamples();
-\end{lstlisting}
-\fi
-
-
-Set/get the tempering half-life.  the number of samples for the temperature to decrease by half. Note that setting the tempering half-life automatically enables the use of tempering if it had not been enabled already.
-
-\ifmatlab
-\begin{lstlisting}
-graph.Solver.enableTempering();
-graph.Solver.disableTempering();
-graph.Solver.isTemperingEnabled();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-graph.getSolver().enableTempering();
-graph.getSolver().disableTempering();
-graph.getSolver().isTemperingEnabled();
-\end{lstlisting}
-\fi
 
 Enable or disable the use of tempering, or determine if tempering is in use.
 
@@ -898,68 +729,12 @@ graph.Solver.getTemperature();
 
 \ifjava
 \begin{lstlisting}
-graph.getSolver().setTemperature(T);
-graph.getSolver().getTemperature();
+sfg.setTemperature(T);
+sfg.getTemperature();
 \end{lstlisting}
 \fi
 
 Set/get the current temperature. Setting the current temperature overrides the current annealing temperature.
-
-\ifmatlab
-\begin{lstlisting}
-graph.Solver.saveAllSamples();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-graph.getSolver().saveAllSamples();
-\end{lstlisting}
-\fi
-
-Prior to solving the graph, this method instructs the solver to save all sample values for all variables. Note that this is practical only for relatively small graphs with relatively small number of samples.
-
-\ifmatlab
-\begin{lstlisting}
-graph.Solver.disableSavingAllSamples();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-graph.getSolver().disableSavingAllSamples();
-\end{lstlisting}
-\fi
-
-In case saveAllSamples had previously been called, calling this method disables saving all samples on future runs.
-
-\ifmatlab
-\begin{lstlisting}
-graph.Solver.saveAllScores();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-graph.getSolver().saveAllScores();
-\end{lstlisting}
-\fi
-
-Prior to solving the graph, this method instructs the solver to save the score value (see section~\ref{sec:FactorGraph.Score}) of the graph for each sample.
-
-\ifmatlab
-\begin{lstlisting}
-graph.Solver.disableSavingAllScores();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-graph.getSolver().disableSavingAllScores();
-\end{lstlisting}
-\fi
-
-In case saveAllScores had previously been called, calling this method disables saving all samples on future runs.
 
 \ifmatlab
 \begin{lstlisting}
@@ -969,25 +744,11 @@ graph.Solver.getAllScores();
 
 \ifjava
 \begin{lstlisting}
-graph.getSolver().getAllScores();
+sfg.getAllScores();
 \end{lstlisting}
 \fi
 
-Returns an array including the score value for each sample. This method only returns a non-empty value if .saveAllScores() method had previously been called on the graph.
-
-\ifmatlab
-\begin{lstlisting}
-graph.Solver.setSeed(seed);
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-graph.getSolver().setSeed(seed);
-\end{lstlisting}
-\fi
-
-Set the random seed used for sampling (and used for random scan, if that schedule is used). Setting the seed allows repeatable execution of the Gibbs solver.
+Returns an array including the score value for each sample. This method only returns a non-empty value if the \nameref{option:GibbsOptions.saveAllScores} option was set to true on the graph before generating samples.
 
 \ifmatlab
 \begin{lstlisting}
@@ -997,7 +758,7 @@ graph.Solver.getTotalPotential();
 
 \ifjava
 \begin{lstlisting}
-graph.getSolver().getTotalPotential();
+sfg.getTotalPotential();
 \end{lstlisting}
 \fi
 
@@ -1011,7 +772,7 @@ graph.Solver.sample(numSamples)
 
 \ifjava
 \begin{lstlisting}
-graph.getSolver().sample(numSamples)
+sfg.sample(numSamples)
 \end{lstlisting}
 \fi
 
@@ -1025,7 +786,7 @@ graph.Solver.burnIn()
 
 \ifjava
 \begin{lstlisting}
-graph.getSolver().burnIn()
+sfg.burnIn()
 \end{lstlisting}
 \fi
 
@@ -1039,7 +800,7 @@ graph.Solver.getRejectionRate()
 
 \ifjava
 \begin{lstlisting}
-graph.getSolver().getRejectionRate()
+sfg.getRejectionRate()
 \end{lstlisting}
 \fi
 
@@ -1053,7 +814,7 @@ graph.Solver.resetRejectionRateStats()
 
 \ifjava
 \begin{lstlisting}
-graph.getSolver().resetRejectionRateStats()
+sfg.resetRejectionRateStats()
 \end{lstlisting}
 \fi
 
@@ -1070,7 +831,10 @@ variable.Solver.getCurrentSample();
 
 \ifjava
 \begin{lstlisting}
-variable.getSolver().getCurrentSample();
+Object d = ((GibbsDiscrete)variable.getSolver()).getCurrentSample();
+double r = ((GibbsReal)variable.getSolver()).getCurrentSample();
+double[] rj = ((GibbsRealJoint)variable.getSolver()).getCurrentSample();
+Value val= ((ISolverVariableGibss)variable.getSolver()).getCurrentSampleValue();
 \end{lstlisting}
 \fi
 
@@ -1084,11 +848,13 @@ variable.Solver.getAllSamples();
 
 \ifjava
 \begin{lstlisting}
-variable.getSolver().getAllSamples();
+Object[] ds = ((GibbsDiscrete)variable.getSolver()).getAllSamples();
+double[] rs = ((GibbsReal)variable.getSolver()).getAllSamples();
+double[][] rjs = ((GibbsRealJoint)variable.getSolver()).getAllSamples();
 \end{lstlisting}
 \fi
 
-Returns an array including all sample values seen so far for a variable. Over multiple variables, samples with the same index correspond to the same joint sample value. This method only returns a non-empty value if .saveAllSamples() method had previously been called on the graph or for the variable.
+Returns an array including all sample values seen so far for a variable. Over multiple variables, samples with the same index correspond to the same joint sample value. This method only returns a non-empty value if the \nameref{GibbsOptions.saveAllSamples} options was enabled for the variable when sampling was performed.
 
 \ifmatlab
 \begin{lstlisting}
@@ -1098,40 +864,14 @@ variable.Solver.getBestSample();
 
 \ifjava
 \begin{lstlisting}
-variable.getSolver().getBestSample();
+Object d = ((GibbsDiscrete)variable.getSolver()).getBestSample();
+double r = ((GibbsReal)variable.getSolver()).getBestSample();
+double[] rj = ((GibbsRealJoint)variable.getSolver()).getBestSample();
 \end{lstlisting}
 \fi
 
 
 Returns the value of the best sample value seen so far, where best is defined as the sample with the minimum total potential over the graph (sum of -log of the factor values and input priors).  When getting the best sample from multiple variables, they all correspond to the same sample in time, thus should be a valid sample from the joint distribution.
-
-\ifmatlab
-\begin{lstlisting}
-variable.Solver.saveAllSamples();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-variable.getSolver().saveAllSamples();
-\end{lstlisting}
-\fi
-
-Prior to solving the graph, this method instructs the solver to save all sample values for this variable.
-
-\ifmatlab
-\begin{lstlisting}
-variable.Solver.disableSavingAllSamples();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-variable.getSolver().disableSavingAllSamples();
-\end{lstlisting}
-\fi
-
-In case saveAllSamples had previously been called, calling this method disables saving all samples for this variable on future runs.
 
 \ifmatlab
 \begin{lstlisting}
@@ -1327,125 +1067,6 @@ variable.getSolver().getSampleCovariance();
 
 Returns the covariance matrix computed over all samples that have been collected.  This is and estimate of the covariance of the belief for the corresponding variable.  This method is only available if, prior to performing inference, the option GibbsOptions.computeRealJointBeliefMoments is set to true.
 
-
-
-\para{Sampler-Specific Methods}
-
-Some of the generic samplers supported by the Gibbs solver include user configurable options, described in below.
-
-The SliceSampler supports setting/getting the initial slice width and the maximum number of doublings:
-
-\ifmatlab
-\begin{lstlisting}
-variable.Solver.getSampler().setInitialSliceWidth(width);
-variable.Solver.getSampler().getInitialSliceWidth();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-variable.getSolver().getSampler().setInitialSliceWidth(width);
-variable.getSolver().getSampler().getInitialSliceWidth();
-\end{lstlisting}
-\fi
-
-The above methods set/get the initial slice width to be used by the slice sampler.  The default initial width is 1.  For variables with a natural range that is much smaller or much larger than one, it may be beneficial to modify this value.
-
-\ifmatlab
-\begin{lstlisting}
-variable.Solver.getSampler().setMaximumDoublings(numDoublings);
-variable.Solver.getSampler().getMaximumDoublings();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-variable.getSolver().getSampler().setMaximumDoublings(numDoublings);
-variable.getSolver().getSampler().getMaximumDoublings();
-\end{lstlisting}
-\fi
-
-The above methods set/get the maximum number of doublings used by the slice sampler.  The default value is 10.
-
-The MHSampler supports setting/getting the proposal kernel:
-
-\ifmatlab
-\begin{lstlisting}
-variable.Solver.getSampler().setProposalKernel(proposalKernelName);
-variable.Solver.getSampler().setProposalKernel(proposalKernelObject);
-variable.Solver.getSampler().getProposalKernel();
-variable.Solver.getSampler().getProposalKernelName();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-variable.getSolver().getSampler().setProposalKernel(proposalKernelName);
-variable.getSolver().getSampler().setProposalKernel(proposalKernelObject);
-variable.getSolver().getSampler().getProposalKernel();
-variable.getSolver().getSampler().getProposalKernelName();
-\end{lstlisting}
-\fi
-
-The setProposalKernel method allows setting the proposal kernel either by name or by specifying an existing proposal kernel object.  For discrete variables, Dimple currently supports only one proposal kernel: UniformDiscreteProposalKernel, though a user may create new proposal kernel Java classes.  For real variables, Dimple currently supports: NormalProposalKernel and CircularNormalProposalKernel.  The default kernel for real variables is NormalProposalKernel.
-
-The method getProposalKernel returns the proposal kernel object, while getProposalKernelName returns a string indicating the name of the current proposal kernel.
-
-The NormalProposalKernel by default makes proposals from a Normal distribution with standard deviation 1.  The standard deviation is settable using:
-
-\ifmatlab
-\begin{lstlisting}
-variable.Solver.getSampler().getProposalKernel().setStandardDeviation(std);
-variable.Solver.getSampler().getProposalKernel().getStandardDeviation();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-variable.getSolver().getSampler().getProposalKernel().setStandardDeviation(std);
-variable.getSolver().getSampler().getProposalKernel().getStandardDeviation();
-\end{lstlisting}
-\fi
-
-The above methods set/get the standard deviation for a NormalProposalKernel.  The default standard deviation is 1.
-
-The CircularNormalProposalKernel makes proposals from a Normal distribution on a circularly wrapping range of the real line.  For example, setting the bounds of the range to $-\pi$ and $\pi$ would create proposals representing angles on a circle.  The CircularNormalProposalKernel has settable parameters that include the standard deviation as well as the lower and upper bounds of the circular range.
-
-\ifmatlab
-\begin{lstlisting}
-variable.Solver.getSampler().getProposalKernel().setStandardDeviation(std);
-variable.Solver.getSampler().getProposalKernel().getStandardDeviation();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-variable.getSolver().getSampler().getProposalKernel().setStandardDeviation(std);
-variable.getSolver().getSampler().getProposalKernel().getStandardDeviation();
-\end{lstlisting}
-\fi
-
-The above methods set/get the standard deviation for a CircularNormalProposalKernel.  The default standard deviation is 1.
-
-\ifmatlab
-\begin{lstlisting}
-variable.Solver.getSampler().getProposalKernel().setCircularBounds(lower, upper);
-variable.Solver.getSampler().getProposalKernel().getLowerBound();
-variable.Solver.getSampler().getProposalKernel().getUpperBound();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-variable.getSolver().getSampler().getProposalKernel().setCircularBounds(lower, upper);
-variable.getSolver().getSampler().getProposalKernel().getLowerBound();
-variable.getSolver().getSampler().getProposalKernel().getUpperBound();
-\end{lstlisting}
-\fi
-
-The above methods set/get the lower and upper bounds of the circular range of values.  The default lower and upper bounds are $-\pi$ and $\pi$, respectively.
-
-
 \para{Factor Methods}
 
 \ifmatlab
@@ -1577,6 +1198,7 @@ Note that to use the addBlockScheduleEntry method, the scheduler must first have
 
 To implement a custom block proposal kernel, a new Java class must be created that implements the IBlockProposalKernel interface.  See section~\ref{sec:CreatingACustomProposalKernel} for more detail.
 
+\clearpage
 \subsubsection{Particle BP Solver}
 
 Use of the particle BP solver is specified by calling:
@@ -1586,141 +1208,112 @@ Use of the particle BP solver is specified by calling:
 fg.Solver = 'ParticleBP';
 \end{lstlisting}
 \fi
-
 \ifjava
 \begin{lstlisting}
-fg.setSolverFactory(new ParticleBPSolver());
+ParticleBPSolverGraph sfg = fg.setSolverFactory(new ParticleBPSolver());
 \end{lstlisting}
 \fi
 
-The following sections list the solver-specific methods for the ParticleBP solver.
+The following lists the solver-specific options for the ParticleBP solver.
+
+\para{Particle BP Options}
+
+\subpara{ParticleBPOptions.numParticles}
+
+\dimpleOption{ParticleBPOptions.numParticles}
+{integer}
+{1}
+{real variables}
+{Specifies the number of particles used to represent the variable. This option takes affect when the solver variable is constructed and when it is initialized.}
+
+\subpara{ParticleBPOptions.enableAnnealing}
+
+\dimpleOption{ParticleBPOptions.enableAnnealing}
+{boolean}
+{false}
+{graph}
+{Determines whether to use a tempering and annealing process during inference.}
+
+\subpara{ParticleBPOptions.initialTemperature}
+
+\dimpleOption{ParticleBPOptions.initialTemperature}
+{double}
+{1.0}
+{graph}
+{Specifies the initial temperature to use when annealing is enabled (as specified by the enableAnnealing option).}
+
+\subpara{ParticleBPOptions.annealingHalfLife}
+
+\dimpleOption{ParticleBPOptions.annealingHalfLife}
+{double}
+{1.0}
+{graph}
+{Specifies the rate at which the temperature will be lowered during the tempering and annealing process. This rate is specified in terms of the number of iterations required for the temperature to be lowered by half. This value is only used if annealing has been enabled as specified by the enableAnnealing option.}
+
+\subpara{ParticleBPOptions.resamplingUpdatesPerParticle}
+
+\dimpleOption{ParticleBPOptions.resamplingUpdatesPerParticle}
+{integer}
+{1}
+{real variables}
+{For variables on which it is set, specifies the number of updates per particle to perform each time the particle is resampled.}
+
+\subpara{ParticleBPOptions.iterationsBetweenResampling}
+
+\dimpleOption{ParticleBPOptions.iterationsBetweenResampling}
+{integer}
+{1}
+{graph}
+{Specifies the number of iterations between re-sampling all of the variables in the graph. Default is 1, meaning resample between every iteration.}
+
+\subpara{ParticleBPOptions.initialParticleRange}
+
+\dimpleOption{ParticleBPOptions.initialParticleRange}
+{\ifmatlab 1x2 vector\fi \ifjava two-element OptionDoubleList\fi}
+{[-infinity infinity]}
+{variables}
+{Set the range over which the initial particle values will be defined. The initial particle values are uniformly spaced between the min and max values specified. If the range is specified using this method, it overrides any other initial value. Otherwise, if a finite domain has been specified, the initial particle values are uniformly spaced between the lower and upper bound of the domain. Otherwise, all particles are initially set to zero.}
+
+\ifmatlab
+\begin{lstlisting}
+% Set particle range to the unit interval for all variables in the graph:
+graph.setOption('ParticleBPOptions.initialParticleRange', [0.0, 1.0]);
+\end{lstlisting}
+\fi
+\ifjava
+\begin{lstlisting}
+// Set particle range to the unit interval for all variables in the graph:
+ParticleBPOptions.initialParticleRange.set(graph, 0.0, 1.0);
+\end{lstlisting}
+\fi
+
+\subpara{ParticleBPOptions.proposalKernel}
+
+\dimpleOption{ParticleBPOptions.proposalKernel}
+{\ifmatlab string\fi \ifjava IProposalKernel class\fi}
+{NormalProposalKernel}
+{real variables}
+{Specifies the type of proposal kernel to use for the specified variables. The selected proposal kernel may have additional options that can be used to configure its behavior. These can also be set on the variables.}
 
 \para{Graph Methods}
 
+The following solver-specific methods are available on the solver graph. \ifjava (It is assumed that sfg is a variable of type ParticleBPSolverGraph obtained when the solver was set or by casting the result of the getSolver() method.)\fi
+
 \ifmatlab
 \begin{lstlisting}
-graph.Solver.setNumParticles(numParticles);
+graph.Solver.setTemperature(newTemperature);
+temp = graph.Solver.getTemperature();
 \end{lstlisting}
 \fi
 
 \ifjava
 \begin{lstlisting}
-graph.getSolver().setNumParticles(numParticles);
+sfg.setTemperature(newTemperature);
+double temp = sfg.getTemperature();
 \end{lstlisting}
 \fi
 
-For each variable in the graph, sets the number of particles per variable. This is set globally for all variables in the graph as an alternative to setting this for all variables separately.
-
-\ifmatlab
-\begin{lstlisting}
-graph.Solver.setResamplingUpdatesPerParticle(updatesPerParticle);
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-graph.getSolver().setResamplingUpdatesPerParticle(updatesPerParticle);
-\end{lstlisting}
-\fi
-
-For each variable in the graph, sets the number of updates per particle to perform each time the particle is resampled. This is set globally for all variables in the graph as an alternative to setting this for all variables separately.
-
-\ifmatlab
-\begin{lstlisting}
-graph.Solver.setNumIterationsBetweenResampling(numIterationsBetweenResampling);
-graph.Solver.getNumIterationsBetweenResampling();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-graph.getSolver().setNumIterationsBetweenResampling(numIterationsBetweenResampling);
-graph.getSolver().getNumIterationsBetweenResampling();
-\end{lstlisting}
-\fi
-
-Set/get the number of iterations between re-sampling all of the variables in the graph (default is 1, meaning resample between every iteration).
-
-\ifmatlab
-\begin{lstlisting}
-graph.Solver.setInitialTemperature(initialTemperature);
-graph.Solver.getInitialTemperature();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-graph.getSolver().setInitialTemperature(initialTemperature);
-graph.getSolver().getInitialTemperature();
-\end{lstlisting}
-\fi
-
-
-Set/get the initial temperature when using tempering. Note that setting the initial temperature automatically enables the use of tempering if it had not been enabled already.
-
-\ifmatlab
-\begin{lstlisting}
-graph.Solver.setTemperingHalfLifeInIterations();
-graph.Solver.getTemperingHalfLifeInIterations();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-graph.getSolver().setTemperingHalfLifeInIterations();
-graph.getSolver().getTemperingHalfLifeInIterations();
-\end{lstlisting}
-\fi
-
-Set/get the tempering half-life�the number of iterations for the temperature to decrease by half. Note that setting the tempering half-life automatically enables the use of tempering if it had not been enabled already.
-
-\ifmatlab
-\begin{lstlisting}
-graph.Solver.enableTempering();
-graph.Solver.disableTempering();
-graph.Solver.isTemperingEnabled();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-graph.getSolver().enableTempering();
-graph.getSolver().disableTempering();
-graph.getSolver().isTemperingEnabled();
-\end{lstlisting}
-\fi
-
-Enable or disable the use of tempering, or determine if tempering is in use.
-
-\ifmatlab
-\begin{lstlisting}
-graph.Solver.setTemperature(T);
-graph.Solver.getTemperature();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-graph.getSolver().setTemperature(T);
-graph.getSolver().getTemperature();
-\end{lstlisting}
-\fi
-
-Set/get the current temperature. Setting the current temperature overrides the current annealing temperature.
-
-\ifmatlab
-\begin{lstlisting}
-graph.Solver.setSeed(seed);
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-graph.getSolver().setSeed(seed);
-\end{lstlisting}
-\fi
-
-Set the random seed used for re-sampling. Setting the seed allows repeatable execution of the solver.
+Set/get the current temperature. Setting the current temperature overrides the current annealing temperature. This should rarely be necessary.
 
 \para{Variable Methods}
 
@@ -1728,39 +1321,6 @@ The Particle BP solver supports both discrete and real variables. For discrete v
 
 \para{Real-Variable-Specific Methods}
 \label{sec:ParticleBPRealVariableSpecificMethods}
-
-\ifmatlab
-\begin{lstlisting}
-variable.Solver.setNumParticles(numParticles);
-variable.Solver.getNumParticles();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-variable.getSolver().setNumParticles(numParticles);
-variable.getSolver().getNumParticles();
-\end{lstlisting}
-\fi
-
-Set/get the number of particles to represent this variable.
-
-\ifmatlab
-\begin{lstlisting}
-variable.Solver.setResamplingUpdatesPerParticle(updatesPerParticle);
-variable.Solver.getResamplingUpdatesPerParticle();
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-variable.getSolver().setResamplingUpdatesPerParticle(updatesPerParticle);
-variable.getSolver().getResamplingUpdatesPerParticle();
-\end{lstlisting}
-\fi
-
-
-Set/get the number of updates per particle to perform each time the particle is resampled.
 
 \ifmatlab
 \begin{lstlisting}
@@ -1781,27 +1341,13 @@ Set/get the standard deviation for a Gaussian proposal distribution (the default
 
 \ifmatlab
 \begin{lstlisting}
-variable.Solver.setInitialParticleRange(min, max);
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-variable.getSolver().setInitialParticleRange(min, max);
-\end{lstlisting}
-\fi
-
-Set the range over which the initial particle values will be defined. The initial particle values are uniformly spaced between the min and max values specified. If the range is specified using this method, it overrides any other initial value. Otherwise, if a finite domain has been specified, the initial particle values are uniformly spaced between the lower and upper bound of the domain. Otherwise, all particles are initially set to zero.
-
-\ifmatlab
-\begin{lstlisting}
 variable.Solver.getParticleValues();
 \end{lstlisting}
 \fi
 
 \ifjava
 \begin{lstlisting}
-variable.getSolver().getParticleValues();
+((ParticleBPReal)variable.getSolver()).getParticleValues();
 \end{lstlisting}
 \fi
 
@@ -1815,7 +1361,7 @@ variable.Solver.getBelief(valueSet);
 
 \ifjava
 \begin{lstlisting}
-variable.getSolver().getBelief(valueSet);
+((ParticleBPReal))variable.getSolver()).getBelief(valueSet);
 \end{lstlisting}
 \fi
 
@@ -1824,35 +1370,163 @@ Given a set of values in the domain of the variable, returns the belief evaluate
 NOTE: the generic variable method Belief (or getBeliefs() with no arguments) operates similarly to the discrete-variable case, but the belief values returned are those at the current set of particle values. Note that this representation does not represent a set of weighted particles. That is, the particle positions are distributed approximately by the belief and the belief values represent the belief. It remains to be see if this should be the representation of belief that is used, or if an alternative representation would be better. The alternative solver-specific getBelief(valueSet) method allows getting the beliefs on a user-specified set of values, which may be uniform, and would not have this unusual interpretation.
 
 
-
+\clearpage
 \subsubsection{LP Solver}
 \label{sec:LPSolver}
 
-\ifmatlab
 Use of the linear programming (LP) solver is specified by calling:
 
+\ifmatlab
 \begin{lstlisting}
 fg.Solver = 'LP';
 \end{lstlisting}
-
-The LP solver transforms a factor graph MAP estimation problem into an equivalent linear program, which is solved using a linear programming software package. The solver can either be a linear programming solver (in which case the MAP is estimated using an LP relaxation, with no guarantees of correctness), or by an integer linear programming (ILP) solver, in which case the solution is guaranteed to be the MAP. 
-
-The choice of the LP solver package used to solve the problem is specified by calling:
+\fi
+\ifjava
 \begin{lstlisting}
-fg.Solver.setMatlabLPSolver(solvername);
+fg.setSolverFactory(new LPSolver());
 \end{lstlisting}
-where solvername is a string containing the solver name. The choices for the string solvername are `matlab', `glpk', `glpkIP', `gurobi', and `gurobiIP'. The `matlab', `glpk', and `gurobi' solvers are linear programming solvers, while `glpkIP' and `gurobiIP' are ILP solvers.
+\fi
 
-Using the matlab LP solver requires the the MATLAB Optimization Toolbox; using `glpk' or `glpkIP' requires glpkmex to be in the matlab path, and `gurobi' and `gurobiIP' require the gurobi matlab interface to be in the matlab path.\footnote{GLPK and Gurobi are not included in dimple}
+The LP solver transforms a factor graph MAP estimation problem into an equivalent linear program, which is solved using a linear programming software package. The solver can either be a linear programming solver (in which case the MAP is estimated using an LP relaxation, with no guarantees of correctness), or by an integer linear programming (ILP) solver, in which case the solution is guaranteed to be the MAP. Because this solver release on an external package, you will need to install and configure the specified package before using this solver.
 
 The LP solver supports only discrete variables.
 
-In the current version of Dimple (version 0.3), there is no support for rolled-up graphs when using the LP solver.
+In the current version of Dimple (version 0.7), there is no support for rolled-up graphs when using the LP solver.
 
-There are currently no solver-specific methods for the LP solver.
+The following options are applicable to the LP solver:
 
-\fi
+\para{LP Options}
 
-\ifjava
-The LP Solver is not currently supported from java.
-\fi
+\subpara{LPOptions.LPSolver}
+
+\dimpleOption{LPOptions.LPSolver}
+{string}
+{`'}
+{graph}
+{Selects which external LP solver will be used to solve the linear program. Valid values include `matlab', `CPLEX', `GLPK', `Gurobi', `LpSolve', `MinSate', `Mosek', and `SAT4J'. The default value is synonomous with specifying `matlab' and will delegate the solver specified by the MatlabLPOption that will be run from the MATLAB frontend. This will obviously only work when running Dimple from MATLAB. None of these solvers are included with Dimple and must be installed and configured separately. The interface for the non-MATLAB based solvers is provided by the third-party Java ILP package. See \href{http://javailp.sourceforge.net}{javailp.sourceforge.net} for more information about configuring various solvers.}
+
+\subpara{LPSolver.MatlabLPSolver}
+
+\dimpleOption{LPSolver.MatlabLPSolver}
+{string}
+{`'}
+{graph}
+{Selects which LP solver will be run from MATLAB to solve the linear program. This option is only relevant if the LPSolver option has been set to `matlab' and Dimple is being run from MATLAB. The choices for the string solvername are `matlab', `glpk', `glpkIP', `gurobi', and `gurobiIP'. The `matlab', `glpk', and `gurobi' solvers are linear programming solvers, while `glpkIP' and `gurobiIP' are ILP solvers. The default value is synonomous with `matlab'.
+
+Using the matlab LP solver requires the the MATLAB Optimization Toolbox. Using `glpk' or `glpkIP' requires glpkmex to be in the matlab path, and `gurobi' and `gurobiIP' require the gurobi matlab interface to be in the matlab path; in either case the appropriate packages will need to be obtained and installed.
+}
+
+\clearpage
+\subsubsection{Proposal Kernels}
+\label{sec:ProposalKernels}
+
+The following proposal kernels are provided by Dimple for use in samplers. Additional kernels may be added by creating new proposal kernel Java classes that implement the appropriate interfaces.
+
+\para{NormalProposalKernel}
+\label{sec:NormalProposalKernel}
+
+The following options may be used to configure this kernel:
+
+\subpara{NormalProposalKernel.standardDeviation}
+
+\dimpleOption{NormalProposalKernel.standardDeviation}
+{double}
+{1.0}
+{variables}
+{Specifies the standard deviation to use on NormalProposalKernel instances attached to the variables that are affected by the option setting. The value must be non-negative.}
+
+\para{CircularNormalProposalKernel}
+\label{sec:CircularNormalProposalKernel}
+
+The CircularNormalProposalKernel makes proposals from a Normal distribution on a circularly wrapping range of the real line.  For example, setting the bounds of the range to $-\pi$ and $\pi$ would create proposals representing angles on a circle.
+
+Since this is a subclass of NormalProposalKernel, the standardDeviation option defined for that class will also affect this one. The following additional options may also be used:
+
+\subpara{CircularNormalProposalKernel.lowerBound}
+
+\dimpleOption{CircularNormalProposalKernel.lowerBound}
+{double}
+{$-\pi$}
+{variables}
+{Specifies lower bound to use on CircularNormalProposalKernel instances attached to the variables that are affected by the option setting.}
+
+\subpara{CircularNormalProposalKernel.upperBound}
+
+\dimpleOption{CircularNormalProposalKernel.upperBound}
+{double}
+{$+\pi$}
+{variables}
+{Specifies upper bound to use on CircularNormalProposalKernel instances attached to the variables that are affected by the option setting.}
+
+\para{UniformDiscreteProposalKernel}
+\label{sec:UniformDiscreteProposalKernel}
+
+This kernel does not have any configurable options.
+
+\clearpage
+\subsubsection{Samplers}
+\label{sec:Samplers}
+
+Samplers are used by sampling solvers (e.g. Gibbs) to generate samples for variables either singly or in blocks.
+
+The following non-conjugate single variable samplers are currently available:
+
+\para{CDFSampler}
+\label{sec:CDFSampler}
+
+The CDFSampler can be used with discrete variable types. It samples from the full conditional distribution of the variable. It is the default sampler used for discrete variables in the Gibbs solver.
+
+It does not support any configuration options.
+
+\para{MHSampler}
+\label{sec:MHSampler}
+
+The MHSampler may be used for discrete or real variables. It implements the Metropolis-Hastings sampling algorithm. The sampler may be configured to use different proposal kernels for discrete and real variables as described below.
+
+The following options may be used to configure the MHSampler for a given variable:
+
+\subpara{MHSampler.discreteProposalKernel}
+
+\dimpleOption{MHSampler.discreteProposalKernel}
+{\ifmatlab string\fi \ifjava IProposalKernel class\fi}
+{UniformDiscreteProposalKernel}
+{variables}
+{Specifies the proposal kernel to use when using the MHSampler on discrete variables for which this option setting is visible. Depending on the kernel selected, it may also be configured by additional option settings. See \autoref{sec:ProposalKernels} for more details.}
+
+\subpara{MHSampler.realProposalKernel}
+
+\dimpleOption{MHSampler.realProposalKernel}
+{\ifmatlab string\fi \ifjava IProposalKernel class\fi}
+{NormalProposalKernel}
+{variables}
+{Specifies the proposal kernel to use when using the MHSampler on real variables for which this option setting is visible. Depending on the kernel selected, it may also be configured by additional option settings. See \autoref{sec:ProposalKernels} for more details.}
+
+\para{SliceSampler}
+\label{sec:SliceSampler}
+
+The slice sampler may be used with real variables. It implements the algorithm described in Neal's paper ``Slice Sampling" 2010. It is the default sampler used for real variables in the Gibbs solver.
+
+The following options may be used to configure the SliceSampler for a given variable:
+
+\subpara{SliceSampler.initialSliceWidth}
+
+\dimpleOption{SliceSampler.initialSliceWidth}
+{double}
+{1.0}
+{variables}
+{The size of the initial slice to use when sampling for SliceSampler instances used by variables that are affected by the option setting. For variables with a natural range that is much smaller or much larger than the default value of one, it may be beneficial to modify this value.}
+
+\subpara{SliceSampler.maximumDoublings}
+
+\dimpleOption{SliceSampler.maximumDoublings}
+{integer}
+{10}
+{variables}
+{}
+
+\para{SuwaTodoSampler}
+\label{sec:SuwoTodoSampler}
+
+The Suwo-Todo sampler can be used for discrete variables. It implements the algorithm described in Suwa and Todo's paper ``Markov Chain Monte Carlo Method without Detailed Balance" (2010).
+
+This sampler does not support any configuration options.

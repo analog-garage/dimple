@@ -373,7 +373,7 @@ HMM.solve;
 \ifjava
 
 \begin{lstlisting}
-HMM.getSolver().setNumIterations(20);
+HMM.setOption(SolverOptions.iterations, 20);
 HMM.solve();
 \end{lstlisting}
 
@@ -807,7 +807,7 @@ MyGraph.addFactor(XorGraph,d([1 2 4 6]));
 % Set input and Solve 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 d.Input = [.75 .6 .9 .1 .2 .9]; 
-MyGraph.Solver.setNumIterations(20);
+MyGraph.NumIterations = 20;
 MyGraph.solve();
 disp(d.Value');
 \end{lstlisting}
@@ -836,6 +836,7 @@ myGraph.addFactor(xorGraph,d[0],d[1],d[3],d[5]);
 double [] inputs = new double [] {.75, .6, .9, .1, .2, .9};
 for (int i = 0; i < inputs.length; i++)
 	d[i].setInput(inputs[i]);
+myGraph.setOption(SolverOptions.iterations, 20);
 myGraph.solve();
 for (int i = 0; i < d.length; i++)
 	System.out.println(d[i].getValue());

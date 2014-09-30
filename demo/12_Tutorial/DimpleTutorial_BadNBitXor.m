@@ -27,7 +27,7 @@ B1.Input=[0.2 0.8];
 B2.Input=[0.2 0.8];
 B3.Input=[0.2 0.8];
 B4.Input=[0.5 0.5];
-FourBitXor.Solver.setNumIterations(30);
+FourBitXor.NumIterations = 30;
 FourBitXor.solve;
 disp(B1.Value);
 

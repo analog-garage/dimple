@@ -36,7 +36,7 @@ MyGraph.addFactor(XorGraph,d([1 2 4 6]));
 % Set input and Solve 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 d.Input = [.75 .6 .9 .1 .2 .9]; 
-MyGraph.Solver.setNumIterations(20);
+MyGraph.NumIterations = 20;
 MyGraph.solve();
 disp(d.Value');
 

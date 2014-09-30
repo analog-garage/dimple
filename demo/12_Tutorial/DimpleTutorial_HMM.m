@@ -42,7 +42,7 @@ HMM.addFactor(@observation_function_Tutorial,SaturdayWeather,'book');
 HMM.addFactor(@observation_function_Tutorial,SundayWeather,'book');
 
 MondayWeather.Input=[0.7 0.3];
-HMM.Solver.setNumIterations(20);
+HMM.NumIterations = 20;
 HMM.solve;
 
 disp('TuesdayWeather.Belief after solve with 20 iterations:');
