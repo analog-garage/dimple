@@ -38,8 +38,8 @@ import com.analog.lyric.dimple.solvers.lp.LPFactorMarginalConstraint;
 import com.analog.lyric.dimple.solvers.lp.LPVariableConstraint;
 import com.analog.lyric.dimple.solvers.lp.MatlabConstraintTermIterator;
 import com.analog.lyric.dimple.solvers.lp.LPSolverGraph;
-import com.analog.lyric.dimple.solvers.lp.STableFactor;
-import com.analog.lyric.dimple.solvers.lp.SVariable;
+import com.analog.lyric.dimple.solvers.lp.LPTableFactor;
+import com.analog.lyric.dimple.solvers.lp.LPDiscrete;
 import com.analog.lyric.dimple.solvers.lp.Solver;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import org.eclipse.jdt.annotation.Nullable;
@@ -109,7 +109,7 @@ public class LPSolverTestCase extends DimpleTestBase
 		
 		for (Variable var : model.getVariables())
 		{
-			SVariable svar = requireNonNull(solver.getSolverVariable(var));
+			LPDiscrete svar = requireNonNull(solver.getSolverVariable(var));
 			assertSame(svar, solver.createVariable(var));
 			
 			Discrete mvar = svar.getModelObject();
@@ -171,7 +171,7 @@ public class LPSolverTestCase extends DimpleTestBase
 		
 		for (Factor factor : model.getFactors())
 		{
-			STableFactor sfactor = requireNonNull(solver.getSolverFactor(factor));
+			LPTableFactor sfactor = requireNonNull(solver.getSolverFactor(factor));
 			assertSame(sfactor, solver.createFactor(factor));
 			assertSame(factor, sfactor.getModelObject());
 			assertSame(solver, sfactor.getParentGraph());
@@ -213,7 +213,7 @@ public class LPSolverTestCase extends DimpleTestBase
 					assertNotNull(varConstraint);
 					assertNull(constraint.asFactorConstraint());
 					
-					SVariable svar = varConstraint.getSolverVariable();
+					LPDiscrete svar = varConstraint.getSolverVariable();
 					assertTrue(svar.hasLPVariable());
 					
 					assertEquals(1, varConstraint.getRHS());
@@ -227,7 +227,7 @@ public class LPSolverTestCase extends DimpleTestBase
 					assertNotNull(factorConstraint);
 					assertNull(constraint.asVariableConstraint());
 					
-					STableFactor sfactor = factorConstraint.getSolverFactor();
+					LPTableFactor sfactor = factorConstraint.getSolverFactor();
 					lpVar = sfactor.getLPVarIndex();
 					
 					assertEquals(0, factorConstraint.getRHS());
@@ -299,7 +299,7 @@ public class LPSolverTestCase extends DimpleTestBase
 		solver.setSolution(solution);
 		for (Variable var : model.getVariables())
 		{
-			SVariable svar = requireNonNull(solver.getSolverVariable(var));
+			LPDiscrete svar = requireNonNull(solver.getSolverVariable(var));
 			double[] belief = svar.getBelief();
 			if (svar.hasFixedValue())
 			{

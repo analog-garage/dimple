@@ -62,7 +62,7 @@ if doplot
         msGraph.Solver.iterate();
     end
 else
-    msGraph.Solver.setNumIterations(numIters);
+    msGraph.NumIterations = numIters;
     msGraph.solve();
 end
 

@@ -29,6 +29,8 @@ import net.sf.javailp.Problem;
 import net.sf.javailp.Result;
 import net.sf.javailp.SolverFactory;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -41,7 +43,6 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.lp.IntegerEquation.TermIterator;
 import com.analog.lyric.util.misc.Matlab;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Solver-specific factor graph for LP solver.
@@ -61,13 +62,13 @@ public class LPSolverGraph extends SFactorGraphBase
 	 * Maps model variables to their corresponding solver variable. Iterators will return
 	 * variables in the order in which they were first added to the map.
 	 */
-	private final LinkedHashMap<Variable, SVariable> _varMap;
+	private final LinkedHashMap<Variable, LPDiscrete> _varMap;
 	
 	/**
 	 * Maps model factors to their corresponding solver factor. Iterators will return
 	 * variables in the order in which they were first added to the map.
 	 */
-	private final LinkedHashMap<Factor, STableFactor> _factorMap;
+	private final LinkedHashMap<Factor, LPTableFactor> _factorMap;
 	
 	/**
 	 * Contains the parameters of the linear objective function for the LP solve.
@@ -113,8 +114,8 @@ public class LPSolverGraph extends SFactorGraphBase
 	LPSolverGraph(FactorGraph model)
 	{
 		super(model);
-		_varMap = new LinkedHashMap<Variable, SVariable>(model.getVariableCount());
-		_factorMap = new LinkedHashMap<Factor, STableFactor>(model.getFactorCount());
+		_varMap = new LinkedHashMap<Variable, LPDiscrete>(model.getVariableCount());
+		_factorMap = new LinkedHashMap<Factor, LPTableFactor>(model.getFactorCount());
 	}
 	
 	/*---------------------
@@ -266,10 +267,11 @@ public class LPSolverGraph extends SFactorGraphBase
 	 * ISolverFactorGraph methods
 	 */
 	
+	@SuppressWarnings("deprecation") // TODO remove when STableFactor removed
 	@Override
-	public STableFactor createFactor(Factor factor)
+	public LPTableFactor createFactor(Factor factor)
 	{
-		STableFactor sfactor = _factorMap.get(factor);
+		LPTableFactor sfactor = _factorMap.get(factor);
 		
 		if (sfactor == null)
 		{
@@ -287,14 +289,15 @@ public class LPSolverGraph extends SFactorGraphBase
 	}
 
 	@Override
-	public SVariable createVariable(Variable var)
+	public LPDiscrete createVariable(Variable var)
 	{
 		return createVariable(var, false);
 	}
 
-	private SVariable createVariable(Variable var, boolean copyInputs)
+	@SuppressWarnings("deprecation") // TODO remove when SVariable removed
+	private LPDiscrete createVariable(Variable var, boolean copyInputs)
 	{
-		SVariable svar = _varMap.get(var);
+		LPDiscrete svar = _varMap.get(var);
 		
 		if (svar == null)
 		{
@@ -305,7 +308,7 @@ public class LPSolverGraph extends SFactorGraphBase
 			}
 			
 			// Reuse svar already associated with var if applicable.
-			svar = var.getSolverIfTypeAndGraph(SVariable.class, this);
+			svar = var.getSolverIfTypeAndGraph(LPDiscrete.class, this);
 			if (svar == null)
 			{
 				svar = new SVariable(this, (Discrete)var);
@@ -591,7 +594,7 @@ public class LPSolverGraph extends SFactorGraphBase
 	@Matlab
 	public void setSolution(double[] solution)
 	{
-		for (SVariable svar : _varMap.values())
+		for (LPDiscrete svar : _varMap.values())
 		{
 			svar.setBeliefsFromLPSolution(solution);
 		}
@@ -613,14 +616,14 @@ public class LPSolverGraph extends SFactorGraphBase
 		for (Variable var : model.getVariables())
 		{
 
-			SVariable svar = createVariable(var, true);
+			LPDiscrete svar = createVariable(var, true);
 			nLPVars += svar.computeValidAssignments();
 		}
 
 		// Create solver factor tables, if not already created.
 		for (Factor factor : model.getFactors())
 		{
-			STableFactor sfactor = createFactor(factor);
+			LPTableFactor sfactor = createFactor(factor);
 			nLPVars += sfactor.computeValidAssignments();
 		}
 
@@ -630,7 +633,7 @@ public class LPSolverGraph extends SFactorGraphBase
 		List<IntegerEquation> constraints = new LinkedList<IntegerEquation>();
 		int nTerms = 0;
 		
-		for (SVariable svar : _varMap.values())
+		for (LPDiscrete svar : _varMap.values())
 		{
 			lpVarIndex = svar.computeObjectiveFunction(objectiveFunction, lpVarIndex);
 			nTerms += svar.computeConstraints(constraints);
@@ -638,7 +641,7 @@ public class LPSolverGraph extends SFactorGraphBase
 		
 		_nVariableConstraints = constraints.size();
 		
-		for (STableFactor sfactor : _factorMap.values())
+		for (LPTableFactor sfactor : _factorMap.values())
 		{
 			lpVarIndex = sfactor.computeObjectiveFunction(objectiveFunction, lpVarIndex);
 			nTerms += sfactor.computeConstraints(constraints);
@@ -655,11 +658,11 @@ public class LPSolverGraph extends SFactorGraphBase
 		_nVariableConstraints = -1;
 		_constraints = null;
 		_nConstraintTerms = 0;
-		for (SVariable svar : _varMap.values())
+		for (LPDiscrete svar : _varMap.values())
 		{
 			svar.clearLPState();
 		}
-		for (STableFactor sfactor : _factorMap.values())
+		for (LPTableFactor sfactor : _factorMap.values())
 		{
 			sfactor.clearLPState();
 		}
@@ -672,7 +675,7 @@ public class LPSolverGraph extends SFactorGraphBase
 	 * associated with input model factor or else null.
 	 */
 	@Override
-	public @Nullable STableFactor getSolverFactor(Factor factor)
+	public @Nullable LPTableFactor getSolverFactor(Factor factor)
 	{
 		return _factorMap.get(factor);
 	}
@@ -682,7 +685,7 @@ public class LPSolverGraph extends SFactorGraphBase
 	 * associated with input model variable or else null.
 	 */
 	@Override
-	public @Nullable SVariable getSolverVariable(Variable var)
+	public @Nullable LPDiscrete getSolverVariable(Variable var)
 	{
 		return _varMap.get(var);
 	}

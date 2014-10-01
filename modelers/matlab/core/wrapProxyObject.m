@@ -45,7 +45,7 @@ function result = wrapProxyObject(proxyObject)
                 indices = 0:(proxyObject.size()-1);
                 result = Real(domain,'existing',proxyObject,indices);
             else
-                error('Invlaid variable type');
+                error('Invalid variable type');
             end
             
         elseif proxyObject.isDomain()

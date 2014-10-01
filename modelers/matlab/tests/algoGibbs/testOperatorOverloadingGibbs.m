@@ -27,6 +27,7 @@ test3(debugPrint, repeatable);
 test4(debugPrint, repeatable);
 test5(debugPrint, repeatable);
 test6(debugPrint, repeatable);
+test7(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testOperatorOverloadingGibbs');
 
@@ -114,9 +115,11 @@ w1 = Real();
 x1 = Real([-pi pi]);
 y1 = Real();
 z1 = Real([-.99 .99]);
+cc = Complex();
 
 w1.Input = FactorFunction('Gamma',1,1);
 y1.Input = {'Normal',0,1/10^2};
+cc.Input = {FactorFunction('Normal',0,1/10^2), FactorFunction('Normal',0,1/10^2)};
 
 a1 = abs(z1);
 b1 = exp(y1);
@@ -131,7 +134,8 @@ j1 = atan(z1);
 k1 = sinh(y1);
 l1 = cosh(y1);
 m1 = tanh(y1);
-n1 = a1 + b1 + c1 + d1 + e1 + f1 + g1 + h1 + i1 + j1 + k1 + l1 + m1;
+o1 = abs(cc);
+n1 = a1 + b1 + c1 + d1 + e1 + f1 + g1 + h1 + i1 + j1 + k1 + l1 + m1 + o1;
 
 
 if (repeatable)
@@ -154,12 +158,22 @@ k1Samples = k1.Solver.getAllSamples();
 l1Samples = l1.Solver.getAllSamples();
 m1Samples = m1.Solver.getAllSamples();
 n1Samples = n1.Solver.getAllSamples();
+o1Samples = o1.Solver.getAllSamples();
 
 w1Samples = w1.Solver.getAllSamples();
 x1Samples = x1.Solver.getAllSamples();
 y1Samples = y1.Solver.getAllSamples();
 z1Samples = z1.Solver.getAllSamples();
+ccSamples = cc.Solver.getAllSamples();
+ccSamplesR = ccSamples(:,1);
+ccSamplesI = ccSamples(:,2);
 
+assert(all(w1Samples ~= 0));
+assert(all(x1Samples ~= 0));
+assert(all(y1Samples ~= 0));
+assert(all(z1Samples ~= 0));
+assert(all(ccSamplesR ~= 0));
+assert(all(ccSamplesI ~= 0));
 
 assertElementsAlmostEqual(a1Samples, abs(z1Samples), 'absolute');
 assertElementsAlmostEqual(b1Samples, exp(y1Samples), 'absolute');
@@ -174,7 +188,8 @@ assertElementsAlmostEqual(j1Samples, atan(z1Samples), 'absolute');
 assertElementsAlmostEqual(k1Samples, sinh(y1Samples), 'absolute');
 assertElementsAlmostEqual(l1Samples, cosh(y1Samples), 'absolute');
 assertElementsAlmostEqual(m1Samples, tanh(y1Samples), 'absolute');
-assertElementsAlmostEqual(n1Samples, a1Samples + b1Samples + c1Samples + d1Samples + e1Samples + f1Samples + g1Samples + h1Samples + i1Samples + j1Samples + k1Samples + l1Samples + m1Samples, 'absolute');
+assertElementsAlmostEqual(n1Samples, a1Samples + b1Samples + c1Samples + d1Samples + e1Samples + f1Samples + g1Samples + h1Samples + i1Samples + j1Samples + k1Samples + l1Samples + m1Samples + o1Samples, 'absolute');
+assertElementsAlmostEqual(o1Samples, sqrt(ccSamplesR.^2 + ccSamplesI.^2), 'absolute');
 
 
 end
@@ -1367,6 +1382,39 @@ assert(lJ1.Domain.NumElements == M);
 assert(lJ2.Domain.NumElements == N);
 assert(cmp(pJ1, 'Real', 'VectorInnerProduct', [1 1]));
 assert(cmp(pJ2, 'Real', 'VectorInnerProduct', [1 1]));
+
+end
+
+
+% Test that sub-graph creation doesn't change default factor of implicit factors
+function test7(debugPrint, repeatable)
+
+q = Real(1,10);
+x = Real;
+y = Real;
+
+a = Real;
+b = Real;
+sg = FactorGraph(a,b);
+sg.addFactor('Normal', a, 1, b);
+
+fg = FactorGraph;
+fg.addFactor(sg, x, y);
+
+assertEqual(getFactorGraph(), fg);
+
+fg.addFactorVectorized(sg, q(1:end-1), q(2:end));
+
+assertEqual(getFactorGraph(), fg);
+
+% Implicit factor creation should still use 'fg'
+z = Normal(y, 1);
+r = Normal(q(10), 1);
+
+fg.Solver = 'Gibbs';
+fg.setOption('GibbsOptions.numSamples', 100);
+
+fg.solve();
 
 end
 

@@ -107,6 +107,7 @@ public class SumProductSolverGraph extends SFactorGraphBase
 	}
 	
 
+	@SuppressWarnings("deprecation") // TODO remove when S* classes removed
 	@Override
 	public ISolverVariable createVariable(Variable var)
 	{
@@ -122,6 +123,7 @@ public class SumProductSolverGraph extends SFactorGraphBase
 
 	
 
+	@SuppressWarnings("deprecation") // TODO remove when STableFactor removed
 	@Override
 	public ISolverFactor createFactor(Factor factor)
 	{
@@ -584,10 +586,10 @@ public class SumProductSolverGraph extends SFactorGraphBase
 				
 		for (Factor f : _factorGraph.getFactorsFlat())
 		{
-			((STableFactor)f.getSolver()).initializeDerivativeMessages(ft.sparseSize());
+			((SumProductTableFactor)f.getSolver()).initializeDerivativeMessages(ft.sparseSize());
 		}
 		for (Variable vb : _factorGraph.getVariablesFlat())
-			((SDiscreteVariable)vb.getSolver()).initializeDerivativeMessages(ft.sparseSize());
+			((SumProductDiscrete)vb.getSolver()).initializeDerivativeMessages(ft.sparseSize());
 		
 		setCalculateDerivative(true);
 		
@@ -597,14 +599,14 @@ public class SumProductSolverGraph extends SFactorGraphBase
 			_factorGraph.solve();
 			for (Factor f : _factorGraph.getFactorsFlat())
 			{
-				STableFactor stf = (STableFactor)f.getSolver();
+				SumProductTableFactor stf = (SumProductTableFactor)f.getSolver();
 				result += stf.calculateDerivativeOfInternalEnergyWithRespectToWeight(weightIndex);
 				result -= stf.calculateDerivativeOfBetheEntropyWithRespectToWeight(weightIndex);
 						
 			}
 			for (Variable v : _factorGraph.getVariablesFlat())
 			{
-				SDiscreteVariable sv = (SDiscreteVariable)v.getSolver();
+				SumProductDiscrete sv = (SumProductDiscrete)v.getSolver();
 				result += sv.calculateDerivativeOfInternalEnergyWithRespectToWeight(weightIndex);
 				result += sv.calculateDerivativeOfBetheEntropyWithRespectToWeight(weightIndex);
 			}
@@ -622,12 +624,12 @@ public class SumProductSolverGraph extends SFactorGraphBase
 	{
 		for (Factor f : _factorGraph.getFactorsFlat())
 		{
-			STableFactor stf = (STableFactor)f.getSolver();
+			SumProductTableFactor stf = (SumProductTableFactor)f.getSolver();
 			stf.setUpdateDerivative(val);
 		}
 		for (Variable vb : _factorGraph.getVariablesFlat())
 		{
-			SDiscreteVariable sv = (SDiscreteVariable)vb.getSolver();
+			SumProductDiscrete sv = (SumProductDiscrete)vb.getSolver();
 			sv.setCalculateDerivative(val);
 		}
 	}
@@ -649,9 +651,9 @@ public class SumProductSolverGraph extends SFactorGraphBase
 		for (Factor f : getModelObject().getFactors())
 		{
 			ISolverFactor sf = f.getSolver();
-			if (sf instanceof STableFactor)
+			if (sf instanceof SumProductTableFactor)
 			{
-				STableFactor tf = (STableFactor)sf;
+				SumProductTableFactor tf = (SumProductTableFactor)sf;
 				tf.getFactorTable().getIndicesSparseUnsafe();
 				tf.getFactorTable().getWeightsSparseUnsafe();
 			}

@@ -26,9 +26,9 @@ import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
-import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
 
@@ -72,8 +72,8 @@ public class RealVariableGibbsTest extends DimpleTestBase
 		double abR = 1/(abSigma*abSigma);
 		graph.addFactor(new Normal(abMean,abR), a, b);
 		
-		SRealVariable sa = (SRealVariable)a.getSolver();
-		SRealVariable sb = (SRealVariable)b.getSolver();
+		GibbsReal sa = (GibbsReal)a.getSolver();
+		GibbsReal sb = (GibbsReal)b.getSolver();
 		
 		sa.setProposalStandardDeviation(0.1);
 		sb.setProposalStandardDeviation(0.1);
@@ -148,8 +148,8 @@ public class RealVariableGibbsTest extends DimpleTestBase
 		double fR1 = 1/(fSigma1*fSigma1);
 		graph.addFactor(new MixedNormal(fMean0, fR0, fMean1, fR1), a, b);
 		
-		SRealVariable sa = requireNonNull((SRealVariable)a.getSolver());
-		SDiscreteVariable sb = requireNonNull((SDiscreteVariable)b.getSolver());
+		GibbsReal sa = requireNonNull((GibbsReal)a.getSolver());
+		GibbsDiscrete sb = requireNonNull((GibbsDiscrete)b.getSolver());
 		
 		sa.setProposalStandardDeviation(1.0);
 

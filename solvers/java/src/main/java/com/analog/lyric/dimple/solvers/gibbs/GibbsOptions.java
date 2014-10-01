@@ -106,8 +106,8 @@ public class GibbsOptions extends SolverOptions
 	 * <p>
 	 * @since 0.07
 	 */
-	public static final BooleanOptionKey enableTempering =
-		new BooleanOptionKey(GibbsOptions.class, "enableTempering", false);
+	public static final BooleanOptionKey enableAnnealing =
+		new BooleanOptionKey(GibbsOptions.class, "enableAnnealing", false);
 	
 	/**
 	 * Specifies the initial temperature for annealing in Gibbs solver.
@@ -130,8 +130,8 @@ public class GibbsOptions extends SolverOptions
 	 * <p>
 	 * @since 0.07
 	 */
-	public static final DoubleOptionKey temperingHalfLife =
-		new DoubleOptionKey(GibbsOptions.class, "temperingHalfLife", 1, 1.0, Double.MAX_VALUE);
+	public static final DoubleOptionKey annealingHalfLife =
+		new DoubleOptionKey(GibbsOptions.class, "annealingHalfLife", 1, 1.0, Double.MAX_VALUE);
 	
 	/**
 	 * Specifies which sampler to use for discrete variables in Gibbs solver.
@@ -176,8 +176,8 @@ public class GibbsOptions extends SolverOptions
 	 * Specifies whether to compute belief moments for RealJoint variables in Gibbs solver.
 	 * <p>
 	 * If true, the belief moments are computed for each sample on-the-fly (without saving all samples)
-	 * The computed moments can later be retrieved by {@link SRealJointVariable#getSampleMean()} and
-	 * {@link SRealJointVariable#getSampleCovariance()}.  (Note that this option applies to RealJoint
+	 * The computed moments can later be retrieved by {@link GibbsRealJoint#getSampleMean()} and
+	 * {@link GibbsRealJoint#getSampleCovariance()}.  (Note that this option applies to RealJoint
 	 * and Complex variables.  Real variables always compute the similar statistics, and do not
 	 * have a corresponding option to enable them.)
 	 * 

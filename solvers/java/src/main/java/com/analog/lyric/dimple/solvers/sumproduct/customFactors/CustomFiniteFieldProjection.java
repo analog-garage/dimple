@@ -23,14 +23,13 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
-import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldVariable;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductFiniteFieldVariable;
 
-
-
+@SuppressWarnings("deprecation") // TODO remove when SFiniteFieldFactor removed
 public class CustomFiniteFieldProjection extends SFiniteFieldFactor
 {
 
-	private SFiniteFieldVariable _ffVar;
+	private SumProductFiniteFieldVariable _ffVar;
 	private int [] _portIndex2bitIndex;
 	private int [] _bit2port;
 	
@@ -46,7 +45,7 @@ public class CustomFiniteFieldProjection extends SFiniteFieldFactor
 		
 		//First variable is the FiniteFieldVariable
 		//Other variables should be bits.
-		_ffVar = (SFiniteFieldVariable)Objects.requireNonNull(factor.getSibling(0).getSolver());
+		_ffVar = (SumProductFiniteFieldVariable)Objects.requireNonNull(factor.getSibling(0).getSolver());
 		_portIndex2bitIndex = new int[nEdges];
 		
 		for (int i = 0; i < nEdges; i++)

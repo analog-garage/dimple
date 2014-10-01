@@ -76,7 +76,7 @@ public class SFactorGraph extends GibbsSolverGraph
 			}
 			if (!Double.isNaN(arguments.temperingHalfLifeInSamples))
 			{
-				setOption(GibbsOptions.temperingHalfLife, arguments.temperingHalfLifeInSamples);
+				setOption(GibbsOptions.annealingHalfLife, arguments.temperingHalfLifeInSamples);
 			}
 		}
 	}

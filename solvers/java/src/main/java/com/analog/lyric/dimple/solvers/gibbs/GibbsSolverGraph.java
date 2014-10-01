@@ -143,6 +143,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		_factorGraph.setSolverSpecificDefaultScheduler(new GibbsDefaultScheduler());	// Override the common default scheduler
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public ISolverVariable createVariable(Variable var)
 	{
@@ -158,6 +159,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	// Note, customFactorExists is intentionally not overridden and therefore returns false
 	// This is because all of the custom factors for this solver also exist as FactorFunctions,
 	// and therefore we still want the MATLAB code to create a factor with the specified FactorFunctions.
+	@SuppressWarnings("deprecation") // TODO: remove when S*Factor classes removed.
 	@Override
 	public ISolverFactor createFactor(Factor factor)
 	{
@@ -207,7 +209,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		else if (factor.isDiscrete())			// No custom factor exists, so create a generic one
 			return new STableFactor(factor);	// Generic discrete factor
 		else
-			return new SRealFactor(factor);		// Generic real factor
+			return new GibbsRealFactor(factor);		// Generic real factor
 	}
 	
 
@@ -219,9 +221,9 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 			throw new DimpleException("not yet supported");
 		
 		if (factor.isDiscrete())
-			return new STableFactorBlastFromThePast(factor);
+			return new GibbsTableFactorBlastFromThePast(factor);
 		else
-			return new SRealFactorBlastFromThePast(factor);
+			return new GibbsRealFactorBlastFromThePast(factor);
 	}
 	
 	@Override
@@ -244,9 +246,9 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		_scansPerSample = getOptionOrDefault(GibbsOptions.scansPerSample);
 		_burnInScans = getOptionOrDefault(GibbsOptions.burnInScans);
 		final boolean saveAllScores = getOptionOrDefault(GibbsOptions.saveAllScores);
-		_temper = getOptionOrDefault(GibbsOptions.enableTempering);
+		_temper = getOptionOrDefault(GibbsOptions.enableAnnealing);
 		_initialTemperature = getOptionOrDefault(GibbsOptions.initialTemperature);
-		_temperingDecayConstant = 1 - LOG2/getOptionOrDefault(GibbsOptions.temperingHalfLife);
+		_temperingDecayConstant = 1 - LOG2/getOptionOrDefault(GibbsOptions.annealingHalfLife);
 		
 		// Make sure the schedule is created before factor initialization to allow custom factors to modify the schedule if needed
 		final IGibbsSchedule schedule = _schedule = (IGibbsSchedule)_factorGraph.getSchedule();
@@ -838,34 +840,34 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	public double getInitialTemperature() {return _initialTemperature;}
 	
 	/**
-	 * @deprecated Instead set {@link GibbsOptions#temperingHalfLife} option using {@link #setOption}.
+	 * @deprecated Instead set {@link GibbsOptions#annealingHalfLife} option using {@link #setOption}.
 	 */
 	@Deprecated
 	public void setTemperingHalfLifeInSamples(double temperingHalfLifeInSamples)
 	{
-		setOption(GibbsOptions.temperingHalfLife, temperingHalfLifeInSamples);
+		setOption(GibbsOptions.annealingHalfLife, temperingHalfLifeInSamples);
 		setTempering(true);
 		_temperingDecayConstant = 1 - LOG2/temperingHalfLifeInSamples;
 	}
 	
 	/**
-	 * @deprecated Instead get {@link GibbsOptions#temperingHalfLife} option using {@link #getOption}.
+	 * @deprecated Instead get {@link GibbsOptions#annealingHalfLife} option using {@link #getOption}.
 	 */
 	@Deprecated
 	public double getTemperingHalfLifeInSamples() {return LOG2/(1 - _temperingDecayConstant);}
 	
 	/**
-	 * @deprecated Instead set {@link GibbsOptions#enableTempering} option using {@link #setOption}.
+	 * @deprecated Instead set {@link GibbsOptions#enableAnnealing} option using {@link #setOption}.
 	 */
 	@Deprecated
 	protected void setTempering(boolean temper)
 	{
-		setOption(GibbsOptions.enableTempering, temper);
+		setOption(GibbsOptions.enableAnnealing, temper);
 		_temper = temper;
 	}
 
 	/**
-	 * @deprecated Instead set {@link GibbsOptions#enableTempering} option to true using {@link #setOption}.
+	 * @deprecated Instead set {@link GibbsOptions#enableAnnealing} option to true using {@link #setOption}.
 	 */
 	@Deprecated
 	public final void enableTempering()
@@ -874,7 +876,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	}
 
 	/**
-	 * @deprecated Instead set {@link GibbsOptions#enableTempering} option to false using {@link #setOption}.
+	 * @deprecated Instead set {@link GibbsOptions#enableAnnealing} option to false using {@link #setOption}.
 	 */
 	@Deprecated
 	public final void disableTempering()
@@ -883,7 +885,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	}
 	
 	/**
-	 * @deprecated Instead get {@link GibbsOptions#enableTempering} option using {@link #getOption}.
+	 * @deprecated Instead get {@link GibbsOptions#enableAnnealing} option using {@link #getOption}.
 	 */
 	@Deprecated
 	public boolean isTemperingEnabled()
@@ -905,10 +907,10 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		for (int i = 0; i < numVariables; i++)
 		{
 			ISolverVariable var = variableList.get(i).getSolver();
-			if (var instanceof SDiscreteVariable)
-				result[i] = (Double)((SDiscreteVariable)var).getCurrentSample();
-			else if (var instanceof SRealVariable)
-				result[i] = ((SRealVariable)var).getCurrentSample();
+			if (var instanceof GibbsDiscrete)
+				result[i] = (Double)((GibbsDiscrete)var).getCurrentSample();
+			else if (var instanceof GibbsReal)
+				result[i] = ((GibbsReal)var).getCurrentSample();
 			else
 				throw new DimpleException("Invalid variable class");
 		}
@@ -925,10 +927,10 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 			for (int i = 0; i < numVariables; i++)
 			{
 				ISolverVariable var = variableList.get(i).getSolver();
-				if (var instanceof SDiscreteVariable)
-					((SDiscreteVariable)var).setAndHoldSampleValue(values[i]);
-				else if (var instanceof SRealVariable)
-					((SRealVariable)var).setAndHoldSampleValue(values[i]);
+				if (var instanceof GibbsDiscrete)
+					((GibbsDiscrete)var).setAndHoldSampleValue(values[i]);
+				else if (var instanceof GibbsReal)
+					((GibbsReal)var).setAndHoldSampleValue(values[i]);
 				else
 					throw new DimpleException("Invalid variable class");
 			}
@@ -943,10 +945,10 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 			for (int i = 0; i < numVariables; i++)
 			{
 				ISolverVariable var = variableList.get(i).getSolver();
-				if (var instanceof SDiscreteVariable)
-					((SDiscreteVariable)var).holdSampleValue();
-				else if (var instanceof SRealVariable)
-					((SRealVariable)var).holdSampleValue();
+				if (var instanceof GibbsDiscrete)
+					((GibbsDiscrete)var).holdSampleValue();
+				else if (var instanceof GibbsReal)
+					((GibbsReal)var).holdSampleValue();
 				else
 					throw new DimpleException("Invalid variable class");
 			}
@@ -961,10 +963,10 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 			for (int i = 0; i < numVariables; i++)
 			{
 				ISolverVariable var = variableList.get(i).getSolver();
-				if (var instanceof SDiscreteVariable)
-					((SDiscreteVariable)var).releaseSampleValue();
-				else if (var instanceof SRealVariable)
-					((SRealVariable)var).releaseSampleValue();
+				if (var instanceof GibbsDiscrete)
+					((GibbsDiscrete)var).releaseSampleValue();
+				else if (var instanceof GibbsReal)
+					((GibbsReal)var).releaseSampleValue();
 				else
 					throw new DimpleException("Invalid variable class");
 			}
@@ -1073,7 +1075,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	{
 		if (--_deferDeterministicFactorUpdatesCounter <= 0)
 		{
-			++_deferDeterministicFactorUpdatesCounter;
+			_deferDeterministicFactorUpdatesCounter = 1;
 			final KeyedPriorityQueue<ISolverFactorGibbs, SFactorUpdate> deferredUpdates =
 				_deferredDeterministicFactorUpdates;
 			if (deferredUpdates != null)
@@ -1084,8 +1086,8 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 					update.performUpdate();
 				}
 			}
+			_deferDeterministicFactorUpdatesCounter = 0;
 		}
-		--_deferDeterministicFactorUpdatesCounter;
 	}
 	
 	public void deferDeterministicUpdates()

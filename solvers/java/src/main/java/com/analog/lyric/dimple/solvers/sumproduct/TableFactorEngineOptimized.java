@@ -48,7 +48,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 	 * @param tableFactor
 	 * @since 0.06
 	 */
-	public TableFactorEngineOptimized(STableFactor tableFactor, FactorUpdatePlan updatePlan)
+	public TableFactorEngineOptimized(SumProductTableFactor tableFactor, FactorUpdatePlan updatePlan)
 	{
 		super(tableFactor);
 		_updatePlan = updatePlan;

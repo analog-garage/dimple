@@ -63,6 +63,17 @@ public abstract class StatelessOptionHolder extends AbstractOptionHolder
 		throw noLocalOptions();
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * This implementation returns false.
+	 */
+	@Override
+	public boolean supportsLocalOptions()
+	{
+		return false;
+	}
+
 	@Override
 	public void unsetOption(IOptionKey<?> key)
 	{

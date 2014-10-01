@@ -12,6 +12,7 @@
 \usepackage{listings}
 \usepackage{longtable}
 \usepackage[titletoc]{appendix}		% titletoc adds 'Appendix' before the letter in the TOC
+\usepackage{titlesec}
 \usepackage{hyperref}
 \usepackage{etoolbox}
 \usepackage{placeins}
@@ -31,6 +32,10 @@
 \newcommand{\subpara}[1]{\subparagraph{#1}$\:$\\}		% Line-break after sub-paragraph heading
 \newcommand{\paraNoToc}[1]{\paragraph*{#1}$\:$\\}		% Line-break after paragraph heading, not in TOC
 \newcommand{\subparaNoToc}[1]{\subparagraph*{#1}$\:$\\}	% Line-break after sub-paragraph heading, not in TOC
+
+% Force sections and subsections to new page.
+\newcommand{\sectionbreak}{\clearpage}
+\newcommand{\subsectionbreak}{\clearpage}
 
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
@@ -56,6 +61,17 @@
 %\makeatother
 %\newcommand{\subsubpara}[1]{\subsubparagraph{#1}$\:$\\}			% Line-break after sub-paragraph heading
 %\newcommand{\subsubparaNoToc}[1]{\subsubparagraph*{#1}$\:$\\}	% Line-break after sub-paragraph heading, not in TOC
+
+% This macro is used to create a structured paragraph documenting a Dimple option.
+\newcommand{\dimpleOption}[5]{
+\label{option:#1}
+\begin{tabular}{r p{5in}}
+\emph{Type}        & #2 \\
+\emph{Default}     & #3 \\
+\emph{Affects}     & #4 \\
+\emph{Description} & #5
+\end{tabular}
+}
 
 
 \lstset{ %

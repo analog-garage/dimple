@@ -30,18 +30,18 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
-import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
-import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-public class CustomCategorical extends SRealFactor implements IRealJointConjugateFactor
+public class CustomCategorical extends GibbsRealFactor implements IRealJointConjugateFactor
 {
 	private @Nullable Object[] _outputMsgs;
-	private @Nullable SDiscreteVariable[] _outputVariables;
+	private @Nullable GibbsDiscrete[] _outputVariables;
 	private int _parameterDimension;
 	private int _numParameterEdges;
 	private @Nullable int[] _constantOutputCounts;
@@ -169,7 +169,7 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 		for (int edge = _numParameterEdges; edge < _numPorts; edge++)
 			if (!(siblings.get(edge).hasFixedValue()))
 				numVariableOutputs++;
-		final SDiscreteVariable[] outputVariables = _outputVariables = new SDiscreteVariable[numVariableOutputs];
+		final GibbsDiscrete[] outputVariables = _outputVariables = new GibbsDiscrete[numVariableOutputs];
 		for (int edge = _numParameterEdges, index = 0; edge < _numPorts; edge++)
 		{
 			Discrete outputVariable = (Discrete)siblings.get(edge);
@@ -183,7 +183,7 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 				_hasConstantOutputs = true;
 			}
 			else
-				outputVariables[index++] = (SDiscreteVariable)outputVariable.getSolver();
+				outputVariables[index++] = (GibbsDiscrete)outputVariable.getSolver();
 		}
 	}
 	

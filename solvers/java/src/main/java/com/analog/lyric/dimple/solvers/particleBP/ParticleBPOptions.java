@@ -16,14 +16,13 @@
 
 package com.analog.lyric.dimple.solvers.particleBP;
 
-import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.options.SolverOptions;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.ProposalKernelOptionKey;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.options.BooleanOptionKey;
 import com.analog.lyric.options.DoubleOptionKey;
-import com.analog.lyric.options.GenericOptionKey;
+import com.analog.lyric.options.DoubleRangeOptionKey;
 import com.analog.lyric.options.IntegerOptionKey;
 
 /**
@@ -43,8 +42,8 @@ public class ParticleBPOptions extends SolverOptions
 	 * <p>
 	 * @since 0.07
 	 */
-	public static final BooleanOptionKey enableTempering =
-		new BooleanOptionKey(ParticleBPOptions.class, "enableTempering", false);
+	public static final BooleanOptionKey enableAnnealing =
+		new BooleanOptionKey(ParticleBPOptions.class, "enableAnnealing", false);
 	
 	/**
 	 * Specifies the initial temperature for annealing in particle BP solver.
@@ -67,7 +66,7 @@ public class ParticleBPOptions extends SolverOptions
 		new IntegerOptionKey(ParticleBPOptions.class, "iterationsBetweenResampling", 1, 1, Integer.MAX_VALUE);
 	
 	/**
-	 * Affects particle BP {@linkplain SRealVariable solver variable} objects.
+	 * Affects particle BP {@linkplain ParticleBPReal solver variable} objects.
 	 * <p>
 	 * Is evaluated both when solver variable is constructed and in {@link ISolverNode#initialize}.
 	 * <p>
@@ -79,7 +78,7 @@ public class ParticleBPOptions extends SolverOptions
 		new IntegerOptionKey(ParticleBPOptions.class, "numParticles", 1, 1, Integer.MAX_VALUE);
 	
 	/**
-	 * Affects particle BP {@linkplain SRealVariable solver variable} objects.
+	 * Affects particle BP {@linkplain ParticleBPReal solver variable} objects.
 	 * <p>
 	 * @since 0.07
 	 */
@@ -95,13 +94,13 @@ public class ParticleBPOptions extends SolverOptions
 	 * <p>
 	 * @since 0.07
 	 */
-	public static final DoubleOptionKey temperingHalfLife =
-		new DoubleOptionKey(ParticleBPOptions.class, "temperingHalfLife", 1, 1.0, Double.MAX_VALUE);
+	public static final DoubleOptionKey annealingHalfLife =
+		new DoubleOptionKey(ParticleBPOptions.class, "annealingHalfLife", 1, 1.0, Double.MAX_VALUE);
 	
 	/**
 	 * Specifies proposal kernel for real variables in particle BP solver.
 	 * <p>
-	 * Affects particle BP {@linkplain SRealVariable solver variable} objects.
+	 * Affects particle BP {@linkplain ParticleBPReal solver variable} objects.
 	 * <p>
 	 * The proposal kernel instance can be configured by setting options on specific to that
 	 * kernel. See documentation for the specific kernel for details.
@@ -116,16 +115,15 @@ public class ParticleBPOptions extends SolverOptions
 	/**
 	 * Specifies the domain of initial particle values for real variables in particle BP solver.
 	 * <p>
-	 * Affects particle BP {@linkplain SRealVariable solver variable} objects.
+	 * Affects particle BP {@linkplain ParticleBPReal solver variable} objects.
 	 * <p>
-	 * The domain should be a subset of the variable's domain. If it is not, then this option is ignored
+	 * The range should be a subset of the variable's domain range. If it is not, then this option is ignored
 	 * for that variable.
 	 * <p>
-	 * Defaults to {@link RealDomain#unbounded()}.
+	 * Defaults to [-infinity, infinity].
 	 * <p>
 	 * @since 0.07
 	 */
-	public static final GenericOptionKey<RealDomain> initialParticleDomain =
-		new GenericOptionKey<RealDomain>(ParticleBPOptions.class, "initialParticleDomain",
-			RealDomain.class, RealDomain.unbounded());
+	public static final DoubleRangeOptionKey initialParticleRange =
+		new DoubleRangeOptionKey(ParticleBPOptions.class, "initialParticleRange");
 }

@@ -31,14 +31,15 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
-import com.analog.lyric.dimple.solvers.sumproduct.SRealVariable;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductReal;
 
 public class NormalMessageTranslator extends MessageTranslatorBase
 {
 	private @Nullable NormalParameters _inputMessage;
 	private @Nullable NormalParameters _outputMessage;
 	private Normal _variableInput;
-	private @Nullable com.analog.lyric.dimple.solvers.gibbs.SRealVariable _solverVariable;
+	private @Nullable GibbsReal _solverVariable;
 
 	public NormalMessageTranslator(Port port, Variable variable)
 	{
@@ -121,10 +122,10 @@ public class NormalMessageTranslator extends MessageTranslatorBase
 	@Override
 	public final void initialize()
 	{
-		SRealVariable var = (SRealVariable)_port.node.getSibling(_port.index).getSolver();
+		SumProductReal var = (SumProductReal)_port.node.getSibling(_port.index).getSolver();
 		_outputMessage = (NormalParameters)var.resetInputMessage(_outputMessage);
 		_inputMessage = (NormalParameters)var.resetInputMessage(_inputMessage);
-		_solverVariable = (com.analog.lyric.dimple.solvers.gibbs.SRealVariable)_variable.getSolver();
+		_solverVariable = (GibbsReal)_variable.getSolver();
 	}
 	
 	@Override

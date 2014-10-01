@@ -11,9 +11,13 @@ Significant New Features Since v0.06
 
 - Added built-in factors to convert between vectors of Real variables and RealJoint or Complex variables (ComplexToRealAndImaginary, RealAndImaginaryToComplex, RealJointProjection, RealJointToRealVector, RealVectorToRealJoint).
 
+- Added built-in factor for complex absolute value (ComplexAbs), and associated use of overloaded abs() method in MATLAB API.
+
 - Modified API for custom Java FactorFunctions, now requiring use of evalEnergy(Value[]) method instead of the other variants; and for deterministic directed FactorFunctions, evalDeterministic now takes a Value array argument instead of an Object array.
 
 - Added methods for the Gibbs solver to determine the rejection rate when using Metropolis-Hastings and related samplers.
+
+- Added methods for Real and RealJoint variables in the Gibbs solver to determine the sample mean and (co)variance.
 
 
 Significant Bug Fixes Since v0.06

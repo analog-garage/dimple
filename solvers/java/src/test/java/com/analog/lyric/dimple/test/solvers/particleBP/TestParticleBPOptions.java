@@ -22,16 +22,16 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.CircularNormalProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.particleBP.ParticleBPOptions;
+import com.analog.lyric.dimple.solvers.particleBP.ParticleBPReal;
 import com.analog.lyric.dimple.solvers.particleBP.ParticleBPSolver;
 import com.analog.lyric.dimple.solvers.particleBP.ParticleBPSolverGraph;
-import com.analog.lyric.dimple.solvers.particleBP.SRealVariable;
 import com.analog.lyric.dimple.test.DimpleTestBase;
+import com.analog.lyric.options.OptionDoubleList;
 
 /**
  * Tests for {@link ParticleBPOptions}
@@ -46,14 +46,15 @@ public class TestParticleBPOptions extends DimpleTestBase
 	public void test()
 	{
 		// Test default values
-		assertFalse(ParticleBPOptions.enableTempering.defaultValue());
+		assertFalse(ParticleBPOptions.enableAnnealing.defaultValue());
 		assertEquals(1.0, ParticleBPOptions.initialTemperature.defaultValue(), 0.0);
 		assertEquals((Integer)1, ParticleBPOptions.iterationsBetweenResampling.defaultValue());
 		assertEquals((Integer)1, ParticleBPOptions.numParticles.defaultValue());
 		assertEquals((Integer)1, ParticleBPOptions.resamplingUpdatesPerParticle.defaultValue());
-		assertEquals(1.0, ParticleBPOptions.temperingHalfLife.defaultValue(), 0.0);
+		assertEquals(1.0, ParticleBPOptions.annealingHalfLife.defaultValue(), 0.0);
 		assertEquals(NormalProposalKernel.class, ParticleBPOptions.proposalKernel.defaultValue());
-		assertEquals(RealDomain.unbounded(), ParticleBPOptions.initialParticleDomain.defaultValue());
+		assertEquals(new OptionDoubleList(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY),
+			ParticleBPOptions.initialParticleRange.defaultValue());
 		
 		// Set up test graph
 		FactorGraph fg = new FactorGraph();
@@ -63,8 +64,8 @@ public class TestParticleBPOptions extends DimpleTestBase
 		
 		// Test default initialization on graph
 		ParticleBPSolverGraph sfg = requireNonNull(fg.setSolverFactory(new ParticleBPSolver()));
-		SRealVariable sr1 = (SRealVariable)sfg.getSolverVariable(r1);
-		SRealVariable sr2 = (SRealVariable)sfg.getSolverVariable(r2);
+		ParticleBPReal sr1 = (ParticleBPReal)sfg.getSolverVariable(r1);
+		ParticleBPReal sr2 = (ParticleBPReal)sfg.getSolverVariable(r2);
 		sfg.initialize();
 		assertFalse(sfg.isTemperingEnabled());
 		assertEquals(1.0, sfg.getInitialTemperature(), 0.0);
@@ -79,9 +80,9 @@ public class TestParticleBPOptions extends DimpleTestBase
 		
 		// Test initialization from option on factor graph
 		fg.setSolverFactory(null);
-		fg.setOption(ParticleBPOptions.enableTempering, true);
+		fg.setOption(ParticleBPOptions.enableAnnealing, true);
 		fg.setOption(ParticleBPOptions.initialTemperature, Math.PI);
-		fg.setOption(ParticleBPOptions.temperingHalfLife, 3.1);
+		fg.setOption(ParticleBPOptions.annealingHalfLife, 3.1);
 		fg.setOption(ParticleBPOptions.iterationsBetweenResampling, 2);
 		fg.setOption(ParticleBPOptions.resamplingUpdatesPerParticle, 2);
 		r2.setOption(ParticleBPOptions.resamplingUpdatesPerParticle, 3);
@@ -91,8 +92,8 @@ public class TestParticleBPOptions extends DimpleTestBase
 		r2.setOption(ParticleBPOptions.proposalKernel, NormalProposalKernel.class);
 		r2.setOption(NormalProposalKernel.standardDeviation, 1.2);
 		sfg = requireNonNull(fg.setSolverFactory(new ParticleBPSolver()));
-		sr1 = (SRealVariable)sfg.getSolverVariable(r1);
-		sr2 = (SRealVariable)sfg.getSolverVariable(r2);
+		sr1 = (ParticleBPReal)sfg.getSolverVariable(r1);
+		sr2 = (ParticleBPReal)sfg.getSolverVariable(r2);
 		
 		// These take effect on construction
 		assertEquals(2, sr1.getNumParticles());
@@ -119,22 +120,22 @@ public class TestParticleBPOptions extends DimpleTestBase
 		// Test set methods
 		sfg.disableTempering();
 		assertFalse(sfg.isTemperingEnabled());
-		assertEquals(false, sfg.getLocalOption(ParticleBPOptions.enableTempering));
+		assertEquals(false, sfg.getLocalOption(ParticleBPOptions.enableAnnealing));
 		sfg.enableTempering();
 		assertTrue(sfg.isTemperingEnabled());
-		assertEquals(true, sfg.getLocalOption(ParticleBPOptions.enableTempering));
+		assertEquals(true, sfg.getLocalOption(ParticleBPOptions.enableAnnealing));
 		
 		sfg.disableTempering();
-		sfg.unsetOption(ParticleBPOptions.enableTempering);
+		sfg.unsetOption(ParticleBPOptions.enableAnnealing);
 		sfg.setInitialTemperature(2.345);
 		assertEquals((Double)2.345, sfg.getLocalOption(ParticleBPOptions.initialTemperature));
 		assertTrue(sfg.isTemperingEnabled()); // tempering implicitly enabled when setting initial temperature
 		
 		sfg.disableTempering();
-		sfg.unsetOption(ParticleBPOptions.enableTempering);
+		sfg.unsetOption(ParticleBPOptions.enableAnnealing);
 		sfg.setTemperingHalfLifeInIterations(4);
 		assertEquals(4, sfg.getTemperingHalfLifeInIterations(), 1e-9);
-		assertEquals(4, sfg.getLocalOption(ParticleBPOptions.temperingHalfLife), 0.0);
+		assertEquals(4, sfg.getLocalOption(ParticleBPOptions.annealingHalfLife), 0.0);
 		assertTrue(sfg.isTemperingEnabled()); // tempering implicitly enabled when setting tempering half life
 		
 		sfg.setNumIterationsBetweenResampling(5);

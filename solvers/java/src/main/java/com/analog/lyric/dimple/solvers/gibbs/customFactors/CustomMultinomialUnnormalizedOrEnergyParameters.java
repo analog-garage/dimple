@@ -35,10 +35,10 @@ import com.analog.lyric.dimple.schedulers.IScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
-import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
-import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
-import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
@@ -47,12 +47,12 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor implements IRealConjugateFactor, MultinomialBlockProposal.ICustomMultinomial
+public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFactor implements IRealConjugateFactor, MultinomialBlockProposal.ICustomMultinomial
 {
 	private @Nullable Object[] _outputMsgs;
-	private @Nullable SDiscreteVariable[] _outputVariables;
-	private @Nullable SDiscreteVariable _NVariable;
-	private @Nullable SRealVariable[] _alphaVariables;
+	private @Nullable GibbsDiscrete[] _outputVariables;
+	private @Nullable GibbsDiscrete _NVariable;
+	private @Nullable GibbsReal[] _alphaVariables;
 	private @Nullable FactorFunction _factorFunction;
 	private int _dimension;
 	private int _alphaParameterMinIndex;
@@ -240,14 +240,14 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 			if (_hasConstantN)
 				_constantN = requireNonNull((Integer)factorFunction.getConstantByIndex(N_PARAMETER_INDEX));
 			else
-				_NVariable = (SDiscreteVariable)((siblings.get(factorFunction.getEdgeByIndex(N_PARAMETER_INDEX))).getSolver());
+				_NVariable = (GibbsDiscrete)((siblings.get(factorFunction.getEdgeByIndex(N_PARAMETER_INDEX))).getSolver());
 		}
 		
 		// Save the alpha parameter constant or variables as well
 		_hasConstantAlphas = false;
 		_hasConstantAlpha = null;
 		_constantAlpha = null;
-		final SRealVariable[] alphaVariables = _alphaVariables = new SRealVariable[_dimension];
+		final GibbsReal[] alphaVariables = _alphaVariables = new GibbsReal[_dimension];
 		_alphaParameterMinEdge = NO_PORT;
 		_alphaParameterMaxEdge = NO_PORT;
 		int[] edges = factorFunction.getEdgesByIndexRange(_alphaParameterMinIndex, alphaParameterMaxIndex);
@@ -272,7 +272,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 				{
 					hasConstantAlpha[i] = false;
 					int alphaEdge = factorFunction.getEdgeByIndex(index);
-					alphaVariables[i] = (SRealVariable)((siblings.get(alphaEdge)).getSolver());
+					alphaVariables[i] = (GibbsReal)((siblings.get(alphaEdge)).getSolver());
 				}
 			}
 		}
@@ -281,7 +281,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 			for (int i = 0, index = _alphaParameterMinIndex; i < _dimension; i++, index++)
 			{
 				int alphaEdge = factorFunction.getEdgeByIndex(index);
-				alphaVariables[i] = (SRealVariable)((siblings.get(alphaEdge)).getSolver());
+				alphaVariables[i] = (GibbsReal)((siblings.get(alphaEdge)).getSolver());
 			}
 		}
 
@@ -289,7 +289,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 		// Save the output constant or variables as well
 		int numOutputEdges = _numPorts - factorFunction.getEdgeByIndex(outputMinIndex);
 		_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(outputMinIndex);
-		final SDiscreteVariable[] outputVariables = _outputVariables = new SDiscreteVariable[numOutputEdges];
+		final GibbsDiscrete[] outputVariables = _outputVariables = new GibbsDiscrete[numOutputEdges];
 		_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(outputMinIndex);
 		_constantOutputCounts = null;
 		if (_hasConstantOutputs)
@@ -305,7 +305,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 				else
 				{
 					int outputEdge = factorFunction.getEdgeByIndex(index);
-					outputVariables[i] = (SDiscreteVariable)((siblings.get(outputEdge)).getSolver());
+					outputVariables[i] = (GibbsDiscrete)((siblings.get(outputEdge)).getSolver());
 				}
 			}
 		}
@@ -314,7 +314,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 			for (int i = 0, index = outputMinIndex; i < _dimension; i++, index++)
 			{
 				int outputEdge = factorFunction.getEdgeByIndex(index);
-				outputVariables[i] = (SDiscreteVariable)((siblings.get(outputEdge)).getSolver());
+				outputVariables[i] = (GibbsDiscrete)((siblings.get(outputEdge)).getSolver());
 			}
 		}
 	}

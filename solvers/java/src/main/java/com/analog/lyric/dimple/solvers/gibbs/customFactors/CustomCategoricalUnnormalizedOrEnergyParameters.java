@@ -29,8 +29,8 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
-import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
-import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
@@ -38,10 +38,10 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-public class CustomCategoricalUnnormalizedOrEnergyParameters extends SRealFactor implements IRealConjugateFactor
+public class CustomCategoricalUnnormalizedOrEnergyParameters extends GibbsRealFactor implements IRealConjugateFactor
 {
 	private @Nullable Object[] _outputMsgs;
-	private @Nullable SDiscreteVariable[] _outputVariables;
+	private @Nullable GibbsDiscrete[] _outputVariables;
 	private @Nullable FactorFunction _factorFunction;
 	private int _parameterDimension;
 	private int _numParameterEdges;
@@ -187,7 +187,7 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends SRealFactor
 		for (int edge = _numParameterEdges; edge < _numPorts; edge++)
 			if (!(siblings.get(edge).hasFixedValue()))
 				numVariableOutputs++;
-		final SDiscreteVariable[] outputVariables = _outputVariables = new SDiscreteVariable[numVariableOutputs];
+		final GibbsDiscrete[] outputVariables = _outputVariables = new GibbsDiscrete[numVariableOutputs];
 		for (int edge = _numParameterEdges, index = 0; edge < _numPorts; edge++)
 		{
 			Discrete outputVariable = (Discrete)siblings.get(edge);
@@ -201,7 +201,7 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends SRealFactor
 				_hasConstantOutputs = true;
 			}
 			else
-				outputVariables[index++] = (SDiscreteVariable)outputVariable.getSolver();
+				outputVariables[index++] = (GibbsDiscrete)outputVariable.getSolver();
 		}
 	}
 	

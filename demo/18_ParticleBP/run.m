@@ -31,10 +31,10 @@ fg = FactorGraph();
 fg.Solver = 'ParticleBP'; 
 
 %specify the number of particles per message
-fg.Solver.setNumParticles(30);
+fg.setOption('ParticleBPOptions.numParticles', 30);
 
 %specify the number of resampling updates per particle
-fg.Solver.setResamplingUpdatesPerParticle(30);
+fg.setOption('ParticleBPOptions.resamplingUpdatesPerParticle', 30);
 
 %Create the factor.
 realProduct = FactorFunction('Product', 1.0);
@@ -45,8 +45,9 @@ a.Input = FactorFunction('Normal', 3, 1);
 b.Input = FactorFunction('Normal', 5, 1);
 
 %Optionally use tempering
-fg.Solver.setInitialTemperature(1);
-fg.Solver.setTemperingHalfLifeInIterations(1);
+fg.setOption('ParticleBPOptions.enableAnnealing', true); 
+fg.setOption('ParticleBPOptions.initialTemperature', 1.0);
+fg.setOption('ParticleBPOptions.annealingHalfLife', 1.0);
 
 %Solve
 fg.initialize();

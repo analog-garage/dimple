@@ -22,7 +22,7 @@ c = Bit();
 XorGraph.addFactor(@xorDeltaTutorial,b(1),b(2),c); 
 XorGraph.addFactor(@xorDeltaTutorial,b(3),b(4),c); 
 b.Input = [ .8 .8 .8 .5];
-XorGraph.Solver.setNumIterations(2);
+XorGraph.NumIterations = 2;
 XorGraph.solve();
 disp(b.Belief); 
 disp(b.Value);

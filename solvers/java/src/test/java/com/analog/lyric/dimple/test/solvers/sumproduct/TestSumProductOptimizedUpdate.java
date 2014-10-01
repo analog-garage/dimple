@@ -28,7 +28,7 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateApproach;
 import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateOptions;
-import com.analog.lyric.dimple.solvers.sumproduct.STableFactor;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductTableFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.google.common.primitives.Ints;
@@ -79,16 +79,16 @@ public class TestSumProductOptimizedUpdate extends DimpleTestBase
 		rand.setSeed(0); // Don't be random
 		FactorGraph fg = new FactorGraph();
 		Factor f = define2bitFactor(rand, fg);
-		STableFactor sft = getSFactorTable(f);
+		SumProductTableFactor sft = getSFactorTable(f);
 		assertEquals(defaultApproach, sft.getOptionOrDefault(UpdateOptions.updateApproach));
 		assertEquals(defaultAllocationScale, sft.getOptionOrDefault(UpdateOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
 		assertEquals(defaultExecutionTimeScale, sft.getOptionOrDefault(UpdateOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
 		assertEquals(defaultSparseThreshold, sft.getOptionOrDefault(UpdateOptions.optimizedUpdateSparseThreshold), 1.0e-9);
 	}
 
-	private static STableFactor getSFactorTable(Factor f)
+	private static SumProductTableFactor getSFactorTable(Factor f)
 	{
-		STableFactor sft = (STableFactor) f.getSolver();
+		SumProductTableFactor sft = (SumProductTableFactor) f.getSolver();
 		assertNotNull(sft);
 		return sft;
 	}
@@ -131,7 +131,7 @@ public class TestSumProductOptimizedUpdate extends DimpleTestBase
 		FactorGraph fg = new FactorGraph();
 		SumProductSolverGraph sfg = getSumProductSolverGraph(fg);
 		Factor f = define2bitFactor(rand, fg);
-		STableFactor sft = getSFactorTable(f);
+		SumProductTableFactor sft = getSFactorTable(f);
 		// Make sure the factor has the default values initially
 		assertEquals(defaultApproach, sft.getOptionOrDefault(UpdateOptions.updateApproach));
 		assertEquals(defaultAllocationScale, sft.getOptionOrDefault(UpdateOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
@@ -287,7 +287,7 @@ public class TestSumProductOptimizedUpdate extends DimpleTestBase
 		table.setRepresentation(FactorTableRepresentation.DENSE_WEIGHT);
 		table.randomizeWeights(rand);
 		Factor f = fg.addFactor(table, vars);
-		STableFactor stf = (STableFactor) f.getSolver();
+		SumProductTableFactor stf = (SumProductTableFactor) f.getSolver();
 		if (stf == null)
 		{
 			fail("STableFactor is null");
@@ -344,7 +344,7 @@ public class TestSumProductOptimizedUpdate extends DimpleTestBase
 		// Before optimize, all factors should not have their optimize enable explicitly set
 		for (Factor factor : fg.getFactors())
 		{
-			STableFactor sft = (STableFactor) factor.getSolver();
+			SumProductTableFactor sft = (SumProductTableFactor) factor.getSolver();
 			if (sft != null)
 			{
 				UpdateApproach automaticUpdateApproach = sft.getAutomaticUpdateApproach();
@@ -355,7 +355,7 @@ public class TestSumProductOptimizedUpdate extends DimpleTestBase
 		// Afterward, they should
 		for (Factor factor : fg.getFactors())
 		{
-			STableFactor sft = (STableFactor) factor.getSolver();
+			SumProductTableFactor sft = (SumProductTableFactor) factor.getSolver();
 			if (sft != null)
 			{
 				UpdateApproach automaticUpdateApproach = sft.getAutomaticUpdateApproach();

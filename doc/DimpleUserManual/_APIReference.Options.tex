@@ -1,0 +1,230 @@
+\subsection{Options}
+\label{sec:Options}
+
+Dimple provides an option mechanism that is used to specify attributes that are used to configure the runtime behavior of various aspects of the system. This section describes the Dimple option system and how it is used. \ifjava Only the most widely useful parts of the API are described here: for complete documentation of the Java API please consult the HTML Java API documentation.\fi Individual options will be described in more detail later in this document.
+
+\textit{Options were introduced in version 0.07 and replace earlier mechanisms based on solver-specific method calls. Those methods are now deprecated and will be removed in a future release. Users with existing Dimple code using such methods should switch to using options as soon as it is convenient to do so.}
+
+\subsubsection{Option Keys}
+
+Options are key/value pairs that can be set on Dimple factor graph, variable or factor objects to configure their behavior. Option keys uniquely identify the option, along with its type and default value. 
+
+\ifjava 
+In the Java API, option keys are singleton instances of the IOptionKey interface that are declared as public static final fields of a publically accessible class. To refer to an option key, you only need to import the class in which it is declared and refer to the field, e.g:
+
+\begin{lstlisting}
+import com.analog.lyric.dimple.options.SolverOptions;
+...
+graph.setOption(SolverOptions.iterations, 12);
+\end{lstlisting}
+
+The IOptionKey interface defines a number of methods that can be used to query the name(), type(), and defaultValue() as well as methods for converting and validating values for that option. Users should have little reason to invoke any of these directly. Details may be found in the HTML Java API documentation.
+
+\fi
+
+\ifmatlab
+In the MATLAB API, option keys are represented by unique strings of the form '\textit{OptionClass.optionName}' (a complete list of supported option keys is returned by the dimpleOptions() function). For instance:
+
+\begin{lstlisting}
+graph.setOption('SolverOptions.iterations', 12);
+\end{lstlisting}
+
+Specifying a string that does not correspond to a known option key will result in a runtime error when key is used to set or look up an option value.
+
+\emph{Internally option keys are represented using singleton Java objects, which are looked up by the string keys. If you have a reference to the Java IOptionKey object, you can use it in place of the string throughout this interface. Consult the Java version of this manual for further details.}
+\fi
+
+\subsubsection{Setting Options}
+
+Options may be set on any FactorGraph, Factor or Variable object or their solver-specific counterparts. Options may also be set on the DimpleEnvironment object, which is described in more detail below. \ifjava(Options may in fact be set on any object that implements the local option methods of the IOptionHolder interface, but this should not matter to most Dimple users.)\fi Options set on graphs will be seen by all factors, variables and subgraphs contained in the graph unless overridden on one of those members. Likewise options set on a model object will be seen by any solver object attached to it unless overridden in the solver object. In most cases, it should never be necessary to set options directly on solver objects.
+
+\ifjava
+Options can be set either using the setOption method (defined in the IOptionHolder interface) or through the set method of the option key itself. For example:
+
+\begin{lstlisting}
+// These both do the same thing:
+graph.setOption(SumProductOptions.damping, .9);
+SumProductOptions.damping.set(graph, .9);
+\end{lstlisting}
+
+Some option keys may define additional set methods that may be more convenient to use than the setOption method:
+
+\begin{lstlisting}
+// These both do the same thing:
+factor.setOption(SumProductOptions.nodeSpecificDamping,
+    new OptionDoubleList(.7, .8, .9));
+SumProductOptions.nodeSpecificDamping.set(factor, .7, .8, .9);
+\end{lstlisting}
+\fi
+
+\ifmatlab
+Options can be set using the setOption method of the Node class:
+
+\begin{lstlisting}
+graph.setOption('SumProductOptions.damping', .9);
+\end{lstlisting}
+
+When applied to a vector or matrix Node object the option will be set on each:
+
+\begin{lstlisting}
+vars = Real(2,2);
+vars.setOption('SumProductOptions.damping', .9);
+\end{lstlisting}
+
+In this case, the values may also be a cell array long as it has matching dimensions:
+
+\begin{lstlisting}
+vars = Real(2,2);
+vars.setOption('SumProductOptions.damping', {.7 .8; .6 .9});
+\end{lstlisting}
+
+Multiple options may be set at the same time using the setOptions method. This takes arguments in one of three forms:
+
+\begin{itemize}
+\item A vector cell array containing alternating option keys and values.
+\begin{lstlisting}
+nodes.setOptions({'SolverOptions.iterations', 10,
+                  'SumProductOptions.damping' , .9});
+\end{lstlisting}
+\item A nx2 cell array where each row contains a key and value.
+\begin{lstlisting}
+nodes.setOptions({'SolverOptions.iterations', 10;
+                  'SumProductOptions.damping' , .9});
+\end{lstlisting}
+\item A cell array with dimensions matching the dimensions of the left hand side where each cell contains one of the above two forms.
+\begin{lstlisting}
+options = cell(2,2);
+options{1,1} = {'SolverOptions.iterations', 10;
+                'SumProductOptions.damping', .85)
+options{2,2} = {'SolverOptions.iterations', 12};
+nodes.setOptions(options);
+\end{lstlisting}
+\end{itemize}
+
+\fi
+
+All of these methods will ensure that the type of the option values are appropriate for that key and may also validate the value. For instance when setting the SumProductOptions.damping option, the value must be a double in the range from 0.0 to 1.0. If a value is not valid for its key an OptionValidationException will be thrown.
+
+Options may be unset on any object on which they were previously set using the unset method:
+
+\ifmatlab
+\begin{lstlisting}
+graph.unsetOption('SumProductOptions.damping');
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.unsetOption(SumProductOptions.damping);
+\end{lstlisting}
+
+or the unset method on the option key can be used:
+
+\begin{lstlisting}
+SumProductOptions.damping.unset(graph);
+\end{lstlisting}
+\fi
+
+All options may be unset on an object using the clearLocalOptions method:
+
+\begin{lstlisting}
+graph.clearLocalOptions();
+\end{lstlisting}
+
+\subsubsection{Looking up Option Values}
+
+There are a number of methods for retrieving option values from objects on which they can be set. Most users will only need to use these to debug their option settings. Before describing those methods, we should first describe the the algorithm that is used for looking up option values starting from a given object. The basic algorithm is to iterate over a list of objects starting with the object itself followed by an ordered list of delegates \ifjava (returned by the getOptionDelegates() method)\fi until a setting for that option is found. The only complexity comes from how this list is determined. The option search order is defined by the following recursive description\footnote{The algorithm is actually slightly more complicated than this but the details should only matter to those implementing custom factors or solvers. For details see the documentation for EventSourceIterator in the HTML Java API documentation.}:
+
+\begin{enumerate}
+\item Search the object itself.
+\item If the object is a solver object, next look at the corresponding model object.
+\item If the object has a parent graph, then recursively search that graph,
+otherwise the DimpleEnvironment for that object will be searched (there is usually only one environment).
+\end{enumerate}
+
+\ifmatlab
+There are two methods for looking up option values:
+
+\begin{itemize}
+\item getOption(key) - returns the values of the specified option as determined by the above lookup algorithm or else the option's default value if not set. If invoked on a matrix/vector then this will return a cell array containing the values. For example:
+\begin{lstlisting}
+>>> graph.getOption('SumProductOptions.damping')
+ans =
+    0.9000
+    
+>>> vars.getOption('SumProductOptions.damping')
+ans =
+    [0.7000]    [0.6000]
+    [0.8000]    [0.9000]
+\end{lstlisting}
+
+\item getLocalOptions() - returns a cell array containing keys and values of options that are set directly on that object in the same format accepted by the setOptions method described in the previous section. For example:
+\begin{lstlisting}
+>>> graph.getLocalOptions()
+ans =
+    'SumProductOptions.damping'    [0.9000]
+    'SolverOptions.iterations'     10
+\end{lstlisting}
+\end{itemize}
+\fi %ifmatlab
+
+\ifjava
+There are a number of methods defined on the IOptionKey and IOptionHolder interfaces that can be used to lookup the value of the option for that object using the lookup algorithm that was just described:
+
+\begin{itemize}
+\item IOptionKey.get(obj) and IOptionHolder.getOption(key) - both return the value of the option for the given object or else null if not set.
+\begin{lstlisting}
+// These are equivalent:
+Double damping1 = graph.getOption(SumProductOptions.damping);
+Double damping2 = SumProductOptions.damping.get(graph);
+\end{lstlisting}
+\item IOptionKey.getOrDefault(obj) and IOptionholder.getOptionOrDefault(key) - return the default value defined by the key instead of null when the option has not been set anywhere.
+\begin{lstlisting}
+// These are equivalent:
+double damping1 = graph.getOptionOrDefault(SumProductOptions.damping);
+double damping2 = SumProductOptions.damping.getOrDefault(graph);
+\end{lstlisting}
+\end{itemize}
+
+There are also methods for querying the values of only those options that are set directly on an object:
+
+\begin{itemize}
+\item IOptionHolder.getLocalOption(key) - returns the value of the option or else null if not set directly on the object.
+\begin{lstlisting}
+Double damping = graph.getLocalOption(SumProductOptions.damping);
+\end{lstlisting}
+
+\item IOptionHolder.getLocalOptions() - returns a read-only collection that provides a view of the option settings for that object in the form of IOption objects.
+\begin{lstlisting}
+// Print options set on node.
+for (IOption<?> option : node.getLocalOptions())
+{
+    System.out.format("%s = %s\n", option.key(), option.value());
+}
+\end{lstlisting}
+\end{itemize}
+
+\fi % ifjava
+
+\subsubsection{Option Initialization}
+
+While option values are visible as soon as they are set on an object, they may not take effect until later because internal objects that are affected by the change may have cached state based on the previous settings. The documentation for individual options should indicate when changes to the settings are incorporated, but in most cases that will happen when the initialize() method is called on the affected object. Since this happens automatically when invoking the FactorGraph.solve() method, users will often not have to be concerned with this detail. But if you performing other operations, such as directly calling FactorGraph.iterate(), then you will probably need to invoke FactorGraph.initialize() for option settings to take effect.
+
+\subsubsection{Setting Defaults on the Dimple Environment}
+
+Sometimes you may want to apply the same default option settings across multiple graphs. While you can simply set the options on all of the graphs individually, another option is to set it on the DimpleEnvironment object. The DimpleEnvironment holds shared state for a Dimple session. Typically there will be only one instance of this class. Because the environment is the last place in the delegation chain for option lookup, you can use it as a place to set default values of options to override those defined by the option keys.
+
+You can obtain a reference to the active global environment using the static DimpleEnvironment.active() method: and set default option values on it. For instance, to globally enable multithreading for all graphs, you could write:
+
+\ifmatlab
+\begin{lstlisting}
+env = DimpleEnvironment.active();
+env.setOption('SolverOptions.enableMultithreading', true);
+\end{lstlisting}
+\fi
+\ifjava
+\begin{lstlisting}
+DimpleEnvironment env = DimpleEnvironment.active();
+env.setOption(SolverOptions.enableMultithreading, true);
+\end{lstlisting}
+\fi

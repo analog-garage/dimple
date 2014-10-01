@@ -228,6 +228,7 @@ fg.addFactor(sg, fa1, fb1, fc1, fd1, fe1, ff1, fg1, fh1, fm1, fn1, fo1, fp1, fq1
                  fa2, fb2, fc2, fd2, fe2, ff2, fg2, fh2, fm2, fn2, fo2, fp2, fq2, fr2, fs2);
 
 % Plus one additional factor in the outer-most graph
+setFactorGraph(fg); % Change the default graph back to fg
 x = fs1 + fs2;
 
 if (debugPrint)

@@ -28,8 +28,8 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
-import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
-import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NormalSampler;
@@ -37,12 +37,12 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-public class CustomNormal extends SRealFactor implements IRealConjugateFactor
+public class CustomNormal extends GibbsRealFactor implements IRealConjugateFactor
 {
 	private @Nullable Object[] _outputMsgs;
-	private @Nullable SRealVariable[] _outputVariables;
-	private @Nullable SRealVariable _meanVariable;
-	private @Nullable SRealVariable _precisionVariable;
+	private @Nullable GibbsReal[] _outputVariables;
+	private @Nullable GibbsReal _meanVariable;
+	private @Nullable GibbsReal _precisionVariable;
 	private boolean _hasConstantMean;
 	private boolean _hasConstantPrecision;
 	private boolean _hasConstantOutputs;
@@ -201,7 +201,7 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 			else					// Variable mean
 			{
 				_meanParameterPort = factorFunction.getEdgeByIndex(MEAN_PARAMETER_INDEX);
-				_meanVariable = (SRealVariable)((siblings.get(_meanParameterPort)).getSolver());
+				_meanVariable = (GibbsReal)((siblings.get(_meanParameterPort)).getSolver());
 				_numParameterEdges++;
 			}
 			
@@ -211,7 +211,7 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 			else 						// Variable precision
 			{
 				_precisionParameterPort = factorFunction.getEdgeByIndex(PRECISION_PARAMETER_INDEX);
-				_precisionVariable = (SRealVariable)((siblings.get(_precisionParameterPort)).getSolver());
+				_precisionVariable = (GibbsReal)((siblings.get(_precisionParameterPort)).getSolver());
 				_numParameterEdges++;
 			}
 		}
@@ -244,7 +244,7 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 		for (int edge = _numParameterEdges; edge < _numPorts; edge++)
 			if (!(siblings.get(edge).hasFixedValue()))
 				numVariableOutputs++;
-		final SRealVariable[] outputVariables = _outputVariables = new SRealVariable[numVariableOutputs];
+		final GibbsReal[] outputVariables = _outputVariables = new GibbsReal[numVariableOutputs];
 		for (int edge = _numParameterEdges, index = 0; edge < _numPorts; edge++)
 		{
 			Real outputVariable = (Real)siblings.get(edge);
@@ -257,7 +257,7 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 				_hasConstantOutputs = true;
 			}
 			else
-				outputVariables[index++] = (SRealVariable)outputVariable.getSolver();
+				outputVariables[index++] = (GibbsReal)outputVariable.getSolver();
 		}
 	}
 	

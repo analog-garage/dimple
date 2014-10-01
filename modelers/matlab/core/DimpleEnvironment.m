@@ -55,8 +55,8 @@ classdef DimpleEnvironment < handle
     end
     
     methods
-        function clearOptions(obj)
-            %clearOptions Unsets all options on the environment.
+        function clearLocalOptions(obj)
+            %clearLocalOptions Unsets all options on the environment.
             %  This only affects options that are set directly on the
             %  environment itself.
             obj.PEnvironment.clearOptions();

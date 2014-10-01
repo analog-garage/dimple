@@ -38,7 +38,6 @@ classdef FactorGraph < Node
     
     properties(Access=public)
         TableFactory;
-        %Retrieves the Solver object.
         %Set/get the number of iterations of the underlying solver.
         NumIterations;
         NestedGraphs;
@@ -69,7 +68,6 @@ classdef FactorGraph < Node
         function obj = FactorGraph(varargin)
             obj@Node([],[]);
             
-            setFactorGraph(obj);
             if numel(varargin) == 2 && isequal(varargin{1},'nestedGraph')
                 obj.VectorObject = varargin{2};
                 obj.TableFactory = FactorTableFactory();
@@ -83,7 +81,10 @@ classdef FactorGraph < Node
                 obj.TableFactory = FactorTableFactory();
                 obj.VectorIndices = varargin{3};
             else
-                
+                % Set the default graph (only in this case where the graph
+                % is created explicitly by the user rather than as a side effect)
+                setFactorGraph(obj);
+
                 modeler = getModeler();
                 
                 obj.TableFactory = FactorTableFactory();
@@ -117,7 +118,7 @@ classdef FactorGraph < Node
         end
         
         function iters = get.NumIterations(obj)
-            iters = obj.Solver.getNumIterations();
+            iters = obj.getOption('SolverOptions.iterations');
         end
         
         function streams = get.FactorGraphStreams(obj)
@@ -129,7 +130,7 @@ classdef FactorGraph < Node
         end
         
         function set.NumIterations(obj,iters)
-            obj.Solver.setNumIterations(iters);
+            obj.setOption('SolverOptions.iterations', iters);
         end
         
         function set.NumSteps(obj,steps)

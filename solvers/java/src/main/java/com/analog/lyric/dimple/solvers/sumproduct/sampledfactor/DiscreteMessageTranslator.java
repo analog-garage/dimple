@@ -22,7 +22,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
-import com.analog.lyric.dimple.solvers.sumproduct.SDiscreteVariable;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscrete;
 import org.eclipse.jdt.annotation.Nullable;
 
 public class DiscreteMessageTranslator extends MessageTranslatorBase
@@ -71,7 +71,7 @@ public class DiscreteMessageTranslator extends MessageTranslatorBase
 	@Override
 	public final void initialize()
 	{
-		SDiscreteVariable var = (SDiscreteVariable)_port.node.getSibling(_port.index).getSolver();
+		SumProductDiscrete var = (SumProductDiscrete)_port.node.getSibling(_port.index).getSolver();
 		_outputMessage = var.resetInputMessage(Objects.requireNonNull(_outputMessage));
 		_inputMessage = var.resetInputMessage(Objects.requireNonNull(_inputMessage));
 	}

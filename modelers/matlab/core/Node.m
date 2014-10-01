@@ -55,8 +55,8 @@ classdef Node < MatrixObject
             obj.VectorObject.setLabel(name);
         end
         
-        function clearOptions(obj)
-            %clearOptions Unsets all options on these objects.
+        function clearLocalOptions(obj)
+            %clearLocalOptions Unsets all options on these objects.
             obj.VectorObject.clearOptions();
         end
         
@@ -76,7 +76,7 @@ classdef Node < MatrixObject
             %
             % See also setOption, dimpleOptions
         	value = obj.VectorObject.getOption(option);
-            if numel(value) == 1
+            if obj.length == 1
                 value = value(1);
             else
                 value = reshape(cell(value), size(obj.VectorIndices));
@@ -93,7 +93,7 @@ classdef Node < MatrixObject
             %           An instance of the Java IOptionKey class may also
             %           be used.
             %
-            % See also setOption, dimpleOptions
+            % See also clearLocalOptions, setOption, dimpleOptions
         	obj.VectorObject.unsetOption(option);
         end
         
@@ -113,7 +113,7 @@ classdef Node < MatrixObject
             %            on.
             %
             % See also getOption, getLocalOptions, unsetOption, dimpleOptions
-            if numel(value) == 1
+            if numel(value) == 1 || obj.length == 1
                 obj.VectorObject.setOptionOnAll(option,value);
             else
                 assert(iscell(value));
@@ -135,7 +135,7 @@ classdef Node < MatrixObject
             % dimensions as the lhs where each cell contains a cell array
             % with the option settings for that node.
             %
-            % See also setOption, setOptions, unsetOption
+            % See also clearLocalOptions, setOption, setOptions, unsetOption
             array = obj.VectorObject.getLocallySetOptions();
             length = array.length;
             if (length == 1)

@@ -8,7 +8,7 @@ Name & Variables & Constructor & Description \\
 \hline
 \endhead
 %
-Abs & out(D,R) \newline in(D,R) & [smoothing] & Deterministic absolute value function, where out = abs(in).  An optional smoothing value may be specified as a constructor argument\footnote{\label{ftn:smoothing}If smoothing is enabled, the factor function becomes $e^{-(\textrm{out} - F(\textrm{in}))^2/\textrm{smoothing}}$ (making it non-deterministic) instead of $\delta(\textrm{out} - F(\textrm{in}))$, where $F$ is the deterministic function associated with this factor.  This is useful for solvers that do not work well with deterministic real-valued factors, such as particle BP, particularly when tempering is used.}.\\
+Abs & out(D,R) \newline in(D,R) & [smoothing] & Deterministic absolute value function, where out = abs(in).  An optional smoothing value may be specified as a constructor argument\footnote{\label{ftn:smoothing}If smoothing is enabled, the factor function becomes $e^{-(\textrm{out} - F(\textrm{in}))^2/\textrm{smoothing}}$ (making it non-deterministic) instead of $\delta(\textrm{out} - F(\textrm{in}))$, where $F$ is the deterministic function associated with this factor.  This is useful for solvers that do not work well with deterministic real-valued factors, such as particle BP, particularly when annealing is used.}.\\
 %
 ACos & out(D,R) \newline in(D,R) & [smoothing] & Deterministic arc-cosine function, where out = acos(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
@@ -37,6 +37,8 @@ In the current implementation, the domain of the x variable must be zero-based c
 Categorical\newline Unnormalized\newline Parameters & [$\alpha$]...(R)  \newline x...(D) & N, [$\alpha$] & Categorical distribution, $p(x | \alpha)$, where $\alpha$ is a vector of parameter variables and x is an array of discrete variables.  The number of elements in $\alpha$ and the domain size of x must equal the value of the constructor argument, N.  There can be any number of x variables, all associated with the same parameter values.  \newline
 In this alternative version of the Categorical distribution, the $\alpha$ parameters are represented as a vector of unnormalized probability values. The conjugate prior for this representation is such that each entry of $\alpha$ is independently distributed according to a Gamma distribution, all with a common $\beta$ parameter\textsuperscript{\ref{ftn:conugatePrior}}.  \newline
 In the current implementation, the domain of the x variable must be zero-based contiguous integers, $0...N-1$\textsuperscript{\ref{ftn:zeroBaseRestriction}}. \\
+%
+ComplexAbs & out(R) \newline in(C) & [smoothing] & Deterministic complex absolute value, where out = $\sqrt{Re(\mathrm{in}) + Im(\mathrm{in})}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
 ComplexConjugate & out(C) \newline in(C,R) & [smoothing] & Deterministic complex conjugate function, where out = in$^{*}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %

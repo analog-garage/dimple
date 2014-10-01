@@ -373,7 +373,7 @@ HMM.solve;
 \ifjava
 
 \begin{lstlisting}
-HMM.getSolver().setNumIterations(20);
+HMM.setOption(SolverOptions.iterations, 20);
 HMM.solve();
 \end{lstlisting}
 
@@ -746,13 +746,14 @@ From /demo/12\_Tutorial/DimpleTutorialNested.m:
 
 
 \begin{lstlisting}
-% Define 4 bit Xor from two 3 bit Xors
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Define 4 bit xor from two 3 bit xors 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 b = Bit(4,1);
-XorGraph = FactorGraph(b);
-c = Bit();
-XorGraph.addFactor(@XorDeltaTutorial,b(1),b(2),c);
-XorGraph.addFactor(@XorDeltaTutorial,b(3),b(4),c);
+XorGraph = FactorGraph(b); 
+c = Bit(); 
+XorGraph.addFactor(@xorDeltaTutorial,b(1),b(2),c); 
+XorGraph.addFactor(@xorDeltaTutorial,b(3),b(4),c);
 \end{lstlisting}
 
 \fi
@@ -783,9 +784,9 @@ IMPORTANT: In principle, variables attached to a Factor Graph can be defined bef
 
 \includegraphics{images/BoundaryVariables.png}
 
-Consider a nestable factor graph NestableFactorGraph(connectvar1, connectvar2,..,vark) with k connector variables. Consider also an actual factor graph of interest, FactorGraph, containing (among others) k variables of interest (var1,..,vark). By using the addGraph method, we can replicate the NestableFactorGraph and use it to connect the variables (var1,..,vark) in the same way the connector variables are connected in the nestable factor graph. The method is: FactorGraph.addGraph(NestableFactorGraph,var1,..,vark).
+Consider a nestable factor graph NestableFactorGraph(connectvar1, connectvar2,..,vark) with k connector variables. Consider also an actual factor graph of interest, FactorGraph, containing (among others) k variables of interest (var1,..,vark). By using the addFactor method, we can replicate the NestableFactorGraph and use it to connect the variables (var1,..,vark) in the same way the connector variables are connected in the nestable factor graph: FactorGraph.addFactor(NestableFactorGraph,var1,..,vark).
 
-In essence, the nestable factor graph represents a factor between the dummy connector variables, and the addGraph method is adding the factor to the desired actual variables.
+In essence, the nestable factor graph represents a factor between the dummy connector variables, and the addFactor method is adding this factor to the desired actual variables.
 
 IMPORTANT: Nested factor graphs support arbitrary levels of nesting.  That is, a nested factor graph can be composed of nested factor graphs.
 
@@ -794,21 +795,18 @@ Armed with this tool, we can very simply use our custom 4-bit XOR to implement t
 \ifmatlab
 
 \begin{lstlisting}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Create graph for 6 bit code
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Create graph for 6 bit code 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 d = Bit(6,1);
-MyGraph = FactorGraph(d);
-MyGraph.addGraph(XorGraph,d([1:3 5]));
-MyGraph.addGraph(XorGraph,d([1 2 4 6]));
+MyGraph = FactorGraph(d); 
+MyGraph.addFactor(XorGraph,d([1:3 5])); 
+MyGraph.addFactor(XorGraph,d([1 2 4 6]));
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Set input and Solve
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-d.Input = [.75 .6 .9 .1 .2 .9];
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Set input and Solve 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+d.Input = [.75 .6 .9 .1 .2 .9]; 
 MyGraph.NumIterations = 20;
 MyGraph.solve();
 disp(d.Value');
@@ -816,7 +814,7 @@ disp(d.Value');
 
 
 
-IMPORTANT: Note the use of standard MATLAB array indexing in the d([1:3 5]) method above. Also, note that technically, our nestable factor graph declared above only had one argument (not four), an array of four random variables (as opposed to four separately declared random variables). As a result, the addGraph call requires a single argument---an array of four random 
+IMPORTANT: Note the use of standard MATLAB array indexing in the d([1:3 5]) method above. Also, note that technically, our nestable factor graph declared above only had one argument (not four), an array of four random variables (as opposed to four separately declared random variables). As a result, the addFactor call requires a single argument---an array of four random 
 
 \fi
 
@@ -838,6 +836,7 @@ myGraph.addFactor(xorGraph,d[0],d[1],d[3],d[5]);
 double [] inputs = new double [] {.75, .6, .9, .1, .2, .9};
 for (int i = 0; i < inputs.length; i++)
 	d[i].setInput(inputs[i]);
+myGraph.setOption(SolverOptions.iterations, 20);
 myGraph.solve();
 for (int i = 0; i < d.length; i++)
 	System.out.println(d[i].getValue());
@@ -861,7 +860,7 @@ function [ldpc,x] = createLdpc()
         for i = 1:numCheckEquations
             varIndices = find(A(i,:));
             gd = getNBitXorDef(length(varIndices));
-            ldpc.addGraph(gd,x(varIndices));
+            ldpc.addFactor(gd,x(varIndices));
         end       
      ldpc.NumIterations = 100;
 end

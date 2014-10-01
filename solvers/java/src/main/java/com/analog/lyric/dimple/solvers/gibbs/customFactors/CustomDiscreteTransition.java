@@ -26,19 +26,19 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
-import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
-import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-public class CustomDiscreteTransition extends SRealFactor implements IRealJointConjugateFactor
+public class CustomDiscreteTransition extends GibbsRealFactor implements IRealJointConjugateFactor
 {
 	private @Nullable Object[] _outputMsgs;
-	private @Nullable SDiscreteVariable _yVariable;
-	private @Nullable SDiscreteVariable _xVariable;
+	private @Nullable GibbsDiscrete _yVariable;
+	private @Nullable GibbsDiscrete _xVariable;
 	private @Nullable FactorFunction _factorFunction;
 	private boolean _hasConstantY;
 	private boolean _hasConstantX;
@@ -142,7 +142,7 @@ public class CustomDiscreteTransition extends SRealFactor implements IRealJointC
 		{
 			_yPort = factorFunction.getEdgeByIndex(Y_INDEX);
 			Discrete yVar = ((Discrete)siblings.get(_yPort));
-			_yVariable = (SDiscreteVariable)yVar.getSolver();
+			_yVariable = (GibbsDiscrete)yVar.getSolver();
 			_yDimension = yVar.getDomain().size();
 			_startingParameterEdge++;
 		}
@@ -155,7 +155,7 @@ public class CustomDiscreteTransition extends SRealFactor implements IRealJointC
 		{
 			_xPort = factorFunction.getEdgeByIndex(X_INDEX);
 			Discrete xVar = ((Discrete)siblings.get(_xPort));
-			_xVariable = (SDiscreteVariable)xVar.getSolver();
+			_xVariable = (GibbsDiscrete)xVar.getSolver();
 			_startingParameterEdge++;
 		}
 		

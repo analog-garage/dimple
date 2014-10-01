@@ -27,19 +27,19 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
-import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
-import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-public class CustomExchangeableDirichlet extends SRealFactor implements IRealJointConjugateFactor
+public class CustomExchangeableDirichlet extends GibbsRealFactor implements IRealJointConjugateFactor
 {
 	private @Nullable Object[] _outputMsgs;
 	private double _constantAlphaMinusOne;
-	private @Nullable SRealVariable _alphaVariable;
+	private @Nullable GibbsReal _alphaVariable;
 	private int _dimension;
 	private int _numParameterEdges;
 	private boolean _hasConstantParameters;
@@ -127,7 +127,7 @@ public class CustomExchangeableDirichlet extends SRealFactor implements IRealJoi
 				_numParameterEdges = 1;
 				_constantAlphaMinusOne = 0;
 				List<? extends Variable> siblings = _factor.getSiblings();
-				_alphaVariable = (SRealVariable)((siblings.get(PARAMETER_INDEX)).getSolver());
+				_alphaVariable = (GibbsReal)((siblings.get(PARAMETER_INDEX)).getSolver());
 			}
 		}
 	}

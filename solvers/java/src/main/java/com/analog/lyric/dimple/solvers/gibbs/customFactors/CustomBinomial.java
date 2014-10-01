@@ -27,9 +27,9 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
-import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
-import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockInitializer;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
@@ -38,11 +38,11 @@ import com.analog.lyric.math.DimpleRandomGenerator;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
+public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFactor
 {
 	private @Nullable Object[] _outputMsgs;
-	private @Nullable SDiscreteVariable _outputVariable;
-	private @Nullable SDiscreteVariable _NParameterVariable;
+	private @Nullable GibbsDiscrete _outputVariable;
+	private @Nullable GibbsDiscrete _NParameterVariable;
 	private int _probabilityParameterEdge;
 	private int _constantNParameterValue;
 	private int _constantOutputValue;
@@ -147,7 +147,7 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 			else
 			{
 				int outputEdge = factorFunction.getEdgeByIndex(OUTPUT_INDEX_FIXED_N);
-				_outputVariable = (SDiscreteVariable)((siblings.get(outputEdge)).getSolver());
+				_outputVariable = (GibbsDiscrete)((siblings.get(outputEdge)).getSolver());
 			}
 		}
 		else	// Variable or constant N parameter
@@ -161,7 +161,7 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 			else
 			{
 				int nParameterEdge = factorFunction.getEdgeByIndex(N_PARAMETER_INDEX);
-				_NParameterVariable = (SDiscreteVariable)((siblings.get(nParameterEdge)).getSolver());
+				_NParameterVariable = (GibbsDiscrete)((siblings.get(nParameterEdge)).getSolver());
 			}
 			
 			if (!factorFunction.isConstantIndex(P_PARAMETER_INDEX))
@@ -175,7 +175,7 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 			else
 			{
 				int outputEdge = factorFunction.getEdgeByIndex(OUTPUT_INDEX);
-				_outputVariable = (SDiscreteVariable)((siblings.get(outputEdge)).getSolver());
+				_outputVariable = (GibbsDiscrete)((siblings.get(outputEdge)).getSolver());
 			}
 		}
 	}

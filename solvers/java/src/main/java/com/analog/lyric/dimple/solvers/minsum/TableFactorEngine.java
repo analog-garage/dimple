@@ -23,10 +23,10 @@ import com.analog.lyric.dimple.model.factors.Factor;
  */
 public class TableFactorEngine
 {
-	STableFactor _tableFactor;
+	MinSumTableFactor _tableFactor;
 	Factor _factor;
 
-	public TableFactorEngine(STableFactor tableFactor)
+	public TableFactorEngine(MinSumTableFactor tableFactor)
 	{
 		_tableFactor = tableFactor;
 		_factor = _tableFactor.getFactor();

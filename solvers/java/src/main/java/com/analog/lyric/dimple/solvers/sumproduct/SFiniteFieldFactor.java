@@ -1,17 +1,5 @@
-
-package com.analog.lyric.dimple.solvers.sumproduct;
-
-import static java.util.Objects.*;
-
-import com.analog.lyric.collect.ArrayUtil;
-import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.solvers.core.SFactorBase;
-import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
-import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 /*******************************************************************************
-*   Copyright 2013 Analog Devices, Inc.
+*   Copyright 2014 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -26,80 +14,18 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 *   limitations under the License.
 ********************************************************************************/
 
-public abstract class SFiniteFieldFactor extends SFactorBase
-{
+package com.analog.lyric.dimple.solvers.sumproduct;
 
-	protected double [][] _inputMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
-	protected double [][] _outputMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
-	
+import com.analog.lyric.dimple.model.factors.Factor;
+
+/**
+ * @deprecated Use {@link SumProductFiniteFieldFactor} instead.
+ */
+@Deprecated
+public abstract class SFiniteFieldFactor extends SumProductFiniteFieldFactor
+{
 	public SFiniteFieldFactor(Factor factor)
 	{
 		super(factor);
-	}
-
-	@Override
-	public void createMessages()
-	{
-		final Factor factor = _factor;
-		final int nVars = factor.getSiblingCount();
-		
-	    _inputMsgs = new double[nVars][];
-	    _outputMsgs = new double[nVars][];
-	    
-	    for (int index = 0; index < nVars; index++)
-	    {
-	    	ISolverVariable svar =  requireNonNull(factor.getSibling(index).getSolver());
-	    	Object [] messages = requireNonNull(svar.createMessages(this));
-	    	_outputMsgs[index] = (double[])messages[0];
-	    	_inputMsgs[index] = (double[])messages[1];
-	    }
-	    
-	}
-
-
-	@SuppressWarnings("null")
-	@Override
-	public void resetEdgeMessages(int i)
-	{
-		SDiscreteVariable sv = (SDiscreteVariable)_factor.getSibling(i).getSolver();
-		_inputMsgs[i] = sv.resetInputMessage(_inputMsgs[i]);
-	}
-
-	@Override
-	public Object getInputMsg(int portIndex)
-	{
-		return _inputMsgs[portIndex];
-	}
-
-	@Override
-	public Object getOutputMsg(int portIndex)
-	{
-		return _outputMsgs[portIndex];
-	}
-
-	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum,
-			int otherPortNum)
-	{
-
-		SFiniteFieldFactor sother = (SFiniteFieldFactor)other;
-	    _inputMsgs[thisPortNum] = sother._inputMsgs[otherPortNum];
-	    _outputMsgs[thisPortNum] = sother._outputMsgs[otherPortNum];
-	}
-
-	/*---------------
-	 * SNode methods
-	 */
-	
-	@Override
-	public DiscreteMessage cloneMessage(int edge)
-	{
-		return new DiscreteWeightMessage(_outputMsgs[edge]);
-	}
-	
-	@Override
-	public boolean supportsMessageEvents()
-	{
-		return true;
 	}
 }

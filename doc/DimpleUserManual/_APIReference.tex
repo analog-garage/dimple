@@ -1,14 +1,13 @@
 \section{API Reference}
 
 \ifmatlab
-The following section describes the functions, classes, properties, and methods that comprise the Dimple API for MATLAB. 
+The following section describes the functions, classes, properties, options and methods that comprise the Dimple API for MATLAB. In some cases, API documentation may also be obtained using either the MATLAB 'help' or 'doc' command with the name of the element of interest.
 \fi
 
-
 \ifjava
-The following section describes the classes, properties, and methods that comprise the Dimple API for Java. 
+The following section describes the classes, properties, options and methods that comprise the Dimple API for Java. Standard HTML-based Java API documentation is also available in the doc/javadoc/ subdirectory of the install kit and from the \href{http://dimple.probprog.org/documentation}{dimple.probprog.org website} and will often provide more detailed information.
 
-The Java language does not provide a mechanism for creating getters and setters for properties.  When this document refers to a "property" Foo, it implies there is a setter and getter of the form:
+Note that in order to maintain compatibility with the MATLAB version of this document, the term "property" is used to refer to elements of the API even though the Java language does not support the concept of implicit getter/setter method calls using field access syntax. When this document refers to a "property" Foo with a given Type, it implies there is a setter and getter method of the form:
 
 \begin{itemize}
 \item getter - Type getFoo();
@@ -19,6 +18,7 @@ The Java language does not provide a mechanism for creating getters and setters 
 \input{_APIReference.FactorGraph}
 \input{_APIReference.Variables}
 \input{_APIReference.Factors}
+\input{_APIReference.Options}
 \input{_APIReference.Schedulers}
 \input{_APIReference.Solvers}
 \input{_APIReference.StreamingData}

@@ -48,8 +48,9 @@ function testBasic()
     b.Input = com.analog.lyric.dimple.factorfunctions.Normal(5,1);
 
     %Optionally use tempering
-    %fg.Solver.setInitialTemperature(1);
-    %fg.Solver.setTemperingHalfLifeInIterations(1);
+    %fg.setOption('ParticleBPOptions.enableAnnealing', true);
+    %fg.setOption('ParticleBPOptions.initialTemperature', 1.0);
+    %fg.setOption('ParticleBPOptions.annealingHalfLife', 1.0);
 
     %Solve
     fg.initialize();

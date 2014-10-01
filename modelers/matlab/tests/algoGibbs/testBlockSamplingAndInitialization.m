@@ -14,12 +14,12 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function testMultinomialBlockSampling()
+function testBlockSamplingAndInitialization()
 
 debugPrint = false;
 repeatable = true;
 
-dtrace(debugPrint, '++testMultinomialBlockSampling');
+dtrace(debugPrint, '++testBlockSamplingAndInitialization');
 
 if (repeatable)
     seed = 2;
@@ -72,7 +72,7 @@ testMultinomialToCategorical(debugPrint, repeatable);
 testBinomialInitialization(debugPrint, repeatable);
 testDirichletInitialization(debugPrint, repeatable);
 
-dtrace(debugPrint, '--testMultinomialBlockSampling');
+dtrace(debugPrint, '--testBlockSamplingAndInitialization');
 
 end
 

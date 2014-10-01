@@ -43,7 +43,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 	 */
 	private final FactorUpdatePlan _updatePlan;
 
-	public TableFactorEngineOptimized(STableFactor tableFactor, FactorUpdatePlan updatePlan)
+	public TableFactorEngineOptimized(MinSumTableFactor tableFactor, FactorUpdatePlan updatePlan)
 	{
 		super(tableFactor);
 		_updatePlan = updatePlan;

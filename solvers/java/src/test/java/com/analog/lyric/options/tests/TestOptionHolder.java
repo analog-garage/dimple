@@ -56,6 +56,7 @@ public class TestOptionHolder
 	{
 		IOptionHolder holder = new StatelessOptionHolder(){};
 		assertInvariants(holder);
+		assertFalse(holder.supportsLocalOptions());
 		
 		assertNull(holder.getOptionParent());
 		holder.clearLocalOptions(); // doesn't do anything
@@ -66,6 +67,7 @@ public class TestOptionHolder
 		
 		holder = new LocalOptionHolder();
 		assertInvariants(holder);
+		assertTrue(holder.supportsLocalOptions());
 		assertNull(holder.getOptionParent());
 		holder.unsetOption(K);
 

@@ -19,8 +19,7 @@ package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
 
-
-
+@SuppressWarnings("deprecation") // TODO remove when SFiniteFieldFactor removed
 public class CustomFiniteFieldAdd extends SFiniteFieldFactor
 {
 	

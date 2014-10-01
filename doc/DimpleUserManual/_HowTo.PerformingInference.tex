@@ -65,8 +65,10 @@ The solver name is case insensitive.  The current set of valid solver names are:
 \ifjava
 
 \begin{lstlisting}
-myGraph.setSolverFactory(new GibbsSolver());
+GibbsSolverGraph solverGraph = myGraph.setSolverFactory(new GibbsSolver());
 \end{lstlisting}
+
+Note that is often useful to save a reference to the created solver graph object returned by this method because it typically provides additional solver specific methods. The solver graph can also be obtained from the getSolver() method, but that requires an explicit downcast.
 
 The currently supported set of solvers is:\footnote{Dimple also supports and LP solver, but this solver is only accessible via the MATLAB API.}
 
@@ -566,9 +568,16 @@ myGraph.solve();
 
 The solve method performs all necessary computation, leaving the results available to be subsequently accessed.  The behavior of the solve method is determined by the chosen schedule as well as by any solver-specific configuration parameters.
 
-For example, for all of the BP solvers, the number of iterations can be set.  By default, the number of iterations is 1, but for a loopy factor graph, generally multiple iterations should be performed.  To set the number of iterations prior to solving, the NumIterations property of the graph may be used:
+For example, for all of the BP solvers, the number of iterations can be set.  By default, the number of iterations is 1, but for a loopy factor graph, generally multiple iterations should be performed.  To set the number of iterations prior to solving, the SolverOptions.iterations option may be set on the graph:
 
 \ifmatlab
+
+\begin{lstlisting}
+myGraph.setOption('SolverOptions.iterations', 10);
+myGraph.solve();
+\end{lstlisting}
+
+As a shortcut, the NumIterations property of the graph may be used to set the option:
 
 \begin{lstlisting}
 myGraph.NumIterations = 10;
@@ -580,32 +589,38 @@ myGraph.solve();
 \ifjava
 
 \begin{lstlisting}
-myGraph.getSolver().setNumIterations(10);
+myGraph.setOption(SolverOptions.iterations, 10);
 myGraph.solve();
 \end{lstlisting}
 
 
 \fi
 
-For the Gibbs solver, the NumIterations property isn't used, and instead other solver specific properties may be used instead.  For example, to set the number of Gibbs samples to run before stopping (assuming the solver has already been set to 'Gibbs'):
+For the Gibbs solver, the SolverOptions.iterations option isn't used and will be ignored if set; other options specific to this solver should be used instead.  For example, to set the number of Gibbs samples to run before stopping (assuming the solver has been set to 'Gibbs'):
 
 \ifmatlab
 \begin{lstlisting}
-myGraph.Solver.setNumSamples(1000);
+myGraph.setOption('GibbsOptions.numSamples', 1000);
 myGraph.solve();
 \end{lstlisting}
 \fi
 
 \ifjava
 \begin{lstlisting}
-myGraph.getSolver().setNumSamples(1000);
+myGraph.setOption(GibbsOptions.numSamples, 1000);
 myGraph.solve();
 \end{lstlisting}
 \fi
 
-Notice that while NumIterations is a property of a factor graph (even though it isn't used by the Gibbs solver), other solver-specific parameters are generally controlled by calling methods on the solver object.  The solver for a given factor graph is obtained via the Solver property, and solver-specific methods can be called on that.
+Note that in most cases solver options can be set directly on the factor graph and the values will only be used if the applicable solver is in use for that graph. Option values will usually not take effect until the solver objects have been initialized, but this is done automatically when the solve() method is run. If you need to interact directly with the solver representation of the factor graph, you can access it using
+the \ifmatlab Solver property \fi \ifjava getSolver() method \fi. \ifjava  Note that if the solver method is not part of the ISolverFactorGraph interface, you will need to cast the return value to the appropriate sovler class (e.g. GibbsSolverGraph) or you can simply save the return value from the setSolverFactory method:
 
-In general, each solver has a series of custom methods that can be used to customize the behavior of the solver.  A complete list of these can be found in section~\ref{sec:SolversAPI}.
+\begin{lstlisting}
+GibbsSolverGraph mySGraph = myGraph.setSolverFactory(new GibbsSolver());
+\end{lstlisting}
+\fi
+
+In general, each solver has a series of custom options and methods that can be used to configure the behavior of the solver and query its state.  A complete list of these can be found in section~\ref{sec:SolversAPI}.
 
 In some cases, it is useful to observe the intermediate behavior of the solver before it has completed.  For the BP solvers, this can be done by using the solver-specific iterate method instead of the solve method.  When called without any arguments, this results in running one iteration.  An optional argument allows specifying the number of iterations to run.  Successive calls to iterate do not reset the state of the solver, allowing it to be called multiple times in succession.  However, before running iterate for the first time, the initialize method must be called in order to reset the state before beginning.  For example, here we run one iteration at a time, displaying the belief of a particular variable after each iteration:
 
@@ -627,7 +642,7 @@ end
 myGraph.initialize();
 for (int i=0; i <  numberOfIterations; i++)\
 {
-	myGraph.Solver.iterate();
+	myGraph.getSolver().iterate();
 	System.out.println(Arrays.toString(someVariable.getBelief()));
 }
 \end{lstlisting}
@@ -655,17 +670,17 @@ For the Gibbs solver, a similar method allows running one or a specified number 
 
 \para{Multithreading}
 
-Some solvers support multithreading.  The following method can be used to turn on multithreading:
+Some solvers support multithreading.  The following option can be used to turn on multithreading:
 
 \ifmatlab
 \begin{lstlisting}
-fg.Solver.useMultithreading(true);
+fg.setOption('SolverOptions.enableMultithreading', true);
 \end{lstlisting}
 \fi
 
 \ifjava
 \begin{lstlisting}
-fg.getSolver().useMultithreading(true);
+fg.setOption(SolverOptions.enableMultithreading, true);
 \end{lstlisting}
 \fi
 
@@ -722,7 +737,7 @@ v = myVariable.getValue();
 \end{lstlisting}
 \fi
 
-When using the Gibbs solver, there are additional inference results that may be useful.  For example, for a given variable, you can request the best sample value that has been seen during inference.
+When using the Gibbs solver, there are additional inference results that may be useful.  For example, for a given real variable, you can request the best sample value that has been seen during inference.
 
 \ifmatlab
 \begin{lstlisting}
@@ -732,7 +747,7 @@ bestValue = myVariable.Solver.getBestSample();
 
 \ifjava
 \begin{lstlisting}
-double bestValue = myVariable.getSolver().getBestSample();
+double bestValue = ((GibbsReal)myVariable.getSolver()).getBestSample();
 \end{lstlisting}
 \fi
 
@@ -752,7 +767,7 @@ allSamples = myVariable.Solver.getAllSamples();
 \begin{lstlisting}
 myVariable.saveAllSamples();
 myGraph.solve();
-double [] allSamples = myVariable.getSolver().getAllSamples();
+double [] allSamples = ((GibbsReal)myVariable.getSolver()).getAllSamples();
 \end{lstlisting}
 \fi
 

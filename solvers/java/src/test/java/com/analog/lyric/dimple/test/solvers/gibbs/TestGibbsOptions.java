@@ -28,9 +28,9 @@ import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
-import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
-import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
-import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsRealJoint;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
 /**
@@ -51,9 +51,9 @@ public class TestGibbsOptions extends DimpleTestBase
 		assertEquals(0, GibbsOptions.burnInScans.defaultIntValue());
 		assertFalse(GibbsOptions.saveAllSamples.defaultBooleanValue());
 		assertFalse(GibbsOptions.saveAllScores.defaultBooleanValue());
-		assertFalse(GibbsOptions.enableTempering.defaultValue());
+		assertFalse(GibbsOptions.enableAnnealing.defaultValue());
 		assertEquals(1.0, GibbsOptions.initialTemperature.defaultDoubleValue(), 1.0);
-		assertEquals(1.0, GibbsOptions.temperingHalfLife.defaultDoubleValue(), 1.0);
+		assertEquals(1.0, GibbsOptions.annealingHalfLife.defaultDoubleValue(), 1.0);
 		
 		// Build test graph
 		FactorGraph fg = new FactorGraph();
@@ -70,12 +70,12 @@ public class TestGibbsOptions extends DimpleTestBase
 		
 		// Test default initialization
 		GibbsSolverGraph sfg = requireNonNull(fg.setSolverFactory(new GibbsSolver()));
-		SDiscreteVariable sb1 = (SDiscreteVariable)sfg.getSolverVariable(b1);
-		SDiscreteVariable sb2 = (SDiscreteVariable)sfg.getSolverVariable(b2);
-		SRealVariable sr1 = (SRealVariable)sfg.getSolverVariable(r1);
-		SRealVariable sr2 = (SRealVariable)sfg.getSolverVariable(r2);
-		SRealJointVariable sj1 = (SRealJointVariable)sfg.getSolverVariable(j1);
-		SRealJointVariable sj2 = (SRealJointVariable)sfg.getSolverVariable(j2);
+		GibbsDiscrete sb1 = (GibbsDiscrete)sfg.getSolverVariable(b1);
+		GibbsDiscrete sb2 = (GibbsDiscrete)sfg.getSolverVariable(b2);
+		GibbsReal sr1 = (GibbsReal)sfg.getSolverVariable(r1);
+		GibbsReal sr2 = (GibbsReal)sfg.getSolverVariable(r2);
+		GibbsRealJoint sj1 = (GibbsRealJoint)sfg.getSolverVariable(j1);
+		GibbsRealJoint sj2 = (GibbsRealJoint)sfg.getSolverVariable(j2);
 		
 		assertEquals(GibbsOptions.numSamples.defaultIntValue(), sfg.getNumSamples());
 		assertEquals(GibbsOptions.numRandomRestarts.defaultIntValue(), sfg.getNumRestarts());
@@ -88,17 +88,17 @@ public class TestGibbsOptions extends DimpleTestBase
 		assertEquals(nVars * GibbsOptions.burnInScans.defaultIntValue(), sfg.getBurnInUpdates());
 		assertFalse(sfg.isTemperingEnabled());
 		assertEquals(GibbsOptions.initialTemperature.defaultDoubleValue(), sfg.getInitialTemperature(), 0.0);
-		assertEquals(GibbsOptions.temperingHalfLife.defaultDoubleValue(), sfg.getTemperingHalfLifeInSamples(), 1e-9);
+		assertEquals(GibbsOptions.annealingHalfLife.defaultDoubleValue(), sfg.getTemperingHalfLifeInSamples(), 1e-9);
 		
 		// Test initialization from options
 		fg.setSolverFactory(null);
 		sfg = requireNonNull(fg.setSolverFactory(new GibbsSolver()));
-		sb1 = requireNonNull((SDiscreteVariable)sfg.getSolverVariable(b1));
-		sb2 = requireNonNull((SDiscreteVariable)sfg.getSolverVariable(b2));
-		sr1 = requireNonNull((SRealVariable)sfg.getSolverVariable(r1));
-		sr2 = requireNonNull((SRealVariable)sfg.getSolverVariable(r2));
-		sj1 = requireNonNull((SRealJointVariable)sfg.getSolverVariable(j1));
-		sj2 = requireNonNull((SRealJointVariable)sfg.getSolverVariable(j2));
+		sb1 = requireNonNull((GibbsDiscrete)sfg.getSolverVariable(b1));
+		sb2 = requireNonNull((GibbsDiscrete)sfg.getSolverVariable(b2));
+		sr1 = requireNonNull((GibbsReal)sfg.getSolverVariable(r1));
+		sr2 = requireNonNull((GibbsReal)sfg.getSolverVariable(r2));
+		sj1 = requireNonNull((GibbsRealJoint)sfg.getSolverVariable(j1));
+		sj2 = requireNonNull((GibbsRealJoint)sfg.getSolverVariable(j2));
 		fg.setOption(GibbsOptions.numSamples, 3);
 		fg.setOption(GibbsOptions.numRandomRestarts, 2);
 		fg.setOption(GibbsOptions.scansPerSample, 2);
@@ -107,9 +107,9 @@ public class TestGibbsOptions extends DimpleTestBase
 		b2.setOption(GibbsOptions.saveAllSamples, false);
 		r2.setOption(GibbsOptions.saveAllSamples, false);
 		j2.setOption(GibbsOptions.saveAllSamples, false);
-		fg.setOption(GibbsOptions.enableTempering, true);
+		fg.setOption(GibbsOptions.enableAnnealing, true);
 		fg.setOption(GibbsOptions.initialTemperature, Math.PI);
-		fg.setOption(GibbsOptions.temperingHalfLife, 3.1);
+		fg.setOption(GibbsOptions.annealingHalfLife, 3.1);
 		
 		// These do not take effect until after initialization
 		assertEquals(GibbsOptions.numSamples.defaultIntValue(), sfg.getNumSamples());
@@ -185,22 +185,22 @@ public class TestGibbsOptions extends DimpleTestBase
 		
 		sfg.disableTempering();
 		assertFalse(sfg.isTemperingEnabled());
-		assertEquals(false, sfg.getLocalOption(GibbsOptions.enableTempering));
+		assertEquals(false, sfg.getLocalOption(GibbsOptions.enableAnnealing));
 		sfg.enableTempering();
 		assertTrue(sfg.isTemperingEnabled());
-		assertEquals(true, sfg.getLocalOption(GibbsOptions.enableTempering));
+		assertEquals(true, sfg.getLocalOption(GibbsOptions.enableAnnealing));
 		
 		sfg.disableTempering();
-		sfg.unsetOption(GibbsOptions.enableTempering);
+		sfg.unsetOption(GibbsOptions.enableAnnealing);
 		sfg.setInitialTemperature(2.345);
 		assertEquals((Double)2.345, sfg.getLocalOption(GibbsOptions.initialTemperature));
 		assertTrue(sfg.isTemperingEnabled()); // tempering implicitly enabled when setting initial temperature
 		
 		sfg.disableTempering();
-		sfg.unsetOption(GibbsOptions.enableTempering);
+		sfg.unsetOption(GibbsOptions.enableAnnealing);
 		sfg.setTemperingHalfLifeInSamples(4);
 		assertEquals(4, sfg.getTemperingHalfLifeInSamples(), 1e-9);
-		assertEquals(4.0, sfg.getLocalOption(GibbsOptions.temperingHalfLife), 0.0);
+		assertEquals(4.0, sfg.getLocalOption(GibbsOptions.annealingHalfLife), 0.0);
 		assertTrue(sfg.isTemperingEnabled()); // tempering implicitly enabled when setting tempering half life
 
 	}

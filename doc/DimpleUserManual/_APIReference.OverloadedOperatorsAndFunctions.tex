@@ -14,13 +14,13 @@ xor() & Xor & B & B & B & \checkmark & Logical XOR \\
 $\sim$ & Not & B & B & - & \checkmark & Logical NOT \\
 $+$ & Sum & D,R\footnote{\label{ftn:outReal}If either input is Real, then the output is Real} & D,R & D,R & \checkmark & Plus \\*
  & ComplexSum & C & C,R & C,R & \checkmark & Complex plus \\
- & RealJointSum & RJ & RJ & RJ &  & RealJoint plus \\
+ & RealJointSum & RJ & RJ & RJ & - & RealJoint plus \\
 $-$ & Subtract & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Minus \\*
  & ComplexSubtract & C & C,R & C,R & \checkmark & Complex minus \\*
- & RealJointSubtract & RJ & RJ & RJ &  & RealJoint minus \\*
+ & RealJointSubtract & RJ & RJ & RJ & - & RealJoint minus \\*
  & Negate & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & - & \checkmark & Unary minus \\*
  & ComplexNegate & C & C, R & - & \checkmark & Unary complex minus \\
- & RealJointNegate & RJ & RJ & - &  & Unary RealJoint minus \\
+ & RealJointNegate & RJ & RJ & - & - & Unary RealJoint minus \\
 $*$ & Product & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\footnote{\label{ftn:inScalar}One of the inputs may be a vector as long as the other is a scalar.} & Scalar multiply \\*
  & ComplexProduct & C & C,R & C,R & \checkmark\textsuperscript{\ref{ftn:inScalar}} & Complex scalar multiply \\*
  & VectorInnerProduct & R & D,R,RJ & D,R,RJ & - & Vector inner product\footnote{If both inputs are vectors of the same dimension, then the VectorInnerProduct factor will be used. Each vector may be an array of scalar variables or a RealJoint variable.} \\*
@@ -33,8 +33,10 @@ $/$ & Divide & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\f
  & ComplexDivide & C & C,R & C,R & \checkmark\textsuperscript{\ref{ftn:divScalar}} & Complex scalar divide \\
 $./$ & Divide & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise divide \\*
  & ComplexDivide & C & C,R & C,R & \checkmark & Complex pointwise divide \\
-$\wedge$ & Power\newline Square\footnote{\label{ftn:Square}If the power is the constant 2, the Square factor is used instead of the Power factor.} & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\footnote{The base may be a vector as long as the exponent is a scalar.} & Scalar power \\
-$.\wedge$ & Power\newline Square\textsuperscript{\ref{ftn:Square}} & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise power \\
+$\wedge$ & Power & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\footnote{\label{ftn:powerScalar}The base may be a vector as long as the exponent is a scalar.} & Scalar power \\*
+ & Square\footnote{\label{ftn:Square}If the power is the constant 2, the Square factor is used instead of the Power factor.} & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\textsuperscript{\ref{ftn:powerScalar}} & Scalar square \\
+$.\wedge$ & Power & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise power \\*
+ & Square\textsuperscript{\ref{ftn:Square}} & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise square \\
 $'$ & ComplexConjugate & C & C & - & \checkmark & Complex conjugate \\
 $<$ & LessThan & B & D,R & D,R & \checkmark & Less than \\
 $>$ & GreaterThan & B & D,R & D,R & \checkmark & Greater than \\
@@ -43,7 +45,8 @@ $>=$ & LessThan\footnote{Uses LessThan factor, reversing the order.} & B & D,R &
 Equals() & Equals & B & B,D,R & B,D,R\footnote{\label{ftn:equals}This function is not limited to two inputs, but can take an arbitrary number of inputs} & \checkmark & Equals\footnote{Equivalent to the $==$ operator, but the $==$ operator is not overloaded for this purpose so that it can instead be used to determine whether or not two variables reference the same Dimple variable.} \\
 NotEquals() & NotEquals & B & B,D,R & B,D,R$^{\ref{ftn:equals}}$ & \checkmark & Not equals\footnote{Equivalent to the $\sim=$ operator, but the $\sim=$ operator is not overloaded for this purpose so that it can instead be used to determine whether or not two variables reference the same Dimple variable.} \\
 mod() & - & D  & D & D & \checkmark & Modulo function\footnote{Currently, the mod() operator supports discrete variables only, and it uses the MATLAB definition of mod on negative numbers.  This may be subject to change in future versions.} \\
-abs() & Abs & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & - & \checkmark & Absolute value \\
+abs() & Abs & D,R & D,R & - & \checkmark & Absolute value \\*
+ & ComplexAbs & R & C & - & \checkmark & Complex absolute value \\
 sqrt() & Sqrt & R & R & - & \checkmark & Square root \\
 log() & Log & R & R & - & \checkmark & Natural log \\
 exp() & Exp & R & R & - & \checkmark & Exponential function \\*

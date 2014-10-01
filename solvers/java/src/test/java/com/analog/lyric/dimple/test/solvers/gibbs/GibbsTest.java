@@ -26,8 +26,8 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
-import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
-import com.analog.lyric.dimple.solvers.gibbs.STableFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsTableFactor;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
 
@@ -62,10 +62,10 @@ public class GibbsTest extends DimpleTestBase
 		solver.saveAllSamples();
 		graph.solve();
 
-		SDiscreteVariable sa = (SDiscreteVariable)a.getSolver();
-		SDiscreteVariable sb = (SDiscreteVariable)b.getSolver();
-		STableFactor sA = (STableFactor)pA.getSolver();
-		STableFactor sBA = (STableFactor)pBA.getSolver();
+		GibbsDiscrete sa = (GibbsDiscrete)a.getSolver();
+		GibbsDiscrete sb = (GibbsDiscrete)b.getSolver();
+		GibbsTableFactor sA = (GibbsTableFactor)pA.getSolver();
+		GibbsTableFactor sBA = (GibbsTableFactor)pBA.getSolver();
 
 		Object[] aSamples = sa.getAllSamples();
 		Object[] bSamples = sb.getAllSamples();

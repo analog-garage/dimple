@@ -28,7 +28,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
-import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
 @SuppressWarnings("deprecation")
@@ -86,8 +86,8 @@ public class GibbsTestParameterizedNormal extends DimpleTestBase
 		graph.addFactor(new Normal(), vars);
 
 
-		SRealVariable svModelMean = requireNonNull((SRealVariable)vModelMean.getSolver());
-		SRealVariable svModelInverseVariance = requireNonNull((SRealVariable)vModelInverseVariance.getSolver());
+		GibbsReal svModelMean = requireNonNull((GibbsReal)vModelMean.getSolver());
+		GibbsReal svModelInverseVariance = requireNonNull((GibbsReal)vModelInverseVariance.getSolver());
 
 
 
