@@ -27,7 +27,6 @@ import com.analog.lyric.dimple.schedulers.ScheduleVisitorFactorFilter;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.options.IOptionKey;
-import com.analog.lyric.options.OptionKey;
 import com.analog.lyric.util.misc.Internal;
 
 /**
@@ -57,7 +56,7 @@ public final class UpdateCostOptimizer
 		_sFactorGraphAdapter = sFactorGraphAdapter;
 	}
 	
-	private static class UpdateCollector implements IScheduledActivity
+	private class UpdateCollector implements IScheduledActivity
 	{
 		final Map<IFactorTable, FactorTableUpdateSettings> _settingsByFactorTable;
 		
@@ -72,7 +71,7 @@ public final class UpdateCostOptimizer
 			// Edge updates are ignored.
 		}
 
-		private <T extends Serializable> T valueOrDefault(@Nullable T t, OptionKey<T> key)
+		private <T extends Serializable> T valueOrDefault(@Nullable T t, IOptionKey<T> key)
 		{
 			return t != null ? t : key.defaultValue();
 		}
@@ -111,10 +110,18 @@ public final class UpdateCostOptimizer
 					}
 					
 					OptionGetter optionGetter = new OptionGetter();
-					UpdateApproach approach = optionGetter.getOption(UpdateOptions.updateApproach);
-					Double sparseThreshold = optionGetter.getOption(UpdateOptions.optimizedUpdateSparseThreshold);
-					Double executionTimeScalingFactor = optionGetter.getOption(UpdateOptions.automaticExecutionTimeScalingFactor);
-					Double memoryAllocationScalingFactor = optionGetter.getOption(UpdateOptions.automaticMemoryAllocationScalingFactor);
+					IOptionKey<UpdateApproach> updateApproachKey = _sFactorGraphAdapter.getUpdateApproachOptionKey();
+					UpdateApproach approach = optionGetter.getOption(updateApproachKey);
+					
+					IOptionKey<Double> optimizedUpdateSparseThresholdKey = _sFactorGraphAdapter.getOptimizedUpdateSparseThresholdKey();
+					Double sparseThreshold = optionGetter.getOption(optimizedUpdateSparseThresholdKey);
+					
+					IOptionKey<Double> automaticExecutionTimeScalingFactorKey = _sFactorGraphAdapter.getAutomaticExecutionTimeScalingFactorKey();
+					Double executionTimeScalingFactor = optionGetter.getOption(automaticExecutionTimeScalingFactorKey);
+					
+					IOptionKey<Double> automaticMemoryAllocationScalingFactorKey = _sFactorGraphAdapter.getAutomaticMemoryAllocationScalingFactorKey();
+					Double memoryAllocationScalingFactor = optionGetter.getOption(automaticMemoryAllocationScalingFactorKey);
+					
 					final int minLevel = optionGetter.getMinLevel();
 
 					boolean updateFactorTableSettings = false;
@@ -136,19 +143,21 @@ public final class UpdateCostOptimizer
 						// and they have different values, then issue a warning, and ignore the
 						// "newer" values.
 						final boolean different =
-							factorTableUpdateSettings.getApproach() != valueOrDefault(approach, UpdateOptions.updateApproach)
+							factorTableUpdateSettings.getApproach() != valueOrDefault(approach, updateApproachKey)
 								|| factorTableUpdateSettings.getSparseThreshold() != valueOrDefault(sparseThreshold,
-									UpdateOptions.optimizedUpdateSparseThreshold)
+									optimizedUpdateSparseThresholdKey)
 								|| factorTableUpdateSettings.getExecutionTimeScalingFactor() != valueOrDefault(
-									executionTimeScalingFactor, UpdateOptions.automaticExecutionTimeScalingFactor)
+									executionTimeScalingFactor, automaticExecutionTimeScalingFactorKey)
 								|| factorTableUpdateSettings.getMemoryAllocationScalingFactor() != valueOrDefault(
 									memoryAllocationScalingFactor,
-									UpdateOptions.automaticMemoryAllocationScalingFactor);
+									automaticMemoryAllocationScalingFactorKey);
 						if (different)
 						{
-							// TODO: Make this warning good and helpful.
-							DimpleEnvironment
-								.logWarning("Different options values set on factors that share a factor table at the same specificity level.");
+							DimpleEnvironment.logWarning(
+									"Options that influence the factor update algorithm and the optimized update " +
+									"algorithm are set inconsistently on multiple factors that share a factor table. " +
+									"Options from factor '%s' are being ignored.",
+									factor.getLabel());
 						}
 					}
 					// Implicitly ignore the case where the factor options are specified at a
@@ -159,13 +168,13 @@ public final class UpdateCostOptimizer
 					if (updateFactorTableSettings)
 					{
 						factorTableUpdateSettings.setLevel(minLevel);
-						factorTableUpdateSettings.setApproach(valueOrDefault(approach, UpdateOptions.updateApproach));
+						factorTableUpdateSettings.setApproach(valueOrDefault(approach, updateApproachKey));
 						factorTableUpdateSettings.setSparseThreshold(valueOrDefault(sparseThreshold,
-							UpdateOptions.optimizedUpdateSparseThreshold));
+							optimizedUpdateSparseThresholdKey));
 						factorTableUpdateSettings.setExecutionTimeScalingFactor(valueOrDefault(executionTimeScalingFactor,
-							UpdateOptions.automaticExecutionTimeScalingFactor));
+							automaticExecutionTimeScalingFactorKey));
 						factorTableUpdateSettings.setMemoryAllocationScalingFactor(valueOrDefault(memoryAllocationScalingFactor,
-							UpdateOptions.automaticMemoryAllocationScalingFactor));
+							automaticMemoryAllocationScalingFactorKey));
 					}
 				}
 			}
@@ -188,8 +197,8 @@ public final class UpdateCostOptimizer
 			{
 				UpdateApproach updateApproach = factorTableUpdateSettings.getApproach();
 				FactorUpdatePlan updatePlan = null;
-				if (updateApproach == UpdateApproach.UPDATE_APPROACH_OPTIMIZED
-					|| (updateApproach == UpdateApproach.UPDATE_APPROACH_AUTOMATIC &&
+				if (updateApproach == UpdateApproach.OPTIMIZED && factorTable.getDimensions() > 1
+					|| (updateApproach == UpdateApproach.AUTOMATIC &&
 						chooseUpdateApproach(workers, factorTable, factorTableUpdateSettings)))
 				{
 					updatePlan =
@@ -213,25 +222,27 @@ public final class UpdateCostOptimizer
 					factorTableUpdateSettings.getSparseThreshold());
 			Costs normalCosts = _sFactorGraphAdapter.estimateCostOfNormalUpdate(factorTable);
 			// Multiply the execution time costs by the quantity of factors using the table
-			optimizedCosts.put(CostType.ACCESSES,
-				factorTableUpdateSettings.getCount() * optimizedCosts.get(CostType.ACCESSES));
-			normalCosts.put(CostType.ACCESSES, factorTableUpdateSettings.getCount() * normalCosts.get(CostType.ACCESSES));
+			optimizedCosts.put(CostType.EXECUTION_TIME,
+				factorTableUpdateSettings.getCount() * optimizedCosts.get(CostType.EXECUTION_TIME));
+			normalCosts.put(CostType.EXECUTION_TIME, factorTableUpdateSettings.getCount() * normalCosts.get(CostType.EXECUTION_TIME));
 			// For the optimized algorithm only, multiply the allocation costs by the lesser
 			// of the core count or the quantity of factors using the table.
 			int scale = Math.min(workers, factorTableUpdateSettings.getCount());
-			optimizedCosts.put(CostType.ALLOCATED_BYTES, optimizedCosts.get(CostType.ALLOCATED_BYTES) * scale);
+			optimizedCosts.put(CostType.MEMORY, optimizedCosts.get(CostType.MEMORY) * scale);
 			// For both algorithms, divide the execution time costs by the same scaling
 			// factor.
-			optimizedCosts.put(CostType.ACCESSES, optimizedCosts.get(CostType.ACCESSES) / scale);
-			normalCosts.put(CostType.ACCESSES, normalCosts.get(CostType.ACCESSES) / scale);
-			createOptimizedUpdatePlan =
+			optimizedCosts.put(CostType.EXECUTION_TIME, optimizedCosts.get(CostType.EXECUTION_TIME) / scale);
+			normalCosts.put(CostType.EXECUTION_TIME, normalCosts.get(CostType.EXECUTION_TIME) / scale);
+			final double optimizedCost =
 				computeCost(optimizedCosts, factorTableUpdateSettings.getExecutionTimeScalingFactor(),
-					factorTableUpdateSettings.getMemoryAllocationScalingFactor()) <= computeCost(normalCosts,
-					factorTableUpdateSettings.getExecutionTimeScalingFactor(),
 					factorTableUpdateSettings.getMemoryAllocationScalingFactor());
+			final double normalCost =
+				computeCost(normalCosts, factorTableUpdateSettings.getExecutionTimeScalingFactor(),
+					factorTableUpdateSettings.getMemoryAllocationScalingFactor());
+			createOptimizedUpdatePlan = optimizedCost <= normalCost;
 		}
 		factorTableUpdateSettings.setAutomaticUpdateApproach(createOptimizedUpdatePlan ?
-			UpdateApproach.UPDATE_APPROACH_OPTIMIZED : UpdateApproach.UPDATE_APPROACH_NORMAL);
+			UpdateApproach.OPTIMIZED : UpdateApproach.NORMAL);
 		return createOptimizedUpdatePlan;
 	}
 
@@ -239,9 +250,9 @@ public final class UpdateCostOptimizer
 		final double executionTimeScalingFactor,
 		final double memoryAllocationScalingFactor)
 	{
-		final double accesses = costs.get(CostType.ACCESSES);
-		final double allocations = costs.get(CostType.ALLOCATED_BYTES);
-		final double j = accesses * executionTimeScalingFactor + allocations * memoryAllocationScalingFactor;
+		final double executionTime = costs.get(CostType.EXECUTION_TIME);
+		final double memory = costs.get(CostType.MEMORY);
+		final double j = executionTime * executionTimeScalingFactor + memory * memoryAllocationScalingFactor;
 		return j;
 	}
 }

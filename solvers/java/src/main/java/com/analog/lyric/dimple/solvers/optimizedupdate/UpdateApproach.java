@@ -27,16 +27,16 @@ public enum UpdateApproach
 	/**
 	 * Use the normal update algorithm.
 	 */
-	UPDATE_APPROACH_NORMAL,
+	NORMAL,
 
 	/**
 	 * Use the optimized update algorithm.
 	 */
-	UPDATE_APPROACH_OPTIMIZED,
+	OPTIMIZED,
 
 	/**
 	 * Choose which algorithm to use by comparing estimates of their memory usage and execution
 	 * time.
 	 */
-	UPDATE_APPROACH_AUTOMATIC;
+	AUTOMATIC;
 }

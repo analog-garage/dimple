@@ -107,22 +107,23 @@ public final class FactorUpdatePlan
 	 * Estimates the costs of applying the optimized factor update algorithm to a factor.
 	 * <p>
 	 * The estimation assumes that the content of sparse tables is distributed randomly throughout
-	 * the table, rather than examining the actual locations of the data.
+	 * the table, rather than examining the actual locations of the data. Using this assumption,
+	 * the density of each auxiliary table is computed without actually populating their data.
 	 * 
 	 * @param factorTable A factor table that describes the factor.
 	 * @return The estimated costs.
 	 * @since 0.07
 	 */
-	public static Costs estimateCosts(IFactorTable factorTable,
+	public static Costs estimateOptimizedUpdateCosts(IFactorTable factorTable,
 		final ISFactorGraphToOptimizedUpdateAdapter tableWrapperHelper,
 		final double sparseThrehsold)
 	{
-		final Costs result = new Costs();
+		final Costs costs = new Costs();
 		ITreeBuilder<CostEstimationTableWrapper> builder =
-			new EstimationTreeBuilder(result, tableWrapperHelper, sparseThrehsold);
+			new EstimationTreeBuilder(costs, tableWrapperHelper, sparseThrehsold);
 		TreeWalker<CostEstimationTableWrapper> treeWalker = new TreeWalker<CostEstimationTableWrapper>(factorTable);
 		treeWalker.accept(builder);
-		return result;
+		return costs;
 	}
 
 	private static class EstimationTreeBuilder implements ITreeBuilder<CostEstimationTableWrapper>

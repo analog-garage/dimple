@@ -66,6 +66,7 @@ import com.analog.lyric.dimple.solvers.optimizedupdate.ISFactorGraphToOptimizedU
 import com.analog.lyric.dimple.solvers.optimizedupdate.IUpdateStep;
 import com.analog.lyric.dimple.solvers.optimizedupdate.IUpdateStepEstimator;
 import com.analog.lyric.dimple.solvers.optimizedupdate.TableWrapper;
+import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateApproach;
 import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateCostOptimizer;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomComplexGaussianPolynomial;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomFiniteFieldAdd;
@@ -87,6 +88,7 @@ import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultivaria
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomNormalConstantParameters;
 import com.analog.lyric.dimple.solvers.sumproduct.sampledfactor.SampledFactor;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.options.IOptionKey;
 
 public class SumProductSolverGraph extends SFactorGraphBase
 {
@@ -283,8 +285,17 @@ public class SumProductSolverGraph extends SFactorGraphBase
 		return true;
 	}
 
-	private final ISFactorGraphToOptimizedUpdateAdapter _optimizedUpdateAdapter = new ISFactorGraphToOptimizedUpdateAdapter() {
+	private final ISFactorGraphToOptimizedUpdateAdapter _optimizedUpdateAdapter = new SFactorGraphToOptimizedUpdateAdapter(this);
 
+	private static class SFactorGraphToOptimizedUpdateAdapter implements ISFactorGraphToOptimizedUpdateAdapter
+	{
+		final private SumProductSolverGraph _sumProductSolverGraph;
+		
+		SFactorGraphToOptimizedUpdateAdapter(SumProductSolverGraph sumProductSolverGraph)
+		{
+			_sumProductSolverGraph = sumProductSolverGraph;
+		}
+		
 		@Override
 		public IUpdateStepEstimator createSparseOutputStepEstimator(CostEstimationTableWrapper tableWrapper)
 		{
@@ -323,44 +334,38 @@ public class SumProductSolverGraph extends SFactorGraphBase
 		public Costs estimateCostOfNormalUpdate(IFactorTable factorTable)
 		{
 			Costs result = new Costs();
-			int numPorts = factorTable.getDimensions();
-			for (int outPortNum = 0; outPortNum < numPorts; outPortNum++)
-			{
-				result.add(estimateCost_updateEdge(factorTable, outPortNum));
-			}
-			return result;
-		}
-
-		private Costs estimateCost_updateEdge(IFactorTable factorTable, int outPortNum)
-		{
-			long accesses = 0;
-			int nonZeroEntries = factorTable.countNonZeroWeights();
-			int numPorts = factorTable.getDimensions();
-			int outputMsg_length = factorTable.getDomainIndexer().getDomainSize(outPortNum);
-			// 1. fill output message with zero
-			// 2. read each output message entry to compute sum
-			// 3. scale each entry by the sum
-			accesses += 3 * outputMsg_length;
-			// for each entry,
-			// 1. read the value
-			// 2. read the entry indices
-			// 3. read the output index from the entry indices
-			// 4. for each port other than the output port,
-			// 4.1 read the input message
-			// 4.2 read the input message index
-			// 4.3 read the input message entry
-			// 4.4 read the output message entry
-			// 4.5 store the updated output message entry
-			accesses += nonZeroEntries * (3 + (numPorts - 1) * 5);
-			Costs result = new Costs();
-			result.put(CostType.ACCESSES, (double) accesses);
+			final int size = factorTable.countNonZeroWeights();
+			final int dimensions = factorTable.getDimensions();
+			// Coefficients determined experimentally
+			double executionTime = 1.73280131035;
+			executionTime += -46.4751637511 * (size - 254722.59319) / 9956266.39996;
+			executionTime += 342.15344018 * (dimensions * size - 1877809.77842) / 219896210.353;
+			result.put(CostType.EXECUTION_TIME, executionTime);
 			return result;
 		}
 
 		@Override
 		public Costs estimateCostOfOptimizedUpdate(IFactorTable factorTable, final double sparseThreshold)
 		{
-			return FactorUpdatePlan.estimateCosts(factorTable, this, sparseThreshold);
+			final Costs costs = FactorUpdatePlan.estimateOptimizedUpdateCosts(factorTable, this, sparseThreshold);
+			double dmf = costs.get(CostType.DENSE_MARGINALIZATION_SIZE);
+			double smf = costs.get(CostType.SPARSE_MARGINALIZATION_SIZE);
+			double fo = costs.get(CostType.OUTPUT_SIZE);
+			double mem_cost = costs.get(CostType.MEMORY) * 1024.0 * 1024.0 * 1024.0;
+			final double size = factorTable.countNonZeroWeights();
+			// Coefficients determined experimentally
+			double executionTime = 0.08;
+			executionTime += 1.24138327837 * (size - 254722.59319) / 9956266.39996;
+			executionTime += 2.18296909944 * (dmf - 316560.301654) / 39676196.0;
+			executionTime += 0.883232752009 * (smf - 421208.789658) / 19914546.0;
+			executionTime += 1.60951456134 * (fo - 4453.26298626) / 1836974.0;
+			executionTime += 1.08967345943 * (mem_cost - 6742787.05688) / 416754545.21;
+			executionTime += -0.447862077999 * Math.pow((size - 254722.59319) / 9956266.39996, 2.0);
+			executionTime += -0.585003946613 * Math.pow((mem_cost - 6742787.05688) / 416754545.21, 2.0);
+			final Costs result = new Costs();
+			result.put(CostType.MEMORY, costs.get(CostType.MEMORY));
+			result.put(CostType.EXECUTION_TIME, executionTime);
+			return result;
 		}
 
 		@Override
@@ -381,7 +386,7 @@ public class SumProductSolverGraph extends SFactorGraphBase
 		public void
 			putFactorTableUpdateSettings(Map<IFactorTable, FactorTableUpdateSettings> optionsValueByFactorTable)
 		{
-			_factorTableUpdateSettings = optionsValueByFactorTable;
+			_sumProductSolverGraph._factorTableUpdateSettings = optionsValueByFactorTable;
 		}
 
 
@@ -429,7 +434,31 @@ public class SumProductSolverGraph extends SFactorGraphBase
 			return new TableFactorEngineOptimized.DenseMarginalizationStep(tableWrapper, this, inPortNum, dimension,
 				g_factorTable);
 		}
-	};
+
+		@Override
+		public IOptionKey<UpdateApproach> getUpdateApproachOptionKey()
+		{
+			return SumProductOptions.updateApproach;
+		}
+
+		@Override
+		public IOptionKey<Double> getOptimizedUpdateSparseThresholdKey()
+		{
+			return SumProductOptions.optimizedUpdateSparseThreshold;
+		}
+
+		@Override
+		public IOptionKey<Double> getAutomaticExecutionTimeScalingFactorKey()
+		{
+			return SumProductOptions.automaticExecutionTimeScalingFactor;
+		}
+
+		@Override
+		public IOptionKey<Double> getAutomaticMemoryAllocationScalingFactorKey()
+		{
+			return SumProductOptions.automaticMemoryAllocationScalingFactor;
+		}
+	}
 	
 	private @Nullable Map<IFactorTable, FactorTableUpdateSettings> _factorTableUpdateSettings;
 
@@ -645,9 +674,9 @@ public class SumProductSolverGraph extends SFactorGraphBase
 	@Override
 	public void initialize()
 	{
+		super.initialize();
 		UpdateCostOptimizer optimizer = new UpdateCostOptimizer(_optimizedUpdateAdapter);
 		optimizer.optimize(_factorGraph);
-		super.initialize();
 		for (Factor f : getModelObject().getFactors())
 		{
 			ISolverFactor sf = f.getSolver();
@@ -656,6 +685,7 @@ public class SumProductSolverGraph extends SFactorGraphBase
 				SumProductTableFactor tf = (SumProductTableFactor)sf;
 				tf.getFactorTable().getIndicesSparseUnsafe();
 				tf.getFactorTable().getWeightsSparseUnsafe();
+				tf.setupTableFactorEngine();
 			}
 		}
 		

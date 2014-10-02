@@ -48,42 +48,44 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
 	 */
-    protected double [][] _savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
-    protected double [] _dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
-    protected int _k;
-    @Nullable
-    private TableFactorEngine _tableFactorEngine;
-    protected KBestFactorEngine _kbestFactorEngine;
-    protected boolean _kIsSmallerThanDomain;
-    protected boolean _dampingInUse = false;
+	protected double[][] _savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+	protected double[] _dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+	protected @Nullable TableFactorEngine _tableFactorEngine;
+	protected KBestFactorEngine _kbestFactorEngine;
+	protected int _k;
+	protected boolean _kIsSmallerThanDomain;
+	protected boolean _dampingInUse = false;
 
-    /*--------------
-     * Construction
-     */
-    
-    public MinSumTableFactor(Factor factor)
+	/*--------------
+	 * Construction
+	 */
+
+	public MinSumTableFactor(Factor factor)
 	{
-    	super(factor);
-		
+		super(factor);
+
 		if (factor.getFactorFunction().factorTableExists(getFactor()))
 			_kbestFactorEngine = new KBestFactorTableEngine(this);
 		else
 			_kbestFactorEngine = new KBestFactorEngine(this);
 	}
-    
+
 	@Override
 	public void initialize()
 	{
 		super.initialize();
-    	configureDampingFromOptions();
-	    updateK(getOptionOrDefault(MinSumOptions.maxMessageSize));
-	    
-	    FactorUpdatePlan updatePlan = null;
-	    final FactorTableUpdateSettings factorTableUpdateSettings = getFactorTableUpdateSettings();
-	    if (factorTableUpdateSettings != null)
-	    {
-	    	updatePlan = factorTableUpdateSettings.getOptimizedUpdatePlan();
-	    }
+		configureDampingFromOptions();
+		updateK(getOptionOrDefault(MinSumOptions.maxMessageSize));
+	}
+
+	void setupTableFactorEngine()
+	{
+		FactorUpdatePlan updatePlan = null;
+		final FactorTableUpdateSettings factorTableUpdateSettings = getFactorTableUpdateSettings();
+		if (factorTableUpdateSettings != null)
+		{
+			updatePlan = factorTableUpdateSettings.getOptimizedUpdatePlan();
+		}
 		if (updatePlan != null)
 		{
 			_tableFactorEngine = new TableFactorEngineOptimized(this, updatePlan);
@@ -109,17 +111,17 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 		return null;
 	}
 
-    /*---------------------
-     * ISolverNode methods
-     */
-   
+	/*---------------------
+	 * ISolverNode methods
+	 */
+	
 	@Override
 	public void moveMessages(ISolverNode other, int portNum, int otherPort)
 	{
 		super.moveMessages(other,portNum,otherPort);
-	    if (_dampingInUse)
-	    	_savedOutMsgArray[portNum] = ((MinSumTableFactor)other)._savedOutMsgArray[otherPort];
-	    
+		if (_dampingInUse)
+			_savedOutMsgArray[portNum] = ((MinSumTableFactor)other)._savedOutMsgArray[otherPort];
+
 	}
 
 	private TableFactorEngine getTableFactorEngine()
@@ -182,7 +184,7 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 			}
 		}
 	}
-    
+	
 	/*-----------------------
 	 * ISolverFactor methods
 	 */
@@ -203,27 +205,6 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 		table.setRepresentation(FactorTableRepresentation.SPARSE_ENERGY_WITH_INDICES);
 	}
 	
-	/**
-	 * Returns the effective update approach for the factor. If the update approach is set to
-	 * automatic, this value is not valid until the graph is initialized. Note that factors
-	 * with only one edge, and factors that do not update all edges together according to the
-	 * schedule, always employ the normal update approach.
-	 * 
-	 * @since 0.07
-	 */
-	public UpdateApproach getEffectiveUpdateApproach()
-	{
-		final FactorTableUpdateSettings factorTableUpdateSettings = getFactorTableUpdateSettings();
-		if (factorTableUpdateSettings != null && factorTableUpdateSettings.useOptimizedUpdate())
-		{
-			return UpdateApproach.UPDATE_APPROACH_OPTIMIZED;
-		}
-		else
-		{
-			return UpdateApproach.UPDATE_APPROACH_NORMAL;
-		}
-	}
-    
 	/*----------------------
 	 * IKBestFactor methods
 	 */
@@ -322,8 +303,8 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 	}
 
 	/*-------------
-     * New methods
-     */
+	 * New methods
+	 */
 	
 	/**
 	 * @deprecated Use {@link MinSumOptions#damping} or {@link MinSumOptions#nodeSpecificDamping} options instead.
@@ -349,6 +330,37 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 	public double getDamping(int index)
 	{
 		return _dampingParams.length > 0 ? _dampingParams[index] : 0.0;
+	}
+	
+	/**
+	 * Returns the effective update approach for the factor. If the update approach is set to
+	 * automatic, this value is not valid until the graph is initialized. Note that a factor
+	 * with only one edge always employs the normal update approach.
+	 * 
+	 * @since 0.07
+	 */
+	public UpdateApproach getEffectiveUpdateApproach()
+	{
+		final FactorTableUpdateSettings factorTableUpdateSettings = getFactorTableUpdateSettings();
+		if (factorTableUpdateSettings != null && factorTableUpdateSettings.getOptimizedUpdatePlan() != null)
+		{
+			return UpdateApproach.OPTIMIZED;
+		}
+		else
+		{
+			return UpdateApproach.NORMAL;
+		}
+	}
+
+	@Internal
+	public @Nullable UpdateApproach getAutomaticUpdateApproach()
+	{
+		FactorTableUpdateSettings updateSettings = getFactorTableUpdateSettings();
+		if (updateSettings != null)
+		{
+			return updateSettings.getAutomaticUpdateApproach();
+		}
+		return null;
 	}
 
 	@Override

@@ -27,13 +27,9 @@ import com.analog.lyric.util.misc.Internal;
 @Internal
 public enum CostType
 {
-	/**
-	 * Memory allocation costs
-	 */
-	ALLOCATED_BYTES,
-
-	/**
-	 * Memory access costs
-	 */
-	ACCESSES
+	MEMORY,
+	EXECUTION_TIME,
+	DENSE_MARGINALIZATION_SIZE,
+	SPARSE_MARGINALIZATION_SIZE,
+	OUTPUT_SIZE
 }

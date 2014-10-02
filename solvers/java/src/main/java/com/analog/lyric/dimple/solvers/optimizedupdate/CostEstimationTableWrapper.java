@@ -125,17 +125,19 @@ public final class CostEstimationTableWrapper
 	public Costs estimateCosts()
 	{
 		final double allocations;
+		final double _tableData = _size * 8;
 		if (_isSparse)
 		{
-			// Sparse tables store data and also index information.
-			allocations = _size * 8 + _size * 4;
+			final double sparseToJointIndices = _size * 4;
+			final double sparseIndices = _size * _dimensions.length * 4;
+			allocations = _tableData + sparseToJointIndices + sparseIndices;
 		}
 		else
 		{
-			allocations = _size * 8;
+			allocations = _tableData;
 		}
 		Costs result = new Costs();
-		result.put(CostType.ALLOCATED_BYTES, allocations);
+		result.put(CostType.MEMORY, allocations / 1024.0 / 1024.0 / 1024.0);
 		return result;
 	}
 
