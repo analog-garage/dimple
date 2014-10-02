@@ -103,7 +103,9 @@ public class TestDimpleOptions extends DimpleTestBase
 				dimpleClassPath.getTopLevelClassesRecursive("com.analog.lyric.dimple");
 			for (ClassPath.ClassInfo info : dimpleClassInfo)
 			{
-				if (info.getPackageName().startsWith("com.analog.lyric.dimple.test"))
+				String packageName = info.getPackageName();
+				if (packageName.startsWith("com.analog.lyric.dimple.test") ||
+					packageName.startsWith("com.analog.lyric.dimple.jsproxy"))
 				{
 					// Skip test packages
 					continue;
