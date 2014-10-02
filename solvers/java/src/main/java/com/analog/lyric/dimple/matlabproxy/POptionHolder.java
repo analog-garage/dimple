@@ -17,7 +17,10 @@
 package com.analog.lyric.dimple.matlabproxy;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
@@ -64,6 +67,22 @@ public abstract class POptionHolder extends PObject
 			final DimpleOptionHolder holder = getOptionHolder(i);
 			
 			ArrayList<IOption<?>> nodeOptions = new ArrayList<>(holder.getLocalOptions());
+			
+			Collections.sort(nodeOptions, new Comparator<Object>() {
+				@NonNullByDefault(false)
+				@Override
+				public int compare(Object obj1, Object obj2)
+				{
+					IOption<?> option1 = (IOption<?>)obj1;
+					IOption<?> option2 = (IOption<?>)obj2;
+					
+					String name1 = OptionKey.qualifiedName(option1.key());
+					String name2 = OptionKey.qualifiedName(option2.key());
+					
+					return name1.compareTo(name2);
+				}
+			});
+			
 			final int nOptions = nodeOptions.size();
 			Object[] keyValues = new Object[nOptions * 2];
 			for (int j = 0; j < nOptions; ++j)
@@ -75,6 +94,7 @@ public abstract class POptionHolder extends PObject
 			}
 			options[i] = keyValues;
 		}
+		
 		return options;
 	}
 

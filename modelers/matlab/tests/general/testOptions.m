@@ -54,11 +54,11 @@ assertTrue(isempty(fg.getLocalOptions()));
 fg.setOption('SolverOptions.iterations', 23);
 fg.setOption('DimpleOptions.randomSeed', 42);
 options = fg.getLocalOptions();
-assertEqual({'SolverOptions.iterations', 23; 'DimpleOptions.randomSeed', 42}, options);
+assertEqual({'DimpleOptions.randomSeed', 42; 'SolverOptions.iterations', 23}, options);
 fg.clearLocalOptions();
 assertTrue(isempty(fg.getLocalOptions()));
 fg.setOptions(options);
-assertEqual({'SolverOptions.iterations', 23; 'DimpleOptions.randomSeed', 42}, options);
+assertEqual({'DimpleOptions.randomSeed', 42; 'SolverOptions.iterations', 23}, options);
 
 end
 
