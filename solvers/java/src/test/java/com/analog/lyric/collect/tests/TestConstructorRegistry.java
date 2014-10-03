@@ -24,6 +24,7 @@ import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.junit.Test;
 
@@ -76,6 +77,16 @@ public class TestConstructorRegistry
 		assertArrayEquals(new String[] { lyricCollectPackage, "java.util" }, collectionRegistry.getPackages());
 		assertSame(ArrayDeque.class, collectionRegistry.getClassOrNull("ArrayDeque"));
 		assertInvariants(collectionRegistry);
+		
+		collectionRegistry.addClass(ConcurrentLinkedQueue.class);
+		assertSame(ConcurrentLinkedQueue.class, collectionRegistry.getClass("ConcurrentLinkedQueue"));
+		// package is not added in this case:
+		assertArrayEquals(new String[] { lyricCollectPackage, "java.util" }, collectionRegistry.getPackages());
+		assertInvariants(collectionRegistry);
+		
+		expectThrow(IllegalArgumentException.class, ".*not a subclass.*", collectionRegistry, "addClass", Object.class);
+		expectThrow(IllegalArgumentException.class, ".*does not have an accessible no-argument constructor.*",
+			collectionRegistry, "addClass", CollectionWithoutConstructor.class);
 	}
 	
 	private <T> void assertInvariants(ConstructorRegistry<T> registry)
@@ -107,6 +118,13 @@ public class TestConstructorRegistry
 			
 			T instance = registry.instantiate(name);
 			assertSame(c, instance.getClass());
+		}
+	}
+	
+	public abstract static class CollectionWithoutConstructor<T> implements Collection<T>
+	{
+		public CollectionWithoutConstructor(int bogusArg)
+		{
 		}
 	}
 }

@@ -40,10 +40,11 @@ import com.google.common.reflect.ClassPath;
  * Simple registry mapping class names to no-argument constructor instances.
  * <p>
  * Note that {@link Map} methods such as {@link #containsKey}, {@link #containsValue},
- * {@link #keySet}, {@link #values}, {@link #entrySet}, and {@link #size} will
- * only reflect keys that have been explicitly looked up using one of {@link #get}, {@link #getClass},
+ * {@link #keySet}, {@link #values}, {@link #entrySet}, and {@link #size} will only reflect keys
+ * that have been explicitly looked up using one of {@link #get}, {@link #getClass},
  * {@link #instantiate} or {@link #loadAll()}.
  * <p>
+ * 
  * @param <T> is the super class of all of the classes in the registry.
  * @since 0.07
  * @author Christopher Barber
@@ -52,24 +53,26 @@ import com.google.common.reflect.ClassPath;
 public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 {
 	private final Class<? super T> _superClass;
-	
+
 	@GuardedBy("this")
 	protected final ArrayList<String> _packages;
-	
+
 	@GuardedBy("this")
 	protected final Map<String, Constructor<T>> _nameToConstructor;
 
 	/*--------------
 	 * Construction
 	 */
-	
+
 	/**
 	 * Constructs a new registry instance for given super class.
 	 * <p>
 	 * The registry will automatically search for classes in the same package in which
 	 * {@code superClass} is declared. Additional packages may be added using {@link #addPackage}.
 	 * <p>
-	 * @param superClass is the runtime class type corresponding to the declared parameter type {@code T}.
+	 * 
+	 * @param superClass is the runtime class type corresponding to the declared parameter type
+	 *        {@code T}.
 	 * @since 0.07
 	 */
 	public ConstructorRegistry(Class<? super T> superClass)
@@ -80,11 +83,13 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 	/**
 	 * Constructs a new registry instance for given super class.
 	 * <p>
-	 * @param superClass is the runtime class type corresponding to the declared parameter type {@code T}.
+	 * 
+	 * @param superClass is the runtime class type corresponding to the declared parameter type
+	 *        {@code T}.
 	 * @param packages are the packages in which to search for subclass implementations.
 	 * @since 0.07
 	 */
-	public ConstructorRegistry(Class<? super T> superClass, String ... packages)
+	public ConstructorRegistry(Class<? super T> superClass, String... packages)
 	{
 		_superClass = superClass;
 		_packages = new ArrayList<String>();
@@ -92,14 +97,14 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 		{
 			_packages.add(packageName);
 		}
-		
+
 		_nameToConstructor = new ConcurrentHashMap<>();
 	}
-	
+
 	/*-------------
 	 * Map methods
 	 */
-	
+
 	@NonNullByDefault(false)
 	@Override
 	public boolean containsKey(Object simpleClassName)
@@ -119,14 +124,15 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 	{
 		return Collections.unmodifiableSet(_nameToConstructor.entrySet());
 	}
-	
+
 	/**
 	 * Looks up no-argument constructor for named class.
 	 * <p>
-	 * Searches all of the registry's packages (see {@link #getPackages()}) for class
-	 * with given {@code simpleClassName} and an accessible constructor that takes no
-	 * arguments. Returns first match or null if none is found.
+	 * Searches all of the registry's packages (see {@link #getPackages()}) for class with given
+	 * {@code simpleClassName} and an accessible constructor that takes no arguments. Returns first
+	 * match or null if none is found.
 	 * <p>
+	 * 
 	 * @param simpleClassName is the unqualified name of the class whose constructor is sought.
 	 */
 	@SuppressWarnings("unchecked")
@@ -134,13 +140,13 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 	@Override
 	public synchronized @Nullable Constructor<T> get(Object simpleClassName)
 	{
-		String name = (String)simpleClassName;
+		String name = (String) simpleClassName;
 		Constructor<T> constructor = _nameToConstructor.get(name);
-		
+
 		if (constructor == null)
 		{
 			ClassLoader loader = getClass().getClassLoader();
-			
+
 			for (String packageName : _packages)
 			{
 				String fullQualifiedName = packageName + "." + name;
@@ -160,39 +166,71 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 				}
 			}
 		}
-		
+
 		return constructor;
 	}
-	
+
 	@Override
 	public Set<String> keySet()
 	{
 		return Collections.unmodifiableSet(_nameToConstructor.keySet());
 	}
-	
+
 	@Override
 	public int size()
 	{
 		return _nameToConstructor.size();
 	}
-	
+
 	@Override
 	public Collection<Constructor<T>> values()
 	{
 		return Collections.unmodifiableCollection(_nameToConstructor.values());
 	}
-	
+
 	/*---------------
 	 * Local methods
 	 */
-	
+
+	/**
+	 * Adds entry for specified class.
+	 * <p>
+	 * 
+	 * @param newClass
+	 * @throws IllegalArgumentException if class is not a subclass of registry's
+	 *         {@linkplain #getSuperClass() super class} or if it does not have a publicly
+	 *         accessible constructor that takes no arguments.
+	 * @since 0.07
+	 * @see #addPackage
+	 */
+	public synchronized void addClass(Class<?> newClass)
+	{
+		final String name = newClass.getSimpleName();
+
+		if (!_superClass.isAssignableFrom(newClass))
+		{
+			throw new IllegalArgumentException(String.format("%s is not a subclass of %s",
+				name, _superClass.getSimpleName()));
+		}
+		
+		Constructor<T> constructor = getConstructor(newClass);
+		if (constructor == null)
+		{
+			throw new IllegalArgumentException(String.format("%s does not have an accessible no-argument constructor",
+				name));
+		}
+		_nameToConstructor.put(name, constructor);
+	}
+
 	/**
 	 * Adds a package to search for class implementations.
 	 * <p>
+	 * 
 	 * @param packageName is a fully qualified Java package name expected to contain subclasses of
-	 * declared superclass {@code T}.
+	 *        declared superclass {@code T}.
 	 * @see #get(Object)
 	 * @since 0.07
+	 * @see #addClass
 	 * @see #getPackages()
 	 */
 	public synchronized void addPackage(String packageName)
@@ -203,8 +241,9 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 	/**
 	 * Returns class type named by {@code simpleClassName}.
 	 * <p>
-	 * Simply returns {@linkplain Constructor#getDeclaringClass() declaring class} of
-	 * value returned by {@link #get}.
+	 * Simply returns {@linkplain Constructor#getDeclaringClass() declaring class} of value returned
+	 * by {@link #get}.
+	 * 
 	 * @throws RuntimeException if no such class can be found.
 	 * @since 0.07
 	 */
@@ -221,8 +260,9 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 	/**
 	 * Returns class type named by {@code simpleClassName}.
 	 * <p>
-	 * Simply returns {@linkplain Constructor#getDeclaringClass() declaring class} of
-	 * value returned by {@link #get} or else null.
+	 * Simply returns {@linkplain Constructor#getDeclaringClass() declaring class} of value returned
+	 * by {@link #get} or else null.
+	 * 
 	 * @since 0.07
 	 */
 	@Nullable
@@ -231,10 +271,11 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 		Constructor<T> constructor = get(simpleClassName);
 		return constructor != null ? constructor.getDeclaringClass() : null;
 	}
-	
+
 	/**
 	 * Returns copy of list of package names searched by this registry.
 	 * <p>
+	 * 
 	 * @since 0.07
 	 * @see #addPackage(String)
 	 * @see #get(Object)
@@ -243,9 +284,10 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 	{
 		return _packages.toArray(new String[_packages.size()]);
 	}
-	
+
 	/**
 	 * Class type of declared type {@code T}.
+	 * 
 	 * @since 0.07
 	 */
 	public Class<? super T> getSuperClass()
@@ -257,6 +299,7 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 	 * Instantiates an instance of named class.
 	 * <p>
 	 * Simply invokes {@link Constructor#newInstance} on constructor returned by {@link #get}.
+	 * 
 	 * @throws RuntimeException if no such class can be found.
 	 * @since 0.07
 	 */
@@ -269,12 +312,13 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 		}
 		return instance;
 	}
-	
+
 	/**
 	 * Instantiates an instance of named class.
 	 * <p>
 	 * Simply invokes {@link Constructor#newInstance} on constructor returned by {@link #get} or
 	 * else returns null.
+	 * 
 	 * @since 0.07
 	 */
 	@Nullable
@@ -296,22 +340,23 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 				throw new RuntimeException(ex);
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Preloads all subclasses of declared superclass {@code T} found in registry's packages.
 	 * <p>
-	 * Searches all of the packages in {@link #getPackages()} for subclasses of {@code T}
-	 * and adds then to the registry.
+	 * Searches all of the packages in {@link #getPackages()} for subclasses of {@code T} and adds
+	 * then to the registry.
 	 * <p>
+	 * 
 	 * @since 0.07
 	 */
 	public synchronized void loadAll()
 	{
 		ClassLoader loader = getClass().getClassLoader();
-		
+
 		ClassPath path;
 		try
 		{
@@ -333,20 +378,18 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 			}
 		}
 	}
-	
+
 	/*-----------------
 	 * Private methods
 	 */
-	
+
 	@SuppressWarnings("unchecked")
 	private @Nullable Constructor<T> getConstructor(Class<?> type)
 	{
 		Constructor<T> constructor = null;
-		
+
 		int modifiers = type.getModifiers();
-		if (Modifier.isPublic(modifiers) &&
-			!Modifier.isAbstract(modifiers) &&
-			_superClass.isAssignableFrom(type))
+		if (Modifier.isPublic(modifiers) && !Modifier.isAbstract(modifiers) && _superClass.isAssignableFrom(type))
 		{
 			try
 			{
@@ -362,16 +405,14 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 				// Ignore
 			}
 		}
-		
-		
+
 		return constructor;
 	}
-	
+
 	private RuntimeException noMatchingClass(String simpleClassName)
 	{
-		return new RuntimeException(
-			String.format("Cannot find class named '%s' with accessible no-argument constructor", simpleClassName));
+		return new RuntimeException(String.format(
+			"Cannot find class named '%s' with accessible no-argument constructor", simpleClassName));
 	}
-
 
 }
