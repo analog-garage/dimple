@@ -116,7 +116,8 @@ public class GibbsReal extends SRealVariableBase
 	private boolean _visited = false;
 	private long _updateCount;
 	private long _rejectCount;
-	
+	private long _scoreCount;
+
 	/**
 	 * List of neighbors for sample scoring. Instantiated during initialization.
 	 */
@@ -266,6 +267,7 @@ public class GibbsReal extends SRealVariableBase
 	public final double getCurrentSampleScore()
 	{
 		double sampleScore = Double.POSITIVE_INFINITY;
+		_scoreCount++;
 		
 		computeScore:
 		{
@@ -627,10 +629,17 @@ public class GibbsReal extends SRealVariableBase
 	}
 	
 	@Override
+	public final double getNumScoresPerUpdate()
+	{
+		return (_updateCount > 0) ? (double)_scoreCount / (double)_updateCount : 0;
+	}
+	
+	@Override
 	public final void resetRejectionRateStats()
 	{
 		_updateCount = 0;
 		_rejectCount = 0;
+		_scoreCount = 0;
 	}
 	
 	@Override

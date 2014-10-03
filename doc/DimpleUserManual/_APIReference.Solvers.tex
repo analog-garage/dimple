@@ -921,7 +921,22 @@ variable.getSolver().getRejectionRate()
 \end{lstlisting}
 \fi
 
-Get the rejection rate for the sampler used for a specific variable.  The rejection rate is the ratio of the number of MCMC proposals that were rejected to the total number of sampler updates.  Rejections only occur in MCMC samplers, such as the MHSampler.  In other samplers, such as conjugate samplers or the CDFSampler, rejection doesn't occur and the rate for variables that use these samplers is zero (in these cases, sampling the same value twice in a row is not considered rejection).  These counts are accumulated from the time the graph is initialized, which automatically occurs when running solve().  This includes both  burn-in and subsequent sampling.  These counts can also be reset explicitly using the resetRejectionRateStats method (see below), which allows these values to be determined, for example, during a specific set of samples.
+Get the rejection rate for the sampler used for a specific variable.  The rejection rate is the ratio of the number of MCMC proposals that were rejected to the total number of sampler updates.  Rejections only occur in MCMC samplers, such as the MHSampler.  In other samplers, such as conjugate samplers or the CDFSampler, rejection doesn't occur and the rate for variables that use these samplers is zero (in these cases, sampling the same value twice in a row is not considered rejection).  These counts are accumulated from the time the graph is initialized, which automatically occurs when running solve().  This includes both burn-in and subsequent sampling.  These counts can also be reset explicitly using the resetRejectionRateStats method (see below), which allows these values to be determined, for example, during a specific set of samples.
+
+
+\ifmatlab
+\begin{lstlisting}
+variable.Solver.getNumScoresPerUpdate()
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().getNumScoresPerUpdate()
+\end{lstlisting}
+\fi
+
+Returns the average number of score computations performed per update when sampling from this variable.  Use of an MCMC sampler requires computation of the score (energy) for specific settings of the variables.  For some samplers, such as the slice sampler, the number of times the score is computed varies, and depends on the particular values and the form of the distribution.  The returned value indicates the average number of times the score has been computed.  If a non-MCMC-based sampler is used, the returned value will be zero.  The count is accumulated from the time the graph is initialized, which automatically occurs when running solve().  This includes both burn-in and subsequent sampling.  The count can also be reset explicitly using the resetRejectionRateStats method (see below), which allows this value to be determined, for example, during a specific set of samples.
 
 \ifmatlab
 \begin{lstlisting}

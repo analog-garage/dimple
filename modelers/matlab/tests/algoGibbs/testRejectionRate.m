@@ -39,14 +39,18 @@ end
 % Basic test
 function test1(debugPrint, repeatable)
 
-rejectionRate1 = runTestCase(debugPrint, repeatable);
+[rejectionRate1, numScores1] = runTestCase(debugPrint, repeatable);
 assert(rejectionRate1 == 0);
-rejectionRate2 = runTestCase(debugPrint, repeatable, 'MHSampler');
+[rejectionRate2, numScores2] = runTestCase(debugPrint, repeatable, 'MHSampler');
 assertElementsAlmostEqual(rejectionRate2, 0.3, 'absolute', 0.01);
+assert(all(numScores1([1:2 5]) >= 6));
+assert(all(numScores1([3:4 6:8])==0));
+assert(all(numScores2([1:2 5]) == 2));
+assert(all(numScores2([3:4 6:8])==0));
 
 end
 
-function rejectionRate = runTestCase(debugPrint, repeatable, varargin)
+function [rejectionRate, numScores] = runTestCase(debugPrint, repeatable, varargin)
 
 fg = FactorGraph;
 fg.Solver = 'Gibbs';
@@ -67,6 +71,7 @@ fg.Solver.setBurnInScans(100);
 fg.solve();
 
 rejectionRate = fg.Solver.getRejectionRate();
+numScores = cellfun(@(x)x.Solver.getNumScoresPerUpdate, fg.Variables);
 
 end
 
