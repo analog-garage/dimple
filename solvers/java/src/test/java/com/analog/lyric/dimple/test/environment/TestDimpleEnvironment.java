@@ -38,6 +38,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.options.SolverOptions;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.SliceSampler;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.util.test.TestLogger;
@@ -226,5 +227,8 @@ public class TestDimpleEnvironment extends DimpleTestBase
 		
 		assertEquals(NormalProposalKernel.class, env.proposalKernels().getClass("NormalProposalKernel"));
 		assertSame(env.proposalKernels(), env.proposalKernels());
+		
+		assertEquals(GibbsSolver.class, env.solvers().getClass("Gibbs"));
+		assertSame(env.solvers(), env.solvers());
 	}
 }

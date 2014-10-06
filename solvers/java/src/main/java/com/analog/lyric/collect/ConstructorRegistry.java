@@ -128,25 +128,44 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 	/**
 	 * Looks up no-argument constructor for named class.
 	 * <p>
-	 * Searches all of the registry's packages (see {@link #getPackages()}) for class with given
-	 * {@code simpleClassName} and an accessible constructor that takes no arguments. Returns first
-	 * match or null if none is found.
+	 * If {@code className} is a fully qualified name referring to a class with an accessible constructor
+	 * that takes no arguments, that constructor will be returned. Otherwise, this will
+	 * searches all of the registry's packages (see {@link #getPackages()}) for class with given
+	 * {@code className} and compatible constructor. Returns first match or null if none is found.
 	 * <p>
-	 * 
-	 * @param simpleClassName is the unqualified name of the class whose constructor is sought.
+	 * @param className is either the unqualified or fully qualified name of the class whose constructor is sought.
 	 */
 	@SuppressWarnings("unchecked")
 	@NonNullByDefault(false)
 	@Override
-	public synchronized @Nullable Constructor<T> get(Object simpleClassName)
+	public synchronized @Nullable Constructor<T> get(Object className)
 	{
-		String name = (String) simpleClassName;
+		String name = (String) className;
 		Constructor<T> constructor = _nameToConstructor.get(name);
 
 		if (constructor == null)
 		{
 			ClassLoader loader = getClass().getClassLoader();
 
+			if (name.indexOf('.') > 0)
+			{
+				// Looks like it is qualified with a package name.
+				try
+				{
+					@SuppressWarnings("unchecked")
+					Class<?> c = Class.forName(name, false, loader);
+					constructor = getConstructor(c);
+					if (constructor != null)
+					{
+						_nameToConstructor.put(name, constructor);
+						return constructor;
+					}
+				}
+				catch (Exception e)
+				{
+				}
+			}
+			
 			for (String packageName : _packages)
 			{
 				String fullQualifiedName = packageName + "." + name;

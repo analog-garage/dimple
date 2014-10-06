@@ -24,6 +24,7 @@ import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.junit.Test;
@@ -87,6 +88,18 @@ public class TestConstructorRegistry
 		expectThrow(IllegalArgumentException.class, ".*not a subclass.*", collectionRegistry, "addClass", Object.class);
 		expectThrow(IllegalArgumentException.class, ".*does not have an accessible no-argument constructor.*",
 			collectionRegistry, "addClass", CollectionWithoutConstructor.class);
+		
+		try
+		{
+			assertNull(collectionRegistry.get("ConcurrentLinkedDeque"));
+			assertEquals(ConcurrentLinkedDeque.class.getConstructor(),
+				collectionRegistry.get("java.util.concurrent.ConcurrentLinkedDeque"));
+			assertNull(collectionRegistry.get("ConcurrentLinkedDeque"));
+		}
+		catch (NoSuchMethodException ex)
+		{
+			fail(ex.toString());
+		}
 	}
 	
 	private <T> void assertInvariants(ConstructorRegistry<T> registry)

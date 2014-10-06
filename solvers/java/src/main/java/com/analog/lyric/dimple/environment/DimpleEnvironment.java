@@ -34,8 +34,10 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.options.DimpleOptionRegistry;
+import com.analog.lyric.dimple.solvers.core.DimpleSolverRegistry;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IGenericSampler;
+import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.options.IOptionKey;
 
@@ -170,6 +172,8 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	
 	@SuppressWarnings("deprecation")
 	private final DimpleOptionRegistry _optionRegistry = new DimpleOptionRegistry();
+	
+	private final DimpleSolverRegistry _solverRegistry = new DimpleSolverRegistry();
 	
 	@GuardedBy("_eventListenerLock")
 	private volatile @Nullable DimpleEventListener _eventListener = null;
@@ -571,4 +575,17 @@ public class DimpleEnvironment extends DimpleOptionHolder
 		return _proposalKernels;
 	}
 
+	/**
+	 * Registry of solver factory classes for this environment.
+	 * <p>
+	 * Supports lookup of {@link IFactorGraphFactory} implementations by class name.
+	 * Primarily for use in dynamic language implementations of Dimple.
+	 * <p>
+	 * @see DimpleSolverRegistry
+	 * @since 0.07
+	 */
+	public DimpleSolverRegistry solvers()
+	{
+		return _solverRegistry;
+	}
 }
