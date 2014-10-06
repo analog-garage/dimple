@@ -111,10 +111,12 @@ fg = FactorGraph;
 fg.Solver = 'Gibbs';
 fg.Solver.setDefaultRealSampler('MHSampler');
 
+d = Discrete(1:10);
+d.Input = rand(1,10);
 a = Normal(0,1);
 b = Gamma(1,1);
 x = (a + b) ^ 2;
-y = x + log(LogNormal(2,7)) ^ 2;
+y = x + log(LogNormal(2,7)) ^ 2 + d;
 y.FixedValue = 5;
 
 dim = 4;
@@ -132,31 +134,76 @@ fg.Solver.setNumSamples(100);
 fg.Solver.setBurnInScans(10);
 fg.solve();
 
+
 assert(fg.Solver.getRejectionRate() > 0);
 assert(a.Solver.getRejectionRate() > 0);
 assert(b.Solver.getRejectionRate() > 0);
+assert(d.Solver.getRejectionRate() == 0);  % CDF sampler
 assert(x.Solver.getRejectionRate() == 0);  % Deterministic depenent
 assert(alpha.Solver.getRejectionRate() == 0);   % Conjugate sampled
+assert(a.Solver.getNumScoresPerUpdate() == 2);
+assert(b.Solver.getNumScoresPerUpdate() == 2);
+assert(d.Solver.getNumScoresPerUpdate() == 0);  % CDF sampler
+assert(x.Solver.getNumScoresPerUpdate() == 0);   % Deterministic depenent
+assert(alpha.Solver.getNumScoresPerUpdate() == 0);   % Conjugate sampled
 
 a.Solver.resetRejectionRateStats();
+assert(fg.Solver.getRejectionRate() > 0);
 assert(a.Solver.getRejectionRate() == 0);
 assert(b.Solver.getRejectionRate() > 0);
-assert(fg.Solver.getRejectionRate() > 0);
+assert(d.Solver.getRejectionRate() == 0);  % CDF sampler
+assert(x.Solver.getRejectionRate() == 0);  % Deterministic depenent
+assert(alpha.Solver.getRejectionRate() == 0);   % Conjugate sampled
+assert(a.Solver.getNumScoresPerUpdate() == 0);
+assert(b.Solver.getNumScoresPerUpdate() == 2);
+assert(d.Solver.getNumScoresPerUpdate() == 0);  % CDF sampler
+assert(x.Solver.getNumScoresPerUpdate() == 0);   % Deterministic depenent
+assert(alpha.Solver.getNumScoresPerUpdate() == 0);   % Conjugate sampled
 
 fg.Solver.resetRejectionRateStats();
 assert(fg.Solver.getRejectionRate() == 0);
 assert(a.Solver.getRejectionRate() == 0);
 assert(b.Solver.getRejectionRate() == 0);
-assert(x.Solver.getRejectionRate() == 0);
-assert(alpha.Solver.getRejectionRate() == 0);
+assert(d.Solver.getRejectionRate() == 0);  % CDF sampler
+assert(x.Solver.getRejectionRate() == 0);  % Deterministic depenent
+assert(alpha.Solver.getRejectionRate() == 0);   % Conjugate sampled
+assert(a.Solver.getNumScoresPerUpdate() == 0);
+assert(b.Solver.getNumScoresPerUpdate() == 0);
+assert(d.Solver.getNumScoresPerUpdate() == 0);  % CDF sampler
+assert(x.Solver.getNumScoresPerUpdate() == 0);   % Deterministic depenent
+assert(alpha.Solver.getNumScoresPerUpdate() == 0);   % Conjugate sampled
 
+alpha.setOption('GibbsOptions.realSampler', 'MHSampler');
+d.setOption('GibbsOptions.discreteSampler', 'MHSampler');
 fg.solve();
 
 assert(fg.Solver.getRejectionRate() > 0);
 assert(a.Solver.getRejectionRate() > 0);
 assert(b.Solver.getRejectionRate() > 0);
+assert(d.Solver.getRejectionRate() > 0);
 assert(x.Solver.getRejectionRate() == 0);  % Deterministic depenent
-assert(alpha.Solver.getRejectionRate() == 0);   % Conjugate sampled
+assert(alpha.Solver.getRejectionRate() > 0);
+assert(a.Solver.getNumScoresPerUpdate() == 2);
+assert(b.Solver.getNumScoresPerUpdate() == 2);
+assert(d.Solver.getNumScoresPerUpdate() == 2);
+assert(x.Solver.getNumScoresPerUpdate() == 0);   % Deterministic depenent
+assert(alpha.Solver.getNumScoresPerUpdate() == 2);
+
+fg.Solver.resetRejectionRateStats();
+alpha.setOption('GibbsOptions.realSampler', 'SliceSampler');
+fg.solve();
+
+assert(fg.Solver.getRejectionRate() > 0);
+assert(a.Solver.getRejectionRate() > 0);
+assert(b.Solver.getRejectionRate() > 0);
+assert(d.Solver.getRejectionRate() > 0);
+assert(x.Solver.getRejectionRate() == 0);  % Deterministic depenent
+assert(alpha.Solver.getRejectionRate() == 0);
+assert(a.Solver.getNumScoresPerUpdate() == 2);
+assert(b.Solver.getNumScoresPerUpdate() == 2);
+assert(d.Solver.getNumScoresPerUpdate() == 2);
+assert(x.Solver.getNumScoresPerUpdate() == 0);   % Deterministic depenent
+assert(alpha.Solver.getNumScoresPerUpdate() >= 6);  % Slice sampler
 
 end
 
