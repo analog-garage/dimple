@@ -67,6 +67,13 @@ public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable,
 	public double getRejectionRate();
 	
 	/**
+	 * Get the average number of score computations performed per update
+	 * @return average number of scores computed per update
+	 * @since 0.07
+	 */
+	public double getNumScoresPerUpdate();
+	
+	/**
 	 * Clear the rejection rate statistics
 	 * @since 0.07
 	 */

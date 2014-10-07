@@ -69,9 +69,13 @@ sourceSets {
 }
 
 ext.javaHome = System.properties.get('java.home')
-// FIXME: apparently this path does not work on Ubuntu (and other Linuxes?)
-// Instead it comes from separate "icedtea" package.
-ext.pluginJar = files("${javaHome}/lib/plugin.jar")
+
+def os = System.getProperty("os.name").toLowerCase()
+if (os.contains("linux")) {
+	ext.pluginJar = files("/usr/share/icedtea-web/plugin.jar")
+} else {
+	ext.pluginJar = files("${javaHome}/lib/plugin.jar")	
+}
 
 //Benchmarking source set depends on main and its dependencies
 dependencies {

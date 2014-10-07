@@ -47,7 +47,7 @@ priors =  [.75 .6 .9 .1 .2 .9]';
 d.Input = priors;
 MyGraph.NumIterations = 20;
 MyGraph.solve();
-if (~silent || true)
+if (~silent)
     disp((d.Belief>.5)');
     d.Belief
 end

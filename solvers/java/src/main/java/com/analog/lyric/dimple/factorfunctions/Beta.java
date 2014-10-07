@@ -89,6 +89,8 @@ public class Beta extends FactorFunction
     		for (; index < length; index++)
     		{
     			final double x = arguments[index].getDouble();			// Remaining inputs are Beta variables
+        		if (x < 0 || x > 1)
+        			return Double.POSITIVE_INFINITY;
     			sum += Math.log(1 - x);
     		}
     		return N * _logBetaAlphaBeta - sum * _betaMinusOne;
@@ -98,6 +100,8 @@ public class Beta extends FactorFunction
     		for (; index < length; index++)
     		{
     			final double x = arguments[index].getDouble();			// Remaining inputs are Beta variables
+        		if (x < 0 || x > 1)
+        			return Double.POSITIVE_INFINITY;
     			sum += Math.log(x);
     		}
     		return N * _logBetaAlphaBeta - sum * _alphaMinusOne;
@@ -107,6 +111,8 @@ public class Beta extends FactorFunction
     		for (; index < length; index++)
     		{
     			final double x = arguments[index].getDouble();			// Remaining inputs are Beta variables
+        		if (x < 0 || x > 1)
+        			return Double.POSITIVE_INFINITY;
     			sum += _alphaMinusOne * Math.log(x) + _betaMinusOne * Math.log(1 - x);
     		}
     		return N * _logBetaAlphaBeta - sum;

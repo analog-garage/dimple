@@ -75,7 +75,7 @@ public class InverseGamma extends FactorFunction
     	for (; index < length; index++)
     	{
     		final double x = arguments[index].getDouble();		// Remaining inputs are Inverse Gamma variables
-        	if (x < 0)
+        	if (x <= 0)
         		return Double.POSITIVE_INFINITY;
         	else
         		sum += _beta/x + _alphaPlusOne * Math.log(x);
