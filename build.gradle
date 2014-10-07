@@ -110,8 +110,14 @@ task installkit(type: Zip) {
 		into 'modelers/matlab/'
 	}
 
+	from ('modelers/javascript/') {
+		include 'applet-test.html'
+		into 'modelers/javascript/'
+	}
+
 	from ('solvers/lib/') {
 		include '*.jar'
+		include '*.jnlp'
 		into 'solvers/lib'
 	}
 

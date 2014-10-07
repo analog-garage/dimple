@@ -1,3 +1,5 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
 project.description = 'Javascript front-end'
 
 ext {
@@ -6,19 +8,25 @@ ext {
 	jnlpTemplate = file('jnlp-template.xml')
 	testApplet = file('applet-test.html')
 }
-
-task assemble(dependsOn: 'copyJavaScriptFiles') {
+task assemble(dependsOn: ['copyJavaScriptFiles', 'generateTestApplet']) {
 	group = 'Build'
 }
 
 task copyJavaScriptFiles(dependsOn: 'generateJNLP', type:Copy) {
 	group = 'Build'
 	from(projectDir) { 
-		include('*.html')
 		include('*.js')
 		include('*.jnlp')
 	}
 	into libDir
+}
+
+task generateTestApplet(type:Copy) {
+	group = 'Build'
+	from 'applet-test-template.html'
+	into projectDir
+	rename 'applet-test-template.html', 'applet-test.html'
+	filter(ReplaceTokens, tokens: [jnlpfile: '../../solvers/lib/' + jnlpFile.getName()])
 }
 
 task generateJNLP(dependsOn: ':solvers:java:copyJars') {
@@ -59,6 +67,7 @@ def generateJNLPFromTemplate(template, jnlpFile, codebase) {
 task cleanJavaScript (type:Delete) {
 	group = 'Cleanup'
 
+	delete 'applet-test.html'
 	delete fileTree(dir: projectDir, include: '*.jnlp')
 	delete fileTree(dir: libDir, includes: ['*.jnlp', '*.js', '*.html'])
 }
