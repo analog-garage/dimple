@@ -111,6 +111,14 @@ end
 assert(f.IFactorFunction.evalEnergy({-eps 1 0}) == Inf);
 assert(f.IFactorFunction.evalEnergy({0 -eps 0}) == Inf);
 assert(f.IFactorFunction.evalEnergy({0 -eps -eps}) == Inf);
+assert(f.IFactorFunction.evalEnergy({1 1 -eps}) == Inf);
+assert(f.IFactorFunction.evalEnergy({2 1 -eps}) == Inf);
+assert(f.IFactorFunction.evalEnergy({1 2 -eps}) == Inf);
+assert(f.IFactorFunction.evalEnergy({2 2 -eps}) == Inf);
+assert(f.IFactorFunction.evalEnergy({1 1 1+eps}) == Inf);
+assert(f.IFactorFunction.evalEnergy({2 1 1+eps}) == Inf);
+assert(f.IFactorFunction.evalEnergy({1 2 1+eps}) == Inf);
+assert(f.IFactorFunction.evalEnergy({2 2 1+eps}) == Inf);
 
 % Beta (multiple outputs, constant parameters)
 alphas = [1 2 .1];
@@ -457,7 +465,7 @@ for i = 1:length(alphas)
     beta = betas(i);
     Z = beta^alpha / gamma(alpha);
     f = FactorFunction('InverseGamma');
-    for v=0:.1:1
+    for v=linspace(0.01,1,10)
         prob = v^(-alpha-1) * exp(-beta/v) * Z;
         assertElementsAlmostEqual(f.IFactorFunction.evalEnergy({alpha, beta, v}), -log(prob));
     end
@@ -466,6 +474,7 @@ assert(f.IFactorFunction.evalEnergy({0, 1, 1}) == Inf);
 assert(f.IFactorFunction.evalEnergy({1, 0, 1}) == Inf);
 assert(f.IFactorFunction.evalEnergy({-eps, 1, 1}) == Inf);
 assert(f.IFactorFunction.evalEnergy({1, -eps, 1}) == Inf);
+assert(f.IFactorFunction.evalEnergy({1, 1, 0}) == Inf);
 
 % InverseGamma (multiple outputs, constant parameters)
 alphas = [1 2 .1];
