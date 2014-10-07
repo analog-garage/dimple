@@ -141,7 +141,11 @@ jar {
 	// to avoid picking up resources that Eclipse implicitly copies.
 	duplicatesStrategy = 'exclude'
 	manifest {
-		attributes("Permissions": "sandbox")
+		attributes(
+			"Implementation-Title": "Dimple",
+			"Implementation-Vendor": "Lyric Labs | Analog Devices",
+			"Implementation-Version": dimpleVersion,
+			"Permissions": "sandbox")
 	}
 }
 
