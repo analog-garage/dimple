@@ -16,33 +16,35 @@
 
 package com.analog.lyric.dimple.jsproxy;
 
-import com.analog.lyric.dimple.model.domains.RealDomain;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 
 /**
  * 
  * @since 0.07
  * @author Christopher Barber
  */
-public class JSRealDomain extends JSDomain<RealDomain>
+public class JSEnvironment extends JSOptionHolder<DimpleEnvironment>
 {
-	JSRealDomain(JSDomainFactory factory, RealDomain domain)
-	{
-		super(factory, domain);
-	}
+	/*-------
+	 * State
+	 */
 	
-	@Override
-	public JSDomain.Type getDomainType()
-	{
-		return JSDomain.Type.REAL;
-	}
+	private final DimpleApplet _applet;
 	
-	public final double getLowerBound()
+	/*--------------
+	 * Construction
+	 */
+
+	JSEnvironment(DimpleApplet applet, DimpleEnvironment delegate)
 	{
-		return getDelegate().getLowerBound();
+		super(delegate);
+		_applet = applet;
 	}
 
-	public final double getUpperBound()
+	@Override
+	public DimpleApplet getApplet()
 	{
-		return getDelegate().getUpperBound();
+		return _applet;
 	}
+
 }

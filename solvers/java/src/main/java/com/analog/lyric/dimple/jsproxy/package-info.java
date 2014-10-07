@@ -18,10 +18,10 @@
  * JavaScript proxy layer for Dimple.
  * <p>
  * This package provides a {@linkplain com.analog.lyric.dimple.jsproxy.DimpleApplet DimpleApplet} class
- * that may be embedded in a webpage and invoked from JavaScript code on that page to make use of
+ * that may be embedded in a web page and invoked from JavaScript code on that page to make use of
  * functionality in dimple.
  * <p>
- * <b>WARNING: the contents of this package are experiemental and the API is highly likely to change!</b>
+ * <b>WARNING: the contents of this package are experimental and the API is highly likely to change!</b>
  * <p>
  * @see <a href="http://www.oracle.com/technetwork/java/javase/documentation/liveconnect-docs-349790.html"
  * >LiveConnect Specification</a>

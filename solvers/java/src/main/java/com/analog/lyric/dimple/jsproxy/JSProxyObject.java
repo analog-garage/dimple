@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.jsproxy;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 
 /**
  * Base JavaScript/Dimple proxy wrapper.
@@ -32,6 +34,34 @@ public abstract class JSProxyObject<Delegate>
 	JSProxyObject(Delegate delegate)
 	{
 		_delegate = delegate;
+	}
+	
+	/*----------------
+	 * Object methods
+	 */
+	
+	@NonNullByDefault(false)
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (obj instanceof JSProxyObject<?>)
+		{
+			obj = ((JSProxyObject<?>)obj).getDelegate();
+		}
+		
+		return _delegate.equals(obj);
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return _delegate.hashCode();
+	}
+	
+	@Override
+	public String toString()
+	{
+		return _delegate.toString();
 	}
 	
 	/*-----------------------

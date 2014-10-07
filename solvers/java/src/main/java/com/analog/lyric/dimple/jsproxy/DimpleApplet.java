@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.jsproxy;
 
 import java.applet.Applet;
 
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -46,9 +47,10 @@ public class DimpleApplet extends Applet
 	@Override
 	public String getAppletInfo()
 	{
-		// TODO: figure out how to get version programatically. When I tried to do this
-		// the regular way, the sandbox security prevented access to the VERSION resource file.
-		return "DimpleApplet (v0.07). Copyright 2014 Analog Devices Inc.";
+		// The standard way to get the version reads the VERSION resource file, but that
+		// does not appear to be accessible in the applet due to sandbox security.
+		String version = getClass().getPackage().getImplementationVersion();
+		return String.format("DimpleApplet (v%s) Copyright 2014 Analog Devices Inc.", version != null ? version : "?");
 	}
 	
 	@Override
@@ -60,6 +62,16 @@ public class DimpleApplet extends Applet
 	/*---------------
 	 * Local methods
 	 */
+	
+	public boolean ok()
+	{
+		return true;
+	}
+	
+	public JSEnvironment getEnvironment()
+	{
+		return new JSEnvironment(this, DimpleEnvironment.active());
+	}
 	
 	public JSFactorGraph createGraph()
 	{
@@ -74,5 +86,5 @@ public class DimpleApplet extends Applet
 	
 	public final JSFactorFunctionFactory functions = new JSFactorFunctionFactory(this);
 	
-	public final JSSolverFactory solvers = new JSSolverFactory();
+	public final JSSolverFactory solvers = new JSSolverFactory(this);
 }

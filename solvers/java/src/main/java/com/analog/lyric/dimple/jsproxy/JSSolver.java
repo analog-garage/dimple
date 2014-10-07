@@ -16,37 +16,43 @@
 
 package com.analog.lyric.dimple.jsproxy;
 
-import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
-import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolver;
-import com.analog.lyric.dimple.solvers.junctiontreemap.JunctionTreeMAPSolver;
-import com.analog.lyric.dimple.solvers.minsum.MinSumSolver;
-import com.analog.lyric.dimple.solvers.particleBP.ParticleBPSolver;
-import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolver;
 
 /**
  * 
  * @since 0.07
  * @author Christopher Barber
  */
-public enum JSSolver
+public class JSSolver extends JSProxyObject<IFactorGraphFactory<?>>
 {
-	Gibbs(new GibbsSolver()),
-	JunctionTree(new JunctionTreeSolver()),
-	JunctionTreeMAP(new JunctionTreeMAPSolver()),
-	MinSum(new MinSumSolver()),
-	ParticleBP(new ParticleBPSolver()),
-	SumProduct(new SumProductSolver());
+	/*-------
+	 * State
+	 */
 	
-	private final IFactorGraphFactory<?> _factory;
+	private final DimpleApplet _applet;
 	
-	private JSSolver(IFactorGraphFactory<?> factory)
+	/*--------------
+	 * Construction
+	 */
+	
+	JSSolver(DimpleApplet applet, IFactorGraphFactory<?> solver)
 	{
-		_factory = factory;
+		super(solver);
+		_applet = applet;
 	}
 	
-	IFactorGraphFactory<?> getFactory()
+	JSSolver(DimpleApplet applet, String solverName)
 	{
-		return _factory;
+		this(applet, applet.getEnvironment().getDelegate().solvers().instantiate(solverName));
+	}
+
+	/*-----------------------
+	 * JSProxyObject methods
+	 */
+	
+	@Override
+	public DimpleApplet getApplet()
+	{
+		return _applet;
 	}
 }

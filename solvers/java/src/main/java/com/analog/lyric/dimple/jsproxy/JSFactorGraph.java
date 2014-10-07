@@ -27,6 +27,7 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
@@ -93,31 +94,50 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 	 * JSFactorGraph methods
 	 */
 	
-	public JSFactor addFactor(JSFactorFunction function, Object ... args)
+	public JSFactor addFactor(JSFactorFunction function, JSVariable ... args)
 	{
 		Object[] unwrapped = new Object[args.length];
 		for (int i = args.length; --i>=0;)
 		{
-			final Object arg = args[i];
-			unwrapped[i] = arg instanceof JSProxyObject ? ((JSProxyObject<?>)arg)._delegate : arg;
+			unwrapped[i] = args[i].getDelegate();
 		}
 		
 		return wrap(_delegate.addFactor(function._delegate, unwrapped));
 	}
 	
-	public JSFactor addFactor(JSFactorFunction function, Object arg1)
+	public JSFactor addFactor(JSFactorFunction function, JSVariable arg1)
 	{
-		return addFactor(function, new Object[] { arg1 });
+		return addFactor(function, new JSVariable[] { arg1 });
 	}
 
-	public JSFactor addFactor(JSFactorFunction function, Object arg1, Object arg2)
+	public JSFactor addFactor(JSFactorFunction function, JSVariable arg1, JSVariable arg2)
 	{
-		return addFactor(function, new Object[] { arg1, arg2 });
+		return addFactor(function, new JSVariable[] { arg1, arg2 });
 	}
 
-	public JSFactor addFactor(JSFactorFunction function, Object arg1, Object arg2, Object arg3)
+	public JSFactor addFactor(JSFactorFunction function, JSVariable arg1, JSVariable arg2, JSVariable arg3)
 	{
-		return addFactor(function, new Object[] { arg1, arg2, arg3 });
+		return addFactor(function, new JSVariable[] { arg1, arg2, arg3 });
+	}
+
+	public JSFactor addFactor(String functionName, JSVariable ... args)
+	{
+		return addFactor(_applet.functions.get(functionName), args);
+	}
+	
+	public JSFactor addFactor(String function, JSVariable arg1)
+	{
+		return addFactor(function, new JSVariable[] { arg1 });
+	}
+
+	public JSFactor addFactor(String function, JSVariable arg1, JSVariable arg2)
+	{
+		return addFactor(function, new JSVariable[] { arg1, arg2 });
+	}
+
+	public JSFactor addFactor(String function, JSVariable arg1, JSVariable arg2, JSVariable arg3)
+	{
+		return addFactor(function, new JSVariable[] { arg1, arg2, arg3 });
 	}
 
 	public JSVariable addVariable(String name, JSDomain<?> domain)
@@ -143,6 +163,12 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 		return wrap(variable);
 	}
 	
+	public @Nullable JSSolver getSolver()
+	{
+		IFactorGraphFactory<?> solver = _delegate.getFactorGraphFactory();
+		return solver != null ? new JSSolver(getApplet(), solver) : null;
+	}
+	
 	public @Nullable JSVariable getVariable(int id)
 	{
 		Variable variable = _delegate.getVariable(id);
@@ -155,14 +181,29 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 		return variable != null ? wrap(variable) : null;
 	}
 	
+	public void initialize()
+	{
+		_delegate.initialize();
+	}
+	
+	public void setSolver(String solver)
+	{
+		setSolver(new JSSolver(_applet, solver));
+	}
+	
 	public void setSolver(JSSolver solver)
 	{
-		_delegate.setSolverFactory(solver.getFactory());
+		_delegate.setSolverFactory(solver.getDelegate());
 	}
 
 	public void solve()
 	{
 		_delegate.solve();
+	}
+
+	public void solveOneStep()
+	{
+		_delegate.solveOneStep();
 	}
 	
 	/*-----------------

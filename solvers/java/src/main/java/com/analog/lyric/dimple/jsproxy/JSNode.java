@@ -18,8 +18,9 @@ package com.analog.lyric.dimple.jsproxy;
 
 import static java.util.Objects.*;
 
-import com.analog.lyric.dimple.model.core.Node;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.model.core.Node;
 
 /**
  * JavaScript proxy for a Dimple {@link Node} object.
@@ -27,7 +28,7 @@ import org.eclipse.jdt.annotation.Nullable;
  * @since 0.07
  * @author Christopher Barber
  */
-public abstract class JSNode<Delegate extends Node> extends JSProxyObject<Delegate>
+public abstract class JSNode<Delegate extends Node> extends JSOptionHolder<Delegate>
 {
 	@Nullable private final JSFactorGraph _parent;
 	
