@@ -423,6 +423,10 @@ public class GibbsReal extends SRealVariableBase
 			// No input or no available sampler, so if bounded, sample uniformly from the bounds
 			if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
 				setCurrentSample(DimpleRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
+			else if (hi < _sampleValue)
+				setCurrentSample(hi);
+			else if (lo > _sampleValue)
+				setCurrentSample(lo);
 		}
 	}
 
