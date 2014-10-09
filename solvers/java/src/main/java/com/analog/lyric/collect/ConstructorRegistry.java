@@ -22,11 +22,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
@@ -34,10 +37,11 @@ import net.jcip.annotations.ThreadSafe;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.reflect.ClassPath;
 
 /**
- * Simple registry mapping class names to no-argument constructor instances.
+ * Simple registry mapping class names to constructor instances.
  * <p>
  * Note that {@link Map} methods such as {@link #containsKey}, {@link #containsValue},
  * {@link #keySet}, {@link #values}, {@link #entrySet}, and {@link #size} will only reflect keys
@@ -58,7 +62,7 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 	protected final ArrayList<String> _packages;
 
 	@GuardedBy("this")
-	protected final Map<String, Constructor<T>> _nameToConstructor;
+	protected final ArrayListMultimap<String, Constructor<T>> _nameToConstructors;
 
 	/*--------------
 	 * Construction
@@ -98,7 +102,7 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 			_packages.add(packageName);
 		}
 
-		_nameToConstructor = new ConcurrentHashMap<>();
+		_nameToConstructors = ArrayListMultimap.create();
 	}
 
 	/*-------------
@@ -109,20 +113,20 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 	@Override
 	public boolean containsKey(Object simpleClassName)
 	{
-		return _nameToConstructor.containsKey(simpleClassName);
+		return _nameToConstructors.containsKey(simpleClassName);
 	}
 
 	@Override
 	@NonNullByDefault(false)
 	public boolean containsValue(Object value)
 	{
-		return _nameToConstructor.containsValue(value);
+		return _nameToConstructors.containsValue(value);
 	}
 
 	@Override
 	public Set<Map.Entry<String, Constructor<T>>> entrySet()
 	{
-		return Collections.unmodifiableSet(_nameToConstructor.entrySet());
+		return Collections.unmodifiableSet(new HashSet<>(_nameToConstructors.entries()));
 	}
 
 	/**
@@ -134,77 +138,36 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 	 * {@code className} and compatible constructor. Returns first match or null if none is found.
 	 * <p>
 	 * @param className is either the unqualified or fully qualified name of the class whose constructor is sought.
+	 * @see #get(String, Class[])
 	 */
-	@SuppressWarnings("unchecked")
 	@NonNullByDefault(false)
 	@Override
-	public synchronized @Nullable Constructor<T> get(Object className)
+	public final @Nullable Constructor<T> get(Object className)
 	{
-		String name = (String) className;
-		Constructor<T> constructor = _nameToConstructor.get(name);
-
-		if (constructor == null)
+		if (className instanceof String)
 		{
-			ClassLoader loader = getClass().getClassLoader();
-
-			if (name.indexOf('.') > 0)
-			{
-				// Looks like it is qualified with a package name.
-				try
-				{
-					@SuppressWarnings("unchecked")
-					Class<?> c = Class.forName(name, false, loader);
-					constructor = getConstructor(c);
-					if (constructor != null)
-					{
-						_nameToConstructor.put(name, constructor);
-						return constructor;
-					}
-				}
-				catch (Exception e)
-				{
-				}
-			}
-			
-			for (String packageName : _packages)
-			{
-				String fullQualifiedName = packageName + "." + name;
-				try
-				{
-					@SuppressWarnings("unchecked")
-					Class<?> c = Class.forName(fullQualifiedName, false, loader);
-					constructor = getConstructor(c);
-					if (constructor != null)
-					{
-						_nameToConstructor.put(name, constructor);
-						break;
-					}
-				}
-				catch (Exception e)
-				{
-				}
-			}
+			return get((String)className, ArrayUtil.EMPTY_CLASS_ARRAY);
 		}
-
-		return constructor;
+		
+		return null;
 	}
-
+	
 	@Override
 	public Set<String> keySet()
 	{
-		return Collections.unmodifiableSet(_nameToConstructor.keySet());
+		return Collections.unmodifiableSet(_nameToConstructors.keySet());
 	}
 
 	@Override
 	public int size()
 	{
-		return _nameToConstructor.size();
+		return _nameToConstructors.size();
 	}
 
 	@Override
 	public Collection<Constructor<T>> values()
 	{
-		return Collections.unmodifiableCollection(_nameToConstructor.values());
+		return Collections.unmodifiableCollection(_nameToConstructors.values());
 	}
 
 	/*---------------
@@ -222,7 +185,7 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 	 * @since 0.07
 	 * @see #addPackage
 	 */
-	public synchronized void addClass(Class<?> newClass)
+	public void addClass(Class<?> newClass)
 	{
 		final String name = newClass.getSimpleName();
 
@@ -232,13 +195,11 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 				name, _superClass.getSimpleName()));
 		}
 		
-		Constructor<T> constructor = getConstructor(newClass);
-		if (constructor == null)
+		if (addConstructorsFrom(newClass, true).isEmpty())
 		{
-			throw new IllegalArgumentException(String.format("%s does not have an accessible no-argument constructor",
+			throw new IllegalArgumentException(String.format("%s does not have an accessible constructor",
 				name));
 		}
-		_nameToConstructor.put(name, constructor);
 	}
 
 	/**
@@ -257,6 +218,91 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 		_packages.add(packageName);
 	}
 
+	/**
+	 * Looks up constructor for named class with specified formal parameters.
+	 * <p>
+	 * If {@code className} is a fully qualified name referring to a class with an accessible constructor
+	 * that takes no arguments, that constructor will be returned. Otherwise, this will
+	 * searches all of the registry's packages (see {@link #getPackages()}) for class with given
+	 * {@code className} and compatible constructor. Returns first match or null if none is found.
+	 * <p>
+	 * @param className is either the unqualified or fully qualified name of the class whose constructor is sought.
+	 * @param formalParameters are the declared types of the parameters to the constructor. Note that these must match
+	 * exactly.
+	 * @see #get(String, Class[])
+	 */
+	public final @Nullable Constructor<T> get(String className, Class<?>[] formalParameters)
+	{
+		List<Constructor<T>> constructors = getAll(className);
+
+		for (Constructor<T> constructor : constructors)
+		{
+			if (Arrays.equals(formalParameters, constructor.getParameterTypes()))
+			{
+				return constructor;
+			}
+		}
+		
+		return null;
+	}
+	
+
+	/**
+	 * Returns list of all public constructors for class with given name.
+	 * @param className is either a simple or fully qualified class name. If a simple name and the class
+	 * has not already been loaded, this will search {@link #getPackages()} for a match.
+	 * @return non-null list of constructors, which may be empty.
+	 * @see #get
+	 * @since 0.07
+	 */
+	public List<Constructor<T>> getAll(String className)
+	{
+		String name = className;
+		
+		List<Constructor<T>> constructors = Collections.emptyList();
+		
+		synchronized(this)
+		{
+			constructors = _nameToConstructors.get(name);
+		}
+
+		if (constructors.isEmpty())
+		{
+			ClassLoader loader = getClass().getClassLoader();
+
+			if (name.indexOf('.') > 0)
+			{
+				// Looks like it is qualified with a package name.
+				try
+				{
+					constructors = addConstructorsFrom(Class.forName(name, false, loader), false);
+				}
+				catch (Exception e)
+				{
+				}
+			}
+			
+			// Search packages for a matching class
+			for (String packageName : _packages)
+			{
+				String fullQualifiedName = packageName + "." + name;
+				try
+				{
+					constructors = addConstructorsFrom(Class.forName(fullQualifiedName, false, loader), true);
+					if (!constructors.isEmpty())
+					{
+						break;
+					}
+				}
+				catch (Exception e)
+				{
+				}
+			}
+		}
+
+		return constructors;
+	}
+	
 	/**
 	 * Returns class type named by {@code simpleClassName}.
 	 * <p>
@@ -287,8 +333,12 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 	@Nullable
 	public Class<? extends T> getClassOrNull(String simpleClassName)
 	{
-		Constructor<T> constructor = get(simpleClassName);
-		return constructor != null ? constructor.getDeclaringClass() : null;
+		List<Constructor<T>> constructors = getAll(simpleClassName);
+		if (!constructors.isEmpty())
+		{
+			return constructors.get(0).getDeclaringClass();
+		}
+		return null;
 	}
 
 	/**
@@ -315,7 +365,7 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 	}
 
 	/**
-	 * Instantiates an instance of named class.
+	 * Instantiates an instance of named class using no-argument constructor.
 	 * <p>
 	 * Simply invokes {@link Constructor#newInstance} on constructor returned by {@link #get}.
 	 * 
@@ -333,7 +383,7 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 	}
 
 	/**
-	 * Instantiates an instance of named class.
+	 * Instantiates an instance of named class using no-argument constructor.
 	 * <p>
 	 * Simply invokes {@link Constructor#newInstance} on constructor returned by {@link #get} or
 	 * else returns null.
@@ -389,11 +439,7 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 		{
 			for (ClassPath.ClassInfo info : path.getTopLevelClasses(packageName))
 			{
-				Constructor<T> constructor = getConstructor(info.load());
-				if (constructor != null)
-				{
-					_nameToConstructor.put(info.getSimpleName(), constructor);
-				}
+				addConstructorsFrom(info.load(), true);
 			}
 		}
 	}
@@ -401,37 +447,57 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 	/*-----------------
 	 * Private methods
 	 */
-
-	@SuppressWarnings("unchecked")
-	private @Nullable Constructor<T> getConstructor(Class<?> type)
+	
+	@NonNullByDefault(false)
+	private static enum ConstructorComparator implements Comparator<Constructor<?>>
 	{
-		Constructor<T> constructor = null;
+		INSTANCE;
 
+		@Override
+		public int compare(Constructor<?> c1, Constructor<?> c2)
+		{
+			return Integer.compare(c1.getParameterTypes().length, c2.getParameterTypes().length);
+		}
+	}
+
+	/**
+	 * Adds public constructors from given type indexed by qualified name
+	 * @param addSimpleName if true, then constructors will also be indexed by the classes simple name.
+	 * @return the constructors that were added
+	 * @since 0.07
+	 */
+	@SuppressWarnings("unchecked")
+	private synchronized List<Constructor<T>> addConstructorsFrom(Class<?> type, boolean addSimpleName)
+	{
+		List<Constructor<T>> constructors = Collections.emptyList();
+		
 		int modifiers = type.getModifiers();
 		if (Modifier.isPublic(modifiers) && !Modifier.isAbstract(modifiers) && _superClass.isAssignableFrom(type))
 		{
 			try
 			{
-				constructor = (Constructor<T>) type.getConstructor();
-				modifiers = constructor.getModifiers();
-				if (!Modifier.isPublic(modifiers))
+				final Constructor<T>[] array = (Constructor<T>[]) type.getConstructors();
+				Arrays.sort(array, ConstructorComparator.INSTANCE);
+				constructors = Arrays.asList(array);
+				if (addSimpleName)
 				{
-					constructor = null;
+					_nameToConstructors.putAll(type.getSimpleName(), constructors);
 				}
+				_nameToConstructors.putAll(type.getCanonicalName(), constructors);
 			}
-			catch (Exception ex)
+			catch (SecurityException ex)
 			{
 				// Ignore
 			}
 		}
-
-		return constructor;
+		
+		return constructors;
 	}
-
+	
 	private RuntimeException noMatchingClass(String simpleClassName)
 	{
 		return new RuntimeException(String.format(
-			"Cannot find class named '%s' with accessible no-argument constructor", simpleClassName));
+			"Cannot find class named '%s' with accessible constructor with appropriate signature", simpleClassName));
 	}
 
 }

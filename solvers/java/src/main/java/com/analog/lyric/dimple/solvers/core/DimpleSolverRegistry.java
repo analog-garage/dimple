@@ -17,9 +17,7 @@
 package com.analog.lyric.dimple.solvers.core;
 
 import java.lang.reflect.Constructor;
-
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
+import java.util.List;
 
 import com.analog.lyric.collect.ConstructorRegistry;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
@@ -73,20 +71,20 @@ public class DimpleSolverRegistry extends ConstructorRegistry<IFactorGraphFactor
 	 * This extends the default behavior by appending "Solver" to the end of the name if no match
 	 * is found using the original argument.
 	 */
-	@NonNullByDefault(false)
 	@Override
-	public synchronized @Nullable Constructor<IFactorGraphFactory<?>> get(Object simpleClassName)
+	public List<Constructor<IFactorGraphFactory<?>>> getAll(String className)
 	{
-		Constructor<IFactorGraphFactory<?>> constructor = super.get(simpleClassName);
-		if (constructor == null)
+		List<Constructor<IFactorGraphFactory<?>>> constructors = super.getAll(className);
+		if (constructors.isEmpty())
 		{
-			String name = (String)simpleClassName;
+			String name = className;
 			if (!name.endsWith("Solver"))
 			{
 				// Try again with name appended with "Solver"
-				constructor = super.get(name + "Solver");
+				constructors = super.getAll(name + "Solver");
 			}
 		}
-		return constructor;
+
+		return constructors;
 	}
 }

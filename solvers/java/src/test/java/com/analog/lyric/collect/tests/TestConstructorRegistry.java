@@ -50,6 +50,7 @@ public class TestConstructorRegistry
 		
 		assertTrue(heapRegistry.isEmpty());
 		assertInvariants(heapRegistry);
+		assertNull(heapRegistry.get(42)); // not a string key
 		assertNull(heapRegistry.get("DoesNotExist"));
 		assertNull(heapRegistry.getClassOrNull("DoesNotExist"));
 		assertNull(heapRegistry.instantiateOrNull("DoesNotExist"));
@@ -60,7 +61,7 @@ public class TestConstructorRegistry
 		assertArrayEquals(new String[] { lyricCollectPackage }, heapRegistry.getPackages());
 		assertSame(BinaryHeap.class, heapRegistry.getClassOrNull("BinaryHeap"));
 		assertInvariants(heapRegistry);
-		assertEquals(1, heapRegistry.size());
+		assertEquals(2 * BinaryHeap.class.getConstructors().length, heapRegistry.size());
 		assertTrue(heapRegistry.containsKey("BinaryHeap"));
 		
 		ConstructorRegistry<Collection<?>> collectionRegistry =
@@ -72,7 +73,8 @@ public class TestConstructorRegistry
 		assertTrue(collectionRegistry.containsKey("BinaryHeap"));
 		assertTrue(collectionRegistry.containsKey("UniquePriorityQueue"));
 		assertFalse(collectionRegistry.containsKey("Tuple")); // is abstract
-		assertFalse(collectionRegistry.containsKey("Tuple2")); // doesn't have no-argument constructor
+		assertTrue(collectionRegistry.containsKey("Tuple2"));
+		assertNull(collectionRegistry.get("Tuple2"));
 		
 		collectionRegistry.addPackage("java.util");
 		assertArrayEquals(new String[] { lyricCollectPackage, "java.util" }, collectionRegistry.getPackages());
@@ -86,7 +88,7 @@ public class TestConstructorRegistry
 		assertInvariants(collectionRegistry);
 		
 		expectThrow(IllegalArgumentException.class, ".*not a subclass.*", collectionRegistry, "addClass", Object.class);
-		expectThrow(IllegalArgumentException.class, ".*does not have an accessible no-argument constructor.*",
+		expectThrow(IllegalArgumentException.class, ".*does not have an accessible constructor.*",
 			collectionRegistry, "addClass", CollectionWithoutConstructor.class);
 		
 		try
@@ -111,7 +113,7 @@ public class TestConstructorRegistry
 		Set<String> keys = registry.keySet();
 		Collection<Constructor<T>> constructors = registry.values();
 		assertEquals(size, entries.size());
-		assertEquals(size, keys.size());
+		assertTrue(size >= keys.size());
 		assertEquals(size, constructors.size());
 		
 		for (Map.Entry<String, Constructor<T>> entry : entries)
@@ -122,15 +124,25 @@ public class TestConstructorRegistry
 			assertTrue(keys.contains(name));
 			assertTrue(registry.containsKey(name));
 			assertTrue(registry.containsValue(constructor));
-			assertSame(constructor, registry.get(name));
+			assertSame(constructor, registry.get(name, constructor.getParameterTypes()));
 			
 			Class<? super T> c = constructor.getDeclaringClass();
 			assertTrue(superClass.isAssignableFrom(c));
 			assertSame(c, registry.getClass(name));
-			assertEquals(name, c.getSimpleName());
+			if (name.contains("."))
+			{
+				assertEquals(name, c.getCanonicalName());
+			}
+			else
+			{
+				assertEquals(name, c.getSimpleName());
+			}
 			
-			T instance = registry.instantiate(name);
-			assertSame(c, instance.getClass());
+			if (constructor.getParameterTypes().length == 0)
+			{
+				T instance = registry.instantiate(name);
+				assertSame(c, instance.getClass());
+			}
 		}
 	}
 	
