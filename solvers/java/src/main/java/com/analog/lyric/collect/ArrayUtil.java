@@ -20,11 +20,12 @@ import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Comparator;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import cern.colt.list.IntArrayList;
 
 import com.analog.lyric.util.misc.Internal;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.math.DoubleMath;
 
 /**
@@ -36,6 +37,11 @@ public abstract class ArrayUtil
 	 * Canonical empty boolean array.
 	 */
 	public static final boolean[] EMPTY_BOOLEAN_ARRAY = new boolean[0];
+	
+	/**
+	 * Canonical empty Class array.
+	 */
+	public static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
 	
 	/**
 	 * Canonical empty double array.
