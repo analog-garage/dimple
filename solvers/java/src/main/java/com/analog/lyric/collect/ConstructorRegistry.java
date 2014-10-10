@@ -494,7 +494,7 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 		return constructors;
 	}
 	
-	private RuntimeException noMatchingClass(String simpleClassName)
+	protected RuntimeException noMatchingClass(String simpleClassName)
 	{
 		return new RuntimeException(String.format(
 			"Cannot find class named '%s' with accessible constructor with appropriate signature", simpleClassName));

@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import java.util.Map;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
@@ -61,6 +63,17 @@ public class Bernoulli extends FactorFunction
 		_parametersConstant = true;
 		_firstDirectedToIndex = 0;
 		if (p < 0 || p > 1) throw new DimpleException("Invalid parameter value.  Must be in range [0, 1].");
+	}
+	
+	/**
+	 * Constructs with fixed probability parameter.
+	 * @param parameterMap specifies the Bernoulli parameter in the entry with the key "p".
+	 * If there is no such entry, the parameter will default to .5.
+	 * @since 0.07
+	 */
+	public Bernoulli(Map<String,Object> parameterMap)
+	{
+		this((double)getOrDefault(parameterMap, "p", .5));
 	}
 
     @Override

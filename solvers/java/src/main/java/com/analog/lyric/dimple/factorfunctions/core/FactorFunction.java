@@ -20,6 +20,7 @@ import static java.util.Objects.*;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -69,14 +70,13 @@ public abstract class FactorFunction
 		_name = name != null ? name : getClass().getSimpleName();
 	}
 
-    /*------------------------
+    /*------------------
      * Abstract methods
      */
     
     // Evaluate the factor function with the specified values and return the energy
     // All factor functions must implement this method
 	public abstract double evalEnergy(Value[] values);
-
 
     /*------------------------
      * FactorFunction methods
@@ -575,6 +575,26 @@ public abstract class FactorFunction
 		return new int[] {};
 	}
 	
+    /*---------------------------
+     * Parameter utility methods
+     */
+    
+	/**
+	 * Looks up a value or default from a map.
+	 * <p>
+	 * Returns result from {@code map.get(key)} if non-null, otherwise
+	 * returns {@code defaultValue}.
+	 * <p>
+	 * This can be used to read parameters in constructors that take a parameter  map.
+	 * <p>
+	 * @since 0.07
+	 */
+	protected static <K,V> V getOrDefault(Map<K,V> map, K key, V defaultValue)
+	{
+		final V value = map.get(key);
+		return value != null ? value : defaultValue;
+	}
+
 
 
  }

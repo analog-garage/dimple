@@ -31,6 +31,7 @@ import com.analog.lyric.dimple.events.DimpleEventListener;
 import com.analog.lyric.dimple.events.IDimpleEventSource;
 import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionRegistry;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.options.DimpleOptionRegistry;
@@ -161,8 +162,7 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 */
 	private final AtomicReference<Logger> _logger = new AtomicReference<>();
 	
-	private final ConstructorRegistry<FactorFunction> _factorFunctions =
-		new ConstructorRegistry<FactorFunction>(FactorFunction.class, "com.analog.lyric.dimple.factorfunctions");
+	private final FactorFunctionRegistry _factorFunctions = new FactorFunctionRegistry();
 	
 	private final ConstructorRegistry<IGenericSampler> _genericSamplers =
 		new ConstructorRegistry<IGenericSampler>(IGenericSampler.class);
@@ -525,10 +525,10 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 * Supports lookup of {@link FactorFunction} implementations by class name.
 	 * Primarily for use in dynamic language implementations of Dimple.
 	 * <p>
-	 * @see ConstructorRegistry
+	 * @see FactorFunctionRegistry
 	 * @since 0.07
 	 */
-	public ConstructorRegistry<FactorFunction> factorFunctions()
+	public FactorFunctionRegistry factorFunctions()
 	{
 		return _factorFunctions;
 	}

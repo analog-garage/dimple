@@ -40,6 +40,8 @@ public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable,
 	@Override
 	public double getPotential();
 
+	public Object getAllSamples();
+	
 	/**
 	 * Sampler instance for generating samples for this variable.
 	 * 
