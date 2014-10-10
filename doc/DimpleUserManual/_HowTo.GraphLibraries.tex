@@ -41,20 +41,19 @@ public class Main
 	public static class MyFunc extends FactorFunction
 	{
 		@Override
-		public double eval(Object ... args)
+		public double evalEnergy(Value[] args)
 		{
-			Object y = args[0];
-			int a = (Integer)args[1];
+			Object y = args[0].getObject();
+			int a = args[1].getInt();
 			
-			Object z = args[2+a];
+			Object z = args[2+a].getObject();
 			
-			return y.equals(z) ? 1.0 : 0.0;
+			return y.equals(z) ? 0 : Double.POSITIVE_INFINITY;
 		}
 	}
 	
-	public static void main(String [] args)
+	public static void main(String[] args)
 	{
-		
 		Discrete y = new Discrete(1,2);
 		Discrete a = new Discrete(0,1,2);
 		Discrete z1 = new Discrete(1,2);

@@ -290,12 +290,49 @@ The FactorFunction class is an abstract class that is used as the base class for
 
 \para{Methods}
 
-At least one or the other of these must be overridden in a derived class.  Users should override evalEnergy instead of eval, but for now can override one or the other.  Eventually eval should be made final and so that only evalEnergy can be overridden.
+\subpara{evalEnergy}
 
-\begin{itemize}
-\item double eval(Object ... args) - Should return a probability associated with the passed in configuration of arguments.
-\item double evalEnergy(Object ... args) - Should return -log(probability) associated with the passed in configuration of arguments.
-\end{itemize}
+This method must be overridden in a derived class.  The method takes an array of Values and returns the energy (negative log of the weight value) associated with the corresponding values.
+
+\begin{lstlisting}
+double evalEnergy(Value[] values);
+\end{lstlisting}
+
+\subpara{isDirected}
+
+This method takes no arguments and returns a boolean indicating whether the factor function is directed.  If directed, then there are a set of directed outputs for which the marginal distribution for all possible input values is a constant.  This method may be overridden in a derived class.  If not overridden, it is assumed false.
+
+\subpara{getDirectedToIndices}
+
+If a factor function is directed, this method indicates which edge indices are the directed outputs (numbering from zero), returning an array of integers.  There are two forms of this method, which may be used depending on whether the set of directed outputs depends on the number of edges in the factor that uses this factor function (many factor functions support a variable number of edges).  If \texttt{isDirected} is overridden and can return \texttt{true}, then this method must also be overridden.  If the result depends on the number of edges connecting to the factor, then the second form must be overridden, otherwise the first form may be overridden instead.
+
+\begin{lstlisting}
+int[]  getDirectedToIndices();
+\end{lstlisting}
+
+\begin{lstlisting}
+int[] getDirectedToIndices(int numEdges);
+\end{lstlisting}
+
+\subpara{isDeterministicDirected}
+
+This method takes no arguments and returns a boolean indicating whether a factor function is both directed and deterministic.  If deterministic and directed, then it is in the form of a deterministic function such that for all possible settings of the input values there is exactly one output value the results in a non-zero weight (or, equivalently, a non-infinite energy)\footnote{The indication that a factor function is deterministic directed is used by the Gibbs solver, and is necessary for such factor functions to work when using the Gibbs solver.}.  This method may be overridden in a derived class.  If not overridden, it is assumed false.
+
+\subpara{evalDeterministic}
+
+If a factor function is directed and deterministic, this method evaluates the values considered the inputs of the deterministic function and returns the resulting values for the corresponding outputs.  Note that these are not the weight or energy values, but the actual values of the associated variables that are considered outputs of the deterministic function.  The resulting values are returned in-place to the values passed in the argument list.  If \texttt{isDeterministicDirected} is overridden and can return \texttt{true}, then this method must also be overridden.
+
+\begin{lstlisting}
+evalDeterministic(Value[] arguments);
+\end{lstlisting}
+
+\subpara{eval}
+
+The method takes an array of Values and returns the weight associated with the corresponding values.  This method need not be overridden in a derived class as the default implementation uses \texttt{evalEnergy} to compute the result.
+
+\begin{lstlisting}
+double eval(Value[] values);
+\end{lstlisting}
 
 \fi
 

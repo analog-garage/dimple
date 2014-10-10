@@ -33,5 +33,4 @@ public class ThreeBitXor extends FactorFunction
 		
 		return (arg0 ^ arg1 ^ arg2) == 0 ? 0 : Double.POSITIVE_INFINITY;
 	}
-
 }
