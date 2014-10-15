@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.test.jsproxy;
 
 import static org.junit.Assert.*;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.factorfunctions.Bernoulli;
@@ -35,6 +36,8 @@ import com.analog.lyric.dimple.test.DimpleTestBase;
  */
 public class TestJSFactorFunction extends DimpleTestBase
 {
+	// FIXME - doesn't work on unix needs display to construct applet.
+	@Ignore
 	@Test
 	public void test()
 	{
