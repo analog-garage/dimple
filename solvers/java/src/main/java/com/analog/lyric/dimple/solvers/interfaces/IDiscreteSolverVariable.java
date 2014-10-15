@@ -55,4 +55,6 @@ public interface IDiscreteSolverVariable extends ISolverVariable
 	 * @see #setGuess(Object)
 	 */
 	public void setGuessIndex(int guessIndex);
+	
+	public int getValueIndex();
 }

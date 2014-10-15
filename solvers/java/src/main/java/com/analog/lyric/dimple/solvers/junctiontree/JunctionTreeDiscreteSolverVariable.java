@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.junctiontree;
 
+import static java.util.Objects.*;
+
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.variables.Discrete;
@@ -68,5 +70,27 @@ public class JunctionTreeDiscreteSolverVariable
 	public @Nullable IDiscreteSolverVariable getDelegate()
 	{
 		return (IDiscreteSolverVariable) _root.getDelegateSolverVariable(this);
+	}
+
+	@Override
+	public int getValueIndex()
+	{
+		if (getModelObject().hasFixedValue())	// If there's a fixed value set, use that instead of the belief
+			return getModelObject().getFixedValueIndex();
+					
+		double[] belief = (double[])getBelief();
+		int numValues = requireNonNull(belief).length;
+		double maxBelief = Double.NEGATIVE_INFINITY;
+		int maxBeliefIndex = -1;
+		for (int i = 0; i < numValues; i++)
+		{
+			double b = belief[i];
+			if (b > maxBelief)
+			{
+				maxBelief = b;
+				maxBeliefIndex = i;
+			}
+		}
+		return maxBeliefIndex;
 	}
 }
