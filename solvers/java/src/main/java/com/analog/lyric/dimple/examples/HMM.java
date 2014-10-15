@@ -31,14 +31,9 @@ public class HMM
 {
 
 	@NonNullByDefault
+	@SuppressWarnings("null")
 	public static class TransitionFactorFunction extends FactorFunction
 	{
-		public TransitionFactorFunction()
-		{
-			super("TransitionFactorFunction");
-		}
-		
-		@SuppressWarnings("null")
 		@Override
 		public final double evalEnergy(Value[] args)
 		{
@@ -66,14 +61,9 @@ public class HMM
 	}
 	
 	@NonNullByDefault
+	@SuppressWarnings("null")
 	public static class ObservationFactorFunction extends FactorFunction
 	{
-		public ObservationFactorFunction()
-		{
-			super("ObservationFactorFunction");
-		}
-		
-		@SuppressWarnings("null")
 		@Override
 		public final double evalEnergy(Value[] args)
 		{

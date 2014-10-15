@@ -127,34 +127,34 @@ end
 
 The method has syntax addFactor(factorFunction,arguments), where factorFunction is an instance of a class that inherits from FactorFunction.  The arguments are the variables involved in the factor being defined (in the same order as the inputs of the real function of the Factor Function). The number of inputs of the function referred to by the function handle has to be equal to the number of arguments of addFactor.
 
-In our case, we define a class called TransitionFactorFunction.
+In our case, we define a class called TransitionFactorFunction.  Note that the evalEnergy method returns the negative log of the factor value, rather than the value itself\footnote{The negative log of a probability value can be interpreted as energy, borrowing the terminology from physics.}.
 
 \begin{lstlisting}
 	public static class TransitionFactorFunction extends FactorFunction
 	{
 		@Override
-		public double eval(Object ... args)
+		public final double evalEnergy(Value[] args)
 		{
-			String state1 = (String)args[0];
-			String state2 = (String)args[1];
+			String state1 = (String)args[0].getObject();
+			String state2 = (String)args[1].getObject();
+			double value;
 			
 			if (state1.equals("sunny"))
 			{
 				if (state2.equals("sunny"))
 				{
-					return 0.8;
+					value = 0.8;
 				}
 				else
 				{
-					return 0.2;
+					value = 0.2;
 				}
-				
 			}
 			else
 			{
-				return 0.5;
+				value = 0.5;
 			}
-			
+			return -Math.log(value);
 		}
 	}
 \end{lstlisting}
@@ -239,25 +239,32 @@ see the ObservationFactorFunction from solvers/java/src/main/java/com/analog/lyr
 	public static class ObservationFactorFunction extends FactorFunction
 	{
 		@Override
-		public double eval(Object ... args)
+		public final double evalEnergy(Value[] args)
 		{
-			String state = (String)args[0];
-			String observation = (String)args[1];
+			String state = (String)args[0].getObject();
+			String observation = (String)args[1].getObject();
+			double value;
 			
 			if (state.equals("sunny"))
+			{
 				if (observation.equals("walk"))
-					return 0.7;
+					value = 0.7;
 				else if (observation.equals("book"))
-					return 0.1;
+					value = 0.1;
 				else // cook
-					return 0.2;
+					value = 0.2;
+			}
 			else
+			{
 				if (observation.equals("walk"))
-					return 0.2;
+					value = 0.2;
 				else if (observation.equals("book"))
-					return 0.4;
+					value = 0.4;
 				else // cook
-					return 0.4;
+					value = 0.4;
+			}
+			
+			return -Math.log(value);
 		}
 	}
 \end{lstlisting}
@@ -392,7 +399,7 @@ By default, the solver will use either a Flooding Schedule or a Tree Schedule de
 If the factor-graph is a tree (one that contains no cycles), the solver will automatically detect this and use a Tree Schedule by default.  In this schedule, each node is updated in an order that will result in the correct beliefs being computed after just one iteration.  In this case, NumIterations should be 1, which is its default value.
 
 \subsubsection*{Accessing Results}
-Once the solver has finished running, we can access the marginal distribution of each variable by using the Belief property
+Once the solver has finished running, we can access the marginal distribution of each variable by using the Belief property:
 
 \ifmatlab
 
@@ -487,26 +494,26 @@ end
 \ifjava
 
 
-See solvers/java/src/main/java/com/analog/lyric/dimple/examples/BadNBitXor.java
+See solvers/java/src/main/java/com/analog/lyric/dimple/examples/BadNBitXor.java.  Note that the evalEnergy method returns the negative log of the factor value, rather than the value itself.  In this case, positive infinity corresponds to zero probability.
 
 \begin{lstlisting}
 	public static class BadNBitXorFactor extends FactorFunction
 	{
 		@Override
-		public double eval(Object ... args)
+		public final double evalEnergy(Value[] args)
 		{
 			int sum = 0;
 			for (int i = 0; i < args.length; i++)
-				sum += (Integer)args[i];
+				sum += args[i].getInt();
 			
-			return (sum % 2) == 0 ? 1 : 0;
+			return (sum % 2) == 0 ? 0 : Double.POSITIVE_INFINITY;
 		}
 	}
 \end{lstlisting}
 
 \fi
 
-Using everything we have learned in the previous example, the sequence of instructions we use is simply 
+Using everything we have learned in the previous example, the sequence of instructions we use is simply:
 
 \ifmatlab 
 
@@ -642,7 +649,7 @@ B_3+B_4+C &=& 0(mod 2)
 
 for an internal bit C. While the reduction from one 4-bit to two 3-bit XORs might not seem tremendous, it is easy to see that more generally, any N-bit XOR can be reduced to a tree of 3-bit XORs, with depth log(N). Because the complexity of running Belief Propagation is exponential in the degree of factors, using this technique leads to dramatic speed improvements.
 
-Using all the techniques mentioned above, we derive a new factor graph for the 4-bit XOR, equivalent to the one previously defined 
+Using all the techniques mentioned above, we derive a new factor graph for the 4-bit XOR, equivalent to the one previously defined.
 
 \ifmatlab
 
@@ -681,13 +688,13 @@ From solvers/java/src/main/java/com/analog/lyric/dimple/examples/ThreeBitXor.jav
 public class ThreeBitXor extends FactorFunction
 {
 	@Override
-	public double eval(Object ... args)
+	public final double evalEnergy(Value[] args)
 	{
-		int arg0 = (Integer)args[0];
-		int arg1 = (Integer)args[1];
-		int arg2 = (Integer)args[2];
+		int arg0 = args[0].getInt();
+		int arg1 = args[1].getInt();
+		int arg2 = args[2].getInt();
 		
-		return (arg0 ^ arg1 ^ arg2) == 0 ? 1 : 0;
+		return (arg0 ^ arg1 ^ arg2) == 0 ? 0 : Double.POSITIVE_INFINITY;
 	}
 }
 \end{lstlisting}
