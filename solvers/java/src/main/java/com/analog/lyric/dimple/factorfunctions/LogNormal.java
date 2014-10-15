@@ -16,10 +16,16 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import java.util.Map;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 
 
 /**
@@ -33,7 +39,7 @@ import com.analog.lyric.dimple.model.values.Value;
  * In this case, the mean and precision are not included in the list of arguments.
  * 
  */
-public class LogNormal extends FactorFunction
+public class LogNormal extends FactorFunction implements IParametricFactorFunction
 {
 	protected double _mean;
 	protected double _precision;
@@ -43,6 +49,10 @@ public class LogNormal extends FactorFunction
 	protected int _firstDirectedToIndex = 2;
 	protected static final double _logSqrt2pi = Math.log(2*Math.PI)*0.5;
 
+	/*--------------
+	 * Construction
+	 */
+	
 	public LogNormal() {super();}
 	public LogNormal(double mean, double precision)
 	{
@@ -55,6 +65,25 @@ public class LogNormal extends FactorFunction
 		_firstDirectedToIndex = 0;
     	if (_precision < 0) throw new DimpleException("Negative precision value. This must be a non-negative value.");
 	}
+	
+	/**
+	 * Constructs log-normal distribution with fixed mean and precision.
+	 * @param parameters is in the same form accepted by {@link Normal#Normal(Map)}.
+	 * @since 0.07
+	 */
+	public LogNormal(Map<String,Object> parameters)
+	{
+		this(new NormalParameters(parameters));
+	}
+	
+	private LogNormal(NormalParameters parameters)
+	{
+		this(parameters.getMean(), parameters.getPrecision());
+	}
+	
+	/*------------------------
+	 * FactorFunction methods
+	 */
 	
     @Override
 	public final double evalEnergy(Value[] arguments)
@@ -95,12 +124,54 @@ public class LogNormal extends FactorFunction
 		return FactorFunctionUtilities.getListOfIndices(_firstDirectedToIndex, numEdges-1);
 	}
     
+    /*-----------------------------------
+     * IParametricFactorFunction methods
+     */
     
-    // Factor-specific methods
-    public final boolean hasConstantParameters()
+    @Override
+    public int copyParametersInto(Map<String, Object> parameters)
+    {
+    	if (_parametersConstant)
+    	{
+    		parameters.put("mean", _mean);
+    		parameters.put("precision", _precision);
+    		return 2;
+    	}
+    	return 0;
+    }
+    
+    @Override
+    public @Nullable Object getParameter(String parameterName)
+    {
+    	if (_parametersConstant)
+    	{
+    		switch (parameterName)
+    		{
+    		case "mean":
+    		case "mu":
+    			return _mean;
+    		case "precision":
+    			return _precision;
+    		case "variance":
+    			return 1.0 / _precision;
+    		case "sigma":
+    		case "std":
+    			return Math.sqrt(1.0 / _precision);
+    		}
+    	}
+    	return null;
+    }
+     
+    @Override
+	public final boolean hasConstantParameters()
     {
     	return _parametersConstant;
     }
+
+    /*-------------------------
+     * Factor-specific methods
+     */
+    
     public final double getMean()
     {
     	return _mean;

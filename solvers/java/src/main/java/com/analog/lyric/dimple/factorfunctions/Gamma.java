@@ -16,9 +16,14 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import java.util.Map;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -33,7 +38,7 @@ import com.analog.lyric.dimple.model.values.Value;
  * In this case, they are not included in the list of arguments.
  * 
  */
-public class Gamma extends FactorFunction
+public class Gamma extends FactorFunction implements IParametricFactorFunction
 {
 	protected double _alpha;
 	protected double _beta;
@@ -43,6 +48,10 @@ public class Gamma extends FactorFunction
 	protected boolean _parametersConstant = false;
 	protected int _firstDirectedToIndex = 2;
 
+	/*--------------
+	 * Construction
+	 */
+	
 	public Gamma() {super();}
 	public Gamma(double alpha, double beta)
 	{
@@ -58,7 +67,15 @@ public class Gamma extends FactorFunction
     	if (_beta <= 0) throw new DimpleException("Non-positive beta parameter. This must be a positive value.");
 	}
 	
-
+	public Gamma(Map<String,Object> parameters)
+	{
+		this((double)getOrDefault(parameters, "alpha", 1.0), (double)getOrDefault(parameters, "beta", 1.0));
+	}
+	
+	/*------------------------
+	 * FactorFunction methods
+	 */
+	
     @Override
     public final double evalEnergy(Value[] arguments)
     {
@@ -114,12 +131,48 @@ public class Gamma extends FactorFunction
 		return FactorFunctionUtilities.getListOfIndices(_firstDirectedToIndex, numEdges-1);
 	}
     
+    /*-----------------------------------
+     * IParametricFactorFunction methods
+     */
     
-    // Factor-specific methods
+    @Override
+    public int copyParametersInto(Map<String, Object> parameters)
+    {
+    	if (_parametersConstant)
+    	{
+    		parameters.put("alpha", _alpha);
+    		parameters.put("beta", _beta);
+    		return 2;
+    	}
+    	return 0;
+    }
+    
+    @Override
+    public @Nullable Object getParameter(String parameterName)
+    {
+    	if (_parametersConstant)
+    	{
+    		switch (parameterName)
+    		{
+    		case "alpha":
+    			return _alpha;
+    		case "beta":
+    			return _beta;
+    		}
+    	}
+    	return null;
+    }
+    
+    @Override
     public final boolean hasConstantParameters()
     {
     	return _parametersConstant;
     }
+
+    /*-------------------------
+     * Factor-specific methods
+     */
+    
     public final double getAlphaMinusOne()
     {
     	return _alphaMinusOne;

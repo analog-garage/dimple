@@ -16,9 +16,14 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import java.util.Map;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -33,7 +38,7 @@ import com.analog.lyric.dimple.model.values.Value;
  * In this case, they are not included in the list of arguments.
  * 
  */
-public class InverseGamma extends FactorFunction
+public class InverseGamma extends FactorFunction implements IParametricFactorFunction
 {
 	protected double _alpha;
 	protected double _beta;
@@ -42,6 +47,10 @@ public class InverseGamma extends FactorFunction
 	protected boolean _parametersConstant = false;
 	protected int _firstDirectedToIndex = 2;
 
+	/*--------------
+	 * Construction
+	 */
+	
 	public InverseGamma() {super();}
 	public InverseGamma(double alpha, double beta)
 	{
@@ -55,6 +64,21 @@ public class InverseGamma extends FactorFunction
     	if (_alpha <= 0) throw new DimpleException("Non-positive alpha parameter. This must be a positive value.");
     	if (_beta <= 0) throw new DimpleException("Non-positive beta parameter. This must be a positive value.");
 	}
+	
+	/**
+	 * Constructs inverse gamma distribution with fixed alpha and beta parameters.
+	 * @param parameters May specify either or both of the alpha and beta parameters using "alpha" and
+	 * "beta" keys respectively. Values will otherwise default to 1.0.
+	 * @since 0.07
+	 */
+	public InverseGamma(Map<String,Object> parameters)
+	{
+		this((double)getOrDefault(parameters, "alpha", 1.0), (double)getOrDefault(parameters, "beta", 1.0));
+	}
+	
+	/*------------------------
+	 * FactorFunction methods
+	 */
 	
     @Override
 	public final double evalEnergy(Value[] arguments)
@@ -91,4 +115,42 @@ public class InverseGamma extends FactorFunction
     	// All edges except the parameter edges (if present) are directed-to edges
 		return FactorFunctionUtilities.getListOfIndices(_firstDirectedToIndex, numEdges-1);
 	}
+    
+    /*-----------------------------------
+     * IParametricFactorFunction methods
+     */
+    
+    @Override
+    public int copyParametersInto(Map<String, Object> parameters)
+    {
+    	if (_parametersConstant)
+    	{
+    		parameters.put("alpha", _alpha);
+    		parameters.put("beta", _beta);
+    		return 2;
+    	}
+    	return 0;
+    }
+    
+    @Override
+    public @Nullable Object getParameter(String parameterName)
+    {
+    	if (_parametersConstant)
+    	{
+    		switch (parameterName)
+    		{
+    		case "alpha":
+    			return _alpha;
+    		case "beta":
+    			return _beta;
+    		}
+    	}
+    	return null;
+    }
+    
+    @Override
+    public boolean hasConstantParameters()
+    {
+    	return _parametersConstant;
+    }
 }

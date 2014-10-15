@@ -18,9 +18,12 @@ package com.analog.lyric.dimple.factorfunctions;
 
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -40,11 +43,15 @@ import com.analog.lyric.dimple.model.values.Value;
  * The parameter may optionally be specified as a constant in the constructor.
  * In this case, the parameter is not included in the list of arguments.
  */
-public class Bernoulli extends FactorFunction
+public class Bernoulli extends FactorFunction implements IParametricFactorFunction
 {
 	private double _p;
 	private boolean _parametersConstant;
 	private int _firstDirectedToIndex;
+	
+	/*--------------
+	 * Construction
+	 */
 	
 	public Bernoulli()		// Variable parameter
 	{
@@ -76,6 +83,11 @@ public class Bernoulli extends FactorFunction
 		this((double)getOrDefault(parameterMap, "p", .5));
 	}
 
+	/*-------------------------
+	 *  FactorFunction methods
+	 */
+	
+	
     @Override
 	public final double evalEnergy(Value[] arguments)
     {
@@ -124,12 +136,48 @@ public class Bernoulli extends FactorFunction
 		return FactorFunctionUtilities.getListOfIndices(_firstDirectedToIndex, numEdges-1);
 	}
     
+    /*-----------------------------------
+     * IParametricFactorFunction methods
+     */
     
-    // Factor-specific methods
-    public final boolean hasConstantParameters()
+    @Override
+    public int copyParametersInto(Map<String, Object> parameters)
+    {
+    	if (_parametersConstant)
+    	{
+    		parameters.put("p", _p);
+    		return 1;
+    	}
+    	else
+    	{
+    		return 0;
+    	}
+    }
+    
+    @Override
+    public @Nullable Object getParameter(String parameterName)
+    {
+    	if (_parametersConstant)
+    	{
+    		switch (parameterName)
+    		{
+    		case "p":
+    			return _p;
+    		}
+    	}
+    	return null;
+    }
+    
+    @Override
+	public final boolean hasConstantParameters()
     {
     	return _parametersConstant;
     }
+
+    /*--------------------------
+     * Factor-specific methods
+     */
+    
     public final double getParameter()
     {
     	return _p;

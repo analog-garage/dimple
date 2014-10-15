@@ -16,9 +16,14 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import java.util.Map;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -32,7 +37,7 @@ import com.analog.lyric.dimple.model.values.Value;
  * In this case, it is not included in the list of arguments.
  * 
  */
-public class Rayleigh extends FactorFunction
+public class Rayleigh extends FactorFunction implements IParametricFactorFunction
 {
 	protected double _sigma;
 	protected double _inverseSigmaSquared;
@@ -40,6 +45,10 @@ public class Rayleigh extends FactorFunction
 	protected boolean _parametersConstant = false;
 	protected int _firstDirectedToIndex = 1;
 
+	/*--------------
+	 * Construction
+	 */
+	
 	public Rayleigh() {super();}
 	public Rayleigh(double sigma)
 	{
@@ -51,6 +60,21 @@ public class Rayleigh extends FactorFunction
 		_firstDirectedToIndex = 0;
     	if (_sigma < 0) throw new DimpleException("Negative sigma value. This must be a non-negative value.");
 	}
+	
+	/**
+	 * Constructs Rayleigh distribution with fixed sigma parameter.
+	 * @param parameters If this contains an entry under the key "sigma", that will be used for the
+	 * corresponding parameter, otherwise it will default to 1.0.
+	 * @since 0.07
+	 */
+	public Rayleigh(Map<String,Object> parameters)
+	{
+		this((double)getOrDefault(parameters, "sigma", 1.0));
+	}
+	
+	/*------------------------
+	 * FactorFunction methods
+	 */
 	
     @Override
 	public final double evalEnergy(Value[] arguments)
@@ -84,4 +108,39 @@ public class Rayleigh extends FactorFunction
     	// All edges except the parameter edges (if present) are directed-to edges
 		return FactorFunctionUtilities.getListOfIndices(_firstDirectedToIndex, numEdges-1);
 	}
+    
+    /*-----------------------------------
+     * IParametricFactorFunction methods
+     */
+    
+    @Override
+    public int copyParametersInto(Map<String, Object> parameters)
+    {
+    	if (_parametersConstant)
+    	{
+    		parameters.put("sigma", _sigma);
+    		return 1;
+    	}
+    	return 0;
+    }
+    
+    @Override
+    public @Nullable Object getParameter(String parameterName)
+    {
+    	if (_parametersConstant)
+    	{
+    		switch (parameterName)
+    		{
+    		case "sigma":
+    			return _sigma;
+    		}
+    	}
+    	return null;
+    }
+    
+    @Override
+    public boolean hasConstantParameters()
+    {
+    	return _parametersConstant;
+    }
 }

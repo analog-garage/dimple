@@ -16,10 +16,15 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import java.util.Map;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -40,12 +45,16 @@ import com.analog.lyric.dimple.model.values.Value;
  * The parameters may optionally be specified as constants in the constructor.
  * In this case, the parameters are not included in the list of arguments.
  */
-public class Categorical extends FactorFunction
+public class Categorical extends FactorFunction implements IParametricFactorFunction
 {
 	private double[] _alpha;
 	private boolean _parametersConstant;
 	private int _firstDirectedToIndex;
 
+	/*--------------
+	 * Construction
+	 */
+	
 	public Categorical()		// Variable parameters
 	{
 		super();
@@ -72,7 +81,16 @@ public class Categorical extends FactorFunction
     	for (int i = 0; i < _alpha.length; i++)		// Normalize the alpha vector in case they're not already normalized
     		_alpha[i] /= sum;
 	}
-
+	
+	public Categorical(Map<String,Object> parameters)
+	{
+		this((double[])require(parameters, "alpha", "alphas"));
+	}
+	
+	/*------------------------
+	 * FactorFunction methods
+	 */
+	
     @Override
 	public final double evalEnergy(Value[] arguments)
     {
@@ -99,12 +117,46 @@ public class Categorical extends FactorFunction
 		return FactorFunctionUtilities.getListOfIndices(_firstDirectedToIndex, numEdges-1);
 	}
     
+    /*-----------------------------------
+     * IParametricFactorFunction methods
+     */
     
-    // Factor-specific methods
-    public final boolean hasConstantParameters()
+    @Override
+    public int copyParametersInto(Map<String, Object> parameters)
+    {
+    	if (_parametersConstant)
+    	{
+    		parameters.put("alpha", _alpha.clone());
+    		return 1;
+    	}
+    	return 0;
+    }
+    
+    @Override
+    public @Nullable Object getParameter(String parameterName)
+    {
+    	if (_parametersConstant)
+    	{
+    		switch (parameterName)
+    		{
+    		case "alpha":
+    		case "alphas":
+    			return _alpha.clone();
+    		}
+    	}
+    	return null;
+    }
+    
+    @Override
+	public final boolean hasConstantParameters()
     {
     	return _parametersConstant;
     }
+
+    /*-------------------------
+     * Factor-specific methods
+     */
+    
     public final double[] getParameters()
     {
     	return _alpha;

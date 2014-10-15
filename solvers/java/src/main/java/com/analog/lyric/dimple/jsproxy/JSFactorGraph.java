@@ -17,9 +17,12 @@
 package com.analog.lyric.dimple.jsproxy;
 
 import static java.util.Objects.*;
+import netscape.javascript.JSException;
+import netscape.javascript.JSObject;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -93,75 +96,110 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 	/*----------------------
 	 * JSFactorGraph methods
 	 */
-	
-	public JSFactor addFactor(JSFactorFunction function, JSVariable ... args)
+
+	public JSFactor addFactor(Object function, Object[] args)
 	{
-		Object[] unwrapped = new Object[args.length];
-		for (int i = args.length; --i>=0;)
+		int firstArg = 0;
+		FactorFunction ff = null;
+
+		if (function instanceof FactorFunction)
 		{
-			unwrapped[i] = args[i].getDelegate();
+			ff = (FactorFunction)function;
+		}
+		else if (function instanceof JSFactorFunction)
+		{
+			ff = ((JSFactorFunction)function)._delegate;
+		}
+		else if (function instanceof String)
+		{
+			String name = (String)function;
+			if (args.length > 0 && args[0] instanceof JSObject)
+			{
+				firstArg = 1;
+				ff = _applet.functions.get(name, (JSObject)args[0])._delegate;
+			}
+			else
+			{
+				ff = _applet.functions.get(name)._delegate;
+			}
+		}
+		// TODO factor tables
+		
+		if (ff == null)
+		{
+			throw new IllegalArgumentException("Bad factor function argument: " + function);
 		}
 		
-		return wrap(_delegate.addFactor(function._delegate, unwrapped));
-	}
-	
-	public JSFactor addFactor(JSFactorFunction function, JSVariable arg1)
-	{
-		return addFactor(function, new JSVariable[] { arg1 });
-	}
-
-	public JSFactor addFactor(JSFactorFunction function, JSVariable arg1, JSVariable arg2)
-	{
-		return addFactor(function, new JSVariable[] { arg1, arg2 });
-	}
-
-	public JSFactor addFactor(JSFactorFunction function, JSVariable arg1, JSVariable arg2, JSVariable arg3)
-	{
-		return addFactor(function, new JSVariable[] { arg1, arg2, arg3 });
-	}
-
-	public JSFactor addFactor(String functionName, JSVariable ... args)
-	{
-		return addFactor(_applet.functions.get(functionName), args);
-	}
-	
-	public JSFactor addFactor(String function, JSVariable arg1)
-	{
-		return addFactor(function, new JSVariable[] { arg1 });
-	}
-
-	public JSFactor addFactor(String function, JSVariable arg1, JSVariable arg2)
-	{
-		return addFactor(function, new JSVariable[] { arg1, arg2 });
-	}
-
-	public JSFactor addFactor(String function, JSVariable arg1, JSVariable arg2, JSVariable arg3)
-	{
-		return addFactor(function, new JSVariable[] { arg1, arg2, arg3 });
-	}
-
-	public JSVariable addVariable(String name, JSDomain<?> domain)
-	{
-		Variable variable = null;
+		final int nArgs = args.length - firstArg;
+		Object[] unwrapped = new Object[nArgs];
+		for (int i = 0; i < nArgs; ++i)
+		{
+			Object arg = args[firstArg + i];
+			if (arg instanceof JSProxyObject<?>)
+			{
+				arg = ((JSProxyObject<?>)arg).getDelegate();
+			}
+			unwrapped[i] = arg;
+		}
 		
-		switch (domain.getDomainType())
+		return wrap(_delegate.addFactor(ff, unwrapped));
+	}
+	
+	public JSFactor addFactor(Object function, Object arg1)
+	{
+		return addFactor(function, new Object[] { arg1 });
+	}
+
+	public JSFactor addFactor(Object function, Object arg1, Object arg2)
+	{
+		return addFactor(function, new Object[] { arg1, arg2 });
+	}
+
+	public JSFactor addFactor(Object function, Object arg1, Object arg2, Object arg3)
+	{
+		return addFactor(function, new Object[] { arg1, arg2, arg3 });
+	}
+
+	public JSFactor addFactor(Object function, Object arg1, Object arg2, Object arg3, Object arg4)
+	{
+		return addFactor(function, new Object[] { arg1, arg2, arg3, arg4 });
+	}
+
+	public JSFactor addFactor(Object function, Object arg1, Object arg2, Object arg3, Object arg4, Object arg5)
+	{
+		return addFactor(function, new Object[] { arg1, arg2, arg3, arg4, arg5 });
+	}
+
+	public JSVariable addVariable(Object domain, String name)
+	{
+		if (!(domain instanceof JSDomain))
+		{
+			throw new JSException(String.format("%s is not a domain", domain));
+		}
+		
+		JSDomain<?> jsdomain = (JSDomain<?>)domain;
+
+		Variable variable = null;
+
+		switch (jsdomain.getDomainType())
 		{
 		case DISCRETE:
-			variable = new Discrete(requireNonNull(domain._delegate.asDiscrete()));
+			variable = new Discrete(requireNonNull(jsdomain._delegate.asDiscrete()));
 			break;
 		case REAL:
-			variable = new Real(requireNonNull(domain._delegate.asReal()));
+			variable = new Real(requireNonNull(jsdomain._delegate.asReal()));
 			break;
 		case REAL_JOINT:
-			variable = new RealJoint(requireNonNull(domain._delegate.asRealJoint()));
+			variable = new RealJoint(requireNonNull(jsdomain._delegate.asRealJoint()));
 			break;
 		}
-		
+
 		requireNonNull(variable).setName(name);
 		_delegate.addVariables(variable);
-		
+
 		return wrap(variable);
 	}
+	
 	
 	public @Nullable JSSolver getSolver()
 	{

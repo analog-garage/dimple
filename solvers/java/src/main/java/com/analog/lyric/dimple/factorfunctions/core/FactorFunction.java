@@ -45,7 +45,7 @@ import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.util.misc.Matlab;
 
 @ThreadSafe
-public abstract class FactorFunction
+public abstract class FactorFunction implements IFactorFunction
 {
 	/*-------
 	 * State
@@ -76,6 +76,7 @@ public abstract class FactorFunction
     
     // Evaluate the factor function with the specified values and return the energy
     // All factor functions must implement this method
+	@Override
 	public abstract double evalEnergy(Value[] values);
 
     /*------------------------
@@ -95,6 +96,7 @@ public abstract class FactorFunction
 	}
 
 	// Evaluate the factor and return a weight rather than an energy value
+	@Override
 	public double eval(Value[] values)
 	{
 		return Math.exp(-evalEnergy(values));
@@ -109,6 +111,7 @@ public abstract class FactorFunction
 	
 	// For deterministic-directed factor functions, set the value of the output variables given the input variables
 	// The default implementation does nothing; any deterministic-directed factor function must override this method
+	@Override
 	public void evalDeterministic(Value[] arguments)
 	{
 	}
@@ -290,17 +293,26 @@ public abstract class FactorFunction
     	return getFactorTableIfExists(factor.getDomainList().asJointDomainIndexer());
     }
     
+	@Override
 	public String getName()
 	{
 		return _name;
 	}
 
+	@Override
 	public boolean isDeterministicDirected()
 	{return false;}
 
+	@Override
 	public boolean isDirected()
 	{return false;}
-
+	
+	@Override
+	public boolean isParametric()
+	{
+		return IParametricFactorFunction.class.isInstance(this);
+	}
+	
     /**
      * The maximum number of variable updates beyond which {@link #updateDeterministic}
      * should not be called.
@@ -585,16 +597,64 @@ public abstract class FactorFunction
 	 * Returns result from {@code map.get(key)} if non-null, otherwise
 	 * returns {@code defaultValue}.
 	 * <p>
-	 * This can be used to read parameters in constructors that take a parameter  map.
+	 * This can be used to read parameters in FactorFunction constructors that take a parameter  map.
 	 * <p>
 	 * @since 0.07
+	 * @see #getFirstOrDefault(Map, Object, Object...)
 	 */
-	protected static <K,V> V getOrDefault(Map<K,V> map, K key, V defaultValue)
+	public static <K,V> V getOrDefault(Map<K,V> map, K key, V defaultValue)
 	{
 		final V value = map.get(key);
 		return value != null ? value : defaultValue;
 	}
 
+	/**
+	 * Looks up a value using multiple keys
+	 * <p>
+	 * Returns first non-null result from {@code map.get(key}} for each key
+	 * in {@code keys}. If none is found, null is returned.
+	 * @since 0.07
+	 * @see #getOrDefault(Map, Object, Object)
+	 */
+	@SafeVarargs
+	public static @Nullable <K,V> V getFirst(Map<K,V> map, K ... keys)
+	{
+		for (K key : keys)
+		{
+			V value = map.get(key);
+			if (value != null)
+			{
+				return value;
+			}
+		}
+		
+		return null;
+	}
 
+	/**
+	 * Looks up a value using multiple keys and returns value or default.
+	 * <p>
+	 * Returns first non-null result from {@code map.get(key}} for each key
+	 * in {@code keys}. If none is found, the {@code defaultValue} is returned instead.
+	 * @since 0.07
+	 * @see #getOrDefault(Map, Object, Object)
+	 */
+	@SafeVarargs
+	public static <K,V> V getFirstOrDefault(Map<K,V> map, V defaultValue, K ... keys)
+	{
+		V value = getFirst(map, keys);
+		return value != null ? value : defaultValue;
+	}
 
+	@SafeVarargs
+	public static <K,V> V require(Map<K,V> map, K ... keys)
+	{
+		V value = getFirst(map, keys);
+		if (value != null)
+		{
+			return value;
+		}
+
+		throw new IllegalArgumentException(String.format("Expected parameter named '%s'", keys[0]));
+	}
  }

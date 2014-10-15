@@ -14,45 +14,14 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.jsproxy;
-
-import com.analog.lyric.dimple.environment.DimpleEnvironment;
+package com.analog.lyric.dimple.factorfunctions.core;
 
 /**
- * Represents the Dimple environment.
- * <p>
- * You can use set option values on this object that will be inherited by
- * all graphs.
- * <p>
+ * 
  * @since 0.07
  * @author Christopher Barber
  */
-public class JSEnvironment extends JSOptionHolder<DimpleEnvironment>
+public interface IParameterizedFactorFunction
 {
-	/*-------
-	 * State
-	 */
 	
-	private final DimpleApplet _applet;
-	
-	/*--------------
-	 * Construction
-	 */
-
-	JSEnvironment(DimpleApplet applet, DimpleEnvironment delegate)
-	{
-		super(delegate);
-		_applet = applet;
-	}
-
-	/*-----------------------
-	 * JSProxyObject methods
-	 */
-	
-	@Override
-	public DimpleApplet getApplet()
-	{
-		return _applet;
-	}
-
 }

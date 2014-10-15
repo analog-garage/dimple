@@ -16,8 +16,10 @@
 
 package com.analog.lyric.dimple.jsproxy;
 
-import com.analog.lyric.collect.ConstructorRegistry;
+import netscape.javascript.JSObject;
+
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionRegistry;
 
 
 /**
@@ -25,24 +27,105 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
  * @since 0.07
  * @author Christopher Barber
  */
-public class JSFactorFunctionFactory
+public class JSFactorFunctionFactory extends JSProxyObject<FactorFunctionRegistry>
 {
 	final DimpleApplet _applet;
-	private final ConstructorRegistry<FactorFunction> _factory;
+
+	/*--------------
+	 * Construction
+	 */
 	
 	JSFactorFunctionFactory(DimpleApplet applet)
 	{
+		super(applet.getEnvironment().getDelegate().factorFunctions());
 		_applet = applet;
-		_factory = applet.getEnvironment().getDelegate().factorFunctions();
 	}
 	
+	/*-----------------------
+	 * JSProxyObject methods
+	 */
+	
+	@Override
+	public DimpleApplet getApplet()
+	{
+		return _applet;
+	}
+	
+	/*---------------------------------
+	 * JSFactorFunctionFactory methods
+	 */
+	
+	/**
+	 * Creates a factor function instance for given name.
+	 * <p>
+	 * Returns a new instance of the requested factor function using its default constructor.
+	 * For functions that can be parameterized, such as
+	 * {@linkplain com.analog.lyric.dimple.factorfunctions.Normal Normal} or
+	 * {@linkplain com.analog.lyric.dimple.factorfunctions.Bernoulli Bernoulli}, this will return
+	 * a version of the function in which the parameter values will be taken from variables attached
+	 * to the factor. For details, see the documentation for the function.
+	 * <p>
+	 * @param name must match the name of a factor function class known to Dimple.
+	 * @since 0.07
+	 * @see #get(String, JSObject)
+	 */
 	public JSFactorFunction get(String name)
 	{
-		return wrap(_factory.instantiate(name));
+		return wrap(_delegate.instantiate(name));
 	}
 	
+	/**
+	 * Creates a factor function instance for given name.
+	 * <p>
+	 * Returns a new instance of the requested factor function using the form of its constructor
+	 * that takes a {@code Map<String,Object>} that specifies the function's parameters, which will
+	 * be stored as state in the function itself and will not come from variables attached to the factor.
+	 * This function will convert the parameters specified as a {@link JSObject} to a map and invoke the
+	 * corresponding factor function constructor. For example, to create a univariate normal (Gaussian) function with
+	 * a specified mean and standard deviation you could write this in Javascript several different ways:
+	 * <blockquote>
+	 * <pre>
+	 * dimple.funtions.get('Normal', {mu: 0.0, sigma: 2.0});
+	 * dimple.funtions.get('Normal', {mean: 0.0, std: 2.0});
+	 * dimple.funtions.get('Normal', {variance: 4.0}); // 0.0 is the default mean
+	 * dimple.funtions.get('Normal', {precision: .25});
+	 * </pre>
+	 * </blockquote>
+	 * Consult the documentation for the specific function for details as to what parameters are supported. Here is a
+	 * list of functions that currently support this form of construction:
+	 * <ul>
+	 * <li>{@linkplain com.analog.lyric.dimple.factorfunctions.Bernoulli#Bernoulli(java.util.Map) Bernoulli}
+	 * <li>{@linkplain com.analog.lyric.dimple.factorfunctions.Beta#Beta(java.util.Map) Beta}
+	 * <li>{@linkplain com.analog.lyric.dimple.factorfunctions.Categorical#Categorical(java.util.Map) Categorical}
+	 * <li>{@linkplain com.analog.lyric.dimple.factorfunctions.Dirichlet#Dirichlet(java.util.Map) Dirichlet}
+	 * <li>{@linkplain com.analog.lyric.dimple.factorfunctions.Gamma#Gamma(java.util.Map) Gamma}
+	 * <li>{@linkplain com.analog.lyric.dimple.factorfunctions.InverseGamma#InverseGamma(java.util.Map) InverseGamma}
+	 * <li>{@linkplain com.analog.lyric.dimple.factorfunctions.LogNormal#LogNormal(java.util.Map) LogNormal}
+	 * <li>{@linkplain com.analog.lyric.dimple.factorfunctions.Normal#Normal(java.util.Map) Normal}
+	 * <li>{@linkplain com.analog.lyric.dimple.factorfunctions.Poisson#Poisson(java.util.Map) Poisson}
+	 * <li>{@linkplain com.analog.lyric.dimple.factorfunctions.Rayleigh#Rayleigh(java.util.Map) Rayleigh}
+	 * <li>{@linkplain com.analog.lyric.dimple.factorfunctions.VonMises#VonMises(java.util.Map) VonMises}
+	 * </ul>
+	 * More may be added in future releases or may be available from user provided packages.
+	 * <p>
+	 * @param name must match the name of a factor function class known to Dimple that has a constructor
+	 * taking a single argument of type {@code Map<String,Object>}.
+	 * @param parameters
+	 * @since 0.07
+	 * @see #get(String)
+	 */
+	public JSFactorFunction get(String name, JSObject parameters)
+	{
+		return wrap(_delegate.instantiateWithParameters(name, new JSObjectMap(_applet, parameters)));
+	}
+
+	/**
+	 * Creates a proxy wrapper for Dimple factor function.
+	 * @since 0.07
+	 */
 	public JSFactorFunction wrap(FactorFunction function)
 	{
 		return new JSFactorFunction(this, function);
 	}
+
 }
