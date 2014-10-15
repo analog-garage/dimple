@@ -16,12 +16,16 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import java.util.Map;
+
 import org.apache.commons.math3.special.Gamma;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -36,7 +40,7 @@ import com.analog.lyric.dimple.model.values.Value;
  * The parameters may optionally be specified as constants in the constructor.
  * In this case, the parameters are not included in the list of arguments.
  */
-public class Dirichlet extends FactorFunction
+public class Dirichlet extends FactorFunction implements IParametricFactorFunction
 {
 	private int _dimension;
 	private double[] _alphaMinusOne;
@@ -45,7 +49,10 @@ public class Dirichlet extends FactorFunction
 	private int _firstDirectedToIndex;
 	private static final double SIMPLEX_THRESHOLD = 1e-12;
 	
-
+	/*--------------
+	 * Construction
+	 */
+	
 	public Dirichlet()		// Variable parameters
 	{
 		super();
@@ -67,6 +74,15 @@ public class Dirichlet extends FactorFunction
     		_alphaMinusOne[i] = alpha[i] - 1;
     	}
 	}
+	
+	public Dirichlet(Map<String,Object> parameters)
+	{
+		this((double[])require(parameters, "alpha", "alphas"));
+	}
+	
+	/*------------------------
+	 * FactorFunction methods
+	 */
 	
     @Override
 	public final double evalEnergy(Value[] arguments)
@@ -142,12 +158,51 @@ public class Dirichlet extends FactorFunction
 		return FactorFunctionUtilities.getListOfIndices(_firstDirectedToIndex, numEdges-1);
 	}
 
+    /*-----------------------------------
+     * IParametricFactorFunction methods
+     */
     
-    // Factor-specific methods
-    public final boolean hasConstantParameters()
+    @Override
+    public int copyParametersInto(Map<String, Object> parameters)
+    {
+    	if (_parametersConstant)
+    	{
+    		parameters.put("alpha", getParameter("alpha"));
+    		return 1;
+    	}
+    	return 0;
+    }
+    
+    @Override
+    public @Nullable Object getParameter(String parameterName)
+    {
+    	if (_parametersConstant)
+    	{
+    		switch (parameterName)
+    		{
+    		case "alpha":
+    		case "alphas":
+    			final double[] alpha = _alphaMinusOne.clone();
+    			for (int i = alpha.length; --i>=0; )
+    			{
+    				++alpha[i];
+    			}
+    			return alpha;
+    		}
+    	}
+    	return null;
+    }
+    
+    @Override
+	public final boolean hasConstantParameters()
     {
     	return _parametersConstant;
     }
+
+    /*-------------------------
+    * Factor-specific methods
+    */
+    
     public final double[] getAlphaMinusOneArray()
     {
     	return _alphaMinusOne;

@@ -17,6 +17,9 @@
 package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
 import java.io.PrintStream;
+import java.util.Map;
+
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 
 
 public class NormalParameters extends ParameterizedMessageBase
@@ -41,6 +44,29 @@ public class NormalParameters extends ParameterizedMessageBase
 		this(other._mean, other._precision);
 	}
 
+	public NormalParameters(Map<String,Object> parameters)
+	{
+		_mean = (double)FactorFunction.getFirstOrDefault(parameters, 0.0, "mean", "mu");
+		Object value;
+		if ((value = parameters.get("precision"))!= null)
+		{
+			_precision = (double)value;
+		}
+		else if ((value = parameters.get("variance")) != null)
+		{
+			_precision = 1.0 / (double)value;
+		}
+		else if ((value = FactorFunction.getFirst(parameters, "std", "sigma")) != null)
+		{
+			double sigma = (double)value;
+			_precision = 1 / (sigma * sigma);
+		}
+		else
+		{
+			_precision = 1.0;
+		}
+	}
+	
 	@Override
 	public NormalParameters clone()
 	{

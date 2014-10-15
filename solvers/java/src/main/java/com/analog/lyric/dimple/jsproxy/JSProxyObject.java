@@ -22,7 +22,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 /**
  * Base JavaScript/Dimple proxy wrapper.
  * <p>
- * {@code Delegate} is the type of the object to which this delegates.
+ * @param <Delegate> is the type of the object to which this delegates.
  * <p>
  * @since 0.07
  * @author Christopher Barber
@@ -30,6 +30,10 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 public abstract class JSProxyObject<Delegate>
 {
 	final Delegate _delegate;
+	
+	/*--------------
+	 * Construction
+	 */
 	
 	JSProxyObject(Delegate delegate)
 	{
@@ -40,6 +44,9 @@ public abstract class JSProxyObject<Delegate>
 	 * Object methods
 	 */
 	
+	/**
+	 * True if {@code obj} is itself a {@code JSProxyObject} and both del
+	 */
 	@NonNullByDefault(false)
 	@Override
 	public boolean equals(Object obj)

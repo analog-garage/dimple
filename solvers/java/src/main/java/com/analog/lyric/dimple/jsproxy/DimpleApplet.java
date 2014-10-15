@@ -63,28 +63,44 @@ public class DimpleApplet extends Applet
 	 * Local methods
 	 */
 	
-	public boolean ok()
-	{
-		return true;
-	}
-	
-	public JSEnvironment getEnvironment()
-	{
-		return new JSEnvironment(this, DimpleEnvironment.active());
-	}
-	
 	public JSFactorGraph createGraph()
 	{
 		return new JSFactorGraph(this, new FactorGraph());
 	}
 
+	// TODO createFactorTable
+	
+	/**
+	 * Returns object representing the current Dimple environment.
+	 * <p>
+	 * The environment can be used to set default values for options.
+	 * <p>
+	 * @since 0.07
+	 */
+	public JSEnvironment getEnvironment()
+	{
+		return new JSEnvironment(this, DimpleEnvironment.active());
+	}
+	
 	/*-----------
 	 * Factories
 	 */
 	
+	/**
+	 * Instance of factory object for obtaining instances of domains.
+	 * @since 0.07
+	 */
 	public final JSDomainFactory domains = new JSDomainFactory(this, this._proxyCache);
 	
+	/**
+	 * Instance of factory object for obtaining instances of factor functions.
+	 * @since 0.07
+	 */
 	public final JSFactorFunctionFactory functions = new JSFactorFunctionFactory(this);
 	
+	/**
+	 * Instance of factory object for obtaining instances of solvers.
+	 * @since 0.07
+	 */
 	public final JSSolverFactory solvers = new JSSolverFactory(this);
 }

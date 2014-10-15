@@ -16,9 +16,14 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import java.util.Map;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 
@@ -37,7 +42,7 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParamete
  * In this case, the mean and precision are not included in the list of arguments.
  * 
  */
-public class Normal extends FactorFunction
+public class Normal extends FactorFunction implements IParametricFactorFunction
 {
 	protected double _mean;
 	protected double _precision;
@@ -47,6 +52,10 @@ public class Normal extends FactorFunction
 	protected int _firstDirectedToIndex = 2;
 	protected static final double _logSqrt2pi = Math.log(2*Math.PI)*0.5;
 
+	/*--------------
+	 * Construction
+	 */
+	
 	public Normal() {super();}
 	public Normal(double mean, double precision)
 	{
@@ -67,7 +76,30 @@ public class Normal extends FactorFunction
 	{
 		this(parameters.getMean(), parameters.getPrecision());
 	}
+	
+	/**
+	 * Construct a Normal function with fixed parameters.
+	 * <p>
+	 * @param parameters specifies the mean and precision. Several different
+	 * keywords are supported. To set the mean parameter, this will first look
+	 * for a value using the keyword "mean" and then using "mu" and will otherwise
+	 * default to a value of zero. To set the precision parameter, this will first
+	 * look for a value using the keyword "precision" and then "tau". If not found,
+	 * this will next look for "variance" and if found will set the precision to its
+	 * reciprocal. If still not found, it will see if the value is specified as
+	 * standard deviation under the keywords "std" or "sigma". If no matching keyword
+	 * is found the precision will default to one.
+	 * @since 0.07
+	 */
+	public Normal(Map<String,Object> parameters)
+	{
+		this(new NormalParameters(parameters));
+	}
 
+	/*------------------------
+	 * FactorFunction methods
+	 */
+	
     @Override
 	public final double evalEnergy(Value[] arguments)
 	{
@@ -101,12 +133,54 @@ public class Normal extends FactorFunction
 		return FactorFunctionUtilities.getListOfIndices(_firstDirectedToIndex, numEdges-1);
 	}
     
+    /*-----------------------------------
+     * IParametricFactorFunction methods
+     */
     
-    // Factor-specific methods
-    public final boolean hasConstantParameters()
+    @Override
+    public int copyParametersInto(Map<String, Object> parameters)
+    {
+    	if (_parametersConstant)
+    	{
+    		parameters.put("mean", _mean);
+    		parameters.put("precision", _precision);
+    		return 2;
+    	}
+    	return 0;
+    }
+
+    @Override
+    public @Nullable Object getParameter(String parameterName)
+    {
+    	if (_parametersConstant)
+    	{
+    		switch (parameterName)
+    		{
+    		case "mean":
+    		case "mu":
+    			return _mean;
+    		case "precision":
+    			return _precision;
+    		case "variance":
+    			return 1.0 / _precision;
+    		case "sigma":
+    		case "std":
+    			return Math.sqrt(1.0 / _precision);
+    		}
+    	}
+		return null;
+    }
+
+    @Override
+	public final boolean hasConstantParameters()
     {
     	return _parametersConstant;
     }
+
+    /*-------------------------
+     * Factor-specific methods
+     */
+    
 	/**
 	 * @since 0.05
 	 */

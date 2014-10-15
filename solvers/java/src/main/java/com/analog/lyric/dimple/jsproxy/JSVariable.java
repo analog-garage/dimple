@@ -21,6 +21,9 @@ import static java.util.Objects.*;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
+import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 /**
  * 
@@ -59,9 +62,49 @@ public class JSVariable extends JSNode<Variable>
 		return getApplet().domains.wrap(_delegate.getDomain());
 	}
 	
+	
+	/**
+	 * Returns all saved samples for this variable, if available.
+	 * <p>
+	 * When used with a sample-based solver (i.e. Gibbs), which is configured to save samples (e.g. by
+	 * setting {@link GibbsOptions#saveAllSamples} option), this will return all the samples that were
+	 * generated for this variable. Otherwise returns null.
+	 * @since 0.07
+	 */
+	public @Nullable Object getAllSamples()
+	{
+		ISolverVariableGibbs svar = _delegate.getSolverIfType(ISolverVariableGibbs.class);
+		if (svar != null)
+		{
+			return svar.getAllSamples();
+		}
+		
+		return null;
+	}
+	
 	public @Nullable Object getBelief()
 	{
 		return _delegate.getBeliefObject();
+	}
+	
+	/**
+	 * Returns the current sample value if available.
+	 * <p>
+	 * When used with a sample-based solver (i.e. Gibbs), this will be the current sample value of this
+	 * variable. Otherwise null.
+	 * <p>
+	 * @since 0.07
+	 * @see #getAllSamples()
+	 */
+	public @Nullable Object getCurrentSample()
+	{
+		ISolverVariableGibbs svar = _delegate.getSolverIfType(ISolverVariableGibbs.class);
+		if (svar != null)
+		{
+			return svar.getCurrentSampleValue().getObject();
+		}
+		
+		return null;
 	}
 	
 	public @Nullable Object getFixedValue()
@@ -80,6 +123,35 @@ public class JSVariable extends JSNode<Variable>
 	public @Nullable Object getInput()
 	{
 		return _delegate.getInputObject();
+	}
+	
+	/**
+	 * Returns the value associated with the maximum belief, if available.
+	 * <p>
+	 * The meaning of this value will depend on what solver is used. For MAP solvers -- such
+	 * as Min-Sum, LP, or JunctionTreeMAP -- this will be the value of the variable that is
+	 * part of the most likely joint assignment of all non-fixed variables in the graph. Otherwise
+	 * this will be the most likely marginal value of the variable.
+	 * <p>
+	 * Returns null if not supported by the current solver (e.g. the Gibbs solver does
+	 * not support this for real variables).
+	 * @since 0.07
+	 */
+	public @Nullable Object getMaxBeliefValue()
+	{
+		try
+		{
+			ISolverVariable svar = _delegate.getSolver();
+			if (svar != null)
+			{
+				return svar.getValue();
+			}
+		}
+		catch (Exception ex)
+		{
+		}
+
+		return null;
 	}
 	
 	public boolean hasFixedValue()

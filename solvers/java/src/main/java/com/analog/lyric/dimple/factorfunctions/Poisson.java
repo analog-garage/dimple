@@ -16,9 +16,14 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import java.util.Map;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 
 /**
@@ -40,13 +45,16 @@ import com.analog.lyric.dimple.model.values.Value;
  * The rate parameter may optionally be specified as constants in the constructor.
  * In this case, it is not included in the list of arguments.
  */
-public class Poisson extends FactorFunction
+public class Poisson extends FactorFunction implements IParametricFactorFunction
 {
 	protected double _lambda;
 	protected double _logLambda;
 	protected boolean _lambdaParameterConstant = false;
 	private int _firstDirectedToIndex = 1;
 	
+	/*---------------
+	 * Construction
+	 */
 	
 	public Poisson() {super();}		// For variable lambda
 	public Poisson(double lambda)	// For fixed lambda
@@ -59,6 +67,20 @@ public class Poisson extends FactorFunction
 		_firstDirectedToIndex=0;
 	}
 	
+	/**
+	 * Constructs a Poisson distribution with fixed lambda parameter.
+	 * @param parameters If this contains an entry under the key "lambda", that will be used for the
+	 * corresponding parameter otherwise it will default to 1.0.
+	 * @since 0.07
+	 */
+	public Poisson(Map<String, Object> parameters)
+	{
+		this((double)getOrDefault(parameters, "lambda", 1.0));
+	}
+	
+	/*------------------------
+	 * FactorFunction methods
+	 */
 	
 	@Override
 	public final double evalEnergy(Value[] arguments)
@@ -96,8 +118,45 @@ public class Poisson extends FactorFunction
 		return FactorFunctionUtilities.getListOfIndices(_firstDirectedToIndex, numEdges-1);
 	}
 	
+	/*-----------------------------------
+	 * IParametricFactorFunction methods
+	 */
 	
-	// Factor-specific methods
+	@Override
+	public int copyParametersInto(Map<String, Object> parameters)
+	{
+		if (_lambdaParameterConstant)
+		{
+			parameters.put("lambda", _lambda);
+			return 1;
+		}
+		return 0;
+	}
+	
+	@Override
+	public @Nullable Object getParameter(String parameterName)
+	{
+		if (_lambdaParameterConstant)
+		{
+			switch (parameterName)
+			{
+			case "lambda":
+				return _lambda;
+			}
+		}
+		return null;
+	}
+	
+	@Override
+	public boolean hasConstantParameters()
+	{
+		return _lambdaParameterConstant;
+	}
+	
+	/*-------------------------
+	 * Factor-specific methods
+	 */
+	
 	public final boolean hasConstantLambdaParameter()
 	{
 		return _lambdaParameterConstant;

@@ -16,11 +16,7 @@
 
 package com.analog.lyric.dimple.factorfunctions.core;
 
-import com.analog.lyric.dimple.model.domains.DiscreteDomain;
-import com.analog.lyric.dimple.model.domains.Domain;
-import com.analog.lyric.dimple.model.domains.RealDomain;
-import com.analog.lyric.dimple.parameters.IParameterKey;
-import com.analog.lyric.dimple.parameters.IParameterList;
+import com.analog.lyric.dimple.model.values.Value;
 
 // This is a prototype interface for factor functions to accomodate parameterization.
 // I am not sure whether we would want to make this an actual interface of FactorFunction or just modify
@@ -35,10 +31,10 @@ public interface IFactorFunction
 	 */
 	
 	/**
-	 * @return true if function is deterministic, i.e. {@link #evalDensity} always returns either 0 or 1 for
-	 * all arguments and {@link #evalEnergy} returns either zero or infinity.
+	 * @return true if function is deterministic ( i.e. {@link #eval} always returns either 0 or 1 for
+	 * all arguments and {@link #evalEnergy} returns either zero or infinity) and directed.
 	 */
-	public abstract boolean isDeterministic();
+	public abstract boolean isDeterministicDirected();
 	
 	/**
 	 * @return true if function is inherently directed such that some of its arguments can
@@ -49,11 +45,10 @@ public interface IFactorFunction
 	/**
 	 * @return true if all arguments to function must have {@link DiscreteDomain}.
 	 */
-	public abstract boolean isDiscrete();
+//	public abstract boolean isDiscrete();
 	
 	/**
-	 * Indicates whether function is defined in terms of one or more parameters, which
-	 * may be learned.
+	 * Indicates whether function implements {@link IParametricFactorFunction} interface.
 	 */
 	public abstract boolean isParametric();
 
@@ -62,12 +57,12 @@ public interface IFactorFunction
 	 * sum/integral over variable domains is equal to one. May be false even if
 	 * function is in fact in normalized form.
 	 */
-	public abstract boolean isNormalized();
+//	public abstract boolean isNormalized();
 	
 	/**
 	 * @return true if all arguments to function must have {@link RealDomain}.
 	 */
-	public abstract boolean isReal();
+//	public abstract boolean isReal();
 	
 	/*------------------
 	 * Argument methods
@@ -76,24 +71,24 @@ public interface IFactorFunction
 	/**
 	 * @return the maximum number of arguments to the function.
 	 */
-	public abstract int getMaxArguments();
+//	public abstract int getMaxArguments();
 	
 	/**
 	 * @return the minimum number of arguments to the function.
 	 */
-	public abstract int getMinArguments();
+//	public abstract int getMinArguments();
 	
 	/**
 	 * The number of output arguments, if this is a directed function.
 	 */
-	public abstract int getNumberOfOutputs();
+//	public abstract int getNumberOfOutputs();
 	
 	/**
 	 * The indexes of all output arguments in increasing order or an empty array if there are no outputs.
 	 * The size of the returned indexes must equal {@link #getNumberOfOutputs}.
 	 * @see #getOutputIndex
 	 */
-	public abstract int[] getOutputIndices();
+//	public abstract int[] getOutputIndices();
 	
 	/**
 	 * The indexes of all output arguments in increasing order given the specified number of arguments
@@ -102,13 +97,13 @@ public interface IFactorFunction
 	 * 
 	 * @see #getOutputIndex
 	 */
-	public abstract int[] getOutputIndices(int nArguments);
+//	public abstract int[] getOutputIndices(int nArguments);
 
 	/**
 	 * The index of the first output argument.
 	 * @see #getOutputIndices()
 	 */
-	public abstract int getOutputIndex();
+//	public abstract int getOutputIndex();
 	
 	/*-------------------
 	 * Parameter methods
@@ -116,60 +111,51 @@ public interface IFactorFunction
 	
 	// REFACTOR: Do we need this on all factor functions?
 	// Should this just be a special case of getParameters()?
-	public abstract IFactorTable getFactorTable(Domain[] domainList);
+//	public abstract IFactorTable getFactorTable(Domain[] domainList);
 
 	// REFACTOR: does this need a variant that takes a domain list?
-	public abstract IParameterList<?> getParameters();
+//	public abstract IParameterList<?> getParameters();
 
 	/**
 	 * Makes default conjugate prior for given keys in order.
 	 * <p>
 	 * @param keys one or more keys from the list of valid keys for this factor's parameters.
 	 */
-	public abstract IFactorFunction makeDefaultConjugatePrior(IParameterKey ... keys);
+//	public abstract IFactorFunction makeDefaultConjugatePrior(IParameterKey ... keys);
 	
 	/*--------------------
 	 * Evaluation methods
 	 */
 	
 	/**
+	 * Evaluates the possibly unnormalized probability density of the arguments.
+	 * <p>
+	 * This must be equivalent to exp(-{@link #evalEnergy}({@code values})).
+	 */
+	public abstract double eval(Value[] values);
+	
+	/**
 	 * Evaluates the possibly unnormalized negative log probability density of the arguments.
 	 * <p>
-	 * This must be equivalent to exp(-{@link #evalEnergy}({@code arguments})).
+	 * This must be equivalent to -log({@link #eval}({@code values})).
 	 */
-	public abstract double evalDensity(Object ... arguments);
-	
+	public abstract double evalEnergy(Value[] values);
+
 	/**
-	 * Evaluates the possibly unnormalized negative log probability density of the arguments.
-	 * <p>
-	 * This must be equivalent to -log({@link #evalDensity}({@code arguments})).
+	 *  For deterministic-directed factor functions, set the value of the output variables given the input variables.
 	 */
-	public abstract double evalEnergy(Object ... arguments);
-	
-	/**
-	 * Evaluates and returns the output of function if it {@link #isDeterministic()} and
-	 * {@link #getNumberOfOutputs()} is one.
-	 * 
-	 * @param arguments all arguments excluding the output argument itself.
-	 */
-	public abstract Object evalDeterministicOutput(Object ... arguments);
-	
-	/**
-	 * Evaluates outputs of function if it {@link #isDeterministic()} writing new values
-	 * back into {@code arguments} array.
-	 */
-	public abstract void evalDeterministicOutputs(Object[] arguments);
+	public void evalDeterministic(Value[] arguments);
 	
 	/*------------------------
 	 * Transformation methods
 	 */
 	
-	public abstract IFactorFunction toFixedParameterForm(double ... parameters);
-	
-	public abstract IFactorFunction toVariableParameterForm();
-	
-	public abstract IFactorFunction getDerivative();
-	public abstract IFactorFunction getIntegral();
-	public abstract IFactorFunction getInverse();
+//	public abstract IFactorFunction toFixedParameterForm(double ... parameters);
+//
+//	public abstract IFactorFunction toVariableParameterForm();
+//
+//	public abstract IFactorFunction getDerivative();
+//	public abstract IFactorFunction getIntegral();
+//	public abstract IFactorFunction getInverse();
 
 }
