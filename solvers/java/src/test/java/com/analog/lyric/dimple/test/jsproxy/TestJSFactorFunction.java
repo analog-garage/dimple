@@ -18,9 +18,13 @@ package com.analog.lyric.dimple.test.jsproxy;
 
 import static org.junit.Assert.*;
 
-import org.junit.Ignore;
+import java.awt.HeadlessException;
+import java.util.Map;
+import java.util.TreeMap;
+
 import org.junit.Test;
 
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.factorfunctions.Bernoulli;
 import com.analog.lyric.dimple.factorfunctions.Sum;
 import com.analog.lyric.dimple.jsproxy.DimpleApplet;
@@ -36,18 +40,29 @@ import com.analog.lyric.dimple.test.DimpleTestBase;
  */
 public class TestJSFactorFunction extends DimpleTestBase
 {
-	// FIXME - doesn't work on unix needs display to construct applet.
-	@Ignore
+	@SuppressWarnings("null")
 	@Test
 	public void test()
 	{
-		DimpleApplet applet = new DimpleApplet();
-		JSFactorFunctionFactory functions = applet.functions;
+		DimpleApplet applet = null;
+		JSFactorFunctionFactory functions = null;
+		try
+		{
+			applet = new DimpleApplet();
+			functions = applet.functions;
+			assertEquals(applet, functions.getApplet());
+		}
+		catch (HeadlessException ex)
+		{
+			functions = new JSFactorFunctionFactory(DimpleEnvironment.active().factorFunctions(), null);
+		}
 		
 		JSFactorFunction sum = functions.get("Sum");
 		assertEquals("Sum", sum.getName());
 		assertTrue(sum.getDelegate() instanceof Sum);
 		assertEquals(applet, sum.getApplet());
+		assertFalse(sum.isParametric());
+		assertNull(sum.getParameter("p"));
 		assertTrue(sum.isDeterministicDirected());
 		assertFalse(sum.isFactorTable());
 		assertArrayEquals(new int[] { 0 }, sum.getDirectedToIndices(4));
@@ -57,6 +72,19 @@ public class TestJSFactorFunction extends DimpleTestBase
 		assertEquals("Bernoulli", bernoulli.getName());
 		assertFalse(((Bernoulli)bernoulli.getDelegate()).hasConstantParameters());
 
-		//		bernoulli = functions.get("Bernoulli", new DummyJSObject("p", .4));
+		bernoulli = functions.get("Bernoulli", params("p", .4));
+		assertTrue(bernoulli.isParametric());
+		assertEquals(.4, bernoulli.getParameter("p"));
+		assertNull(bernoulli.getParameter("bogus"));
+	}
+	
+	private Map<String,Object> params(Object ... args)
+	{
+		Map<String,Object> map = new TreeMap<>();
+		for (int i = 0; i < args.length; i += 2)
+		{
+			map.put((String)args[i], args[i+1]);
+		}
+		return map;
 	}
 }

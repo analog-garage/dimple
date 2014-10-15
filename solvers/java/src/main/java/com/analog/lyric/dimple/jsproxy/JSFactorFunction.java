@@ -16,8 +16,10 @@
 
 package com.analog.lyric.dimple.jsproxy;
 
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
 
 /**
  * 
@@ -58,6 +60,16 @@ public class JSFactorFunction extends JSProxyObject<FactorFunction>
 		return _delegate.getDirectedToIndices(numEdges);
 	}
 	
+	public @Nullable Object getParameter(String name)
+	{
+		FactorFunction function = _delegate;
+		if (function instanceof IParametricFactorFunction)
+		{
+			return ((IParametricFactorFunction)function).getParameter(name);
+		}
+		return null;
+	}
+	
 	public boolean isDeterministicDirected()
 	{
 		return _delegate.isDeterministicDirected();
@@ -68,4 +80,8 @@ public class JSFactorFunction extends JSProxyObject<FactorFunction>
 		return false;
 	}
 
+	public boolean isParametric()
+	{
+		return _delegate.isParametric();
+	}
 }

@@ -16,10 +16,13 @@
 
 package com.analog.lyric.dimple.jsproxy;
 
+import java.util.Map;
+
 import netscape.javascript.JSObject;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionRegistry;
+import com.analog.lyric.util.misc.Internal;
 
 
 /**
@@ -37,7 +40,13 @@ public class JSFactorFunctionFactory extends JSProxyObject<FactorFunctionRegistr
 	
 	JSFactorFunctionFactory(DimpleApplet applet)
 	{
-		super(applet.getEnvironment().getDelegate().factorFunctions());
+		this(applet.getEnvironment().getDelegate().factorFunctions(), applet);
+	}
+	
+	@Internal
+	public JSFactorFunctionFactory(FactorFunctionRegistry registry, DimpleApplet applet)
+	{
+		super(registry);
 		_applet = applet;
 	}
 	
@@ -116,7 +125,12 @@ public class JSFactorFunctionFactory extends JSProxyObject<FactorFunctionRegistr
 	 */
 	public JSFactorFunction get(String name, JSObject parameters)
 	{
-		return wrap(_delegate.instantiateWithParameters(name, new JSObjectMap(_applet, parameters)));
+		return get(name, new JSObjectMap(_applet, parameters));
+	}
+	
+	public JSFactorFunction get(String name, Map<String,Object> parameters)
+	{
+		return wrap(_delegate.instantiateWithParameters(name, parameters));
 	}
 
 	/**
