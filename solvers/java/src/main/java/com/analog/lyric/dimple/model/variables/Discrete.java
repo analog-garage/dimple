@@ -25,7 +25,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
-import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.IDiscreteSolverVariable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Internal;
@@ -151,7 +150,7 @@ public class Discrete extends VariableBase
    
     public int getValueIndex()
     {
-    	return ((SDiscreteVariableBase)requireSolver("getValueIndex")).getValueIndex();
+    	return ((IDiscreteSolverVariable)requireSolver("getValueIndex")).getValueIndex();
     }
     
 	private double [] getDefaultPriors(DiscreteDomain domain)

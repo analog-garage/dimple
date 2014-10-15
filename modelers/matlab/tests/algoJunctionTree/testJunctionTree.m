@@ -33,6 +33,7 @@ function testJunctionTree()
     fg.solve();
     
     jtBeliefs = vars.Belief;
+    jtValues = vars.Value;
     
     % Try again using a single factor
     fg.setSolver('SumProduct');
@@ -41,8 +42,10 @@ function testJunctionTree()
     fg.solve();
     
     expectedBeliefs = vars.Belief;
+    expectedValues = vars.Value;
     
     assertElementsAlmostEqual(expectedBeliefs, jtBeliefs);
+    assertElementsAlmostEqual(expectedValues, jtValues);
     
     dtrace(bLog, '--testJunctionTree');
 end
