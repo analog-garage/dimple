@@ -35,7 +35,10 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 /**
- * 
+ * Javascript API representation of a Dimple factor graph.
+ * <p>
+ * Delegates to an underlying Dimple {@link FactorGraph} object.
+ * <p>
  * @since 0.07
  * @author Christopher Barber
  */
@@ -97,6 +100,16 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 	 * JSFactorGraph methods
 	 */
 
+	/**
+	 * Adds a new factor to the table using specified factor function and variables.
+	 * @param function is either an already constructed {@link JSFactorFunction} instance
+	 * or a string naming the function to create. If the latter, and the first argument of
+	 * {@code args} is a Javascript object (represented by {@link JSObject}), that will be used
+	 * to construct the function.
+	 * @param args apart from the first argument, which may be used to construct the factor function, the
+	 * rest of the array should contain {@link JSVariable}s defining the connections of the factor.
+	 * @since 0.07
+	 */
 	public JSFactor addFactor(Object function, Object[] args)
 	{
 		int firstArg = 0;
@@ -116,11 +129,11 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 			if (args.length > 0 && args[0] instanceof JSObject)
 			{
 				firstArg = 1;
-				ff = _applet.functions.get(name, (JSObject)args[0])._delegate;
+				ff = _applet.functions.create(name, (JSObject)args[0])._delegate;
 			}
 			else
 			{
-				ff = _applet.functions.get(name)._delegate;
+				ff = _applet.functions.create(name)._delegate;
 			}
 		}
 		// TODO factor tables
@@ -169,7 +182,16 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 	{
 		return addFactor(function, new Object[] { arg1, arg2, arg3, arg4, arg5 });
 	}
-
+	
+	public JSFactor addTableFactor(Object[] variables)
+	{
+		return addFactor(_applet.functions.createTable(variables), variables);
+	}
+	
+	/**
+	 * Adds a new variable to the graph with given name and domain.
+	 * @since 0.07
+	 */
 	public JSVariable addVariable(Object domain, String name)
 	{
 		if (!(domain instanceof JSDomain))
@@ -200,45 +222,92 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 		return wrap(variable);
 	}
 	
-	
+	/**
+	 * Current solver configured for this graph.
+	 * @since 0.07
+	 */
 	public @Nullable JSSolver getSolver()
 	{
 		IFactorGraphFactory<?> solver = _delegate.getFactorGraphFactory();
 		return solver != null ? new JSSolver(getApplet(), solver) : null;
 	}
 	
+	/**
+	 * Returns variable in graph with given identifier.
+	 * @since 0.07
+	 */
 	public @Nullable JSVariable getVariable(int id)
 	{
 		Variable variable = _delegate.getVariable(id);
 		return variable != null ? wrap(variable) : null;
 	}
 	
+	/**
+	 * Returns variable in graph with given name.
+	 * @since 0.07
+	 */
 	public @Nullable JSVariable getVariable(String name)
 	{
 		Variable variable = _delegate.getVariableByName(name);
 		return variable != null ? wrap(variable) : null;
 	}
 	
+	/**
+	 * Initializes graph state in preparation for solve.
+	 * <p>
+	 * This is invoked automatically by {@link #solve()} and only needs to be
+	 * called directly if manually invoking solve steps (e.g. {@link #solveOneStep()}).
+	 * 
+	 * @since 0.07
+	 */
 	public void initialize()
 	{
 		_delegate.initialize();
 	}
 	
+	/**
+	 * Sets configured solver to specified name.
+	 * 
+	 * @param solver is the name of a supported solver. See {@link JSSolverFactory#get}.
+	 * @since 0.07
+	 */
 	public void setSolver(String solver)
 	{
-		setSolver(new JSSolver(_applet, solver));
+		setSolver(_applet.solvers.get(solver));
 	}
 	
+	/**
+	 * Sets currently configured solver.
+	 * @since 0.07
+	 */
 	public void setSolver(JSSolver solver)
 	{
 		_delegate.setSolverFactory(solver.getDelegate());
 	}
 
+	/**
+	 * Runs inference using currently configured solver.
+	 * <p>
+	 * The details will depend on the solver. For instance, when using SumProduct marginal beliefs will
+	 * be computed for all variables, when using Gibbs samples may be generated.
+	 * <p>
+	 * This method automatically invokes {@link #initialize()} prior to inference.
+	 * <p>
+	 * @since 0.07
+	 */
 	public void solve()
 	{
 		_delegate.solve();
 	}
 
+	/**
+	 * Runs one step of the solver.
+	 * <p>
+	 * The exact behavior will depend on the solver.
+	 * <p>
+	 * Unlike {@link #solve()} this does not first invoke {@link #initialize()}.
+	 * @since 0.07
+	 */
 	public void solveOneStep()
 	{
 		_delegate.solveOneStep();

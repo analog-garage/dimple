@@ -63,13 +63,16 @@ public class DimpleApplet extends Applet
 	 * Local methods
 	 */
 	
+	/**
+	 * Creates a new factor graph instance.
+	 * <p>
+	 * @since 0.07
+	 */
 	public JSFactorGraph createGraph()
 	{
 		return new JSFactorGraph(this, new FactorGraph());
 	}
 
-	// TODO createFactorTable
-	
 	/**
 	 * Returns object representing the current Dimple environment.
 	 * <p>

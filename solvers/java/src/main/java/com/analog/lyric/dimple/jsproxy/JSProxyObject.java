@@ -24,6 +24,15 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * <p>
  * @param <Delegate> is the type of the object to which this delegates.
  * <p>
+ * Except for {@link DimpleApplet}, all Java objects that comprise the Javascript interface
+ * are subclasses of this class. This wraps an underlying object from the standard Java API
+ * of Dimple for use in Java and exposes the object to Javascript users through the {@link #getDelegate()}
+ * method, although this should only be used as a last resort.
+ * <p>
+ * The {@link #equals(Object)} and {@link #hashCode()} methods have been overridden to implement
+ * equality based on the underlying delegate object. It is expected that there may be multiple proxy
+ * objects that refer to the same delegate, so users should make sure to use {@link #equals} for comparison.
+ * <p>
  * @since 0.07
  * @author Christopher Barber
  */
@@ -45,7 +54,7 @@ public abstract class JSProxyObject<Delegate>
 	 */
 	
 	/**
-	 * True if {@code obj} is itself a {@code JSProxyObject} and both del
+	 * True if {@code obj} is itself a {@code JSProxyObject} with the same value for {@link #getDelegate()}.
 	 */
 	@NonNullByDefault(false)
 	@Override
@@ -59,6 +68,9 @@ public abstract class JSProxyObject<Delegate>
 		return _delegate.equals(obj);
 	}
 	
+	/**
+	 * Returns hash code of underlying {@linkplain #getDelegate delegate} object.
+	 */
 	@Override
 	public int hashCode()
 	{
@@ -89,5 +101,9 @@ public abstract class JSProxyObject<Delegate>
 		return _delegate;
 	}
 
+	/**
+	 * The applet instance under which the proxy was created.
+	 * @since 0.07
+	 */
 	public abstract DimpleApplet getApplet();
 }

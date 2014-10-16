@@ -16,17 +16,23 @@
 
 package com.analog.lyric.dimple.jsproxy;
 
-import com.analog.lyric.dimple.model.domains.Domain;
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.model.domains.Domain;
+
 /**
- * 
+ * Javascript API representation of a Dimple variable domain.
+ * <p>
+ * Delegates to underlying {@link Domain}.
+ * <p>
+ * Construct domain objects using {@link DimpleApplet#domains} factory.
+ * <p>
  * @since 0.07
  * @author Christopher Barber
  */
 public abstract class JSDomain<D extends Domain> extends JSProxyObject<D>
 {
-	private final JSDomainFactory _factory;
+	final JSDomainFactory _factory;
 	
 	JSDomain(JSDomainFactory factory, D domain)
 	{
@@ -34,6 +40,9 @@ public abstract class JSDomain<D extends Domain> extends JSProxyObject<D>
 		_factory = factory;
 	}
 
+	/**
+	 * Identifies type of variable domain.
+	 */
 	public enum Type
 	{
 		DISCRETE,
@@ -55,6 +64,10 @@ public abstract class JSDomain<D extends Domain> extends JSProxyObject<D>
 	 * JSDomain methods
 	 */
 	
+	/**
+	 * True if specified {@code value} is a member of the domain.
+	 * @since 0.07
+	 */
 	public boolean contains(@Nullable Object value)
 	{
 		return _delegate.inDomain(value);
@@ -82,18 +95,44 @@ public abstract class JSDomain<D extends Domain> extends JSProxyObject<D>
 		return -1;
 	}
 	
+	/**
+	 * Indicates the type of domain.
+	 * @since 0.07
+	 */
 	public abstract Type getDomainType();
 	
+	/**
+	 * True if domain is discrete.
+	 * <p>
+	 * That is if domain has a fixed number of discrete elements. Should only be true if
+	 * this is a {@link JSDiscreteDomain}.
+	 * <p>
+	 * @since 0.07
+	 */
 	public boolean isDiscrete()
 	{
 		return _delegate.isDiscrete();
 	}
 	
+	/**
+	 * True if domain is a scalar, continuous, and real.
+	 * <p>
+	 * Should only be true if this is a {@link JSRealDomain}.
+	 * <p>
+	 * @since 0.07
+	 */
 	public boolean isReal()
 	{
 		return _delegate.isReal();
 	}
 	
+	/**
+	 * True if domain is a continuous, and real with multiple dimensions.
+	 * <p>
+	 * Should only be true if this is a {@link JSRealJointDomain}.
+	 * <p>
+	 * @since 0.07
+	 */
 	public boolean isRealJoint()
 	{
 		return _delegate.isRealJoint();

@@ -26,7 +26,13 @@ import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 /**
- * 
+ * Javascript API representation of a Java variable
+ * <p>
+ * This can be used to set observed "fixed" values and to query the results of
+ * inference for this variable.
+ * <p>
+ * This wraps an underlying Dimple {@link Variable} object.
+ * <p>
  * @since 0.07
  * @author Christopher Barber
  */
@@ -57,6 +63,10 @@ public class JSVariable extends JSNode<Variable>
 	 * JSVariable methods
 	 */
 	
+	/**
+	 * Describes the domain of the variable.
+	 * @since 0.07
+	 */
 	public JSDomain<?> domain()
 	{
 		return getApplet().domains.wrap(_delegate.getDomain());
@@ -82,6 +92,16 @@ public class JSVariable extends JSNode<Variable>
 		return null;
 	}
 	
+	/**
+	 * Returns a representation of the marginal beliefs of this variable.
+	 * <p>
+	 * For discrete variables this will be an array of doubles describing the normalized probabilities
+	 * of each possible discrete variable. The value will only be valid after inference ({@link JSFactorGraph#solve})
+	 * has been run on the graph. Note that for MAP based solvers such as MinSum and JunctionTreeMAP these beliefs
+	 * will be the max marginal beliefs and not normal marginal probabilities.
+	 * <p>
+	 * @since 0.07
+	 */
 	public @Nullable Object getBelief()
 	{
 		return _delegate.getBeliefObject();
@@ -107,6 +127,11 @@ public class JSVariable extends JSNode<Variable>
 		return null;
 	}
 	
+	/**
+	 * Returns the fixed (observed) value of the variable or null if not fixed.
+	 * @since 0.07
+	 * @see #setFixedValue(Object)
+	 */
 	public @Nullable Object getFixedValue()
 	{
 		return _delegate.getFixedValueObject();
@@ -154,11 +179,23 @@ public class JSVariable extends JSNode<Variable>
 		return null;
 	}
 	
+	/**
+	 * True if variable has a fixed (observed) value
+	 * @since 0.07
+	 * @see #getFixedValue()
+	 */
 	public boolean hasFixedValue()
 	{
 		return _delegate.hasFixedValue();
 	}
 	
+	/**
+	 * Sets the fixed (observed) value of the variable.
+	 * @param value is either a valid value for the variable's domain or is null indicating that
+	 * the fixed value should be cleared.
+	 * @since 0.07
+	 * @see #getFixedValue()
+	 */
 	public void setFixedValue(@Nullable Object value)
 	{
 		if (value == null)
@@ -171,11 +208,27 @@ public class JSVariable extends JSNode<Variable>
 		}
 	}
 	
+	/**
+	 * Sets input distribution for variable.
+	 * <p>
+	 * @param input is a factor function that can be used with a single edge. If
+	 * {@linkplain JSFactorFunction#isParametric() parametric}, the function must
+	 * {@linkplain JSFactorFunction#hasParameters() have internal parameters}.
+	 * @since 0.07
+	 * @see #setInput(double[])
+	 */
 	public void setInput(JSFactorFunction input)
 	{
 		_delegate.setInputObject(input._delegate);
 	}
 	
+	/**
+	 * Sets input distribution for discrete variable.
+	 * @param input is an array of weights/probabilities with size matching the dimensions of the
+	 * discrete domain of the variable.
+	 * @since 0.07
+	 * @see #setInput(JSFactorFunction)
+	 */
 	public void setInput(double[] input)
 	{
 		_delegate.setInputObject(input);

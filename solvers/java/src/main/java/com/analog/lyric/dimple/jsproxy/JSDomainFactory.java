@@ -25,7 +25,8 @@ import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.google.common.cache.Cache;
 
 /**
- * 
+ * Factory for creating {@link JSDomain} instances.
+ * <p>
  * @since 0.07
  * @author Christopher Barber
  */
@@ -34,47 +35,90 @@ public class JSDomainFactory
 	final DimpleApplet _applet;
 	private final Cache<Object, JSProxyObject<?>> _proxyCache;
 	
+	/*--------------
+	 * Construction
+	 */
+	
 	JSDomainFactory(DimpleApplet applet, Cache<Object, JSProxyObject<?>> proxyCache)
 	{
 		_applet = applet;
 		_proxyCache = proxyCache;
 	}
 	
+	/**
+	 * Returns instance of discrete domain with values {0, 1}.
+	 * @since 0.07
+	 */
 	public JSDiscreteDomain bit()
 	{
 		return wrap(DiscreteDomain.bit());
 	}
-	
+
+	/**
+	 * Returns instance of discrete domain with values {false, true}.
+	 * @since 0.07
+	 */
 	public JSDiscreteDomain bool()
 	{
 		return wrap(DiscreteDomain.bool());
 	}
-	
+
+	/**
+	 * Returns instance of discrete domain with specified elements in given order.
+	 * @since 0.07
+	 */
 	public JSDiscreteDomain discrete(Object[] elements)
 	{
 		return wrap(DiscreteDomain.create(elements));
 	}
 	
+	/**
+	 * Returns instance of discrete domain with integer values in range [start, end].
+	 * @param start specifies the lowest integer value in the domain
+	 * @param end specifies the highest integer value in the domain. It must not be less than {@code start}.
+	 * @since 0.07
+	 */
 	public JSDiscreteDomain range(int start, int end)
 	{
 		return wrap(DiscreteDomain.range((double)start, (double)end));
 	}
 	
+	/**
+	 * Returns instance of unbounded real domain.
+	 * @since 0.07
+	 */
 	public JSRealDomain real()
 	{
 		return wrap(RealDomain.unbounded());
 	}
-	
+
+	/**
+	 * Returns instance of bounded real domain.
+	 * @param lowerBound specifies the lower bound (inclusive) of the domain.
+	 * @param upperBound specifies the upper bound (inclusive) of the domain. It must not be less than
+	 * {@code lowerBound}.
+	 * @since 0.07
+	 */
 	public JSRealDomain real(double lowerBound, double upperBound)
 	{
 		return wrap(RealDomain.create(lowerBound, upperBound));
 	}
 	
+	/**
+	 * Returns instance of an unbounded n-dimensional real joint domain.
+	 * @param N is the number of dimensions, which must be greater than one.
+	 * @since 0.07
+	 */
 	public JSRealJointDomain realN(int N)
 	{
 		return wrap(RealJointDomain.create(N));
 	}
 	
+	/**
+	 * Returns instance of an n-dimensional real joint domain with specified dimensions.
+	 * @param domains specifies the scalar real domains that make up the dimensions of the real joint domain.
+	 * @since 0.07
+	 */
 	public JSRealJointDomain realN(JSRealDomain[] domains)
 	{
 		RealDomain[] unwrappedDomains = new RealDomain[domains.length];
@@ -85,6 +129,10 @@ public class JSDomainFactory
 		return wrap(RealJointDomain.create(unwrappedDomains));
 	}
 	
+	/**
+	 * Wraps a raw Dimple {@link Domain} object with appropriate {@link JSDomain}.
+	 * @since 0.07
+	 */
 	@SuppressWarnings("unchecked")
 	public <D extends JSDomain<?>> D wrap(Domain domain)
 	{
@@ -112,9 +160,4 @@ public class JSDomainFactory
 		}
 		return (D)(JSDomain<?>)jsdomain;
 	}
-	
-	/*-----------------
-	 * Private methods
-	 */
-	
 }

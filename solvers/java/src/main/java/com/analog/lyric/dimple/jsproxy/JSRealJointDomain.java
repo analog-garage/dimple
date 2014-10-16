@@ -19,7 +19,10 @@ package com.analog.lyric.dimple.jsproxy;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 
 /**
- * 
+ * Javascript API representation for a multi-dimensional, continuous real domain with optional bounds.
+ * <p>
+ * This wraps an underlying Dimple {@link RealJointDomain} object.
+ * <p>
  * @since 0.07
  * @author Christopher Barber
  */
@@ -34,5 +37,15 @@ public class JSRealJointDomain extends JSDomain<RealJointDomain>
 	public JSDomain.Type getDomainType()
 	{
 		return JSDomain.Type.REAL_JOINT;
+	}
+	
+	/**
+	 * Returns the scalar real domain for the specified dimension
+	 * @param dimension must be non-negative and less than {@link #dimensions()}.
+	 * @since 0.07
+	 */
+	public JSRealDomain getRealDomain(int dimension)
+	{
+		return _factory.wrap(_delegate.getRealDomain(dimension));
 	}
 }

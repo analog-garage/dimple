@@ -16,11 +16,15 @@
 
 package com.analog.lyric.dimple.jsproxy;
 
-import com.analog.lyric.dimple.model.factors.Factor;
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.model.factors.Factor;
+
 /**
- * 
+ * Javascript API representation of a Dimple factor.
+ * <p>
+ * This delegates to an underlying Dimple {@link Factor} object.
+ * <p>
  * @since 0.07
  * @author Christopher Barber
  */
@@ -35,6 +39,10 @@ public class JSFactor extends JSNode<Factor>
 	 * JSProxyNode methods
 	 */
 	
+	/**
+	 * The underlying factor function that specifies how the factor is evaluatged.
+	 * @since 0.07
+	 */
 	public JSFactorFunction getFactorFunction()
 	{
 		return getApplet().functions.wrap(_delegate.getFactorFunction());

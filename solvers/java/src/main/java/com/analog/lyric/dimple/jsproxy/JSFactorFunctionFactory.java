@@ -22,6 +22,7 @@ import netscape.javascript.JSObject;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionRegistry;
+import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
 import com.analog.lyric.util.misc.Internal;
 
 
@@ -30,10 +31,8 @@ import com.analog.lyric.util.misc.Internal;
  * @since 0.07
  * @author Christopher Barber
  */
-public class JSFactorFunctionFactory extends JSProxyObject<FactorFunctionRegistry>
+public class JSFactorFunctionFactory extends JSProxyObjectWithApplet<FactorFunctionRegistry>
 {
-	final DimpleApplet _applet;
-
 	/*--------------
 	 * Construction
 	 */
@@ -46,18 +45,7 @@ public class JSFactorFunctionFactory extends JSProxyObject<FactorFunctionRegistr
 	@Internal
 	public JSFactorFunctionFactory(FactorFunctionRegistry registry, DimpleApplet applet)
 	{
-		super(registry);
-		_applet = applet;
-	}
-	
-	/*-----------------------
-	 * JSProxyObject methods
-	 */
-	
-	@Override
-	public DimpleApplet getApplet()
-	{
-		return _applet;
+		super(applet, registry);
 	}
 	
 	/*---------------------------------
@@ -76,9 +64,9 @@ public class JSFactorFunctionFactory extends JSProxyObject<FactorFunctionRegistr
 	 * <p>
 	 * @param name must match the name of a factor function class known to Dimple.
 	 * @since 0.07
-	 * @see #get(String, JSObject)
+	 * @see #create(String, JSObject)
 	 */
-	public JSFactorFunction get(String name)
+	public JSFactorFunction create(String name)
 	{
 		return wrap(_delegate.instantiate(name));
 	}
@@ -121,24 +109,64 @@ public class JSFactorFunctionFactory extends JSProxyObject<FactorFunctionRegistr
 	 * taking a single argument of type {@code Map<String,Object>}.
 	 * @param parameters
 	 * @since 0.07
-	 * @see #get(String)
+	 * @see #create(String)
+	 * @see #create(String, Map)
 	 */
-	public JSFactorFunction get(String name, JSObject parameters)
+	public JSFactorFunction create(String name, JSObject parameters)
 	{
-		return get(name, new JSObjectMap(_applet, parameters));
+		return create(name, new JSObjectMap(_applet, parameters));
 	}
 	
-	public JSFactorFunction get(String name, Map<String,Object> parameters)
+	/**
+	 * Creates a factor function instance for given name.
+	 * <p>
+	 * This is the same as {@link #create(String, JSObject)} but takes the parameters in the form
+	 * of a Java {@link Map} object.
+	 * @since 0.07
+	 */
+	public JSFactorFunction create(String name, Map<String,Object> parameters)
 	{
 		return wrap(_delegate.instantiateWithParameters(name, parameters));
 	}
 
 	/**
-	 * Creates a proxy wrapper for Dimple factor function.
+	 * Creates a table factor function.
+	 * <p>
+	 * Creates a table-based factor function wrapped around the specified {@code table}.
+	 * @since 0.07
+	 * @see #createTable(Object[])
+	 */
+	public JSTableFactorFunction create(JSFactorTable table)
+	{
+		return new JSTableFactorFunction(this, table);
+	}
+	
+	/**
+	 * Creates a factor table.
+	 * <p>
+	 * Creates a table-based factor function for specified discrete domains/variables. Once created the
+	 * table weights should be set before use. Factor tables are expected to be used to create table-based
+	 * factor functions.
+	 * <p>
+	 * @param domainsOrVariables
+	 * @since 0.07
+	 * @see #create(JSFactorTable)
+	 */
+	public JSFactorTable createTable(Object[] domainsOrVariables)
+	{
+		return new JSFactorTable(_applet, domainsOrVariables);
+	}
+	
+	/**
+	 * Creates a proxy wrapper for a raw Dimple factor function.
 	 * @since 0.07
 	 */
 	public JSFactorFunction wrap(FactorFunction function)
 	{
+		if (function instanceof TableFactorFunction)
+		{
+			return new JSTableFactorFunction(this, (TableFactorFunction)function);
+		}
 		return new JSFactorFunction(this, function);
 	}
 

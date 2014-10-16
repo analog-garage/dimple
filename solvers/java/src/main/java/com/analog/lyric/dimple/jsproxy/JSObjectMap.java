@@ -106,6 +106,9 @@ public class JSObjectMap extends AbstractMap<String, Object>
 	@Override
 	public Set<String> keySet()
 	{
+		// The JSObject API does not provide a direct way to enumerate members.
+		// The following is a hack proposed on stackoverflow: http://stackoverflow.com/a/13982185/334526
+		
 		final JSObject jsObject = _obj;
 		final Applet applet = _applet;
 		

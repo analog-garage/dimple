@@ -16,47 +16,33 @@
 
 package com.analog.lyric.dimple.jsproxy;
 
-import com.analog.lyric.dimple.model.domains.RealDomain;
-
 /**
- * Javascript API representation for a scalar, continuous real domain with optional bounds.
- * <p>
- * This wraps an underlying Dimple {@link RealDomain} object.
- * <p>
+ * Extension of JSProxyObject with direct storage for applet.
  * @since 0.07
  * @author Christopher Barber
  */
-public class JSRealDomain extends JSDomain<RealDomain>
+class JSProxyObjectWithApplet<Delegate> extends JSProxyObject<Delegate>
 {
-	JSRealDomain(JSDomainFactory factory, RealDomain domain)
+	protected final DimpleApplet _applet;
+	
+	/*--------------
+	 * Construction
+	 */
+	
+	JSProxyObjectWithApplet(DimpleApplet applet, Delegate delegate)
 	{
-		super(factory, domain);
+		super(delegate);
+		_applet = applet;
 	}
+	
+	/*-----------------------
+	 * JSProxyObject methods
+	 */
 	
 	@Override
-	public JSDomain.Type getDomainType()
+	public DimpleApplet getApplet()
 	{
-		return JSDomain.Type.REAL;
-	}
-	
-	/**
-	 * The lower bound of the domain.
-	 * <p>
-	 * All elements of the domain are greater than or equal to this value.
-	 * @since 0.07
-	 */
-	public final double getLowerBound()
-	{
-		return getDelegate().getLowerBound();
+		return _applet;
 	}
 
-	/**
-	 * The upper bound of the domain.
-	 * <p>
-	 * All elements of the domain are less than or equal to this value.
-	 */
-	public final double getUpperBound()
-	{
-		return getDelegate().getUpperBound();
-	}
 }

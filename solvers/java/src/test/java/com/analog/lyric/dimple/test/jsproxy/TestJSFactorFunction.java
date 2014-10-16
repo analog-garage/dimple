@@ -57,22 +57,22 @@ public class TestJSFactorFunction extends DimpleTestBase
 			functions = new JSFactorFunctionFactory(DimpleEnvironment.active().factorFunctions(), null);
 		}
 		
-		JSFactorFunction sum = functions.get("Sum");
+		JSFactorFunction sum = functions.create("Sum");
 		assertEquals("Sum", sum.getName());
 		assertTrue(sum.getDelegate() instanceof Sum);
 		assertEquals(applet, sum.getApplet());
 		assertFalse(sum.isParametric());
 		assertNull(sum.getParameter("p"));
 		assertTrue(sum.isDeterministicDirected());
-		assertFalse(sum.isFactorTable());
+		assertFalse(sum.isTableFactor());
 		assertArrayEquals(new int[] { 0 }, sum.getDirectedToIndices(4));
 		
 		// Test functions with parameters
-		JSFactorFunction bernoulli = functions.get("Bernoulli");
+		JSFactorFunction bernoulli = functions.create("Bernoulli");
 		assertEquals("Bernoulli", bernoulli.getName());
 		assertFalse(((Bernoulli)bernoulli.getDelegate()).hasConstantParameters());
 
-		bernoulli = functions.get("Bernoulli", params("p", .4));
+		bernoulli = functions.create("Bernoulli", params("p", .4));
 		assertTrue(bernoulli.isParametric());
 		assertEquals(.4, bernoulli.getParameter("p"));
 		assertNull(bernoulli.getParameter("bogus"));

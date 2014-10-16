@@ -19,7 +19,10 @@ package com.analog.lyric.dimple.jsproxy;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 
 /**
- * 
+ * Javascript API representation of Dimple discrete domain.
+ * <p>
+ * Delegates to underlying {@link DiscreteDomain}.
+ * <p>
  * @since 0.07
  * @author Christopher Barber
  */

@@ -19,40 +19,29 @@ package com.analog.lyric.dimple.jsproxy;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 
 /**
- * 
+ * Javascript API representation for a Dimple solver factory.
+ * <p>
+ * Used to configure solver on a {@link JSFactorGraph}. Obtain new instances using
+ * {@link DimpleApplet#solvers} factory.
+ * <p>
+ * This wraps an underlying Dimple {@link IFactorGraphFactory} object.
+ * <p>
  * @since 0.07
  * @author Christopher Barber
  */
-public class JSSolver extends JSProxyObject<IFactorGraphFactory<?>>
+public class JSSolver extends JSProxyObjectWithApplet<IFactorGraphFactory<?>>
 {
-	/*-------
-	 * State
-	 */
-	
-	private final DimpleApplet _applet;
-	
 	/*--------------
 	 * Construction
 	 */
 	
 	JSSolver(DimpleApplet applet, IFactorGraphFactory<?> solver)
 	{
-		super(solver);
-		_applet = applet;
+		super(applet, solver);
 	}
 	
 	JSSolver(DimpleApplet applet, String solverName)
 	{
 		this(applet, applet.getEnvironment().getDelegate().solvers().instantiate(solverName));
-	}
-
-	/*-----------------------
-	 * JSProxyObject methods
-	 */
-	
-	@Override
-	public DimpleApplet getApplet()
-	{
-		return _applet;
 	}
 }
