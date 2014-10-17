@@ -2,27 +2,147 @@
 <html>
 <head>
 <meta charset="ISO-8859-1">
-<title>Dimple proxy applet test page</title>
+<title>Dimple Javascript API Tests</title>
 <script src="https://www.java.com/js/deployJava.js">
 </script>
 <script>
-	var attributes = { name: 'dimple', height: '0', width: '0' };
-	var parameters = { jnlp_href: '@jnlpfile@' };
-	deployJava.runApplet(attributes, parameters, '1.7');
+var attributes = { name: 'dimple', height: '0', width: '0' };
+var parameters = { jnlp_href: '@jnlpfile@' };
+deployJava.runApplet(attributes, parameters, '1.7');
+
+var dimpleLoaded = false;
+var tests = [];
+
+function assertAlmostEquals(expected,actual,epsilon) {
+	if (epsilon == undefined) {
+		epsilon = 1e-10;
+	}
+	if (Math.abs(expected - actual) > epsilon) {
+		throw 'Expected ' + expected + ' but got ' + actual;
+	}
+}
+
+function assertEquals(expected,actual) {
+	if (expected != actual) {
+		throw 'Expected ' + expected + ' but got ' + actual;
+	}
+}
+
+function addTest(name,body) {
+	var test = {name: name, run: body}
+	window[name] = test
+	tests.push(test);
+}
+
+window.onload = function() {
+	dimpleLoaded = dimple.getAppletInfo() != null;
+	if (dimpleLoaded) {
+		document.getElementById('loaded').innerHTML = "Dimple applet loaded successfully";
+	}
+
+	var testButtons = [];
+	var testTable = document.getElementById('tests');
+	for (var i = 0; i < tests.length; ++i) {
+		var test = tests[i];
+		var testRow = testTable.insertRow();
+		var testCell1 = testRow.insertCell();
+		var testCell2 = testRow.insertCell();
+		var testButton = document.createElement('button');
+		testButton.style.width = 200 + "px";
+		testButtons.push(testButton);
+		testButton.onclick = (function() {
+			var run = test.run;
+			var button = testButton;
+			var resultCell = testCell2;
+			return function() {
+				try {
+					run();
+					button.style.color = "green";
+					resultCell.innerHTML = 'Success';
+				} catch (ex) {
+					resultCell.innerHTML = 'Failure: ' + ex;
+					button.style.color = "red";
+				}
+			}
+		})();
+		testButton.innerHTML = test.name;
+		testCell1.appendChild(testButton);
+	}
+	testRow = testTable.insertRow(0);
+	testCell1 = testRow.insertCell();
+	testCell2 = testRow.insertCell();
+	testButton = document.createElement('button');
+	testButton.style.width = 200 + "px";
+	testButton.innerHTML = "Run All";
+	testButton.onclick = function () {
+		for (var i = 0; i < testButtons.length; ++i) {
+			testButtons[i].onclick();
+		}
+	};
+	testCell1.appendChild(testButton);
+}
+
+function makeDice() {
+	var fg = this.fg = dimple.createGraph();
+	var D6 = dimple.domains.range(1,6);
+	var TwoD6 = dimple.domains.range(2,12);
+	var die1 = fg.addVariable(D6, 'die1');
+	var die2 = fg.addVariable(D6, 'die2');
+	var dice = fg.addVariable(TwoD6, 'dice');
+	fg.addFactor('Sum', dice, die1, die2);
+	return fg;
+}
+
+addTest('SumProductDiceTest', function() {
+		var fg = makeDice();
+		fg.setSolver('SumProduct');
+		fg.solve();
+		var dice = fg.getVariable('dice');
+		var belief = dice.getBelief();
+		for (var i = 1; i <= 6; ++i) {
+			assertAlmostEquals(i/36, belief[i - 1]);
+			assertAlmostEquals(i/36, belief[11 - i]);
+		}
+		assertEquals(7, dice.getMaxBeliefValue());
+	}
+);
+
+addTest('GibbsDiceTest', function() {
+	var fg = makeDice();
+	fg.setSolver('Gibbs');
+	fg.setOption('GibbsOptions.numSamples', 2000);
+	assertEquals(2000, fg.getOption('GibbsOptions.numSamples'));
+	fg.setOption('GibbsOptions.saveAllSamples', true);
+	fg.setOption('GibbsOptions.burnInScans', 100);
+	fg.setOption('GibbsOptions.numRandomRestarts', 1);
+	fg.solve();
+	var dice = fg.getVariable('dice');
+	var belief = dice.getBelief();
+	for (var i = 1; i <= 6; ++i) {
+		assertAlmostEquals(i/36, belief[i - 1], .02);
+		assertAlmostEquals(i/36, belief[11 - i], .02);
+	}
+	assertEquals(7, dice.getMaxBeliefValue());
+	assertEquals(4000, dice.getAllSamples().length);
+}
+)
+
 </script>
 </head>
 <body>
-<h1>Dimple proxy applet test page</h1>
+<h1>Dimple Javascript API Tests</h1>
 
-This page simply embeds a dimple proxy applet that may be tested manually
-using the JavaScript interpreter in your web browser.
-<p>
 Unless the applet Jars have been properly signed (and they probably won't be) you
-will need to answer a dialog to allow the applet to run, and you may either have
+may need to answer a dialog to allow the applet to run, and you may either have
 to lower the security level in the Java Control Panel or add the site to the 
 "Exception Site List" to allow lowered security for applets loaded from the
 specified sites.
 <p>
+
+<h2 id="loaded">Dimple applet has not been loaded!</h2>
+
+<table id=tests>
+</table>
 
 </body>
 </html>
