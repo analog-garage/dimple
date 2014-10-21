@@ -19,6 +19,8 @@ Significant New Features Since v0.06
 
 - Added methods for Real and RealJoint variables in the Gibbs solver to determine the sample mean and (co)variance.
 
+- Added IfElse factor creation utility in MATLAB API to simplify conditional assignment factor creation.
+
 
 Significant Bug Fixes Since v0.06
 ---------------------------------
