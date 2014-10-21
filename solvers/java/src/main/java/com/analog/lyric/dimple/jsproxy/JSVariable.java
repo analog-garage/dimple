@@ -69,7 +69,12 @@ public class JSVariable extends JSNode<Variable>
 	 */
 	public JSDomain<?> domain()
 	{
-		return getApplet().domains.wrap(_delegate.getDomain());
+		return getDomainFactory(getApplet()).wrap(_delegate.getDomain());
+	}
+	
+	private JSDomainFactory getDomainFactory(@Nullable DimpleApplet applet)
+	{
+		return applet != null ? applet.domains : new JSDomainFactory();
 	}
 	
 	
