@@ -16,6 +16,9 @@
 
 package com.analog.lyric.dimple.jsproxy;
 
+import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 
 /**
@@ -42,6 +45,11 @@ public class JSSolver extends JSProxyObjectWithApplet<IFactorGraphFactory<?>>
 	
 	JSSolver(DimpleApplet applet, String solverName)
 	{
-		this(applet, applet.getEnvironment().getDelegate().solvers().instantiate(solverName));
+		this(applet, environmentForApplet(applet).solvers().instantiate(solverName));
+	}
+	
+	private static DimpleEnvironment environmentForApplet(@Nullable DimpleApplet applet)
+	{
+		return applet != null ? applet.getEnvironment().getDelegate() : DimpleEnvironment.active();
 	}
 }

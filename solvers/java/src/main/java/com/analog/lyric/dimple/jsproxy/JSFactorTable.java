@@ -144,8 +144,13 @@ public class JSFactorTable extends JSProxyObjectWithApplet<IFactorTable>
 	 */
 	public JSDiscreteDomain getDomain(int dimension)
 	{
-		JSDomainFactory domainFactory = getApplet().domains;
+		JSDomainFactory domainFactory = getDomainFactory(getApplet());
 		return domainFactory.wrap(_delegate.getDomainIndexer().get(dimension));
+	}
+	
+	private JSDomainFactory getDomainFactory(@Nullable DimpleApplet applet)
+	{
+		return applet != null ? applet.domains : new JSDomainFactory();
 	}
 	
 	public String getRepresentation()
