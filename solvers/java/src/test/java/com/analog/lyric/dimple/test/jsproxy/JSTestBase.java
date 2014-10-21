@@ -21,6 +21,8 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 
+import netscape.javascript.JSObject;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Before;
 
@@ -81,11 +83,13 @@ public class JSTestBase extends DimpleTestBase
 	 * <p>
 	 * @since 0.07
 	 */
-	@Nullable FakeJSObject createJSObject()
+	@Nullable JSObject createJSObject()
 	{
 		try
 		{
-			return new FakeJSObject();
+			// FIXME
+			return null;
+//			return new FakeJSObject();
 		}
 		catch (Throwable ex)
 		{

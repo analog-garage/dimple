@@ -22,6 +22,7 @@ import static org.junit.Assert.*;
 import java.applet.Applet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import netscape.javascript.JSObject;
 
@@ -39,19 +40,19 @@ public class TestJSObjectMap extends JSTestBase
 	@Test
 	public void test()
 	{
-		FakeJSObject jsobj = createJSObject();
+		JSObject jsobj = createJSObject();
 		if (jsobj != null)
 		{
 			assertInvariants(jsobj);
 
 			jsobj.setMember("name", "Bob");
 			jsobj.setMember("count", 42);
-			assertInvariants(jsobj);
+			assertInvariants(jsobj, "name", "count");
 		}
 	}
 	
 	@SuppressWarnings("null")
-	private void assertInvariants(FakeJSObject jsobj)
+	private void assertInvariants(JSObject jsobj, String ... names)
 	{
 		JSObjectMap map = new DummyJSObjectMap(state.applet, jsobj);
 		
@@ -61,8 +62,12 @@ public class TestJSObjectMap extends JSTestBase
 			
 		assertFalse(map.containsKey(42));
 		assertFalse(map.containsKey("no such key"));
-		
-		Set<String> memberNames = jsobj.getMemberNames();
+
+		Set<String> memberNames = new TreeSet<>();
+		for (String name : names)
+		{
+			memberNames.add(name);
+		}
 		
 		for (String name : memberNames)
 		{
@@ -81,7 +86,6 @@ public class TestJSObjectMap extends JSTestBase
 		for (Map.Entry<String,Object> entry : entries)
 		{
 			String name = entry.getKey();
-			assertTrue(memberNames.contains(name));
 			assertEquals(jsobj.getMember(name), map.get(name));
 		}
 		

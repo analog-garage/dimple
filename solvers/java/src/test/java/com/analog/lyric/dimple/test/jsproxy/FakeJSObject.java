@@ -21,7 +21,6 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import netscape.javascript.JSException;
-import netscape.javascript.JSObject;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
@@ -31,7 +30,10 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * @author Christopher Barber
  */
 @NonNullByDefault(false)
-public class FakeJSObject extends JSObject
+public class FakeJSObject
+ // FIXME: subclassing JSObject does not work on linux because JSObject is final!
+ //extends JSObject
+ implements IJSObject
 {
 	private final Map<String,Object> _members;
 	private final Map<Integer,Object> _slots;
@@ -58,7 +60,7 @@ public class FakeJSObject extends JSObject
 		{
 			final int size = _members.size();
 			final String[] names = _members.keySet().toArray(new String[size]);
-			final JSObject result = new FakeJSObject();
+			final FakeJSObject result = new FakeJSObject();
 			for (int i = 0; i < size; ++i)
 			{
 				result.setSlot(i, names[i]);
