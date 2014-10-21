@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.jsproxy;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
+import com.analog.lyric.util.misc.Internal;
 
 /**
  * Represents the Dimple environment.
@@ -39,10 +40,19 @@ public class JSEnvironment extends JSOptionHolder<DimpleEnvironment>
 	 * Construction
 	 */
 
-	JSEnvironment(DimpleApplet applet, DimpleEnvironment delegate)
+	private JSEnvironment(DimpleApplet applet, DimpleEnvironment delegate)
 	{
 		super(delegate);
 		_applet = applet;
+	}
+	
+	/**
+	 * For tests purposes. Instead use {@link DimpleApplet#getEnvironment()}.
+	 */
+	@Internal
+	public JSEnvironment(DimpleApplet applet)
+	{
+		this(applet, DimpleEnvironment.active());
 	}
 
 	/*-----------------------

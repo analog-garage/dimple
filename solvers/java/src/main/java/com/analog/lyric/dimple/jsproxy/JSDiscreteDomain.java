@@ -48,4 +48,14 @@ public class JSDiscreteDomain extends JSDomain<DiscreteDomain>
 	{
 		return JSDomain.Type.DISCRETE;
 	}
+	
+	/**
+	 * Returns the indexed element in the domain.
+	 * @param i is in the range 0 to {@link #discreteSize()} - 1.
+	 * @since 0.07
+	 */
+	public Object getElement(int i)
+	{
+		return _delegate.getElement(i);
+	}
 }

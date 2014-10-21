@@ -18,19 +18,20 @@ package com.analog.lyric.dimple.test.jsproxy;
 
 import static org.junit.Assert.*;
 
-import java.awt.HeadlessException;
 import java.util.Map;
 import java.util.TreeMap;
 
+import netscape.javascript.JSObject;
+
 import org.junit.Test;
 
-import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.factorfunctions.Bernoulli;
 import com.analog.lyric.dimple.factorfunctions.Sum;
-import com.analog.lyric.dimple.jsproxy.DimpleApplet;
+import com.analog.lyric.dimple.jsproxy.JSDiscreteDomain;
 import com.analog.lyric.dimple.jsproxy.JSFactorFunction;
 import com.analog.lyric.dimple.jsproxy.JSFactorFunctionFactory;
-import com.analog.lyric.dimple.test.DimpleTestBase;
+import com.analog.lyric.dimple.jsproxy.JSFactorTable;
+import com.analog.lyric.dimple.jsproxy.JSTableFactorFunction;
 
 /**
  * Tests for JSFactorFunction and JSFactorFunctionFactory
@@ -38,44 +39,89 @@ import com.analog.lyric.dimple.test.DimpleTestBase;
  * @since 0.07
  * @author Christopher Barber
  */
-public class TestJSFactorFunction extends DimpleTestBase
+public class TestJSFactorFunction extends JSTestBase
 {
 	@SuppressWarnings("null")
 	@Test
 	public void test()
 	{
-		DimpleApplet applet = null;
-		JSFactorFunctionFactory functions = null;
-		try
-		{
-			applet = new DimpleApplet();
-			functions = applet.functions;
-			assertEquals(applet, functions.getApplet());
-		}
-		catch (HeadlessException ex)
-		{
-			functions = new JSFactorFunctionFactory(DimpleEnvironment.active().factorFunctions(), null);
-		}
+		JSFactorFunctionFactory functions = state.functions;
 		
 		JSFactorFunction sum = functions.create("Sum");
 		assertEquals("Sum", sum.getName());
 		assertTrue(sum.getDelegate() instanceof Sum);
-		assertEquals(applet, sum.getApplet());
+		assertEquals(state.applet, sum.getApplet());
 		assertFalse(sum.isParametric());
 		assertNull(sum.getParameter("p"));
 		assertTrue(sum.isDeterministicDirected());
 		assertFalse(sum.isTableFactor());
 		assertArrayEquals(new int[] { 0 }, sum.getDirectedToIndices(4));
+		assertEquals(1.0, sum.evalWeight(new Object[] {3.0, 1.0, 2.0}), 0.0);
+		assertEquals(0.0, sum.evalEnergy(new Object[] {3.0, 1.0, 2.0}), 0.0);
+		assertEquals(0.0, sum.evalWeight(new Object[] {4.0, 1.0, 2.0}), 0.0);
+		assertEquals(Double.POSITIVE_INFINITY, sum.evalEnergy(new Object[] {4.0, 1.0, 2.0}), 0.0);
+		assertInvariants(sum);
 		
 		// Test functions with parameters
 		JSFactorFunction bernoulli = functions.create("Bernoulli");
 		assertEquals("Bernoulli", bernoulli.getName());
 		assertFalse(((Bernoulli)bernoulli.getDelegate()).hasConstantParameters());
+		assertInvariants(bernoulli);
 
 		bernoulli = functions.create("Bernoulli", params("p", .4));
 		assertTrue(bernoulli.isParametric());
 		assertEquals(.4, bernoulli.getParameter("p"));
 		assertNull(bernoulli.getParameter("bogus"));
+		assertInvariants(bernoulli);
+		
+		JSObject jsobj = createJSObject();
+		if (jsobj != null)
+		{
+			jsobj.setMember("p", .6);
+			bernoulli = functions.create("Bernoulli", jsobj);
+			assertTrue(bernoulli.isParametric());
+			assertEquals(.6, bernoulli.getParameter("p"));
+			assertNull(bernoulli.getParameter("bogus"));
+			assertInvariants(bernoulli);
+		}
+
+		// Test factor table creation
+		JSDiscreteDomain bitDomain = state.domains.bit();
+		JSFactorTable table1 = functions.createTable(new Object[] { bitDomain, bitDomain });
+		assertEquals(2, table1.getDimensions());
+		for (int i = table1.getDimensions(); --i>=0;)
+		{
+			assertEquals(bitDomain, table1.getDomain(i));
+		}
+		
+		JSFactorFunction tableFunction1 = functions.create(table1);
+		assertTrue(tableFunction1.isTableFactor());
+		assertSame(table1, ((JSTableFactorFunction)tableFunction1).getTable());
+		assertInvariants(tableFunction1);
+	}
+	
+	private void assertInvariants(JSFactorFunction function)
+	{
+		assertEquals(function, function);
+		assertEquals(function, state.functions.wrap(function.getDelegate()));
+		assertEquals(state.applet, function.getApplet());
+		assertEquals(function.getDelegate().getName(), function.getName());
+		assertEquals(function.getDelegate().isDeterministicDirected(), function.isDeterministicDirected());
+		assertNull(function.getParameter("noSuchParameter"));
+		Map<String,Object> parameters = function.getParameters();
+		if (function.hasParameters())
+		{
+			assertTrue(function.isParametric());
+			assertNotNull(parameters);
+			for (String key : parameters.keySet())
+			{
+				assertEquals(parameters.get(key), function.getParameter(key));
+			}
+		}
+		else
+		{
+			assertNull(parameters);
+		}
 	}
 	
 	private Map<String,Object> params(Object ... args)

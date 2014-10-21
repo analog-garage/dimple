@@ -35,12 +35,14 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	/**
 	 * Returns an iterator over the non-zero entries in the table in increasing order
 	 * of sparse/joint index.
+	 * @see #fullIterator()
 	 */
 	@Override
 	public abstract IFactorTableIterator iterator();
 	
 	/**
 	 * Returns an iterator over the joint indexes in the table in increasing order.
+	 * @see #iterator()
 	 */
 	public abstract IFactorTableIterator fullIterator();
 	

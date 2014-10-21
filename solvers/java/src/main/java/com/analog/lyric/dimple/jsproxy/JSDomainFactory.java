@@ -22,7 +22,9 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
+import com.analog.lyric.util.misc.Internal;
 import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 /**
  * Factory for creating {@link JSDomain} instances.
@@ -43,6 +45,17 @@ public class JSDomainFactory
 	{
 		_applet = applet;
 		_proxyCache = proxyCache;
+	}
+	
+	/**
+	 * For tests purposes only.
+	 */
+	@SuppressWarnings("null")
+	@Internal
+	public JSDomainFactory()
+	{
+		_applet = null;
+		_proxyCache = CacheBuilder.newBuilder().build();
 	}
 	
 	/**

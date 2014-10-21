@@ -16,14 +16,17 @@
 
 package com.analog.lyric.dimple.jsproxy;
 
+import java.util.BitSet;
+
 import netscape.javascript.JSException;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
-import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.variables.Discrete;
 
 /**
@@ -128,28 +131,36 @@ public class JSFactorTable extends JSProxyObjectWithApplet<IFactorTable>
 		return _delegate.getDimensions();
 	}
 	
+	public @Nullable int[] getDirectedOutputs()
+	{
+		BitSet outputSet = _delegate.getOutputSet();
+		return outputSet != null ?	BitSetUtil.bitsetToIndices(outputSet) : null;
+	}
+	
 	/**
-	 * Returns the discrete domains that are indexed by the factor table.
-	 * <p>
-	 * The length will be equal to {@link #getDimensions()}.
+	 * Returns the domain of the specified dimension of the factor table.
+	 * @param dimension must be in the range 0 to {@link #getDimensions()} - 1.
 	 * @since 0.07
 	 */
-	public JSDiscreteDomain[] getDomains()
+	public JSDiscreteDomain getDomain(int dimension)
 	{
-		JSDomainFactory factory = getApplet().domains;
-		final JointDomainIndexer domains = _delegate.getDomainIndexer();
-		final int size = domains.size();
-		final JSDiscreteDomain[] jsdomains = new JSDiscreteDomain[size];
-		for (int i = size; --i>=0;)
-		{
-			jsdomains[i] = factory.wrap(domains.get(i));
-		}
-		return jsdomains;
+		JSDomainFactory domainFactory = getApplet().domains;
+		return domainFactory.wrap(_delegate.getDomainIndexer().get(dimension));
 	}
 	
 	public String getRepresentation()
 	{
 		return _delegate.getRepresentation().name();
+	}
+	
+	public boolean isDirected()
+	{
+		return _delegate.isDirected();
+	}
+	
+	public boolean isNormalized()
+	{
+		return _delegate.isDirected() ? _delegate.isConditional() : _delegate.isNormalized();
 	}
 	
 	public void normalize()
@@ -164,7 +175,7 @@ public class JSFactorTable extends JSProxyObjectWithApplet<IFactorTable>
 		}
 	}
 	
-	public void setDirected(int[] outputIndices)
+	public void setDirectedOutputs(int[] outputIndices)
 	{
 		_delegate.setDirected(BitSetUtil.bitsetFromIndices(getDimensions(), outputIndices));
 	}

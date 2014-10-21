@@ -31,6 +31,7 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
+import com.analog.lyric.util.misc.Internal;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
@@ -62,7 +63,11 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 	 * Construction
 	 */
 	
-	JSFactorGraph(DimpleApplet applet, FactorGraph graph)
+	/**
+	 * For test purposes Use {@link DimpleApplet#createGraph()} instead.
+	 */
+	@Internal
+	public JSFactorGraph(DimpleApplet applet, FactorGraph graph)
 	{
 		super(null, graph);
 		_applet = applet;

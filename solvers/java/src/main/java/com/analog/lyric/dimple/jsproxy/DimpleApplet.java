@@ -18,7 +18,6 @@ package com.analog.lyric.dimple.jsproxy;
 
 import java.applet.Applet;
 
-import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -82,7 +81,7 @@ public class DimpleApplet extends Applet
 	 */
 	public JSEnvironment getEnvironment()
 	{
-		return new JSEnvironment(this, DimpleEnvironment.active());
+		return new JSEnvironment(this);
 	}
 	
 	/*-----------

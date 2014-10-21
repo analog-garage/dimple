@@ -16,6 +16,8 @@
 	
 	package com.analog.lyric.dimple.jsproxy;
 
+import com.analog.lyric.util.misc.Internal;
+
 	
 	
 /**
@@ -28,11 +30,15 @@ public class JSSolverFactory
 {
 	private final DimpleApplet _applet;
 
-	JSSolverFactory(DimpleApplet applet)
+	/**
+	 * For tests purposes. Instead use {@link DimpleApplet#solvers}.
+	 */
+	@Internal
+	public JSSolverFactory(DimpleApplet applet)
 	{
 		_applet = applet;
 	}
-
+	
 	/**
 	 * Returns solver instance with specified name.
 	 * <p>

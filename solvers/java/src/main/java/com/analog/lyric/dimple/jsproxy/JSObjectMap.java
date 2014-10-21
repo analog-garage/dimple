@@ -42,14 +42,14 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 @NonNullByDefault(false)
 public class JSObjectMap extends AbstractMap<String, Object>
 {
-	private final Applet _applet;
-	private final JSObject _obj;
+	protected final Applet _applet;
+	protected final JSObject _obj;
 
 	/*--------------
 	 * Construction
 	 */
 	
-	JSObjectMap(Applet applet, JSObject obj)
+	public JSObjectMap(Applet applet, JSObject obj)
 	{
 		_applet = applet;
 		_obj = obj;
@@ -110,37 +110,19 @@ public class JSObjectMap extends AbstractMap<String, Object>
 		// The following is a hack proposed on stackoverflow: http://stackoverflow.com/a/13982185/334526
 		
 		final JSObject jsObject = _obj;
-		final Applet applet = _applet;
 		
-		// Retrieving global context - a JSObject representing a window applet belongs to
-		JSObject globalContext;
-		try
-		{
-			globalContext = JSObject.getWindow(applet);
-		}
-		catch (JSException ex)
-		{
-			return Collections.emptySet();
-		}
-
-		// Checking whether passed object is not an array
-		try
-		{
-			jsObject.getSlot(0);
-			return Collections.emptySet();
-		}
-		catch (JSException e) {
-
-		}
-
-		String keysFunctionName = String.format("_getKeys%d", Calendar.getInstance().getTimeInMillis());
-		jsObject.eval("window['" + keysFunctionName + "'] = function(jsObject) { return Object.keys(jsObject) }");
-		JSObject propertiesNamesJsObject = (JSObject)globalContext.call(keysFunctionName, new Object[] { jsObject });
-		jsObject.eval("delete(window['" + keysFunctionName + "'])");
-
 		Set<String> propertiesNames = new TreeSet<>();
+
+		// Retrieving global context - a JSObject representing a window applet belongs to
 		try
 		{
+			JSObject globalContext = getWindow();
+
+			String keysFunctionName = String.format("_getKeys%d", Calendar.getInstance().getTimeInMillis());
+			jsObject.eval("window['" + keysFunctionName + "'] = function(jsObject) { return Object.keys(jsObject) }");
+			JSObject propertiesNamesJsObject = (JSObject)globalContext.call(keysFunctionName, new Object[] { jsObject });
+			jsObject.eval("delete(window['" + keysFunctionName + "'])");
+
 			int slotIndex = 0;
 			while (true)
 			{
@@ -180,5 +162,10 @@ public class JSObjectMap extends AbstractMap<String, Object>
 			entries.add(new SimpleImmutableEntry<>(key, get(key)));
 		}
 		return Collections.unmodifiableSet(entries);
+	}
+	
+	protected JSObject getWindow()
+	{
+		return JSObject.getWindow(_applet);
 	}
 }
