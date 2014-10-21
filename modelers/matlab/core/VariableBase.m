@@ -656,4 +656,28 @@ classdef VariableBase < Node
 
     end
     
+    methods (Static)
+        
+        % Create a new variable of the same type as another variable
+        function var = createFrom(other)
+            otherSize = num2cell(size(other));
+            if isa(other, 'Bit')
+                var = Bit(otherSize{:});
+            elseif isa(other, 'FiniteFieldVariable')
+                var = FiniteFieldVariable(other.Domain.PrimitivePolynomial, otherSize{:});
+            elseif isa(other, 'Discrete')
+                var = Discrete(other.Domain.Elements, otherSize{:});
+            elseif isa(other, 'Real')
+                var = Real(other.Domain, otherSize{:});
+            elseif isa(other, 'Complex')
+                var = Complex(other.Domain, otherSize{:});
+            elseif isa(other, 'RealJoint')
+                var = RealJoint(other.Domain.RealDomains, otherSize{:});
+            else
+                error('Invalid variable type');
+            end
+        end
+        
+    end
+    
 end
