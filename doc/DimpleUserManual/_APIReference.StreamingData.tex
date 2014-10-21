@@ -336,8 +336,8 @@ This method appends the data source with the a single time-step of data (multipl
 
 \ifjava
 \begin{itemize}
-\item dataSource.add(MultivariateMsg msg) - Add data for a single step.
-\item dataSource.add(multivariateMsg [] msgs) - Add multiple steps of data.
+\item dataSource.add(MultivariateNormalParameters msg) - Add data for a single step.
+\item dataSource.add(MultivariateNormalParameters[] msgs) - Add multiple steps of data.
 \item dataSource.add(double [] means, double [][] covariances) - Add data for a single step.
 \end{itemize}
 \fi
@@ -498,7 +498,7 @@ This method takes no arguments, and returns the set of belief values from the ne
 b = dataSink.getNext();
 \end{lstlisting}
 
-This method takes no arguments, and returns the belief values from the next time-step.  The returned value is a MultivariateMsg object (see section~\ref{sec:MultivariateMsg}) that contains the mean vector and covariance matrix. 
+This method takes no arguments, and returns the belief values from the next time-step.  The returned value is a MultivariateNormalParameters object (see section~\ref{sec:MultivariateNormalParameters}) that contains the mean vector and covariance matrix. 
 \fi
 
 

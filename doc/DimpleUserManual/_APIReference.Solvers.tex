@@ -5,7 +5,7 @@
 
 \subsubsection{Solver-Specific Options}
 
-Each solver supports a number of options specific to that solver. These are described in the following sections. Solver-specific options may be used to configure how overall inference works for that solver or may be used to configure the behavior of individual factors or variables for that solver. Solver-specific options are typically set on the applicable model object (factor graph, factor or variable) and the values will be observed and used to configure the corresponding solver objects:
+Each solver supports a number of options specific to that solver. These are described in the following sections. Solver-specific options may be used to configure how overall inference works for that solver or may be used to configure the behavior of individual factors or variables for that solver. Solver-specific options are typically set on the applicable model object (factor graph, factor, or variable) and the values will be observed and used to configure the corresponding solver objects:
 
 \ifmatlab
 \begin{lstlisting}
@@ -18,7 +18,7 @@ Each solver supports a number of options specific to that solver. These are desc
 \end{lstlisting}
 \fi
 
-Options that are not applicable to the object on which it is set or that are not applicable to the active solver will simply be ignored. For more details on the options mechanism see \autoref{sec:Options} of this document.
+Solver-specific options may be set at any time, even before the solver for a graph has been specified.  Options that are not applicable to the object on which it is set or that are not applicable to the active solver will simply be ignored.  For more details on the options mechanism see \autoref{sec:Options} of this document.
 
 \subsubsection{Solver-Specific Methods}
 
@@ -86,13 +86,13 @@ In this case, returnArray is a cell-array of the return values of the method, wi
 
 A few options are applicable to multiple solvers and are therefore described in this subsection.
 
-\para{DimpleOptions.randomSeed}
+\para{SolverOptions.iterations}
 
-\dimpleOption{DimpleOptions.randomSeed}
-{64-bit integer}
-{N/A}
+\dimpleOption{SolverOptions.iterations}
+{integer}
+{1}
 {graph}
-{When set, this option specifies a random seed that may be used by solvers that use a random number generator. The seed will only be used if explicitly set; the default value is not used. This can be used to ensure repeatable behavior during testing or profiling but should not be used for normal operation.}
+{Controls how many iterations to perform when running solve(). This is not applicable to all solvers. It is currently only used by the SumProduct, MinSum and ParticleBP solvers.}
 
 \para{SolverOptions.enableMultithreading}
 
@@ -102,13 +102,13 @@ A few options are applicable to multiple solvers and are therefore described in 
 {graph}
 {Controls whether to use multithreading for this solver. Multithreading is currently only supported by the MinSum and SumProduct solvers but will eventually be implemented in others. This value will be ignored if not applicable.}
 
-\para{SolverOptions.iterations}
+\para{DimpleOptions.randomSeed}
 
-\dimpleOption{SolverOptions.iterations}
-{integer}
-{1}
+\dimpleOption{DimpleOptions.randomSeed}
+{64-bit integer}
+{N/A}
 {graph}
-{Controls how many iterations to perform during solves. This is not applicable to all solvers. It is currently only used by Sum-Product, Min-Sum and Particle BP.}
+{When set, this option specifies a random seed that may be used by solvers that use a random number generator. The seed will only be used if explicitly set; the default value is not used. This can be used to ensure repeatable behavior during testing or profiling but should not be used for normal operation.}
 
 \subsubsection{Common Methods}
 
@@ -278,17 +278,6 @@ where $D$ is the damping value. So that a value of 0 means that the previous mes
 This option applies the same damping parameter to all edges connected to the variable or factor on which it is set. If you want different values for different edges, you need to use the \nameref{option:SumProductOptions.nodeSpecificDamping} option.
 }
 
-\subpara{SumProductOptions.maxMessageSize}
-
-\dimpleOption{SumProductOptions.maxMessageSize}
-{integer}
-{integer max}
-{discrete factors}
-{This specifies the maximum size of the outgoing messages on the discrete factors on which it is set. If this number K is less than the full size of the message (i.e. the size of the domain of the target variable), then only the K-best values -- those with the largest weights -- will be included in the message. This can results in a faster but more approximate form of inference and is most suited to graphs with very large-dimension variables.
-\linebreak
-\linebreak
-IMPORTANT: k-best and damping are not compatible with each other\footnote{This restriction may be removed in a future version of Dimple.}}
-
 \subpara{SumProductOptions.nodeSpecificDamping}
 
 \dimpleOption{SumProductOptions.nodeSpecificDamping}
@@ -300,6 +289,17 @@ IMPORTANT: k-best and damping are not compatible with each other\footnote{This r
 \linebreak
 This option takes precedence over the simple damping option if both are specified for the same node.
 }
+
+\subpara{SumProductOptions.maxMessageSize}
+
+\dimpleOption{SumProductOptions.maxMessageSize}
+{integer}
+{integer max}
+{discrete factors}
+{This specifies the maximum size of the outgoing messages on the discrete factors on which it is set. If this number K is less than the full size of the message (i.e. the size of the domain of the target variable), then only the K-best values -- those with the largest weights -- will be included in the message. This can results in a faster but more approximate form of inference and is most suited to graphs with very large-dimension variables.
+\linebreak
+\linebreak
+IMPORTANT: k-best and damping are not compatible with each other\footnote{This restriction may be removed in a future version of Dimple.}}
 
 \subpara{SumProductOptions.updateApproach}
 
@@ -339,18 +339,18 @@ This option takes precedence over the simple damping option if both are specifie
 {discrete factors}
 {This option controls the representation of the auxiliary tables used by the optimized update algorithm, which is controlled through the \nameref{option:SumProductOptions.updateApproach}. Internally, the optimized algorithm creates multiple factor tables to perform the update. This option specifies a density, below which an auxiliary table uses a sparse representation. It must be a number in the range [0.0, 1.0]. The value 1.0 (the default), indicates that a sparse representation should be used if there are any zero-entries in the table. The value 0.0 will prevent the sparse representation from being used entirely. Sparse tables typically decrease execution time, but they use more memory. When the update approach is set to AUTOMATIC, this option impacts both the execution time and memory allocation estimates used to choose the update approach.}
 
-\subpara{GibbsOptions for sampled factors}
+\subpara{GibbsOptions for Sampled Factors}
 
-Factors connected to continuous variables that do not support exact message computation, instead use a sampled approximation (see section~\ref{sec:SumProductSolver}) where the sampling is performed using the Gibbs Solver.
+Factors connected to continuous variables that do not support exact message computation, instead use a sampled approximation (see section~\ref{sec:SumProductSolver}) where the sampling is performed using the Gibbs solver.
 
-For all such factors in a graph, you may set any of the Gibbs solver options described in \autoref{sec:GibbsOptions} to control how the sampling will be done. The most important of these options have different default values when used with Sum-Product. This is accomplished by setting the options on the solver graph object when it is constructed. In order to override these defaults, it is necessary to set them on the solver graph, or on the factor model or solver objects.
+For all such factors in a graph, you may set any of the Gibbs solver options described in \autoref{sec:GibbsOptions} to control how the sampling will be done. The most important of these options have different default values when used with Sum-Product. This is accomplished by setting the options on the solver graph object when it is constructed. In order to override these defaults, it is necessary to set them on the solver graph (to apply to all such factors, using \texttt{graph.Solver.setOption(...))}, or on the factor specific factor object (to apply to a single factor, using \texttt{factor.setOption(...))}.
 
-These options and their Sum-Product default values are:
+These options and their SumProduct-specific default values are:
 
 \begin{itemize}
-\item \nameref{option:GibbsOptions.numSamples}: 1000 \ifjava See SampledFactor.DEFAULT\_SAMPLES\_PER\_UPDATE\fi
-\item \nameref{option:GibbsOptions.burnInScans}: 10 \ifjava See SampledFactor.DEFAULT\_BURN\_IN\_SCANS\_PER\_UPDATE\fi
-\item \nameref{option:GibbsOptions.scansPerSample}: 1 \ifjava See SampledFactor.DEFAULT\_SCANS\_PER\_SAMPLE\fi
+\item \nameref{option:GibbsOptions.numSamples}: 1000 \ifjava (See SampledFactor.DEFAULT\_SAMPLES\_PER\_UPDATE)\fi
+\item \nameref{option:GibbsOptions.burnInScans}: 10 \ifjava (See SampledFactor.DEFAULT\_BURN\_IN\_SCANS\_PER\_UPDATE)\fi
+\item \nameref{option:GibbsOptions.scansPerSample}: 1 \ifjava (See SampledFactor.DEFAULT\_SCANS\_PER\_SAMPLE)\fi
 \end{itemize}
 
 \clearpage
@@ -385,14 +385,6 @@ The following sections list the solver-specific options for the MinSum solver.
 {variables and factors}
 {See \nameref{option:SumProductOptions.damping}}
 
-\subpara{MinSumOptions.maxMessageSize}
-
-\dimpleOption{MinSumOptions.maxMessagesSize}
-{integer}
-{integer max}
-{discrete factors}
-{See \nameref{option:SumProductOptions.maxMessageSize}}
-
 \subpara{MinSumOptions.nodeSpecificDamping}
 
 \dimpleOption{MinSumOptions.nodeSpecificDamping}
@@ -400,6 +392,14 @@ The following sections list the solver-specific options for the MinSum solver.
 {\textit{empty}}
 {variables and factors}
 {See \nameref{option:SumProductOptions.nodeSpecificDamping}}
+
+\subpara{MinSumOptions.maxMessageSize}
+
+\dimpleOption{MinSumOptions.maxMessagesSize}
+{integer}
+{integer max}
+{discrete factors}
+{See \nameref{option:SumProductOptions.maxMessageSize}}
 
 \subpara{MinSumOptions.updateApproach}
 
@@ -613,53 +613,30 @@ The following sections list the solver-specific aspects of the API for the Gibbs
 
 The following options affect the behavior of various aspects of the Gibbs solver:
 
-\subpara{GibbsOptions.burnInScans}
-
-\dimpleOption{GibbsOptions.burnInScans}
-{integer}
-{0}
-{graph}
-{Specifies the number of full updates of all of the variables in the graph to perform during the burn-in phase before generating samples.}
-
-\subpara{GibbsOptions.discreteSampler}
-
-\dimpleOption{GibbsOptions.discreteSampler}
-{\ifmatlab string\fi \ifjava IGenericSampler class\fi}
-{CDFSampler}
-{variables}
-{Specifies the default sampler to use for discrete variables when a conjugate sampler is not  suitable. The sampler may be configured by use of additional options defined by each sampler type. See \autoref{sec:Samplers} for more details.}
-
-\subpara{GibbsOptions.enableAutomaticConjugateSampling}
-
-\dimpleOption{GibbsOptions.enableAutomaticConjugateSampling}
-{boolean}
-{true}
-{variables}
-{Specifies whether to use conjugate sampling when available for a given variable. Note that if a specific sampler has been specified for a particular variable (by setting the \nameref{option:GibbsOptions.realSampler} option directly on the model or solver variable object) then a conjugate sampler will not be used regardless.}
-
-\subpara{GibbsOptions.enableAnnealing}
-
-\dimpleOption{GibbsOptions.enableAnnealing}
-{boolean}
-{false}
-{graph}
-{Specifies whether to use a tempering and annealing process when running Gibbs.}
-
-\subpara{GibbsOptions.initialTemperature}
-
-\dimpleOption{GibbsOptions.initialTemperature}
-{double}
-{1.0}
-{graph}
-{Specifies the initial temperature to use when annealing is enabled (as specified by the enableAnnealing option).}
-
 \subpara{GibbsOptions.numSamples}
 
 \dimpleOption{GibbsOptions.numSamples}
 {integer}
 {1}
 {graph}
-{Specifies the number of samples to be generated when solving the graph post burn-in. This value times the value of \nameref{option:GibbsOptions.numRandomRestarts} plus one determines the number of samples that will be produced in a call to solveOneStep.}
+{Specifies the number of samples to be generated when solving the graph post burn-in.  (This value times the value of \nameref{option:GibbsOptions.numRandomRestarts} plus one determines the total number of samples that will be produced.)}
+
+\subpara{GibbsOptions.scansPerSample}
+
+\dimpleOption{GibbsOptions.scansPerSample}
+{integer}
+{0}
+{graph}
+{Specifies sampling rate in terms of the number of scans\footnote{A scan is a number of updates to each variable equal to the number of variables in the graph.  For a fixed schedule, this typically means updating each variable exactly once.  For a random update schedule, this is not necessarily the case.} of the graph to perform for each sample.}
+
+
+\subpara{GibbsOptions.burnInScans}
+
+\dimpleOption{GibbsOptions.burnInScans}
+{integer}
+{0}
+{graph}
+{Specifies the number of scans of the graph to perform during the burn-in phase before generating samples.}
 
 \subpara{GibbsOptions.numRandomRestarts}
 
@@ -669,23 +646,6 @@ The following options affect the behavior of various aspects of the Gibbs solver
 {graph}
 {Specifies the number of random restarts (zero by default, which means run once and don't restart). For a value greater than zero, the after running the specified number of samples, the solver is restarted with the variable values randomized, and re-run (including burn-in).  The sample values (the best sample value, or all samples, if requested) are extracted across all runs.
 }
-
-\subpara{GibbsOptions.realSampler}
-
-\dimpleOption{GibbsOptions.realSampler}
-{\ifmatlab string\fi \ifjava IGenericSampler class\fi}
-{SliceSampler}
-{variables}
-{Specifies the default sampler to use for real-valued variables (including Complex and RealJoint) when a conjugate sampler is not suitable. The sampler may be configured by use of additional options defined by each sampler type. See \autoref{sec:Samplers} for more details.}
-
-\subpara{GibbsOptions.scansPerSample}
-
-\dimpleOption{GibbsOptions.scansPerSample}
-{integer}
-{0}
-{graph}
-{Specifies sampling rate in terms of the number of updates of all of the variables in the graph to perform for each sample.}
-
 
 \subpara{GibbsOptions.saveAllSamples}
 
@@ -701,7 +661,49 @@ The following options affect the behavior of various aspects of the Gibbs solver
 {boolean}
 {false}
 {graph}
-{Specifies whether to save scores for all generated samples in Gibbs. If true, then for each sample the total energy/log-likelihood aka \emph{score} of the graph will be saved. The saved scores can later be retrieved by the getAllScores() method described below.}
+{Specifies whether to save scores for all generated samples in Gibbs. If true, then for each sample the total energy/log-likelihood a.k.a. \emph{score} of the graph will be saved. The saved scores can later be retrieved by the getAllScores() method described below.}
+
+\subpara{GibbsOptions.discreteSampler}
+
+\dimpleOption{GibbsOptions.discreteSampler}
+{\ifmatlab string\fi \ifjava IGenericSampler class\fi}
+{CDFSampler}
+{variables}
+{Specifies the default sampler to use for discrete variables when a conjugate sampler is not  suitable. The sampler may be configured by use of additional options defined by each sampler type. See \autoref{sec:Samplers} for more details.}
+
+\subpara{GibbsOptions.realSampler}
+
+\dimpleOption{GibbsOptions.realSampler}
+{\ifmatlab string\fi \ifjava IGenericSampler class\fi}
+{SliceSampler}
+{variables}
+{Specifies the default sampler to use for real-valued variables (including Complex and RealJoint) when a conjugate sampler is not suitable. The sampler may be configured by use of additional options defined by each sampler type. See \autoref{sec:Samplers} for more details.}
+
+\subpara{GibbsOptions.enableAutomaticConjugateSampling}
+
+\dimpleOption{GibbsOptions.enableAutomaticConjugateSampling}
+{boolean}
+{true}
+{variables}
+{Specifies whether to use conjugate sampling when available for a given variable. Note that if a specific sampler has been specified for a particular variable (by setting the \nameref{option:GibbsOptions.realSampler} option directly on the model or solver variable object) then a conjugate sampler will not be used regardless.}
+
+\subpara{GibbsOptions.computeRealJointBeliefMoments}
+
+\dimpleOption{GibbsOptions.computeRealJointBeliefMoments}
+{boolean}
+{false}
+{variables}
+{Specifies whether to compute the belief moments (mean vector and covariance matrix) for RealJoint (and Complex) variables while sampling.  To minimize computation, these are not computed by default for RealJoint variables (Real variables always compute similar statistics, and do not have a corresponding option to enable them).  If true, the belief moments are computed for each sample on-the-fly (without saving all samples).  The computed moments can later be retrieved by the getSampleMean and getSampleCovariance solver-specific methods for the variable (see section~\ref{sec:RealJointVariableSpecificMethods})}
+
+
+
+\subpara{GibbsOptions.enableAnnealing}
+
+\dimpleOption{GibbsOptions.enableAnnealing}
+{boolean}
+{false}
+{graph}
+{Specifies whether to use a tempering and annealing process when running Gibbs.}
 
 \subpara{GibbsOptions.annealingHalfLife}
 
@@ -709,7 +711,16 @@ The following options affect the behavior of various aspects of the Gibbs solver
 {double}
 {1.0}
 {graph}
-{Specifies the rate at which the temperature will be lowered during the tempering and annealing process. This rate is specified in terms of the number of iterations required for the temperature to be lowered by half. This value is only used if annealing has been enabled as specified by the enableAnnealing option.}
+{Specifies the rate at which the temperature will be lowered during the tempering and annealing process. This rate is specified in terms of the number of samples required for the temperature to be lowered by half. This value is only used if annealing has been enabled as specified by the enableAnnealing option.}
+
+\subpara{GibbsOptions.initialTemperature}
+
+\dimpleOption{GibbsOptions.initialTemperature}
+{double}
+{1.0}
+{graph}
+{Specifies the initial temperature to use when annealing is enabled (as specified by the enableAnnealing option).}
+
 
 \para{Graph Methods}
 
@@ -853,7 +864,7 @@ double[][] rjs = ((GibbsRealJoint)variable.getSolver()).getAllSamples();
 \end{lstlisting}
 \fi
 
-Returns an array including all sample values seen so far for a variable. Over multiple variables, samples with the same index correspond to the same joint sample value. This method only returns a non-empty value if the \nameref{GibbsOptions.saveAllSamples} options was enabled for the variable when sampling was performed.
+Returns an array including all sample values seen so far for a variable. Over multiple variables, samples with the same index correspond to the same joint sample value. This method only returns a non-empty value if the \nameref{option:GibbsOptions.saveAllSamples} options was enabled for the variable when sampling was performed.
 
 \ifmatlab
 \begin{lstlisting}
@@ -1050,6 +1061,7 @@ variable.getSolver().getSampleVariance();
 Returns the variance of all samples that have been collected.  This is and estimate of the variance of the belief for the corresponding variable.
 
 \para{RealJoint-Variable-Specific Methods}
+\label{sec:RealJointVariableSpecificMethods}
 
 The following methods apply only to RealJoint and Complex variables when using the Gibbs solver.
 
@@ -1065,7 +1077,7 @@ variable.getSolver().getSampleMean();
 \end{lstlisting}
 \fi
 
-Returns the mean vector of all samples that have been collected.  This is and estimate of the mean of the belief for the corresponding variable.  This method is only available if, prior to performing inference, the option GibbsOptions.computeRealJointBeliefMoments is set to true.
+Returns the mean vector of all samples that have been collected.  This is and estimate of the mean of the belief for the corresponding variable.  This method is only available if, prior to performing inference, the option  \nameref{option:GibbsOptions.computeRealJointBeliefMoments} is set to true.
 
 \ifmatlab
 \begin{lstlisting}
@@ -1079,7 +1091,7 @@ variable.getSolver().getSampleCovariance();
 \end{lstlisting}
 \fi
 
-Returns the covariance matrix computed over all samples that have been collected.  This is and estimate of the covariance of the belief for the corresponding variable.  This method is only available if, prior to performing inference, the option GibbsOptions.computeRealJointBeliefMoments is set to true.
+Returns the covariance matrix computed over all samples that have been collected.  This is and estimate of the covariance of the belief for the corresponding variable.  This method is only available if, prior to performing inference, the option  \nameref{option:GibbsOptions.computeRealJointBeliefMoments} is set to true.
 
 \para{Factor Methods}
 
@@ -1232,6 +1244,8 @@ The following lists the solver-specific options for the ParticleBP solver.
 
 \para{Particle BP Options}
 
+The following options affect the behavior of various aspects of the ParticleBP solver:
+
 \subpara{ParticleBPOptions.numParticles}
 
 \dimpleOption{ParticleBPOptions.numParticles}
@@ -1239,30 +1253,6 @@ The following lists the solver-specific options for the ParticleBP solver.
 {1}
 {real variables}
 {Specifies the number of particles used to represent the variable. This option takes affect when the solver variable is constructed and when it is initialized.}
-
-\subpara{ParticleBPOptions.enableAnnealing}
-
-\dimpleOption{ParticleBPOptions.enableAnnealing}
-{boolean}
-{false}
-{graph}
-{Determines whether to use a tempering and annealing process during inference.}
-
-\subpara{ParticleBPOptions.initialTemperature}
-
-\dimpleOption{ParticleBPOptions.initialTemperature}
-{double}
-{1.0}
-{graph}
-{Specifies the initial temperature to use when annealing is enabled (as specified by the enableAnnealing option).}
-
-\subpara{ParticleBPOptions.annealingHalfLife}
-
-\dimpleOption{ParticleBPOptions.annealingHalfLife}
-{double}
-{1.0}
-{graph}
-{Specifies the rate at which the temperature will be lowered during the tempering and annealing process. This rate is specified in terms of the number of iterations required for the temperature to be lowered by half. This value is only used if annealing has been enabled as specified by the enableAnnealing option.}
 
 \subpara{ParticleBPOptions.resamplingUpdatesPerParticle}
 
@@ -1308,6 +1298,30 @@ ParticleBPOptions.initialParticleRange.set(graph, 0.0, 1.0);
 {NormalProposalKernel}
 {real variables}
 {Specifies the type of proposal kernel to use for the specified variables. The selected proposal kernel may have additional options that can be used to configure its behavior. These can also be set on the variables.}
+
+\subpara{ParticleBPOptions.enableAnnealing}
+
+\dimpleOption{ParticleBPOptions.enableAnnealing}
+{boolean}
+{false}
+{graph}
+{Determines whether to use a tempering and annealing process during inference.}
+
+\subpara{ParticleBPOptions.annealingHalfLife}
+
+\dimpleOption{ParticleBPOptions.annealingHalfLife}
+{double}
+{1.0}
+{graph}
+{Specifies the rate at which the temperature will be lowered during the tempering and annealing process. This rate is specified in terms of the number of iterations required for the temperature to be lowered by half. This value is only used if annealing has been enabled as specified by the enableAnnealing option.}
+
+\subpara{ParticleBPOptions.initialTemperature}
+
+\dimpleOption{ParticleBPOptions.initialTemperature}
+{double}
+{1.0}
+{graph}
+{Specifies the initial temperature to use when annealing is enabled (as specified by the enableAnnealing option).}
 
 \para{Graph Methods}
 
@@ -1410,6 +1424,8 @@ In the current version of Dimple (version 0.7), there is no support for rolled-u
 The following options are applicable to the LP solver:
 
 \para{LP Options}
+
+The following options affect the behavior of various aspects of the LP solver:
 
 \subpara{LPOptions.LPSolver}
 
@@ -1536,7 +1552,7 @@ The following options may be used to configure the SliceSampler for a given vari
 {integer}
 {10}
 {variables}
-{}
+{The maximum number of doublings used during the doubling phase of the slice sampler.  The maximum slice interval is on the order of $initialSliceWidth \cdot 2^{maximumDoublings}$}
 
 \para{SuwaTodoSampler}
 \label{sec:SuwoTodoSampler}
