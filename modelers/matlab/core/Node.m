@@ -151,8 +151,15 @@ classdef Node < MatrixObject
             end
         end
         
-        function setOptions(obj,options)
-            %setOptions Sets options from a cell array
+        function setOptions(obj,varargin)
+            %setOptions Sets options from a cell array or comma-spearated list
+            %
+            %  setOptions(optionList)
+            %
+            %    optionVector is a comma-separated list with an even number of
+            %       entries containing alternating keys and values. The
+            %       specified options will be set on all nodes in the left
+            %       hand side of the expression.
             %
             %  setOptions(optionVector)
             %
@@ -178,22 +185,28 @@ classdef Node < MatrixObject
             %
             % Examples:
             %    
-            %    % These two variants are equivalent. Both set the
+            %    % These variants are equivalent. All set the
             %    % specified options on all nodes.
-            %    nodes.setOptions({'SolverOptions.iterations', 10,
+            %    nodes.setOptions('SolverOptions.iterations', 10,...
+            %                      'SumProductOptions.damping' , .9);
+            %    nodes.setOptions({'SolverOptions.iterations', 10,...
             %                      'SumProductOptions.damping' , .9});
-            %    nodes.setOptions({'SolverOptions.iterations', 10;
+            %    nodes.setOptions({'SolverOptions.iterations', 10;...
             %                      'SumProductOptions.damping', .9);
             %
             %    % Sets options on a 2x2 node.    
             %    options = cell(2,2);
-            %    options{1,1} = {'SolverOptions.iterations', 10;
+            %    options{1,1} = {'SolverOptions.iterations', 10;...
             %                    'SumProductOptions.damping', .85)
             %    options{2,2} = {'SolverOptions.iterations', 12};
             %    nodes.setOptions(options);
             %
             % See also getLocalOptions, setOption
-            assert(iscell(options), 'Options must be specified in a cell array');
+            if iscell(varargin{1})
+                options = varargin{1};
+            else
+                options = varargin;
+            end
             if isvector(options)
                 assert(rem(numel(options),2) == 0, 'Options vector must have even length');
                 options = reshape(options, 2, numel(options)/2)';
