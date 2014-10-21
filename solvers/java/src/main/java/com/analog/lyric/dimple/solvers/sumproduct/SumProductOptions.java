@@ -47,21 +47,6 @@ public class SumProductOptions extends SolverOptions
 		new DoubleOptionKey(SumProductOptions.class, "damping", 0.0, 0.0, 1.0);
 	
 	/**
-	 * Maximum size of discrete belief messages.
-	 * <p>
-	 * This option may be set on entire graph or on individual discrete factors.
-	 * <p>
-	 * If less than the full domain size of the message, then messages will be truncated
-	 * to this number of dimensions with the lowest weight dimensions omitted.
-	 * <p>
-	 * Must be a positive number.
-	 * <p>
-	 * @since 0.07
-	 */
-	public static final IntegerOptionKey maxMessageSize =
-		new IntegerOptionKey(SumProductOptions.class, "maxMessageSize", Integer.MAX_VALUE, 1, Integer.MAX_VALUE);
-	
-	/**
 	 * Node specific damping values.
 	 * <p>
 	 * This option may be set on individual discrete variables or factors. It must either be
@@ -76,6 +61,21 @@ public class SumProductOptions extends SolverOptions
 	public static final DoubleListOptionKey nodeSpecificDamping =
 		new DoubleListOptionKey(SumProductOptions.class, "nodeSpecificDamping");
 
+	/**
+	 * Maximum size of discrete belief messages.
+	 * <p>
+	 * This option may be set on entire graph or on individual discrete factors.
+	 * <p>
+	 * If less than the full domain size of the message, then messages will be truncated
+	 * to this number of dimensions with the lowest weight dimensions omitted.
+	 * <p>
+	 * Must be a positive number.
+	 * <p>
+	 * @since 0.07
+	 */
+	public static final IntegerOptionKey maxMessageSize =
+		new IntegerOptionKey(SumProductOptions.class, "maxMessageSize", Integer.MAX_VALUE, 1, Integer.MAX_VALUE);
+	
 	/**
 	 * Update approach.
 	 * <p>

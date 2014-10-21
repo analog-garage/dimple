@@ -35,18 +35,6 @@ import com.analog.lyric.options.IntegerOptionKey;
 public class GibbsOptions extends SolverOptions
 {
 	/**
-	 * The number of updates of all of the variables in the graph to perform during burn-in in Gibbs solver.
-	 * <p>
-	 * The effective updates per burn-in will be the number of variables to be updated in the graph times this number.
-	 * <p>
-	 * The default value is zero.
-	 * <p>
-	 * @since 0.07
-	 */
-	public static final IntegerOptionKey burnInScans =
-		new IntegerOptionKey(GibbsOptions.class, "burnInScans", 0, -1, Integer.MAX_VALUE);
-	
-	/**
 	 * The number of samples to generate per restart in Gibbs solver.
 	 * <p>
 	 * This multiplied by {@link #numRandomRestarts} plus one specifies the number of samples that
@@ -72,6 +60,18 @@ public class GibbsOptions extends SolverOptions
 		new IntegerOptionKey(GibbsOptions.class, "scansPerSample", 1, -1, Integer.MAX_VALUE);
 	
 	/**
+	 * The number of updates of all of the variables in the graph to perform during burn-in in Gibbs solver.
+	 * <p>
+	 * The effective updates per burn-in will be the number of variables to be updated in the graph times this number.
+	 * <p>
+	 * The default value is zero.
+	 * <p>
+	 * @since 0.07
+	 */
+	public static final IntegerOptionKey burnInScans =
+		new IntegerOptionKey(GibbsOptions.class, "burnInScans", 0, -1, Integer.MAX_VALUE);
+	
+	/**
 	 * The number of times to randomly restart during one round of Gibbs sampling.
 	 * <p>
 	 * This is the number of additional times to randomly reinitialize the graph, run burn in, and generate
@@ -87,67 +87,6 @@ public class GibbsOptions extends SolverOptions
 	 */
 	public static final IntegerOptionKey numRandomRestarts =
 		new IntegerOptionKey(GibbsOptions.class, "numRandomRestarts", 0, 0, Integer.MAX_VALUE);
-	
-	/**
-	 * Determines whether conjugate sampling is automatically used when possible.
-	 * <p>
-	 * Note that if a specific sampler is set on the solver or model instance of a variable, that
-	 * sampler will be used regardless of this setting.
-	 * <p>
-	 * @since 0.07
-	 */
-	public static final BooleanOptionKey enableAutomaticConjugateSampling =
-		new BooleanOptionKey(GibbsOptions.class, "enableAutomaticConjugateSampling", true);
-	
-	/**
-	 * Enables use of a tempering and annealing process in Gibbs solver.
-	 * <p>
-	 * Defaults to false.
-	 * <p>
-	 * @since 0.07
-	 */
-	public static final BooleanOptionKey enableAnnealing =
-		new BooleanOptionKey(GibbsOptions.class, "enableAnnealing", false);
-	
-	/**
-	 * Specifies the initial temperature for annealing in Gibbs solver.
-	 * <p>
-	 * Defaults to 1.0.
-	 * <p>
-	 * @since 0.07
-	 */
-	public static final DoubleOptionKey initialTemperature =
-		new DoubleOptionKey(GibbsOptions.class, "initialTemperature", 1.0, 0.0, Double.MAX_VALUE);
-	
-	/**
-	 * Specifies the temperature decay rate for annealing in Gibbs solver.
-	 * <p>
-	 * Specifies the rate at which the temperature will be lowered during simulated annealing
-	 * in Gibbs solver in terms of the number of samples it will take for the temperature to
-	 * be lowered by half.
-	 * <p>
-	 * Defaults to 1.0.
-	 * <p>
-	 * @since 0.07
-	 */
-	public static final DoubleOptionKey annealingHalfLife =
-		new DoubleOptionKey(GibbsOptions.class, "annealingHalfLife", 1, 1.0, Double.MAX_VALUE);
-	
-	/**
-	 * Specifies which sampler to use for discrete variables in Gibbs solver.
-	 * <p>
-	 * @since 0.07
-	 */
-	public static final GenericSamplerOptionKey discreteSampler =
-		new GenericSamplerOptionKey(GibbsOptions.class, "discreteSampler", CDFSampler.class);
-	
-	/**
-	 * Specifies which sampler to use for real variables in Gibbs solver.
-	 * <p>
-	 * @since 0.07
-	 */
-	public static final GenericSamplerOptionKey realSampler =
-		new GenericSamplerOptionKey(GibbsOptions.class, "realSampler", SliceSampler.class);
 	
 	/**
 	 * Specifies whether to save sample values for variables in Gibbs solver.
@@ -173,12 +112,39 @@ public class GibbsOptions extends SolverOptions
 		new BooleanOptionKey(GibbsOptions.class, "saveAllScores", false);
 	
 	/**
+	 * Specifies which sampler to use for discrete variables in Gibbs solver.
+	 * <p>
+	 * @since 0.07
+	 */
+	public static final GenericSamplerOptionKey discreteSampler =
+		new GenericSamplerOptionKey(GibbsOptions.class, "discreteSampler", CDFSampler.class);
+	
+	/**
+	 * Specifies which sampler to use for real variables in Gibbs solver.
+	 * <p>
+	 * @since 0.07
+	 */
+	public static final GenericSamplerOptionKey realSampler =
+		new GenericSamplerOptionKey(GibbsOptions.class, "realSampler", SliceSampler.class);
+	
+	/**
+	 * Determines whether conjugate sampling is automatically used when possible.
+	 * <p>
+	 * Note that if a specific sampler is set on the solver or model instance of a variable, that
+	 * sampler will be used regardless of this setting.
+	 * <p>
+	 * @since 0.07
+	 */
+	public static final BooleanOptionKey enableAutomaticConjugateSampling =
+		new BooleanOptionKey(GibbsOptions.class, "enableAutomaticConjugateSampling", true);
+	
+	/**
 	 * Specifies whether to compute belief moments for RealJoint variables in Gibbs solver.
 	 * <p>
 	 * If true, the belief moments are computed for each sample on-the-fly (without saving all samples)
 	 * The computed moments can later be retrieved by {@link GibbsRealJoint#getSampleMean()} and
 	 * {@link GibbsRealJoint#getSampleCovariance()}.  (Note that this option applies to RealJoint
-	 * and Complex variables.  Real variables always compute the similar statistics, and do not
+	 * and Complex variables.  Real variables always compute similar statistics, and do not
 	 * have a corresponding option to enable them.)
 	 * 
 	 * <p>
@@ -188,4 +154,38 @@ public class GibbsOptions extends SolverOptions
 	 */
 	public static final BooleanOptionKey computeRealJointBeliefMoments =
 		new BooleanOptionKey(GibbsOptions.class, "computeRealJointBeliefMoments", false);
+
+	/**
+	 * Enables use of a tempering and annealing process in Gibbs solver.
+	 * <p>
+	 * Defaults to false.
+	 * <p>
+	 * @since 0.07
+	 */
+	public static final BooleanOptionKey enableAnnealing =
+		new BooleanOptionKey(GibbsOptions.class, "enableAnnealing", false);
+	
+	/**
+	 * Specifies the temperature decay rate for annealing in Gibbs solver.
+	 * <p>
+	 * Specifies the rate at which the temperature will be lowered during simulated annealing
+	 * in Gibbs solver in terms of the number of samples it will take for the temperature to
+	 * be lowered by half.
+	 * <p>
+	 * Defaults to 1.0.
+	 * <p>
+	 * @since 0.07
+	 */
+	public static final DoubleOptionKey annealingHalfLife =
+		new DoubleOptionKey(GibbsOptions.class, "annealingHalfLife", 1, 1.0, Double.MAX_VALUE);
+	
+	/**
+	 * Specifies the initial temperature for annealing in Gibbs solver.
+	 * <p>
+	 * Defaults to 1.0.
+	 * <p>
+	 * @since 0.07
+	 */
+	public static final DoubleOptionKey initialTemperature =
+		new DoubleOptionKey(GibbsOptions.class, "initialTemperature", 1.0, 0.0, Double.MAX_VALUE);
 }

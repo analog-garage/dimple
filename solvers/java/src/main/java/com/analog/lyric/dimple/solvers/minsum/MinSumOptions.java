@@ -48,19 +48,6 @@ public class MinSumOptions extends SolverOptions
 		new DoubleOptionKey(MinSumOptions.class, "damping", 0.0, 0.0, 1.0);
 	
 	/**
-	 * Maximum size of discrete belief messages.
-	 * <p>
-	 * If less than the full domain size of the message, then messages will be truncated
-	 * to this number of dimensions with the lowest weight dimensions omitted.
-	 * <p>
-	 * Must be a positive number.
-	 * <p>
-	 * @since 0.07
-	 */
-	public static final IntegerOptionKey maxMessageSize =
-		new IntegerOptionKey(MinSumOptions.class, "maxMessageSize", Integer.MAX_VALUE, 1, Integer.MAX_VALUE);
-
-	/**
 	 * Node specific damping values.
 	 * <p>
 	 * This option may be set on individual discrete variables or factors. It must either be
@@ -74,6 +61,19 @@ public class MinSumOptions extends SolverOptions
 	 */
 	public static final DoubleListOptionKey nodeSpecificDamping =
 		new DoubleListOptionKey(MinSumOptions.class, "nodeSpecificDamping");
+
+	/**
+	 * Maximum size of discrete belief messages.
+	 * <p>
+	 * If less than the full domain size of the message, then messages will be truncated
+	 * to this number of dimensions with the lowest weight dimensions omitted.
+	 * <p>
+	 * Must be a positive number.
+	 * <p>
+	 * @since 0.07
+	 */
+	public static final IntegerOptionKey maxMessageSize =
+		new IntegerOptionKey(MinSumOptions.class, "maxMessageSize", Integer.MAX_VALUE, 1, Integer.MAX_VALUE);
 
 	/**
 	 * Update approach.

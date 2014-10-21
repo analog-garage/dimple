@@ -36,24 +36,16 @@ import com.analog.lyric.options.IntegerOptionKey;
 public class ParticleBPOptions extends SolverOptions
 {
 	/**
-	 * Enables use of a tempering and annealing process in particle BP solver.
+	 * Affects particle BP {@linkplain ParticleBPReal solver variable} objects.
 	 * <p>
-	 * Defaults to false.
+	 * Is evaluated both when solver variable is constructed and in {@link ISolverNode#initialize}.
 	 * <p>
-	 * @since 0.07
-	 */
-	public static final BooleanOptionKey enableAnnealing =
-		new BooleanOptionKey(ParticleBPOptions.class, "enableAnnealing", false);
-	
-	/**
-	 * Specifies the initial temperature for annealing in particle BP solver.
-	 * <p>
-	 * Defaults to 1.0.
+	 * Defaults to 1.
 	 * <p>
 	 * @since 0.07
 	 */
-	public static final DoubleOptionKey initialTemperature =
-		new DoubleOptionKey(ParticleBPOptions.class, "initialTemperature", 1.0, 0.0, Double.MAX_VALUE);
+	public static final IntegerOptionKey numParticles =
+		new IntegerOptionKey(ParticleBPOptions.class, "numParticles", 1, 1, Integer.MAX_VALUE);
 	
 	/**
 	 * Specifies number of iterations between resampling in particle BP solver.
@@ -68,34 +60,10 @@ public class ParticleBPOptions extends SolverOptions
 	/**
 	 * Affects particle BP {@linkplain ParticleBPReal solver variable} objects.
 	 * <p>
-	 * Is evaluated both when solver variable is constructed and in {@link ISolverNode#initialize}.
-	 * <p>
-	 * Defaults to 1.
-	 * <p>
-	 * @since 0.07
-	 */
-	public static final IntegerOptionKey numParticles =
-		new IntegerOptionKey(ParticleBPOptions.class, "numParticles", 1, 1, Integer.MAX_VALUE);
-	
-	/**
-	 * Affects particle BP {@linkplain ParticleBPReal solver variable} objects.
-	 * <p>
 	 * @since 0.07
 	 */
 	public static final IntegerOptionKey resamplingUpdatesPerParticle =
 		new IntegerOptionKey(ParticleBPOptions.class, "resamplingUpdatesPerParticle", 1, 1, Integer.MAX_VALUE);
-	
-	/**
-	 * Specifies the temperature decay rate for annealing in particle BP solver.
-	 * <p>
-	 * Specifies the rate at which the temperature will be lowered during simulated annealing
-	 * in particle BP solver in terms of the number of iterations it will take for the temperature to
-	 * be lowered by half.
-	 * <p>
-	 * @since 0.07
-	 */
-	public static final DoubleOptionKey annealingHalfLife =
-		new DoubleOptionKey(ParticleBPOptions.class, "annealingHalfLife", 1, 1.0, Double.MAX_VALUE);
 	
 	/**
 	 * Specifies proposal kernel for real variables in particle BP solver.
@@ -126,4 +94,37 @@ public class ParticleBPOptions extends SolverOptions
 	 */
 	public static final DoubleRangeOptionKey initialParticleRange =
 		new DoubleRangeOptionKey(ParticleBPOptions.class, "initialParticleRange");
+	
+	/**
+	 * Enables use of a tempering and annealing process in particle BP solver.
+	 * <p>
+	 * Defaults to false.
+	 * <p>
+	 * @since 0.07
+	 */
+	public static final BooleanOptionKey enableAnnealing =
+		new BooleanOptionKey(ParticleBPOptions.class, "enableAnnealing", false);
+	
+	/**
+	 * Specifies the temperature decay rate for annealing in particle BP solver.
+	 * <p>
+	 * Specifies the rate at which the temperature will be lowered during simulated annealing
+	 * in particle BP solver in terms of the number of iterations it will take for the temperature to
+	 * be lowered by half.
+	 * <p>
+	 * @since 0.07
+	 */
+	public static final DoubleOptionKey annealingHalfLife =
+		new DoubleOptionKey(ParticleBPOptions.class, "annealingHalfLife", 1, 1.0, Double.MAX_VALUE);
+	
+	/**
+	 * Specifies the initial temperature for annealing in particle BP solver.
+	 * <p>
+	 * Defaults to 1.0.
+	 * <p>
+	 * @since 0.07
+	 */
+	public static final DoubleOptionKey initialTemperature =
+		new DoubleOptionKey(ParticleBPOptions.class, "initialTemperature", 1.0, 0.0, Double.MAX_VALUE);
+	
 }
