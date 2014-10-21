@@ -156,7 +156,10 @@ task testInstallkit(dependsOn: [testInstallkitSetup, 'solvers:java:testClasses']
 	group = 'Verification'
 
 	evaluationDependsOn ':solvers:java'
-    ext.testSet = project(':solvers:java').sourceSets.test
+    ext.testSet = project(':solvers:java').sourceSets.test { 
+    	// Exclude jsproxy tests because the installkit does not include the plugin.jar
+    	exclude('**/jsproxy/**') 
+    }
 
     // show standard out and standard error of the test JVM(s) on the console
     testLogging.showStandardStreams = true
