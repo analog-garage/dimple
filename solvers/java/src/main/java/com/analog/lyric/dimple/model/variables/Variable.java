@@ -365,6 +365,12 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		}
 	}
 	
+	public abstract @Nullable Object getFixedValueAsObject();
+	public abstract void setFixedValueFromObject(@Nullable Object value);
+	
+	// REFACTOR: this is not a good name - has different semantics for discrete and non-discrete
+	// For Discrete this returns the index of the fixed value, for non-discrete it returns the actual fixed
+	// value.
 	public @Nullable Object getFixedValueObject()
 	{
 		return _fixedValue;
@@ -388,10 +394,13 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		return _hasFixedValue;
 	}
 	
+	@Deprecated
 	protected final void fixValue()
 	{
 		_hasFixedValue = true;
 	}
+	
+	@Deprecated
 	protected final void unfixValue()
 	{
 		_hasFixedValue = false;

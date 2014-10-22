@@ -77,7 +77,6 @@ public class JSVariable extends JSNode<Variable>
 		return applet != null ? applet.domains : new JSDomainFactory();
 	}
 	
-	
 	/**
 	 * Returns all saved samples for this variable, if available.
 	 * <p>
@@ -139,7 +138,7 @@ public class JSVariable extends JSNode<Variable>
 	 */
 	public @Nullable Object getFixedValue()
 	{
-		return _delegate.getFixedValueObject();
+		return _delegate.getFixedValueAsObject();
 	}
 	
 	/**
@@ -209,7 +208,7 @@ public class JSVariable extends JSNode<Variable>
 		}
 		else
 		{
-			_delegate.setFixedValueObject(value);
+			_delegate.setFixedValueFromObject(value);
 		}
 	}
 	
@@ -234,7 +233,7 @@ public class JSVariable extends JSNode<Variable>
 	 * @since 0.07
 	 * @see #setInput(JSFactorFunction)
 	 */
-	public void setInput(double[] input)
+	public void setInput(@Nullable double[] input)
 	{
 		_delegate.setInputObject(input);
 	}

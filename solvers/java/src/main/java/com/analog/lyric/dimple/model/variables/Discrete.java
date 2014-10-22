@@ -70,8 +70,8 @@ public class Discrete extends VariableBase
     	return (IDiscreteSolverVariable)super.getSolver();
     }
     
-    /*----------------------
-     * VariableBase methods
+    /*------------------
+     * Variable methods
      */
     
     @Override
@@ -91,6 +91,12 @@ public class Discrete extends VariableBase
     	return getDomain();
     }
     
+	@Override
+	public final @Nullable Object getFixedValueAsObject()
+	{
+		return hasFixedValue() ? getFixedValue() : null;
+	}
+	
     @Override
     public @Nullable Integer getFixedValueObject()
     {
@@ -108,6 +114,20 @@ public class Discrete extends VariableBase
     		return tmp;
     }
     
+    
+    @Override
+    public void setFixedValueFromObject(@Nullable Object value)
+    {
+    	if (value != null)
+    	{
+    		setFixedValue(value);
+    	}
+    	else if (hasFixedValue())
+    	{
+    		setInputOrFixedValue(null, _input);
+    	}
+    }
+
     /*------------------
      * Discrete methods
      */
@@ -218,6 +238,7 @@ public class Discrete extends VariableBase
 		
 		return getDomain().getElement(index);
 	}
+	
 	public void setFixedValueIndex(int fixedValueIndex)
 	{
 		// In case the solver doesn't directly support fixed-values, convert the fixed-value to an input

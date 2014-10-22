@@ -120,7 +120,7 @@ public abstract class JSNode<Delegate extends Node> extends JSOptionHolder<Deleg
 	/**
 	 * The number of siblings currently connected to the node.
 	 * @since 0.07
-	 * @see #getSiblings()
+	 * @see #getSibling(int)
 	 */
 	public int getSiblingCount()
 	{
@@ -128,24 +128,17 @@ public abstract class JSNode<Delegate extends Node> extends JSOptionHolder<Deleg
 	}
 	
 	/**
-	 * The siblings currently connected to the node.
+	 * Returns the nth sibling connected to this node.
 	 * <p>
-	 * The length of the array will be the same as {@link #getSiblingCount()}. The order in which
-	 * they siblings occur is significant for factors, since it specifies the order in which the
+	 * The order in which they siblings occur is significant for factors, since it specifies the order in which the
 	 * arguments are passed to the underlying factor function.
 	 * <p>
 	 * @since 0.07
 	 */
-	public JSNode<?>[] getSiblings()
+	public JSNode<?> getSibling(int n)
 	{
 		final JSFactorGraph graph = getGraph();
-		final int n = _delegate.getSiblingCount();
-		JSNode<?>[] siblings = new JSNode<?>[n];
-		for (int i = n; --i>=0;)
-		{
-			siblings[i] = graph.wrap(_delegate.getSibling(i));
-		}
-		return siblings;
+		return  graph.wrap(_delegate.getSibling(n));
 	}
 	
 	/**

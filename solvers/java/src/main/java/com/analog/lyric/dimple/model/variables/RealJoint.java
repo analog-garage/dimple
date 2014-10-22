@@ -73,6 +73,12 @@ public class RealJoint extends VariableBase
 			return (double[])tmp;
 	}
 	
+	@Override
+	public @Nullable Object getFixedValueAsObject()
+	{
+		return hasFixedValue() ? getFixedValue() : null;
+	}
+	
 	public void setFixedValue(double[] fixedValue)
 	{
 		// Verify that the fixed value is in the domain of the variable
@@ -80,6 +86,19 @@ public class RealJoint extends VariableBase
 			throw new DimpleException("Attempt to set fixed value outside of variable domain.");
 	
 		setFixedValueObject(fixedValue);
+	}
+
+	@Override
+	public void setFixedValueFromObject(@Nullable Object value)
+	{
+		if (value != null)
+		{
+			setFixedValue((double[])value);
+		}
+		else if (hasFixedValue())
+		{
+			setInputOrFixedValue(null, _input);
+		}
 	}
 	
 	public void setInput(@Nullable FactorFunction[] input)

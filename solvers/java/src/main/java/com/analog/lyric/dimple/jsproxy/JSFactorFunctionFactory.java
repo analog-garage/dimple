@@ -107,7 +107,8 @@ public class JSFactorFunctionFactory extends JSProxyObjectWithApplet<FactorFunct
 	 * <p>
 	 * @param name must match the name of a factor function class known to Dimple that has a constructor
 	 * taking a single argument of type {@code Map<String,Object>}.
-	 * @param parameters
+	 * @param parameters is either a {@link JSObject} whose members specify the parameters, or a
+	 * {@code Map<String,Object>}.
 	 * @since 0.07
 	 * @see #create(String)
 	 */

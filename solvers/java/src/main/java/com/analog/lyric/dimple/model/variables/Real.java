@@ -76,6 +76,12 @@ public class Real extends VariableBase
 			return (Double)tmp;
 	}
 	
+	@Override
+	public final @Nullable Object getFixedValueAsObject()
+	{
+		return getFixedValueObject();
+	}
+	
 	public void setFixedValue(double fixedValue)
 	{
 		// Verify that the fixed value is in the domain of the variable
@@ -85,6 +91,19 @@ public class Real extends VariableBase
 		setFixedValueObject(fixedValue);
 	}
 
+	@Override
+	public final void setFixedValueFromObject(@Nullable Object value)
+	{
+		if (value != null)
+		{
+			setFixedValue((double)value);
+		}
+		else if (hasFixedValue())
+		{
+			setInputOrFixedValue(null, _input);
+		}
+	}
+	
 	public void setInput(@Nullable FactorFunction input)
 	{
 		setInputObject(input);

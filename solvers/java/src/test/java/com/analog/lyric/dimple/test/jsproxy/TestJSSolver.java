@@ -49,6 +49,7 @@ public class TestJSSolver extends JSTestBase
 			fg.setSolver(solver);
 			
 			assertEquals(solver, fg.getSolver());
+			assertEquals(fg.getSolver(), fg.getSolver());
 			assertEquals(solver.getDelegate(), fg.getDelegate().getFactorGraphFactory());
 		}
 	}

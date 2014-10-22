@@ -22,6 +22,7 @@ import netscape.javascript.JSObject;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
@@ -52,7 +53,7 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 	/**
 	 * The applet that created this graph.
 	 */
-	private final DimpleApplet _applet;
+	private final @Nullable DimpleApplet _applet;
 	
 	/**
 	 * Cache of proxy objects owned by this graph.
@@ -82,7 +83,7 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 	@Override
 	public DimpleApplet getApplet()
 	{
-		return _applet;
+		return requireNonNull(_applet);
 	}
 	
 	/*-------------
@@ -131,14 +132,14 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 		else if (function instanceof String)
 		{
 			String name = (String)function;
-			if (args.length > 0 && args[0] instanceof JSObject)
+			if (args.length > 0 && (args[0] instanceof JSObject || args[0] instanceof IJSObject))
 			{
 				firstArg = 1;
-				ff = _applet.functions.create(name, (JSObject)args[0])._delegate;
+				ff = functions().create(name, args[0])._delegate;
 			}
 			else
 			{
-				ff = _applet.functions.create(name)._delegate;
+				ff = functions().create(name)._delegate;
 			}
 		}
 		// TODO factor tables
@@ -190,7 +191,8 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 	
 	public JSFactor addTableFactor(Object[] variables)
 	{
-		return addFactor(_applet.functions.createTable(variables), variables);
+		final JSFactorFunctionFactory factory = functions();
+		return addFactor(factory.create(factory.createTable(variables)), variables);
 	}
 	
 	/**
@@ -225,6 +227,26 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 		_delegate.addVariables(variable);
 
 		return wrap(variable);
+	}
+	
+	/**
+	 * Returns variable in graph with given identifier.
+	 * @since 0.07
+	 */
+	public @Nullable JSFactor getFactor(int id)
+	{
+		Factor factor = _delegate.getFactor(id);
+		return factor != null ? wrap(factor) : null;
+	}
+	
+	/**
+	 * Returns variable in graph with given name.
+	 * @since 0.07
+	 */
+	public @Nullable JSFactor getFactor(String name)
+	{
+		Factor factor = _delegate.getFactorByName(name);
+		return factor != null ? wrap(factor) : null;
 	}
 	
 	/**
@@ -271,25 +293,33 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 	}
 	
 	/**
-	 * Sets configured solver to specified name.
+	 * Sets configured solver.
 	 * 
-	 * @param solver is the name of a supported solver. See {@link JSSolverFactory#get}.
+	 * @param solver is either a String containing the name of a supported solver (see {@link JSSolverFactory#get}),
+	 * a {@link JSSolver} object or an underlying {@link IFactorGraphFactory} instance. May be set to null to clear
+	 * the solver.
 	 * @since 0.07
 	 */
-	public void setSolver(String solver)
+	public void setSolver(@Nullable Object solver)
 	{
-		setSolver(_applet.solvers.get(solver));
+		IFactorGraphFactory<?> factory = null;
+		
+		if (solver instanceof String)
+		{
+			factory = solvers().get((String)solver).getDelegate();
+		}
+		else if (solver instanceof JSSolver)
+		{
+			factory = ((JSSolver)solver).getDelegate();
+		}
+		else if (solver instanceof IFactorGraphFactory<?>)
+		{
+			factory = (IFactorGraphFactory<?>)solver;
+		}
+		
+		_delegate.setSolverFactory(factory);
 	}
 	
-	/**
-	 * Sets currently configured solver.
-	 * @since 0.07
-	 */
-	public void setSolver(JSSolver solver)
-	{
-		_delegate.setSolverFactory(solver.getDelegate());
-	}
-
 	/**
 	 * Runs inference using currently configured solver.
 	 * <p>
@@ -334,7 +364,7 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 				jsnode = new JSFactor(this, (Factor)node);
 				break;
 			case GRAPH:
-				jsnode = new JSFactorGraph(_applet, (FactorGraph)node);
+				jsnode = new JSFactorGraph(getApplet(), (FactorGraph)node);
 				break;
 			case VARIABLE:
 				jsnode = new JSVariable(this, (Variable)node);
@@ -346,23 +376,32 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 	
 	JSFactor wrap(Factor factor)
 	{
-		JSFactor jsfactor = (JSFactor)_proxyCache.getIfPresent(factor);
-		if (jsfactor == null)
-		{
-			jsfactor = new JSFactor(this, factor);
-			_proxyCache.put(factor, jsfactor);
-		}
-		return jsfactor;
+		return (JSFactor)wrap((INode)factor);
 	}
 
 	JSVariable wrap(Variable variable)
 	{
-		JSVariable jsvariable = (JSVariable)_proxyCache.getIfPresent(variable);
-		if (jsvariable == null)
-		{
-			jsvariable = new JSVariable(this, variable);
-			_proxyCache.put(variable, jsvariable);
-		}
-		return jsvariable;
+		return (JSVariable)wrap((INode)variable);
+	}
+	
+	/*-----------------
+	 * Private methods
+	 */
+	
+	@SuppressWarnings("null")
+	private JSFactorFunctionFactory functions()
+	{
+		DimpleApplet applet = _applet;
+		
+		return applet != null ? applet.functions :
+			new JSFactorFunctionFactory(DimpleEnvironment.active().factorFunctions(), applet);
+	}
+	
+	@SuppressWarnings("null")
+	private JSSolverFactory solvers()
+	{
+		DimpleApplet applet = _applet;
+		
+		return applet != null ? applet.solvers : new JSSolverFactory(applet);
 	}
 }
