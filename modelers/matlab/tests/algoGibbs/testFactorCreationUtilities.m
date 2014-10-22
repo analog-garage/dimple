@@ -620,7 +620,7 @@ end
 
 
 
-% Test IfElse
+% Test If
 function test8(debugPrint, repeatable)
 
 fg = FactorGraph;
@@ -631,14 +631,14 @@ conditionArray = Bit(4,5);
 
 x = Bit;
 y = Bit;
-z = IfElse(condition, x, y);
+z = If(condition, x, y);
 assert(isa(z, 'Bit'));
 assert(strcmp(z.Factors{1}.VectorObject.getFactorFunction.getName, 'Multiplexer'));
 assertEqual(size(x), size(z));
 
 x = Bit;
 y = 1;
-z = IfElse(condition, x, y);
+z = If(condition, x, y);
 assert(isa(z, 'Bit'));
 assert(strcmp(z.Factors{1}.VectorObject.getFactorFunction.getName, 'Multiplexer'));
 assertEqual(size(x), size(z));
@@ -646,21 +646,21 @@ assertEqual(size(x), size(z));
 
 x = Bit(4,5);
 y = Bit(4,5);
-z = IfElse(condition, x, y);
+z = If(condition, x, y);
 assert(isa(z, 'Bit'));
 assert(strcmp(z.Factors{1}.VectorObject.getFactorFunction.getName, 'Multiplexer'));
 assertEqual(size(x), size(z));
 
 x = Bit(4,5);
 y = 1;
-z = IfElse(condition, x, y);
+z = If(condition, x, y);
 assert(isa(z, 'Bit'));
 assert(strcmp(z.Factors{1}.VectorObject.getFactorFunction.getName, 'Multiplexer'));
 assertEqual(size(x), size(z));
 
 x = Bit(4,5);
 y = Bit(4,5);
-z = IfElse(conditionArray, x, y);
+z = If(conditionArray, x, y);
 assert(isa(z, 'Bit'));
 assert(strcmp(z.Factors{1}.VectorObject.getFactorFunction.getName, 'Multiplexer'));
 assertEqual(size(x), size(z));
@@ -669,7 +669,7 @@ assertEqual(size(x), size(z));
 
 x = Discrete(2:11);
 y = Discrete(2:11);
-z = IfElse(condition, x, y);
+z = If(condition, x, y);
 assert(isa(z, 'Discrete'));
 assert(strcmp(z.Factors{1}.VectorObject.getFactorFunction.getName, 'Multiplexer'));
 assertEqual(size(x), size(z));
@@ -677,7 +677,7 @@ assertEqual(x.Domain.Elements, z.Domain.Elements);
 
 x = Discrete(2:11);
 y = 1;
-z = IfElse(condition, x, y);
+z = If(condition, x, y);
 assert(isa(z, 'Discrete'));
 assert(strcmp(z.Factors{1}.VectorObject.getFactorFunction.getName, 'Multiplexer'));
 assertEqual(size(x), size(z));
@@ -686,7 +686,7 @@ assertEqual(x.Domain.Elements, z.Domain.Elements);
 
 x = Discrete(2:11,4,5);
 y = Discrete(2:11,4,5);
-z = IfElse(condition, x, y);
+z = If(condition, x, y);
 assert(isa(z, 'Discrete'));
 assert(strcmp(z.Factors{1}.VectorObject.getFactorFunction.getName, 'Multiplexer'));
 assertEqual(size(x), size(z));
@@ -694,7 +694,7 @@ assertEqual(x.Domain.Elements, z.Domain.Elements);
 
 x = Discrete(2:11,4,5);
 y = 1;
-z = IfElse(condition, x, y);
+z = If(condition, x, y);
 assert(isa(z, 'Discrete'));
 assert(strcmp(z.Factors{1}.VectorObject.getFactorFunction.getName, 'Multiplexer'));
 assertEqual(size(x), size(z));
@@ -702,7 +702,7 @@ assertEqual(x.Domain.Elements, z.Domain.Elements);
 
 x = Discrete(2:11,4,5);
 y = Discrete(2:11,4,5);
-z = IfElse(conditionArray, x, y);
+z = If(conditionArray, x, y);
 assert(isa(z, 'Discrete'));
 assert(strcmp(z.Factors{1}.VectorObject.getFactorFunction.getName, 'Multiplexer'));
 assertEqual(size(x), size(z));
@@ -712,28 +712,28 @@ assertEqual(x.Domain.Elements, z.Domain.Elements);
 
 x = Real();
 y = Real();
-z = IfElse(condition, x, y);
+z = If(condition, x, y);
 assert(isa(z, 'Real'));
 assert(strcmp(z.Factors{1}.VectorObject.getFactorFunction.getName, 'Multiplexer'));
 assertEqual(size(x), size(z));
 
 x = Real(4,5);
 y = Real(4,5);
-z = IfElse(condition, x, y);
+z = If(condition, x, y);
 assert(isa(z, 'Real'));
 assert(strcmp(z.Factors{1}.VectorObject.getFactorFunction.getName, 'Multiplexer'));
 assertEqual(size(x), size(z));
 
 x = Real(4,5);
 y = Real(4,5);
-z = IfElse(conditionArray, x, y);
+z = If(conditionArray, x, y);
 assert(isa(z, 'Real'));
 assert(strcmp(z.Factors{1}.VectorObject.getFactorFunction.getName, 'Multiplexer'));
 assertEqual(size(x), size(z));
 
 x = Real([-1 2], 4,5);
 y = Real([-1 2], 4,5);
-z = IfElse(conditionArray, x, y);
+z = If(conditionArray, x, y);
 assert(isa(z, 'Real'));
 assert(strcmp(z.Factors{1}.VectorObject.getFactorFunction.getName, 'Multiplexer'));
 assertEqual(size(x), size(z));
@@ -742,14 +742,14 @@ assertEqual(x.Domain.UB, z.Domain.UB);
 
 x = Complex(4,5);
 y = Complex(4,5);
-z = IfElse(condition, x, y);
+z = If(condition, x, y);
 assert(isa(z, 'Complex'));
 assert(strcmp(z.Factors{1}.VectorObject.getFactorFunction.getName, 'Multiplexer'));
 assertEqual(size(x), size(z));
 
 x = RealJoint(3,4,5);
 y = RealJoint(3,4,5);
-z = IfElse(condition, x, y);
+z = If(condition, x, y);
 assert(isa(z, 'RealJoint'));
 assert(strcmp(z.Factors{1}.VectorObject.getFactorFunction.getName, 'Multiplexer'));
 assertEqual(size(x), size(z));
@@ -760,12 +760,10 @@ assertEqual(x.Domain.NumElements, z.Domain.NumElements);
 gg = FactorGraph;
 gg.Solver = 'Gibbs';
 
-c = Bit;
-c.Input = 0.2;
-
 a = Normal(-2,1);
 b = Normal(2,1);
-m = IfElse(c, a, b);
+c = Bernoulli(0.2);
+m = If(c, a, b);
 
 gg.setOption('GibbsOptions.numSamples', 1000);
 gg.setOption('GibbsOptions.saveAllSamples', true);

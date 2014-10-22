@@ -250,10 +250,10 @@ Z = Rayleigh(sigma, myGraph, size(somethingElse));
 Dimple also includes built-in helper functions to create other factors that aren't distributions.  Specifically:
 
 \begin{lstlisting}
-outValue = ElseIf(condition, trueValue, falseValue);
+outValue = If(condition, trueValue, falseValue);
 \end{lstlisting}
 
-The ElseIf helper function implements a conditional assignment function using the built-in Multiplexer factor.  The function creates an output variable (or array of variables) that is of the same type and dimension as the trueValue and falseValue variables.  These two input variables must either be of identical type, domain, and dimensions, or one of these may be a constant.  The condition must be a Bit variable or array of variables.  If trueValue and falseValue are arrays, the function creates an array of Multiplexer factors, each connected to the corresponding inputs and outputs.  In the case of an array, if condition is a scalar Bit variable, all of these are connected to the same condition bit.  Otherwise, condition must be of the same dimension as the other inputs.  As with the other factor creation utilities, the function optionally takes a graph input to specify a particular graph in which to add the factors.
+The ``If'' helper function implements a conditional assignment function using the built-in Multiplexer factor.  The function creates an output variable (or array of variables) that is of the same type and dimension as the trueValue and falseValue variables.  These two input variables must either be of identical type, domain, and dimensions, or one of these may be a constant.  The condition must be a Bit variable or array of variables.  If trueValue and falseValue are arrays, the function creates an array of Multiplexer factors, each connected to the corresponding inputs and outputs.  In the case of an array, if condition is a scalar Bit variable, all of these are connected to the same condition bit.  Otherwise, condition must be of the same dimension as the other inputs.  As with the other factor creation utilities, the function optionally takes a graph input to specify a particular graph in which to add the factors.
 \fi
 
 Dimple also includes some built-in helper functions to create structured graphs, combining smaller factors to form an efficient implementation of a larger subgraph.  Specifically, the following functions are provided:
