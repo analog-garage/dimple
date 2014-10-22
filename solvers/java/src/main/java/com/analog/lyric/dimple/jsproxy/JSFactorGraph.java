@@ -80,10 +80,11 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 	 * JSProxyObject methods
 	 */
 	
+	@SuppressWarnings("null")
 	@Override
 	public DimpleApplet getApplet()
 	{
-		return requireNonNull(_applet);
+		return _applet;
 	}
 	
 	/*-------------
