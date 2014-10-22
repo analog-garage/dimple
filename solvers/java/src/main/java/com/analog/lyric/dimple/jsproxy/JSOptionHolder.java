@@ -80,6 +80,13 @@ public abstract class JSOptionHolder<Delegate extends DimpleOptionHolder> extend
 		return getDelegate().getEnvironment().optionRegistry().getAllMatching(regexp).toArray();
 	}
 
+	public boolean isOptionSet(Object optionKey)
+	{
+		final DimpleOptionHolder holder = getDelegate();
+		final IOptionKey<?> key = lookupOptionKey(optionKey);
+		return holder.getOption(key) != null;
+	}
+	
 	/**
 	 * Sets option to specified value on this object.
 	 * <p>
