@@ -43,13 +43,13 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 public class JSObjectMap extends AbstractMap<String, Object>
 {
 	protected final Applet _applet;
-	protected final JSObject _obj;
+	protected final IJSObject _obj;
 
 	/*--------------
 	 * Construction
 	 */
 	
-	public JSObjectMap(Applet applet, JSObject obj)
+	public JSObjectMap(Applet applet, IJSObject obj)
 	{
 		_applet = applet;
 		_obj = obj;
@@ -109,18 +109,19 @@ public class JSObjectMap extends AbstractMap<String, Object>
 		// The JSObject API does not provide a direct way to enumerate members.
 		// The following is a hack proposed on stackoverflow: http://stackoverflow.com/a/13982185/334526
 		
-		final JSObject jsObject = _obj;
+		final IJSObject jsObject = _obj;
 		
 		Set<String> propertiesNames = new TreeSet<>();
 
 		// Retrieving global context - a JSObject representing a window applet belongs to
 		try
 		{
-			JSObject globalContext = getWindow();
+			IJSObject globalContext = getWindow();
 
 			String keysFunctionName = String.format("_getKeys%d", Calendar.getInstance().getTimeInMillis());
 			jsObject.eval("window['" + keysFunctionName + "'] = function(jsObject) { return Object.keys(jsObject) }");
-			JSObject propertiesNamesJsObject = (JSObject)globalContext.call(keysFunctionName, new Object[] { jsObject });
+			IJSObject propertiesNamesJsObject =
+				JSObjectWrapper.wrap(globalContext.call(keysFunctionName, new Object[] { jsObject }));
 			jsObject.eval("delete(window['" + keysFunctionName + "'])");
 
 			int slotIndex = 0;
@@ -164,8 +165,8 @@ public class JSObjectMap extends AbstractMap<String, Object>
 		return Collections.unmodifiableSet(entries);
 	}
 	
-	protected JSObject getWindow()
+	protected IJSObject getWindow()
 	{
-		return JSObject.getWindow(_applet);
+		return new JSObjectWrapper(JSObject.getWindow(_applet));
 	}
 }

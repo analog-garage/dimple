@@ -14,114 +14,82 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.test.jsproxy;
-
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+package com.analog.lyric.dimple.jsproxy;
 
 import netscape.javascript.JSException;
+import netscape.javascript.JSObject;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import com.analog.lyric.dimple.jsproxy.IJSObject;
-
 /**
- * Fake implementation of IJSObject for testing
+ * 
  * @since 0.07
  * @author Christopher Barber
  */
 @NonNullByDefault(false)
-public class FakeJSObject implements IJSObject
+public class JSObjectWrapper implements IJSObject
 {
-	private final Map<String,Object> _members;
-	private final Map<Integer,Object> _slots;
+	private final JSObject _obj;
 	
-	/*--------------
-	 * Construction
-	 */
-	
-	FakeJSObject()
+	public static IJSObject wrap(Object obj)
 	{
-		_members = new TreeMap<>();
-		_slots = new TreeMap<>();
+		if (obj instanceof IJSObject)
+		{
+			return (IJSObject)obj;
+		}
+		else if (obj instanceof JSObject)
+		{
+			return new JSObjectWrapper((JSObject)obj);
+		}
+		
+		return (IJSObject)obj;
 	}
 	
-	/*------------------
-	 * JSObject methods
-	 */
+	public JSObjectWrapper(JSObject obj)
+	{
+		_obj = obj;
+	}
 	
 	@Override
 	public Object call(String functionName, Object[] args) throws JSException
 	{
-		// HACK - to suppor testing of JSObjectMap.keySet
-		if (functionName.startsWith("_getKeys"))
-		{
-			final int size = _members.size();
-			final String[] names = _members.keySet().toArray(new String[size]);
-			final FakeJSObject result = new FakeJSObject();
-			for (int i = 0; i < size; ++i)
-			{
-				result.setSlot(i, names[i]);
-			}
-			return result;
-		}
-		
-		return null;
+		return _obj.call(functionName, args);
 	}
 
 	@Override
 	public Object eval(String arg0) throws JSException
 	{
-		return null;
+		return _obj.eval(arg0);
 	}
 
 	@Override
 	public Object getMember(String name) throws JSException
 	{
-		if (_members.containsKey(name))
-		{
-			return _members.get(name);
-		}
-		
-		throw new JSException("No such member " + name);
+		return _obj.getMember(name);
 	}
 
 	@Override
 	public Object getSlot(int i) throws JSException
 	{
-		if (_slots.containsKey(i))
-		{
-			return _slots.get(i);
-		}
-		
-		throw new JSException("No such slot " + i);
+		return _obj.getSlot(i);
 	}
-	
+
 	@Override
 	public void removeMember(String name) throws JSException
 	{
-		_members.remove(name);
+		_obj.removeMember(name);
 	}
 
 	@Override
 	public void setMember(String name, Object value) throws JSException
 	{
-		_members.put(name, value);
+		_obj.setMember(name, value);
 	}
 
 	@Override
 	public void setSlot(int i, Object value) throws JSException
 	{
-		_slots.put(i, value);
+		_obj.setSlot(i, value);
 	}
 
-	/*----------------------
-	 * FakeJSObject methods
-	 */
-	
-	Set<String> getMemberNames()
-	{
-		return _members.keySet();
-	}
 }

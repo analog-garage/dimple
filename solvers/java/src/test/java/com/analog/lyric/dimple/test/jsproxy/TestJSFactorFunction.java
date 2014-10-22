@@ -21,12 +21,11 @@ import static org.junit.Assert.*;
 import java.util.Map;
 import java.util.TreeMap;
 
-import netscape.javascript.JSObject;
-
 import org.junit.Test;
 
 import com.analog.lyric.dimple.factorfunctions.Bernoulli;
 import com.analog.lyric.dimple.factorfunctions.Sum;
+import com.analog.lyric.dimple.jsproxy.IJSObject;
 import com.analog.lyric.dimple.jsproxy.JSDiscreteDomain;
 import com.analog.lyric.dimple.jsproxy.JSFactorFunction;
 import com.analog.lyric.dimple.jsproxy.JSFactorFunctionFactory;
@@ -74,7 +73,7 @@ public class TestJSFactorFunction extends JSTestBase
 		assertNull(bernoulli.getParameter("bogus"));
 		assertInvariants(bernoulli);
 		
-		JSObject jsobj = createJSObject();
+		IJSObject jsobj = createJSObject();
 		if (jsobj != null)
 		{
 			jsobj.setMember("p", .6);

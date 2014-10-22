@@ -14,7 +14,7 @@
  *   limitations under the License.
  ********************************************************************************/
 
-package com.analog.lyric.dimple.test.jsproxy;
+package com.analog.lyric.dimple.jsproxy;
 
 import netscape.javascript.JSException;
 

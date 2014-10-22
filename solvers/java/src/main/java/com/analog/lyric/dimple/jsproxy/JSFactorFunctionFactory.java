@@ -64,7 +64,7 @@ public class JSFactorFunctionFactory extends JSProxyObjectWithApplet<FactorFunct
 	 * <p>
 	 * @param name must match the name of a factor function class known to Dimple.
 	 * @since 0.07
-	 * @see #create(String, JSObject)
+	 * @see #create(String, Object)
 	 */
 	public JSFactorFunction create(String name)
 	{
@@ -110,25 +110,23 @@ public class JSFactorFunctionFactory extends JSProxyObjectWithApplet<FactorFunct
 	 * @param parameters
 	 * @since 0.07
 	 * @see #create(String)
-	 * @see #create(String, Map)
 	 */
-	public JSFactorFunction create(String name, JSObject parameters)
+	@SuppressWarnings("unchecked")
+	public JSFactorFunction create(String name, Object parameters)
 	{
-		return create(name, new JSObjectMap(_applet, parameters));
+		if (parameters instanceof JSObject)
+		{
+			parameters = JSObjectWrapper.wrap(parameters);
+		}
+		
+		if (parameters instanceof IJSObject)
+		{
+			parameters = new JSObjectMap(_applet, (IJSObject)parameters);
+		}
+		
+		return wrap(_delegate.instantiateWithParameters(name, (Map<String,Object>)parameters));
 	}
 	
-	/**
-	 * Creates a factor function instance for given name.
-	 * <p>
-	 * This is the same as {@link #create(String, JSObject)} but takes the parameters in the form
-	 * of a Java {@link Map} object.
-	 * @since 0.07
-	 */
-	public JSFactorFunction create(String name, Map<String,Object> parameters)
-	{
-		return wrap(_delegate.instantiateWithParameters(name, parameters));
-	}
-
 	/**
 	 * Creates a table factor function.
 	 * <p>

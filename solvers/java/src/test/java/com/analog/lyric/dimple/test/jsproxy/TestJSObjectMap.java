@@ -24,10 +24,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import netscape.javascript.JSObject;
-
 import org.junit.Test;
 
+import com.analog.lyric.dimple.jsproxy.IJSObject;
 import com.analog.lyric.dimple.jsproxy.JSObjectMap;
 
 /**
@@ -40,7 +39,7 @@ public class TestJSObjectMap extends JSTestBase
 	@Test
 	public void test()
 	{
-		JSObject jsobj = createJSObject();
+		IJSObject jsobj = createJSObject();
 		if (jsobj != null)
 		{
 			assertInvariants(jsobj);
@@ -52,7 +51,7 @@ public class TestJSObjectMap extends JSTestBase
 	}
 	
 	@SuppressWarnings("null")
-	private void assertInvariants(JSObject jsobj, String ... names)
+	private void assertInvariants(IJSObject jsobj, String ... names)
 	{
 		JSObjectMap map = new DummyJSObjectMap(state.applet, jsobj);
 		
@@ -99,13 +98,13 @@ public class TestJSObjectMap extends JSTestBase
 	
 	private static class DummyJSObjectMap extends JSObjectMap
 	{
-		DummyJSObjectMap(Applet applet, JSObject obj)
+		DummyJSObjectMap(Applet applet, IJSObject obj)
 		{
 			super(applet, obj);
 		}
 		
 		@Override
-		protected JSObject getWindow()
+		protected IJSObject getWindow()
 		{
 			return _obj;
 		}
