@@ -27,8 +27,11 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.solvers.core.SolverBase;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
+import com.analog.lyric.dimple.solvers.minsum.MinSumSolver;
 import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateApproach;
+import com.analog.lyric.dimple.solvers.sumproduct.Solver;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscrete;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductOptions;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolver;
@@ -171,5 +174,21 @@ public class TestSumProductOptions extends DimpleTestBase
 		assertEquals(UpdateApproach.NORMAL, sf1.getLocalOption(SumProductOptions.updateApproach));
 
 		assertEquals((Integer)11, sfg.getLocalOption(GibbsOptions.burnInScans));
+	}
+	
+	@Test
+	public void testSolverEquality()
+	{
+		SolverBase<?> solver1 = new SumProductSolver();
+		SolverBase<?> solver2 = new Solver();
+		SolverBase<?> solver3 = new MinSumSolver();
+		SolverBase<?> solver4 = new com.analog.lyric.dimple.solvers.gaussian.Solver();
+		
+		assertEquals(solver1, solver2);
+		assertEquals(solver1.hashCode(), solver2.hashCode());
+		assertNotEquals(solver1, solver3);
+		assertNotEquals(solver1.hashCode(), solver3.hashCode());
+		assertEquals(solver1, solver4);
+		assertEquals(solver1.hashCode(), solver4.hashCode());
 	}
 }

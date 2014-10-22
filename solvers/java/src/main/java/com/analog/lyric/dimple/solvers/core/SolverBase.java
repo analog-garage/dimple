@@ -16,6 +16,9 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
@@ -28,5 +31,37 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 public abstract class SolverBase<SolverGraph extends ISolverFactorGraph>
 	implements IFactorGraphFactory<SolverGraph>
 {
+	@Override
+	@NonNullByDefault(false)
+	public boolean equals(Object obj)
+	{
+		if (obj == this)
+		{
+			return true;
+		}
+		
+		final Class<? extends SolverBase<?>> superclass = equalitySuperClass();
+		return superclass != null && superclass.isInstance(obj);
+	}
 	
+	@Override
+	public int hashCode()
+	{
+		final Class<? extends SolverBase<?>> superclass = equalitySuperClass();
+		return superclass != null ? superclass.hashCode() : super.hashCode();
+	}
+	
+	/**
+	 * Subclasses can override this to return a class to be used for equality checks.
+	 * <p>
+	 * This is used to determine the behavior of {@link #equals} and {@link #hashCode}. If
+	 * null (the default), then these methods will have their default behavior of same-object
+	 * equality semantics. If this returns a non-null class, then instances of that class will
+	 * 
+	 * @since 0.07
+	 */
+	protected @Nullable Class<? extends SolverBase<?>> equalitySuperClass()
+	{
+		return null;
+	}
 }

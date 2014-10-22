@@ -32,8 +32,11 @@ import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
+import com.analog.lyric.dimple.solvers.core.SolverBase;
+import com.analog.lyric.dimple.solvers.lp.LPSolver;
 import com.analog.lyric.dimple.solvers.lp.LPSolverGraph;
 import com.analog.lyric.dimple.solvers.lp.Solver;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolver;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
 public class TestLPSolver extends DimpleTestBase
@@ -93,6 +96,16 @@ public class TestLPSolver extends DimpleTestBase
 	@Test
 	public void test()
 	{
+		// Test solver equality
+		SolverBase<?> solver1 = new LPSolver();
+		SolverBase<?> solver2 = new Solver();
+		SolverBase<?> solver3 = new SumProductSolver();
+		
+		assertEquals(solver1, solver2);
+		assertNotEquals(solver2, solver3);
+		assertEquals(solver1.hashCode(), solver2.hashCode());
+		assertNotEquals(solver2.hashCode(), solver3.hashCode());
+		
 		RealDomain realDomain = new RealDomain(0.0, 1.0);
 		FactorGraph fg0 = new FactorGraph();
 		fg0.setSolverFactory(new Solver());

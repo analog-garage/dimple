@@ -27,10 +27,13 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.solvers.core.SolverBase;
 import com.analog.lyric.dimple.solvers.minsum.MinSumOptions;
 import com.analog.lyric.dimple.solvers.minsum.MinSumSolver;
 import com.analog.lyric.dimple.solvers.minsum.MinSumSolverGraph;
 import com.analog.lyric.dimple.solvers.minsum.MinSumTableFactor;
+import com.analog.lyric.dimple.solvers.minsum.Solver;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolver;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
 /**
@@ -119,4 +122,16 @@ public class TestMinSumOptions extends DimpleTestBase
 			MinSumOptions.nodeSpecificDamping.get(sf1).toPrimitiveArray(), 0.0);
 	}
 	
+	@Test
+	public void testSolverEquality()
+	{
+		SolverBase<?> solver1 = new MinSumSolver();
+		SolverBase<?> solver2 = new Solver();
+		SolverBase<?> solver3 = new SumProductSolver();
+		
+		assertEquals(solver1, solver2);
+		assertEquals(solver1.hashCode(), solver2.hashCode());
+		assertNotEquals(solver1, solver3);
+		assertNotEquals(solver1.hashCode(), solver3.hashCode());
+	}
 }

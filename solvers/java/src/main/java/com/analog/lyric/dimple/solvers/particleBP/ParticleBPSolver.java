@@ -16,14 +16,37 @@
 
 package com.analog.lyric.dimple.solvers.particleBP;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.core.SolverBase;
 
 public class ParticleBPSolver extends SolverBase<ParticleBPSolverGraph>
 {
+	/*----------------
+	 * Object methods
+	 */
+	
+	@Override
+	@NonNullByDefault(false)
+	public boolean equals(Object obj)
+	{
+		return obj instanceof ParticleBPSolver;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return ParticleBPSolver.class.hashCode();
+	}
+	
+	/*------------------------------
+	 *  IFactorGraphFactory methods
+	 */
+	
 	@SuppressWarnings("deprecation")
 	@Override
-	public SFactorGraph createFactorGraph(FactorGraph factorGraph)
+	public final SFactorGraph createFactorGraph(FactorGraph factorGraph)
 	{
 		return new SFactorGraph(factorGraph);
 	}

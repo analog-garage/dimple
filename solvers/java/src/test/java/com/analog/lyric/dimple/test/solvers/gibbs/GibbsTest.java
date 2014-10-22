@@ -25,9 +25,12 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsTableFactor;
+import com.analog.lyric.dimple.solvers.gibbs.Solver;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolver;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
 
@@ -39,6 +42,18 @@ public class GibbsTest extends DimpleTestBase
 	@Test
 	public void basicTest()
 	{
+		// Test solver equality
+		Solver solver1 = new Solver();
+		Solver solver2 = new GibbsSolver();
+		Solver solver3 = new GibbsSolver();
+		
+		assertEquals(solver1, solver2);
+		assertEquals(solver3, solver2);
+		assertEquals(solver1.hashCode(), solver2.hashCode());
+		assertEquals(solver2.hashCode(), solver3.hashCode());
+		assertNotEquals(solver1, new SumProductSolver());
+
+		
 		int numSamples = 10000;
 		int updatesPerSample = 2;
 		int burnInUpdates = 2000;

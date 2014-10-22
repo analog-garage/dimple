@@ -16,9 +16,11 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.core.SolverBase;
-import org.eclipse.jdt.annotation.Nullable;
 
 
 public class Solver extends SolverBase<GibbsSolverGraph>
@@ -56,9 +58,30 @@ public class Solver extends SolverBase<GibbsSolverGraph>
 		_factorGraphConfig = config;
 	}
 	
+	/*----------------
+	 * Object methods
+	 */
+	
+	@Override
+	@NonNullByDefault(false)
+	public boolean equals(Object obj)
+	{
+		return obj instanceof Solver;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return GibbsSolver.class.hashCode();
+	}
+	
+	/*------------------------------
+	 *  IFactorGraphFactory methods
+	 */
+	
 	@SuppressWarnings("deprecation")
 	@Override
-	public SFactorGraph createFactorGraph(FactorGraph graph)
+	public final SFactorGraph createFactorGraph(FactorGraph graph)
 	{
 		return new SFactorGraph(graph, _factorGraphConfig);
 	}

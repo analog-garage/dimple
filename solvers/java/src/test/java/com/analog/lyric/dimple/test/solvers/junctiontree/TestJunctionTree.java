@@ -36,6 +36,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
+import com.analog.lyric.dimple.solvers.core.SolverBase;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolver;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolverGraphBase;
 import com.analog.lyric.dimple.solvers.junctiontreemap.JunctionTreeMAPSolver;
@@ -59,6 +60,29 @@ public class TestJunctionTree extends DimpleTestBase
 	private final long _seed = new Random().nextLong();
 	private final Random _rand = new Random(_seed);
 	private final RandomGraphGenerator _graphGenerator = new RandomGraphGenerator(_rand);
+	
+	@Test
+	public void testSolverEquality()
+	{
+		SolverBase<?> solver1 = new JunctionTreeSolver();
+		SolverBase<?> solver2 = new JunctionTreeSolver();
+		SolverBase<?> solver3 = new com.analog.lyric.dimple.solvers.junctiontree.Solver();
+		
+		SolverBase<?> solver4 = new JunctionTreeMAPSolver();
+		SolverBase<?> solver5 = new JunctionTreeMAPSolver();
+		SolverBase<?> solver6 = new com.analog.lyric.dimple.solvers.junctiontreemap.Solver();
+		
+		assertEquals(solver1, solver2);
+		assertEquals(solver1.hashCode(), solver2.hashCode());
+		assertEquals(solver2, solver3);
+		assertEquals(solver2.hashCode(), solver3.hashCode());
+		assertNotEquals(solver3, solver4);
+		assertNotEquals(solver3.hashCode(), solver4.hashCode());
+		assertEquals(solver4, solver5);
+		assertEquals(solver4.hashCode(), solver5.hashCode());
+		assertEquals(solver5, solver6);
+		assertEquals(solver5.hashCode(), solver6.hashCode());
+	}
 	
 	@Test
 	public void testTriangle()

@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import com.analog.lyric.dimple.solvers.core.SolverBase;
 
 /**
@@ -25,9 +27,30 @@ import com.analog.lyric.dimple.solvers.core.SolverBase;
  */
 public class SumProductSolver extends SolverBase<SumProductSolverGraph>
 {
+	/*----------------
+	 * Object methods
+	 */
+	
+	@Override
+	@NonNullByDefault(false)
+	public boolean equals(Object obj)
+	{
+		return obj instanceof SumProductSolver;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return SumProductSolver.class.hashCode();
+	}
+	
+	/*------------------------------
+	 *  IFactorGraphFactory methods
+	 */
+	
 	@SuppressWarnings("deprecation")
 	@Override
-	public SFactorGraph createFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph)
+	public final SFactorGraph createFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph)
 	{
 		return new SFactorGraph(factorGraph);
 	}
