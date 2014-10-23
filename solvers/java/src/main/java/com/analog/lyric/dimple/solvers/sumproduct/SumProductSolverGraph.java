@@ -48,6 +48,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.options.DimpleOptions;
 import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
@@ -267,7 +268,7 @@ public class SumProductSolverGraph extends SFactorGraphBase
 	public void setDamping(double damping)
 	{
 		_damping = damping;
-		setOption(SumProductOptions.damping, damping);
+		setOption(BPOptions.damping, damping);
 	}
 	
 	public double getDamping()
@@ -438,25 +439,25 @@ public class SumProductSolverGraph extends SFactorGraphBase
 		@Override
 		public IOptionKey<UpdateApproach> getUpdateApproachOptionKey()
 		{
-			return SumProductOptions.updateApproach;
+			return BPOptions.updateApproach;
 		}
 
 		@Override
 		public IOptionKey<Double> getOptimizedUpdateSparseThresholdKey()
 		{
-			return SumProductOptions.optimizedUpdateSparseThreshold;
+			return BPOptions.optimizedUpdateSparseThreshold;
 		}
 
 		@Override
 		public IOptionKey<Double> getAutomaticExecutionTimeScalingFactorKey()
 		{
-			return SumProductOptions.automaticExecutionTimeScalingFactor;
+			return BPOptions.automaticExecutionTimeScalingFactor;
 		}
 
 		@Override
 		public IOptionKey<Double> getAutomaticMemoryAllocationScalingFactorKey()
 		{
-			return SumProductOptions.automaticMemoryAllocationScalingFactor;
+			return BPOptions.automaticMemoryAllocationScalingFactor;
 		}
 	}
 	
@@ -699,7 +700,7 @@ public class SumProductSolverGraph extends SFactorGraphBase
 			setSeed(seed);
 		}
 		
-		_damping = getOptionOrDefault(SumProductOptions.damping);
+		_damping = getOptionOrDefault(BPOptions.damping);
 	}
 
 	/*

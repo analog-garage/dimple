@@ -35,8 +35,8 @@ import com.analog.lyric.dimple.events.IDimpleEventSource;
 import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
-import com.analog.lyric.dimple.options.SolverOptions;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.SliceSampler;
@@ -222,7 +222,7 @@ public class TestDimpleEnvironment extends DimpleTestBase
 		assertEquals(SliceSampler.class, env.genericSamplers().getClass("SliceSampler"));
 		assertSame(env.genericSamplers(), env.genericSamplers());
 		
-		assertEquals(SolverOptions.iterations, env.optionRegistry().get("SolverOptions.iterations"));
+		assertEquals(BPOptions.iterations, env.optionRegistry().get("BPOptions.iterations"));
 		assertSame(env.optionRegistry(), env.optionRegistry());
 		
 		assertEquals(NormalProposalKernel.class, env.proposalKernels().getClass("NormalProposalKernel"));

@@ -25,9 +25,8 @@ import org.junit.Test;
 
 import com.analog.lyric.dimple.jsproxy.JSEnvironment;
 import com.analog.lyric.dimple.jsproxy.JSOptionHolder;
+import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.options.DimpleOptionRegistry;
-import com.analog.lyric.dimple.options.SolverOptions;
-import com.analog.lyric.dimple.solvers.sumproduct.SumProductOptions;
 
 /**
  * Test for {@link JSOptionHolder} class.
@@ -41,8 +40,8 @@ public class TestJSOptionHolder extends JSTestBase
 	{
 		JSOptionHolder<?> holder = state.createGraph();
 		
-		String iterationsKey = SolverOptions.iterations.qualifiedName();
-		String dampingKey = SumProductOptions.damping.qualifiedName();
+		String iterationsKey = BPOptions.iterations.qualifiedName();
+		String dampingKey = BPOptions.damping.qualifiedName();
 		
 		expectThrow(NoSuchElementException.class, holder, "getOption", "does-not-exist");
 		assertEquals(0.0, holder.getOption(dampingKey));
@@ -52,7 +51,7 @@ public class TestJSOptionHolder extends JSTestBase
 		holder.setOption(dampingKey, .9);
 		assertTrue(holder.isOptionSet(dampingKey));
 		assertEquals(.9, holder.getOption(dampingKey));
-		assertEquals(.9, holder.getOption(SumProductOptions.damping));
+		assertEquals(.9, holder.getOption(BPOptions.damping));
 		
 		holder.setOption(iterationsKey, 42);
 		assertEquals(42, holder.getOption(iterationsKey));
@@ -63,12 +62,12 @@ public class TestJSOptionHolder extends JSTestBase
 		assertEquals(1, holder.getOption(iterationsKey));
 		assertEquals(.9, holder.getOption(dampingKey));
 		
-		holder.setOption(SolverOptions.iterations, 23);
+		holder.setOption(BPOptions.iterations, 23);
 		assertEquals(23, holder.getOption(iterationsKey));
 		
 		holder.clearOptions();
-		assertFalse(holder.isOptionSet(SolverOptions.iterations));
-		assertFalse(holder.isOptionSet(SumProductOptions.damping));
+		assertFalse(holder.isOptionSet(BPOptions.iterations));
+		assertFalse(holder.isOptionSet(BPOptions.damping));
 		
 		JSEnvironment env = state.getEnvironment();
 		assertEquals(state.applet, env.getApplet());

@@ -68,7 +68,7 @@ classdef DimpleEnvironment < handle
             % getOption(name)
             %
             %    name - a string qualified option name of the form
-            %           'Class.field' (e.g. 'SumProductOptions.damping').
+            %           'Class.field' (e.g. 'BPOptions.damping').
             %           An instance of the Java IOptionKey class may also
             %           be used.
             %
@@ -83,7 +83,7 @@ classdef DimpleEnvironment < handle
             % unsetOption(name)
             %
             %    name - a string qualified option name of the form
-            %           'Class.field' (e.g. 'SumProductOptions.damping').
+            %           'Class.field' (e.g. 'BPOptions.damping').
             %           An instance of the Java IOptionKey class may also
             %           be used.
             %
@@ -97,7 +97,7 @@ classdef DimpleEnvironment < handle
             % setOption(name,value)
             %
             %    name  - a string qualified option name of the form
-            %            'Class.field' (e.g. 'SumProductOptions.damping').
+            %            'Class.field' (e.g. 'BPOptions.damping').
             %            An instance of the Java IOptionKey class may also
             %            be used.
             %

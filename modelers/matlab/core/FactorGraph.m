@@ -118,7 +118,7 @@ classdef FactorGraph < Node
         end
         
         function iters = get.NumIterations(obj)
-            iters = obj.getOption('SolverOptions.iterations');
+            iters = obj.getOption('BPOptions.iterations');
         end
         
         function streams = get.FactorGraphStreams(obj)
@@ -130,7 +130,7 @@ classdef FactorGraph < Node
         end
         
         function set.NumIterations(obj,iters)
-            obj.setOption('SolverOptions.iterations', iters);
+            obj.setOption('BPOptions.iterations', iters);
         end
         
         function set.NumSteps(obj,steps)

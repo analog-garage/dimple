@@ -33,6 +33,7 @@ import com.analog.lyric.dimple.model.factors.FactorList;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
+import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.options.SolverOptions;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
@@ -162,13 +163,13 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	/**
 	 * Sets number of solver iterations.
 	 * <p>
-	 * Sets {@link #getNumIterations()} and {@link SolverOptions#iterations} option
+	 * Sets {@link #getNumIterations()} and {@link BPOptions#iterations} option
 	 * to specified value.
 	 */
 	@Override
 	public void setNumIterations(int numIter)
 	{
-		setOption(SolverOptions.iterations, numIter);
+		setOption(BPOptions.iterations, numIter);
 		_numIterations = numIter;
 	}
 	
@@ -550,7 +551,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	@Override
 	public void initialize()
 	{
-		_numIterations = getOptionOrDefault(SolverOptions.iterations);
+		_numIterations = getOptionOrDefault(BPOptions.iterations);
 		_useMultithreading = getOptionOrDefault(SolverOptions.enableMultithreading);
 		
 		FactorGraph fg = _factorGraph;

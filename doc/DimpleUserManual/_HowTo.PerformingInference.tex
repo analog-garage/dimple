@@ -568,12 +568,12 @@ myGraph.solve();
 
 The solve method performs all necessary computation, leaving the results available to be subsequently accessed.  The behavior of the solve method is determined by the chosen schedule as well as by any solver-specific configuration parameters.
 
-For example, for all of the BP solvers, the number of iterations can be set.  By default, the number of iterations is 1, but for a loopy factor graph, generally multiple iterations should be performed.  To set the number of iterations prior to solving, the SolverOptions.iterations option may be set on the graph:
+For example, for all of the BP solvers, the number of iterations can be set.  By default, the number of iterations is 1, but for a loopy factor graph, generally multiple iterations should be performed.  To set the number of iterations prior to solving, the BPOptions.iterations option may be set on the graph:
 
 \ifmatlab
 
 \begin{lstlisting}
-myGraph.setOption('SolverOptions.iterations', 10);
+myGraph.setOption('BPOptions.iterations', 10);
 myGraph.solve();
 \end{lstlisting}
 
@@ -589,14 +589,14 @@ myGraph.solve();
 \ifjava
 
 \begin{lstlisting}
-myGraph.setOption(SolverOptions.iterations, 10);
+myGraph.setOption(BPOptions.iterations, 10);
 myGraph.solve();
 \end{lstlisting}
 
 
 \fi
 
-For the Gibbs solver, the SolverOptions.iterations option isn't used and will be ignored if set; other options specific to this solver should be used instead.  For example, to set the number of Gibbs samples to run before stopping (assuming the solver has been set to 'Gibbs'):
+For the Gibbs solver, the BPOptions.iterations option isn't used and will be ignored if set; other options specific to this solver should be used instead.  For example, to set the number of Gibbs samples to run before stopping (assuming the solver has been set to 'Gibbs'):
 
 \ifmatlab
 \begin{lstlisting}

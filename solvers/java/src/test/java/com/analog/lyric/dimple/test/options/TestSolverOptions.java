@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.options.SolverOptions;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
@@ -40,18 +41,18 @@ public class TestSolverOptions extends DimpleTestBase
 	public void test()
 	{
 		// Test default values
-		assertEquals(1, SolverOptions.iterations.defaultIntValue());
+		assertEquals(1, BPOptions.iterations.defaultIntValue());
 		assertEquals(false, SolverOptions.enableMultithreading.defaultBooleanValue());
 		
 		DimpleEnvironment env = DimpleEnvironment.active();
 		
-		env.setOption(SolverOptions.iterations, 42);
-		assertEquals((Integer)42, env.getOption(SolverOptions.iterations));
+		env.setOption(BPOptions.iterations, 42);
+		assertEquals((Integer)42, env.getOption(BPOptions.iterations));
 		env.setOption(SolverOptions.enableMultithreading, true);
 		assertEquals(true, env.getOption(SolverOptions.enableMultithreading));
 		
 		FactorGraph fg = new FactorGraph();
-		assertEquals((Integer)42, fg.getOption(SolverOptions.iterations));
+		assertEquals((Integer)42, fg.getOption(BPOptions.iterations));
 		assertEquals(true, fg.getOption(SolverOptions.enableMultithreading));
 
 		DummyFactorGraph sfg = new DummyFactorGraph(fg);
@@ -61,7 +62,7 @@ public class TestSolverOptions extends DimpleTestBase
 		// Test pre-initialization state. Most if not all options are not updated until
 		// initialize() is called.
 		
-		assertEquals((Integer)42, sfg.getOption(SolverOptions.iterations));
+		assertEquals((Integer)42, sfg.getOption(BPOptions.iterations));
 		assertEquals(1, sfg.getNumIterations());
 		assertEquals(true, sfg.getOption(SolverOptions.enableMultithreading));
 		assertFalse(sfg.useMultithreading());
@@ -73,10 +74,10 @@ public class TestSolverOptions extends DimpleTestBase
 		assertTrue(sfg.useMultithreading());
 		
 		// Make sure set* methods update option setting.
-		assertNull(sfg.getLocalOption(SolverOptions.iterations));
+		assertNull(sfg.getLocalOption(BPOptions.iterations));
 		sfg.setNumIterations(23);
 		assertEquals(23, sfg.getNumIterations());
-		assertEquals((Integer)23, sfg.getLocalOption(SolverOptions.iterations));
+		assertEquals((Integer)23, sfg.getLocalOption(BPOptions.iterations));
 		assertNull(sfg.getLocalOption(SolverOptions.enableMultithreading));
 		sfg.useMultithreading(false);
 		assertFalse(sfg.useMultithreading());

@@ -28,9 +28,8 @@ import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.matlabproxy.POptionHolder;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.variables.Real;
+import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
-import com.analog.lyric.dimple.options.SolverOptions;
-import com.analog.lyric.dimple.solvers.sumproduct.SumProductOptions;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.OptionKey;
@@ -72,15 +71,15 @@ public class TestPOptionHolder extends DimpleTestBase
 		assertSame(r2, proxy.getOptionHolder(1));
 		assertInvariants(proxy);
 		
-		fg.setOption(SolverOptions.iterations, 10);
-		r1.setOption(SolverOptions.iterations, 12);
-		r2.setOption(SumProductOptions.damping, .95);
+		fg.setOption(BPOptions.iterations, 10);
+		r1.setOption(BPOptions.iterations, 12);
+		r2.setOption(BPOptions.damping, .95);
 		assertInvariants(proxy);
-		assertArrayEquals(new Object[] { 12, 10 }, proxy.getOption("SolverOptions.iterations"));
+		assertArrayEquals(new Object[] { 12, 10 }, proxy.getOption("BPOptions.iterations"));
 		
-		proxy.unsetOption("SolverOptions.iterations");
+		proxy.unsetOption("BPOptions.iterations");
 		assertInvariants(proxy);
-		assertArrayEquals(new Object[] { 10, 10 }, proxy.getOption("SolverOptions.iterations"));
+		assertArrayEquals(new Object[] { 10, 10 }, proxy.getOption("BPOptions.iterations"));
 		
 		proxy.setOptionOnAll("GibbsOptions.enableAnnealing", true);
 		assertInvariants(proxy);
@@ -90,17 +89,17 @@ public class TestPOptionHolder extends DimpleTestBase
 		assertArrayEquals(new Object[] { false, false }, proxy.getOption("GibbsOptions.enableAnnealing"));
 		assertInvariants(proxy);
 		
-		proxy.setOptionAcrossAll("SolverOptions.iterations", new Object[] { 14, 23 });
+		proxy.setOptionAcrossAll("BPOptions.iterations", new Object[] { 14, 23 });
 		assertInvariants(proxy);
-		assertArrayEquals(new Object[] { 14, 23 }, proxy.getOption("SolverOptions.iterations"));
+		assertArrayEquals(new Object[] { 14, 23 }, proxy.getOption("BPOptions.iterations"));
 		
 		proxy.setOptionsAcrossAll(new Object[] {
 			new Object[] {
-				"SolverOptions.iterations", 99,
+				"BPOptions.iterations", 99,
 				"JunctionTreeOptions.variableEliminatorCostFunctions", new Object[] { "MIN_FILL", "MIN_NEIGHBORS" }
 			},
 			new Object[][] {
-				new Object[] { "SolverOptions.iterations", 9},
+				new Object[] { "BPOptions.iterations", 9},
 				new Object[] { "GibbsOptions.enableAnnealing", true },
 			}
 		});

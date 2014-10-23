@@ -358,7 +358,7 @@ The Input property can be used in several different ways. Some notes of interest
 \item The Input method can typically be used for prior probabilities of the root variables in a Bayes Net, or for the initial node of a Markov Chain or HMM.
 \item The Input property can also be used for any factors with only one variable, for instance, for observation factors (see the introduction to factor graphs on how to remove observations and turn them into single node factors).
 \item The \ifmatlab observation\_function\_Tutorial \fi \ifjava ObservationFactorFunction \fi in the above example was not entirely required (see below)---we could have used the input property instead.
-\item IMPORTANT: Unlike the addFactor method, the Input property can be used only once for each variable. That is, once you have specified an input for a variable, re-specifying this input will destroy the previous factor and create a new one. In the example above, using only the Input property, it would not have been possible to separately incorporate both the prior on Monday's weather and the factor corresponding to MondayÕs observation. However, this feature is very useful when Input is used to specify external information, and when the user wants to see the effect of external information. Say for instance that Bob mentions to Alice that it rained on Wednesday. Alice can simply use the call \ifmatlab WednesdayWeather.Input=[0 1] \fi \ifjava WednesdayWeather.setInput(0,1)\fi. If Bob corrects himself and says he misremembered, and that it actually was sunny that day, Alice can correct the information using again the call \ifmatlab WednesdayWeather.Input=[1 0] \fi \ifjava WednesdayWeather.setInput(1,0)\fi.
+\item IMPORTANT: Unlike the addFactor method, the Input property can be used only once for each variable. That is, once you have specified an input for a variable, re-specifying this input will destroy the previous factor and create a new one. In the example above, using only the Input property, it would not have been possible to separately incorporate both the prior on Monday's weather and the factor corresponding to Mondayï¿½s observation. However, this feature is very useful when Input is used to specify external information, and when the user wants to see the effect of external information. Say for instance that Bob mentions to Alice that it rained on Wednesday. Alice can simply use the call \ifmatlab WednesdayWeather.Input=[0 1] \fi \ifjava WednesdayWeather.setInput(0,1)\fi. If Bob corrects himself and says he misremembered, and that it actually was sunny that day, Alice can correct the information using again the call \ifmatlab WednesdayWeather.Input=[1 0] \fi \ifjava WednesdayWeather.setInput(1,0)\fi.
 \end{itemize}
 
 
@@ -380,7 +380,7 @@ HMM.solve;
 \ifjava
 
 \begin{lstlisting}
-HMM.setOption(SolverOptions.iterations, 20);
+HMM.setOption(BPOptions.iterations, 20);
 HMM.solve();
 \end{lstlisting}
 
@@ -843,7 +843,7 @@ myGraph.addFactor(xorGraph,d[0],d[1],d[3],d[5]);
 double [] inputs = new double [] {.75, .6, .9, .1, .2, .9};
 for (int i = 0; i < inputs.length; i++)
 	d[i].setInput(inputs[i]);
-myGraph.setOption(SolverOptions.iterations, 20);
+myGraph.setOption(BPOptions.iterations, 20);
 myGraph.solve();
 for (int i = 0; i < d.length; i++)
 	System.out.println(d[i].getValue());

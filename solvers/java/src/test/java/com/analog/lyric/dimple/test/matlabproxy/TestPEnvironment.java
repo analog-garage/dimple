@@ -22,7 +22,7 @@ import org.junit.Test;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.matlabproxy.PEnvironment;
-import com.analog.lyric.dimple.options.SolverOptions;
+import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
 /**
@@ -53,7 +53,7 @@ public class TestPEnvironment extends DimpleTestBase
 		Object[] keys = env.getOptionKeysMatching("foobarbaz");
 		assertEquals(0, keys.length);
 		
-		keys = env.getOptionKeysMatching("SolverOptions.iterations");
-		assertArrayEquals(new Object[] { SolverOptions.iterations }, keys);
+		keys = env.getOptionKeysMatching("BPOptions.iterations");
+		assertArrayEquals(new Object[] { BPOptions.iterations }, keys);
 	}
 }

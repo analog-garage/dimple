@@ -25,10 +25,12 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+
 import org.eclipse.jdt.annotation.Nullable;
 
 public class SumProductDiscrete extends SDiscreteVariableDoubleArray
@@ -86,7 +88,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	@Deprecated
 	public void setDamping(int portIndex,double dampingVal)
 	{
-		double[] params  = SumProductOptions.nodeSpecificDamping.getOrDefault(this).toPrimitiveArray();
+		double[] params  = BPOptions.nodeSpecificDamping.getOrDefault(this).toPrimitiveArray();
 		if (params.length == 0 && dampingVal != 0.0)
 		{
 			params = new double[getSiblingCount()];
@@ -96,7 +98,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 			params[portIndex] = dampingVal;
 		}
 		
-		SumProductOptions.nodeSpecificDamping.set(this, params);
+		BPOptions.nodeSpecificDamping.set(this, params);
 		configureDampingFromOptions();
 	}
 	
@@ -635,13 +637,13 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
      	final int size = getSiblingCount();
     	
     	_dampingParams =
-    		getReplicatedNonZeroListFromOptions(SumProductOptions.nodeSpecificDamping, SumProductOptions.damping,
+    		getReplicatedNonZeroListFromOptions(BPOptions.nodeSpecificDamping, BPOptions.damping,
     			size, _dampingParams);
  
     	if (_dampingParams.length > 0 && _dampingParams.length != size)
     	{
 			DimpleEnvironment.logWarning("%s has wrong number of parameters for %s\n",
-				SumProductOptions.nodeSpecificDamping, this);
+				BPOptions.nodeSpecificDamping, this);
     		_dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
     	}
     	

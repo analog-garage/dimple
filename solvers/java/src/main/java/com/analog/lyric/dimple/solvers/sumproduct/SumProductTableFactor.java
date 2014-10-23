@@ -32,6 +32,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
 import com.analog.lyric.dimple.solvers.core.kbest.IKBestFactor;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorEngine;
@@ -90,7 +91,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 		super.initialize();
 		
 		configureDampingFromOptions();
-		updateK(getOptionOrDefault(SumProductOptions.maxMessageSize));
+		updateK(getOptionOrDefault(BPOptions.maxMessageSize));
 	}
 	
 	@Internal
@@ -246,7 +247,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	@Deprecated
 	public void setDamping(int index, double val)
 	{
-		double[] params  = SumProductOptions.nodeSpecificDamping.getOrDefault(this).toPrimitiveArray();
+		double[] params  = BPOptions.nodeSpecificDamping.getOrDefault(this).toPrimitiveArray();
 		if (params.length == 0 && val != 0.0)
 		{
 			params = new double[getSiblingCount()];
@@ -256,7 +257,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 			params[index] = val;
 		}
 		
-		SumProductOptions.nodeSpecificDamping.set(this, params);
+		BPOptions.nodeSpecificDamping.set(this, params);
 		configureDampingFromOptions();
 	}
 	
@@ -279,7 +280,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	@Deprecated
 	public void enableOptimizedUpdate()
 	{
-		setOption(SumProductOptions.updateApproach, UpdateApproach.OPTIMIZED);
+		setOption(BPOptions.updateApproach, UpdateApproach.OPTIMIZED);
 	}
 
 	/**
@@ -293,7 +294,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	@Deprecated
 	public void disableOptimizedUpdate()
 	{
-		setOption(SumProductOptions.updateApproach, UpdateApproach.NORMAL);
+		setOption(BPOptions.updateApproach, UpdateApproach.NORMAL);
 	}
 
 	/**
@@ -308,7 +309,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	@Deprecated
 	public void useDefaultOptimizedUpdateEnable()
 	{
-		unsetOption(SumProductOptions.updateApproach);
+		unsetOption(BPOptions.updateApproach);
 	}
 
 	/**
@@ -349,7 +350,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	
 	public void setK(int k)
 	{
-		setOption(SumProductOptions.maxMessageSize, k);
+		setOption(BPOptions.maxMessageSize, k);
 		updateK(k);
 	}
 
@@ -787,13 +788,13 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 		final int size = getSiblingCount();
 
 		_dampingParams =
-			getReplicatedNonZeroListFromOptions(SumProductOptions.nodeSpecificDamping, SumProductOptions.damping, size,
+			getReplicatedNonZeroListFromOptions(BPOptions.nodeSpecificDamping, BPOptions.damping, size,
 				_dampingParams);
 
 		if (_dampingParams.length > 0 && _dampingParams.length != size)
 		{
 			DimpleEnvironment.logWarning("%s has wrong number of parameters for %s\n",
-				SumProductOptions.nodeSpecificDamping, this);
+				BPOptions.nodeSpecificDamping, this);
 			_dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 		}
 

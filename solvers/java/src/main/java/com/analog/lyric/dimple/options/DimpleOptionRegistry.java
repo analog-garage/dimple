@@ -47,6 +47,7 @@ import com.analog.lyric.options.OptionRegistry;
  * <dt>Solver-specific options</dt>
  * <dd>
  * <ul>
+ * <li>{@link BPOptions}
  * <li>{@link GibbsOptions}
  * <li>{@link JunctionTreeOptions}
  * <li>{@link LPOptions}
@@ -96,6 +97,7 @@ public final class DimpleOptionRegistry extends OptionRegistry
 			SolverOptions.class,
 		
 			// Solver option classes
+			BPOptions.class,
 			GibbsOptions.class,
 			JunctionTreeOptions.class,
 			LPOptions.class,

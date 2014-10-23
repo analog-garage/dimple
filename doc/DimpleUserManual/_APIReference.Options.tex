@@ -15,7 +15,7 @@ In the Java API, option keys are singleton instances of the IOptionKey interface
 \begin{lstlisting}
 import com.analog.lyric.dimple.options.SolverOptions;
 ...
-graph.setOption(SolverOptions.iterations, 12);
+graph.setOption(BPOptions.iterations, 12);
 \end{lstlisting}
 
 The IOptionKey interface defines a number of methods that can be used to query the name(), type(), and defaultValue() as well as methods for converting and validating values for that option. Users should have little reason to invoke any of these directly. Details may be found in the HTML Java API documentation.
@@ -26,7 +26,7 @@ The IOptionKey interface defines a number of methods that can be used to query t
 In the MATLAB API, option keys are represented by unique strings of the form '\textit{OptionClass.optionName}' (a complete list of supported option keys is returned by the dimpleOptions() function). For instance:
 
 \begin{lstlisting}
-graph.setOption('SolverOptions.iterations', 12);
+graph.setOption('BPOptions.iterations', 12);
 \end{lstlisting}
 
 Specifying a string that does not correspond to a known option key will result in a runtime error when key is used to set or look up an option value.\footnote{Internally option keys are represented using singleton Java objects, which are looked up by the string keys. If you have a reference to the Java IOptionKey object, you can use it in place of the string throughout this interface. Consult the Java version of this manual for further details.}
@@ -41,17 +41,17 @@ Options can be set either using the setOption method (defined in the IOptionHold
 
 \begin{lstlisting}
 // These both do the same thing:
-graph.setOption(SumProductOptions.damping, .9);
-SumProductOptions.damping.set(graph, .9);
+graph.setOption(BPOptions.damping, .9);
+BPOptions.damping.set(graph, .9);
 \end{lstlisting}
 
 Some option keys may define additional set methods that may be more convenient to use than the setOption method:
 
 \begin{lstlisting}
 // These both do the same thing:
-factor.setOption(SumProductOptions.nodeSpecificDamping,
+factor.setOption(BPOptions.nodeSpecificDamping,
     new OptionDoubleList(.7, .8, .9));
-SumProductOptions.nodeSpecificDamping.set(factor, .7, .8, .9);
+BPOptions.nodeSpecificDamping.set(factor, .7, .8, .9);
 \end{lstlisting}
 \fi
 
@@ -59,21 +59,21 @@ SumProductOptions.nodeSpecificDamping.set(factor, .7, .8, .9);
 Options can be set using the setOption method of the Node class.  For example:
 
 \begin{lstlisting}
-graph.setOption('SumProductOptions.damping', .9);
+graph.setOption('BPOptions.damping', .9);
 \end{lstlisting}
 
 When applied to an array object the option will be set on each.  For example:
 
 \begin{lstlisting}
 vars = Real(2,2);
-vars.setOption('SumProductOptions.damping', .9);
+vars.setOption('BPOptions.damping', .9);
 \end{lstlisting}
 
 In this case, to apply a distinct value to each element of the array, the values are specified in a cell-array of the same dimensions as the array object:
 
 \begin{lstlisting}
 vars = Real(2,2);
-vars.setOption('SumProductOptions.damping', {.7 .8; .6 .9});
+vars.setOption('BPOptions.damping', {.7 .8; .6 .9});
 \end{lstlisting}
 
 Multiple options may be set at the same time using the setOptions method. This takes arguments in one of the following forms:
@@ -81,50 +81,50 @@ Multiple options may be set at the same time using the setOptions method. This t
 \begin{itemize}
 \item A comma-separated list containing alternating option keys and values.
 \begin{lstlisting}
-nodes.setOptions('SolverOptions.iterations', 10, ...
-                  'SumProductOptions.damping' , .9);
+nodes.setOptions('BPOptions.iterations', 10, ...
+                  'BPOptions.damping' , .9);
 \end{lstlisting}
 \item A vector cell array containing alternating option keys and values.
 \begin{lstlisting}
-nodes.setOptions({'SolverOptions.iterations', 10, ...
-                  'SumProductOptions.damping' , .9});
+nodes.setOptions({'BPOptions.iterations', 10, ...
+                  'BPOptions.damping' , .9});
 \end{lstlisting}
 \item A nx2 cell array where each row contains a key and value.
 \begin{lstlisting}
-nodes.setOptions({'SolverOptions.iterations', 10; ...
-                  'SumProductOptions.damping' , .9});
+nodes.setOptions({'BPOptions.iterations', 10; ...
+                  'BPOptions.damping' , .9});
 \end{lstlisting}
 \item A cell array with dimensions matching the dimensions of the left hand side where each cell contains one of the above two forms.
 \begin{lstlisting}
 options = cell(2,2);
-options{1,1} = {'SolverOptions.iterations', 10; ...
-                'SumProductOptions.damping', .85};
-options{2,2} = {'SolverOptions.iterations', 12};
+options{1,1} = {'BPOptions.iterations', 10; ...
+                'BPOptions.damping', .85};
+options{2,2} = {'BPOptions.iterations', 12};
 nodes.setOptions(options);
 \end{lstlisting}
 \end{itemize}
 
 \fi
 
-All of these methods will ensure that the type of the option values are appropriate for that key and may also validate the value. For instance when setting the SumProductOptions.damping option, the value must be a double in the range from 0.0 to 1.0. If a value is not valid for its key an OptionValidationException will be thrown.
+All of these methods will ensure that the type of the option values are appropriate for that key and may also validate the value. For instance when setting the BPOptions.damping option, the value must be a double in the range from 0.0 to 1.0. If a value is not valid for its key an OptionValidationException will be thrown.
 
 Options may be unset on any object on which they were previously set using the unset method:
 
 \ifmatlab
 \begin{lstlisting}
-graph.unsetOption('SumProductOptions.damping');
+graph.unsetOption('BPOptions.damping');
 \end{lstlisting}
 \fi
 
 \ifjava
 \begin{lstlisting}
-graph.unsetOption(SumProductOptions.damping);
+graph.unsetOption(BPOptions.damping);
 \end{lstlisting}
 
 or the unset method on the option key can be used:
 
 \begin{lstlisting}
-SumProductOptions.damping.unset(graph);
+BPOptions.damping.unset(graph);
 \end{lstlisting}
 \fi
 
@@ -153,11 +153,11 @@ There are two methods for looking up option values:
 \begin{itemize}
 \item getOption(key) - returns the values of the specified option as determined by the above lookup rules or else the option's default value if not set. If invoked on an object array then this will return a cell array containing the values. For example:
 \begin{lstlisting}
->>> graph.getOption('SumProductOptions.damping')
+>>> graph.getOption('BPOptions.damping')
 ans =
     0.9000
     
->>> vars.getOption('SumProductOptions.damping')
+>>> vars.getOption('BPOptions.damping')
 ans =
     [0.7000]    [0.6000]
     [0.8000]    [0.9000]
@@ -167,8 +167,8 @@ ans =
 \begin{lstlisting}
 >>> graph.getLocalOptions()
 ans =
-    'SumProductOptions.damping'    [0.9000]
-    'SolverOptions.iterations'     10
+    'BPOptions.damping'    [0.9000]
+    'BPOptions.iterations'     10
 \end{lstlisting}
 \end{itemize}
 \fi %ifmatlab
@@ -180,14 +180,14 @@ There are a number of methods defined on the IOptionKey and IOptionHolder interf
 \item IOptionKey.get(obj) and IOptionHolder.getOption(key) - both return the value of the option for the given object or else null if not set.
 \begin{lstlisting}
 // These are equivalent:
-Double damping1 = graph.getOption(SumProductOptions.damping);
-Double damping2 = SumProductOptions.damping.get(graph);
+Double damping1 = graph.getOption(BPOptions.damping);
+Double damping2 = BPOptions.damping.get(graph);
 \end{lstlisting}
 \item IOptionKey.getOrDefault(obj) and IOptionholder.getOptionOrDefault(key) - return the default value defined by the key instead of null when the option has not been set anywhere.
 \begin{lstlisting}
 // These are equivalent:
-double damping1 = graph.getOptionOrDefault(SumProductOptions.damping);
-double damping2 = SumProductOptions.damping.getOrDefault(graph);
+double damping1 = graph.getOptionOrDefault(BPOptions.damping);
+double damping2 = BPOptions.damping.getOrDefault(graph);
 \end{lstlisting}
 \end{itemize}
 
@@ -196,7 +196,7 @@ There are also methods for querying the values of only those options that are se
 \begin{itemize}
 \item IOptionHolder.getLocalOption(key) - returns the value of the option or else null if not set directly on the object.
 \begin{lstlisting}
-Double damping = graph.getLocalOption(SumProductOptions.damping);
+Double damping = graph.getLocalOption(BPOptions.damping);
 \end{lstlisting}
 
 \item IOptionHolder.getLocalOptions() - returns a read-only collection that provides a view of the option settings for that object in the form of IOption objects.

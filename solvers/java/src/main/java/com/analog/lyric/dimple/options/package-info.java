@@ -105,7 +105,7 @@
  * model graph object:
  * <blockquote>
  * <pre>
- * fg.setOption(MinSumOptions.damping, .9);
+ * fg.setOption(BPOptions.damping, .9);
  * fg.setOption(SolverOptions.iterations, 20);
  * </pre>
  * </blockquote>
@@ -115,21 +115,21 @@
  * MinSumSolverGraph minSumGraph = fg.setSolverFactory(new MinSumSolver());
  * assert(minSumGraph.getOption(SolverOptions.iterations) == 20);
  * ISolverVariable sd1 = minSumGraph.getSolverVariable(d1);
- * assert(sd1.getOption(MinSumOptions.damping) == .9);
+ * assert(sd1.getOption(BPOptions.damping) == .9);
  * </pre>
  * </blockquote>
  * If you find you need to override the damping value for a particular variable or factor, you
  * can set it on the model object:
  * <blockquote>
  * <pre>
- * d1.setOption(MinSumOptions.damping, .7);
+ * d1.setOption(BPOptions.damping, .7);
  * </pre>
  * </blockquote>
  * You may also set options directly on solver objects as well, but that is usually less convenient
  * and should rarely be necessary:
  * <blockquote>
  * <pre>
- * sd1.setOption(MinSumOptions.damping, .7);
+ * sd1.setOption(BPOptions.damping, .7);
  * </pre>
  * </blockquote>
  * The {@linkplain com.analog.lyric.options.IOptionHolder#setOption setOption} method only accepts a single
@@ -139,8 +139,8 @@
  * <blockquote>
  * <pre>
  * // These two statements are equivalent:
- * d1.setOption(MinSumOptions.nodeSpecificDamping, new OptionDoubleList(.7, .8));
- * MinSumOptions.nodeSpecificDamping.set(d1, .7, .8);
+ * d1.setOption(BPOptions.nodeSpecificDamping, new OptionDoubleList(.7, .8));
+ * BPOptions.nodeSpecificDamping.set(d1, .7, .8);
  * </pre>
  * </blockquote>
  * <p>

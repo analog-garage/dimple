@@ -18,16 +18,18 @@ package com.analog.lyric.dimple.solvers.minsum;
 
 import java.util.Arrays;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergyMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 
 
 public class MinSumDiscrete extends SDiscreteVariableDoubleArray
@@ -220,12 +222,12 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 
 
 	/**
-	 * @deprecated Use {@link MinSumOptions#damping} or {@link MinSumOptions#nodeSpecificDamping} options instead.
+	 * @deprecated Use {@link BPOptions#damping} or {@link BPOptions#nodeSpecificDamping} options instead.
 	 */
 	@Deprecated
 	public void setDamping(int portIndex, double dampingVal)
 	{
-		double[] params  = MinSumOptions.nodeSpecificDamping.getOrDefault(this).toPrimitiveArray();
+		double[] params  = BPOptions.nodeSpecificDamping.getOrDefault(this).toPrimitiveArray();
 		if (params.length == 0 && dampingVal != 0.0)
 		{
 			params = new double[getSiblingCount()];
@@ -235,7 +237,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 			params[portIndex] = dampingVal;
 		}
 		
-		MinSumOptions.nodeSpecificDamping.set(this, params);
+		BPOptions.nodeSpecificDamping.set(this, params);
 		configureDampingFromOptions();
 	}
 
@@ -303,13 +305,13 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
      	final int size = getSiblingCount();
     	
     	_dampingParams =
-    		getReplicatedNonZeroListFromOptions(MinSumOptions.nodeSpecificDamping, MinSumOptions.damping,
+    		getReplicatedNonZeroListFromOptions(BPOptions.nodeSpecificDamping, BPOptions.damping,
     			size, _dampingParams);
  
     	if (_dampingParams.length > 0 && _dampingParams.length != size)
     	{
 			DimpleEnvironment.logWarning("%s has wrong number of parameters for %s\n",
-				MinSumOptions.nodeSpecificDamping, this);
+				BPOptions.nodeSpecificDamping, this);
     		_dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
     	}
     	

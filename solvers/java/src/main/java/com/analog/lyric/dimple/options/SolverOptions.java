@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.options;
 
 import com.analog.lyric.options.BooleanOptionKey;
-import com.analog.lyric.options.IntegerOptionKey;
 
 /**
  * Defines options that are general to multiple solvers.
@@ -34,10 +33,4 @@ public class SolverOptions extends DimpleOptions
 	 */
 	public final static BooleanOptionKey enableMultithreading =
 		new BooleanOptionKey(SolverOptions.class, "enableMultithreading", false);
-
-	/**
-	 * Specifies the number of iterations to perform when solving.
-	 */
-	public final static IntegerOptionKey iterations =
-		new IntegerOptionKey(SolverOptions.class, "iterations", 1);
 }

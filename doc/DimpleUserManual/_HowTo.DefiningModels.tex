@@ -902,7 +902,7 @@ FactorGraph fg = new FactorGraph();
  double [] inputs = new double [] {0.8,0.8,0.6};
  for (int i = 0; i < inputs.length ; i++)
 	 b[i].setInput(inputs[i]);
- fg.setOption(SolverOptions.iterations, 2);
+ fg.setOption(BPOptions.iterations, 2);
  fg.solve();
  for (int i = 0; i < b.length; i++)
 	 System.out.println(b[i].getP1());

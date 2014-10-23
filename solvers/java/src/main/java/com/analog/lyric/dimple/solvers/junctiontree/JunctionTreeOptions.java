@@ -20,7 +20,7 @@ import com.analog.lyric.dimple.model.transform.JunctionTreeTransform;
 import com.analog.lyric.dimple.model.transform.VariableEliminator;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.VariableCost;
 import com.analog.lyric.dimple.model.transform.VariableEliminatorCostListOptionKey;
-import com.analog.lyric.dimple.options.SolverOptions;
+import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.options.BooleanOptionKey;
 import com.analog.lyric.options.IntegerOptionKey;
 
@@ -33,7 +33,7 @@ import com.analog.lyric.options.IntegerOptionKey;
  * @since 0.07
  * @author Christopher Barber
  */
-public class JunctionTreeOptions extends SolverOptions
+public class JunctionTreeOptions extends BPOptions
 {
 	/**
 	 * If true, then the transformation will condition out any variables that have a fixed value.

@@ -66,7 +66,7 @@ classdef Node < MatrixObject
             % getOption(name)
             %
             %    name - a string qualified option name of the form
-            %           'Class.field' (e.g. 'SumProductOptions.damping').
+            %           'Class.field' (e.g. 'BPOptions.damping').
             %           An instance of the Java IOptionKey class may also
             %           be used.
             %
@@ -89,7 +89,7 @@ classdef Node < MatrixObject
             % unsetOption(name)
             %
             %    name - a string qualified option name of the form
-            %           'Class.field' (e.g. 'SumProductOptions.damping').
+            %           'Class.field' (e.g. 'BPOptions.damping').
             %           An instance of the Java IOptionKey class may also
             %           be used.
             %
@@ -103,7 +103,7 @@ classdef Node < MatrixObject
             % setOption(name,value)
             %
             %    name  - a string qualified option name of the form
-            %            'Class.field' (e.g. 'SumProductOptions.damping').
+            %            'Class.field' (e.g. 'BPOptions.damping').
             %            An instance of the Java IOptionKey class may also
             %            be used.
             %
@@ -187,18 +187,18 @@ classdef Node < MatrixObject
             %    
             %    % These variants are equivalent. All set the
             %    % specified options on all nodes.
-            %    nodes.setOptions('SolverOptions.iterations', 10,...
-            %                      'SumProductOptions.damping' , .9);
-            %    nodes.setOptions({'SolverOptions.iterations', 10,...
-            %                      'SumProductOptions.damping' , .9});
-            %    nodes.setOptions({'SolverOptions.iterations', 10;...
-            %                      'SumProductOptions.damping', .9);
+            %    nodes.setOptions('BPOptions.iterations', 10,...
+            %                      'BPOptions.damping' , .9);
+            %    nodes.setOptions({'BPOptions.iterations', 10,...
+            %                      'BPOptions.damping' , .9});
+            %    nodes.setOptions({'BPOptions.iterations', 10;...
+            %                      'BPOptions.damping', .9);
             %
             %    % Sets options on a 2x2 node.    
             %    options = cell(2,2);
-            %    options{1,1} = {'SolverOptions.iterations', 10;...
-            %                    'SumProductOptions.damping', .85)
-            %    options{2,2} = {'SolverOptions.iterations', 12};
+            %    options{1,1} = {'BPOptions.iterations', 10;...
+            %                    'BPOptions.damping', .85)
+            %    options{2,2} = {'BPOptions.iterations', 12};
             %    nodes.setOptions(options);
             %
             % See also getLocalOptions, setOption

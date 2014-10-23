@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.particleBP;
 
-import com.analog.lyric.dimple.options.SolverOptions;
+import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.ProposalKernelOptionKey;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -33,7 +33,7 @@ import com.analog.lyric.options.IntegerOptionKey;
  * @since 0.07
  * @author Christopher Barber
  */
-public class ParticleBPOptions extends SolverOptions
+public class ParticleBPOptions extends BPOptions
 {
 	/**
 	 * Affects particle BP {@linkplain ParticleBPReal solver variable} objects.

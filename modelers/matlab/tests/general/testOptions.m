@@ -28,45 +28,45 @@ try
 catch err
 end
 
-assertEqual({1 1; 1 1}, v.getOption('SolverOptions.iterations'));
-v.setOption('SolverOptions.iterations', 3);
-assertEqual({3 3; 3 3}, v.getOption('SolverOptions.iterations'));
-v(1,1).setOption('SolverOptions.iterations', 4);
-v(2,:).setOption('SolverOptions.iterations', 5);
-assertEqual({4 3; 5 5}, v.getOption('SolverOptions.iterations'));
-assertEqual({3;5}, v(:,2).getOption('SolverOptions.iterations'));
-v(2,:).unsetOption('SolverOptions.iterations');
-assertEqual({4 3; 1 1}, v.getOption('SolverOptions.iterations'));
+assertEqual({1 1; 1 1}, v.getOption('BPOptions.iterations'));
+v.setOption('BPOptions.iterations', 3);
+assertEqual({3 3; 3 3}, v.getOption('BPOptions.iterations'));
+v(1,1).setOption('BPOptions.iterations', 4);
+v(2,:).setOption('BPOptions.iterations', 5);
+assertEqual({4 3; 5 5}, v.getOption('BPOptions.iterations'));
+assertEqual({3;5}, v(:,2).getOption('BPOptions.iterations'));
+v(2,:).unsetOption('BPOptions.iterations');
+assertEqual({4 3; 1 1}, v.getOption('BPOptions.iterations'));
 v.clearLocalOptions();
-assertEqual({1 1; 1 1}, v.getOption('SolverOptions.iterations'));
+assertEqual({1 1; 1 1}, v.getOption('BPOptions.iterations'));
 
-env.setOption('SolverOptions.iterations', 42);
-assertEqual(42, env.getOption('SolverOptions.iterations'));
-assertEqual(42, v(1,1).getOption('SolverOptions.iterations'));
-v(2,2).setOption('SolverOptions.iterations',12);
-assertEqual({42 42; 42 12}, v.getOption('SolverOptions.iterations'));
+env.setOption('BPOptions.iterations', 42);
+assertEqual(42, env.getOption('BPOptions.iterations'));
+assertEqual(42, v(1,1).getOption('BPOptions.iterations'));
+v(2,2).setOption('BPOptions.iterations',12);
+assertEqual({42 42; 42 12}, v.getOption('BPOptions.iterations'));
 
 v.clearLocalOptions();
 env.clearLocalOptions();
 fg.clearLocalOptions();
 
 assertTrue(isempty(fg.getLocalOptions()));
-fg.setOption('SolverOptions.iterations', 23);
+fg.setOption('BPOptions.iterations', 23);
 fg.setOption('DimpleOptions.randomSeed', 42);
 options = fg.getLocalOptions();
-assertEqual({'DimpleOptions.randomSeed', 42; 'SolverOptions.iterations', 23}, options);
+assertEqual({'DimpleOptions.randomSeed', 42; 'BPOptions.iterations', 23}, options);
 fg.clearLocalOptions();
 assertTrue(isempty(fg.getLocalOptions()));
 fg.setOptions(options);
-assertEqual({'DimpleOptions.randomSeed', 42; 'SolverOptions.iterations', 23}, options);
+assertEqual({'DimpleOptions.randomSeed', 42; 'BPOptions.iterations', 23}, options);
 
-v.setOptions('SolverOptions.iterations', 21);
-assertEqual(v(1,1).getOption('SolverOptions.iterations'), 21);
-v.setOptions('SolverOptions.iterations', 27, 'DimpleOptions.randomSeed', 88);
-assertEqual(v(1,2).getOption('SolverOptions.iterations'), 27);
+v.setOptions('BPOptions.iterations', 21);
+assertEqual(v(1,1).getOption('BPOptions.iterations'), 21);
+v.setOptions('BPOptions.iterations', 27, 'DimpleOptions.randomSeed', 88);
+assertEqual(v(1,2).getOption('BPOptions.iterations'), 27);
 assertEqual(v(2,1).getOption('DimpleOptions.randomSeed'), 88);
-v.setOptions({'SolverOptions.iterations', 111, 'DimpleOptions.randomSeed', 34});
-assertEqual(v(2,2).getOption('SolverOptions.iterations'), 111);
+v.setOptions({'BPOptions.iterations', 111, 'DimpleOptions.randomSeed', 34});
+assertEqual(v(2,2).getOption('BPOptions.iterations'), 111);
 assertEqual(v(1,1).getOption('DimpleOptions.randomSeed'), 34);
 
 end

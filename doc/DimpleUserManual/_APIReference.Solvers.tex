@@ -86,14 +86,6 @@ In this case, returnArray is a cell-array of the return values of the method, wi
 
 A few options are applicable to multiple solvers and are therefore described in this subsection.
 
-\para{SolverOptions.iterations}
-
-\dimpleOption{SolverOptions.iterations}
-{integer}
-{1}
-{graph}
-{Controls how many iterations to perform when running solve(). This is not applicable to all solvers. It is currently only used by the SumProduct, MinSum and ParticleBP solvers.}
-
 \para{SolverOptions.enableMultithreading}
 
 \dimpleOption{SolverOptions.enableMultithreading}
@@ -205,6 +197,102 @@ The following global methods can be used to set the number of threads in the Thr
 \fi
 
 \clearpage
+\subsubsection{Common Belief Propagation Options}
+\label{sec:BPOptions}
+
+There are a number of options that are applicable to multiple solvers that are based on some form of message-passing belief propagation. These include the Sum-Product, Min-Sum, Particle BP, and Junction Tree solvers. These options are defined in the BPOptions class. The following options are supported:
+
+\para{BPOptions.iterations}
+
+\dimpleOption{BPOptions.iterations}
+{integer}
+{1}
+{graph}
+Controls how many iterations to perform when running solve(). This is not applicable to all solvers. It is currently only used by the SumProduct, MinSum and ParticleBP solvers.
+
+\para{BPOptions.damping}
+
+\dimpleOption{BPOptions.damping}
+{double}
+{0.0}
+{variables and factors}
+{The SumProduct solver supports damping, in which messages are damped by replacing each message by a weighted sum of the computed message value and the previous value of that message (when the corresponding edge was most-recently updated). In the current version of Dimple, damping is supported only in discrete variables and factors that connect only to discrete variables\footnote{Support for damping for continuous variables may be added in a future release.}.
+\linebreak
+\linebreak
+The damping parameter specifies a weighting value in the range 0 through 1:
+
+\[
+\mathrm{message} = \mathrm{computedMessage} \cdot (1 - D) + \mathrm{previousMessage} \cdot D
+\]
+
+where $D$ is the damping value. So that a value of 0 means that the previous message will not be considered, effectively turning off damping.
+\linebreak
+\linebreak
+This option applies the same damping parameter to all edges connected to the variable or factor on which it is set. If you want different values for different edges, you need to use the \nameref{option:BPOptions.nodeSpecificDamping} option.
+}
+
+\para{BPOptions.nodeSpecificDamping}
+
+\dimpleOption{BPOptions.nodeSpecificDamping}
+{\ifmatlab double vector\fi \ifjava OptionDoubleList\fi}
+{\textit{empty}}
+{variables and factors}
+{This is the similar to the \nameref{option:BPOptions.damping} option but allows you specify different weights for different edges. Unlike the simple damping option, this usually makes no sense to set on the graph itself since factors and variables will typically have different numbers and arrangements of edges. The value must either be an empty list, indicating that damping should be turned off, or a list of weights with the same length as the number of siblings of the affected variable and factor. The dmpaing weights will be applied in the order in which the siblings are declared.
+\linebreak
+\linebreak
+This option takes precedence over the simple damping option if both are specified for the same node.
+}
+
+\para{BPOptions.maxMessageSize}
+
+\dimpleOption{BPOptions.maxMessageSize}
+{integer}
+{integer max}
+{discrete factors}
+{This specifies the maximum size of the outgoing messages on the discrete factors on which it is set. If this number K is less than the full size of the message (i.e. the size of the domain of the target variable), then only the K-best values -- those with the largest weights -- will be included in the message. This can results in a faster but more approximate form of inference and is most suited to graphs with very large-dimension variables.
+\linebreak
+\linebreak
+IMPORTANT: k-best and damping are not compatible with each other\footnote{This restriction may be removed in a future version of Dimple.}}
+
+\para{BPOptions.updateApproach}
+
+\dimpleOption{BPOptions.updateApproach}
+{\ifmatlab string\fi \ifjava UpdateApproach enum\fi}
+{AUTOMATIC}
+{discrete factors}
+{This option controls which update algorithm is applied to discrete factors. The option can take one of three values:
+\begin{itemize}
+\item NORMAL - Perform updates using just the factor tables. Do not use the optimized update technique.
+\item OPTIMIZED - Use the optimized update algorithm. Note that factors that have only one edge, or factors that do not have all of their edges updated simultaneously by the schedule, ignore this setting and use the normal approach.
+\item AUTOMATIC - Automatically determine whether to use the optimized algorithm. The automatic selection algorithm can be tuned through the \nameref{option:BPOptions.automaticExecutionTimeScalingFactor} and \nameref{option:BPOptions.automaticMemoryAllocationScalingFactor} options.
+\end{itemize}
+}
+
+\para{BPOptions.automaticExecutionTimeScalingFactor}
+
+\dimpleOption{BPOptions.automaticExecutionTimeScalingFactor}
+{double}
+{1.0}
+{discrete factors}
+{This option is an execution time scaling factor used when the \nameref{option:BPOptions.updateApproach} option is set to AUTOMATIC. It controls how execution time costs are weighed. The value must be a positive number.}
+
+\para{BPOptions.automaticMemoryAllocationScalingFactor}
+
+\dimpleOption{BPOptions.automaticMemoryAllocationScalingFactor}
+{double}
+{10.0}
+{discrete factors}
+{This option is an memory allocation scaling factor used when the \nameref{option:BPOptions.updateApproach} option is set to AUTOMATIC. It controls how memory allocation costs are weighed. The value must be a positive number.}
+
+\para{BPOptions.optimizedUpdateSparseThreshold}
+
+\dimpleOption{BPOptions.optimizedUpdateSparseThreshold}
+{double}
+{1.0}
+{discrete factors}
+{This option controls the representation of the auxiliary tables used by the optimized update algorithm, which is controlled through the \nameref{option:BPOptions.updateApproach}. Internally, the optimized algorithm creates multiple factor tables to perform the update. This option specifies a density, below which an auxiliary table uses a sparse representation. It must be a number in the range [0.0, 1.0]. The value 1.0 (the default), indicates that a sparse representation should be used if there are any zero-entries in the table. The value 0.0 will prevent the sparse representation from being used entirely. Sparse tables typically decrease execution time, but they use more memory. When the update approach is set to AUTOMATIC, this option impacts both the execution time and memory allocation estimates used to choose the update approach.}
+
+\clearpage
 \subsubsection{Sum-Product Solver}
 \label{sec:SumProductSolver}
 
@@ -252,94 +340,8 @@ For factors that are neither discrete-only or listed in the above table, an appr
 
 For discrete-only factors, two factor update algorithms are available: normal and optimized. The optimized algorithm can be applied only to factors with more than one edge, and only when the schedule updates all of the factor's edges simultaneously. The optimized algorithm computes the outbound message update with fewer operations than the normal algorithm, which can decrease execution time; however, it also uses more memory and increases initialization time. Several options, described below, influence which algorithm is used. Key among them is the updateApproach option, which can be set to normal, optimized, or automatic. When set to automatic, Dimple makes an estimate of the memory usage and execution time of each algorithm in order to select one.
 
-\para{Sum-Product Options}
-\label{sec:SumProductOptions}
 
-The following options can be used with the SumProduct solver.
-
-\subpara{SumProductOptions.damping}
-
-\dimpleOption{SumProductOptions.damping}
-{double}
-{0.0}
-{variables and factors}
-{The SumProduct solver supports damping, in which messages are damped by replacing each message by a weighted sum of the computed message value and the previous value of that message (when the corresponding edge was most-recently updated). In the current version of Dimple, damping is supported only in discrete variables and factors that connect only to discrete variables\footnote{Support for damping for continuous variables may be added in a future release.}.
-\linebreak
-\linebreak
-The damping parameter specifies a weighting value in the range 0 through 1:
-
-\[
-\mathrm{message} = \mathrm{computedMessage} \cdot (1 - D) + \mathrm{previousMessage} \cdot D
-\]
-
-where $D$ is the damping value. So that a value of 0 means that the previous message will not be considered, effectively turning off damping.
-\linebreak
-\linebreak
-This option applies the same damping parameter to all edges connected to the variable or factor on which it is set. If you want different values for different edges, you need to use the \nameref{option:SumProductOptions.nodeSpecificDamping} option.
-}
-
-\subpara{SumProductOptions.nodeSpecificDamping}
-
-\dimpleOption{SumProductOptions.nodeSpecificDamping}
-{\ifmatlab double vector\fi \ifjava OptionDoubleList\fi}
-{\textit{empty}}
-{variables and factors}
-{This is the similar to the \nameref{option:SumProductOptions.damping} option but allows you specify different weights for different edges. Unlike the simple damping option, this usually makes no sense to set on the graph itself since factors and variables will typically have different numbers and arrangements of edges. The value must either be an empty list, indicating that damping should be turned off, or a list of weights with the same length as the number of siblings of the affected variable and factor. The dmpaing weights will be applied in the order in which the siblings are declared.
-\linebreak
-\linebreak
-This option takes precedence over the simple damping option if both are specified for the same node.
-}
-
-\subpara{SumProductOptions.maxMessageSize}
-
-\dimpleOption{SumProductOptions.maxMessageSize}
-{integer}
-{integer max}
-{discrete factors}
-{This specifies the maximum size of the outgoing messages on the discrete factors on which it is set. If this number K is less than the full size of the message (i.e. the size of the domain of the target variable), then only the K-best values -- those with the largest weights -- will be included in the message. This can results in a faster but more approximate form of inference and is most suited to graphs with very large-dimension variables.
-\linebreak
-\linebreak
-IMPORTANT: k-best and damping are not compatible with each other\footnote{This restriction may be removed in a future version of Dimple.}}
-
-\subpara{SumProductOptions.updateApproach}
-
-\dimpleOption{SumProductOptions.updateApproach}
-{\ifmatlab string\fi \ifjava UpdateApproach enum\fi}
-{AUTOMATIC}
-{discrete factors}
-{This option controls which update algorithm is applied to discrete factors. The option can take one of three values:
-\begin{itemize}
-\item NORMAL - Perform updates using just the factor tables. Do not use the optimized update technique.
-\item OPTIMIZED - Use the optimized update algorithm. Note that factors that have only one edge, or factors that do not have all of their edges updated simultaneously by the schedule, ignore this setting and use the normal approach.
-\item AUTOMATIC - Automatically determine whether to use the optimized algorithm. The automatic selection algorithm can be tuned through the \nameref{option:SumProductOptions.automaticExecutionTimeScalingFactor} and \nameref{option:SumProductOptions.automaticMemoryAllocationScalingFactor} options.
-\end{itemize}
-}
-
-\subpara{SumProductOptions.automaticExecutionTimeScalingFactor}
-
-\dimpleOption{SumProductOptions.automaticExecutionTimeScalingFactor}
-{double}
-{1.0}
-{discrete factors}
-{This option is an execution time scaling factor used when the \nameref{option:SumProductOptions.updateApproach} option is set to AUTOMATIC. It controls how execution time costs are weighed. The value must be a positive number.}
-
-\subpara{SumProductOptions.automaticMemoryAllocationScalingFactor}
-
-\dimpleOption{SumProductOptions.automaticMemoryAllocationScalingFactor}
-{double}
-{10.0}
-{discrete factors}
-{This option is an memory allocation scaling factor used when the \nameref{option:SumProductOptions.updateApproach} option is set to AUTOMATIC. It controls how memory allocation costs are weighed. The value must be a positive number.}
-
-\subpara{SumProductOptions.optimizedUpdateSparseThreshold}
-
-\dimpleOption{SumProductOptions.optimizedUpdateSparseThreshold}
-{double}
-{1.0}
-{discrete factors}
-{This option controls the representation of the auxiliary tables used by the optimized update algorithm, which is controlled through the \nameref{option:SumProductOptions.updateApproach}. Internally, the optimized algorithm creates multiple factor tables to perform the update. This option specifies a density, below which an auxiliary table uses a sparse representation. It must be a number in the range [0.0, 1.0]. The value 1.0 (the default), indicates that a sparse representation should be used if there are any zero-entries in the table. The value 0.0 will prevent the sparse representation from being used entirely. Sparse tables typically decrease execution time, but they use more memory. When the update approach is set to AUTOMATIC, this option impacts both the execution time and memory allocation estimates used to choose the update approach.}
-
-\subpara{GibbsOptions for Sampled Factors}
+\para{GibbsOptions for Sampled Factors}
 
 Factors connected to continuous variables that do not support exact message computation, instead use a sampled approximation (see section~\ref{sec:SumProductSolver}) where the sampling is performed using the Gibbs solver.
 
@@ -370,68 +372,8 @@ SFactorGraph sgraph = fg.setSolverFactory(new MinSumSolver());
 \end{lstlisting}
 \fi
 
-The MinSum solver supports only discrete variables.
-
-\para{Min-Sum Options}
-\label{sec:MinSumOptions}
-
-The following sections list the solver-specific options for the MinSum solver.
-
-\subpara{MinSumOptions.damping}
-
-\dimpleOption{MinSumOptions.damping}
-{double}
-{0.0}
-{variables and factors}
-{See \nameref{option:SumProductOptions.damping}}
-
-\subpara{MinSumOptions.nodeSpecificDamping}
-
-\dimpleOption{MinSumOptions.nodeSpecificDamping}
-{\ifmatlab double vector\fi \ifjava OptionDoubleList\fi}
-{\textit{empty}}
-{variables and factors}
-{See \nameref{option:SumProductOptions.nodeSpecificDamping}}
-
-\subpara{MinSumOptions.maxMessageSize}
-
-\dimpleOption{MinSumOptions.maxMessagesSize}
-{integer}
-{integer max}
-{discrete factors}
-{See \nameref{option:SumProductOptions.maxMessageSize}}
-
-\subpara{MinSumOptions.updateApproach}
-
-\dimpleOption{MinSumOptions.updateApproach}
-{\ifmatlab string\fi \ifjava UpdateApproach enum\fi}
-{AUTOMATIC}
-{discrete factors}
-{See \nameref{option:SumProductOptions.updateApproach}}
-
-\subpara{MinSumOptions.automaticExecutionTimeScalingFactor}
-
-\dimpleOption{MinSumOptions.automaticExecutionTimeScalingFactor}
-{double}
-{1.0}
-{discrete factors}
-{See \nameref{option:SumProductOptions.automaticExecutionTimeScalingFactor}}
-
-\subpara{MinSumOptions.automaticMemoryAllocationScalingFactor}
-
-\dimpleOption{MinSumOptions.automaticMemoryAllocationScalingFactor}
-{double}
-{10.0}
-{discrete factors}
-{See \nameref{option:SumProductOptions.automaticMemoryAllocationScalingFactor}}
-
-\subpara{MinSumOptions.optimizedUpdateSparseThreshold}
-
-\dimpleOption{MinSumOptions.optimizedUpdateSparseThreshold}
-{double}
-{1.0}
-{discrete factors}
-{See \nameref{option:SumProductOptions.optimizedUpdateSparseThreshold}}
+Unlike the Sum-Product solver, the Min-Sum solver supports only discrete variables. It only
+uses the standard BP Options described in \nameref{sec:BPOptions}.
 
 \clearpage
 \subsubsection{Junction Tree Solver}
