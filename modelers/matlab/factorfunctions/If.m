@@ -14,7 +14,7 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function var = IfElse(condition, trueValue, falseValue, varargin)
+function var = If(condition, trueValue, falseValue, varargin)
 
 fg = getFactorGraph();            % By default, use the current factor graph
 
