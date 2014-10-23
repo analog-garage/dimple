@@ -118,7 +118,11 @@ public class MultinomialEnergyParameters extends FactorFunction
     	if (countSum != _N)
 			return Double.POSITIVE_INFINITY;
     	
-    	return sum + _N * Math.log(parameterSum);
+    	final double energy = sum + _N * Math.log(parameterSum);
+    	if (energy != energy)	// Faster isNaN
+    		return Double.POSITIVE_INFINITY;
+
+    	return energy;
 	}
     
     @Override

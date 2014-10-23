@@ -91,15 +91,21 @@ public abstract class FactorFunction implements IFactorFunction
 		final Value[] values = new Value[size];
 		for (int i = 0; i < size; ++i)
 			values[i] = Value.create(arguments[i]);
-
-		return evalEnergy(values);
+		
+		final double energy = evalEnergy(values);
+		if (energy != energy)	// Faster isNaN
+			return Double.POSITIVE_INFINITY;
+		return energy;
 	}
 
 	// Evaluate the factor and return a weight rather than an energy value
 	@Override
 	public double eval(Value[] values)
 	{
-		return Math.exp(-evalEnergy(values));
+		final double energy = evalEnergy(values);
+		if (energy != energy)	// Faster isNaN
+			return Double.POSITIVE_INFINITY;
+		return Math.exp(-energy);
 	}
 
 	// Evaluate the factor and return a weight value using unwrapped object arguments

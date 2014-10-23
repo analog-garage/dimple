@@ -109,8 +109,12 @@ public class Multinomial extends FactorFunction
     	}
     	if (countSum != _N)
 			return Double.POSITIVE_INFINITY;
+
+    	final double energy = sum + _N * Math.log(parameterSum);
+    	if (energy != energy)	// Faster isNaN
+    		return Double.POSITIVE_INFINITY;
     	
-    	return sum + _N * Math.log(parameterSum);
+    	return energy;
 	}
     
     @Override

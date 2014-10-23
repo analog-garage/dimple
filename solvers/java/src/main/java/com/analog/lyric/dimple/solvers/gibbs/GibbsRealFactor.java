@@ -119,7 +119,15 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 			return 0;
 
 		final Value[] inputMsgs = _inputMsgs;
-		return inputMsgs != null ? _realFactor.getFactorFunction().evalEnergy(inputMsgs) : Double.POSITIVE_INFINITY;
+		if (inputMsgs != null)
+		{
+			final double energy = _realFactor.getFactorFunction().evalEnergy(inputMsgs);
+			if (energy != energy)	// Faster isNaN
+				return Double.POSITIVE_INFINITY;
+			return energy;
+		}
+		else
+			return Double.POSITIVE_INFINITY;
 	}
 	
 	@Override

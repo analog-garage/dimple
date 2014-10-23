@@ -107,7 +107,10 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 		{
 			// Avoid creating table because it may be very large.
 			// FIXME - think more about this. Should this be conditional on something?
-			return getFactor().getFactorFunction().evalEnergy(_inPortMsgs);
+			final double energy = getFactor().getFactorFunction().evalEnergy(_inPortMsgs);
+			if (energy != energy)	// Faster isNaN
+				return Double.POSITIVE_INFINITY;
+			return energy;
 		}
 		
 		int[] inPortMsgs = new int[_numPorts];
