@@ -46,19 +46,19 @@ public class NormalParameters extends ParameterizedMessageBase
 
 	public NormalParameters(Map<String,Object> parameters)
 	{
-		_mean = (double)FactorFunction.getFirstOrDefault(parameters, 0.0, "mean", "mu");
+		_mean = ((Number)FactorFunction.getFirstOrDefault(parameters, 0.0, "mean", "mu")).doubleValue();
 		Object value;
 		if ((value = parameters.get("precision"))!= null)
 		{
-			_precision = (double)value;
+			_precision = ((Number)value).doubleValue();
 		}
 		else if ((value = parameters.get("variance")) != null)
 		{
-			_precision = 1.0 / (double)value;
+			_precision = 1.0 / ((Number)value).doubleValue();
 		}
 		else if ((value = FactorFunction.getFirst(parameters, "std", "sigma")) != null)
 		{
-			double sigma = (double)value;
+			double sigma = ((Number)value).doubleValue();
 			_precision = 1 / (sigma * sigma);
 		}
 		else

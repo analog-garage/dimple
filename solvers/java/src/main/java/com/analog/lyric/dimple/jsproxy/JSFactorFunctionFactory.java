@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.jsproxy;
 
 import java.util.Map;
 
+import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -123,17 +124,45 @@ public class JSFactorFunctionFactory extends JSProxyObjectWithApplet<FactorFunct
 	@SuppressWarnings("unchecked")
 	public JSFactorFunction create(String name, Object parameters)
 	{
+		Map<String,Object> parameterMap = convertParametersToMap(_applet, parameters);
+		
+		if (parameterMap == null)
+		{
+			throw new JSException(String.format("'%s' is not a valid parameters type",
+				parameters.getClass().getSimpleName()));
+		}
+		
+		return wrap(_delegate.instantiateWithParameters(name, parameterMap));
+	}
+	
+	/**
+	 * Converts parameters to a Map object or else returns null.
+	 * <p>
+	 * If {@code parameters} is a {@code JSObject}, {@link IJSOBject} or a {@code Map}, they will
+	 * be wrapped up in a map and returned. Otherwise null will be returned.
+	 * <p>
+	 * @param applet
+	 * @param parameters are the potential parameters
+	 * @return
+	 * @since 0.07
+	 */
+	@SuppressWarnings("unchecked")
+	static @Nullable Map<String,Object> convertParametersToMap(@Nullable DimpleApplet applet, Object parameters)
+	{
 		if (parameters instanceof JSObject)
 		{
-			parameters = JSObjectWrapper.wrap(parameters);
+			return new JSObjectMap(applet, JSObjectWrapper.wrap(parameters));
 		}
-		
-		if (parameters instanceof IJSObject)
+		else if (parameters instanceof IJSObject)
 		{
-			parameters = new JSObjectMap(_applet, (IJSObject)parameters);
+			return new JSObjectMap(applet, (IJSObject)parameters);
+		}
+		else if (parameters instanceof Map)
+		{
+			return (Map<String,Object>)parameters;
 		}
 		
-		return wrap(_delegate.instantiateWithParameters(name, (Map<String,Object>)parameters));
+		return null;
 	}
 	
 	/**

@@ -23,6 +23,7 @@ import java.util.NoSuchElementException;
 
 import org.junit.Test;
 
+import com.analog.lyric.dimple.jsproxy.JSEnvironment;
 import com.analog.lyric.dimple.jsproxy.JSOptionHolder;
 import com.analog.lyric.dimple.options.DimpleOptionRegistry;
 import com.analog.lyric.dimple.options.SolverOptions;
@@ -69,7 +70,12 @@ public class TestJSOptionHolder extends JSTestBase
 		assertFalse(holder.isOptionSet(SolverOptions.iterations));
 		assertFalse(holder.isOptionSet(SumProductOptions.damping));
 		
-		DimpleOptionRegistry registry = state.getEnvironment().getDelegate().optionRegistry();
+		JSEnvironment env = state.getEnvironment();
+		assertEquals(state.applet, env.getApplet());
+		env.setOption(iterationsKey, 123);
+		assertEquals(123, holder.getOption(iterationsKey));
+
+		DimpleOptionRegistry registry = env.getDelegate().optionRegistry();
 		
 		assertArrayEquals(registry.getAllMatching(".*").toArray(), (Object[])holder.getOptionKeysMatching(".*"));
 		assertArrayEquals(registry.getAllMatching("damping").toArray(), (Object[])holder.getOptionKeysMatching("damping"));

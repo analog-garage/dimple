@@ -17,7 +17,9 @@
 package com.analog.lyric.dimple.jsproxy;
 
 import static java.util.Objects.*;
-import netscape.javascript.JSException;
+
+import java.util.Map;
+
 import netscape.javascript.JSObject;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -131,10 +133,15 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 		else if (function instanceof String)
 		{
 			String name = (String)function;
-			if (args.length > 0 && (args[0] instanceof JSObject || args[0] instanceof IJSObject))
+			Map<String,Object> parameters = null;
+			if (args.length > 0)
+			{
+				parameters = JSFactorFunctionFactory.convertParametersToMap(_applet,  args[0]);
+			}
+			if (parameters != null)
 			{
 				firstArg = 1;
-				ff = functions().create(name, args[0])._delegate;
+				ff = functions().create(name, parameters)._delegate;
 			}
 			else
 			{
@@ -202,7 +209,7 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 	{
 		if (!(domain instanceof JSDomain))
 		{
-			throw new JSException(String.format("%s is not a domain", domain));
+			throw new IllegalArgumentException(String.format("%s is not a domain", domain));
 		}
 		
 		JSDomain<?> jsdomain = (JSDomain<?>)domain;

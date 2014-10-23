@@ -104,6 +104,8 @@ public abstract class JSProxyObject<Delegate>
 
 	/**
 	 * The applet instance under which the proxy was created.
+	 * <p>
+	 * This can only be null when testing this API without an applet.
 	 * @since 0.07
 	 */
 	public abstract @Nullable DimpleApplet getApplet();

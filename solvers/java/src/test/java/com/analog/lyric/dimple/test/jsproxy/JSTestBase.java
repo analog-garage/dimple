@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.test.jsproxy;
 
-import org.eclipse.jdt.annotation.Nullable;
-
 import com.analog.lyric.dimple.jsproxy.IJSObject;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
@@ -31,12 +29,19 @@ public class JSTestBase extends DimpleTestBase
 	final DimpleAppletTestState state = new DimpleAppletTestState();
 	
 	/**
-	 * Creates a new JSObject for testing, or null if not supported in current configuration.
+	 * Creates a new JSObject for testing
 	 * <p>
 	 * @since 0.07
 	 */
-	@Nullable IJSObject createJSObject()
+	IJSObject createJSObject(Object ... memberNamesAndValues)
 	{
-		return new FakeJSObject();
+		FakeJSObject jsobj = new FakeJSObject();
+		
+		for (int i = 0; i < memberNamesAndValues.length; i+=2)
+		{
+			jsobj.setMember(memberNamesAndValues[i].toString(), memberNamesAndValues[i+1]);
+		}
+		
+		return jsobj;
 	}
 }

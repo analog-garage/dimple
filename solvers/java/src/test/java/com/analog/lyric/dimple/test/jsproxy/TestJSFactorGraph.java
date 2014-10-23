@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.test.jsproxy;
 
+import static com.analog.lyric.util.test.ExceptionTester.*;
 import static org.junit.Assert.*;
 
 import java.lang.reflect.Array;
@@ -72,6 +73,9 @@ public class TestJSFactorGraph extends JSTestBase
 		assertNull(fg.getFactor("frob"));
 		assertNull(fg.getFactor(42));
 		
+		expectThrow(IllegalArgumentException.class, ".*is not a domain", fg, "addVariable", 42, "a");
+		assertNull(fg.getVariable("a"));
+		
 		JSVariable a = fg.addVariable(D6, "a");
 		assertEquals("a", a.getName());
 		assertEquals(a, fg.getVariable("a"));
@@ -91,6 +95,7 @@ public class TestJSFactorGraph extends JSTestBase
 		
 		JSVariable c = fg.addVariable(PairD6,  "c");
 		
+		expectThrow(IllegalArgumentException.class, "Bad factor function argument.*", fg, "addFactor", 42, c, a, b);
 		JSFactor abc = fg.addFactor("Sum", c, a, b);
 		assertEquals(Sum.class, abc.getFactorFunction().getDelegate().getClass());
 		assertFactorInvariants(abc);
@@ -137,6 +142,8 @@ public class TestJSFactorGraph extends JSTestBase
 		assertArrayEquals(inputs, (double[])b.getBelief(), 1e-10);
 		assertFalse(b.hasFixedValue());
 		fg.solve();
+		assertEquals(fg.getDelegate().getBetheEntropy(), fg.getBetheEntropy(), 0.0);
+		assertEquals(fg.getDelegate().getInternalEnergy(), fg.getInternalEnergy(), 0.0);
 		
 		fg.setSolver(new GibbsSolver());
 		fg.setOption(GibbsOptions.numSamples, 100);
@@ -146,6 +153,7 @@ public class TestJSFactorGraph extends JSTestBase
 		fg.solve();
 		assertVariableInvariants(c);
 		assertEquals(100, Array.getLength(c.getAllSamples()));
+		assertEquals(fg.getDelegate().getScore(), fg.getScore(), 0.0);
 		
 		fg = state.createGraph();
 		JSVariable d = fg.addVariable(D6, "d");
@@ -170,9 +178,32 @@ public class TestJSFactorGraph extends JSTestBase
 		c = fg.addVariable(R, "c");
 		d = fg.addVariable(R, "d");
 		e = fg.addVariable(R ,"e");
+
 		JSFactor fa = fg.addFactor(parameterizedFunction("Normal", "mean", 1.0), a);
 		assertFactorInvariants(fa);
+		assertTrue(fa.getFactorFunction().hasParameters());
+		assertEquals(1.0, fa.getFactorFunction().getParameter("mean"));
 		assertSiblings(fa, a);
+
+		JSFactor fb = fg.addFactor("Normal", createJSObject(), b);
+		assertFactorInvariants(fb);
+		assertEquals(0.0, fb.getFactorFunction().getParameter("mean"));
+		
+		JSFactor fab = fg.addFactor("Normal", createJSObject("mean", 2.0), a, b);
+		assertFactorInvariants(fab);
+		assertSiblings(fab, a, b);
+		assertEquals(2.0, fab.getFactorFunction().getParameter("mean"));
+		
+		JSFactor fabcd = fg.addFactor(parameterizedFunction("Normal", "mean", 42).getDelegate(),
+			a, b, c, d.getDelegate());
+		assertFactorInvariants(fabcd);
+		assertSiblings(fabcd, a, b, c, d);
+
+		JSFactor fabcde = fg.addFactor(parameterizedFunction("Normal", "mean", 42).getDelegate(), a, b, c, d, e);
+		assertFactorInvariants(fabcde);
+		assertSiblings(fabcde, a, b, c, d, e);
+		
+		assertSiblings(a, fa, fab, fabcd, fabcde);
 	}
 	
 	private void assertNodeInvariants(JSNode<?> node)

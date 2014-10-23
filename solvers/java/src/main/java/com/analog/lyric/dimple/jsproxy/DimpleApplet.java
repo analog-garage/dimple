@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.jsproxy;
 
 import java.applet.Applet;
+import java.util.Calendar;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.google.common.cache.Cache;
@@ -49,7 +50,9 @@ public class DimpleApplet extends Applet
 		// The standard way to get the version reads the VERSION resource file, but that
 		// does not appear to be accessible in the applet due to sandbox security.
 		String version = getClass().getPackage().getImplementationVersion();
-		return String.format("DimpleApplet (v%s) Copyright 2014 Analog Devices Inc.", version != null ? version : "?");
+		return String.format("DimpleApplet (v%s) Copyright %d Analog Devices Inc.",
+			version != null ? version : "?",
+			Calendar.getInstance().get(Calendar.YEAR));
 	}
 	
 	@Override

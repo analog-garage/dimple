@@ -40,14 +40,11 @@ public class TestJSObjectMap extends JSTestBase
 	public void test()
 	{
 		IJSObject jsobj = createJSObject();
-		if (jsobj != null)
-		{
-			assertInvariants(jsobj);
+		assertInvariants(jsobj);
 
-			jsobj.setMember("name", "Bob");
-			jsobj.setMember("count", 42);
-			assertInvariants(jsobj, "name", "count");
-		}
+		jsobj.setMember("name", "Bob");
+		jsobj.setMember("count", 42);
+		assertInvariants(jsobj, "name", "count");
 	}
 	
 	@SuppressWarnings("null")
