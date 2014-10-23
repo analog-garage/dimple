@@ -34,7 +34,6 @@ import com.analog.lyric.dimple.jsproxy.JSFactorFunction;
 import com.analog.lyric.dimple.jsproxy.JSFactorGraph;
 import com.analog.lyric.dimple.jsproxy.JSNode;
 import com.analog.lyric.dimple.jsproxy.JSRealDomain;
-import com.analog.lyric.dimple.jsproxy.JSRealJointDomain;
 import com.analog.lyric.dimple.jsproxy.JSTableFactorFunction;
 import com.analog.lyric.dimple.jsproxy.JSVariable;
 import com.analog.lyric.dimple.model.core.Node;
@@ -66,7 +65,7 @@ public class TestJSFactorGraph extends JSTestBase
 		JSDiscreteDomain D6 = state.domains.range(1,6);
 		JSDiscreteDomain PairD6 = state.domains.range(2,12);
 		JSRealDomain R = state.domains.real();
-		JSRealJointDomain R2 = state.domains.realN(2);
+//		JSRealJointDomain R2 = state.domains.realN(2);
 		
 		assertNull(fg.getVariable("a"));
 		assertNull(fg.getVariable(42));

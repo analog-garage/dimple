@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.jsproxy;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 
 /**
@@ -105,5 +106,5 @@ public abstract class JSProxyObject<Delegate>
 	 * The applet instance under which the proxy was created.
 	 * @since 0.07
 	 */
-	public abstract DimpleApplet getApplet();
+	public abstract @Nullable DimpleApplet getApplet();
 }

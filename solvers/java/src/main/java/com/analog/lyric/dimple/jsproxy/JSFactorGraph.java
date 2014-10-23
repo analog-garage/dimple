@@ -22,7 +22,6 @@ import netscape.javascript.JSObject;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
@@ -68,7 +67,7 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 	 * For test purposes Use {@link DimpleApplet#createGraph()} instead.
 	 */
 	@Internal
-	public JSFactorGraph(DimpleApplet applet, FactorGraph graph)
+	public JSFactorGraph(@Nullable DimpleApplet applet, FactorGraph graph)
 	{
 		super(null, graph);
 		_applet = applet;
@@ -80,9 +79,8 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 	 * JSProxyObject methods
 	 */
 	
-	@SuppressWarnings("null")
 	@Override
-	public DimpleApplet getApplet()
+	public @Nullable DimpleApplet getApplet()
 	{
 		return _applet;
 	}
@@ -394,8 +392,7 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 	{
 		DimpleApplet applet = _applet;
 		
-		return applet != null ? applet.functions :
-			new JSFactorFunctionFactory(DimpleEnvironment.active().factorFunctions(), applet);
+		return applet != null ? applet.functions : new JSFactorFunctionFactory();
 	}
 	
 	@SuppressWarnings("null")

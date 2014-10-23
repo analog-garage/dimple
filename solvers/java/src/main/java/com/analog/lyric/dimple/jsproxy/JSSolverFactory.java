@@ -21,7 +21,7 @@ import com.analog.lyric.util.misc.Internal;
 	
 	
 /**
- * This provides the solvers that are available for use with {@link JSFactorGraph#setSolver(JSSolver)}.
+ * This provides the solvers that are available for use with {@link JSFactorGraph#setSolver(Object)}.
  * <p>
  * @since 0.07
  * @author Christopher Barber

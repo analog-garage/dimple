@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.jsproxy;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.util.misc.Internal;
 
@@ -34,7 +36,7 @@ public class JSEnvironment extends JSOptionHolder<DimpleEnvironment>
 	 * State
 	 */
 	
-	private final DimpleApplet _applet;
+	private final @Nullable DimpleApplet _applet;
 	
 	/*--------------
 	 * Construction
@@ -60,7 +62,7 @@ public class JSEnvironment extends JSOptionHolder<DimpleEnvironment>
 	 */
 	
 	@Override
-	public DimpleApplet getApplet()
+	public @Nullable DimpleApplet getApplet()
 	{
 		return _applet;
 	}

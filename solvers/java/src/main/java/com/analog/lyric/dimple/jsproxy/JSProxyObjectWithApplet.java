@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.jsproxy;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * Extension of JSProxyObject with direct storage for applet.
  * @since 0.07
@@ -23,13 +25,13 @@ package com.analog.lyric.dimple.jsproxy;
  */
 class JSProxyObjectWithApplet<Delegate> extends JSProxyObject<Delegate>
 {
-	protected final DimpleApplet _applet;
+	protected final @Nullable DimpleApplet _applet;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	JSProxyObjectWithApplet(DimpleApplet applet, Delegate delegate)
+	JSProxyObjectWithApplet(@Nullable DimpleApplet applet, Delegate delegate)
 	{
 		super(delegate);
 		_applet = applet;
@@ -40,7 +42,7 @@ class JSProxyObjectWithApplet<Delegate> extends JSProxyObject<Delegate>
 	 */
 	
 	@Override
-	public DimpleApplet getApplet()
+	public @Nullable DimpleApplet getApplet()
 	{
 		return _applet;
 	}

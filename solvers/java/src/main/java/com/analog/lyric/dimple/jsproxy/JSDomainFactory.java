@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.jsproxy;
 
 import netscape.javascript.JSException;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
@@ -34,7 +36,7 @@ import com.google.common.cache.CacheBuilder;
  */
 public class JSDomainFactory
 {
-	final DimpleApplet _applet;
+	final @Nullable DimpleApplet _applet;
 	private final Cache<Object, JSProxyObject<?>> _proxyCache;
 	
 	/*--------------

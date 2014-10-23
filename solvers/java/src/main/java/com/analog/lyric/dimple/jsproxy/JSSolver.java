@@ -38,7 +38,7 @@ public class JSSolver extends JSProxyObjectWithApplet<IFactorGraphFactory<?>>
 	 * Construction
 	 */
 	
-	JSSolver(DimpleApplet applet, IFactorGraphFactory<?> solver)
+	JSSolver(@Nullable DimpleApplet applet, IFactorGraphFactory<?> solver)
 	{
 		super(applet, solver);
 	}

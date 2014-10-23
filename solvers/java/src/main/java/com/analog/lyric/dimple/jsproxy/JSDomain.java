@@ -55,7 +55,7 @@ public abstract class JSDomain<D extends Domain> extends JSProxyObject<D>
 	 */
 	
 	@Override
-	public DimpleApplet getApplet()
+	public @Nullable DimpleApplet getApplet()
 	{
 		return _factory._applet;
 	}

@@ -45,7 +45,9 @@ public class JSFactor extends JSNode<Factor>
 	 */
 	public JSFactorFunction getFactorFunction()
 	{
-		return getApplet().functions.wrap(_delegate.getFactorFunction());
+		DimpleApplet applet = getApplet();
+		JSFactorFunctionFactory functions = applet != null ? applet.functions : new JSFactorFunctionFactory();
+		return functions.wrap(_delegate.getFactorFunction());
 	}
 	
 	@Override

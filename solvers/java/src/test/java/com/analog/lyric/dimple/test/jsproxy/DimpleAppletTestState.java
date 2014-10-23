@@ -22,7 +22,6 @@ import java.awt.HeadlessException;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.jsproxy.DimpleApplet;
 import com.analog.lyric.dimple.jsproxy.JSDomainFactory;
 import com.analog.lyric.dimple.jsproxy.JSEnvironment;
@@ -74,7 +73,7 @@ class DimpleAppletTestState
 		catch (HeadlessException ex)
 		{
 			_domains = new JSDomainFactory();
-			_functions = new JSFactorFunctionFactory(DimpleEnvironment.active().factorFunctions(), null);
+			_functions = new JSFactorFunctionFactory();
 			_solvers = new JSSolverFactory(null);
 		}
 		

@@ -53,7 +53,7 @@ public class JSFactorFunction extends JSProxyObject<FactorFunction>
 	 */
 	
 	@Override
-	public DimpleApplet getApplet()
+	public @Nullable DimpleApplet getApplet()
 	{
 		return _factory._applet;
 	}

@@ -20,6 +20,9 @@ import java.util.Map;
 
 import netscape.javascript.JSObject;
 
+import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionRegistry;
 import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
@@ -42,10 +45,15 @@ public class JSFactorFunctionFactory extends JSProxyObjectWithApplet<FactorFunct
 		this(applet.getEnvironment().getDelegate().factorFunctions(), applet);
 	}
 	
-	@Internal
-	public JSFactorFunctionFactory(FactorFunctionRegistry registry, DimpleApplet applet)
+	private JSFactorFunctionFactory(FactorFunctionRegistry registry, @Nullable DimpleApplet applet)
 	{
 		super(applet, registry);
+	}
+	
+	@Internal
+	public JSFactorFunctionFactory()
+	{
+		this(DimpleEnvironment.active().factorFunctions(), null);
 	}
 	
 	/*---------------------------------

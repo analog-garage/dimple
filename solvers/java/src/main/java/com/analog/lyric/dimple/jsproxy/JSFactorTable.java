@@ -44,12 +44,12 @@ public class JSFactorTable extends JSProxyObjectWithApplet<IFactorTable>
 	 * @param function
 	 * @since 0.07
 	 */
-	JSFactorTable(DimpleApplet applet, IFactorTable factorTable)
+	JSFactorTable(@Nullable DimpleApplet applet, IFactorTable factorTable)
 	{
 		super(applet, factorTable);
 	}
 
-	JSFactorTable(DimpleApplet applet, Object[] domainsOrVariables)
+	JSFactorTable(@Nullable DimpleApplet applet, Object[] domainsOrVariables)
 	{
 		super(applet, createTable(domainsOrVariables));
 	}

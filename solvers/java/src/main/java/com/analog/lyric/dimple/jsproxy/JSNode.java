@@ -57,7 +57,7 @@ public abstract class JSNode<Delegate extends Node> extends JSOptionHolder<Deleg
 	 */
 	
 	@Override
-	public DimpleApplet getApplet()
+	public @Nullable DimpleApplet getApplet()
 	{
 		return requireNonNull(_parent).getApplet();
 	}
