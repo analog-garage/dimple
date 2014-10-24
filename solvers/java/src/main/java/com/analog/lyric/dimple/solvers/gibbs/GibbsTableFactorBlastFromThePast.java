@@ -29,6 +29,9 @@ import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SBlastFromThePast;
 
+/**
+ * @since 0.07
+ */
 public class GibbsTableFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs
 {
     protected int _numPorts;

@@ -23,7 +23,9 @@ import com.analog.lyric.dimple.model.domains.FiniteFieldDomain;
 import com.analog.lyric.dimple.model.variables.Variable;
 
 
-/*
+/**
+ * Solver variable for FiniteField variable under Sum-Product solver.
+ * <p>
  * This class provides an implementation for FiniteField variables (with a characteristic of 2).
  * It does not modify
  * the update algorithm but provides dlog and power tables for the FiniteField function classes.
@@ -32,6 +34,8 @@ import com.analog.lyric.dimple.model.variables.Variable;
  * 
  * There is a unique pair of lookup tables for each primitive polynomial.  As a result we cache
  * the lookup tables for each unique primitive polynomial.
+ * 
+ * @since 0.07
  */
 @SuppressWarnings("deprecation") // TODO remove when SDiscreteVariable removed
 public class SumProductFiniteFieldVariable extends SDiscreteVariable
@@ -69,8 +73,10 @@ public class SumProductFiniteFieldVariable extends SDiscreteVariable
 		return _numBits;
 	}
 	
-	/*
+	/**
 	 * The LookupTables class simply contains the polynomial and the dlog and power tables.
+	 * 
+	 * @since 0.07
 	 */
 	public class LookupTables
 	{

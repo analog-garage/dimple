@@ -47,7 +47,11 @@ import com.analog.lyric.dimple.solvers.optimizedupdate.ISTableFactorSupportingOp
 import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateApproach;
 import com.analog.lyric.util.misc.Internal;
 
-
+/**
+ * Solver representation of table factor under Sum-Product solver.
+ * 
+ * @since 0.07
+ */
 public class SumProductTableFactor extends STableFactorDoubleArray
 	implements IKBestFactor, ISTableFactorSupportingOptimizedUpdate
 {

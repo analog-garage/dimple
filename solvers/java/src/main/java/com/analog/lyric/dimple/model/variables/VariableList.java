@@ -31,6 +31,10 @@ public class VariableList extends MapList<Variable> implements IVariableMapList
 		super(initialCapacity);
 	}
 
+	/**
+	 * Construct from an array.
+	 * @since 0.07
+	 */
 	public VariableList(Variable [] vars)
 	{
 		super(vars.length);
@@ -38,6 +42,10 @@ public class VariableList extends MapList<Variable> implements IVariableMapList
 			add(v);
 	}
 
+	/**
+	 * Construct from an iterable.
+	 * @since 0.07
+	 */
 	public VariableList(Iterable<Variable> vars)
 	{
 		super(vars);

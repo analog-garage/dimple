@@ -28,6 +28,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
 import com.analog.lyric.dimple.solvers.core.kbest.IKBestFactor;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorEngine;
@@ -41,6 +42,11 @@ import com.analog.lyric.dimple.solvers.optimizedupdate.ISTableFactorSupportingOp
 import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateApproach;
 import com.analog.lyric.util.misc.Internal;
 
+/**
+ * Solver table factor under Min-Sum solver.
+ * 
+ * @since 0.07
+ */
 public class MinSumTableFactor extends STableFactorDoubleArray
 	implements IKBestFactor, ISTableFactorSupportingOptimizedUpdate
 {
@@ -75,7 +81,7 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 	{
 		super.initialize();
 		configureDampingFromOptions();
-		updateK(getOptionOrDefault(MinSumOptions.maxMessageSize));
+		updateK(getOptionOrDefault(BPOptions.maxMessageSize));
 	}
 
 	void setupTableFactorEngine()

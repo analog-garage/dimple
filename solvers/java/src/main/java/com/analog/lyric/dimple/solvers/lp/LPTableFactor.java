@@ -22,6 +22,8 @@ import java.util.SortedSet;
 
 import net.jcip.annotations.NotThreadSafe;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableBase;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
@@ -31,10 +33,15 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.SortedSetMultimap;
 import com.google.common.collect.TreeMultimap;
 
+/**
+ * Solver table factor under LP solver.
+ * 
+ * @since 0.07
+ * @author Christopher Barber
+ */
 @NotThreadSafe
 public class LPTableFactor extends STableFactorBase
 {

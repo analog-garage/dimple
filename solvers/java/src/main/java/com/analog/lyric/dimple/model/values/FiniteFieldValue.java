@@ -36,6 +36,9 @@ public class FiniteFieldValue extends DiscreteValue
 		_value = value;
 	}
 	
+	/**
+	 * @since 0.07
+	 */
 	public FiniteFieldValue(FiniteFieldDomain domain)
 	{
 		_value = new FiniteFieldNumber(0, domain);

@@ -21,11 +21,12 @@ import static java.util.Objects.*;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import org.eclipse.jdt.annotation.Nullable;
 
 public abstract class VariableStreamBase implements IVariableStreamSlice
 {
@@ -130,6 +131,10 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 		}
 	}
 	
+	/**
+	 * The variable domain of the stream.
+	 * @since 0.07
+	 */
 	public Domain getDomain()
 	{
 		return _domain;

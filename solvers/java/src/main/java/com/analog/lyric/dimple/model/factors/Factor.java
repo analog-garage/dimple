@@ -569,6 +569,11 @@ public class Factor extends FactorBase implements Cloneable
 		}
 	}
 	
+	/**
+	 * Makes factor undirected.
+	 * 
+	 * @since 0.07
+	 */
 	public void setUndirected()
 	{
 		_directedTo = null;

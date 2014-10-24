@@ -21,6 +21,10 @@ import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.variables.Complex;
 import com.analog.lyric.dimple.model.variables.Variable;
 
+/**
+ * Variable stream for complex variables.
+ * @since 0.07
+ */
 public class ComplexStream extends VariableStreamBase
 {
 	public ComplexStream()

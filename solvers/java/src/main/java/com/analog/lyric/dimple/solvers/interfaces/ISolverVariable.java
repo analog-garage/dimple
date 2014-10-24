@@ -35,6 +35,8 @@ public interface ISolverVariable extends ISolverNode
 	 * getModelObject().getDomain();
 	 * </pre>
 	 * </blockquote>
+	 * 
+	 * @since 0.07
 	 */
 	public Domain getDomain();
 	

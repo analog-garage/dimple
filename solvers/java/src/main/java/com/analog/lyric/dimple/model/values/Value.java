@@ -155,6 +155,7 @@ public abstract class Value implements Cloneable, Serializable
 	
 	/**
 	 * Creates a {@link FiniteFieldValue} instance for given {@code domain}.
+	 * @since 0.07
 	 */
 	public static FiniteFieldValue create(FiniteFieldDomain domain)
 	{
@@ -306,6 +307,7 @@ public abstract class Value implements Cloneable, Serializable
 	
 	/**
 	 * Gets the current value as a {@code FiniteFieldNumber}
+	 * @since 0.07
 	 */
 	public FiniteFieldNumber getFiniteField()
 	{
@@ -314,6 +316,7 @@ public abstract class Value implements Cloneable, Serializable
 	
 	/**
 	 * Sets the current value from a {@code FiniteFieldNumber}
+	 * @since 0.07
 	 */
 	public void setFiniteField(FiniteFieldNumber value)
 	{
@@ -368,6 +371,7 @@ public abstract class Value implements Cloneable, Serializable
 	/**
 	 * Sets contents from a {@code boolean}
 	 * Subclasses should override this to set a boolean in the appropriate form
+	 * @since 0.07
 	 */
 	public void setBoolean(boolean value)
 	{
@@ -453,6 +457,7 @@ public abstract class Value implements Cloneable, Serializable
 	 * @param domains specifies the domains of the objects. This must have between 1 and {@code objs.length}
 	 * elements. If less than the maximum, the last domain will be applied to all remaining objects.
 	 * @return array of {@code Value} instances each with the corresponding domain.
+	 * @since 0.07
 	 */
 	public static Value[] createFromDomains(Domain... domains)
 	{
@@ -473,6 +478,7 @@ public abstract class Value implements Cloneable, Serializable
 	 * @param domains specifies the domains of the objects. This must have between 1 and {@code objs.length}
 	 * elements. If less than the maximum, the last domain will be applied to all remaining objects.
 	 * @return array of {@code Value} instances each with the corresponding domain.
+	 * @since 0.07
 	 */
 	public static Value[] createFromDomains(DomainList<?> domains)
 	{

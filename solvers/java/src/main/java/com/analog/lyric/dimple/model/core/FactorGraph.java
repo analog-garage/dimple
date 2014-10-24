@@ -167,16 +167,25 @@ public class FactorGraph extends FactorBase
 	{
 		this(null, name);
 	}
+	/**
+	 * @since 0.07
+	 */
 	public FactorGraph(@Nullable Variable ... boundaryVariables)
 	{
 		this(boundaryVariables, "");
 	}
 
+	/**
+	 * @since 0.07
+	 */
 	public FactorGraph(@Nullable Variable[] boundaryVariables, @Nullable String name)
 	{
 		this(boundaryVariables, name, Model.getInstance().getDefaultGraphFactory());
 	}
 
+	/**
+	 * @since 0.07
+	 */
 	public FactorGraph(
 		@Nullable Variable[] boundaryVariables,
 		@Nullable String name,
@@ -251,6 +260,7 @@ public class FactorGraph extends FactorBase
 	 * {@link #setEventAndOptionParent(IDimpleEventSource)}.
 	 * <p>
 	 * @see #setParentGraph(FactorGraph)
+	 * @since 0.07
 	 */
 	@Override
 	public @Nullable IDimpleEventSource getOptionParent()
@@ -1061,6 +1071,7 @@ public class FactorGraph extends FactorBase
 
 	/*
 	 * Splitting a variable creates a copy and an equals node between the two.
+	 * @since 0.07
 	 */
 	public Variable split(Variable variable)
 	{
@@ -1071,6 +1082,7 @@ public class FactorGraph extends FactorBase
 	 * Splitting a variable creates a copy and an equals node between the two.
 	 * The Factor array specifies which factors should connect to the new variable.
 	 * All factors left out of hte array remain pointing to the original variable.
+	 * @since 0.07
 	 */
 	public Variable split(Variable variable,Factor ... factorsToBeMovedToCopy)
 	{

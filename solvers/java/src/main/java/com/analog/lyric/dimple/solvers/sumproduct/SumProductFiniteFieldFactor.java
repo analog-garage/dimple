@@ -26,6 +26,11 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 *   limitations under the License.
 ********************************************************************************/
 
+/**
+ * Solver variable for finite field factors under Sum-Product solver
+ * 
+ * @since 0.07
+ */
 public abstract class SumProductFiniteFieldFactor extends SFactorBase
 {
 

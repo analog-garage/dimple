@@ -718,6 +718,8 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * @param inputIndex must be in range [0, {@link #getInputCardinality()}-1].
 	 * @param values must have length equal to {@link #size()} and must be fully populated (i.e. no null entries)
 	 *   with {@link Value} objects with domain compatible with corresponding indexer domains.
+	 * 
+	 * @since 0.07
 	 */
 	public void inputIndexToValues(int inputIndex, Value[] values)
 	{
@@ -816,6 +818,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * @param jointIndex a unique joint table index in the range [0,{@link #getCardinality()}).
 	 * @param values must have length equal to {@link #size()} and must be fully populated (i.e. no null entries)
 	 *   with {@link Value} objects with domain compatible with corresponding indexer domains.
+	 * @since 0.07
 	 */
 	public Value[] jointIndexToValues(int jointIndex, Value[] values)
 	{
@@ -836,6 +839,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * Computes domain values corresponding to given joint index.
 	 * <p>
 	 * @see #jointIndexToValues(int, Value[])
+	 * @since 0.07
 	 */
 	public final Value[] jointIndexToValues(int jointIndex)
 	{
@@ -958,6 +962,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * @param outputIndex must be in range [0, {@link #getOutputCardinality()}-1].
 	 * @param values must have length equal to {@link #size()} and must be fully populated (i.e. no null entries)
 	 *   with {@link Value} objects with domain compatible with corresponding indexer domains.
+	 * @since 0.07
 	 */
 	public void outputIndexToValues(int outputIndex, Value[] values)
 	{
@@ -988,6 +993,9 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	
 	public abstract <T> T[] undirectedJointIndexToElements(int jointIndex, @Nullable T[] elements);
 	
+	/**
+	 * @since 0.07
+	 */
 	public abstract Value[] undirectedJointIndexToValues(int jointIndex, Value[] elements);
 	
 	public final Object[] undirectedJointIndexToElements(int jointIndex)
@@ -995,6 +1003,9 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		return undirectedJointIndexToElements(jointIndex, null);
 	}
 
+	/**
+	 * @since 0.07
+	 */
 	public final Value[] undirectedJointIndexToValues(int jointIndex)
 	{
 		return undirectedJointIndexToValues(jointIndex, Value.createFromDomains(_domains));

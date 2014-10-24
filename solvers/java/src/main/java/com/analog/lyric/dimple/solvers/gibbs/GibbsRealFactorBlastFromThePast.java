@@ -32,6 +32,11 @@ import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SBlastFromThePast;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 
+/**
+ * Real "blast from the past" factor for Gibbs solver.
+ * 
+ * @since 0.07
+ */
 public class GibbsRealFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs
 {
 	private Value [] _inputMsgs;

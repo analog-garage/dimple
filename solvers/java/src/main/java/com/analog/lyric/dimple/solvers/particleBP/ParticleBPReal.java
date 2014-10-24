@@ -42,6 +42,11 @@ import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.OptionDoubleList;
 import com.analog.lyric.options.OptionValidationException;
 
+/**
+ * Solver variable for Real variables under Particle BP solver.
+ * 
+ * @since 0.07
+ */
 public class ParticleBPReal extends SRealVariableBase
 {
 	protected Double[] _particleValues;

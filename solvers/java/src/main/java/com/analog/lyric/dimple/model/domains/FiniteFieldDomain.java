@@ -39,6 +39,10 @@ public class FiniteFieldDomain extends TypedDiscreteDomain<FiniteFieldNumber>
 	 * Construction
 	 */
 	
+	/**
+	 * Create finite field domain with specified primitive polynomial.
+	 * @since 0.07
+	 */
 	public static FiniteFieldDomain create(int primitivePolynomial)
 	{
 		return new FiniteFieldDomain(primitivePolynomial);
