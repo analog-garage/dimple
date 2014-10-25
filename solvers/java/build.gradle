@@ -267,7 +267,6 @@ ext {
 	jdiffPrevApiFilename = jdiffPrevApiname + '.xml'
 	jdiffPrevApiFile = file(jdiffApiDirname + '/' + jdiffPrevApiFilename)
 	jdiffChangesFile = file(jdiffApiDirname + '/changes.html')
-	print jdiffApiFile
 }
 
 // This task generates the file build/jdiff/Dimple_<version>.xml containing
