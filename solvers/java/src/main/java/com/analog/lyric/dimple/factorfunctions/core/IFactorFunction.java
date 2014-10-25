@@ -22,6 +22,11 @@ import com.analog.lyric.dimple.model.values.Value;
 // I am not sure whether we would want to make this an actual interface of FactorFunction or just modify
 // the FactorFunction class accordingly.
 
+/**
+ * Abstract interface for factor functions in Dimple.
+ * 
+ * @since 0.07
+ */
 public interface IFactorFunction
 {
 	public abstract String getName();
@@ -33,6 +38,7 @@ public interface IFactorFunction
 	/**
 	 * @return true if function is deterministic ( i.e. {@link #eval} always returns either 0 or 1 for
 	 * all arguments and {@link #evalEnergy} returns either zero or infinity) and directed.
+	 * @since 0.07
 	 */
 	public abstract boolean isDeterministicDirected();
 	
@@ -49,6 +55,7 @@ public interface IFactorFunction
 	
 	/**
 	 * Indicates whether function implements {@link IParametricFactorFunction} interface.
+	 * @since 0.07
 	 */
 	public abstract boolean isParametric();
 
@@ -131,6 +138,7 @@ public interface IFactorFunction
 	 * Evaluates the possibly unnormalized probability density of the arguments.
 	 * <p>
 	 * This must be equivalent to exp(-{@link #evalEnergy}({@code values})).
+	 * @since 0.07
 	 */
 	public abstract double eval(Value[] values);
 	
@@ -138,11 +146,13 @@ public interface IFactorFunction
 	 * Evaluates the possibly unnormalized negative log probability density of the arguments.
 	 * <p>
 	 * This must be equivalent to -log({@link #eval}({@code values})).
+	 * @since 0.07
 	 */
 	public abstract double evalEnergy(Value[] values);
 
 	/**
 	 *  For deterministic-directed factor functions, set the value of the output variables given the input variables.
+	 *  @since 0.07
 	 */
 	public void evalDeterministic(Value[] arguments);
 	

@@ -91,6 +91,11 @@ import com.analog.lyric.dimple.solvers.sumproduct.sampledfactor.SampledFactor;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.IOptionKey;
 
+/**
+ * Solver representation of factor graph under Sum-Product solver.
+ * 
+ * @since 0.07
+ */
 public class SumProductSolverGraph extends SFactorGraphBase
 {
 	private double _damping = 0;
@@ -542,8 +547,7 @@ public class SumProductSolverGraph extends SFactorGraphBase
 		pe.run(numRestarts, numSteps);
 	}
 	
-	
-	public class GradientDescent extends ParameterEstimator
+	class GradientDescent extends ParameterEstimator
 	{
 		private double _scaleFactor;
 

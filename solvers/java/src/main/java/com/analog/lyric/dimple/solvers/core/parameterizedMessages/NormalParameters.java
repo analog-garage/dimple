@@ -44,6 +44,19 @@ public class NormalParameters extends ParameterizedMessageBase
 		this(other._mean, other._precision);
 	}
 
+	/**
+	 * Construct with specified parameter values.
+	 * <p>
+	 * The following parameter keys are supported:
+	 * <ul>
+	 * <li>mean, mu (default is zero)
+	 * <li>precision (default is one)
+	 * <li>variance (default is one)
+	 * <li>sigma, std (default is one)
+	 * </ul>
+	 * @param parameters
+	 * @since 0.07
+	 */
 	public NormalParameters(Map<String,Object> parameters)
 	{
 		_mean = ((Number)FactorFunction.getFirstOrDefault(parameters, 0.0, "mean", "mu")).doubleValue();

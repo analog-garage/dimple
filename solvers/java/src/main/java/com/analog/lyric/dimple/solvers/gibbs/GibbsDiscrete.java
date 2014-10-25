@@ -47,7 +47,11 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.google.common.primitives.Doubles;
 
 
-
+/**
+ * Solver variable for Discrete variables in Gibbs solver.
+ * 
+ * @since 0.07
+ */
 public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVariableGibbs, IDiscreteSamplerClient
 {
 	/*-----------
@@ -597,7 +601,8 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
     	return _bestSampleIndex;
     }
 
-    public final Object[] getAllSamples()
+    @Override
+	public final Object[] getAllSamples()
     {
     	final IntArrayList sampleIndexArray = _sampleIndexArray;
     	

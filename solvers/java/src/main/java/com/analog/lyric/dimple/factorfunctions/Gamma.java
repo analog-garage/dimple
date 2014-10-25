@@ -67,6 +67,15 @@ public class Gamma extends FactorFunction implements IParametricFactorFunction
     	if (_beta <= 0) throw new DimpleException("Non-positive beta parameter. This must be a positive value.");
 	}
 	
+	/**
+	 * Construct from specified parameters
+	 * @param parameters the following values are supported
+	 * <ul>
+	 * <li>alpha (default 1.0)
+	 * <li>beta (default 1.0)
+	 * </ul>
+	 * @since 0.07
+	 */
 	public Gamma(Map<String,Object> parameters)
 	{
 		this((double)getOrDefault(parameters, "alpha", 1.0), (double)getOrDefault(parameters, "beta", 1.0));

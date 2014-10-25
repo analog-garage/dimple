@@ -71,6 +71,7 @@ import com.google.common.primitives.Doubles;
 
 /**
  * RealJoint-valued solver variable for Gibbs solver.
+ * @since 0.07
  */
 public class GibbsRealJoint extends SRealJointVariableBase
 	implements ISolverVariableGibbs, ISolverRealVariableGibbs, IRealSamplerClient
@@ -807,6 +808,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		return _bestSampleValue;
 	}
 
+	@Override
 	public final double[][] getAllSamples()
 	{
 		final ArrayList<double[]> sampleArray = _sampleArray;

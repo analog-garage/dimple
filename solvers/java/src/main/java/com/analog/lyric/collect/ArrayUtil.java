@@ -40,6 +40,7 @@ public abstract class ArrayUtil
 	
 	/**
 	 * Canonical empty Class array.
+	 * @since 0.07
 	 */
 	public static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
 	

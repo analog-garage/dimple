@@ -266,6 +266,7 @@ ext {
 	jdiffPrevApiname = 'Dimple_prev'
 	jdiffPrevApiFilename = jdiffPrevApiname + '.xml'
 	jdiffPrevApiFile = file(jdiffApiDirname + '/' + jdiffPrevApiFilename)
+	jdiffChangesFile = file(jdiffApiDirname + '/changes.html')
 }
 
 // This task generates the file build/jdiff/Dimple_<version>.xml containing
@@ -308,7 +309,7 @@ task jdiff(dependsOn: 'jdiffAPI', type: Exec) {
 	 description 'Generates comparison between this Java API and previous one'
 
 	inputs.files(jdiffPrevApiFile, jdiffApiFile)
-	outputs.files(jdiffApiDirname + '/' + 'changes.html')
+	outputs.files(jdiffChangesFile)
 
 	commandLine 'javadoc', 
 	 	'-docletpath', jdiffDocletPath, 
@@ -320,6 +321,11 @@ task jdiff(dependsOn: 'jdiffAPI', type: Exec) {
 		'-newapidir', jdiffApiDirname,
 		'-d', jdiffApiDirname,
 		'com.analog.lyric'
+}
+
+task jdiffClean(type: Delete) {
+	description 'Cleans up jdiff API files for current release so that you can rerun jdiff'
+	delete jdiffApiFile, jdiffChangesFile
 }
 
 //

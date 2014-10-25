@@ -42,8 +42,11 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Internal;
 import com.google.common.primitives.Ints;
 
-
-
+/**
+ * Base class for model variables in Dimple
+ * 
+ * @since 0.07
+ */
 public abstract class Variable extends Node implements Cloneable, IDataEventSource
 {
 	/*-----------
@@ -365,7 +368,16 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		}
 	}
 	
+	/**
+	 * Returns fixed value of variable or null if not fixed.
+	 * @since 0.07
+	 */
 	public abstract @Nullable Object getFixedValueAsObject();
+
+	/**
+	 * Sets variable to a fixed value.
+	 * @since 0.07
+	 */
 	public abstract void setFixedValueFromObject(@Nullable Object value);
 	
 	// REFACTOR: this is not a good name - has different semantics for discrete and non-discrete

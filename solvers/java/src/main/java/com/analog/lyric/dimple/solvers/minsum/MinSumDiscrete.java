@@ -31,7 +31,11 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergy
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
-
+/**
+ * Solver variable for Discrete variables under Min-Sum solver.
+ * 
+ * @since 0.07
+ */
 public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 {
 	/*

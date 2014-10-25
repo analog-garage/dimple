@@ -35,7 +35,11 @@ import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
-
+/**
+ * Solver table factor for Gibbs solver.
+ * 
+ * @since 0.07
+ */
 public class GibbsTableFactor extends STableFactorBase implements ISolverFactorGibbs
 {
 	/*-------

@@ -69,6 +69,16 @@ public class Beta extends FactorFunction implements IParametricFactorFunction
 			throw new DimpleException("Negative beta parameter. This must be a non-negative value.");
 	}
 
+	/**
+	 * Construct with specified parameters.
+	 * <p>
+	 * @param parameters the following values are supported:
+	 * <ul>
+	 * <li>alpha (default 1.0)
+	 * <li>beta (default 1.0)
+	 * </ul>
+	 * @since 0.07
+	 */
 	public Beta(Map<String, Object> parameters)
 	{
 		this((double) getOrDefault(parameters, "alpha", 1.0), (double) getOrDefault(parameters, "beta", 1.0));

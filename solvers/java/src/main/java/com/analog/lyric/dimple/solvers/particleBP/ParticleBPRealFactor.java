@@ -19,6 +19,8 @@ package com.analog.lyric.dimple.solvers.particleBP;
 
 import static java.util.Objects.*;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
@@ -28,9 +30,12 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import org.eclipse.jdt.annotation.Nullable;
 
-
+/**
+ * Real solver factor under Particle BP solver.
+ * 
+ * @since 0.07
+ */
 public class ParticleBPRealFactor extends SFactorBase
 {
 	protected Factor _realFactor;

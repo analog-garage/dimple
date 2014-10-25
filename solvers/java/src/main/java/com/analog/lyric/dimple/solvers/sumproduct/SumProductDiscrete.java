@@ -19,6 +19,8 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 import java.util.Arrays;
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -31,8 +33,11 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeight
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
-import org.eclipse.jdt.annotation.Nullable;
-
+/**
+ * Solver variable for Discrete variables under Sum-Product solver.
+ * 
+ * @since 0.07
+ */
 public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 {
 	/*

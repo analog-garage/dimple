@@ -19,6 +19,8 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 import java.util.Arrays;
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.MultivariateNormal;
 import com.analog.lyric.dimple.factorfunctions.Normal;
@@ -28,8 +30,12 @@ import com.analog.lyric.dimple.solvers.core.SRealJointVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import org.eclipse.jdt.annotation.Nullable;
 
+/**
+ * Solver variable for RealJoint variables under Sum-Product solver.
+ * 
+ * @since 0.07
+ */
 public class SumProductRealJoint extends SRealJointVariableBase
 {
 

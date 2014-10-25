@@ -40,6 +40,10 @@ public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable,
 	@Override
 	public double getPotential();
 
+	/**
+	 * Returns all saved samples in an array of the appropriate type.
+	 * @since 0.07
+	 */
 	public Object getAllSamples();
 	
 	/**

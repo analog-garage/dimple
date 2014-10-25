@@ -33,6 +33,12 @@ public class RealStream extends VariableStreamBase
 		super(domain);
 	}
 	
+	/**
+	 * Construct with bounded domain.
+	 * @param lower is the lower bound of the stream's domain
+	 * @param upper is the upper bound of the stream's domain
+	 * @since 0.07
+	 */
 	public RealStream(double lower, double upper)
 	{
 		this(RealDomain.create(lower,upper));

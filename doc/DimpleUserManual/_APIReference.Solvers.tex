@@ -208,7 +208,7 @@ There are a number of options that are applicable to multiple solvers that are b
 {integer}
 {1}
 {graph}
-Controls how many iterations to perform when running solve(). This is not applicable to all solvers. It is currently only used by the SumProduct, MinSum and ParticleBP solvers.
+{Controls how many iterations to perform when running solve(). This is not applicable to all solvers. It is currently only used by the SumProduct, MinSum and ParticleBP solvers. It only makes sense to set this to a value greater than one if the graph is not singly connected or "loopy", that is when there is more than one unique path between two or more nodes in the graph. You can tell if a graph is loopy using the FactorGraph method isForest(), which will be false if the graph is not singly connected.}
 
 \para{BPOptions.damping}
 
@@ -216,7 +216,7 @@ Controls how many iterations to perform when running solve(). This is not applic
 {double}
 {0.0}
 {variables and factors}
-{The SumProduct solver supports damping, in which messages are damped by replacing each message by a weighted sum of the computed message value and the previous value of that message (when the corresponding edge was most-recently updated). In the current version of Dimple, damping is supported only in discrete variables and factors that connect only to discrete variables\footnote{Support for damping for continuous variables may be added in a future release.}.
+{The belief propogation based solvers supports damping, in which messages are damped by replacing each message by a weighted sum of the computed message value and the previous value of that message (when the corresponding edge was most-recently updated). In the current version of Dimple, damping is supported only in discrete variables and factors that connect only to discrete variables\footnote{Support for damping for continuous variables may be added in a future release.}.
 \linebreak
 \linebreak
 The damping parameter specifies a weighting value in the range 0 through 1:
@@ -237,7 +237,7 @@ This option applies the same damping parameter to all edges connected to the var
 {\ifmatlab double vector\fi \ifjava OptionDoubleList\fi}
 {\textit{empty}}
 {variables and factors}
-{This is the similar to the \nameref{option:BPOptions.damping} option but allows you specify different weights for different edges. Unlike the simple damping option, this usually makes no sense to set on the graph itself since factors and variables will typically have different numbers and arrangements of edges. The value must either be an empty list, indicating that damping should be turned off, or a list of weights with the same length as the number of siblings of the affected variable and factor. The dmpaing weights will be applied in the order in which the siblings are declared.
+{This is the similar to the \nameref{option:BPOptions.damping} option but allows you specify different weights for different edges. Unlike the simple damping option, this usually makes no sense to set on the graph itself since factors and variables will typically have different numbers and arrangements of edges. The value must either be an empty list, indicating that damping should be turned off, or a list of weights with the same length as the number of siblings of the affected variable and factor. The damping weights will be applied in the order in which the siblings are declared.
 \linebreak
 \linebreak
 This option takes precedence over the simple damping option if both are specified for the same node.

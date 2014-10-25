@@ -29,7 +29,14 @@ public interface ISolverFactorGibbs extends ISolverFactor, ISolverNodeGibbs
 	@Override
 	public double getPotential();
 	
+	/**
+	 * @since 0.07
+	 */
 	public int getTopologicalOrder();
+
+	/**
+	 * @since 0.07
+	 */
 	public void setTopologicalOrder(int order);
 	
 	/**

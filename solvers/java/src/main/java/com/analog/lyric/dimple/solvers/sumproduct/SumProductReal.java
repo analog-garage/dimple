@@ -31,6 +31,11 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParamete
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
+/**
+ * Solver variable for Real variables under Sum-Product solver.
+ * 
+ * @since 0.07
+ */
 public class SumProductReal extends SRealVariableBase
 {
 	/*

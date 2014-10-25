@@ -75,6 +75,15 @@ public class Dirichlet extends FactorFunction implements IParametricFactorFuncti
     	}
 	}
 	
+	/**
+	 * Construct from specified parameters
+	 * @param parameters the following values are supported:
+	 * <ul>
+	 * <li>alpha (default 1.0)
+	 * <li>beta (default 1.0)
+	 * </ul>
+	 * @since 0.07
+	 */
 	public Dirichlet(Map<String,Object> parameters)
 	{
 		this((double[])require(parameters, "alpha", "alphas"));

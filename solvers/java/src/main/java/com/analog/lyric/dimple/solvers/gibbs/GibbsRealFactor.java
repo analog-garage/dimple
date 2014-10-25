@@ -35,7 +35,12 @@ import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
-
+/**
+ * Real solver factor under Gibbs solver.
+ * 
+ * @since 0.07
+ * @author Christopher Barber
+ */
 @SuppressWarnings("deprecation") // TODO: remove when SRealFactor removed
 public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 {
