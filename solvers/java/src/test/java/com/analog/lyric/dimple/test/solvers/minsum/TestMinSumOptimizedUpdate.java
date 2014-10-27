@@ -25,9 +25,9 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.schedulers.FloodingScheduler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.minsum.MinSumOptions;
 import com.analog.lyric.dimple.solvers.minsum.MinSumSolver;
 import com.analog.lyric.dimple.solvers.minsum.MinSumSolverGraph;
 import com.analog.lyric.dimple.solvers.minsum.MinSumTableFactor;
@@ -64,10 +64,10 @@ public class TestMinSumOptimizedUpdate extends DimpleTestBase
 	
 	private void checkDefaults(IOptionHolder optionHolder)
 	{
-		assertEquals(defaultApproach, optionHolder.getOptionOrDefault(MinSumOptions.updateApproach));
-		assertEquals(defaultAllocationScale, optionHolder.getOptionOrDefault(MinSumOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
-		assertEquals(defaultExecutionTimeScale, optionHolder.getOptionOrDefault(MinSumOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
-		assertEquals(defaultSparseThreshold, optionHolder.getOptionOrDefault(MinSumOptions.optimizedUpdateSparseThreshold), 1.0e-9);
+		assertEquals(defaultApproach, optionHolder.getOptionOrDefault(BPOptions.updateApproach));
+		assertEquals(defaultAllocationScale, optionHolder.getOptionOrDefault(BPOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
+		assertEquals(defaultExecutionTimeScale, optionHolder.getOptionOrDefault(BPOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
+		assertEquals(defaultSparseThreshold, optionHolder.getOptionOrDefault(BPOptions.optimizedUpdateSparseThreshold), 1.0e-9);
 	}
 
 	/**
@@ -115,53 +115,53 @@ public class TestMinSumOptimizedUpdate extends DimpleTestBase
 		Factor f = add2BitFactor(rand, fg);
 		MinSumTableFactor sft = getMinSumFactorTable(f);
 		// Make sure the factor has the default values initially
-		assertEquals(defaultApproach, sft.getOptionOrDefault(MinSumOptions.updateApproach));
-		assertEquals(defaultAllocationScale, sft.getOptionOrDefault(MinSumOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
-		assertEquals(defaultExecutionTimeScale, sft.getOptionOrDefault(MinSumOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
-		assertEquals(defaultSparseThreshold, sft.getOptionOrDefault(MinSumOptions.optimizedUpdateSparseThreshold), 1.0e-9);
+		assertEquals(defaultApproach, sft.getOptionOrDefault(BPOptions.updateApproach));
+		assertEquals(defaultAllocationScale, sft.getOptionOrDefault(BPOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
+		assertEquals(defaultExecutionTimeScale, sft.getOptionOrDefault(BPOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
+		assertEquals(defaultSparseThreshold, sft.getOptionOrDefault(BPOptions.optimizedUpdateSparseThreshold), 1.0e-9);
 		// Set the properties at the graph to non-default values
 		final UpdateApproach graphApproach = UpdateApproach.OPTIMIZED;
 		final double graphAllocationScale = 2.0;
 		final double graphExecutionTimeScale = 50.0;
 		final double graphSparseThreshold = 0.6;
-		sfg.setOption(MinSumOptions.updateApproach, graphApproach);
-		sfg.setOption(MinSumOptions.automaticMemoryAllocationScalingFactor, graphAllocationScale);
-		sfg.setOption(MinSumOptions.automaticExecutionTimeScalingFactor, graphExecutionTimeScale);
-		sfg.setOption(MinSumOptions.optimizedUpdateSparseThreshold, graphSparseThreshold);
+		sfg.setOption(BPOptions.updateApproach, graphApproach);
+		sfg.setOption(BPOptions.automaticMemoryAllocationScalingFactor, graphAllocationScale);
+		sfg.setOption(BPOptions.automaticExecutionTimeScalingFactor, graphExecutionTimeScale);
+		sfg.setOption(BPOptions.optimizedUpdateSparseThreshold, graphSparseThreshold);
 		// Check that the factor returns the values programmed on the graph
-		assertEquals(graphApproach, sft.getOptionOrDefault(MinSumOptions.updateApproach));
-		assertEquals(graphAllocationScale, sft.getOptionOrDefault(MinSumOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
-		assertEquals(graphExecutionTimeScale, sft.getOptionOrDefault(MinSumOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
-		assertEquals(graphSparseThreshold, sft.getOptionOrDefault(MinSumOptions.optimizedUpdateSparseThreshold), 1.0e-9);
+		assertEquals(graphApproach, sft.getOptionOrDefault(BPOptions.updateApproach));
+		assertEquals(graphAllocationScale, sft.getOptionOrDefault(BPOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
+		assertEquals(graphExecutionTimeScale, sft.getOptionOrDefault(BPOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
+		assertEquals(graphSparseThreshold, sft.getOptionOrDefault(BPOptions.optimizedUpdateSparseThreshold), 1.0e-9);
 		// Set the properties at the factor to yet different values
 		final UpdateApproach factorApproach = UpdateApproach.AUTOMATIC;
 		final double factorAllocationScale = 3.0;
 		final double factorExecutionTimeScale = 60.0;
 		final double factorSparseThreshold = 0.7;
-		sft.setOption(MinSumOptions.updateApproach, factorApproach);
-		sft.setOption(MinSumOptions.automaticMemoryAllocationScalingFactor, factorAllocationScale);
-		sft.setOption(MinSumOptions.automaticExecutionTimeScalingFactor, factorExecutionTimeScale);
-		sft.setOption(MinSumOptions.optimizedUpdateSparseThreshold, factorSparseThreshold);
+		sft.setOption(BPOptions.updateApproach, factorApproach);
+		sft.setOption(BPOptions.automaticMemoryAllocationScalingFactor, factorAllocationScale);
+		sft.setOption(BPOptions.automaticExecutionTimeScalingFactor, factorExecutionTimeScale);
+		sft.setOption(BPOptions.optimizedUpdateSparseThreshold, factorSparseThreshold);
 		// Check that the factor returns the values programmed on the factor
-		assertEquals(factorApproach, sft.getOptionOrDefault(MinSumOptions.updateApproach));
-		assertEquals(factorAllocationScale, sft.getOptionOrDefault(MinSumOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
-		assertEquals(factorExecutionTimeScale, sft.getOptionOrDefault(MinSumOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
-		assertEquals(factorSparseThreshold, sft.getOptionOrDefault(MinSumOptions.optimizedUpdateSparseThreshold), 1.0e-9);
+		assertEquals(factorApproach, sft.getOptionOrDefault(BPOptions.updateApproach));
+		assertEquals(factorAllocationScale, sft.getOptionOrDefault(BPOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
+		assertEquals(factorExecutionTimeScale, sft.getOptionOrDefault(BPOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
+		assertEquals(factorSparseThreshold, sft.getOptionOrDefault(BPOptions.optimizedUpdateSparseThreshold), 1.0e-9);
 		// And that the graph returns its own values still
-		assertEquals(graphApproach, sfg.getOptionOrDefault(MinSumOptions.updateApproach));
-		assertEquals(graphAllocationScale, sfg.getOptionOrDefault(MinSumOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
-		assertEquals(graphExecutionTimeScale, sfg.getOptionOrDefault(MinSumOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
-		assertEquals(graphSparseThreshold, sfg.getOptionOrDefault(MinSumOptions.optimizedUpdateSparseThreshold), 1.0e-9);
+		assertEquals(graphApproach, sfg.getOptionOrDefault(BPOptions.updateApproach));
+		assertEquals(graphAllocationScale, sfg.getOptionOrDefault(BPOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
+		assertEquals(graphExecutionTimeScale, sfg.getOptionOrDefault(BPOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
+		assertEquals(graphSparseThreshold, sfg.getOptionOrDefault(BPOptions.optimizedUpdateSparseThreshold), 1.0e-9);
 		// "Unset" the factor properties
-		sft.unsetOption(MinSumOptions.updateApproach);
-		sft.unsetOption(MinSumOptions.automaticMemoryAllocationScalingFactor);
-		sft.unsetOption(MinSumOptions.automaticExecutionTimeScalingFactor);
-		sft.unsetOption(MinSumOptions.optimizedUpdateSparseThreshold);
+		sft.unsetOption(BPOptions.updateApproach);
+		sft.unsetOption(BPOptions.automaticMemoryAllocationScalingFactor);
+		sft.unsetOption(BPOptions.automaticExecutionTimeScalingFactor);
+		sft.unsetOption(BPOptions.optimizedUpdateSparseThreshold);
 		// And check that the factor again returns the graph values
-		assertEquals(graphApproach, sft.getOptionOrDefault(MinSumOptions.updateApproach));
-		assertEquals(graphAllocationScale, sft.getOptionOrDefault(MinSumOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
-		assertEquals(graphExecutionTimeScale, sft.getOptionOrDefault(MinSumOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
-		assertEquals(graphSparseThreshold, sft.getOptionOrDefault(MinSumOptions.optimizedUpdateSparseThreshold), 1.0e-9);
+		assertEquals(graphApproach, sft.getOptionOrDefault(BPOptions.updateApproach));
+		assertEquals(graphAllocationScale, sft.getOptionOrDefault(BPOptions.automaticMemoryAllocationScalingFactor), 1.0e-9);
+		assertEquals(graphExecutionTimeScale, sft.getOptionOrDefault(BPOptions.automaticExecutionTimeScalingFactor), 1.0e-9);
+		assertEquals(graphSparseThreshold, sft.getOptionOrDefault(BPOptions.optimizedUpdateSparseThreshold), 1.0e-9);
 	}
 
 	public static void runSolver(FactorGraph fg,
@@ -175,16 +175,16 @@ public class TestMinSumOptimizedUpdate extends DimpleTestBase
 			MinSumSolverGraph ssolver = (MinSumSolverGraph) solver;
 
 			solver.useMultithreading(true);
-			ssolver.setOption(MinSumOptions.updateApproach, UpdateApproach.NORMAL);
+			ssolver.setOption(BPOptions.updateApproach, UpdateApproach.NORMAL);
 			ssolver.setDamping(damping);
 			fg.initialize();
 			ssolver.iterate(5);
 			List<Object> normalBeliefs = getBeliefs(fg);
 			
 			solver.useMultithreading(useMultithreading);
-			ssolver.setOption(MinSumOptions.optimizedUpdateSparseThreshold, sparsityControl);
+			ssolver.setOption(BPOptions.optimizedUpdateSparseThreshold, sparsityControl);
 			ssolver.setDamping(damping);
-			ssolver.setOption(MinSumOptions.updateApproach, UpdateApproach.OPTIMIZED);
+			ssolver.setOption(BPOptions.updateApproach, UpdateApproach.OPTIMIZED);
 			fg.initialize();
 			ssolver.iterate(5);
 			List<Object> optimizedBeliefs = getBeliefs(fg);
@@ -293,7 +293,7 @@ public class TestMinSumOptimizedUpdate extends DimpleTestBase
 			fail("MinSumSolverGraph is null");
 			return;
 		}
-		sfg.setOption(MinSumOptions.updateApproach, UpdateApproach.AUTOMATIC);
+		sfg.setOption(BPOptions.updateApproach, UpdateApproach.AUTOMATIC);
 		sfg.useMultithreading(multithreaded);
 		// Before optimize, all factors should not have their optimize enable explicitly set
 		for (Factor factor : fg.getFactors())

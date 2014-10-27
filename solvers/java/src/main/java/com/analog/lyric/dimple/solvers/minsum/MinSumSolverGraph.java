@@ -28,6 +28,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -68,7 +69,7 @@ public class MinSumSolverGraph extends SFactorGraphBase
 	@Override
 	public void initialize()
 	{
-		_damping = getOptionOrDefault(MinSumOptions.damping);
+		_damping = getOptionOrDefault(BPOptions.damping);
 		super.initialize();
 		UpdateCostOptimizer optimizer = new UpdateCostOptimizer(_optimizedUpdateAdapter);
 		optimizer.optimize(_factorGraph);
@@ -137,7 +138,7 @@ public class MinSumSolverGraph extends SFactorGraphBase
 	 */
 	public void setDamping(double damping)
 	{
-		setOption(MinSumOptions.damping, damping);
+		setOption(BPOptions.damping, damping);
 		_damping = damping;
 	}
 	
@@ -312,25 +313,25 @@ public class MinSumSolverGraph extends SFactorGraphBase
 		@Override
 		public IOptionKey<UpdateApproach> getUpdateApproachOptionKey()
 		{
-			return MinSumOptions.updateApproach;
+			return BPOptions.updateApproach;
 		}
 
 		@Override
 		public IOptionKey<Double> getOptimizedUpdateSparseThresholdKey()
 		{
-			return MinSumOptions.optimizedUpdateSparseThreshold;
+			return BPOptions.optimizedUpdateSparseThreshold;
 		}
 
 		@Override
 		public IOptionKey<Double> getAutomaticExecutionTimeScalingFactorKey()
 		{
-			return MinSumOptions.automaticExecutionTimeScalingFactor;
+			return BPOptions.automaticExecutionTimeScalingFactor;
 		}
 
 		@Override
 		public IOptionKey<Double> getAutomaticMemoryAllocationScalingFactorKey()
 		{
-			return MinSumOptions.automaticMemoryAllocationScalingFactor;
+			return BPOptions.automaticMemoryAllocationScalingFactor;
 		}
 	}
 	
