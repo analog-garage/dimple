@@ -176,7 +176,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	/**
 	 * Number of solver iterations
 	 * <p>
-	 * This is set from {@link SolverOptions#iterations} during {@link #initialize}.
+	 * This is set from {@link BPOptions#iterations} during {@link #initialize}.
 	 * <p>
 	 * This value is not meaningful to all solvers.
 	 */

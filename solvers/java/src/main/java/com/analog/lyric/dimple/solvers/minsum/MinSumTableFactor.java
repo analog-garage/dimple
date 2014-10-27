@@ -169,7 +169,7 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 	
 	public void setK(int k)
 	{
-		setOption(MinSumOptions.maxMessageSize, k);
+		setOption(BPOptions.maxMessageSize, k);
 		updateK(k);
 	}
 	
@@ -313,12 +313,12 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 	 */
 	
 	/**
-	 * @deprecated Use {@link MinSumOptions#damping} or {@link MinSumOptions#nodeSpecificDamping} options instead.
+	 * @deprecated Use {@link BPOptions#damping} or {@link BPOptions#nodeSpecificDamping} options instead.
 	 */
 	@Deprecated
 	public void setDamping(int index, double val)
 	{
-		double[] params  = MinSumOptions.nodeSpecificDamping.getOrDefault(this).toPrimitiveArray();
+		double[] params  = BPOptions.nodeSpecificDamping.getOrDefault(this).toPrimitiveArray();
 		if (params.length == 0 && val != 0.0)
 		{
 			params = new double[getSiblingCount()];
@@ -328,7 +328,7 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 			params[index] = val;
 		}
 		
-		MinSumOptions.nodeSpecificDamping.set(this, params);
+		BPOptions.nodeSpecificDamping.set(this, params);
 		configureDampingFromOptions();
 	}
 		
@@ -390,13 +390,13 @@ public class MinSumTableFactor extends STableFactorDoubleArray
      	final int size = getSiblingCount();
     	
     	_dampingParams =
-    		getReplicatedNonZeroListFromOptions(MinSumOptions.nodeSpecificDamping, MinSumOptions.damping,
+    		getReplicatedNonZeroListFromOptions(BPOptions.nodeSpecificDamping, BPOptions.damping,
     			size, _dampingParams);
  
     	if (_dampingParams.length > 0 && _dampingParams.length != size)
     	{
 			DimpleEnvironment.logWarning("%s has wrong number of parameters for %s\n",
-				MinSumOptions.nodeSpecificDamping, this);
+				BPOptions.nodeSpecificDamping, this);
     		_dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
     	}
     	
