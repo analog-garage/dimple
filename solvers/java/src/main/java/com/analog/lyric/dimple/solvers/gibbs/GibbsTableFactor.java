@@ -24,6 +24,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -34,6 +35,7 @@ import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.Internal;
 
 /**
  * Solver table factor for Gibbs solver.
@@ -48,7 +50,6 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	
     protected DiscreteValue[] _inPortMsgs = new DiscreteValue[0];
     protected double[][] _outPortMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
-    protected int _numPorts;
     protected boolean _isDeterministicDirected;
     private boolean _visited = false;
 	private int _topologicalOrder = 0;
@@ -63,6 +64,9 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 		_isDeterministicDirected = _factor.getFactorFunction().isDeterministicDirected();
 	}
 	
+	/*---------------
+	 * SNode methods
+	 */
 	
 	@Override
 	public void doUpdateEdge(int outPortNum)
@@ -77,6 +81,9 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 		// This is ignored and doesn't throw an error so that a custom schedule that updates factors won't cause a problem
 	}
 	
+	/*----------------------------
+	 * ISolverFactorGibbs methods
+	 */
 
 	@Override
 	public void updateEdgeMessage(int outPortNum)
@@ -87,20 +94,56 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 		if (_isDeterministicDirected) throw new DimpleException("Invalid call to updateEdge");
 		
 		double[] outMessage = _outPortMsgs[outPortNum];
-		IFactorTable factorTable = getFactorTable();
 
-		final int numPorts = _numPorts;
-		int[] inPortMsgs = new int[numPorts];
-		for (int port = 0; port < numPorts; port++)
-			inPortMsgs[port] = _inPortMsgs[port].getIndex();
+		final int numPorts = _inPortMsgs.length;
 
-		inPortMsgs[outPortNum] = 0;
-		factorTable.getEnergySlice(outMessage, outPortNum, inPortMsgs);
+		final IFactorTable factorTable = getFactorTableIfComputed();
+		if (factorTable != null)
+		{
+			int[] inPortMsgs = new int[numPorts];
+			for (int port = 0; port < numPorts; port++)
+				inPortMsgs[port] = _inPortMsgs[port].getIndex();
+
+			inPortMsgs[outPortNum] = 0;
+			
+			factorTable.getEnergySlice(outMessage, outPortNum, inPortMsgs);
+		}
+		else
+		{
+			final Value changedValue = _inPortMsgs[outPortNum];
+			final FactorFunction function = _factor.getFactorFunction();
+			final int savedIndex = changedValue.getIndex();
+			final int sliceLength = outMessage.length;
+
+			changedValue.setIndex(0);
+			outMessage[0] = function.evalEnergy(_inPortMsgs);
+
+			if (function.useUpdateEnergy(_inPortMsgs, 1))
+			{
+				final Value prevValue = changedValue.clone();
+				final IndexedValue[] changedValues = new IndexedValue[] { new IndexedValue(outPortNum, prevValue) };
+
+				double energy = outMessage[0];
+				for (int i = 1; i < sliceLength; ++i)
+				{
+					changedValue.setIndex(i);
+					prevValue.setIndex(i - 1);
+					outMessage[i] = energy = function.updateEnergy(_inPortMsgs, changedValues, energy);
+				}
+			}
+			else
+			{
+				for (int i = 1; i < sliceLength; ++i)
+				{
+					changedValue.setIndex(i);
+					outMessage[i] = function.evalEnergy(_inPortMsgs);
+				}
+			}
+			
+			changedValue.setIndex(savedIndex);
+		}
 	}
 	
-	
-	
-
 	@Override
 	public double getPotential()
 	{
@@ -117,12 +160,15 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 			return energy;
 		}
 		
-		int[] inPortMsgs = new int[_numPorts];
-		for (int port = 0; port < _numPorts; port++)
+		final int size = _inPortMsgs.length;
+		int[] inPortMsgs = new int[size];
+		for (int port = 0; port < size; port++)
 			inPortMsgs[port] = _inPortMsgs[port].getIndex();
 
 		return getPotential(inPortMsgs);
 	}
+	
+	@Internal
 	public double getPotential(int[] inputs)
 	{
 		return getFactorTable().getEnergyForIndices(inputs);
@@ -176,12 +222,11 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	{
 		final Factor factor = _factor;
     	int size = factor.getSiblingCount();
-    	_numPorts= size;
     	
-	    _inPortMsgs = new DiscreteValue[_numPorts];
-	    _outPortMsgs = new double[_numPorts][];
+	    _inPortMsgs = new DiscreteValue[size];
+	    _outPortMsgs = new double[size][];
 	    
-	    for (int port = 0; port < _numPorts; port++)
+	    for (int port = 0; port < size; port++)
 	    {
 	    	ISolverVariable svar = requireNonNull(factor.getSibling(port).getSolver());
 	    	Object [] messages = requireNonNull(svar.createMessages(this));

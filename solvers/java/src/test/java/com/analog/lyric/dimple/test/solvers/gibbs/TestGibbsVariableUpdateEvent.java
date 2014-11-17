@@ -196,9 +196,9 @@ public class TestGibbsVariableUpdateEvent extends DimpleTestBase
 		listener.register(handler, GibbsVariableUpdateEvent.class, true, model);
 		model.solve();
 		assertEvents(handler, GibbsScoredVariableUpdateEvent.class, sd1, sr1, sc1);
-		double prevScore = sgraph.getTotalPotential();
+		double prevScore = sgraph.getSampleScore();
 		sgraph.sample();
-		double score = sgraph.getTotalPotential();
+		double score = sgraph.getSampleScore();
 		double scoreDifference = assertEvents(handler, GibbsScoredVariableUpdateEvent.class, sd1, sr1, sc1);
 		assertEquals(score - prevScore, scoreDifference, 1e-14);
 		listener.unregisterAll();

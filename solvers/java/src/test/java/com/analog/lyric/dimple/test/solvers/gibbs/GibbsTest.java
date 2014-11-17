@@ -25,7 +25,9 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.options.SolverOptions;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsTableFactor;
@@ -53,17 +55,30 @@ public class GibbsTest extends DimpleTestBase
 		assertEquals(solver2.hashCode(), solver3.hashCode());
 		assertNotEquals(solver1, new SumProductSolver());
 
-		
+		basicDiscreteCase(true);
+		basicDiscreteCase(false); // make sure it still works without factor tables
+	}
+	
+	private void basicDiscreteCase(boolean useFactorTable)
+	{
 		int numSamples = 10000;
 		int updatesPerSample = 2;
 		int burnInUpdates = 2000;
 
 		FactorGraph graph = new FactorGraph();
-		graph.setSolverFactory(new com.analog.lyric.dimple.solvers.gibbs.Solver());
-		GibbsSolverGraph solver = (GibbsSolverGraph)graph.getSolver();
-		solver.setNumSamples(numSamples);
+		GibbsSolverGraph solver = graph.setSolverFactory(new GibbsSolver());
+		graph.setOption(GibbsOptions.numSamples, numSamples);
 		solver.setUpdatesPerSample(updatesPerSample);
 		solver.setBurnInUpdates(burnInUpdates);
+		
+		if (useFactorTable)
+		{
+			graph.unsetOption(SolverOptions.maxAutomaticFactorTableSize);
+		}
+		else
+		{
+			graph.setOption(SolverOptions.maxAutomaticFactorTableSize, 0);
+		}
 		
 		Discrete a = new Discrete(1,0);
 		Discrete b = new Discrete(1,0);
@@ -74,7 +89,7 @@ public class GibbsTest extends DimpleTestBase
 		Factor pBA = graph.addFactor(new PBA(), b, a);
 		
 		solver.setSeed(1);					// Make this repeatable
-		solver.saveAllSamples();
+		graph.setOption(GibbsOptions.saveAllSamples, true);
 		graph.solve();
 
 		GibbsDiscrete sa = (GibbsDiscrete)a.getSolver();
@@ -167,12 +182,12 @@ public class GibbsTest extends DimpleTestBase
 	}
 	
 	
-	private static double TOLLERANCE = 1e-12;
+	private static double TOLERANCE = 1e-12;
 	private boolean nearlyEquals(double a, double b)
 	{
 		double diff = a - b;
-		if (diff > TOLLERANCE) return false;
-		if (diff < -TOLLERANCE) return false;
+		if (diff > TOLERANCE) return false;
+		if (diff < -TOLERANCE) return false;
 		return true;
 	}
 

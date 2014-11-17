@@ -21,6 +21,7 @@ import static org.junit.Assert.*;
 import java.util.Random;
 
 import org.apache.commons.math3.stat.descriptive.moment.Variance;
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -34,11 +35,10 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
-import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
+import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.util.misc.Misc;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Tests for {@link JunctionTreeTransform}
@@ -185,9 +185,9 @@ public class TestJunctionTreeTransform extends DimpleTestBase
 			}
 			
 			// Compare the joint likelihoods
-			final double sourcePotential = sourceGibbs.getTotalPotential();
-			final double targetPotential = targetGibbs.getTotalPotential();
-			final double difference = sourcePotential - targetPotential;
+			final double sourceEnergy = sourceGibbs.getSampleScore();
+			final double targetEnergy = targetGibbs.getSampleScore();
+			final double difference = sourceEnergy - targetEnergy;
 			if (Math.abs(difference) > 1e-10)
 			{
 				Misc.breakpoint();

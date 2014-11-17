@@ -94,6 +94,23 @@ A few options are applicable to multiple solvers and are therefore described in 
 {graph}
 {Controls whether to use multithreading for this solver. Multithreading is currently only supported by the MinSum and SumProduct solvers but will eventually be implemented in others. This value will be ignored if not applicable.}
 
+\para{SolverOptions.maxAutomaticFactorTableSize}
+
+\dimpleOption{SolverOptions.maxAutomaticFactorTableSize}
+{32-bit integer}
+{max signed value: $2^{31} - 1$}
+{discrete factor}
+{This controls whether factor tables will be automatically computed at initialization time for discrete factors based on the expected number of entries in the table. Factor table creation can be expensive both in the memory it takes to store large tables and in the time that is needed to evaluate the factor function for every possible combination of arguments. This option provides a means to set a threshold for creation.
+\linebreak
+\linebreak
+The expected size of the table is computed differently based on whether the factor is directed and the function is deterministic:
+\begin{itemize}
+\item If the factor is not deterministic directed, then the expected size of the factor table is the sizes of all of the variable domains multiplied together.
+\item If the factor is deterministic and directed the expected size, then the expected size is the sizes of just the input variable domains multipled together.
+\end{itemize}
+
+This will not prevent factor tables from being generated manually. Only applicable to discrete factors, and currently only useful when using the Gibbs solver.}
+
 \para{DimpleOptions.randomSeed}
 
 \dimpleOption{DimpleOptions.randomSeed}
@@ -554,6 +571,10 @@ The following sections list the solver-specific aspects of the API for the Gibbs
 \label{sec:GibbsOptions}
 
 The following options affect the behavior of various aspects of the Gibbs solver:
+
+\subpara{SolverOptions.maxAutomaticFactorTableSize}
+
+See description in \autoref{option:SolverOptions.maxAutomaticFactorTableSize}.
 
 \subpara{GibbsOptions.numSamples}
 

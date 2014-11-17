@@ -46,6 +46,12 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGraph
 {
+	/**
+	 * Bits in {@link #_flags} reserved by this class and its superclasses.
+	 */
+	@SuppressWarnings("hiding")
+	protected static final int RESERVED_FLAGS = 0xFFFF0000;
+	
 	protected FactorGraph _factorGraph;
 	protected int _numIterations = 1;		// Default number of iterations unless otherwise specified
 	private @Nullable MultiThreadingManager _multithreader; // = new MultiThreadingManager();

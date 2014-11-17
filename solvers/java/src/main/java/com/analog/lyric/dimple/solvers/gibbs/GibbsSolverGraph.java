@@ -104,6 +104,23 @@ import com.analog.lyric.math.DimpleRandomGenerator;
  */
 public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFactorGraph
 {
+	/*
+	 * Constants
+	 */
+	
+	private static final double LOG2 = Math.log(2);
+	
+	/**
+	 * Bits in {@link #_flags} reserved by this class and its superclasses.
+	 * @see GibbsSolverGraphEvent
+	 */
+	@SuppressWarnings("hiding")
+	protected static final int RESERVED_FLAGS = 0xFFFFF000;
+
+	/*-------
+	 * State
+	 */
+	
 	private @Nullable IGibbsSchedule _schedule;
 	private @Nullable Iterator<IScheduleEntry> _scheduleIterator;
 	private @Nullable ArrayList<IBlockInitializer> _blockInitializers;
@@ -120,8 +137,6 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	private double _minPotential = Double.MAX_VALUE;
 	private boolean _firstSample = true;
 	private @Nullable DoubleArrayList _scoreArray;
-	
-	private static final double LOG2 = Math.log(2);
 	
 	/**
 	 * Priority queue of deterministic factors whose outputs should be
@@ -366,6 +381,11 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	{
 		randomRestart(restartCount);
 		iterate(_burnInUpdates);
+		
+		if (GibbsSolverGraphEvent.raiseBurnInEvent(this))
+		{
+			raiseEvent(new GibbsBurnInEvent(this, restartCount, _temper ? _temperature : Double.NaN));
+		}
 	}
 	
 	/**
@@ -434,8 +454,9 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		}
 		
 		// Save the best sample value seen so far
-		double totalPotential = getTotalPotential();
-		if (totalPotential < _minPotential || _firstSample)
+		final double totalPotential = getSampleScore();
+		final boolean wasMininum = totalPotential < _minPotential || _firstSample;
+		if (wasMininum)
 		{
 			for (Variable v : _factorGraph.getVariables())
 				getSolverVariable(v).saveBestSample();
@@ -451,10 +472,17 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		}
 		
 		// If tempering, reduce the temperature
+		double oldTemperature = Double.NaN, newTemperature = Double.NaN;
 		if (_temper)
 		{
-			_temperature *= _temperingDecayConstant;
-			setTemperature(_temperature);
+			oldTemperature = _temperature;
+			newTemperature= oldTemperature * _temperingDecayConstant;
+			setTemperature(_temperature = newTemperature);
+		}
+
+		if (GibbsSolverGraphEvent.raiseSampleStatsEvent(this))
+		{
+			raiseEvent(new GibbsSampleStatisticsEvent(this, totalPotential, wasMininum, oldTemperature, newTemperature));
 		}
 	}
 	
@@ -494,18 +522,43 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		if (_temper) setTemperature(_initialTemperature);	// Reset the temperature, if tempering
 	}
 	
-	
-
-	// Get the total potential over all factors of the graph given the current sample values (including input priors on variables)
+	/**
+	 * @deprecated use {@link #getSampleScore()} instead.
+	 */
+	@Deprecated
 	@SuppressWarnings("null")
 	public double getTotalPotential()
 	{
+		return getSampleScore();
+	}
+	
+	/**
+	 * Computes the total energy or "score" over the entire graph given current sample values.
+	 * <p>
+	 * Includes input priors over variables.
+	 * <p>
+	 * @since 0.08
+	 * @see #getBestSampleScore()
+	 */
+	public double getSampleScore()
+	{
 		double totalPotential = 0;
 		for (Factor f : _factorGraph.getNonGraphFactors())
-			totalPotential += getSolverFactor(f).getPotential();
+			totalPotential += requireNonNull(getSolverFactor(f)).getPotential();
 		for (Variable v : _factorGraph.getVariables())		// Variables contribute too because they have inputs, which are factors
-			totalPotential += getSolverVariable(v).getPotential();
+			totalPotential += requireNonNull(getSolverVariable(v)).getPotential();
 		return totalPotential;
+	}
+	
+	/**
+	 * Returns the lowest value of {@link #getSampleScore()} discovered since initialization.
+	 * <p>
+	 * @since 0.08
+	 * @see #getAllScores()
+	 */
+	public double getBestSampleScore()
+	{
+		return _minPotential;
 	}
 	
 	/**

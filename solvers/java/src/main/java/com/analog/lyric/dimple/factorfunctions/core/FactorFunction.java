@@ -369,7 +369,50 @@ public abstract class FactorFunction implements IFactorFunction
 		return false;
     }
     
-
+    /**
+     * Indicates whether to use {@link #updateEnergy}
+     * <p>
+     * Functions that override {@link #updateEnergy} should override this method to return
+     * true when that function is expected to provide a performance benefit over {@link #evalEnergy(Value[])}.
+     * <p>
+     * The default implementation returns false.
+     * <p>
+     * @param values the values that will be passed to {@code updateEnergy}.
+     * @param nChangedValues the number of {@code oldValues} that will be provided to {@code updateEnergy}.
+     * @since 0.08
+     */
+    public boolean useUpdateEnergy(Value[] values, int nChangedValues)
+    {
+    	return false;
+    }
+    
+    /**
+     * Optimized energy evaluation based on previously computed value.
+     * <p>
+     * Implementations of this method should produce the same energy value you
+     * would get by calling {@link #evalEnergy} with the specified {@code values},
+     * and that is what the default implementation does.
+     * <p>
+     * When the same function needs to be evaluated many times with only small changes
+     * in the input arguments (as is the case in the Gibbs solver), the energy can
+     * sometimes be more efficiently computed based on the previous energy values together
+     * with information about the value changes.
+     * <p>
+     * Functions that implement this method should also implement {@code #useUpdateEnergy}.
+     * <p>
+     * @param values the argument values for which the energy is to be computed
+     * @param oldValues specifies one or more old values. Each {@link IndexedValue} argument
+     * indicates the value and its position in the argument list.
+     * @param oldEnergy the previous energy computed from {@code values} except for those
+     * overridden by {@code oldValues}.
+     * 
+     * @since 0.08
+     */
+    public double updateEnergy(Value[] values, IndexedValue[] oldValues, double oldEnergy)
+    {
+    	return evalEnergy(values);
+    }
+    
     /*-------------------
      * Protected methods
      */

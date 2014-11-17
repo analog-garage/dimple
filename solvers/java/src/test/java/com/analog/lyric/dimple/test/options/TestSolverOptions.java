@@ -32,8 +32,8 @@ import com.analog.lyric.dimple.test.dummySolver.DummyFactorGraph;
 /**
  * Tests behavior of {@link SolverOptions} on {@link SFactorGraphBase}.
  * <p>
- * @since 0.07
- * @author Christopher Barber
+ * There are test cases for createFactorTableOnInit and maxAutomaticFactorTableSize in
+ * the TestSTableFactorBase test.
  */
 public class TestSolverOptions extends DimpleTestBase
 {
@@ -43,6 +43,7 @@ public class TestSolverOptions extends DimpleTestBase
 		// Test default values
 		assertEquals(1, BPOptions.iterations.defaultIntValue());
 		assertEquals(false, SolverOptions.enableMultithreading.defaultBooleanValue());
+		assertEquals(Integer.MAX_VALUE, SolverOptions.maxAutomaticFactorTableSize.defaultIntValue());
 		
 		DimpleEnvironment env = DimpleEnvironment.active();
 		

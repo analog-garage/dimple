@@ -16,10 +16,14 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
+import com.analog.lyric.dimple.model.domains.DomainList;
+import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.factors.Factor;
-import org.eclipse.jdt.annotation.Nullable;
+import com.analog.lyric.dimple.options.SolverOptions;
 
 public abstract class STableFactorBase extends SFactorBase
 {
@@ -62,22 +66,63 @@ public abstract class STableFactorBase extends SFactorBase
     	}
     }
     
+    /*--------------------------
+     * STableFactorBase methods
+     */
+    
+    /**
+     * Removes current factor table instance.
+     * <p>
+     * After invoking this, {@link #getFactorTableIfComputed()} will return null.
+     * <p>
+     * The factor table can be recreated by calling {@link #getFactorTable()}.
+     * <p>
+     * @since 0.08
+     */
+    public void clearFactorTable()
+    {
+    	_factorTable = null;
+    }
+    
     /**
      * Indicate whether {@link #initialize()} should call {@link #getFactorTable()} to
      * force factor table creation (e.g. to avoid lazy initialization for multithreading
      * solvers.
      * <p>
-     * The default implementation returns true.
+     * The default implementation returns true if the <em>cardinality</em> of the factor is no greater than
+     * {@link SolverOptions#maxAutomaticFactorTableSize}, where the <em>cardinality</em> is computed by multiplying
+     * the dimensions of the independent domains of the factor, i.e. the input domains if the factor is
+     * deterministic directed and otherwise all of the domains.
      */
     protected boolean createFactorTableOnInit()
     {
-    	return true;
+		final DomainList<?> domains = getFactor().getDomainList();
+		final JointDomainIndexer indexer = domains.asJointDomainIndexer();
+		
+		if (indexer == null || !indexer.supportsJointIndexing())
+		{
+			return false;
+		}
+		
+		int maxSize = getOptionOrDefault(SolverOptions.maxAutomaticFactorTableSize);
+		if (maxSize <= 0)
+		{
+			return false;
+		}
+		
+		final int cardinality = indexer.isDirected() && getFactor().getFactorFunction().isDeterministicDirected() ?
+			indexer.getInputCardinality() : indexer.getCardinality();
+		return cardinality <= getOptionOrDefault(SolverOptions.maxAutomaticFactorTableSize);
     }
-
-    /*--------------------------
-     * STableFactorBase methods
-     */
     
+    /**
+     * Returns factor table for this factor, creating it if necessary.
+     * <p>
+     * Note that creation can be expensive for large joint cardinality of domains since the
+     * factor function must be evaluated for all possible combinations of values!
+     * 
+     * @see #getFactorTableIfComputed()
+     */
     public final IFactorTable getFactorTable()
 	{
     	IFactorTable factorTable = _factorTable;
@@ -89,7 +134,13 @@ public abstract class STableFactorBase extends SFactorBase
 		return factorTable;
 	}
     
-    protected final @Nullable IFactorTable getFactorTableIfComputed()
+    /**
+     * Returns factor table for this factor if it has been created, else null.
+     * <p>
+     * @see #getFactorTable()
+     * @since 0.08
+     */
+    public final @Nullable IFactorTable getFactorTableIfComputed()
     {
     	return _factorTable;
     }
