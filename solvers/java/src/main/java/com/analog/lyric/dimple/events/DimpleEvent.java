@@ -21,9 +21,10 @@ import java.util.EventObject;
 
 import net.jcip.annotations.ThreadSafe;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.util.misc.IPrintable;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Abstract base class for all Dimple events.
@@ -87,6 +88,14 @@ public abstract class DimpleEvent extends EventObject implements IPrintable
 		}
 	}
 	
+	/**
+	 * Subclasses should override this to output details of the event for the given verbosity.
+	 * <p>
+	 * @param out is the output stream.
+	 * @param verbosity indicates how much to output. See {@link #print(PrintStream, int)} method
+	 * for suggested meaning. It is safe to assume that value will be non-negative.
+	 * @since 0.06
+	 */
 	protected abstract void printDetails(PrintStream out, int verbosity);
 	
 	@Override
