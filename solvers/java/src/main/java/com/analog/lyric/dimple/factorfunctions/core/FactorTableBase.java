@@ -16,16 +16,21 @@
 
 package com.analog.lyric.dimple.factorfunctions.core;
 
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Random;
 
 import net.jcip.annotations.NotThreadSafe;
 
+import org.eclipse.jdt.annotation.Nullable;
+
+import cern.colt.list.DoubleArrayList;
+import cern.colt.list.IntArrayList;
+
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.values.Value;
-import org.eclipse.jdt.annotation.Nullable;
 
 @NotThreadSafe
 public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
@@ -37,6 +42,7 @@ public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
 	private static final long serialVersionUID = 1L;
 
 	private JointDomainIndexer _domains;
+	protected @Nullable FactorFunction _function;
 	
 	/*--------------
 	 * Construction
@@ -55,6 +61,7 @@ public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
 	protected FactorTableBase(FactorTableBase that)
 	{
 		_domains = that._domains;
+		_function = that._function;
 	}
 	
 	/*----------------
@@ -262,8 +269,68 @@ public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
 	 */
 	
 	@Override
+	public @Nullable FactorFunction getFactorFunction()
+	{
+		return _function;
+	}
+	
+	@Override
+	public void populateFromFunction(FactorFunction function)
+	{
+		final JointDomainIndexer domains = getDomainIndexer();
+		final IFactorTable table = this;
+		
+    	final Value[] values = Value.createFromDomains(domains);
+
+    	if (function.isDeterministicDirected() && domains.isDirected())
+    	{
+    		final int maxInput = domains.getInputCardinality();
+    		final int[] outputs = new int[maxInput];
+
+    		for (int inputIndex = 0; inputIndex < maxInput; ++inputIndex)
+    		{
+    			domains.inputIndexToValues(inputIndex, values);
+    			function.evalDeterministic(values);
+    			outputs[inputIndex] = domains.outputIndexFromValues(values);
+    		}
+
+    		table.setDeterministicOutputIndices(outputs);
+    	}
+    	else
+    	{
+    		IntArrayList indexes = new IntArrayList();
+    		DoubleArrayList energies = new DoubleArrayList();
+
+    		final int maxJoint = domains.getCardinality();
+    		for (int jointIndex = 0; jointIndex < maxJoint; ++ jointIndex)
+    		{
+    			domains.jointIndexToValues(jointIndex, values);
+    			double energy = function.evalEnergy(values);
+    			if (!Double.isInfinite(energy))
+    			{
+    				indexes.add(jointIndex);
+    				energies.add(energy);
+    			}
+    		}
+
+    		if (indexes.size() == maxJoint)
+    		{
+    			table.setEnergiesDense(Arrays.copyOf(energies.elements(), maxJoint));
+    		}
+    		else
+    		{
+    			table.setEnergiesSparse(Arrays.copyOf(indexes.elements(), indexes.size()),
+    				Arrays.copyOf(energies.elements(), indexes.size()));
+    		}
+    	}
+		
+    	_function = function;
+	}
+	
+	@Override
 	public void randomizeWeights(Random rand)
 	{
+		_function = null;
 		if (hasDenseRepresentation())
 		{
 			for (int i = jointSize(); --i >= 0;)

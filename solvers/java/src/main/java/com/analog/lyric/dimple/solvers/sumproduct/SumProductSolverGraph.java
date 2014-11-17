@@ -688,8 +688,12 @@ public class SumProductSolverGraph extends SFactorGraphBase
 			if (sf instanceof SumProductTableFactor)
 			{
 				SumProductTableFactor tf = (SumProductTableFactor)sf;
-				tf.getFactorTable().getIndicesSparseUnsafe();
-				tf.getFactorTable().getWeightsSparseUnsafe();
+				IFactorTable table = tf.getFactorTableIfComputed();
+				if (table != null)
+				{
+					tf.getFactorTable().getIndicesSparseUnsafe();
+					tf.getFactorTable().getWeightsSparseUnsafe();
+				}
 				tf.setupTableFactorEngine();
 			}
 		}

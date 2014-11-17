@@ -1301,6 +1301,7 @@ public class SparseFactorTable extends SparseFactorTableBase implements IFactorT
 	@Override
 	void setSparseValues(int[][] indicesArray, double[] values, int representation)
 	{
+		_function = null;
 		int size = indicesArray.length;
 		if (size != values.length)
 		{

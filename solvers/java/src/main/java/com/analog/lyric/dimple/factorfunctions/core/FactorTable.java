@@ -346,6 +346,13 @@ public class FactorTable extends SparseFactorTableBase
 		return create(JointDomainIndexer.create(outputSet, domains));
 	}
 	
+	public static IFactorTable create(FactorFunction function, JointDomainIndexer domains)
+	{
+		IFactorTable table = create(domains);
+		table.populateFromFunction(function);
+		return table;
+	}
+	
 	/**
 	 * Create a directed deterministic factor table that marginalizes out the specified subdomain
 	 * of the joint input domain.
@@ -1712,6 +1719,7 @@ public class FactorTable extends SparseFactorTableBase
 	@Override
 	public void setDeterministicOutputIndices(int[] outputIndices)
 	{
+		_function = null;
 		final JointDomainIndexer domains = getDomainIndexer();
 		final int size = domains.getInputCardinality();
 		
@@ -2750,6 +2758,7 @@ public class FactorTable extends SparseFactorTableBase
 
 	private void setDenseValues(double[] values, int representation)
 	{
+		_function = null;
 		final JointDomainIndexer domains = getDomainIndexer();
 		if (values.length != domains.getCardinality())
 		{
@@ -2890,6 +2899,7 @@ public class FactorTable extends SparseFactorTableBase
 	
 	private void setSparseValues(int[] jointIndices, double[] values, int representation)
 	{
+		_function = null;
 		final int size= jointIndices.length;
 		if (size != values.length)
 		{

@@ -18,7 +18,6 @@ package com.analog.lyric.dimple.factorfunctions.core;
 
 import static java.util.Objects.*;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -29,9 +28,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import net.jcip.annotations.ThreadSafe;
 
 import org.eclipse.jdt.annotation.Nullable;
-
-import cern.colt.list.DoubleArrayList;
-import cern.colt.list.IntArrayList;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.MatrixProduct;
@@ -425,56 +421,8 @@ public abstract class FactorFunction implements IFactorFunction
      */
     protected IFactorTable createTableForDomains(JointDomainIndexer domains)
     {
-    	final FactorTable table = new FactorTable(domains);
-
-    	final Value[] values = Value.createFromDomains(domains);
-
-    	if (isDeterministicDirected() && domains.isDirected())
-    	{
-    		final int maxInput = domains.getInputCardinality();
-    		final int[] outputs = new int[maxInput];
-
-    		for (int inputIndex = 0; inputIndex < maxInput; ++inputIndex)
-    		{
-    			domains.inputIndexToValues(inputIndex, values);
-    			evalDeterministic(values);
-    			outputs[inputIndex] = domains.outputIndexFromValues(values);
-    		}
-
-    		table.setDeterministicOutputIndices(outputs);
-    	}
-    	else
-    	{
-    		IntArrayList indexes = new IntArrayList();
-    		DoubleArrayList energies = new DoubleArrayList();
-
-    		final int maxJoint = domains.getCardinality();
-    		for (int jointIndex = 0; jointIndex < maxJoint; ++ jointIndex)
-    		{
-    			domains.jointIndexToValues(jointIndex, values);
-    			double energy = evalEnergy(values);
-    			if (!Double.isInfinite(energy))
-    			{
-    				indexes.add(jointIndex);
-    				energies.add(energy);
-    			}
-    		}
-
-    		if (indexes.size() == maxJoint)
-    		{
-    			table.setEnergiesDense(Arrays.copyOf(energies.elements(), maxJoint));
-    		}
-    		else
-    		{
-    			table.setEnergiesSparse(Arrays.copyOf(indexes.elements(), indexes.size()),
-    				Arrays.copyOf(energies.elements(), indexes.size()));
-    		}
-    	}
-
-    	return table;
+    	return FactorTable.create(this, domains);
     }
-    
-    
     
 	/*********
 	 * Methods from FactorFunctionWithConstants that allow calling even if there are no constants

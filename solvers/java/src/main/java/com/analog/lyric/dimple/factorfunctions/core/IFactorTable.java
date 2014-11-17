@@ -19,13 +19,14 @@ package com.analog.lyric.dimple.factorfunctions.core;
 import java.util.BitSet;
 import java.util.Random;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.values.Value;
-import org.eclipse.jdt.annotation.Nullable;
 
 public interface IFactorTable extends IFactorTableBase
 {
@@ -177,6 +178,17 @@ public interface IFactorTable extends IFactorTableBase
 	public double[] getEnergySlice(@Nullable double[] slize, int sliceDimension, Value ... values);
 	
 	/**
+	 * Get factor function used to populate the table, if any.
+	 * <p>
+	 * This will be the function provided to the last call of {@link #populateFromFunction(FactorFunction)},
+	 * if any. The function may also be cleared subsequent calls that replace all of the table entries
+	 * (e.g. {@link #setEnergiesDense(double[])}.
+	 * @since 0.08
+	 * @see #populateFromFunction(FactorFunction)
+	 */
+	public @Nullable FactorFunction getFactorFunction();
+	
+	/**
 	 * Returns the underlying array of sparse element indices.
 	 * <p>
 	 * <b>IMPORTANT</b>: modifying the contents of the array may put the factor table into
@@ -262,6 +274,14 @@ public interface IFactorTable extends IFactorTableBase
 	 * True if the current factor table representation supports {@link #getIndicesSparseUnsafe}.
 	 */
 	public boolean hasSparseIndices();
+	
+	/**
+	 * Populates entries of table from given factor function.
+	 * @param function
+	 * @since 0.08
+	 * @see #getFactorFunction()
+	 */
+	public void populateFromFunction(FactorFunction function);
 	
 	/**
 	 * Replace the energies/weights of the table from the given array of {@code energies} in
