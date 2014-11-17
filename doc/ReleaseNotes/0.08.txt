@@ -3,8 +3,11 @@ Dimple version 0.08 release notes
 
 Significant New Features Since v0.07
 ------------------------------------
+* SolverOptions.maxAutomaticFactorTableSize option allows control of when factor tables are generated based on size.
 
+* New events for monitoring Gibbs solver.
 
 Significant Bug Fixes Since v0.07
 ---------------------------------
+* Gibbs solver now supports large discrete factors.
 
