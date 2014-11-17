@@ -201,18 +201,27 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		}
 		
 		// Sample from the conditional distribution
-		boolean rejected = false;
 		_updateCount++;
-		if (_sampler instanceof IDiscreteDirectSampler)
+		boolean rejected = false;
+		
+		if (minEnergy < Double.POSITIVE_INFINITY)
 		{
-			((IDiscreteDirectSampler)Objects.requireNonNull(_sampler)).nextSample(_outputMsg.clone(),
-				_conditional, minEnergy, this);
+			if (_sampler instanceof IDiscreteDirectSampler)
+			{
+				((IDiscreteDirectSampler)Objects.requireNonNull(_sampler)).nextSample(_outputMsg.clone(),
+					_conditional, minEnergy, this);
+			}
+			else if (_sampler instanceof IMCMCSampler)
+			{
+				rejected = !((IMCMCSampler)Objects.requireNonNull(_sampler)).nextSample(_outputMsg.clone(), this);
+			}
 		}
-		else if (_sampler instanceof IMCMCSampler)
+		else
 		{
-			rejected = !((IMCMCSampler)Objects.requireNonNull(_sampler)).nextSample(_outputMsg.clone(), this);
-			if (rejected) _rejectCount++;
+			rejected = true;
 		}
+		
+		if (rejected) _rejectCount++;
 		
 		switch (updateEventFlags)
 		{

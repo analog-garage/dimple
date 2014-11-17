@@ -138,7 +138,10 @@ public class TestDNAMotifFinder extends DimpleTestBase
 			gibbsMotifVars[i] = (GibbsDiscrete)gibbs.getSolverVariable(motifVariables[i]);
 		}
 
-		gibbs.setSeed(13); // use seed for repeatable results
+		// Use seed for repeatable results. This value was chosen because it happens to hit the
+		// answer with fewer restarts so the test won't run too long.
+		gibbs.setSeed(15);
+		
 		fg.setOption(GibbsOptions.numRandomRestarts, 2000);
 		fg.setOption(GibbsOptions.numSamples, 20);
 		fg.setOption(GibbsOptions.enableAnnealing, true);
@@ -148,10 +151,25 @@ public class TestDNAMotifFinder extends DimpleTestBase
 		for (int restart = 0; restart < 100; ++restart)
 		{
 			gibbs.burnIn(restart);
-			gibbs.sample(20);
+			
+			if (restart == 0)
+			{
+				// Test for infinite energy annealing bug 403.
+				// Instead of running many samples to drive energy to infinity, just start with a really low
+				// temperature.
+				double temperature = gibbs.getTemperature();
+				gibbs.setTemperature(1e-300);
+				gibbs.sample(20);
+				gibbs.setTemperature(temperature);
+			}
+			else
+			{
+				gibbs.sample(20);
+			}
 			
 			if (gibbs.getBestSampleScore() <= cutoffScore)
 			{
+//				System.out.println("required restarts: " + restart);
 				break;
 			}
 		}
