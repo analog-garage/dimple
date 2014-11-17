@@ -111,6 +111,12 @@ public class DiscreteFactor extends Factor
 	}
 	
 	@Override
+	public boolean isDiscrete()
+	{
+		return true;
+	}
+
+	@Override
 	protected FactorFunction removeFixedVariablesImpl(
 		FactorFunction oldFunction,
 		@Nullable IFactorTable oldFactorTable,
