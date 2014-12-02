@@ -33,6 +33,7 @@ import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionRegistry;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraphRegistry;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.options.DimpleOptionRegistry;
 import com.analog.lyric.dimple.solvers.core.DimpleSolverRegistry;
@@ -164,6 +165,8 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	
 	private final FactorFunctionRegistry _factorFunctions = new FactorFunctionRegistry();
 	
+	private final FactorGraphRegistry _factorGraphs = new FactorGraphRegistry();
+	
 	private final ConstructorRegistry<IGenericSampler> _genericSamplers =
 		new ConstructorRegistry<IGenericSampler>(IGenericSampler.class);
 
@@ -178,7 +181,7 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	@GuardedBy("_eventListenerLock")
 	private volatile @Nullable DimpleEventListener _eventListener = null;
 	private final Object _eventListenerLock = new Object();
-	
+
 	/*--------------
 	 * Construction
 	 */
@@ -531,6 +534,17 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	public FactorFunctionRegistry factorFunctions()
 	{
 		return _factorFunctions;
+	}
+	
+	/**
+	 * Registry of factor graphs associated with this environment.
+	 * <p>
+	 * @since 0.08
+	 * @see FactorGraphRegistry
+	 */
+	public FactorGraphRegistry factorGraphs()
+	{
+		return _factorGraphs;
 	}
 	
 	/**

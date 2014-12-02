@@ -117,7 +117,9 @@ public class FactorGraph extends FactorBase
 	 * specifies a different one, this will be the value of {@link DimpleEnvironment.active}
 	 * when the object was constructed.
 	 */
-	private final DimpleEnvironment _env;
+	private transient final DimpleEnvironment _env;
+	
+	private transient final int _graphId;
 
 	private volatile @Nullable IDimpleEventSource _eventAndOptionParent;
 	
@@ -192,6 +194,7 @@ public class FactorGraph extends FactorBase
 		@Nullable IFactorGraphFactory<?> solver)
 	{
 		_env = DimpleEnvironment.active();
+		_graphId = _env.factorGraphs().registerIdForFactorGraph(this);
 		_eventAndOptionParent = _env;
 		
 		if (boundaryVariables != null)
@@ -235,6 +238,17 @@ public class FactorGraph extends FactorBase
 	public String getClassLabel()
 	{
 		return "Graph";
+	}
+	
+	/**
+	 * Unique identifier of graph within its {@linkplain #getEnvironment() environment}.
+	 * <p>
+	 * @since 0.08
+	 * @see DimpleEnvironment#getFactorGraphWithId
+	 */
+	public int getGraphId()
+	{
+		return _graphId;
 	}
 
 	/*--------------------------
