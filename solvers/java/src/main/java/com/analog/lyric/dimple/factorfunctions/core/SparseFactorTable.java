@@ -796,12 +796,6 @@ public class SparseFactorTable extends SparseFactorTableBase implements IFactorT
 	}
 
 	@Override
-	public void serializeToXML(String serializeName, String targetDirectory)
-	{
-		throw DimpleException.unsupportedMethod(getClass(), "serializeToXML");
-	}
-
-	@Override
 	public void setDeterministicOutputIndices(int[] outputIndices)
 	{
 		throw notDeterministic("setDeterministicOutputIndices");

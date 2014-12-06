@@ -18,10 +18,13 @@ package com.analog.lyric.dimple.model.factors;
 
 import java.util.List;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
+import com.analog.lyric.dimple.model.core.NodeType;
 import com.analog.lyric.dimple.model.variables.Variable;
-import org.eclipse.jdt.annotation.Nullable;
+import com.analog.lyric.util.misc.Internal;
 
 
 public abstract class FactorBase extends Node
@@ -49,9 +52,10 @@ public abstract class FactorBase extends Node
 		super(id);
 	}
 	
-	public FactorBase()
+	@Internal
+	public FactorBase(NodeType type)
 	{
-		super();
+		super(type);
 	}
 
 	/*--------------

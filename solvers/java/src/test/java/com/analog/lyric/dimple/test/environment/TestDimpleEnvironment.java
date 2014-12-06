@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.test.environment;
 
 import static org.junit.Assert.*;
 
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -35,6 +36,7 @@ import com.analog.lyric.dimple.events.IDimpleEventSource;
 import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.NodeId;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
@@ -56,6 +58,11 @@ public class TestDimpleEnvironment extends DimpleTestBase
 		final DimpleEnvironment global1 = DimpleEnvironment.defaultEnvironment();
 		final DimpleEnvironment local1 = DimpleEnvironment.active();
 		assertSame(global1, local1);
+		
+		UUID uid = global1.getUUID();
+		assertEquals(2, uid.variant());
+		assertEquals(NodeId.DIMPLE_UUID_VERSION, uid.version());
+		assertEquals(0, uid.getLeastSignificantBits() & (1L<<62) - 1);
 		
 		Thread thread1 = new Thread() {
 			@Override
@@ -83,6 +90,7 @@ public class TestDimpleEnvironment extends DimpleTestBase
 		DimpleEnvironment.setDefaultEnvironment(global2);
 		assertSame(global2, DimpleEnvironment.defaultEnvironment());
 		assertSame(local1, DimpleEnvironment.active());
+		assertNotEquals(uid, global2.getUUID());
 		
 		Thread thread2 = new Thread() {
 			@Override
@@ -218,6 +226,9 @@ public class TestDimpleEnvironment extends DimpleTestBase
 		
 		assertEquals(Normal.class, env.factorFunctions().getClass("Normal"));
 		assertSame(env.factorFunctions(), env.factorFunctions());
+		
+		assertNull(env.factorGraphs().getGraphWithId(0));
+		assertSame(env.factorGraphs(), env.factorGraphs());
 		
 		assertEquals(SliceSampler.class, env.genericSamplers().getClass("SliceSampler"));
 		assertSame(env.genericSamplers(), env.genericSamplers());

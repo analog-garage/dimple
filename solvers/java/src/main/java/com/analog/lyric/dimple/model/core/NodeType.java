@@ -41,4 +41,20 @@ public enum NodeType
 	 * Node is a {@link Variable}.
 	 */
 	VARIABLE;
+	
+	/*-------
+	 * State
+	 */
+	
+	/**
+	 * Single-character representation of type.
+	 * <p>
+	 * This is simply the first character of the name ('F', 'G', or 'V').
+	 * <p>
+	 * @since 0.08
+	 */
+	public char character()
+	{
+		return name().charAt(0);
+	}
 }

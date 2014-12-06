@@ -340,9 +340,6 @@ public interface IFactorTable extends IFactorTableBase
 	 */
 	public void randomizeWeights(Random rand);
 
-	@Deprecated
-	public void serializeToXML(String serializeName, String targetDirectory);
-	
 	/**
 	 * Sets representation to {@link FactorTableRepresentation#DETERMINISTIC} with given set of
 	 * outputs.

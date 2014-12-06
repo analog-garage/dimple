@@ -17,11 +17,10 @@
 package com.analog.lyric.util.test;
 
 import static java.util.Objects.*;
+import static org.junit.Assert.*;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.XorDelta;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -143,44 +142,32 @@ public class Demo {
 		fgMid.addGraph(fgLeaf, vMidO2);
 		fgRoot.addGraph(fgMid, vRootO2);
 
-
-		//Find objects by name - cause exception if not found
-		ArrayList<Object> temps = new ArrayList<Object>();
-		
 		//unqualified immediate children
-		temps.add(fgRoot.getObjectByName("fgMid"));
-		temps.add(fgRoot.getObjectByName("vRootB1"));
-		temps.add(fgRoot.getObjectByName("vRootO1"));
-		temps.add(fgRoot.getObjectByName("vRootO2"));
+		assertNotNull(fgRoot.getObjectByName("fgMid"));
+		assertNotNull(fgRoot.getObjectByName("vRootB1"));
+		assertNotNull(fgRoot.getObjectByName("vRootO1"));
+		assertNotNull(fgRoot.getObjectByName("vRootO2"));
 
 		//qualified immediate children
-		temps.add(fgRoot.getObjectByName("fgRoot.fgMid"));
-		temps.add(fgRoot.getObjectByName("fgRoot.vRootB1"));
-		temps.add(fgRoot.getObjectByName("fgRoot.vRootO1"));
-		temps.add(fgRoot.getObjectByName("fgRoot.vRootO2"));
+		assertNotNull(fgRoot.getObjectByName("fgRoot.fgMid"));
+		assertNotNull(fgRoot.getObjectByName("fgRoot.vRootB1"));
+		assertNotNull(fgRoot.getObjectByName("fgRoot.vRootO1"));
+		assertNotNull(fgRoot.getObjectByName("fgRoot.vRootO2"));
 		
 		//further down
-		temps.add(fgRoot.getObjectByName("fgRoot.fgMid.vMidO1"));
-		temps.add(fgRoot.getObjectByName("fgRoot.fgMid.vMidO2"));
-		temps.add(fgRoot.getObjectByName("fgRoot.fgMid.fgLeaf"));
-		temps.add(fgRoot.getObjectByName("fgRoot.fgMid.fgLeaf.vLeafO1"));
-		temps.add(fgRoot.getObjectByName("fgRoot.fgMid.fgLeaf.vLeafO2"));
+		assertNotNull(fgRoot.getObjectByName("fgRoot.fgMid.vMidO1"));
+		assertNotNull(fgRoot.getObjectByName("fgRoot.fgMid.vMidO2"));
+		assertNotNull(fgRoot.getObjectByName("fgRoot.fgMid.fgLeaf"));
+		assertNotNull(fgRoot.getObjectByName("fgRoot.fgMid.fgLeaf.vLeafO1"));
+		assertNotNull(fgRoot.getObjectByName("fgRoot.fgMid.fgLeaf.vLeafO2"));
 
 		//sub graphs still have their own tables, and can be searched
 		fgMid = requireNonNull((FactorGraph) fgRoot.getObjectByName("fgMid"));
 		fgLeaf = requireNonNull((FactorGraph) fgMid.getObjectByName("fgLeaf"));
-		temps.add(fgMid.getObjectByName("vMidO1"));
-		temps.add(fgMid.getObjectByName("fgMid.fgLeaf.vLeafO1"));
-		temps.add(fgLeaf.getObjectByName("vLeafO1"));
+		assertNotNull(fgMid.getObjectByName("vMidO1"));
+		assertNotNull(fgMid.getObjectByName("fgMid.fgLeaf.vLeafO1"));
+		assertNotNull(fgLeaf.getObjectByName("vLeafO1"));
 		
-		//prove it worked
-		for(Object o : temps)
-		{
-			if(o == null)
-			{
-				throw new DimpleException("WHOOPS didn't find someone");
-			}
-		}
 		if(print)
 		{
 			System.out.println("\n\n-------------------------------------------------------------------------");

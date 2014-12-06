@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.UUID;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
@@ -31,30 +32,29 @@ import com.analog.lyric.dimple.model.core.NodeId;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class SolverNamesTest extends DimpleTestBase
 {
 	@Test
 	public void test_simpleNameStuff()
 	{
-		Discrete variable = new Discrete(NodeId.getNext(), new Object[]{0.0, 1.0}, "Variable");
+		Discrete variable = new Discrete(DiscreteDomain.bit(), "Variable");
 		
 		assertTrue(variable.getParentGraph() == null);
-		assertTrue(variable.getName().equals(variable.getUUID().toString()));
+		assertEquals(NodeId.defaultNameForLocalId(variable.getId()), variable.getName());
 		
 		FactorGraph fg = new FactorGraph(new Discrete[]{variable});
-		assertTrue(fg.getParentGraph() == null);
-		assertTrue(fg.getName().equals(fg.getUUID().toString()));
-		assertTrue(variable.getParentGraph() == fg);
+		assertNull(fg.getParentGraph());
+		assertEquals(NodeId.defaultNameForGraphId(fg.getGraphId()), fg.getName());
+		assertEquals(fg, variable.getParentGraph());
 				
 		String fgNameSet = "FactorGraphName";
 		fg.setName(fgNameSet);
-		assertTrue(fg.getName().equals(fgNameSet));
+		assertEquals(fgNameSet, fg.getName());
 		
 		String variableNameSet = "VariableGraphName";
 		variable.setName(variableNameSet);
-		assertTrue(variable.getName().equals(variableNameSet));
+		assertEquals(variableNameSet, variable.getName());
 	}
 
 	@Test
@@ -75,10 +75,10 @@ public class SolverNamesTest extends DimpleTestBase
 			variables[2].getId(),
 		};
 		//simple checks on variables
-		for(int i = 0; i < variableIds.length; ++i)
+		for (Discrete variable : variables)
 		{
-			assertTrue(variables[i].getParentGraph() == null);
-			assertTrue(variables[i].getName().equals(variables[i].getUUID().toString()));
+			assertNull(variable.getParentGraph());
+			assertEquals(NodeId.defaultNameForLocalId(variable.getId()), variable.getName());
 		}
 		
 		//new graph
@@ -86,8 +86,8 @@ public class SolverNamesTest extends DimpleTestBase
 		FactorGraph fg = new FactorGraph(dummyVars);
 	
 		//simple checks on graph
-		assertTrue(fg.getParentGraph() == null);
-		assertTrue(fg.getName().equals(fg.getUUID().toString()));
+		assertNull(fg.getParentGraph());
+		assertEquals(NodeId.defaultNameForGraphId(fg.getGraphId()), fg.getName());
 		
 		int[][] dummyTable = new int[3][3];
   		for(int i = 0; i < dummyTable.length; ++i)
@@ -115,7 +115,7 @@ public class SolverNamesTest extends DimpleTestBase
 				FactorTable.create(dummyTable, dummyValues, DiscreteDomain.create(0,1), DiscreteDomain.create(0,1), DiscreteDomain.create(0,1)));
 		//fg.createTable(dummyTable, dummyValues,);
 		Factor fn = fg.addFactor(factorFunc, variables);
-		assertTrue(fn.getName().equals(fn.getUUID().toString()));
+		assertEquals(NodeId.defaultNameForLocalId(fn.getId()), fn.getName());
 		
 		//check parent
 		assertTrue(fn.getParentGraph() == fg);
@@ -125,12 +125,9 @@ public class SolverNamesTest extends DimpleTestBase
 		}
 		
 		//Check UUIDs
-		Factor fnNotFound = (Factor) fg.getObjectByName(fn.getExplicitName());
-		Factor fnFound = (Factor) fg.getObjectByName(fn.getName());
-		Factor fnFoundUUID = (Factor) fg.getObjectByUUID(fn.getUUID());
-		assertTrue(fnNotFound == null);
-		assertTrue(fnFound == fn);
-		assertTrue(fnFoundUUID == fn);
+		assertNull(fg.getObjectByName(fn.getExplicitName()));
+		assertEquals(fn, fg.getObjectByName(fn.getName()));
+		assertEquals(fn, fg.getObjectByUUID(fn.getUUID()));
 		
 		for(int i = 0; i < variableIds.length; ++i)
 		{
@@ -156,29 +153,24 @@ public class SolverNamesTest extends DimpleTestBase
 		assertTrue(fn.getName().equals(functionBaseName));
 		assertTrue(fn.getExplicitName().equals(functionBaseName));
 
-		fnNotFound = (Factor) fg.getObjectByName(fn.getUUID().toString());
-		fnFound = (Factor) fg.getObjectByName(fn.getName());
-		Factor fnFoundQualified = (Factor) fg.getObjectByName(fn.getQualifiedName());
-		assertTrue(fnNotFound == null);
-		assertTrue(fnFound == fn);
-		assertTrue(fnFoundQualified == fn);
+		assertSame(fn, fg.getObjectByName(fn.getUUID().toString()));
+		assertSame(fn, fg.getObjectByName(fn.getName()));
+		assertSame(fn, fg.getObjectByName(fn.getQualifiedName()));
 		
 		String variableBaseName = "vName";
-		for(int i = 0; i < variableIds.length; ++i)
+		for (int i = 0; i < variableIds.length; ++i)
 		{
+			Discrete variable = variables[i];
 			String VariableName = variableBaseName + Integer.toString(i);
-			variables[i].setName(VariableName);
-			assertTrue(variables[i].getName().equals(VariableName));
+			variable.setName(VariableName);
+			assertTrue(variable.getName().equals(VariableName));
 			String qualifiedName = fg.getName() + "." + VariableName;
-			String variableQualifiedName = variables[i].getQualifiedName();
+			String variableQualifiedName = variable.getQualifiedName();
 			assertTrue(variableQualifiedName.equals(qualifiedName));
 			
-			Discrete vNotFound = (Discrete) fg.getObjectByName(variables[i].getUUID().toString());
-			Discrete vFound = (Discrete) fg.getObjectByName(variables[i].getName());
-			Discrete vFoundQualified = (Discrete) fg.getObjectByName(variables[i].getQualifiedName());
-			assertTrue(vNotFound == null);
-			assertTrue(vFound == variables[i]);
-			assertTrue(vFoundQualified == variables[i]);
+			assertSame(variable, fg.getObjectByName(variable.getUUID().toString()));
+			assertSame(variable, fg.getObjectByName(variable.getName()));
+			assertSame(variable, fg.getObjectByName(variable.getQualifiedName()));
 		}
 		
 		//invalid names
@@ -201,12 +193,9 @@ public class SolverNamesTest extends DimpleTestBase
 		assertTrue(fn.getName().equals(functionName2));
 		assertTrue(fn.getExplicitName().equals(functionName2));
 
-		fnNotFound = (Factor) fg.getObjectByName(fn.getUUID().toString());
-		fnFound = (Factor) fg.getObjectByName(fn.getName());
-		fnFoundQualified = (Factor) fg.getObjectByName(fn.getQualifiedName());
-		assertTrue(fnNotFound == null);
-		assertTrue(fnFound == fn);
-		assertTrue(fnFoundQualified == fn);
+		assertSame(fn, fg.getObjectByName(fn.getUUID().toString()));
+		assertSame(fn, fg.getObjectByName(fn.getName()));
+		assertSame(fn, fg.getObjectByName(fn.getQualifiedName()));
 		
 		//fg
 		String fgName2 = fgNameSet + "2";
@@ -218,33 +207,24 @@ public class SolverNamesTest extends DimpleTestBase
 		//variable
 		String vName2 = variables[0].getName() + "2";
 		variables[0].setName(vName2);
-		Discrete vNotFound = (Discrete) fg.getObjectByName(variables[0].getUUID().toString());
-		Discrete vFound = (Discrete) fg.getObjectByName(variables[0].getName());
-		Discrete vFoundQualified = (Discrete) fg.getObjectByName(variables[0].getQualifiedName());
-		assertTrue(vNotFound == null);
-		assertTrue(vFound == variables[0]);
-		assertTrue(vFoundQualified == variables[0]);
+		assertSame(variables[0], fg.getObjectByName(variables[0].getUUID().toString()));
+		assertSame(variables[0], fg.getObjectByName(variables[0].getName()));
+		assertSame(variables[0], fg.getObjectByName(variables[0].getQualifiedName()));
 		
 		//no more names
 		fn.setName(null);
 		fg.setName(null);
 		variables[0].setName(null);
 
-		fnNotFound = (Factor) fg.getObjectByName(fn.getExplicitName());
-		fnFound = (Factor) fg.getObjectByName(fn.getName());
-		fnFoundUUID = (Factor) fg.getObjectByUUID(fn.getUUID());
-		assertTrue(fg.getName().equals(fg.getUUID().toString()));
-		assertTrue(fg.getExplicitName() == null);
-		assertTrue(fnNotFound == null);
-		assertTrue(fnFound == fn);
-		assertTrue(fnFoundUUID == fn);
+		assertNull(fg.getObjectByName(fn.getExplicitName()));
+		assertSame(fn, fg.getObjectByName(fn.getName()));
+		assertSame(fn, fg.getObjectByUUID(fn.getUUID()));
+		assertEquals(NodeId.defaultNameForGraphId(fg.getGraphId()), fg.getName());
+		assertNull(fg.getExplicitName());
 		
-		vNotFound = (Discrete) fg.getObjectByName(variables[0].getExplicitName());
-		vFound = (Discrete) fg.getObjectByName(variables[0].getName());
-		Discrete vFoundUUID = (Discrete) fg.getObjectByUUID(variables[0].getUUID());
-		assertTrue(vNotFound == null);
-		assertTrue(vFound == variables[0]);
-		assertTrue(vFoundUUID == variables[0]);
+		assertNull(fg.getObjectByName(variables[0].getExplicitName()));
+		assertSame(variables[0], fg.getObjectByName(variables[0].getName()));
+		assertSame(variables[0], fg.getObjectByUUID(variables[0].getUUID()));
 	}
 	
 	void typeByName(FactorGraph fg, @Nullable Object expected, boolean equals, String id, String type)

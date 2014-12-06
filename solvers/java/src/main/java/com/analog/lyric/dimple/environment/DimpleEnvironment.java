@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.environment;
 
+import java.security.SecureRandom;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
@@ -34,6 +36,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionRegistry;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.FactorGraphRegistry;
+import com.analog.lyric.dimple.model.core.NodeId;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.options.DimpleOptionRegistry;
 import com.analog.lyric.dimple.solvers.core.DimpleSolverRegistry;
@@ -158,6 +161,9 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	// variable, there will typically be only one environment shared across all threads
 	// so care should be taken to ensure that the code is thread safe.
 	
+	private final long _envId;
+	private final UUID _uuid;
+	
 	/**
 	 * Logging instance for this environment.
 	 */
@@ -193,6 +199,14 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 */
 	public DimpleEnvironment()
 	{
+		this(new SecureRandom().nextLong());
+	}
+	
+	public DimpleEnvironment(long envId)
+	{
+		_envId = envId;
+		_uuid = NodeId.makeUUID(envId, 0L);
+		
 		Logger logger = getDefaultLogger();
 		
 		if (loadedFromMATLAB() &&
@@ -382,6 +396,35 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	{
 		// TODO: this does not do anything right now. But if the environment ever ends up storing
 		// references to the models it contains, we might want to pass this on to them...
+	}
+	
+	/*------------------------
+	 * Identification methods
+	 */
+	
+	/**
+	 * Randomly generated unique id for environment instance.
+	 * <p>
+	 * Identifier will be in range {@link NodeId#ENV_ID_MIN} and
+	 * {@link NodeId#ENV_ID_MAX}.
+	 * 
+	 * @since 0.08
+	 */
+	public long getEnvId()
+	{
+		return _envId;
+	}
+	
+	/**
+	 * Randomly generated UUID for environment instance.
+	 * <p>
+	 * @since 0.08
+	 * @see #getEnvId()
+	 * @see NodeId#makeUUID(long, long)
+	 */
+	public UUID getUUID()
+	{
+		return _uuid;
 	}
 	
 	/*----------------------------

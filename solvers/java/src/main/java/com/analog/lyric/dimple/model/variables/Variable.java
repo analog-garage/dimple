@@ -98,11 +98,11 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
     
 	public Variable(Domain domain)
 	{
-		this(NodeId.getNext(), "Variable", domain);
+		this(NodeId.getNextVariableId(), "Variable", domain);
 	}
 	public Variable(Domain domain, String modelerClassName)
 	{
-		this(NodeId.getNext(), modelerClassName, domain);
+		this(NodeId.getNextVariableId(), modelerClassName, domain);
 	}
 	
 	protected Variable(int id, String modelerClassName, Domain domain)

@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.CustomFactorFunctionWrapper;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
@@ -51,7 +53,6 @@ import com.analog.lyric.util.misc.FactorGraphDiffs;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.MapList;
 import com.analog.lyric.util.misc.Matlab;
-import org.eclipse.jdt.annotation.Nullable;
 
 @Matlab
 public class PFactorGraphVector extends PFactorVector
@@ -602,12 +603,6 @@ public class PFactorGraphVector extends PFactorVector
 			getGraph().remove((Factor)n);
 	}
 	
-	
-	public String serializeToXML(String FgName, String targetDirectory)
-	{
-		return getGraph().serializeToXML(FgName, targetDirectory);
-	}
-
 	public void initialize()
     {
     	if (getGraph().isSolverRunning())

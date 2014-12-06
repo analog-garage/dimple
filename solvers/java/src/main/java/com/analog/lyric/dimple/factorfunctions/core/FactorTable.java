@@ -720,35 +720,6 @@ public class FactorTable extends SparseFactorTableBase
 		setRepresentation(representation);
 	}
 	
-	@Deprecated
-	@Override
-	public void serializeToXML(String serializeName, String targetDirectory)
-	{
-		serializeToXML(this, serializeName, targetDirectory);
-	}
-	
-	@Deprecated
-	static public void serializeToXML(FactorTable ct, String serializeName, String targetDirectory)
-	{
-		com.analog.lyric.dimple.model.core.xmlSerializer toXML
-			= new com.analog.lyric.dimple.model.core.xmlSerializer();
-		
-		toXML.serializeFactorTableToXML(ct,
-									   serializeName,
-									   targetDirectory);
-	}
-
-	@Deprecated
-	public static @Nullable IFactorTable deserializeFromXML(String docName)
-	{
-		com.analog.lyric.dimple.model.core.xmlSerializer x
-			= new com.analog.lyric.dimple.model.core.xmlSerializer();
-		
-		IFactorTable mct = x.deserializeFactorTableFromXML(docName);
-		
-		return mct;
-	}
-
 	/*----------------
 	 * Object methods
 	 */

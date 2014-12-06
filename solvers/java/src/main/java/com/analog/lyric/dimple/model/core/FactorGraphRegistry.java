@@ -41,6 +41,8 @@ public class FactorGraphRegistry
 	 * State
 	 */
 	
+	private static final int MAX_GRAPH_ID = (1<<28) - 1;
+	
 	@GuardedBy("this")
 	private long _nextId = 0;
 	
@@ -79,17 +81,14 @@ public class FactorGraphRegistry
 		synchronized(_graphById)
 		{
 			long longid = ++_nextId;
-			int id = (int)longid;
+			int id = (int)longid & MAX_GRAPH_ID;
 			
-			if (longid >= 0x100000000L)
+			if (longid > MAX_GRAPH_ID)
 			{
 				// Id wrapped around. Need to find next available slot.
-				// We don't need to support more than 32 bits for the graph ids, but
-				// it is theoretically possible to wrap around, so in that unlikely case,
-				// we need to check to make sure one is not currently in use.
 				while (id != 0 && _graphById.containsKey(id))
 				{
-					id = (int)++_nextId;
+					id = (int)++_nextId & MAX_GRAPH_ID;
 				}
 			}
 			

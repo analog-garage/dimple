@@ -18,7 +18,6 @@ package com.analog.lyric.dimple.model.core;
 
 import static java.util.Objects.*;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
@@ -35,10 +34,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.eclipse.jdt.annotation.Nullable;
-import org.xml.sax.SAXException;
 
 import cern.colt.list.IntArrayList;
 
@@ -117,9 +113,9 @@ public class FactorGraph extends FactorBase
 	 * specifies a different one, this will be the value of {@link DimpleEnvironment.active}
 	 * when the object was constructed.
 	 */
-	private transient final DimpleEnvironment _env;
+	private final DimpleEnvironment _env;
 	
-	private transient final int _graphId;
+	private final int _graphId;
 
 	private volatile @Nullable IDimpleEventSource _eventAndOptionParent;
 	
@@ -154,8 +150,7 @@ public class FactorGraph extends FactorBase
 	private boolean _numStepsInfinite = true;
 	
 	//new identity related members
-	private final HashMap<String, Object> _name2object = new HashMap<String, Object>();
-	private final HashMap<UUID, Object> _UUID2object = new HashMap<UUID, Object>();
+	private final HashMap<String, Node> _name2object = new HashMap<>();
 
 	/*--------------
 	 * Construction
@@ -193,6 +188,8 @@ public class FactorGraph extends FactorBase
 		@Nullable String name,
 		@Nullable IFactorGraphFactory<?> solver)
 	{
+		super(NodeType.GRAPH);
+		
 		_env = DimpleEnvironment.active();
 		_graphId = _env.factorGraphs().registerIdForFactorGraph(this);
 		_eventAndOptionParent = _env;
@@ -243,14 +240,55 @@ public class FactorGraph extends FactorBase
 	/**
 	 * Unique identifier of graph within its {@linkplain #getEnvironment() environment}.
 	 * <p>
+	 * Will be in the range from {@link NodeId#GRAPH_ID_MIN} to {@link NodeId#GRAPH_ID_MAX}.
+	 * <p>
 	 * @since 0.08
-	 * @see DimpleEnvironment#getFactorGraphWithId
 	 */
 	public int getGraphId()
 	{
 		return _graphId;
 	}
 
+	@Override
+	public long getGlobalId()
+	{
+		if (getParentGraph() == null)
+		{
+			// If there is no parent graph, then use the graph id as the id.
+			return _graphId | (NodeId.GRAPH_TYPE<<NodeId.LOCAL_ID_NODE_TYPE_OFFSET);
+		}
+		else
+		{
+			return super.getGlobalId();
+		}
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * For root graphs (that have no {@linkplain #getParentGraph() parent graph})
+	 * the implicitly generated name will be computed by {@link NodeId#defaultNameForGraphId(int)}
+	 * using the value of {@link #getGraphId()}.
+	 */
+	@Override
+	public String getName()
+	{
+		String name = _name;
+		if (name != null)
+		{
+			return name;
+		}
+		
+		if (getParentGraph() == null)
+		{
+			return NodeId.defaultNameForGraphId(_graphId);
+		}
+		else
+		{
+			return NodeId.defaultNameForLocalId(getId());
+		}
+	}
+	
 	/*--------------------------
 	 * IDimpleEnvironmentHolder
 	 */
@@ -498,7 +536,7 @@ public class FactorGraph extends FactorBase
             setVariableSolver(var);
 
             BlastFromThePastFactor f;
-            f = new BlastFromThePastFactor(NodeId.getNext(), var,factorPort);
+            f = new BlastFromThePastFactor(NodeId.getNextFactorId(), var,factorPort);
 
             addFactor(f,new Variable[]{var});
 
@@ -670,9 +708,9 @@ public class FactorGraph extends FactorBase
 
 		Factor f;
 		if (allDomainsAreDiscrete(vars))
-			f = new DiscreteFactor(NodeId.getNext(),factorFunction,vars);
+			f = new DiscreteFactor(NodeId.getNextFactorId(),factorFunction,vars);
 		else
-			f = new Factor(NodeId.getNext(),factorFunction,vars);
+			f = new Factor(NodeId.getNextFactorId(),factorFunction,vars);
 
 		addFactor(f,vars);
 
@@ -818,7 +856,6 @@ public class FactorGraph extends FactorBase
 			_boundaryVariables.add(v);
 	
 	
-			UUID uuid = v.getUUID();
 			String explicitName = v.getExplicitName();
 	
 			if(explicitName != null && getObjectByName(explicitName) != null && v.getParentGraph() != this)
@@ -831,8 +868,6 @@ public class FactorGraph extends FactorBase
 			{
 				_name2object.put(explicitName, v);
 			}
-	
-			_UUID2object.put(uuid, v);
 	
 			//being the root, at least for the moment,
 			//I'm this variable's owner, if it has no other
@@ -1328,7 +1363,6 @@ public class FactorGraph extends FactorBase
 		{
 			for(Variable v : _boundaryVariables)
 			{
-				_UUID2object.remove(v.getUUID());
 				String explicitName = v.getExplicitName();
 				if(explicitName != null)
 				{
@@ -1426,7 +1460,7 @@ public class FactorGraph extends FactorBase
 					Factor fCopy = fTemplate.clone();
 					old2newObjs.put(fTemplate,fCopy);
 
-					addNameAndUUID(fCopy);
+					addName(fCopy);
 					fCopy.setParentGraph(this);
 					_ownedFactors.add(fCopy);
 					for (INode n : fTemplate.getSiblings())
@@ -1650,7 +1684,7 @@ public class FactorGraph extends FactorBase
 
 	private void addOwnedFactor(Factor factor, boolean absorbedFromSubgraph)
 	{
-		addNameAndUUID(factor);
+		addName(factor);
 		factor.setParentGraph(this);
 		_ownedFactors.add(factor);
 		if ((_flags & FACTOR_ADD_EVENT) != 0)
@@ -1661,7 +1695,7 @@ public class FactorGraph extends FactorBase
 
 	private void addOwnedSubgraph(FactorGraph subgraph, boolean absorbedFromSubgraph)
 	{
-		addNameAndUUID(subgraph);
+		addName(subgraph);
 		subgraph.setParentGraph(this);
 		_ownedFactors.add(subgraph);
 		_ownedSubGraphs.add(subgraph);
@@ -1674,8 +1708,9 @@ public class FactorGraph extends FactorBase
 	
 	private void addOwnedVariable(Variable variable, boolean absorbedFromSubgraph)
 	{
+		addName(variable);
 		//Only insert if not already there.
-		if(addNameAndUUID(variable))
+		if (!_ownedVariables.contains(variable))
 		{
 			//Tell variable about us...
 			variable.setParentGraph(this);
@@ -1889,7 +1924,6 @@ public class FactorGraph extends FactorBase
 
 	private void removeNode(Node n)
 	{
-		_UUID2object.remove(n.getUUID());
 		String explicitName = n.getExplicitName();
 		if(explicitName != null)
 		{
@@ -2689,37 +2723,26 @@ public class FactorGraph extends FactorBase
 	//
 	//=========
 	
-	private boolean addNameAndUUID(INameable nameable)
+	private void addName(Node nameable)
 	{
-		boolean added = false;
-		UUID uuid = nameable.getUUID();
 		String explicitName = nameable.getExplicitName();
 
-		if(_UUID2object.get(uuid) == null)
+		//Check + insert name if there is one
+		if (explicitName != null)
 		{
-			//(true or exception...)
-			added = true;
-
-			//Check + insert name if there is one
-			if(explicitName != null)
+			Object obj = _name2object.get(explicitName);
+			if (obj != null && obj != nameable)
 			{
-				if(_name2object.get(explicitName) != null)
-				{
-					throw new DimpleException("ERROR variable name " + explicitName + " already in graph");
-				}
-
-				_name2object.put(explicitName, nameable);
+				throw new DimpleException("ERROR variable name " + explicitName + " already in graph");
 			}
 
-			_UUID2object.put(uuid, nameable);
+			_name2object.put(explicitName, nameable);
 		}
-
-		return added;
 	}
 
-	public void setChildUUID(INameable child, UUID newUUID)
+	public void setChildName(Node child, @Nullable String newName)
 	{
-		INameable childFound = (INameable) getObjectByUUID(child.getUUID());
+		Node childFound = getNodeByGlobalId(child.getGlobalId());
 
 		//If it's not our child, bad
 		if(childFound == null)
@@ -2727,27 +2750,7 @@ public class FactorGraph extends FactorBase
 			throw new DimpleException("ERROR child UUID not found");
 		}
 		//If new name already here, bad
-		else if(getObjectByUUID(newUUID) != null)
-		{
-			throw new DimpleException("ERROR UUID already present in parent");
-		}
-
-		//remove old UUID
-		_UUID2object.remove(child.getUUID());
-		//add new UUID, if there is one
-		_UUID2object.put(newUUID, childFound);
-	}
-	public void setChildName(INameable child, @Nullable String newName)
-	{
-		INameable childFound = (INameable) getObjectByUUID(child.getUUID());
-
-		//If it's not our child, bad
-		if(childFound == null)
-		{
-			throw new DimpleException("ERROR child UUID not found");
-		}
-		//If new name already here, bad
-		else if(getObjectByName(newName) != null)
+		else if (getObjectByName(newName) != null)
 		{
 			throw new DimpleException("ERROR name already present in parent");
 		}
@@ -2766,110 +2769,118 @@ public class FactorGraph extends FactorBase
 		}
 	}
 
-	private @Nullable Object getObjectByNameOrUUIDWithoutRecurse(String string)
+	@SuppressWarnings("null")
+	public @Nullable Node getObjectByName(@Nullable String name)
 	{
-		//try first as a simple name; qualified names won't be found
-		//	'.' is prevented from being part of a simple name
-		Object o = _name2object.get(string);
-
-		//If not found, try as if string is a string version of a UUID
-		if(o == null)
+		Node obj = null;
+		
+		if (name != null && !name.isEmpty())
 		{
-			try
+			if (NodeId.isUUIDString(name))
 			{
-				//Convert, if possible...
-				UUID uuid = UUID.fromString(string);
-				//...search
-				INameable nameable = (INameable) _UUID2object.get(uuid);
-
-				//finally enforce 1-and-only-1 name (explicit OR UUID)
-				//we enforce this to not have to guarantee that the opposite
-				//either at every level of the hierarchy)
-
-				if(nameable != null && nameable.getExplicitName() == null)
-				{
-					o = nameable;
-				}
-				//else we were asked for UUID by name, and actually found it,
-				//but the object has an explicit name. (See comment above).
+				obj = getObjectByUUID(UUID.fromString(name));
 			}
-			//just quietly swallow case where name couldn't be UUID
-			catch(IllegalArgumentException e){}
-		}//else o already there
-
-		return o;
-	}
-
-	public @Nullable Object getObjectByName(@Nullable String name)
-	{
-		Object o = null;
-
-		if(name != null && !name.equals(""))
-		{
-			//Names can be of the forms:
-			//	object_name
-			//	root_name.object_name
-			//  root_name.subgraph_name0.subgraph_nameN.object_name
-			//
-			//  names are either the explicitly set name, or
-			//		if none was set, the UUID as a string.
-			//
-			//	object_name can refer to a variable, function or subgraph.
-			//	root_name can refers to name of this graph
-			//	subgraphN name refers to name of child graph
-
-
-
-			//Try name as a simple, unqualified name.
-			//If it is qualified, it cannot be found, as
-			//the '.' character cannot be explicitly inserted as part of a name
-			o = getObjectByNameOrUUIDWithoutRecurse(name);
-			if(o == null)
+			else
 			{
-				//See if this is a qualified name...
-				int qualifierIdx = name.indexOf(".");
-				if(qualifierIdx != -1)
+				String remainder = null;
+		
+				int dotOffset = name.indexOf('.');
+				if (dotOffset >= 0)
 				{
-					//First qualifier can be our name. In that case,
-					//strip it, repeat search
-					String baseQualifier = name.substring(0, qualifierIdx);
-					String remainder = name.substring(qualifierIdx + 1, name.length());
-					if(baseQualifier.equals(getName()))
+					remainder = name.substring(dotOffset + 1);
+					name = name.substring(0, dotOffset);
+					
+					// Check to see if name refers to this graph.
+					if (name.equals(_name) || _graphId == NodeId.graphIdFromDefaultName(name))
 					{
-						o = getObjectByName(remainder);
-					}
-					//otherwise see if it is a child name
-					else
-					{
-						//int childQualifierIdx = name.indexOf(".", qualifierIdx + 1);
-						//if(childQualifierIdx != -1)
+						name = remainder;
+						remainder = null;
+
+						dotOffset = name.indexOf('.');
+						if (dotOffset >= 0)
 						{
-							//String childName = name.substring(qualifierIdx + 1, childQualifierIdx);
-							//Object child = getObjectByNameOrUUIDWithoutRecurse(childName);
-							Object child = getObjectByNameOrUUIDWithoutRecurse(baseQualifier);
-
-							//if we found something see if it is a
-							if(child != null && child instanceof FactorGraph)
-							{
-								//found the child!. Strip off child and search in child
-								//String remainder = name.substring(childQualifierIdx + 1, name.length());
-								FactorGraph fgChild = (FactorGraph) child;
-								o = fgChild.getObjectByName(remainder);
-							}//else child isn't a subgraph, so can't search in it
-						}//else first part is only qualifier, and it doesn't match us!
-					}//end of search-children-branch
-				}//else is a simple name (and not found)
-			}//else found the object!
-		}//else null or empty string
-
-		return o;
+							remainder = name.substring(dotOffset + 1);
+							name = name.substring(0, dotOffset);
+						}
+					}
+				}
+		
+				obj = _name2object.get(name);
+				if (obj == null)
+				{
+					obj = getNodeByLocalId(NodeId.localIdFromDefaultName(name));
+				}
+		
+				if (remainder != null && obj instanceof FactorGraph)
+				{
+					FactorGraph subgraph = (FactorGraph)obj;
+					obj = subgraph.getObjectByName(remainder);
+				}
+			}
+		}
+		
+		return obj;
 	}
 
-	public @Nullable Object getObjectByUUID(UUID uuid)
+	public @Nullable Node getObjectByUUID(UUID uuid)
 	{
-		return _UUID2object.get(uuid);
+		return getNodeByGlobalId(NodeId.globalIdFromUUID(uuid));
 	}
-
+	
+	/**
+	 * 
+	 * @param gid
+	 * @return
+	 * @since 0.08
+	 */
+	public @Nullable Node getNodeByGlobalId(long gid)
+	{
+		final int graphId = NodeId.graphIdFromGlobalId(gid);
+		final int id = NodeId.localIdFromGlobalId(gid);
+		if (_graphId == graphId)
+		{
+			return getNodeByLocalId(id);
+		}
+		else
+		{
+			FactorGraph fg = getEnvironment().factorGraphs().getGraphWithId(graphId);
+			if (fg != null && isAncestorOf(fg))
+			{
+				return fg.getNodeByLocalId(id);
+			}
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * 
+	 * @param id
+	 * @return
+	 * @since 0.08
+	 */
+	public @Nullable Node getNodeByLocalId(int id)
+	{
+		switch (id >>> NodeId.LOCAL_ID_NODE_TYPE_OFFSET)
+		{
+		case NodeId.FACTOR_TYPE:
+			return _ownedFactors.getByKey(id);
+		case NodeId.GRAPH_TYPE:
+			return _ownedFactors.getByKey(id);
+		case NodeId.VARIABLE_TYPE:
+			Node obj = _ownedVariables.getByKey(id);
+			if (obj == null && getParentGraph() == null)
+			{
+				// TODO: eventually owned variables will always be in the owned list, even if they
+				// are also boundary variables.
+				obj = _boundaryVariables.getByKey(id);
+			}
+			return obj;
+		default:
+			return null;
+		}
+	}
+	
 	public @Nullable Variable 	getVariableByName(String name)
 	{
 		Variable v = null;
@@ -3372,31 +3383,6 @@ public class FactorGraph extends FactorBase
 		final HashMap<Integer, ArrayList<Variable>> groups = _variableGroups;
 		return groups != null ? groups.get(variableGroupID) : null;
 	}
-
-	//===============
-	// Serialization
-	//===============
-
-	public String serializeToXML(String FgName, String targetDirectory)
-	{
-		com.analog.lyric.dimple.model.core.xmlSerializer toXML
-		= new com.analog.lyric.dimple.model.core.xmlSerializer();
-
-		return toXML.serializeToXML(this, FgName, targetDirectory);
-	}
-
-	static public FactorGraph deserializeFromXML(String docName) throws ParserConfigurationException, SAXException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException
-	{
-		return deserializeFromXML(docName, null);
-	}
-	static public FactorGraph deserializeFromXML(String docName, @Nullable IFactorGraphFactory<?> solver)
-		throws ParserConfigurationException, SAXException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException
-	{
-		com.analog.lyric.dimple.model.core.xmlSerializer x
-		= new com.analog.lyric.dimple.model.core.xmlSerializer();
-		return x.deserializeFromXML(docName, solver);
-	}
-
 
 	//==================
 	// FactorGraphDiffs

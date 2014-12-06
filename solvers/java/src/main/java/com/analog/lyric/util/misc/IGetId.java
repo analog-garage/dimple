@@ -16,7 +16,14 @@
 
 package com.analog.lyric.util.misc;
 
-public interface IGetId 
+import java.util.UUID;
+
+public interface IGetId
 {
 	public int getId();
+	
+	public long getGlobalId();
+
+	public UUID getUUID();
+	
 }

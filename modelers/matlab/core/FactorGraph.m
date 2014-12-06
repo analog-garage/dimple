@@ -897,11 +897,6 @@ classdef FactorGraph < Node
             obj.VectorObject.removeFactor(factor.VectorObject);
         end
         
-        function FileName = serializeToXML(obj, FileName, DirectoryName)
-            FileName = obj.VectorObject.serializeToXML(FileName, DirectoryName);
-        end
-        
-        
         function setSolver(obj,solver,varargin)
             if ischar(solver)
                 registry = getSolverRegistry();

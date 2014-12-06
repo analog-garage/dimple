@@ -16,21 +16,19 @@
 
 package com.analog.lyric.dimple.model.core;
 
-import java.util.UUID;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.util.misc.IGetId;
-import org.eclipse.jdt.annotation.Nullable;
 
 public interface INameable extends IGetId
 {
-	@Override
-	public int getId();
-	
-	public UUID getUUID();
-	public void setUUID(UUID newUUID) ;
-	
 	/**
-	 * Returns explicitly set name or, if name not set, UUID as string
+	 * Returns name of object.
+	 * <p>
+	 * This will be the name set explicitly by {@link #setName(String)}
+	 * or else a generated name depending on the type of object.
+	 * <p>
+	 * @see #getExplicitName()
 	 */
 	public String getName();
 	

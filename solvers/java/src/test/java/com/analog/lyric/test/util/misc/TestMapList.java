@@ -20,10 +20,12 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.Test;
 
 import com.analog.lyric.collect.tests.CollectionTester;
+import com.analog.lyric.dimple.model.core.NodeId;
 import com.analog.lyric.util.misc.FlaggedMapList;
 import com.analog.lyric.util.misc.IGetId;
 import com.analog.lyric.util.misc.IMapList;
@@ -45,6 +47,18 @@ public class TestMapList
 		public int getId()
 		{
 			return _id;
+		}
+		
+		@Override
+		public long getGlobalId()
+		{
+			return _id;
+		}
+		
+		@Override
+		public UUID getUUID()
+		{
+			return NodeId.makeUUID(0, _id);
 		}
 	}
 	

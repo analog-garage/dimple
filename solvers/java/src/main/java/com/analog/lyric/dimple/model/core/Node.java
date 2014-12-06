@@ -76,7 +76,6 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	 */
 	
 	private int _id;
-	private UUID _UUID;
 	protected @Nullable String _name;
 	protected @Nullable String _label;
 	private @Nullable FactorGraph _parentGraph;
@@ -107,66 +106,17 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	 * Construction
 	 */
 	
-	public Node()
+	public Node(NodeType type)
 	{
-		this(NodeId.getNext(),
-			 NodeId.getNextUUID(),
-			 null,
-			 null,
-			 null,
-			 new ArrayList<INode>());
+		this(NodeId.getNextId(type));
 	}
+	
 	public Node(int id)
 	{
-		this(id,
-				NodeId.getNextUUID(),
-			 null,
-			 null,
-			 null,
-			 new ArrayList<INode>());
-	}
-	public Node(int id,
-				 UUID UUID,
-				 String name)
-	{
-		this(id,
-			 UUID,
-			 name,
-			 null,
-			 null,
-			 new ArrayList<INode>());
-	}
-	public Node(int id,
-			 UUID UUID,
-			 @Nullable String name,
-			 @Nullable String label,
-			 @Nullable FactorGraph parentGraph,
-			 ArrayList<INode> siblings)
-	{
 		_id = id;
-		_UUID = UUID;
-		_name = name;
-		_label = label;
-		_siblings = siblings;
-		_parentGraph = parentGraph;
+		_siblings = new ArrayList<>();
 	}
 		
-	public void init(int id,
-					 UUID UUID,
-					 @Nullable String name,
-					 @Nullable String label,
-					 @Nullable FactorGraph parentGraph,
-					 ArrayList<INode> siblings)
-	{
-		_id = id;
-		_UUID = UUID;
-		_name = name;
-		_label = label;
-		_siblings = siblings;
-		_parentGraph = parentGraph;
-		notifyConnectionsChanged();
-	}
-
 	@Override
 	public @NonNull Node clone()
 	{
@@ -181,8 +131,7 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 			final Node n = (Node)(super.clone());
 		
 			n._siblings = new ArrayList<INode>();	// Clear the ports in the clone
-			n._id = NodeId.getNext();
-			n._UUID = NodeId.getNextUUID();
+			n._id = NodeId.getNextId(getNodeType());
 			n._parentGraph = null;
 			n._name = _name;
 			if (_label != null)
@@ -607,6 +556,18 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	}
 	
 	@Override
+	public long getGlobalId()
+	{
+		long gid = _id & ((1L<<32) - 1);
+		FactorGraph parent = _parentGraph;
+		if (parent != null)
+		{
+			gid |= ((long)parent.getGraphId() << 32);
+		}
+		return gid;
+	}
+	
+	@Override
 	public void setName(@Nullable String name)
 	{
 		if(name != null && name.contains("."))
@@ -629,31 +590,24 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 		_label = name;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * For regular nodes implicitly generated name will be computed
+	 * by {@link NodeId#defaultNameForLocalId(int)} using the
+	 * value of {@link #getId()}.
+	 */
 	@Override
 	public String getName()
 	{
 		String name = _name;
-		if(name == null)
-		{
-			name = _UUID.toString();
-		}
-		return name;
+		return name != null ? name : NodeId.defaultNameForLocalId(_id);
 	}
+	
     @Override
 	public UUID getUUID()
 	{
-		return _UUID;
-	}
-	@Override
-	public void setUUID(UUID newUUID)
-	{
-		final FactorGraph parentGraph = _parentGraph;
-		if (parentGraph != null)
-		{
-			parentGraph.setChildUUID(this, newUUID);
-		}
-
-		_UUID = newUUID;
+    	return NodeId.makeUUID(getEnvironment().getEnvId(), getGlobalId());
 	}
     
     abstract public String getClassLabel();
@@ -661,28 +615,32 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	@Override
 	public String getQualifiedName()
 	{
-		String s = getName();
+		StringBuilder sb = new StringBuilder();
+		buildQualifiedName(sb);
+		return sb.toString();
+	}
+	
+	protected void buildQualifiedName(StringBuilder sb)
+	{
 		final FactorGraph parent = getParentGraph();
 		if (parent != null)
 		{
-			s = parent.getQualifiedName() + "." + s;
+			parent.buildQualifiedName(sb);
+			sb.append('.');
 		}
-		return s;
+		sb.append(getName());
 	}
 
 	@Override
 	public String getLabel()
 	{
 		String name = _label;
-		if(name == null)
+		if (name == null)
 		{
 			name = _name;
-			if(name == null)
+			if (name == null)
 			{
-				name = String.format("%s_%d_%s"
-						,getClassLabel()
-						,getId()
-						,_UUID.toString().substring(0, 8));
+				name = String.format("%s_%d", getClassLabel(), getGlobalId());
 			}
 		}
 		return name;

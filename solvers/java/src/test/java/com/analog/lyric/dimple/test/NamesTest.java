@@ -23,6 +23,7 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -32,9 +33,9 @@ import org.junit.Test;
 import com.analog.lyric.dimple.factorfunctions.XorDelta;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INameable;
+import com.analog.lyric.dimple.model.core.NodeId;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class NamesTest extends DimpleTestBase
 {
@@ -90,11 +91,12 @@ public class NamesTest extends DimpleTestBase
 		
 		Discrete v1 = new Discrete(0.0, 1.0);
 		Discrete v2 = new Discrete(0.0, 1.0);
-		testObjectName(v1, v1.getUUID().toString(), null, v1.getUUID().toString());
-		testObjectName(v2, v2.getUUID().toString(), null, v2.getUUID().toString());
+		testObjectName(v1, NodeId.defaultNameForLocalId(v1.getId()), null, NodeId.defaultNameForLocalId(v1.getId()));
+		testObjectName(v2, NodeId.defaultNameForLocalId(v2.getId()), null, NodeId.defaultNameForLocalId(v2.getId()));
 
 		FactorGraph fg = new FactorGraph();
-		testObjectName(fg, fg.getUUID().toString(), null, fg.getUUID().toString());
+		testObjectName(fg, NodeId.defaultNameForGraphId(fg.getGraphId()),
+			null, NodeId.defaultNameForGraphId(fg.getGraphId()));
 		assertTrue(fg.toString().length() != 0);
 		assertTrue(fg.getNodeString().length() != 0);
 		assertTrue(fg.getAdjacencyString().length() != 0);
@@ -102,9 +104,12 @@ public class NamesTest extends DimpleTestBase
 		
 		Factor f = fg.addFactor(new XorDelta(), v1, v2);
 
-		testObjectName(f, f.getUUID().toString(), null, fg.getUUID().toString() + "." + f.getUUID().toString());
-		testObjectName(v1, v1.getUUID().toString(), null, fg.getUUID().toString() + "." + v1.getUUID().toString());
-		testObjectName(v2, v2.getUUID().toString(), null, fg.getUUID().toString() + "." + v2.getUUID().toString());
+		testObjectName(f, NodeId.defaultNameForLocalId(f.getId()), null,
+			NodeId.defaultNameForGraphId(fg.getGraphId()) + "." + NodeId.defaultNameForLocalId(f.getId()));
+		testObjectName(v1, NodeId.defaultNameForLocalId(v1.getId()), null,
+			NodeId.defaultNameForGraphId(fg.getGraphId()) + "." + NodeId.defaultNameForLocalId(v1.getId()));
+		testObjectName(v2, NodeId.defaultNameForLocalId(v2.getId()), null,
+			NodeId.defaultNameForGraphId(fg.getGraphId()) + "." + NodeId.defaultNameForLocalId(v2.getId()));
 	
 		v1.setName("v1");
 		v2.setName("v2");
@@ -322,50 +327,47 @@ public class NamesTest extends DimpleTestBase
 		{
 			ArrayList<INameable> nameables = new ArrayList<INameable>();
 			
-			nameables.add((INameable)fgRoot.getObjectByName("vRootB1"));
-			nameables.add((INameable)fgRoot.getObjectByName("vRootB1"));
-			nameables.add((INameable)fgRoot.getObjectByName("vRootB1"));
-			nameables.add((INameable)fgRoot.getObjectByName("Mid"));
-			nameables.add((INameable)fgRoot.getObjectByName("fRoot"));
+			nameables.add(fgRoot.getObjectByName("vRootB1"));
+			nameables.add(fgRoot.getObjectByName("vRootB1"));
+			nameables.add(fgRoot.getObjectByName("vRootB1"));
+			nameables.add(fgRoot.getObjectByName("Mid"));
+			nameables.add(fgRoot.getObjectByName("fRoot"));
 
 			for(INameable named : nameables)
 			{
-				INameable byUUID = (INameable) fgRoot.getObjectByUUID(named.getUUID());
-				assertTrue(byUUID != null);
-				assertTrue(byUUID.getUUID() == named.getUUID());
-				assertTrue(byUUID.getQualifiedName().equals(named.getQualifiedName()));
+				INameable byUUID = fgRoot.getObjectByUUID(named.getUUID());
+				assertNotNull(byUUID);
+				assertEquals(byUUID.getUUID(), named.getUUID());
+				assertEquals(byUUID.getQualifiedName(), named.getQualifiedName());
 			}
 		}
 		
 		{
 			ArrayList<INameable> nameables = new ArrayList<INameable>();
 			
-			nameables.add((INameable)fgRoot.getObjectByName("Root.Mid.vMidO1"));
-			nameables.add((INameable)fgRoot.getObjectByName("Root.Mid.vMidO1"));
-			nameables.add((INameable)fgRoot.getObjectByName("Root.Mid.Leaf"));
-			nameables.add((INameable)fgRoot.getObjectByName("Root.Mid.fMid"));
+			nameables.add(fgRoot.getObjectByName("Root.Mid.vMidO1"));
+			nameables.add(fgRoot.getObjectByName("Root.Mid.vMidO2"));
+			nameables.add(fgRoot.getObjectByName("Root.Mid.Leaf"));
+			nameables.add(fgRoot.getObjectByName("Root.Mid.fMid"));
 
 			for(INameable named : nameables)
 			{
-				INameable byUUID = (INameable) fgMid.getObjectByUUID(named.getUUID());
-				assertTrue(byUUID != null);
-				assertTrue(byUUID.getUUID() == named.getUUID());
-				assertTrue(byUUID.getQualifiedName().equals(named.getQualifiedName()));
+				INameable byUUID = fgMid.getObjectByUUID(named.getUUID());
+				assertNotNull(byUUID);
+				assertEquals(byUUID.getUUID(), named.getUUID());
+				assertEquals(byUUID.getQualifiedName(), named.getQualifiedName());
 			}
 		}
 		{
 			ArrayList<INameable> nameables = new ArrayList<INameable>();
 
-			nameables.add((INameable)fgRoot.getObjectByName("Mid.Leaf.fLeaf"));
-			nameables.add((INameable)fgRoot.getObjectByName("Root.Mid.Leaf.vLeafO1"));
-			nameables.add((INameable)fgRoot.getObjectByName("Root.Mid.Leaf.vLeafO2"));
+			nameables.add(fgRoot.getObjectByName("Mid.Leaf.fLeaf"));
+			nameables.add(fgRoot.getObjectByName("Root.Mid.Leaf.vLeafO1"));
+			nameables.add(fgRoot.getObjectByName("Root.Mid.Leaf.vLeafO2"));
 			
 			for(INameable named : nameables)
 			{
-				INameable byUUID = (INameable) fgLeaf.getObjectByUUID(named.getUUID());
-				assertTrue(byUUID != null);
-				assertTrue(byUUID.getUUID() == named.getUUID());
-				assertTrue(byUUID.getQualifiedName().equals(named.getQualifiedName()));
+				assertSame(named, fgLeaf.getObjectByUUID(named.getUUID()));
 			}
 		}
 		
@@ -398,33 +400,33 @@ public class NamesTest extends DimpleTestBase
 		Factor fLeaf = fgLeaf.addFactor(xorFF, vLeafB1, vLeafO1, vLeafO2);
 		
 		//Checks UUID names, parentage
-		assertTrue(vRootB1.getName().equals(vRootB1.getUUID().toString()));
-		assertTrue(vRootO1.getName().equals(vRootO1.getUUID().toString()));
-		assertTrue(vRootO2.getName().equals(vRootO2.getUUID().toString()));
-		assertTrue(vMidB1.getName().equals(vMidB1.getUUID().toString()));
-		assertTrue(vMidO1.getName().equals(vMidO1.getUUID().toString()));
-		assertTrue(vMidO2.getName().equals(vMidO2.getUUID().toString()));
-		assertTrue(vLeafB1.getName().equals(vLeafB1.getUUID().toString()));
-		assertTrue(vLeafO1.getName().equals(vLeafO1.getUUID().toString()));
-		assertTrue(vLeafO2.getName().equals(vLeafO2.getUUID().toString()));
+		assertEquals(NodeId.defaultNameForLocalId(vRootB1.getId()), vRootB1.getName());
+		assertEquals(NodeId.defaultNameForLocalId(vRootO1.getId()), vRootO1.getName());
+		assertEquals(NodeId.defaultNameForLocalId(vRootO2.getId()), vRootO2.getName());
+		assertEquals(NodeId.defaultNameForLocalId(vMidB1.getId()), vMidB1.getName());
+		assertEquals(NodeId.defaultNameForLocalId(vMidO1.getId()), vMidO1.getName());
+		assertEquals(NodeId.defaultNameForLocalId(vMidO2.getId()), vMidO2.getName());
+		assertEquals(NodeId.defaultNameForLocalId(vLeafB1.getId()), vLeafB1.getName());
+		assertEquals(NodeId.defaultNameForLocalId(vLeafO1.getId()), vLeafO1.getName());
+		assertEquals(NodeId.defaultNameForLocalId(vLeafO2.getId()), vLeafO2.getName());
 		
-		assertTrue(fRoot.getName().equals(fRoot.getUUID().toString()));
-		assertTrue(fMid.getName().equals(fMid.getUUID().toString()));
-		assertTrue(fLeaf.getName().equals(fLeaf.getUUID().toString()));
+		assertEquals(NodeId.defaultNameForLocalId(fRoot.getId()), fRoot.getName());
+		assertEquals(NodeId.defaultNameForLocalId(fMid.getId()), fMid.getName());
+		assertEquals(NodeId.defaultNameForLocalId(fLeaf.getId()), fLeaf.getName());
 		
-		assertTrue(((Discrete)fgRoot.getObjectByName(vRootB1.getName())).getUUID() == vRootB1.getUUID());
-		assertTrue(((Discrete)fgRoot.getObjectByName(vRootO1.getName())).getUUID() == vRootO1.getUUID());
-		assertTrue(((Discrete)fgRoot.getObjectByName(vRootO2.getName())).getUUID() == vRootO2.getUUID());
-		assertTrue(((Discrete)fgMid.getObjectByName(vMidB1.getName())).getUUID() == vMidB1.getUUID());
-		assertTrue(((Discrete)fgMid.getObjectByName(vMidO1.getName())).getUUID() == vMidO1.getUUID());
-		assertTrue(((Discrete)fgMid.getObjectByName(vMidO2.getName())).getUUID() == vMidO2.getUUID());
-		assertTrue(((Discrete)fgLeaf.getObjectByName(vLeafB1.getName())).getUUID() == vLeafB1.getUUID());
-		assertTrue(((Discrete)fgLeaf.getObjectByName(vLeafO1.getName())).getUUID() == vLeafO1.getUUID());
-		assertTrue(((Discrete)fgLeaf.getObjectByName(vLeafO2.getName())).getUUID() == vLeafO2.getUUID());
+		assertSame(vRootB1, fgRoot.getObjectByName(vRootB1.getName()));
+		assertSame(vRootO1, fgRoot.getObjectByName(vRootO1.getName()));
+		assertSame(vRootO2, fgRoot.getObjectByName(vRootO2.getName()));
+		assertSame(vMidB1, fgMid.getObjectByName(vMidB1.getName()));
+		assertSame(vMidO1, fgMid.getObjectByName(vMidO1.getName()));
+		assertSame(vMidO2, fgMid.getObjectByName(vMidO2.getName()));
+		assertSame(vLeafB1, fgLeaf.getObjectByName(vLeafB1.getName()));
+		assertSame(vLeafO1, fgLeaf.getObjectByName(vLeafO1.getName()));
+		assertSame(vLeafO2, fgLeaf.getObjectByName(vLeafO2.getName()));
 
-		assertTrue(((Factor)fgRoot.getObjectByName(fRoot.getName())).getUUID() == fRoot.getUUID());
-		assertTrue(((Factor)fgMid.getObjectByName(fMid.getName())).getUUID() == fMid.getUUID());
-		assertTrue(((Factor)fgLeaf.getObjectByName(fLeaf.getName())).getUUID() == fLeaf.getUUID());
+		assertSame(fRoot, fgRoot.getObjectByName(fRoot.getName()));
+		assertSame(fMid, fgMid.getObjectByName(fMid.getName()));
+		assertSame(fLeaf, fgLeaf.getObjectByName(fLeaf.getName()));
 		
 		//set names
 		vRootB1.setName("vRootB1");
@@ -462,27 +464,27 @@ public class NamesTest extends DimpleTestBase
 		assertTrue(fgMid.getName().equals("Mid"));
 		assertTrue(fgLeaf.getName().equals("Leaf"));
 		
-		assertTrue(((Discrete)fgRoot.getObjectByName(vRootB1.getName())).getUUID() == vRootB1.getUUID());
-		assertTrue(((Discrete)fgRoot.getObjectByName(vRootO1.getName())).getUUID() == vRootO1.getUUID());
-		assertTrue(((Discrete)fgRoot.getObjectByName(vRootO2.getName())).getUUID() == vRootO2.getUUID());
-		assertTrue(((Discrete)fgMid.getObjectByName(vMidB1.getName())).getUUID() == vMidB1.getUUID());
-		assertTrue(((Discrete)fgMid.getObjectByName(vMidO1.getName())).getUUID() == vMidO1.getUUID());
-		assertTrue(((Discrete)fgMid.getObjectByName(vMidO2.getName())).getUUID() == vMidO2.getUUID());
-		assertTrue(((Discrete)fgLeaf.getObjectByName(vLeafB1.getName())).getUUID() == vLeafB1.getUUID());
-		assertTrue(((Discrete)fgLeaf.getObjectByName(vLeafO1.getName())).getUUID() == vLeafO1.getUUID());
-		assertTrue(((Discrete)fgLeaf.getObjectByName(vLeafO2.getName())).getUUID() == vLeafO2.getUUID());
+		assertSame(vRootB1, fgRoot.getObjectByName(vRootB1.getName()));
+		assertSame(vRootO1, fgRoot.getObjectByName(vRootO1.getName()));
+		assertSame(vRootO2, fgRoot.getObjectByName(vRootO2.getName()));
+		assertSame(vMidB1, fgMid.getObjectByName(vMidB1.getName()));
+		assertSame(vMidO1, fgMid.getObjectByName(vMidO1.getName()));
+		assertSame(vMidO2, fgMid.getObjectByName(vMidO2.getName()));
+		assertSame(vLeafB1, fgLeaf.getObjectByName(vLeafB1.getName()));
+		assertSame(vLeafO1, fgLeaf.getObjectByName(vLeafO1.getName()));
+		assertSame(vLeafO2, fgLeaf.getObjectByName(vLeafO2.getName()));
 
-		assertTrue(((Factor)fgRoot.getObjectByName(fRoot.getName())).getUUID() == fRoot.getUUID());
-		assertTrue(((Factor)fgMid.getObjectByName(fMid.getName())).getUUID() == fMid.getUUID());
-		assertTrue(((Factor)fgLeaf.getObjectByName(fLeaf.getName())).getUUID() == fLeaf.getUUID());
-					
+		assertSame(fRoot, fgRoot.getObjectByName(fRoot.getName()));
+		assertSame(fMid, fgMid.getObjectByName(fMid.getName()));
+		assertSame(fLeaf, fgLeaf.getObjectByName(fLeaf.getName()));
+		
 		//One sub graph
 		fgMid.addGraph(fgLeaf, new Discrete[]{vMidO2});
 		
 		//owned variables of parent same
-		assertTrue(((Discrete)fgMid.getObjectByName("vMidB1")).getUUID() == vMidB1.getUUID());
-		assertTrue(((Discrete)fgMid.getObjectByName("vMidO1")).getUUID() == vMidO1.getUUID());
-		assertTrue(((Discrete)fgMid.getObjectByName("vMidO2")).getUUID() == vMidO2.getUUID());
+		assertSame(fgMid.getObjectByName("vMidB1"), vMidB1);
+		assertSame(vMidO1, fgMid.getObjectByName("vMidO1"));
+		assertSame(vMidO2, fgMid.getObjectByName("vMidO2"));
 		//new child
 		fgLeaf = (FactorGraph) fgMid.getObjectByName("Leaf");
 		assertTrue(fgLeaf != null);
@@ -496,11 +498,11 @@ public class NamesTest extends DimpleTestBase
 				   vLeafO2 != null &&
 				   fLeaf != null);
 		vLeafB1 = (Discrete) fgMid.getObjectByName("Mid.vMidO2");
-		assertTrue(vLeafB1.getUUID() == vMidO2.getUUID());
-		assertTrue(((FactorGraph)fgMid.getObjectByName("Mid.Leaf")).getUUID() == fgLeaf.getUUID());
-		assertTrue(((FactorGraph)fgMid.getObjectByName("Leaf")).getUUID() == fgLeaf.getUUID());
-		assertTrue(((Discrete)fgMid.getObjectByName("Mid.Leaf.vLeafO1")).getUUID() == vLeafO1.getUUID());
-		assertTrue(((Discrete)fgMid.getObjectByName("Mid.Leaf.vLeafO2")).getUUID() == vLeafO2.getUUID());
+		assertSame(vLeafB1, vMidO2);
+		assertSame(fgLeaf, fgMid.getObjectByName("Mid.Leaf"));
+		assertSame(fgLeaf, fgMid.getObjectByName("Leaf"));
+		assertSame(vLeafO1, fgMid.getObjectByName("Mid.Leaf.vLeafO1"));
+		assertSame(vLeafO2, fgMid.getObjectByName("Mid.Leaf.vLeafO2"));
 		
 
 		//Two sub graphs
@@ -520,9 +522,9 @@ public class NamesTest extends DimpleTestBase
 		fLeaf = (Factor) fgLeaf.getObjectByName("fLeaf");
 
 		//owned variables of parent same
-		assertTrue(((Discrete)fgRoot.getObjectByName("vRootB1")).getUUID() == vRootB1.getUUID());
-		assertTrue(((Discrete)fgRoot.getObjectByName("vRootO1")).getUUID() == vRootO1.getUUID());
-		assertTrue(((Discrete)fgRoot.getObjectByName("vRootO2")).getUUID() == vRootO2.getUUID());
+		assertSame(vRootB1, fgRoot.getObjectByName("vRootB1"));
+		assertSame(vRootO1, fgRoot.getObjectByName("vRootO1"));
+		assertSame(vRootO2, fgRoot.getObjectByName("vRootO2"));
 		
 		assertTrue(fgMid != null &&
 				   fgLeaf != null &&
@@ -535,20 +537,20 @@ public class NamesTest extends DimpleTestBase
 				   fMid != null &&
 				   fLeaf != null);
 		
-		assertTrue(((FactorGraph)fgRoot.getObjectByName("Root.Mid")).getUUID() == fgMid.getUUID());
-		assertTrue(((FactorGraph)fgRoot.getObjectByName("Root.Mid.Leaf")).getUUID() == fgLeaf.getUUID());
+		assertSame(fgMid, fgRoot.getObjectByName("Root.Mid"));
+		assertSame((fgRoot.getObjectByName("Root.Mid.Leaf")), fgLeaf);
 
-		assertTrue(((Factor)fgRoot.getObjectByName("Root.fRoot")).getUUID() == fRoot.getUUID());
-		assertTrue(((Factor)fgRoot.getObjectByName("Root.Mid.fMid")).getUUID() == fMid.getUUID());
-		assertTrue(((Factor)fgRoot.getObjectByName("Root.Mid.Leaf.fLeaf")).getUUID() == fLeaf.getUUID());
+		assertSame((fgRoot.getObjectByName("Root.fRoot")), fRoot);
+		assertSame((fgRoot.getObjectByName("Root.Mid.fMid")), fMid);
+		assertSame((fgRoot.getObjectByName("Root.Mid.Leaf.fLeaf")), fLeaf);
 		
-		assertTrue(((Discrete)fgRoot.getObjectByName("Root.vRootB1")).getUUID() == vRootB1.getUUID());
-		assertTrue(((Discrete)fgRoot.getObjectByName("Root.vRootO1")).getUUID() == vRootO1.getUUID());
-		assertTrue(((Discrete)fgRoot.getObjectByName("Root.vRootO2")).getUUID() == vRootO2.getUUID());
-		assertTrue(((Discrete)fgRoot.getObjectByName("Root.Mid.vMidO1")).getUUID() == vMidO1.getUUID());
-		assertTrue(((Discrete)fgRoot.getObjectByName("Root.Mid.vMidO2")).getUUID() == vMidO2.getUUID());
-		assertTrue(((Discrete)fgRoot.getObjectByName("Root.Mid.Leaf.vLeafO1")).getUUID() == vLeafO1.getUUID());
-		assertTrue(((Discrete)fgRoot.getObjectByName("Root.Mid.Leaf.vLeafO2")).getUUID() == vLeafO2.getUUID());
+		assertSame((fgRoot.getObjectByName("Root.vRootB1")), vRootB1);
+		assertSame((fgRoot.getObjectByName("Root.vRootO1")), vRootO1);
+		assertSame((fgRoot.getObjectByName("Root.vRootO2")), vRootO2);
+		assertSame((fgRoot.getObjectByName("Root.Mid.vMidO1")), vMidO1);
+		assertSame((fgRoot.getObjectByName("Root.Mid.vMidO2")), vMidO2);
+		assertSame((fgRoot.getObjectByName("Root.Mid.Leaf.vLeafO1")), vLeafO1);
+		assertSame((fgRoot.getObjectByName("Root.Mid.Leaf.vLeafO2")), vLeafO2);
 		
 
 		assertTrue(fgMid.getQualifiedName().equals("Root.Mid"));
@@ -609,12 +611,12 @@ public class NamesTest extends DimpleTestBase
 			
 		//found by new name
 		vRootO3.setName("xxx");
-		assertTrue(((Discrete)fgRoot.getObjectByName("xxx")).getUUID() == vRootO3.getUUID());
+		assertSame(vRootO3, fgRoot.getObjectByName("xxx"));
 		//no name ok
 		vRootO3.setName(null);
-		assertTrue(fgRoot.getObjectByName("xxx") == null);
-		assertTrue(vRootO3.getExplicitName() == null);
-		assertTrue(((Discrete)fgRoot.getObjectByName(vRootO3.getName())).getUUID() == vRootO3.getUUID());
+		assertNull(fgRoot.getObjectByName("xxx"));
+		assertNull(vRootO3.getExplicitName());
+		assertSame(vRootO3, fgRoot.getObjectByName(vRootO3.getName()));
 		
 		//System.out.println(fgRoot.getFullString());
 		
