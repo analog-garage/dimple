@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.test.environment;
 
 import static org.junit.Assert.*;
 
+import java.security.SecureRandom;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -55,9 +56,12 @@ public class TestDimpleEnvironment extends DimpleTestBase
 	@Test
 	public void testInstances()
 	{
+		assertNull(DimpleEnvironment.withId(new SecureRandom().nextLong()));
+		
 		final DimpleEnvironment global1 = DimpleEnvironment.defaultEnvironment();
 		final DimpleEnvironment local1 = DimpleEnvironment.active();
 		assertSame(global1, local1);
+		assertSame(global1, DimpleEnvironment.withId(global1.getEnvId()));
 		
 		UUID uid = global1.getUUID();
 		assertEquals(2, uid.variant());
@@ -70,6 +74,8 @@ public class TestDimpleEnvironment extends DimpleTestBase
 			{
 				assertSame(global1, DimpleEnvironment.active());
 				DimpleEnvironment local2 = new DimpleEnvironment();
+				assertNotEquals(local2.getEnvId(), global1.getEnvId());
+				assertSame(local2, DimpleEnvironment.withId(local2.getEnvId()));
 				DimpleEnvironment.setActive(local2);
 				assertSame(local2, DimpleEnvironment.active());
 			}

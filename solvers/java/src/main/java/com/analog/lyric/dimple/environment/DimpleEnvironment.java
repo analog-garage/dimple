@@ -29,6 +29,7 @@ import net.jcip.annotations.ThreadSafe;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ConstructorRegistry;
+import com.analog.lyric.collect.WeakLongHashMap;
 import com.analog.lyric.dimple.events.DimpleEventListener;
 import com.analog.lyric.dimple.events.IDimpleEventSource;
 import com.analog.lyric.dimple.events.IModelEventSource;
@@ -128,6 +129,9 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 * Static state
 	 */
 	
+	@GuardedBy("_allInstances")
+	private static final WeakLongHashMap<DimpleEnvironment> _allInstances = new WeakLongHashMap<>();
+	
 	private static final AtomicReference<DimpleEnvironment> _globalInstance =
 		new AtomicReference<>(new DimpleEnvironment());
 	
@@ -204,6 +208,15 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	
 	public DimpleEnvironment(long envId)
 	{
+		synchronized (_allInstances)
+		{
+			if (_allInstances.containsKey(envId))
+			{
+				throw new IllegalStateException(String.format("An environment with id %d already exists", envId));
+			}
+			_allInstances.put(envId, this);
+		}
+
 		_envId = envId;
 		_uuid = NodeId.makeUUID(envId, 0L);
 		
@@ -223,6 +236,7 @@ public class DimpleEnvironment extends DimpleOptionHolder
 		}
 
 		_logger.set(logger);
+		
 	}
 	
 	/*----------------
@@ -259,6 +273,19 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	public static DimpleEnvironment active()
 	{
 		return _threadInstance.get();
+	}
+	
+	/**
+	 * Returns environment with specified environment id, or null if not found.
+	 * <p>
+	 * @since 0.08
+	 */
+	public static @Nullable DimpleEnvironment withId(long envId)
+	{
+		synchronized(_allInstances)
+		{
+			return _allInstances.get(envId);
+		}
 	}
 	
 	/**
