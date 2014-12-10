@@ -115,6 +115,9 @@ public class FactorGraph extends FactorBase
 	 */
 	private final DimpleEnvironment _env;
 	
+	/**
+	 * Unique identifier for this graph within its environment.
+	 */
 	private final int _graphId;
 
 	private volatile @Nullable IDimpleEventSource _eventAndOptionParent;

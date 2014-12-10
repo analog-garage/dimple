@@ -25,31 +25,31 @@ import net.jcip.annotations.NotThreadSafe;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import cern.colt.map.OpenIntObjectHashMap;
+import cern.colt.map.OpenLongObjectHashMap;
 
 /**
- * A simple int to weak Object map.
+ * A simple long to weak Object map.
  * <p>
- * This maps integers to a non-null value of a reference type T, but only holds a
+ * This maps long integers to a non-null value of a reference type T, but only holds a
  * weak reference so that the value may be garbage collected if no one else has
  * a reference.
  * <p>
  * This does not implement the {@link java.util.Map} interface because the keys
- * are primitive ints, but has a similar API.
+ * are primitive longs, but has a similar API.
  * <p>
  * @since 0.08
  * @author Christopher Barber
- * @see WeakLongHashMap
+ * @see WeakIntHashMap
  */
 @NotThreadSafe
-public class WeakIntHashMap<T>
+public class WeakLongHashMap<T>
 {
 	private static class Ref<T> extends WeakReference<T>
 	{
-		private final int _key;
+		private final long _key;
 		private volatile boolean _removed = false;
 		
-		private Ref(int key, T value, ReferenceQueue<? super T> q)
+		private Ref(long key, T value, ReferenceQueue<? super T> q)
 		{
 			super(value, q);
 			_key = key;
@@ -61,7 +61,7 @@ public class WeakIntHashMap<T>
 	 */
 
 	private final ReferenceQueue<T> _collected;
-	private final OpenIntObjectHashMap _map;
+	private final OpenLongObjectHashMap _map;
 	
 	/*--------------
 	 * Construction
@@ -72,7 +72,7 @@ public class WeakIntHashMap<T>
 	 * 
 	 * @since 0.08
 	 */
-	public WeakIntHashMap()
+	public WeakLongHashMap()
 	{
 		this(256);
 	}
@@ -81,10 +81,10 @@ public class WeakIntHashMap<T>
 	 * Constructs an empty map with given initial capacity.
 	 * @since 0.08
 	 */
-	public WeakIntHashMap(int capacity)
+	public WeakLongHashMap(int capacity)
 	{
 		_collected = new ReferenceQueue<>();
-		_map = new OpenIntObjectHashMap(capacity);
+		_map = new OpenLongObjectHashMap(capacity);
 	}
 	
 	/*---------
@@ -126,7 +126,7 @@ public class WeakIntHashMap<T>
 	/**
 	 * True if map contains an entry with given key (that has not yet been garbage collected)
 	 */
-	public boolean containsKey(int key)
+	public boolean containsKey(long key)
 	{
 		return get(key) != null;
 	}
@@ -149,7 +149,7 @@ public class WeakIntHashMap<T>
 	 * @since 0.08
 	 */
 	@SuppressWarnings("unchecked")
-	public @Nullable T get(int key)
+	public @Nullable T get(long key)
 	{
 		T result = null;
 		Ref<T> ref = (Ref<T>)_map.get(key);
@@ -173,7 +173,7 @@ public class WeakIntHashMap<T>
 	 * <p>
 	 * @since 0.08
 	 */
-	public int[] keys()
+	public long[] keys()
 	{
 		clean();
 		return _map.keys().elements();
@@ -193,7 +193,7 @@ public class WeakIntHashMap<T>
 	 * @return True if map did not already have an entry for this key.
 	 * @since 0.08
 	 */
-	public boolean put(int key, T value)
+	public boolean put(long key, T value)
 	{
 		return _map.put(key, new Ref<>(key, requireNonNull(value), _collected));
 	}
@@ -203,7 +203,7 @@ public class WeakIntHashMap<T>
 	 * @return True if map contained the key.
 	 * @since 0.08
 	 */
-	public boolean removeKey(int key)
+	public boolean removeKey(long key)
 	{
 		@SuppressWarnings("unchecked")
 		Ref<T> ref = (Ref<T>)_map.get(key);
