@@ -126,7 +126,7 @@ public class FactorGraph extends FactorBase
 	
 	private volatile @Nullable IDimpleEventSource _eventAndOptionParent;
 	
-	private final VariableList _ownedVariables = new VariableList();
+	private final OwnedVariables _ownedVariables = new OwnedVariables(16);
 
 	private final VariableList _boundaryVariables = new VariableList();
 	
@@ -1761,7 +1761,6 @@ public class FactorGraph extends FactorBase
 	
 	private void addOwnedVariable(Variable variable, boolean absorbedFromSubgraph)
 	{
-		addName(variable);
 		//Only insert if not already there.
 		if (!_ownedVariables.contains(variable))
 		{
@@ -1775,6 +1774,7 @@ public class FactorGraph extends FactorBase
 				raiseEvent(new VariableAddEvent(this, variable, absorbedFromSubgraph));
 			}
 		}
+		addName(variable);
 	}
 
 	@Override
@@ -1885,7 +1885,7 @@ public class FactorGraph extends FactorBase
 			throw new DimpleException("Cannot absorb subgraph that is not directly owned.");
 		}
 		
-		final VariableList variables = subgraph._ownedVariables;
+		final OwnedVariables variables = subgraph._ownedVariables;
 		final MapList<FactorBase> factors = subgraph._ownedFactors;
 		
 		// FIXME: may need to rename nodes when they are transferred to avoid conflicts...
@@ -2542,17 +2542,7 @@ public class FactorGraph extends FactorBase
 
 	public @Nullable Variable getVariable(long id)
 	{
-		Variable v;
-		v = _ownedVariables.getByKey(id);
-		if (v != null) return v;
-		v = _boundaryVariables.getByKey(id);
-		if (v != null) return v;
-		for (FactorGraph g : getNestedGraphs())
-		{
-			v = g.getVariable(id);
-			if (v != null) return v;
-		}
-		return null;
+		return (Variable)getNodeByGlobalId(id);
 	}
 
 	public FactorList getNonGraphFactors()
@@ -2936,7 +2926,7 @@ public class FactorGraph extends FactorBase
 		case NodeId.GRAPH_TYPE:
 			return _ownedFactors.getByKey(gid);
 		case NodeId.VARIABLE_TYPE:
-			Node obj = _ownedVariables.getByKey(gid);
+			Node obj = _ownedVariables.getByKey(id);
 			if (obj == null && getParentGraph() == null)
 			{
 				// TODO: eventually owned variables will always be in the owned list, even if they

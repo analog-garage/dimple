@@ -163,6 +163,8 @@ public class NodeId
 	private static final long UUID_NON_VERSION_MASK = (1L << UUID_VERSION_OFFSET) - 1;
 	private static final long UUID_NON_VERSION_SHIFT = UUID_VERSION_OFFSET + UUID_VERSION_WIDTH;
 	
+	public static final int INITIAL_VARIABLE_ID = VARIABLE_TYPE << LOCAL_ID_NODE_TYPE_OFFSET | LOCAL_ID_INDEX_MAX;
+	
 	/**
 	 * Makes a UUID instance encoding Dimple environment and global identifiers.
 	 * <p>

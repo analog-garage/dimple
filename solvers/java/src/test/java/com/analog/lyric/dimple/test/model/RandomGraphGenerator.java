@@ -459,11 +459,6 @@ public class RandomGraphGenerator
 	public Discrete newDiscrete(DiscreteDomain domain, @Nullable String name)
 	{
 		Discrete var = new Discrete(domain);
-		if (name == null || name.isEmpty())
-		{
-			name = "v" + var.getLocalId();
-		}
-		var.setName(name);
 		return var;
 	}
 

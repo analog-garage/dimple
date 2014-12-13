@@ -99,21 +99,16 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
     
 	public Variable(Domain domain)
 	{
-		this(NodeId.getNextVariableId(), "Variable", domain);
+		this(domain, "Variable");
 	}
 	public Variable(Domain domain, String modelerClassName)
 	{
-		this(NodeId.getNextVariableId(), modelerClassName, domain);
-	}
-	
-	protected Variable(int id, String modelerClassName, Domain domain)
-	{
-		super(id);
+		super(NodeId.INITIAL_VARIABLE_ID);
 		
 		_modelerClassName = modelerClassName;
 		_domain = domain;
 	}
-
+	
 	// FIXME: remove
 	@Override
 	public void setParentGraph(@Nullable FactorGraph parentGraph)
