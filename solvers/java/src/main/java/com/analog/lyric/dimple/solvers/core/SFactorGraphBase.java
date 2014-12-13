@@ -561,9 +561,9 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		_useMultithreading = getOptionOrDefault(SolverOptions.enableMultithreading);
 		
 		FactorGraph fg = _factorGraph;
-		for (int i = 0, end = fg.getOwnedVariableCount(); i < end; ++i)
+		for (Variable variable : fg.getOwnedVariables())
 		{
-			fg.getOwnedVariable(i).requireSolver("initialize").initialize();
+			variable.requireSolver("initialize").initialize();
 		}
 		if (!fg.hasParentGraph())
 		{

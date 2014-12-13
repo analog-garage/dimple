@@ -21,6 +21,7 @@ import static java.util.Objects.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,8 +30,6 @@ import java.util.UUID;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-
-import cern.colt.map.OpenIntIntHashMap;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BitSetUtil;
@@ -98,9 +97,9 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	private int [] _siblingIndices = ArrayUtil.EMPTY_INT_ARRAY;
 	
 	/**
-	 * Reverse mapping of sibling id to its index plus one. Created lazily as needed.
+	 * Reverse mapping of sibling to its index. Created lazily as needed.
 	 */
-	private @Nullable OpenIntIntHashMap _siblingToIndex = null;
+	private @Nullable HashMap<INode,Integer> _siblingToIndex = null;
 
 	/*--------------
 	 * Construction
@@ -474,10 +473,10 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	public void connect(INode node)
 	{
 		_siblings.add(node);
-		final OpenIntIntHashMap siblingToIndex = _siblingToIndex;
+		final HashMap<INode,Integer> siblingToIndex = _siblingToIndex;
 		if (siblingToIndex != null)
 		{
-			siblingToIndex.put(node.getId(), _siblings.size());
+			siblingToIndex.put(node, _siblings.size() - 1);
 		}
 		notifyConnectionsChanged();
 	}
@@ -500,9 +499,11 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 		disconnect(getPortNum(node));
 	}
 
+	@Internal
 	@Override
 	public void setParentGraph(@Nullable FactorGraph parentGraph)
 	{
+		// TODO: combine with adding to owned list?
 		_parentGraph = parentGraph;
 	}
 	
@@ -550,7 +551,18 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	
 	
 	@Override
-	public int getId()
+	public long getId()
+	{
+		return getGlobalId();
+	}
+	
+	void setId(int id)
+	{
+		_id = id;
+	}
+	
+	@Override
+	public int getLocalId()
 	{
 		return _id;
 	}
@@ -558,13 +570,8 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	@Override
 	public long getGlobalId()
 	{
-		long gid = _id & ((1L<<32) - 1);
-		FactorGraph parent = _parentGraph;
-		if (parent != null)
-		{
-			gid |= ((long)parent.getGraphId() << 32);
-		}
-		return gid;
+		final FactorGraph parent = _parentGraph;
+		return NodeId.globalIdFromParts(parent != null ? parent.getGraphId() : 0, _id);
 	}
 	
 	@Override
@@ -637,6 +644,7 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 		String name = _label;
 		if (name == null)
 		{
+			// FIXME: instead use getName()
 			name = _name;
 			if (name == null)
 			{
@@ -838,11 +846,11 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 			{
 				_siblingIndices[index] = 0;
 			}
-			final OpenIntIntHashMap siblingToIndex = _siblingToIndex;
+			final HashMap<INode,Integer> siblingToIndex = _siblingToIndex;
 			if (siblingToIndex != null)
 			{
-				siblingToIndex.removeKey(oldNode.getId());
-				siblingToIndex.put(newNode.getId(), index + 1);
+				siblingToIndex.remove(oldNode);
+				siblingToIndex.put(newNode, index);
 			}
 			notifyConnectionsChanged();
 		}
@@ -875,20 +883,21 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	{
 		int nSiblings = _siblings.size();
 		
-		OpenIntIntHashMap siblingToIndex = _siblingToIndex;
+		HashMap<INode,Integer> siblingToIndex = _siblingToIndex;
 		
 		if (siblingToIndex == null && nSiblings > 10)
 		{
-			siblingToIndex = _siblingToIndex = new OpenIntIntHashMap(nSiblings);
+			siblingToIndex = _siblingToIndex = new HashMap<>(nSiblings);
 			for (int i = 0; i < nSiblings; ++i)
 			{
-				siblingToIndex.put(_siblings.get(i).getId(), i + 1);
+				siblingToIndex.put(_siblings.get(i), i);
 			}
 		}
 		
 		if (siblingToIndex != null)
 		{
-			return siblingToIndex.get(node.getId()) - 1;
+			Integer index = siblingToIndex.get(node);
+			return index != null ? index : -1;
 		}
 		else
 		{

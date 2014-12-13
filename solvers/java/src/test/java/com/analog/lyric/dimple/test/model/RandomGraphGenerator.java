@@ -461,7 +461,7 @@ public class RandomGraphGenerator
 		Discrete var = new Discrete(domain);
 		if (name == null || name.isEmpty())
 		{
-			name = "v" + var.getId();
+			name = "v" + var.getLocalId();
 		}
 		var.setName(name);
 		return var;

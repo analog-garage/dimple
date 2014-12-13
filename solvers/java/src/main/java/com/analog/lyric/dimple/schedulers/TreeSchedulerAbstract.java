@@ -69,7 +69,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 		FixedSchedule schedule = new FixedSchedule();
 		
 
-		HashMap<Integer,NodeUpdateState> updateState = new HashMap<Integer,NodeUpdateState>();
+		HashMap<Long,NodeUpdateState> updateState = new HashMap<>();
 		
 		@SuppressWarnings("all")
 		IMapList allIncludedNodes = g.getNodes();

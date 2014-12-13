@@ -91,8 +91,8 @@ public class NamesTest extends DimpleTestBase
 		
 		Discrete v1 = new Discrete(0.0, 1.0);
 		Discrete v2 = new Discrete(0.0, 1.0);
-		testObjectName(v1, NodeId.defaultNameForLocalId(v1.getId()), null, NodeId.defaultNameForLocalId(v1.getId()));
-		testObjectName(v2, NodeId.defaultNameForLocalId(v2.getId()), null, NodeId.defaultNameForLocalId(v2.getId()));
+		testObjectName(v1, NodeId.defaultNameForLocalId(v1.getLocalId()), null, NodeId.defaultNameForLocalId(v1.getLocalId()));
+		testObjectName(v2, NodeId.defaultNameForLocalId(v2.getLocalId()), null, NodeId.defaultNameForLocalId(v2.getLocalId()));
 
 		FactorGraph fg = new FactorGraph();
 		testObjectName(fg, NodeId.defaultNameForGraphId(fg.getGraphId()),
@@ -104,12 +104,12 @@ public class NamesTest extends DimpleTestBase
 		
 		Factor f = fg.addFactor(new XorDelta(), v1, v2);
 
-		testObjectName(f, NodeId.defaultNameForLocalId(f.getId()), null,
-			NodeId.defaultNameForGraphId(fg.getGraphId()) + "." + NodeId.defaultNameForLocalId(f.getId()));
-		testObjectName(v1, NodeId.defaultNameForLocalId(v1.getId()), null,
-			NodeId.defaultNameForGraphId(fg.getGraphId()) + "." + NodeId.defaultNameForLocalId(v1.getId()));
-		testObjectName(v2, NodeId.defaultNameForLocalId(v2.getId()), null,
-			NodeId.defaultNameForGraphId(fg.getGraphId()) + "." + NodeId.defaultNameForLocalId(v2.getId()));
+		testObjectName(f, NodeId.defaultNameForLocalId(f.getLocalId()), null,
+			NodeId.defaultNameForGraphId(fg.getGraphId()) + "." + NodeId.defaultNameForLocalId(f.getLocalId()));
+		testObjectName(v1, NodeId.defaultNameForLocalId(v1.getLocalId()), null,
+			NodeId.defaultNameForGraphId(fg.getGraphId()) + "." + NodeId.defaultNameForLocalId(v1.getLocalId()));
+		testObjectName(v2, NodeId.defaultNameForLocalId(v2.getLocalId()), null,
+			NodeId.defaultNameForGraphId(fg.getGraphId()) + "." + NodeId.defaultNameForLocalId(v2.getLocalId()));
 	
 		v1.setName("v1");
 		v2.setName("v2");
@@ -400,19 +400,19 @@ public class NamesTest extends DimpleTestBase
 		Factor fLeaf = fgLeaf.addFactor(xorFF, vLeafB1, vLeafO1, vLeafO2);
 		
 		//Checks UUID names, parentage
-		assertEquals(NodeId.defaultNameForLocalId(vRootB1.getId()), vRootB1.getName());
-		assertEquals(NodeId.defaultNameForLocalId(vRootO1.getId()), vRootO1.getName());
-		assertEquals(NodeId.defaultNameForLocalId(vRootO2.getId()), vRootO2.getName());
-		assertEquals(NodeId.defaultNameForLocalId(vMidB1.getId()), vMidB1.getName());
-		assertEquals(NodeId.defaultNameForLocalId(vMidO1.getId()), vMidO1.getName());
-		assertEquals(NodeId.defaultNameForLocalId(vMidO2.getId()), vMidO2.getName());
-		assertEquals(NodeId.defaultNameForLocalId(vLeafB1.getId()), vLeafB1.getName());
-		assertEquals(NodeId.defaultNameForLocalId(vLeafO1.getId()), vLeafO1.getName());
-		assertEquals(NodeId.defaultNameForLocalId(vLeafO2.getId()), vLeafO2.getName());
+		assertEquals(NodeId.defaultNameForLocalId(vRootB1.getLocalId()), vRootB1.getName());
+		assertEquals(NodeId.defaultNameForLocalId(vRootO1.getLocalId()), vRootO1.getName());
+		assertEquals(NodeId.defaultNameForLocalId(vRootO2.getLocalId()), vRootO2.getName());
+		assertEquals(NodeId.defaultNameForLocalId(vMidB1.getLocalId()), vMidB1.getName());
+		assertEquals(NodeId.defaultNameForLocalId(vMidO1.getLocalId()), vMidO1.getName());
+		assertEquals(NodeId.defaultNameForLocalId(vMidO2.getLocalId()), vMidO2.getName());
+		assertEquals(NodeId.defaultNameForLocalId(vLeafB1.getLocalId()), vLeafB1.getName());
+		assertEquals(NodeId.defaultNameForLocalId(vLeafO1.getLocalId()), vLeafO1.getName());
+		assertEquals(NodeId.defaultNameForLocalId(vLeafO2.getLocalId()), vLeafO2.getName());
 		
-		assertEquals(NodeId.defaultNameForLocalId(fRoot.getId()), fRoot.getName());
-		assertEquals(NodeId.defaultNameForLocalId(fMid.getId()), fMid.getName());
-		assertEquals(NodeId.defaultNameForLocalId(fLeaf.getId()), fLeaf.getName());
+		assertEquals(NodeId.defaultNameForLocalId(fRoot.getLocalId()), fRoot.getName());
+		assertEquals(NodeId.defaultNameForLocalId(fMid.getLocalId()), fMid.getName());
+		assertEquals(NodeId.defaultNameForLocalId(fLeaf.getLocalId()), fLeaf.getName());
 		
 		assertSame(vRootB1, fgRoot.getObjectByName(vRootB1.getName()));
 		assertSame(vRootO1, fgRoot.getObjectByName(vRootO1.getName()));
@@ -489,14 +489,10 @@ public class NamesTest extends DimpleTestBase
 		fgLeaf = (FactorGraph) fgMid.getObjectByName("Leaf");
 		assertTrue(fgLeaf != null);
 		//child's nodes
-		vLeafB1 = (Discrete) fgLeaf.getObjectByName("vLeafB1");
-		vLeafO1 = (Discrete) fgLeaf.getObjectByName("vLeafO1");
-		vLeafO2 = (Discrete) fgLeaf.getObjectByName("vLeafO2");
-		fLeaf = (Factor) fgLeaf.getObjectByName("fLeaf");
-		assertTrue(vLeafB1 == null &&
-				   vLeafO1 != null &&
-				   vLeafO2 != null &&
-				   fLeaf != null);
+		assertNull(vLeafB1 = (Discrete) fgLeaf.getObjectByName("vLeafB1"));
+		assertNotNull(vLeafO1 = (Discrete) fgLeaf.getObjectByName("vLeafO1"));
+		assertNotNull(vLeafO2 = (Discrete) fgLeaf.getObjectByName("vLeafO2"));
+		assertNotNull(fLeaf = (Factor) fgLeaf.getObjectByName("fLeaf"));
 		vLeafB1 = (Discrete) fgMid.getObjectByName("Mid.vMidO2");
 		assertSame(vLeafB1, vMidO2);
 		assertSame(fgLeaf, fgMid.getObjectByName("Mid.Leaf"));

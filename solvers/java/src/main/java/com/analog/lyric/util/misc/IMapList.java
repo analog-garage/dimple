@@ -30,7 +30,7 @@ public interface IMapList<T extends IGetId> extends Collection<T>
 
 	public abstract void ensureCapacity(int minCapacity);
 
-	public abstract @Nullable T getByKey(int id);
+	public abstract @Nullable T getByKey(long id);
 
 	public abstract T getByIndex(int index);
 	

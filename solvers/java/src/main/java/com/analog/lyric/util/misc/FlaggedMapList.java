@@ -71,7 +71,7 @@ public class FlaggedMapList<T extends IGetId> extends MapList<T> implements IFla
 			return false;
 		}
 		
-		final int id = ((IGetId)value).getId();
+		final long id = ((IGetId)value).getId();
 		if (!_hashMap.removeKey(id))
 		{
 			return false;

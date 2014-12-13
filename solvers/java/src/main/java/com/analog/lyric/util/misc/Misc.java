@@ -100,10 +100,10 @@ public class Misc
 		
 	}
 	
-	public static int [] 			convertToIds(Collection<?> nameables)
+	public static long [] 			convertToIds(Collection<?> nameables)
 	{
 		//ArrayList<Integer> result = new ArrayList<Integer>();
-		int [] ids = new int[nameables.size()];
+		long [] ids = new long[nameables.size()];
 		
 		int i = 0;
 		for (Object n : nameables)

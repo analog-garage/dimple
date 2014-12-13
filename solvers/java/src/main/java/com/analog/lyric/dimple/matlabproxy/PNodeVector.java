@@ -159,9 +159,9 @@ public abstract class PNodeVector extends POptionHolder
 		return _nodes.length;
 	}
 	
-	public int [] getIds()
+	public long [] getIds()
 	{
-		int [] ids = new int[_nodes.length];
+		long [] ids = new long[_nodes.length];
 		for (int i = 0; i < ids.length; i++)
 			ids[i] = _nodes[i].getId();
 		

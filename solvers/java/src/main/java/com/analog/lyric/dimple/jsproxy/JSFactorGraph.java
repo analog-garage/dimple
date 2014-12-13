@@ -239,7 +239,7 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 	 * Returns variable in graph with given identifier.
 	 * @since 0.07
 	 */
-	public @Nullable JSFactor getFactor(int id)
+	public @Nullable JSFactor getFactor(long id)
 	{
 		Factor factor = _delegate.getFactor(id);
 		return factor != null ? wrap(factor) : null;
@@ -269,7 +269,7 @@ public class JSFactorGraph extends JSNode<FactorGraph>
 	 * Returns variable in graph with given identifier.
 	 * @since 0.07
 	 */
-	public @Nullable JSVariable getVariable(int id)
+	public @Nullable JSVariable getVariable(long id)
 	{
 		Variable variable = _delegate.getVariable(id);
 		return variable != null ? wrap(variable) : null;

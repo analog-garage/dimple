@@ -21,6 +21,7 @@ import static java.util.Objects.*;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -33,6 +34,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
+
+import net.jcip.annotations.NotThreadSafe;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -77,9 +80,10 @@ import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.MapList;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Iterables;
 
 
-
+@NotThreadSafe
 public class FactorGraph extends FactorBase
 {
 	/*-----------
@@ -119,7 +123,7 @@ public class FactorGraph extends FactorBase
 	 * Unique identifier for this graph within its environment.
 	 */
 	private final int _graphId;
-
+	
 	private volatile @Nullable IDimpleEventSource _eventAndOptionParent;
 	
 	private final VariableList _ownedVariables = new VariableList();
@@ -288,7 +292,7 @@ public class FactorGraph extends FactorBase
 		}
 		else
 		{
-			return NodeId.defaultNameForLocalId(getId());
+			return NodeId.defaultNameForLocalId(getLocalId());
 		}
 	}
 	
@@ -535,18 +539,39 @@ public class FactorGraph extends FactorBase
 
     public BlastFromThePastFactor addBlastFromPastFactor(Variable var,Port factorPort)
     {
+		boolean setVarSolver = false;
+		
+		// FIXME boundary variable solver logic is hacky
+		if (_solverFactorGraph != null && !variableBelongs(var))
+		{
+			if (var.getSiblingCount() > 0)
+				throw new DimpleException("Can't connect a variable to multiple graphs");
+			
+			setVarSolver = true;
+		}
 
-            setVariableSolver(var);
+		// Add any variables that do not yet have a parent
+    	if (var.getParentGraph() == null)
+    	{
+    		addVariables(var);
+    	}
+    	
+    	setVariableSolver(var);
 
-            BlastFromThePastFactor f;
-            f = new BlastFromThePastFactor(NodeId.getNextFactorId(), var,factorPort);
+		BlastFromThePastFactor f;
+		f = new BlastFromThePastFactor(NodeId.getNextFactorId(), var,factorPort);
 
-            addFactor(f,new Variable[]{var});
+		addFactor(f,var);
 
-    		if (_solverFactorGraph != null)
-    			f.createSolverObject(_solverFactorGraph);
+		if (setVarSolver)
+		{
+			var.createSolverObject(_solverFactorGraph);
+		}
+		
+		if (_solverFactorGraph != null)
+			f.createSolverObject(_solverFactorGraph);
 
-            return f;
+		return f;
 
     }
 
@@ -704,6 +729,15 @@ public class FactorGraph extends FactorBase
 		if (vars.length == 0)
 			throw new DimpleException("must pass at least one variable to addFactor");
 
+		// Add any variables that do not yet have a parent
+		for (Variable v : vars)
+		{
+			if (v.getParentGraph() == null)
+			{
+				addVariables(v);
+			}
+		}
+
 		for (Variable v : vars)
 			setVariableSolver(v);
 
@@ -829,11 +863,11 @@ public class FactorGraph extends FactorBase
 		if (v.getSiblingCount() != 0)
 			throw new DimpleException("can only remove a variable if it is no longer connected to a factor");
 
-		if (!_ownedVariables.contains(v))
+		if (!_ownedVariables.remove(v))
+		{
 			throw new DimpleException("can only currently remove variables that are owned");
-		_ownedVariables.remove(v);
-		if (_ownedVariables.contains(v))
-			throw new DimpleException("eh?");
+		}
+		
 		v.createSolverObject(null);
 		v.setParentGraph(null);
 		removeNode(v);
@@ -848,35 +882,37 @@ public class FactorGraph extends FactorBase
 	{
 		for (Variable v : vars)
 		{
-			setVariableSolver(v);
-	
+			boolean setSolver = false;
+			
+			// FIXME boundary variable solver logic is hacky
+			if (_solverFactorGraph != null && !variableBelongs(v))
+			{
+				if (v.getSiblingCount() > 0)
+					throw new DimpleException("Can't connect a variable to multiple graphs");
+				
+				setSolver = true;
+			}
+			
 			//if (_boundaryVariables.contains(v))
 			//	throw new DimpleException("ERROR name [" + v.getName() + "] already a boundary variable");
 	
-			if (_ownedVariables.contains(v))
-				_ownedVariables.remove(v);
-	
-			_boundaryVariables.add(v);
-	
-	
-			String explicitName = v.getExplicitName();
-	
-			if(explicitName != null && getObjectByName(explicitName) != null && v.getParentGraph() != this)
-			{
-				throw new DimpleException("ERROR name [" + explicitName + "] already in graph");
-			}
-	
-	
-			if(explicitName != null)
-			{
-				_name2object.put(explicitName, v);
-			}
-	
 			//being the root, at least for the moment,
 			//I'm this variable's owner, if it has no other
-			if(v.getParentGraph() == null)
+			if (v.getParentGraph() == null)
 			{
-				v.setParentGraph(this);
+				addOwnedVariable(v, false);
+			}
+
+			_boundaryVariables.add(v);
+	
+			if (v.getParentGraph() != this)
+			{
+				addName(v);
+			}
+			
+			if (setSolver && _solverFactorGraph != null)
+			{
+				v.createSolverObject(_solverFactorGraph);
 			}
 		}
 
@@ -1133,7 +1169,7 @@ public class FactorGraph extends FactorBase
 	/*
 	 * Splitting a variable creates a copy and an equals node between the two.
 	 * The Factor array specifies which factors should connect to the new variable.
-	 * All factors left out of hte array remain pointing to the original variable.
+	 * All factors left out of the array remain pointing to the original variable.
 	 * @since 0.07
 	 */
 	public Variable split(Variable variable,Factor ... factorsToBeMovedToCopy)
@@ -1142,19 +1178,8 @@ public class FactorGraph extends FactorBase
 	}
 
 
-	private FactorBase addFactor(Factor function, Variable[] variables)
+	private FactorBase addFactor(Factor function, Variable ... variables)
 	{
-		// Add variables to owned variable list if not a boundary variable
-		for (Variable v : variables)
-		{
-
-			if (!_boundaryVariables.contains(v))
-			{
-				addOwnedVariable(v, false);
-			}
-
-		}
-
 		addOwnedFactor(function, false);
 		_versionId++;							// The graph has changed
 		return function;
@@ -1327,14 +1352,39 @@ public class FactorGraph extends FactorBase
 	public FactorGraph addGraph(FactorGraph subGraphTemplate, Variable ... boundaryVariables)
 	{
 
-		//TODO: helper function
-		//TODO: or do I do this below constructor?
-		for (Variable v : boundaryVariables)
-			setVariableSolver(v);
+		// FIXME: solver logic is hacky
+		// Really we should not try to update solver state while mutating the graph.
+		// Instead wait until we are done...
+		
+		List<Variable> needsSolver = Collections.emptyList();
+		if (_solverFactorGraph != null)
+		{
+			needsSolver = new ArrayList<>(boundaryVariables.length);
+			for (Variable v : boundaryVariables)
+			{
+				if (!variableBelongs(v))
+				{
+					needsSolver.add(v);
+				}
+			}
+		}
+
+		for (Variable v : boundaryVariables)	// Add variables to owned variable list if not a boundary variable
+		{
+			if (!_boundaryVariables.contains(v))
+			{
+				addOwnedVariable(v, false);
+			}
+		}
 
 		//copy the graph
 		FactorGraph subGraphCopy = new FactorGraph(boundaryVariables, subGraphTemplate,this);
 
+		for (Variable v : needsSolver)
+		{
+			v.createSolverObject(_solverFactorGraph);
+		}
+		
 		if (_solverFactory != null)
 		{
 			subGraphCopy.setSolverFactory(_solverFactory);
@@ -1342,12 +1392,6 @@ public class FactorGraph extends FactorBase
 
 		//tell us about it
 		addOwnedSubgraph(subGraphCopy, false);
-
-		for (Variable v : boundaryVariables)			// Add variables to owned variable list if not a boundary variable
-			if (!_boundaryVariables.contains(v))
-			{
-				addOwnedVariable(v, false);
-			}
 
 		_versionId++;							// The graph has changed
 
@@ -1364,6 +1408,8 @@ public class FactorGraph extends FactorBase
 		//		stop references names/UUIDs of boundary variables.
 		if(noLongerRoot)
 		{
+			// FIXME: this seems really hacky - we are depending on someone fixing up the boundary variables
+			// later.
 			for(Variable v : _boundaryVariables)
 			{
 				String explicitName = v.getExplicitName();
@@ -1373,6 +1419,7 @@ public class FactorGraph extends FactorBase
 				}
 				if(v.getParentGraph() == this)
 				{
+					_ownedVariables.remove(v);
 					v.setParentGraph(null);
 				}
 			}
@@ -1405,11 +1452,14 @@ public class FactorGraph extends FactorBase
 		// Copy owned variables
 		for (Variable vTemplate : templateGraph._ownedVariables)
 		{
-			Variable vCopy = vTemplate.clone();
+			if (!templateGraph.isBoundaryVariable(vTemplate))
+			{
+				Variable vCopy = vTemplate.clone();
 
-			//old2newIds.put(vTemplate.getId(), vCopy.getId());
-			old2newObjs.put(vTemplate,vCopy);
-			addOwnedVariable(vCopy, false);
+				//old2newIds.put(vTemplate.getId(), vCopy.getId());
+				old2newObjs.put(vTemplate,vCopy);
+				addOwnedVariable(vCopy, false);
+			}
 		}
 
 		// Check boundary variables for consistency
@@ -1841,9 +1891,9 @@ public class FactorGraph extends FactorBase
 		// FIXME: may need to rename nodes when they are transferred to avoid conflicts...
 		
 		// Reparent owned variables & factors & subgraphs
-		for (int i = 0, end = variables.size(); i < end; ++i)
+		for (Variable variable : variables)
 		{
-			addOwnedVariable(variables.getByIndex(i), true);
+			addOwnedVariable(variable, true);
 		}
 		for (int i = 0, end = factors.size(); i < end; ++i)
 		{
@@ -2350,7 +2400,6 @@ public class FactorGraph extends FactorBase
 	/**
 	 * Returns the number of non-boundary variables contained directly in this graph
 	 * (i.e. not in subgraphs).
-	 * @see #getOwnedVariable(int)
 	 * @since 0.05
 	 */
 	public int getOwnedVariableCount()
@@ -2361,12 +2410,19 @@ public class FactorGraph extends FactorBase
 	/**
 	 * Returns the ith non-boundary variable contained directly in this graph
 	 * (i.e. not in subgraphs).
-	 * @param i an index int he range [0,{@link #getOwnedVariableCount()} - 1]
+	 * @param i an index in the range [0,{@link #getOwnedVariableCount()} - 1]
 	 * @since 0.05
+	 * @deprecated As of 0.08 use {@link #getOwnedVariables()} instead.
 	 */
+	@Deprecated
 	public Variable getOwnedVariable(int i)
 	{
 		return _ownedVariables.getByIndex(i);
+	}
+	
+	public Iterable<Variable> getOwnedVariables()
+	{
+		return Iterables.unmodifiableIterable(_ownedVariables);
 	}
 	
 	/**
@@ -2427,7 +2483,15 @@ public class FactorGraph extends FactorBase
 
 		//include boundary variables only if this is the root node
 		if (getParentGraph()==null || forceIncludeBoundaryVariables)
-			retval.addAll(_boundaryVariables);
+		{
+			for (Variable variable : _boundaryVariables)
+			{
+				if (variable.getParentGraph() != this)
+				{
+					retval.add(variable);
+				}
+			}
+		}
 
 		retval.addAll(_ownedVariables);
 
@@ -2476,7 +2540,7 @@ public class FactorGraph extends FactorBase
 		return _boundaryVariables.contains(mv);
 	}
 
-	public @Nullable Variable getVariable(int id)
+	public @Nullable Variable getVariable(long id)
 	{
 		Variable v;
 		v = _ownedVariables.getByKey(id);
@@ -2640,7 +2704,7 @@ public class FactorGraph extends FactorBase
 		return getFactors(0);
 	}
 
-	public @Nullable Factor getFactor(int id)
+	public @Nullable Factor getFactor(long id)
 	{
 		Factor f;
 		f = getNonGraphFactorsTop().getByKey(id);
@@ -2864,19 +2928,20 @@ public class FactorGraph extends FactorBase
 	 */
 	public @Nullable Node getNodeByLocalId(int id)
 	{
+		long gid = NodeId.globalIdFromParts(_graphId, id);
 		switch (id >>> NodeId.LOCAL_ID_NODE_TYPE_OFFSET)
 		{
 		case NodeId.FACTOR_TYPE:
-			return _ownedFactors.getByKey(id);
+			return _ownedFactors.getByKey(gid);
 		case NodeId.GRAPH_TYPE:
-			return _ownedFactors.getByKey(id);
+			return _ownedFactors.getByKey(gid);
 		case NodeId.VARIABLE_TYPE:
-			Node obj = _ownedVariables.getByKey(id);
+			Node obj = _ownedVariables.getByKey(gid);
 			if (obj == null && getParentGraph() == null)
 			{
 				// TODO: eventually owned variables will always be in the owned list, even if they
 				// are also boundary variables.
-				obj = _boundaryVariables.getByKey(id);
+				obj = _boundaryVariables.getByKey(gid);
 			}
 			return obj;
 		default:

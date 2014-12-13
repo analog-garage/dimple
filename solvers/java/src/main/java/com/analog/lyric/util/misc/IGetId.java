@@ -20,7 +20,9 @@ import java.util.UUID;
 
 public interface IGetId
 {
-	public int getId();
+	public long getId();
+
+	public int getLocalId();
 	
 	public long getGlobalId();
 

@@ -38,7 +38,7 @@ import com.analog.lyric.util.misc.IPrintable;
 @ThreadSafe
 public abstract class DimpleEvent extends EventObject implements IPrintable
 {
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
 	/*-------
 	 * State
@@ -46,7 +46,7 @@ public abstract class DimpleEvent extends EventObject implements IPrintable
 	
 	private volatile transient boolean _consumed = false;
 	
-	private final int _modelId;
+	private final long _modelId;
 	private final String _eventSourceName;
 	
 	/*--------------
@@ -172,7 +172,7 @@ public abstract class DimpleEvent extends EventObject implements IPrintable
 	 * 
 	 * @since 0.06
 	 */
-	public int getModelId()
+	public long getModelId()
 	{
 		return _modelId;
 	}

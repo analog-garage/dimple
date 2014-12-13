@@ -90,6 +90,8 @@ public class TestVariableEliminator extends DimpleTestBase
 			Discrete b = newVar(4, "b");
 			Discrete c = newVar(5, "c");
 			Discrete d = newVar(6, "d");
+			
+			model.addVariables(a,b,c,d);
 			addClique(model, a, d);
 			addClique(model, b, d);
 			addClique(model, c, d);

@@ -36,17 +36,23 @@ public class TestMapList
 
 	private static class Value implements IGetId
 	{
-		private int _id;
+		private long _id;
 		
-		private Value(int id)
+		private Value(long id)
 		{
 			_id = id;
 		}
 		
 		@Override
-		public int getId()
+		public long getId()
 		{
 			return _id;
+		}
+		
+		@Override
+		public int getLocalId()
+		{
+			return (int)_id;
 		}
 		
 		@Override
@@ -151,7 +157,7 @@ public class TestMapList
 		for (int i = 0, endi = values.size(); i <endi; ++ i)
 		{
 			T value = values.get(i);
-			int id = value.getId();
+			long id = value.getGlobalId();
 			
 			assertSame(value, maplist.getByIndex(i));
 			assertSame(value, maplist.getByKey(id));

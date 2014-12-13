@@ -280,8 +280,10 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		// Same as SFactorGraphBase.initialize() but with deferral of deterministic updates
 		_blockInitializers = null;
 		deferDeterministicUpdates();
-		for (int i = 0, end = fg.getOwnedVariableCount(); i < end; ++i)
-			fg.getOwnedVariable(i).requireSolver("initialize").initialize();
+		for (Variable variable : fg.getOwnedVariables())
+		{
+			variable.requireSolver("initialize").initialize();
+		}
 		if (!fg.hasParentGraph())
 			for (int i = 0, end = fg.getBoundaryVariableCount(); i <end; ++i)
 				fg.getBoundaryVariable(i).requireSolver("initialize").initialize();

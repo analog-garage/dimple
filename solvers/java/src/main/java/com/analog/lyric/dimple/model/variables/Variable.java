@@ -40,7 +40,8 @@ import com.analog.lyric.dimple.solvers.core.SNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Internal;
-import com.google.common.primitives.Ints;
+import com.analog.lyric.util.misc.Misc;
+import com.google.common.primitives.Longs;
 
 /**
  * Base class for model variables in Dimple
@@ -88,7 +89,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		@NonNullByDefault(false)
 		public int compare(Variable var1, Variable var2)
 		{
-			return Ints.compare(var1.getId(), var2.getId());
+			return Longs.compare(var1.getId(), var2.getId());
 		}
     };
 
@@ -113,6 +114,20 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		_domain = domain;
 	}
 
+	// FIXME: remove
+	@Override
+	public void setParentGraph(@Nullable FactorGraph parentGraph)
+	{
+		FactorGraph parent = getParentGraph();
+		
+		if (parent != null && parentGraph != null)
+		{
+			Misc.breakpoint();
+		}
+		
+		super.setParentGraph(parentGraph);
+	}
+	
 	/*----------------
 	 * Object methods
 	 */

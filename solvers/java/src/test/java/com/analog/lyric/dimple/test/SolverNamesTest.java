@@ -41,7 +41,7 @@ public class SolverNamesTest extends DimpleTestBase
 		Discrete variable = new Discrete(DiscreteDomain.bit(), "Variable");
 		
 		assertTrue(variable.getParentGraph() == null);
-		assertEquals(NodeId.defaultNameForLocalId(variable.getId()), variable.getName());
+		assertEquals(NodeId.defaultNameForLocalId(variable.getLocalId()), variable.getName());
 		
 		FactorGraph fg = new FactorGraph(new Discrete[]{variable});
 		assertNull(fg.getParentGraph());
@@ -68,17 +68,12 @@ public class SolverNamesTest extends DimpleTestBase
 			new Discrete(0,1),
 			new Discrete(0,1)
 		};
-		int[] variableIds = new int[]
-		{
-			variables[0].getId(),
-			variables[1].getId(),
-			variables[2].getId(),
-		};
+
 		//simple checks on variables
 		for (Discrete variable : variables)
 		{
 			assertNull(variable.getParentGraph());
-			assertEquals(NodeId.defaultNameForLocalId(variable.getId()), variable.getName());
+			assertEquals(NodeId.defaultNameForLocalId(variable.getLocalId()), variable.getName());
 		}
 		
 		//new graph
@@ -115,11 +110,11 @@ public class SolverNamesTest extends DimpleTestBase
 				FactorTable.create(dummyTable, dummyValues, DiscreteDomain.create(0,1), DiscreteDomain.create(0,1), DiscreteDomain.create(0,1)));
 		//fg.createTable(dummyTable, dummyValues,);
 		Factor fn = fg.addFactor(factorFunc, variables);
-		assertEquals(NodeId.defaultNameForLocalId(fn.getId()), fn.getName());
+		assertEquals(NodeId.defaultNameForLocalId(fn.getLocalId()), fn.getName());
 		
 		//check parent
 		assertTrue(fn.getParentGraph() == fg);
-		for(int i = 0; i < variableIds.length; ++i)
+		for(int i = 0; i < variables.length; ++i)
 		{
 			assertTrue(variables[i].getParentGraph() == fg);
 		}
@@ -129,7 +124,7 @@ public class SolverNamesTest extends DimpleTestBase
 		assertEquals(fn, fg.getObjectByName(fn.getName()));
 		assertEquals(fn, fg.getObjectByUUID(fn.getUUID()));
 		
-		for(int i = 0; i < variableIds.length; ++i)
+		for(int i = 0; i < variables.length; ++i)
 		{
 			Discrete vNotFound = (Discrete) fg.getObjectByName(variables[i].getExplicitName());
 			Discrete vFound = (Discrete) fg.getObjectByName(variables[i].getName());
@@ -158,7 +153,7 @@ public class SolverNamesTest extends DimpleTestBase
 		assertSame(fn, fg.getObjectByName(fn.getQualifiedName()));
 		
 		String variableBaseName = "vName";
-		for (int i = 0; i < variableIds.length; ++i)
+		for (int i = 0; i < variables.length; ++i)
 		{
 			Discrete variable = variables[i];
 			String VariableName = variableBaseName + Integer.toString(i);

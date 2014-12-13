@@ -153,6 +153,7 @@ public class TestFactorGraphEvent extends DimpleTestBase
 		handler.assertNoEvents();
 		
 		root.addBoundaryVariables(b);
+		handler.assertEvent(VariableAddEvent.class, root, b);
 		handler.assertEvent(BoundaryVariableAddEvent.class, root, b);
 		handler.assertNoEvents();
 		

@@ -161,7 +161,7 @@ public class Factor extends FactorBase implements Cloneable
 			name = _name;
 			if(name == null)
 			{
-				name = getModelerFunctionName() + "_" + getId();
+				name = getModelerFunctionName() + "_" + getLocalId();
 			}
 		}
 		return name;

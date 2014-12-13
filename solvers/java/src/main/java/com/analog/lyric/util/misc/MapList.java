@@ -28,7 +28,7 @@ import net.jcip.annotations.NotThreadSafe;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import cern.colt.map.OpenIntObjectHashMap;
+import cern.colt.map.OpenLongObjectHashMap;
 
 import com.google.common.collect.Iterators;
 
@@ -39,7 +39,7 @@ import com.google.common.collect.Iterators;
 @NotThreadSafe
 public class MapList<T extends IGetId>  implements IMapList<T>
 {
-	final OpenIntObjectHashMap _hashMap;
+	final OpenLongObjectHashMap _hashMap;
 	final ArrayList<T> _arrayList;
 		
 	/*---------------
@@ -53,7 +53,7 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	
 	public MapList(int initialCapacity)
 	{
-		_hashMap = new OpenIntObjectHashMap(initialCapacity);
+		_hashMap = new OpenLongObjectHashMap(initialCapacity);
 		_arrayList = new ArrayList<T>(initialCapacity);
 	}
 	
@@ -261,7 +261,7 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	}
 
 	@Override
-	public @Nullable T getByKey(int id)
+	public @Nullable T getByKey(long id)
 	{
 		@SuppressWarnings("unchecked")
 		T value = (T) _hashMap.get(id);

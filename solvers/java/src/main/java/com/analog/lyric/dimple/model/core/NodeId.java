@@ -245,6 +245,11 @@ public class NodeId
 		return nodeUid.getLeastSignificantBits() & GLOBAL_ID_MASK;
 	}
 	
+	public static long globalIdFromParts(int graphId, int localId)
+	{
+		return (long)graphId << 32 | 0xFFFFFFFFL & localId;
+	}
+	
 	/**
 	 * Extracts graph id from default graph name.
 	 * <p>
