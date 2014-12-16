@@ -134,9 +134,9 @@ public class FactorGraph extends FactorBase
 	 * Factors and subgraphs contained directly by this graph. Does not include
 	 * factors and subgraphs contained in subgraphs of this graph.
 	 */
-	private final MapList<FactorBase> _ownedFactors = new MapList<FactorBase>();
+	private final OwnedFactors _ownedFactors = new OwnedFactors(16);
 	
-	private final ArrayList<FactorGraph> _ownedSubGraphs = new ArrayList<FactorGraph>();
+	private final OwnedGraphs _ownedSubGraphs = new OwnedGraphs(16);
 	
 	// TODO : some state only needs to be in root graph. Put it in common object.
 	
@@ -195,7 +195,7 @@ public class FactorGraph extends FactorBase
 		@Nullable String name,
 		@Nullable IFactorGraphFactory<?> solver)
 	{
-		super(NodeType.GRAPH);
+		super(NodeId.INITIAL_GRAPH_ID);
 		
 		_env = DimpleEnvironment.active();
 		_graphId = _env.factorGraphs().registerIdForFactorGraph(this);
@@ -465,7 +465,7 @@ public class FactorGraph extends FactorBase
 		@Nullable IFactorGraphFactory<?> factory)
 	{
 		ISolverFactorGraph solverGraph = setSolverFactorySubGraph(parentSolverGraph, factory);
-		for (FactorGraph fg : getNestedGraphs())
+		for (FactorGraph fg : _ownedSubGraphs)
 			fg.setSolverFactorySubGraphRecursive(solverGraph, factory);
 	}
 
@@ -504,7 +504,7 @@ public class FactorGraph extends FactorBase
 		for (Variable var : getVariablesFlat())
 			var.createSolverObject(_solverFactorGraph);
 
-		for (FactorGraph fg : getNestedGraphs())
+		for (FactorGraph fg : _ownedSubGraphs)
 			fg.setSolverFactorySubGraphRecursive(solverGraph, factory);
 
 		for (Factor f : getNonGraphFactorsFlat())
@@ -559,7 +559,7 @@ public class FactorGraph extends FactorBase
     	setVariableSolver(var);
 
 		BlastFromThePastFactor f;
-		f = new BlastFromThePastFactor(NodeId.getNextFactorId(), var,factorPort);
+		f = new BlastFromThePastFactor(var,factorPort);
 
 		addFactor(f,var);
 
@@ -745,9 +745,9 @@ public class FactorGraph extends FactorBase
 
 		Factor f;
 		if (allDomainsAreDiscrete(vars))
-			f = new DiscreteFactor(NodeId.getNextFactorId(),factorFunction,vars);
+			f = new DiscreteFactor(factorFunction,vars);
 		else
-			f = new Factor(NodeId.getNextFactorId(),factorFunction,vars);
+			f = new Factor(factorFunction,vars);
 
 		addFactor(f,vars);
 
@@ -820,16 +820,13 @@ public class FactorGraph extends FactorBase
 	 */
 	private boolean ownsDirectly_(Node node)
 	{
-		if (node.isVariable())
+		switch (node.getNodeType())
 		{
+		case VARIABLE:
 			return _ownedVariables.contains(node);
-		}
-		else if (node.isFactor())
-		{
+		case FACTOR:
 			return _ownedFactors.contains(node);
-		}
-		else if (node.isFactorGraph())
-		{
+		case GRAPH:
 			return _ownedSubGraphs.contains(node);
 		}
 		
@@ -1385,13 +1382,13 @@ public class FactorGraph extends FactorBase
 			v.createSolverObject(_solverFactorGraph);
 		}
 		
+		//tell us about it
+		addOwnedSubgraph(subGraphCopy, false);
+
 		if (_solverFactory != null)
 		{
 			subGraphCopy.setSolverFactory(_solverFactory);
 		}
-
-		//tell us about it
-		addOwnedSubgraph(subGraphCopy, false);
 
 		_versionId++;							// The graph has changed
 
@@ -1488,51 +1485,42 @@ public class FactorGraph extends FactorBase
 			}
 		}
 
-		for (FactorBase fb : templateGraph._ownedFactors)
+		for (FactorGraph subGraph : templateGraph._ownedSubGraphs)
 		{
-			FactorGraph subGraph = fb.asFactorGraph();
-			if (subGraph != null)
+			Variable[] vBoundary = new Variable[subGraph._boundaryVariables.size()];
 			{
-
-				Variable[] vBoundary = new Variable[subGraph._boundaryVariables.size()];
-				{
-					int i = 0;
-					for (Variable v : subGraph._boundaryVariables)
-						vBoundary[i++] = (Variable)old2newObjs.get(v);
-				}
-				FactorGraph newGraph = addGraph(subGraph, vBoundary);	// Add the graph using the appropriate boundary variables
-				old2newObjs.put(subGraph,newGraph);
-
-
+				int i = 0;
+				for (Variable v : subGraph._boundaryVariables)
+					vBoundary[i++] = (Variable)old2newObjs.get(v);
 			}
-			else
-			{
-				Factor fTemplate = fb.asFactor();
-				if (fTemplate != null)
-				{
-					Factor fCopy = fTemplate.clone();
-					old2newObjs.put(fTemplate,fCopy);
+			// Add the graph using the appropriate boundary variables
+			FactorGraph newGraph = addGraph(subGraph, vBoundary);
+			old2newObjs.put(subGraph,newGraph);
+		}
 
-					addName(fCopy);
-					fCopy.setParentGraph(this);
-					_ownedFactors.add(fCopy);
-					for (INode n : fTemplate.getSiblings())
-					{
-						Variable vTemplate = (Variable)n;
-						Variable var = (Variable)old2newObjs.get(vTemplate);
-						fCopy.connect(var);
-						if (templateGraph._boundaryVariables.contains(vTemplate))
-						{
-							// Boundary variable in template graph: connect port to corresponding boundary
-							// variable in this graph
-							var.connect(fCopy);
-						}
-						else
-						{
-							// Owned variable in template graph: connect port to new copy of template variable
-							var.connect(fCopy);
-						}
-					}
+		for (Factor fTemplate : templateGraph._ownedFactors)
+		{
+			Factor fCopy = fTemplate.clone();
+			old2newObjs.put(fTemplate,fCopy);
+
+			addName(fCopy);
+			fCopy.setParentGraph(this);
+			_ownedFactors.add(fCopy);
+			for (Variable vTemplate : fTemplate.getSiblings())
+			{
+				Variable var = (Variable)old2newObjs.get(vTemplate);
+				fCopy.connect(var);
+				// FIXME - remove if, both branches are the same!
+				if (templateGraph._boundaryVariables.contains(vTemplate))
+				{
+					// Boundary variable in template graph: connect port to corresponding boundary
+					// variable in this graph
+					var.connect(fCopy);
+				}
+				else
+				{
+					// Owned variable in template graph: connect port to new copy of template variable
+					var.connect(fCopy);
 				}
 			}
 		}
@@ -1737,9 +1725,9 @@ public class FactorGraph extends FactorBase
 
 	private void addOwnedFactor(Factor factor, boolean absorbedFromSubgraph)
 	{
-		addName(factor);
 		factor.setParentGraph(this);
 		_ownedFactors.add(factor);
+		addName(factor);
 		if ((_flags & FACTOR_ADD_EVENT) != 0)
 		{
 			raiseEvent(new FactorAddEvent(this, factor, absorbedFromSubgraph));
@@ -1748,12 +1736,11 @@ public class FactorGraph extends FactorBase
 
 	private void addOwnedSubgraph(FactorGraph subgraph, boolean absorbedFromSubgraph)
 	{
-		addName(subgraph);
 		subgraph.setParentGraph(this);
-		_ownedFactors.add(subgraph);
 		_ownedSubGraphs.add(subgraph);
+		addName(subgraph);
 		
-		if ((_flags & FACTOR_ADD_EVENT) != 0)
+		if ((_flags & SUBGRAPH_ADD_EVENT) != 0)
 		{
 			raiseEvent(new SubgraphAddEvent(this, subgraph, absorbedFromSubgraph));
 		}
@@ -1829,15 +1816,17 @@ public class FactorGraph extends FactorBase
 		notifyListenerChanged();
 		
 		for (Variable v : _ownedVariables)
+		{
 			v.initialize();
-		if (!hasParentGraph())			// Initialize boundary variables only if there's no parent to do it
-			for (Variable v : _boundaryVariables)
-				v.initialize();
-
-		for (Factor f : getNonGraphFactorsTop())
+		}
+		for (Factor f : _ownedFactors)
+		{
 			f.initialize();
-		for (FactorGraph g : getNestedGraphs())
+		}
+		for (FactorGraph g : _ownedSubGraphs)
+		{
 			g.initialize();
+		}
 
 		final ISolverFactorGraph sfg = _solverFactorGraph;
 		if (sfg != null)
@@ -1886,7 +1875,8 @@ public class FactorGraph extends FactorBase
 		}
 		
 		final OwnedVariables variables = subgraph._ownedVariables;
-		final MapList<FactorBase> factors = subgraph._ownedFactors;
+		final OwnedFactors factors = subgraph._ownedFactors;
+		final OwnedGraphs subgraphs = subgraph._ownedSubGraphs;
 		
 		// FIXME: may need to rename nodes when they are transferred to avoid conflicts...
 		
@@ -1895,26 +1885,20 @@ public class FactorGraph extends FactorBase
 		{
 			addOwnedVariable(variable, true);
 		}
-		for (int i = 0, end = factors.size(); i < end; ++i)
+		for (Factor factor : factors)
 		{
-			final FactorBase factorBase = factors.getByIndex(i);
-			final Factor factor = factorBase.asFactor();
-			if (factor != null)
-			{
-				addOwnedFactor(factor, true);
-			}
-			final FactorGraph subsubgraph = factorBase.asFactorGraph();
-			if (subsubgraph != null)
-			{
-				addOwnedSubgraph(subsubgraph, true);
-			}
+			addOwnedFactor(factor, true);
+		}
+		for (FactorGraph subsubgraph : subgraphs)
+		{
+			addOwnedSubgraph(subsubgraph, true);
 		}
 		
 		// Clear subgraph state
 		variables.clear();
 		factors.clear();
+		subgraphs.clear();
 		subgraph._boundaryVariables.clear();
-		subgraph._ownedSubGraphs.clear();
 
 		// Remove subgraph itself
 		removeNode(subgraph);
@@ -1960,7 +1944,6 @@ public class FactorGraph extends FactorBase
 
 		removeVariables(arr);
 		removeNode(subgraph);
-		_ownedFactors.remove(subgraph);
 		_ownedSubGraphs.remove(subgraph);
 		
 		for (Variable v : boundary)
@@ -1994,18 +1977,21 @@ public class FactorGraph extends FactorBase
 	public void remove(Factor factor)
 	{
 		//_ownedFactors;
-		if (!getNonGraphFactorsTop().contains(factor))
+		if (!_ownedFactors.contains(factor))
+		{
 			throw new DimpleException("Cannot delete factor.  It is not a member of this graph");
+		}
 
-		_ownedFactors.remove(factor);
-		removeNode(factor);
-		
 		for (int i = 0, nVars = factor.getSiblingCount(); i < nVars; ++i)
 		{
 			Variable var = factor.getSibling(i);
 			var.remove(factor);
 		}
 
+		_ownedFactors.remove(factor);
+		removeNode(factor);
+		factor.setParentGraph(null);
+		
 		if ((_flags & FACTOR_REMOVE_EVENT) != 0)
 		{
 			raiseEvent(new FactorRemoveEvent(this, factor));
@@ -2398,7 +2384,7 @@ public class FactorGraph extends FactorBase
 	}
 	
 	/**
-	 * Returns the number of non-boundary variables contained directly in this graph
+	 * Returns the number of variables contained directly in this graph
 	 * (i.e. not in subgraphs).
 	 * @since 0.05
 	 */
@@ -2408,7 +2394,25 @@ public class FactorGraph extends FactorBase
 	}
 	
 	/**
-	 * Returns the ith non-boundary variable contained directly in this graph
+	 * Unmodifiable iterable that enumerates factors whose parent is this graph..
+	 * @since 0.08
+	 */
+	public Iterable<Factor> getOwnedFactors()
+	{
+		return Iterables.unmodifiableIterable(_ownedFactors);
+	}
+	
+	/**
+	 * Unmodifiable iterable that enumerates subgraphs whose parent is this graph..
+	 * @since 0.08
+	 */
+	public Iterable<FactorGraph> getOwnedGraphs()
+	{
+		return Iterables.unmodifiableIterable(_ownedSubGraphs);
+	}
+	
+	/**
+	 * Returns the ith variable contained directly in this graph
 	 * (i.e. not in subgraphs).
 	 * @param i an index in the range [0,{@link #getOwnedVariableCount()} - 1]
 	 * @since 0.05
@@ -2420,6 +2424,10 @@ public class FactorGraph extends FactorBase
 		return _ownedVariables.getByIndex(i);
 	}
 	
+	/**
+	 * Unmodifiable iterable that enumerates variables whose parent is this graph..
+	 * @since 0.08
+	 */
 	public Iterable<Variable> getOwnedVariables()
 	{
 		return Iterables.unmodifiableIterable(_ownedVariables);
@@ -2438,19 +2446,11 @@ public class FactorGraph extends FactorBase
 	 */
 	public int getVariableCount(int relativeNestingDepth)
 	{
-		int count = 0;
-
-		// include boundary variables only if this is the root node
-		if (getParentGraph() == null)
-		{
-			count += _boundaryVariables.size();
-		}
-
-		count += _ownedVariables.size();
+		int count = _ownedVariables.size();
 
 		if (relativeNestingDepth > 0)
 		{
-			for (FactorGraph fg : getNestedGraphs())
+			for (FactorGraph fg : _ownedSubGraphs)
 			{
 				count += fg.getVariableCount(relativeNestingDepth-1);
 			}
@@ -2553,30 +2553,26 @@ public class FactorGraph extends FactorBase
 	public FactorList getNonGraphFactors(int relativeNestingDepth)
 	{
 		FactorList f = new FactorList();
-
-		for (FactorBase fb : _ownedFactors)
+		getNonGraphFactors(relativeNestingDepth, f);
+		return f;
+	}
+	
+	private final void getNonGraphFactors(int relativeNestingDepth, FactorList list)
+	{
+		if (relativeNestingDepth > 0)
 		{
-			Factor factor = fb.asFactor();
-			if (factor != null)
+			int nextDepth = relativeNestingDepth - 1;
+			for (FactorGraph subgraph : _ownedSubGraphs)
 			{
-				f.add(factor);
-			}
-			else
-			{
-				FactorGraph subgraph = fb.asFactorGraph();
-				if (subgraph != null)
-				{
-					if (relativeNestingDepth > 0)
-					{
-						f.addAll((subgraph).getNonGraphFactors(relativeNestingDepth-1));
-					}
-				}
+				subgraph.getNonGraphFactors(nextDepth, list);
 			}
 		}
 
-		//f.add(_ownedNonGraphFactors);
-
-		return f;
+		// HACK:
+		for (Factor factor : _ownedFactors)
+		{
+			list.add(factor);
+		}
 	}
 
 	public FactorList getNonGraphFactorsFlat()
@@ -2651,27 +2647,27 @@ public class FactorGraph extends FactorBase
 	 */
 	public MapList<FactorBase> getFactors(int relativeNestingDepth, MapList<FactorBase> factors)
 	{
-		for (FactorBase f : _ownedFactors)
+		for (Factor f : _ownedFactors)
 		{
-			FactorGraph subgraph = f.asFactorGraph();
-			if (subgraph != null)
-			{
-				if (relativeNestingDepth > 0)
-				{
-					factors.addAll(subgraph.getFactors(relativeNestingDepth-1, factors));
-				}
-				else
-				{
-					factors.add(f);
-				}
-
-			}
-			else
-			{
-				factors.add(f);
-			}
+			factors.add(f);
 		}
 
+		if (relativeNestingDepth > 0)
+		{
+			int nextDepth = relativeNestingDepth - 1;
+			for (FactorGraph subgraph : _ownedSubGraphs)
+			{
+				subgraph.getFactors(nextDepth, factors);
+			}
+		}
+		else
+		{
+			for (FactorGraph subgraph : _ownedSubGraphs)
+			{
+				factors.add(subgraph);
+			}
+		}
+		
 		return factors;
 	}
 
@@ -2696,35 +2692,25 @@ public class FactorGraph extends FactorBase
 
 	public @Nullable Factor getFactor(long id)
 	{
-		Factor f;
-		f = getNonGraphFactorsTop().getByKey(id);
-		if (f != null) return f;
-		for (FactorGraph g : getNestedGraphs())
-		{
-			f = g.getFactor(id);
-			if (f != null) return f;
-		}
-		return null;
+		return (Factor)getNodeByGlobalId(id);
 	}
 
 	@Nullable INode getFirstNode()
 	{
-		INode node = null;
-
-		if (this._ownedFactors.size() > 0)
+		if (!_ownedSubGraphs.isEmpty())
 		{
-			node = this._ownedFactors.getByIndex(0);
+			return _ownedSubGraphs.getByIndex(0);
+		}
+		else if (this._ownedFactors.size() > 0)
+		{
+			return _ownedFactors.getByIndex(0);
 		}
 		else if (this._ownedVariables.size() > 0)
 		{
-			node = this._ownedVariables.getByIndex(0);
-		}
-		else if (!this.hasParentGraph() && this._boundaryVariables.size() > 0)
-		{
-			node = this._boundaryVariables.getByIndex(0);
+			return _ownedVariables.getByIndex(0);
 		}
 
-		return node;
+		return null;
 	}
 
 	public IMapList<INode> getNodes()
@@ -2758,9 +2744,10 @@ public class FactorGraph extends FactorBase
 		return getNodes(0);
 	}
 
+	// TODO either change return type to (unmodifiable) Iterable or create another method.
 	public ArrayList<FactorGraph> getNestedGraphs()
 	{
-		return _ownedSubGraphs;
+		return new ArrayList<>(_ownedSubGraphs);
 	}
 
 	public long getVersionId()
@@ -2885,9 +2872,9 @@ public class FactorGraph extends FactorBase
 	}
 	
 	/**
-	 * 
-	 * @param gid
-	 * @return
+	 * Returns node in this graph or subgraph with given global id.
+	 * @return node with given global id or null if not found or not a
+	 * member of this graph or its subgraphs
 	 * @since 0.08
 	 */
 	public @Nullable Node getNodeByGlobalId(long gid)
@@ -2911,29 +2898,21 @@ public class FactorGraph extends FactorBase
 	}
 	
 	/**
-	 * 
-	 * @param id
-	 * @return
+	 * Returns node directly owned by this graph with given local id.
+	 * @return node with given id or null if not found.
 	 * @since 0.08
+	 * @see #getNodeByGlobalId
 	 */
 	public @Nullable Node getNodeByLocalId(int id)
 	{
-		long gid = NodeId.globalIdFromParts(_graphId, id);
 		switch (id >>> NodeId.LOCAL_ID_NODE_TYPE_OFFSET)
 		{
 		case NodeId.FACTOR_TYPE:
-			return _ownedFactors.getByKey(gid);
+			return _ownedFactors.getByKey(id);
 		case NodeId.GRAPH_TYPE:
-			return _ownedFactors.getByKey(gid);
+			return _ownedSubGraphs.getByKey(id);
 		case NodeId.VARIABLE_TYPE:
-			Node obj = _ownedVariables.getByKey(id);
-			if (obj == null && getParentGraph() == null)
-			{
-				// TODO: eventually owned variables will always be in the owned list, even if they
-				// are also boundary variables.
-				obj = _boundaryVariables.getByKey(gid);
-			}
-			return obj;
+			return _ownedVariables.getByKey(id);
 		default:
 			return null;
 		}
@@ -3054,8 +3033,7 @@ public class FactorGraph extends FactorBase
 		//functions
 		sb.append(tabString);
 		//		sb.append("Functions:\n");
-		FactorList fList = getNonGraphFactorsTop();
-		for(Factor fn : fList)
+		for(Factor fn : _ownedFactors)
 		{
 			sb.append(tabString);
 			sb.append("\t");
@@ -3066,8 +3044,7 @@ public class FactorGraph extends FactorBase
 		//boundary variables
 		sb.append(tabString);
 		sb.append("Boundary variables:\n");
-		VariableList vList = getBoundaryVariables();
-		for(Variable v : vList)
+		for(Variable v : _boundaryVariables)
 		{
 			sb.append(tabString);
 			sb.append("\t");
@@ -3078,8 +3055,7 @@ public class FactorGraph extends FactorBase
 		//owned variables
 		sb.append(tabString);
 		sb.append("Owned variables:\n");
-		vList = getVariablesTop();
-		for(Variable v : vList)
+		for(Variable v : _ownedVariables)
 		{
 			sb.append(tabString);
 			sb.append("\t");
@@ -3090,7 +3066,7 @@ public class FactorGraph extends FactorBase
 		//child graphs
 		sb.append(tabString);
 		sb.append("Sub graphs:\n");
-		for(FactorGraph g : getNestedGraphs())
+		for(FactorGraph g : _ownedSubGraphs)
 		{
 			sb.append(tabString);
 			sb.append(g.toString());
@@ -3259,12 +3235,13 @@ public class FactorGraph extends FactorBase
 			node.setName(null);
 		}
 
-		for(FactorGraph graph : getNestedGraphs())
+		for(FactorGraph graph : _ownedSubGraphs)
 		{
 			graph.clearNames();
 		}
 	}
 
+	@Deprecated
 	public void setNamesByStructure()
 	{
 		setNamesByStructure("bv",
@@ -3273,6 +3250,7 @@ public class FactorGraph extends FactorBase
 				"graph",
 		"subGraph");
 	}
+	@Deprecated
 	public void setNamesByStructure(String boundaryString,
 			String ownedString,
 			String factorString,
@@ -3307,18 +3285,20 @@ public class FactorGraph extends FactorBase
 			ownedFactors.get(i).setName(String.format("%s%d", factorString, i));
 		}
 
-		ArrayList<FactorGraph> subGraphs = getNestedGraphs();
-		for(int i = 0; i < subGraphs.size(); ++i)
+		int i = 0;
+		for (FactorGraph subgraph : _ownedSubGraphs)
 		{
-			subGraphs.get(i).setName(String.format("%s%d", childGraphString, i));
+			subgraph.setName(String.format("%s%d", childGraphString, i));
 
-			subGraphs.get(i).setNamesByStructure(boundaryString,
+			subgraph.setNamesByStructure(boundaryString,
 					ownedString,
 					factorString,
 					rootGraphString,
 					childGraphString);
+			
+			++i;
 		}
-			}
+	}
 
 	static public HashMap<Integer, ArrayList<INode>> getNodesByDegree(ArrayList<INode> nodes)
 	{

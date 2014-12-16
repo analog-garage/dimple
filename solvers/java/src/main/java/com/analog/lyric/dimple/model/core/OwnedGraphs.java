@@ -16,22 +16,21 @@
 
 package com.analog.lyric.dimple.model.core;
 
-import com.analog.lyric.dimple.model.variables.Variable;
 
 /**
  * 
  * @since 0.08
  * @author Christopher Barber
  */
-final class OwnedVariables extends OwnedArray<Variable>
+final class OwnedGraphs extends OwnedArray<FactorGraph>
 {
 	/*--------------
 	 * Construction
 	 */
 	
-	OwnedVariables(int capacity)
+	OwnedGraphs(int capacity)
 	{
-		super(new Variable[capacity]);
+		super(new FactorGraph[capacity]);
 	}
 
 	/*
@@ -41,13 +40,13 @@ final class OwnedVariables extends OwnedArray<Variable>
 	@Override
 	int idTypeMask()
 	{
-		return NodeId.VARIABLE_TYPE << NodeId.LOCAL_ID_NODE_TYPE_OFFSET;
+		return NodeId.GRAPH_TYPE << NodeId.LOCAL_ID_NODE_TYPE_OFFSET;
 	}
 	
 	@Override
-	Variable[] resize(Variable[] array, int length)
+	FactorGraph[] resize(FactorGraph[] array, int length)
 	{
-		final Variable[] newArray = new Variable[length];
+		final FactorGraph[] newArray = new FactorGraph[length];
 		System.arraycopy(array, 0, newArray, 0, Math.min(length, array.length));
 		return newArray;
 	}

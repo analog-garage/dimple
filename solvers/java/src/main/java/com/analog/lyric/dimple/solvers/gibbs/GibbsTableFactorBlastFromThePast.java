@@ -55,9 +55,11 @@ public class GibbsTableFactorBlastFromThePast extends SBlastFromThePast implemen
 	@SuppressWarnings("null")
 	private void getMessages()
 	{
-		_outputMsg = (double[])getOtherVariablePort().node.getSolver().getInputMsg(getOtherVariablePort().index);
-		_inputMsg = (DiscreteValue)getOtherVariablePort().node.getSolver().getOutputMsg(getOtherVariablePort().index);
-		
+		final Port otherVarPort = _portForOtherVar;
+		final GibbsDiscrete svar = (GibbsDiscrete)otherVarPort.node.getSolver();
+		final int index = otherVarPort.index;
+		_outputMsg = svar.getInputMsg(index);
+		_inputMsg = svar.getOutputMsg(index);
 	}
 	
 	@Override

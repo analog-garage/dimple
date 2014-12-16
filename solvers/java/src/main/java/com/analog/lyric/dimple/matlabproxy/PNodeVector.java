@@ -33,7 +33,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.Matlab;
 
 @Matlab
-public abstract class PNodeVector extends POptionHolder
+public class PNodeVector extends POptionHolder
 {
 	/*
 	 * State
@@ -103,7 +103,10 @@ public abstract class PNodeVector extends POptionHolder
 
 	}
 	
-	public abstract PNodeVector createNodeVector(Node [] nodes);
+	public PNodeVector createNodeVector(Node [] nodes)
+	{
+		return new PNodeVector(nodes);
+	}
 	
 	public PNodeVector concat(Object [] varVectors)
 	{

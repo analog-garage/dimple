@@ -21,7 +21,6 @@ import java.util.UUID;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
-import com.analog.lyric.util.misc.Internal;
 
 /**
  * Contains utility methods for manipulating node identifiers.
@@ -30,35 +29,6 @@ import com.analog.lyric.util.misc.Internal;
  */
 public class NodeId
 {
-	private static int nextId = 0;
-	
-	@Internal
-	@Deprecated
-	public static int getNextId(NodeType type)
-	{
-		return ++nextId | (type.ordinal() << LOCAL_ID_NODE_TYPE_OFFSET);
-	}
-	
-	/**
-	 * @deprecated instead get id from FactorGraph
-	 */
-	@Internal
-	@Deprecated
-	public static int getNextFactorId()
-	{
-		return ++nextId | (FACTOR_TYPE<<LOCAL_ID_NODE_TYPE_OFFSET);
-	}
-	
-	/**
-	 * @deprecated instead get id from FactorGraph
-	 */
-	@Internal
-	@Deprecated
-	public static int getNextVariableId()
-	{
-		return ++nextId | (VARIABLE_TYPE<<LOCAL_ID_NODE_TYPE_OFFSET);
-	}
-
 	/*-----------
 	 * Constants
 	 */
@@ -163,6 +133,8 @@ public class NodeId
 	private static final long UUID_NON_VERSION_MASK = (1L << UUID_VERSION_OFFSET) - 1;
 	private static final long UUID_NON_VERSION_SHIFT = UUID_VERSION_OFFSET + UUID_VERSION_WIDTH;
 	
+	public static final int INITIAL_FACTOR_ID   = FACTOR_TYPE   << LOCAL_ID_NODE_TYPE_OFFSET | LOCAL_ID_INDEX_MAX;
+	public static final int INITIAL_GRAPH_ID    = GRAPH_TYPE    << LOCAL_ID_NODE_TYPE_OFFSET | LOCAL_ID_INDEX_MAX;
 	public static final int INITIAL_VARIABLE_ID = VARIABLE_TYPE << LOCAL_ID_NODE_TYPE_OFFSET | LOCAL_ID_INDEX_MAX;
 	
 	/**

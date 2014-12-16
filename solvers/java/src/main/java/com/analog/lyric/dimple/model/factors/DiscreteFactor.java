@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
@@ -32,6 +31,7 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.util.misc.Internal;
 
 /**
  * A factor with only {@link Discrete} variables.
@@ -48,12 +48,17 @@ public class DiscreteFactor extends Factor
 	 * Construction
 	 */
 	
+	@Internal
+	@Deprecated
 	public DiscreteFactor(int id, FactorFunction factorFunc, Variable[] variables)
 	{
-		super(id, factorFunc, variables);
-		
-		if (!isDiscrete())
-			throw new DimpleException("ack");
+		this(factorFunc, variables);
+	}
+	
+	@Internal
+	public DiscreteFactor(FactorFunction factorFunc, Variable[] variables)
+	{
+		super(factorFunc, variables);
 	}
 
 	/*--------------

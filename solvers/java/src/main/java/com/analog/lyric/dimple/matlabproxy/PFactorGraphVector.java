@@ -55,7 +55,7 @@ import com.analog.lyric.util.misc.MapList;
 import com.analog.lyric.util.misc.Matlab;
 
 @Matlab
-public class PFactorGraphVector extends PFactorVector
+public class PFactorGraphVector extends PFactorBaseVector
 {
 	/*--------------
 	 * Construction
@@ -95,7 +95,7 @@ public class PFactorGraphVector extends PFactorVector
 	 */
 	
 	@Override
-	public PNodeVector createNodeVector(Node[] nodes) {
+	public PFactorGraphVector createNodeVector(Node[] nodes) {
 		return new PFactorGraphVector(nodes);
 	}
 	
@@ -247,28 +247,17 @@ public class PFactorGraphVector extends PFactorVector
 		return tmp;
 	}
 	
-    public PFactorVector getFactors(int relativeNestingDepth)
+    public PFactorBaseVector getFactors(int relativeNestingDepth)
     {
     	return getFactors(getGraph().getFactors(relativeNestingDepth));
     }
 
-    public PFactorVector getFactors(IMapList<FactorBase> factors)
+    public PFactorBaseVector getFactors(IMapList<FactorBase> factors)
     {
     	if (getGraph().isSolverRunning())
     		throw new DimpleException("No changes allowed while the solver is running.");
     	
-    	
-    	int size = factors.values().size();
-    	Node [] nodes = new Node[size];
-    	int i = 0;
-    	for (FactorBase fb : factors.values())
-    	{
-    		nodes[i] = fb;
-    		i++;
-    	}
-    	 
-    	return PHelpers.convertToFactorVector(nodes);
-    	//return new PFactorVector(nodes);
+    	return PHelpers.convertToFactorVector(factors.toArray(new Node[factors.size()]));
     }
     
 	public int [][] getAdjacencyMatrix()
@@ -311,7 +300,7 @@ public class PFactorGraphVector extends PFactorVector
 	
 
 	
-	public PFactorVector addFactorVectorized(PFactorVector factor, Object [] vars, Object [] indices)
+	public PNodeVector addFactorVectorized(PFactorVector factor, Object [] vars, Object [] indices)
 	{
 		PNodeVector [] nodes = PHelpers.convertObjectArrayToNodeVectorArray(vars);
 		int [][][] intIndices = PHelpers.extractIndicesVectorized(indices);

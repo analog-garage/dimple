@@ -62,7 +62,7 @@ public class ScheduleTest extends DimpleTestBase
 		{
 			fg.addFactor(xorFF, variables[factor], variables[factor + 1]);
 		}
-		fg.setNamesByStructure();
+		//fg.setNamesByStructure();
 
 		VariableList variableList = fg.getVariables();
 		double[][] trivialRandomCodeword =

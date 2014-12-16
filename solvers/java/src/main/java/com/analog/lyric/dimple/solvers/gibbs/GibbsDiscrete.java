@@ -866,14 +866,14 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 
 	// TODO move to ISolverNode
 	@Override
-	public Object getInputMsg(int portIndex)
+	public double[] getInputMsg(int portIndex)
 	{
 		return _inPortMsgs[portIndex];
 	}
 
 	// TODO move to ISolverNode
 	@Override
-	public Object getOutputMsg(int portIndex)
+	public DiscreteValue getOutputMsg(int portIndex)
 	{
 		return _outputMsg;
 	}

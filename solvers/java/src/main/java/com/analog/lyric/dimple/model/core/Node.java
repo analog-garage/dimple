@@ -105,12 +105,8 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	 * Construction
 	 */
 	
-	public Node(NodeType type)
-	{
-		this(NodeId.getNextId(type));
-	}
-	
-	public Node(int id)
+	@Internal
+	protected Node(int id)
 	{
 		_id = id;
 		_siblings = new ArrayList<>();
@@ -130,7 +126,6 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 			final Node n = (Node)(super.clone());
 		
 			n._siblings = new ArrayList<INode>();	// Clear the ports in the clone
-			n._id = NodeId.getNextId(getNodeType());
 			n._parentGraph = null;
 			n._name = _name;
 			if (_label != null)

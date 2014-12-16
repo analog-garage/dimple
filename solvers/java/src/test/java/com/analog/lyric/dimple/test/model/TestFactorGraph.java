@@ -97,7 +97,7 @@ public class TestFactorGraph extends DimpleTestBase
 		assertNull(b2.getSolver());
 		assertNull(sum1.getSolver());
 	}
-
+	
 	public static void assertFactorGraphInvariants(FactorGraph fg)
 	{
 		assertSame(fg, fg.asFactorGraph());

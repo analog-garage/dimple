@@ -22,7 +22,6 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
-import com.analog.lyric.dimple.model.core.NodeType;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.util.misc.Internal;
 
@@ -47,17 +46,12 @@ public abstract class FactorBase extends Node
 	// FIXME: constructors should probably have package access to enforce intention that all
 	// subclasses are either Factors or FactorGraphs.
 	
-	public FactorBase(int id)
+	@Internal
+	protected FactorBase(int id)
 	{
 		super(id);
 	}
 	
-	@Internal
-	public FactorBase(NodeType type)
-	{
-		super(type);
-	}
-
 	/*--------------
 	 * Node methods
 	 */

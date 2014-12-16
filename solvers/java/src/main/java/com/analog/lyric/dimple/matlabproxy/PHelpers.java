@@ -120,17 +120,21 @@ public class PHelpers
 			return new PDomain(d);
 	}
 		
-	public static PFactorVector convertToFactorVector(Node [] nodes)
+	public static PFactorBaseVector convertToFactorVector(Node [] nodes)
 	{
 		if (nodes.length == 0)
-			return new PFactorVector();
+			return new PFactorBaseVector();
 		
-		if (nodes[0] instanceof DiscreteFactor)
+		Class<?> superclass = Supers.nearestCommonSuperClass(nodes);
+		
+		if (DiscreteFactor.class.isAssignableFrom(superclass))
 			return new PDiscreteFactorVector(nodes);
-		else if (nodes[0] instanceof FactorGraph)
+		else if (FactorGraph.class.isAssignableFrom(superclass))
 			return new PFactorGraphVector(nodes);
-		else
+		else if (Factor.class.isAssignableFrom(superclass))
 			return new PFactorVector(nodes);
+		else
+			return new PFactorBaseVector(nodes);
 	}
 	
 	public static PFactorVector [] convertToFactorVector(FactorList factors)

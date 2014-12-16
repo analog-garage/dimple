@@ -27,7 +27,7 @@ import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.util.misc.Matlab;
 
 @Matlab
-public class PFactorVector extends PNodeVector
+public class PFactorVector extends PFactorBaseVector
 {
 	/*--------------
 	 * Construction
@@ -61,7 +61,7 @@ public class PFactorVector extends PNodeVector
 	 */
 
 	@Override
-	public PNodeVector createNodeVector(Node[] nodes)
+	public PFactorVector createNodeVector(Node[] nodes)
 	{
 		return new PFactorVector(nodes);
 	}

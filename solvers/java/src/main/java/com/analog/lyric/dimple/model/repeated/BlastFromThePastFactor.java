@@ -23,6 +23,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+import com.analog.lyric.util.misc.Internal;
 
 public class BlastFromThePastFactor extends Factor
 {
@@ -30,10 +31,18 @@ public class BlastFromThePastFactor extends Factor
 	private Port _portForOtherVariable;
 	private Variable _variableConnectedToBlast;
 	
+	@Internal
+	@Deprecated
 	public BlastFromThePastFactor(int id, Variable varConnectedToBlast,
 			Port portForOtherVar)
 	{
-		super(id,((Factor)portForOtherVar.getSibling()).getFactorFunction(),new Variable[]{varConnectedToBlast});
+		this(varConnectedToBlast, portForOtherVar);
+	}
+	
+	@Internal
+	public BlastFromThePastFactor(Variable varConnectedToBlast, Port portForOtherVar)
+	{
+		super(((Factor)portForOtherVar.getSibling()).getFactorFunction(),new Variable[]{varConnectedToBlast});
 		
 		_portForOtherVariable = portForOtherVar;
 		_variableConnectedToBlast = varConnectedToBlast;

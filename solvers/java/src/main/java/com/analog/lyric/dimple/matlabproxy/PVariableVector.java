@@ -99,7 +99,7 @@ public class PVariableVector extends PNodeVector
 	
 	//TODO: support all getFactors variants
 	
-	public PFactorVector getFactors(int relativeNestingDepth)
+	public PFactorBaseVector getFactors(int relativeNestingDepth)
 	{
 		
 		ArrayList<Node> retval = new ArrayList<Node>();

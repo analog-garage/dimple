@@ -33,6 +33,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.INode;
+import com.analog.lyric.dimple.model.core.NodeId;
 import com.analog.lyric.dimple.model.core.NodeType;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.DomainList;
@@ -80,10 +81,17 @@ public class Factor extends FactorBase implements Cloneable
 		return _modelerFunctionName;
 	}
 	
+	@Internal
+	@Deprecated
 	public Factor(int id,FactorFunction factorFunc, Variable [] variables)
 	{
-		super(id);
-
+		this(factorFunc, variables);
+	}
+	
+	@Internal
+	public Factor(FactorFunction factorFunc, Variable[] variables)
+	{
+		super(NodeId.INITIAL_FACTOR_ID);
 		
 		_factorFunction = factorFunc;
 		_modelerFunctionName = factorFunc.getName();

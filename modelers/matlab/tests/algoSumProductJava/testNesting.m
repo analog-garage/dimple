@@ -67,8 +67,6 @@ function testNesting()
     f2.Name = 'f2top';
     f3.Name = 'f3top';
     
-    
-    
     %Test ability to retrieve nested graphs.
     ngs = fg.NestedGraphs;
     assertTrue(ngs{1} == f1);
@@ -80,28 +78,29 @@ function testNesting()
     %Test ability to retrieve FactorsTop()
     
     %In root graph
-    assertEqual(length(fg.FactorsTop),3);
-    assertTrue(fg.FactorsTop{1}==f1);
-    assertTrue(fg.FactorsTop{2}==f2);
-    assertTrue(fg.FactorsTop{3}==f3);
-    
+    factors = fg.FactorsTop;
+    assertEqual(length(factors),3);
+    assertTrue(factors{1}==f3); % factors listed before subgraphs
+    assertTrue(factors{2}==f1);
+    assertTrue(factors{3}==f2);
     
     %In graph at mid level
-    assertEqual(length(f1.FactorsTop),3);
-    assertEqual(f1.FactorsTop{1}.Name,'f1mid');
-    assertEqual(f1.FactorsTop{2}.Name,'f2mid');
-    assertEqual(f1.FactorsTop{3}.Name,'f3mid');
+    factors = f1.FactorsTop;
+    assertEqual(length(factors),3);
+    assertEqual(factors{1}.Name,'f3mid'); % factors before subgraphs
+    assertEqual(factors{2}.Name,'f1mid');
+    assertEqual(factors{3}.Name,'f2mid');
 
     %In graph at low level
-    assertEqual(length(f1.FactorsTop{1}.FactorsTop),2);
-    assertEqual(f1.FactorsTop{1}.FactorsTop{1}.Name,'f1bottom');
-    assertEqual(f1.FactorsTop{1}.FactorsTop{2}.Name,'f2bottom');
+    assertEqual(length(f1.FactorsTop{2}.FactorsTop),2);
+    assertEqual(f1.FactorsTop{2}.FactorsTop{1}.Name,'f1bottom');
+    assertEqual(f1.FactorsTop{2}.FactorsTop{2}.Name,'f2bottom');
     
     %Test ability to retrieve Factors
     
     %At top level
-    expectedNames = {'f1bottom','f2bottom','f1bottom','f2bottom','f3mid',...
-        'f1bottom','f2bottom','f1bottom','f2bottom','f3mid','f3top'};
+    expectedNames = {'f3top', 'f3mid', 'f1bottom','f2bottom','f1bottom','f2bottom','f3mid',...
+        'f1bottom','f2bottom','f1bottom','f2bottom' };
     assertEqual(length(fg.Factors),length(expectedNames));
     for i = 1:length(fg.Factors)
        assertEqual(fg.Factors{i}.Name,expectedNames{i}); 
@@ -112,17 +111,17 @@ function testNesting()
 
     
     %at mid level
-    expectedNames = {'f1bottom','f2bottom','f1bottom','f2bottom','f3mid'};
-    assertEqual(length(fg.FactorsTop{1}.Factors),length(expectedNames));
-    for i = 1:length(fg.FactorsTop{1}.Factors)
-       assertEqual(fg.FactorsTop{1}.Factors{i}.Name,expectedNames{i}); 
+    expectedNames = {'f3mid','f1bottom','f2bottom','f1bottom','f2bottom'};
+    assertEqual(length(fg.FactorsTop{2}.Factors),length(expectedNames));
+    for i = 1:length(fg.FactorsTop{2}.Factors)
+       assertEqual(fg.FactorsTop{2}.Factors{i}.Name,expectedNames{i}); 
     end
     
     %at low level
     expectedNames = {'f1bottom','f2bottom'};
-    assertEqual(length(fg.FactorsTop{1}.FactorsTop{1}.Factors),length(expectedNames));
+    assertEqual(length(fg.FactorsTop{2}.FactorsTop{2}.Factors),length(expectedNames));
     for i = 1:length(expectedNames)
-        assertEqual(fg.FactorsTop{1}.FactorsTop{1}.Factors{i}.Name,expectedNames{i});
+        assertEqual(fg.FactorsTop{2}.FactorsTop{2}.Factors{i}.Name,expectedNames{i});
     end
     
     
@@ -130,16 +129,16 @@ function testNesting()
     
     %from top
     factors = fg.getFactors(1);
-    expectedNames = {'f1mid','f2mid','f3mid','f1mid','f2mid','f3mid','f3top'};
+    expectedNames = {'f3top','f3mid','f1mid','f2mid','f3mid','f1mid','f2mid'};
     assertEqual(length(factors),length(expectedNames));
     for i = 1:length(factors)
         assertEqual(factors{i}.Name,expectedNames{i});
     end
     
     %from middle
-    expectedNames = {'f1bottom','f2bottom','f1bottom','f2bottom','f3mid'};
+    expectedNames = {'f3mid','f1bottom','f2bottom','f1bottom','f2bottom'};
     factors = fg.getFactors(0);
-    factors = factors{1}.getFactors(1);
+    factors = factors{2}.getFactors(1);
     assertEqual(length(factors),length(expectedNames));
     for i = 1:length(factors)
         assertEqual(factors{i}.Name,expectedNames{i});

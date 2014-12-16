@@ -47,7 +47,7 @@ public class PDiscreteFactorVector extends PFactorVector
 	 */
 
 	@Override
-	public PNodeVector createNodeVector(Node[] nodes)
+	public PDiscreteFactorVector createNodeVector(Node[] nodes)
 	{
 		return new PDiscreteFactorVector(nodes);
 	}
