@@ -40,7 +40,6 @@ import com.analog.lyric.dimple.solvers.core.SNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Internal;
-import com.analog.lyric.util.misc.Misc;
 import com.google.common.primitives.Longs;
 
 /**
@@ -107,20 +106,6 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		
 		_modelerClassName = modelerClassName;
 		_domain = domain;
-	}
-	
-	// FIXME: remove
-	@Override
-	public void setParentGraph(@Nullable FactorGraph parentGraph)
-	{
-		FactorGraph parent = getParentGraph();
-		
-		if (parent != null && parentGraph != null)
-		{
-			Misc.breakpoint();
-		}
-		
-		super.setParentGraph(parentGraph);
 	}
 	
 	/*----------------
