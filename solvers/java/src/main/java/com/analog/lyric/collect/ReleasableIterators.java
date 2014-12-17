@@ -19,7 +19,6 @@ package com.analog.lyric.collect;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 public class ReleasableIterators
@@ -100,9 +99,8 @@ public class ReleasableIterators
 			return false;
 		}
 
-		@NonNullByDefault(false)
 		@Override
-		public Object next()
+		public @Nullable Object next()
 		{
 			return null;
 		}
@@ -120,11 +118,25 @@ public class ReleasableIterators
 	}
 	
 	/**
-	 * Returns a canonical empty releasable iterator.
-	 * @since 0.07
+	 * @deprecated Use #emptyIterator instead
 	 */
+	@Deprecated
 	@SuppressWarnings("unchecked")
 	public static <T> ReleasableIterator<T> emptyIterators()
+	{
+		return (ReleasableIterator<T>) EmptyReleasableIterator.INSTANCE;
+	}
+	
+	/**
+	 * Returns a canonical empty releasable iterator.
+	 * <p>
+	 * Returns an iterator whose {@linkplain Iterator#hasNext hasNext()} method returns false,
+	 * and whose {@linkplain Iterator#next next()} method returns null.
+	 * <p>
+	 * @since 0.08
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> ReleasableIterator<T> emptyIterator()
 	{
 		return (ReleasableIterator<T>) EmptyReleasableIterator.INSTANCE;
 	}

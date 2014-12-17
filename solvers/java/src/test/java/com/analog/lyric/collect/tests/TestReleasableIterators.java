@@ -19,13 +19,16 @@ package com.analog.lyric.collect.tests;
 import static com.analog.lyric.util.test.ExceptionTester.*;
 import static org.junit.Assert.*;
 
+import java.util.Iterator;
+
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
 
 import com.analog.lyric.collect.ReleasableArrayIterator;
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.collect.ReleasableIterators;
+import com.analog.lyric.collect.SingleIterator;
 import com.analog.lyric.collect.UnmodifiableReleasableIterator;
-import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.util.test.ExceptionTester;
 
 public class TestReleasableIterators
@@ -78,7 +81,7 @@ public class TestReleasableIterators
 	@Test
 	public void testEmptyIterator()
 	{
-		ReleasableIterator<String> iter = ReleasableIterators.emptyIterators();
+		ReleasableIterator<String> iter = ReleasableIterators.emptyIterator();
 		
 		assertFalse(iter.hasNext());
 		assertNull(iter.next());
@@ -86,4 +89,15 @@ public class TestReleasableIterators
 		iter.release(); // does nothing
 	}
 	
+	@Test
+	public void testSingleIterator()
+	{
+		// Note that this is not a ReleasableIterator.
+		
+		Iterator<String> iter = new SingleIterator<>("foo");
+		assertTrue(iter.hasNext());
+		assertEquals("foo", iter.next());
+		assertFalse(iter.hasNext());
+		assertNull(iter.next());
+	}
 }
