@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.core;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 
 /**
  * 
@@ -28,9 +30,8 @@ final class OwnedGraphs extends OwnedArray<FactorGraph>
 	 * Construction
 	 */
 	
-	OwnedGraphs(int capacity)
+	OwnedGraphs()
 	{
-		super(new FactorGraph[capacity]);
 	}
 
 	/*
@@ -44,10 +45,13 @@ final class OwnedGraphs extends OwnedArray<FactorGraph>
 	}
 	
 	@Override
-	FactorGraph[] resize(FactorGraph[] array, int length)
+	FactorGraph[] resize(@Nullable FactorGraph[] array, int length)
 	{
 		final FactorGraph[] newArray = new FactorGraph[length];
-		System.arraycopy(array, 0, newArray, 0, Math.min(length, array.length));
+		if (array != null)
+		{
+			System.arraycopy(array, 0, newArray, 0, Math.min(length, array.length));
+		}
 		return newArray;
 	}
 }

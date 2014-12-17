@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.core;
 
+import static java.util.Objects.*;
+
 import java.util.AbstractCollection;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,7 +33,11 @@ import com.google.common.collect.Iterators;
 
 /**
  * Maintains owned nodes of a single type for a FactorGraph
- * 
+ * <p>
+ * This class holds the nodes in a simple array indexed by the local id
+ * of the node, which is assigned when the node is added to this collection.
+ * There may be holes in the array, but only if a node is removed.
+ * <p>
  * @since 0.08
  * @author Christopher Barber
  */
@@ -42,7 +48,7 @@ abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
 	 * State
 	 */
 	
-	private T[] _nodes;
+	private @Nullable T[] _nodes;
 	private int _size;
 	private int _end;
 	
@@ -50,9 +56,8 @@ abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
 	 * Construction
 	 */
 	
-	OwnedArray(T[] nodes)
+	OwnedArray()
 	{
-		_nodes = nodes;
 	}
 
 	/*--------------------
@@ -63,13 +68,13 @@ abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
 	@Override
 	public boolean add(T node)
 	{
-		if (contains(node))
+		if (containsNode(node))
 		{
 			return false;
 		}
 		
 		int index = allocate();
-		_nodes[index] = node;
+		requireNonNull(_nodes)[index] = node;
 		node.setId(index|idTypeMask());
 		return true;
 	}
@@ -79,18 +84,19 @@ abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
 	public boolean addAll(Collection<? extends T> nodes)
 	{
 		ensureCapacity(capacity() + nodes.size());
+		final T[] array = requireNonNull(_nodes);
 		
 		final int prevSize = _size;
 		final int typeMask = idTypeMask();
 		
 		for (T node : nodes)
 		{
-			if (!contains(node))
+			if (!containsNode(node))
 			{
 				int index = _end;
 				_end = index + 1;
 				++_size;
-				_nodes[index] = node;
+				array[index] = node;
 				node.setId(index|typeMask);
 			}
 		}
@@ -101,7 +107,10 @@ abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
 	@Override
 	public void clear()
 	{
-		Arrays.fill(_nodes, null);
+		if (_size > 0)
+		{
+			Arrays.fill(_nodes, 0, _end, null);
+		}
 		_size = _end = 0;
 	}
 	
@@ -110,7 +119,7 @@ abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
 	{
 		if (obj instanceof Node)
 		{
-			return contains((Node)obj);
+			return containsNode((Node)obj);
 		}
 		
 		return false;
@@ -123,18 +132,20 @@ abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
 		{
 			return Iterators.emptyIterator();
 		}
+		
+		final T[] array = requireNonNull(_nodes);
 
 		return new Iterator<T>() {
 
 			private int _next = 0;
-			private int _prev = -1;
+			private final T[] _array = array;
 				
 			@Override
 			public boolean hasNext()
 			{
 				for (; _next < _end; ++_next)
 				{
-					if (_nodes[_next] != null)
+					if (_array[_next] != null)
 					{
 						return true;
 					}
@@ -148,11 +159,10 @@ abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
 			{
 				for (; _next < _end; ++_next)
 				{
-					final T node = _nodes[_next];
+					final T node = _array[_next];
 					if (node != null)
 					{
 						++_next;
-						_prev = _next;
 						return node;
 					}
 				}
@@ -163,12 +173,7 @@ abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
 			@Override
 			public void remove()
 			{
-				if (_prev >= 0)
-				{
-					_nodes[_prev] = null;
-					--_size;
-					_prev = -1;
-				}
+				throw new UnsupportedOperationException();
 			}
 		};
 	}
@@ -178,7 +183,7 @@ abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
 	{
 		if (obj instanceof Node)
 		{
-			return remove((Node)obj);
+			return removeNode((Node)obj);
 		}
 		
 		return false;
@@ -196,7 +201,8 @@ abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
 	
 	int capacity()
 	{
-		return _nodes.length;
+		final T[] nodes = _nodes;
+		return nodes != null ? nodes.length : 0;
 	}
 	
 	void capacity(int capacity)
@@ -207,34 +213,40 @@ abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
 		}
 	}
 	
-	public boolean contains(Node node)
+	boolean containsNode(Node node)
 	{
-		return node == getByKey(node.getLocalId());
+		return node == getByLocalId(node.getLocalId());
 	}
 	
-	void ensureCapacity(int capacity)
+	void ensureCapacity(int newCapacity)
 	{
-	}
-	
-	@Nullable T get(int index)
-	{
-		return _nodes[index];
+		if (newCapacity > capacity())
+		{
+			int nextPowerOfTwo = Integer.highestOneBit(newCapacity);
+			if (nextPowerOfTwo < newCapacity)
+			{
+				nextPowerOfTwo <<= 1;
+			}
+			capacity(nextPowerOfTwo);
+		}
 	}
 	
 	/**
 	 * Return's nth node in array (skipping null entries).
 	 */
-	T getByIndex(int n)
+	T getNth(int n)
 	{
 		if (n >= 0 && n < _size)
 		{
+			final T[] nodes = requireNonNull(_nodes);
+			
 			int nNulls = _end - _size;
 			if (nNulls == 0)
 			{
-				return _nodes[n];
+				return nodes[n];
 			}
 
-			for (T node : _nodes)
+			for (T node : nodes)
 			{
 				if (node != null && --n < 0)
 				{
@@ -246,21 +258,33 @@ abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
 		throw new IndexOutOfBoundsException();
 	}
 	
-	@Nullable T getByKey(int localId)
+	@Nullable T getByLocalId(int localId)
 	{
-		int index = NodeId.indexFromLocalId(localId);
-		return index < _end ? _nodes[index] : null;
+		final T[] nodes = _nodes;
+		if (nodes != null)
+		{
+			int index = NodeId.indexFromLocalId(localId);
+			if (index < _end)
+			{
+				return nodes[index];
+			}
+		}
+		return null;
 	}
 	
-	boolean remove(Node node)
+	boolean removeNode(Node node)
 	{
-		final int id = node.getLocalId();
-		final int index = NodeId.indexFromLocalId(id);
-		if (index < _end && _nodes[index] == node)
+		final T[] nodes = _nodes;
+		if (nodes != null)
 		{
-			_nodes[index] = null;
-			--_size;
-			return true;
+			final int id = node.getLocalId();
+			final int index = NodeId.indexFromLocalId(id);
+			if (index < _end && nodes[index] == node)
+			{
+				nodes[index] = null;
+				--_size;
+				return true;
+			}
 		}
 		return false;
 	}
@@ -270,7 +294,7 @@ abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
 	 */
 	
 	abstract int idTypeMask();
-	abstract T[] resize(T[] array, int length);
+	abstract T[] resize(@Nullable T[] array, int length);
 	
 	/*-----------------
 	 * Private methods
@@ -283,10 +307,7 @@ abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
 	{
 		++_size;
 		int index = _end++;
-		if (index >= _nodes.length)
-		{
-			_nodes = resize(_nodes, _nodes.length * 2);
-		}
+		ensureCapacity(_end);
 		return index;
 	}
 }

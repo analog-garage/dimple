@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.core;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.factors.Factor;
 
 /**
@@ -29,9 +31,8 @@ final class OwnedFactors extends OwnedArray<Factor>
 	 * Construction
 	 */
 	
-	OwnedFactors(int capacity)
+	OwnedFactors()
 	{
-		super(new Factor[capacity]);
 	}
 
 	/*
@@ -45,10 +46,13 @@ final class OwnedFactors extends OwnedArray<Factor>
 	}
 	
 	@Override
-	Factor[] resize(Factor[] array, int length)
+	Factor[] resize(@Nullable Factor[] array, int length)
 	{
 		final Factor[] newArray = new Factor[length];
-		System.arraycopy(array, 0, newArray, 0, Math.min(length, array.length));
+		if (array != null)
+		{
+			System.arraycopy(array, 0, newArray, 0, Math.min(length, array.length));
+		}
 		return newArray;
 	}
 }

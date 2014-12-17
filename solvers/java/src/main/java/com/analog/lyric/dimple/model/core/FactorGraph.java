@@ -126,7 +126,7 @@ public class FactorGraph extends FactorBase
 	
 	private volatile @Nullable IDimpleEventSource _eventAndOptionParent;
 	
-	private final OwnedVariables _ownedVariables = new OwnedVariables(16);
+	private final OwnedVariables _ownedVariables = new OwnedVariables();
 
 	private final VariableList _boundaryVariables = new VariableList();
 	
@@ -134,9 +134,9 @@ public class FactorGraph extends FactorBase
 	 * Factors and subgraphs contained directly by this graph. Does not include
 	 * factors and subgraphs contained in subgraphs of this graph.
 	 */
-	private final OwnedFactors _ownedFactors = new OwnedFactors(16);
+	private final OwnedFactors _ownedFactors = new OwnedFactors();
 	
-	private final OwnedGraphs _ownedSubGraphs = new OwnedGraphs(16);
+	private final OwnedGraphs _ownedSubGraphs = new OwnedGraphs();
 	
 	// TODO : some state only needs to be in root graph. Put it in common object.
 	
@@ -789,7 +789,7 @@ public class FactorGraph extends FactorBase
 		// TODO: apart from the boundary variable case, it seems that it would probably be
 		// more efficient to simply walk the ancestor chain from v to see if it hits this graph.
 		
-		if (_ownedVariables.contains(v))
+		if (_ownedVariables.containsNode(v))
 			return true;
 		if (_boundaryVariables.contains(v))
 			return true;
@@ -823,11 +823,11 @@ public class FactorGraph extends FactorBase
 		switch (node.getNodeType())
 		{
 		case VARIABLE:
-			return _ownedVariables.contains(node);
+			return _ownedVariables.containsNode(node);
 		case FACTOR:
-			return _ownedFactors.contains(node);
+			return _ownedFactors.containsNode(node);
 		case GRAPH:
-			return _ownedSubGraphs.contains(node);
+			return _ownedSubGraphs.containsNode(node);
 		}
 		
 		return false;
@@ -860,7 +860,7 @@ public class FactorGraph extends FactorBase
 		if (v.getSiblingCount() != 0)
 			throw new DimpleException("can only remove a variable if it is no longer connected to a factor");
 
-		if (!_ownedVariables.remove(v))
+		if (!_ownedVariables.removeNode(v))
 		{
 			throw new DimpleException("can only currently remove variables that are owned");
 		}
@@ -1416,7 +1416,7 @@ public class FactorGraph extends FactorBase
 				}
 				if(v.getParentGraph() == this)
 				{
-					_ownedVariables.remove(v);
+					_ownedVariables.removeNode(v);
 					v.setParentGraph(null);
 				}
 			}
@@ -1749,7 +1749,7 @@ public class FactorGraph extends FactorBase
 	private void addOwnedVariable(Variable variable, boolean absorbedFromSubgraph)
 	{
 		//Only insert if not already there.
-		if (!_ownedVariables.contains(variable))
+		if (!_ownedVariables.containsNode(variable))
 		{
 			//Tell variable about us...
 			variable.setParentGraph(this);
@@ -1944,7 +1944,7 @@ public class FactorGraph extends FactorBase
 
 		removeVariables(arr);
 		removeNode(subgraph);
-		_ownedSubGraphs.remove(subgraph);
+		_ownedSubGraphs.removeNode(subgraph);
 		
 		for (Variable v : boundary)
 		{
@@ -1977,7 +1977,7 @@ public class FactorGraph extends FactorBase
 	public void remove(Factor factor)
 	{
 		//_ownedFactors;
-		if (!_ownedFactors.contains(factor))
+		if (!_ownedFactors.containsNode(factor))
 		{
 			throw new DimpleException("Cannot delete factor.  It is not a member of this graph");
 		}
@@ -1988,7 +1988,7 @@ public class FactorGraph extends FactorBase
 			var.remove(factor);
 		}
 
-		_ownedFactors.remove(factor);
+		_ownedFactors.removeNode(factor);
 		removeNode(factor);
 		factor.setParentGraph(null);
 		
@@ -2421,7 +2421,7 @@ public class FactorGraph extends FactorBase
 	@Deprecated
 	public Variable getOwnedVariable(int i)
 	{
-		return _ownedVariables.getByIndex(i);
+		return _ownedVariables.getNth(i);
 	}
 	
 	/**
@@ -2699,15 +2699,15 @@ public class FactorGraph extends FactorBase
 	{
 		if (!_ownedSubGraphs.isEmpty())
 		{
-			return _ownedSubGraphs.getByIndex(0);
+			return _ownedSubGraphs.getNth(0);
 		}
 		else if (this._ownedFactors.size() > 0)
 		{
-			return _ownedFactors.getByIndex(0);
+			return _ownedFactors.getNth(0);
 		}
 		else if (this._ownedVariables.size() > 0)
 		{
-			return _ownedVariables.getByIndex(0);
+			return _ownedVariables.getNth(0);
 		}
 
 		return null;
@@ -2908,11 +2908,11 @@ public class FactorGraph extends FactorBase
 		switch (id >>> NodeId.LOCAL_ID_NODE_TYPE_OFFSET)
 		{
 		case NodeId.FACTOR_TYPE:
-			return _ownedFactors.getByKey(id);
+			return _ownedFactors.getByLocalId(id);
 		case NodeId.GRAPH_TYPE:
-			return _ownedSubGraphs.getByKey(id);
+			return _ownedSubGraphs.getByLocalId(id);
 		case NodeId.VARIABLE_TYPE:
-			return _ownedVariables.getByKey(id);
+			return _ownedVariables.getByLocalId(id);
 		default:
 			return null;
 		}

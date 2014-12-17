@@ -596,9 +596,9 @@ public class JunctionTreeTransform
 					{
 						jointName.append("+");
 					}
-					jointName.append(edgeVars[i].getLabel());
+					jointName.append(edgeVars[i].getName());
 				}
-				jointVar.setLabel(jointName.toString());
+				jointVar.setName(jointName.toString());
 				targetModel.addVariables(jointVar);
 				_jointVariable = jointVar;
 				

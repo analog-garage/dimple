@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.core;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.variables.Variable;
 
 /**
@@ -29,9 +31,9 @@ final class OwnedVariables extends OwnedArray<Variable>
 	 * Construction
 	 */
 	
-	OwnedVariables(int capacity)
+	OwnedVariables()
 	{
-		super(new Variable[capacity]);
+		super();
 	}
 
 	/*
@@ -45,10 +47,13 @@ final class OwnedVariables extends OwnedArray<Variable>
 	}
 	
 	@Override
-	Variable[] resize(Variable[] array, int length)
+	Variable[] resize(@Nullable Variable[] array, int length)
 	{
 		final Variable[] newArray = new Variable[length];
-		System.arraycopy(array, 0, newArray, 0, Math.min(length, array.length));
+		if (array != null)
+		{
+			System.arraycopy(array, 0, newArray, 0, Math.min(length, array.length));
+		}
 		return newArray;
 	}
 }
