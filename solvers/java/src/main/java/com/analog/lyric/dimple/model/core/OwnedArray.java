@@ -28,7 +28,8 @@ import net.jcip.annotations.NotThreadSafe;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.google.common.collect.Iterators;
+import com.analog.lyric.collect.ReleasableIterators;
+import com.google.common.collect.UnmodifiableIterator;
 
 
 /**
@@ -130,12 +131,12 @@ abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
 	{
 		if (_size == 0)
 		{
-			return Iterators.emptyIterator();
+			return ReleasableIterators.emptyIterator();
 		}
 		
 		final T[] array = requireNonNull(_nodes);
 
-		return new Iterator<T>() {
+		return new UnmodifiableIterator<T>() {
 
 			private int _next = 0;
 			private final T[] _array = array;
@@ -168,12 +169,6 @@ abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
 				}
 				
 				return null;
-			}
-
-			@Override
-			public void remove()
-			{
-				throw new UnsupportedOperationException();
 			}
 		};
 	}
