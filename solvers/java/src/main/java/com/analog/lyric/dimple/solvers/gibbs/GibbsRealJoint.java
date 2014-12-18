@@ -697,6 +697,9 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		if (_var.hasFixedValue())
 			return 0;
 		
+		if (!_domain.inDomain(_sampleValue))
+			return Double.POSITIVE_INFINITY;
+		
 		final FactorFunction inputJoint = _inputJoint;
 		if (inputJoint != null)
 			return inputJoint.evalEnergy(_sampleValue);
@@ -716,7 +719,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	@Override
 	public final boolean hasPotential()
 	{
-		return !_var.hasFixedValue() && (_inputJoint != null || _inputArray != null);
+		return !_var.hasFixedValue() && (_inputJoint != null || _inputArray != null || _domain.isBounded());
 	}
 
 	@Override

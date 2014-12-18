@@ -221,7 +221,7 @@ public class TestGibbsNeighborList extends DimpleTestBase
 		for (int row = 0; row < rows; ++row)
 			for (int col = 0; col < cols; ++col)
 			{
-				Real var = new Real(RealDomain.nonNegative());
+				Real var = new Real(RealDomain.unbounded());
 				var.setName(String.format("%s[%d,%d]", namePrefix, row, col));
 				matrix[row][col] = var;
 			}

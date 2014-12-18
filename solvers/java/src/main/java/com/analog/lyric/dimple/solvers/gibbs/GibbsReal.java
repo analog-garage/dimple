@@ -544,6 +544,9 @@ public class GibbsReal extends SRealVariableBase
 		if (_var.hasFixedValue())
 			return 0;
 		
+		if (!_domain.inDomain(_sampleValue))
+			return Double.POSITIVE_INFINITY;
+		
 		final FactorFunction input = _input;
 		if (input == null)
 			return 0;
@@ -554,7 +557,7 @@ public class GibbsReal extends SRealVariableBase
 	@Override
 	public final boolean hasPotential()
 	{
-		return !_var.hasFixedValue() && _input != null;
+		return !_var.hasFixedValue() && (_input != null || _domain.isBounded());
 	}
 
     @Override
