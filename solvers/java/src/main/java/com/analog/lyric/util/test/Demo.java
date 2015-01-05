@@ -69,7 +69,7 @@ public class Demo {
 			//PRINTING GRAPH
 			System.out.println("-------------------------------------------------------------------------");
 			System.out.println("before naming...\n");
-			System.out.println(fg.getFullString());
+			System.out.println(Helpers.getFullString(fg));
 			System.out.println("-------------------------------------------------------------------------");
 			
 			
@@ -83,7 +83,7 @@ public class Demo {
 			
 			System.out.println("\n\n-------------------------------------------------------------------------");
 			System.out.println("After naming...\n");
-			System.out.println(fg.getFullString());
+			System.out.println(Helpers.getFullString(fg));
 			
 			System.out.println(v1.getName() + " beliefs: " + Arrays.toString((double[])v1.getBeliefObject()));
 			System.out.println(v2.getName() + " beliefs: " + Arrays.toString((double[])v2.getBeliefObject()));
@@ -172,7 +172,7 @@ public class Demo {
 		{
 			System.out.println("\n\n-------------------------------------------------------------------------");
 			System.out.println("Nested graphs\n");
-			System.out.println(fgRoot.getFullString());
+			System.out.println(Helpers.getFullString(fgRoot));
 			
 			System.out.println("-------------------------------------------------------------------------");
 		}

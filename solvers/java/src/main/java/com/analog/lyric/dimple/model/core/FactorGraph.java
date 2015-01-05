@@ -29,7 +29,6 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
@@ -58,7 +57,6 @@ import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.JointFactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.JointFactorFunction.Functions;
 import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
-import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.DiscreteFactor;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorBase;
@@ -81,6 +79,8 @@ import com.analog.lyric.util.misc.FactorGraphDiffs;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.MapList;
+import com.analog.lyric.util.misc.Matlab;
+import com.analog.lyric.util.test.Helpers;
 import com.google.common.base.Predicate;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Iterators;
@@ -2967,211 +2967,46 @@ public class FactorGraph extends FactorBase
 	@Override
 	public String toString()
 	{
-		// FIXME: all this doesn't need to be in the default toString output. Just the name and graph id
-		// is sufficient.
-		int ownedVariables = getVariablesTop().size();
-		int boundaryVariables = _boundaryVariables.size();
-		int childVariables = getVariablesFlat().size() - ownedVariables - boundaryVariables;
-		int ownedFunctions = getNonGraphFactorsTop().size();
-		int childFunctions = getNonGraphFactorsFlat().size() - ownedFunctions;
-		int subGraphs = getOwnedGraphs().size();
-		String s = String.format("FactorGraph [%s] Variables:(o:%d  b:%d  ch:%d)  Functions:(o:%d ch:%d) Graphs:%d"
-				,getQualifiedLabel()
-				,ownedVariables
-				,boundaryVariables
-				,childVariables
-				,ownedFunctions
-				,childFunctions
-				,subGraphs);
-		return s;
-
-		//return getLabel();
+		return String.format("[FactorGraph %s]", getQualifiedName());
 	}
 
+	@Matlab
 	@Deprecated
 	public String getNodeString()
 	{
-		return getNodeString(0);
+		return Helpers.getNodeString(this);
 	}
 
-	private String getTabString(int numTabs)
-	{
-		String s = "";
-		for(int i = 0; i < numTabs; ++i)
-		{
-			s += "\t";
-		}
-		return s;
-	}
-
-	private String getNodeString(int tabDepth)
-	{
-		String tabString = getTabString(tabDepth);
-		//graph itself
-		StringBuilder sb = new StringBuilder(tabString + 	"------Nodes------\n");
-
-		//functions
-		sb.append(tabString);
-		//		sb.append("Functions:\n");
-		for(Factor fn : _ownedFactors)
-		{
-			sb.append(tabString);
-			sb.append("\t");
-			sb.append(fn.getQualifiedLabel());
-			sb.append("\n");
-		}
-
-		//boundary variables
-		sb.append(tabString);
-		sb.append("Boundary variables:\n");
-		for(Variable v : _boundaryVariables)
-		{
-			sb.append(tabString);
-			sb.append("\t");
-			sb.append(v.getQualifiedLabel());
-			sb.append("\n");
-		}
-
-		//owned variables
-		sb.append(tabString);
-		sb.append("Owned variables:\n");
-		for(Variable v : _ownedVariables)
-		{
-			sb.append(tabString);
-			sb.append("\t");
-			sb.append(v.getQualifiedLabel());
-			sb.append("\n");
-		}
-
-		//child graphs
-		sb.append(tabString);
-		sb.append("Sub graphs:\n");
-		for(FactorGraph g : _ownedSubGraphs)
-		{
-			sb.append(tabString);
-			sb.append(g.toString());
-			sb.append("\n");
-			sb.append(g.getNodeString(tabDepth + 1));
-		}
-		return sb.toString();
-	}
-
+	@Matlab
 	@Deprecated
 	public String getAdjacencyString()
 	{
-		StringBuilder sb = new StringBuilder("------Adjacency------\n");
-		FactorList allFunctions = getNonGraphFactorsFlat();
-		sb.append(String.format("\n--Functions (%d)--\n", allFunctions.size()));
-		for(Factor fn : allFunctions)
-		{
-			String fnName = fn.getLabel();
-			final FactorGraph fnParent = requireNonNull(fn.getParentGraph());
-			if(fnParent.getParentGraph() != null)
-			{
-				fnName = fn.getQualifiedLabel();
-			}
-			sb.append(String.format("fn  [%s]\n", fnName));
-
-			for(int i = 0, end = fn.getSiblingCount(); i < end; i++)
-			{
-				Variable v = fn.getSibling(i);
-
-				String vName = v.getLabel();
-				final FactorGraph vParent = v.getParentGraph();
-				if (vParent != null && // can happen with boundary variables
-					vParent.getParentGraph() != null)
-				{
-					vName = v.getQualifiedLabel();
-				}
-				sb.append(String.format("\t-> [%s]\n", vName));
-			}
-		}
-		VariableList allVariables = getVariablesFlat();
-		sb.append(String.format("--Variables (%d)--\n", allVariables.size()));
-		for(Variable v : allVariables)
-		{
-			String vName = v.getLabel();
-			final FactorGraph vParent = v.getParentGraph();
-			if(vParent != null && //can happen with boundary variables
-				vParent.getParentGraph() != null)
-			{
-				vName = v.getQualifiedLabel();
-			}
-			sb.append(String.format("var [%s]\n", vName));
-
-			for(int i = 0, end = v.getSiblingCount(); i < end; i++)
-			{
-				Factor fn = v.getFactors()[i];
-				String fnName = fn.getLabel();
-				final FactorGraph fnParent = requireNonNull(fn.getParentGraph());
-				if(fnParent.getParentGraph() != null)
-				{
-					fnName = fn.getQualifiedLabel();
-				}
-				sb.append(String.format("\t-> [%s]\n", fnName));
-			}
-		}
-
-		return sb.toString();
+		return Helpers.getAdjacencyString(this);
 	}
 
 	@Deprecated
 	public String getDegreeString()
 	{
-		StringBuilder sb = new StringBuilder("------Degrees------\n");
-		HashMap<Integer, ArrayList<INode>> variablesByDegree = getVariablesByDegree();
-		HashMap<Integer, ArrayList<INode>> factorsByDegree = getFactorsByDegree();
-		sb.append("Variables:\n");
-		for(Entry<Integer, ArrayList<INode>> entry : variablesByDegree.entrySet())
-		{
-			sb.append(String.format("\tdegree:%02d  count:%03d\n", entry.getKey(), entry.getValue().size()));
-		}
-		sb.append("Factors:\n");
-		for(Entry<Integer, ArrayList<INode>> entry : factorsByDegree.entrySet())
-		{
-			sb.append(String.format("\tdegree:%02d  count:%03d\n", entry.getKey(), entry.getValue().size()));
-		}
-		sb.append("-------------------\n");
-		return sb.toString();
+		return Helpers.getDegreeString(this);
 	}
 	
 	@Deprecated
 	public String getDomainSizeString()
 	{
-		StringBuilder sb = new StringBuilder("------Domains------\n");
-		TreeMap<Integer, ArrayList<Variable>> variablesByDomain = getVariablesByDomainSize();
-		for(Entry<Integer, ArrayList<Variable>> entry : variablesByDomain.entrySet())
-		{
-			sb.append(String.format("\tdomain:[%03d]  count:%03d\n", entry.getKey(), entry.getValue().size()));
-		}
-		sb.append("-------------------\n");
-		return sb.toString();
+		return Helpers.getDomainSizeString(this);
 	}
 
 	@Deprecated
 	public String getDomainString()
 	{
-		StringBuilder sb = new StringBuilder("------Domains------\n");
-		TreeMap<Integer, ArrayList<Variable>> variablesByDomain = getVariablesByDomainSize();
-		for(Entry<Integer, ArrayList<Variable>> entry : variablesByDomain.entrySet())
-		{
-			for(Variable vb : entry.getValue())
-			{
-				sb.append(String.format("\t[%-20s]  Domain [%-40s]\n", vb.getLabel(), vb.getDomain().toString()));
-			}
-		}
-		sb.append("-------------------\n");
-		return sb.toString();
+		return Helpers.getDomainString(this);
 	}
 
+	@Matlab
 	@Deprecated
 	public String getFullString()
 	{
-		StringBuilder sb = new StringBuilder(toString() + "\n");
-		sb.append(getNodeString());
-		sb.append(getAdjacencyString());
-		sb.append(getDegreeString());
-		return sb.toString();
+		return Helpers.getFullString(this);
 	}
 
 
@@ -3202,149 +3037,55 @@ public class FactorGraph extends FactorBase
 	@Deprecated
 	public void clearNames()
 	{
-		//If root, clear boundary variables
-		if(!hasParentGraph())
-		{
-			for(Variable v : _boundaryVariables)
-			{
-				v.setName(null);
-			}
-		}
-
-		@SuppressWarnings("all")
-		IMapList<INode> owned = getNodesTop();
-		for(INode node : owned.values())
-		{
-			node.setName(null);
-		}
-
-		for(FactorGraph graph : _ownedSubGraphs)
-		{
-			graph.clearNames();
-		}
+		Helpers.clearNames(this);
 	}
 
 	@Deprecated
 	public void setNamesByStructure()
 	{
-		setNamesByStructure("bv",
-				"v",
-				"f",
-				"graph",
-		"subGraph");
+		Helpers.setNamesByStructure(this);
 	}
+
 	@Deprecated
 	public void setNamesByStructure(String boundaryString,
 			String ownedString,
 			String factorString,
 			String rootGraphString,
 			String childGraphString)
-			{
-
-		//If root, set boundary variables
-		if(!hasParentGraph())
-		{
-			List<Variable> boundaryVariables = _boundaryVariables.values();
-			for(int i = 0; i < boundaryVariables.size(); ++i)
-			{
-				boundaryVariables.get(i).setName(String.format("%s%d", boundaryString, i));
-			}
-
-			if(getExplicitName() != null)
-			{
-				setName(rootGraphString);
-			}
-		}
-
-		ArrayList<Variable> ownedVariables = (ArrayList<Variable>)getVariablesTop().values();
-		for(int i = 0; i < ownedVariables.size(); ++i)
-		{
-			ownedVariables.get(i).setName(String.format("%s%d", ownedString, i));
-		}
-
-		ArrayList<Factor> ownedFactors = (ArrayList<Factor>)getNonGraphFactorsTop().values();
-		for(int i = 0; i < ownedFactors.size(); ++i)
-		{
-			ownedFactors.get(i).setName(String.format("%s%d", factorString, i));
-		}
-
-		int i = 0;
-		for (FactorGraph subgraph : _ownedSubGraphs)
-		{
-			subgraph.setName(String.format("%s%d", childGraphString, i));
-
-			subgraph.setNamesByStructure(boundaryString,
-					ownedString,
-					factorString,
-					rootGraphString,
-					childGraphString);
-			
-			++i;
-		}
+	{
+		Helpers.setNamesByStructure(this, boundaryString, ownedString, factorString, rootGraphString, childGraphString);
 	}
 
 	@Deprecated
 	static public HashMap<Integer, ArrayList<INode>> getNodesByDegree(ArrayList<INode> nodes)
 	{
-		HashMap<Integer, ArrayList<INode>> nodesByDegree = new HashMap<Integer, ArrayList<INode>>();
-		for(INode node : nodes)
-		{
-			int degree = node.getSiblingCount();
-			if(!nodesByDegree.containsKey(degree))
-			{
-				ArrayList<INode> degreeNNodes = new ArrayList<INode>();
-				nodesByDegree.put(degree, degreeNNodes);
-			}
-			nodesByDegree.get(degree).add(node);
-		}
-		return nodesByDegree;
+		return Helpers.getNodesByDegree(nodes);
 	}
 	
 	@Deprecated
 	public HashMap<Integer, ArrayList<INode>> getNodesByDegree()
 	{
-		ArrayList<INode> nodes = new ArrayList<INode>();
-		nodes.addAll(getNonGraphFactorsFlat());
-		nodes.addAll(getVariablesFlat());
-		return getNodesByDegree(nodes);
+		return Helpers.getNodesByDegree(this);
 	}
+
 	@Deprecated
 	public HashMap<Integer, ArrayList<INode>> getVariablesByDegree()
 	{
-		ArrayList<INode> nodes = new ArrayList<INode>();
-		nodes.addAll(getVariablesFlat());
-		return getNodesByDegree(nodes);
+		return Helpers.getVariablesByDegree(this);
 	}
+
 	@Deprecated
 	public HashMap<Integer, ArrayList<INode>> getFactorsByDegree()
 	{
-		ArrayList<INode> nodes = new ArrayList<INode>();
-		nodes.addAll(getNonGraphFactorsFlat().values());
-		return getNodesByDegree(nodes);
+		return Helpers.getFactorsByDegree(this);
 	}
+
 	@Deprecated
 	public TreeMap<Integer, ArrayList<Variable>> getVariablesByDomainSize()
 	{
-		ArrayList<Variable> variables = new ArrayList<Variable>();
-		variables.addAll(getVariablesFlat());
-		TreeMap<Integer, ArrayList<Variable>> variablesByDomain = new TreeMap<Integer, ArrayList<Variable>>();
-		for(Variable vb : variables)
-		{
-			if(!(vb.getDomain() instanceof DiscreteDomain))
-			{
-				throw new DimpleException("whoops");
-			}
-			DiscreteDomain domain = (DiscreteDomain) vb.getDomain();
-			int size = domain.size();
-			if(!variablesByDomain.containsKey(size))
-			{
-				ArrayList<Variable> variablesForDomain = new ArrayList<Variable>();
-				variablesByDomain.put(size, variablesForDomain);
-			}
-			variablesByDomain.get(size).add(vb);
-		}
-		return variablesByDomain;
+		return Helpers.getVariablesByDomainSize(this);
 	}
+
 	public @Nullable IFactorGraphFactory<?> getFactorGraphFactory()
 	{
 		return _solverFactory;

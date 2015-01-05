@@ -36,6 +36,7 @@ import com.analog.lyric.dimple.model.core.INameable;
 import com.analog.lyric.dimple.model.core.NodeId;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.util.test.Helpers;
 
 public class NamesTest extends DimpleTestBase
 {
@@ -98,9 +99,9 @@ public class NamesTest extends DimpleTestBase
 		testObjectName(fg, NodeId.defaultNameForGraphId(fg.getGraphId()),
 			null, NodeId.defaultNameForGraphId(fg.getGraphId()));
 		assertTrue(fg.toString().length() != 0);
-		assertTrue(fg.getNodeString().length() != 0);
-		assertTrue(fg.getAdjacencyString().length() != 0);
-		assertTrue(fg.getFullString().length() != 0);
+		assertTrue(Helpers.getNodeString(fg).length() != 0);
+		assertTrue(Helpers.getAdjacencyString(fg).length() != 0);
+		assertTrue(Helpers.getFullString(fg).length() != 0);
 		
 		Factor f = fg.addFactor(new XorDelta(), v1, v2);
 

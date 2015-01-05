@@ -22,6 +22,7 @@ import static org.junit.Assert.*;
 
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -34,7 +35,6 @@ import com.analog.lyric.dimple.model.core.INameable;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.util.misc.FactorGraphDiffs;
-import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.util.test.Helpers;
 
 public class FactorGraphDiffsTest extends DimpleTestBase
@@ -70,8 +70,8 @@ public class FactorGraphDiffsTest extends DimpleTestBase
 			if(noDiffsExpected != diffs.noDiffs())
 			{
 				diffs.print(tag + "_ERROR");
-				System.out.println(a.getAdjacencyString());
-				System.out.println(b.getAdjacencyString());
+				System.out.println(Helpers.getAdjacencyString(a));
+				System.out.println(Helpers.getAdjacencyString(b));
 			}
 			assertTrue(noDiffsExpected == diffs.noDiffs());
 			if(bPrint){diffs.print(tag);}
@@ -79,8 +79,8 @@ public class FactorGraphDiffsTest extends DimpleTestBase
 		catch(Exception e)
 		{
 			System.out.println("Exception diffing [" + tag + "]");
-			System.out.println(a.getFullString());
-			System.out.println(b.getFullString());
+			System.out.println(Helpers.getFullString(a));
+			System.out.println(Helpers.getFullString(b));
 			throw new RuntimeException(e);
 		}
 		if(diffs.noDiffs())

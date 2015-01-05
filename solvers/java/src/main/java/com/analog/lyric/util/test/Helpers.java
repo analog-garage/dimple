@@ -23,20 +23,26 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Random;
 import java.util.TreeMap;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.XorDelta;
 import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraphIterables;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Model;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.IntRangeDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.factors.FactorList;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
@@ -44,7 +50,7 @@ import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
-import org.eclipse.jdt.annotation.Nullable;
+import com.google.common.base.Strings;
 
 
 public class Helpers
@@ -183,7 +189,7 @@ public class Helpers
 			fg.addFactor(xorFF, discretes[factor], discretes[factor + 1]);
 		}
 		
-		fg.setNamesByStructure();
+		Helpers.setNamesByStructure(fg);
 		
 		if(randomInput)
 		{
@@ -901,6 +907,308 @@ public class Helpers
 	static public void setSeed(long seed)
 	{
 		_r.setSeed(seed);
+	}
+	
+	static public void clearNames(FactorGraph root)
+	{
+		for (FactorGraph fg : FactorGraphIterables.subgraphs(root))
+		{
+			fg.setName(null);
+			
+			for (Variable v : fg.getOwnedVariables())
+			{
+				v.setName(null);
+			}
+
+			for (Factor f : fg.getOwnedFactors())
+			{
+				f.setName(null);
+			}
+		}
+	}
+	
+	static public void setNamesByStructure(FactorGraph fg)
+	{
+		setNamesByStructure(fg, "bv", "v", "f", "graph", "subGraph");
+	}
+	
+	static public void setNamesByStructure(FactorGraph fg,String boundaryString,
+		String ownedString,
+		String factorString,
+		String rootGraphString,
+		String childGraphString)
+	{
+		int i;
+		
+		// If root, set boundary variables
+		if (!fg.hasParentGraph())
+		{
+			i = 0;
+			for (Variable v : FactorGraphIterables.boundary(fg))
+			{
+				v.setName(String.format("%s%d", boundaryString, i));
+				++i;
+			}
+			
+			if (fg.getExplicitName() != null)
+			{
+				fg.setName(rootGraphString);
+			}
+		}
+
+		i = 0;
+		for (Variable v : fg.getOwnedVariables())
+		{
+			v.setName(String.format("%s%d", ownedString, i));
+			++i;
+		}
+
+		i = 0;
+		for (Factor f : fg.getOwnedFactors())
+		{
+			f.setName(String.format("%s%d", factorString, i));
+			++i;
+		}
+		
+		i = 0;
+		for (FactorGraph subgraph : fg.getOwnedGraphs())
+		{
+			subgraph.setName(String.format("%s%d", childGraphString, i));
+
+			setNamesByStructure(subgraph, boundaryString, ownedString, factorString, rootGraphString, childGraphString);
+			++i;
+		}
+	}
+		
+	public static String getAdjacencyString(FactorGraph fg)
+	{
+		StringBuilder sb = new StringBuilder("------Adjacency------\n");
+		FactorList allFunctions = fg.getNonGraphFactors();
+		sb.append(String.format("\n--Functions (%d)--\n", allFunctions.size()));
+		for(Factor fn : allFunctions)
+		{
+			String fnName = fn.getLabel();
+			final FactorGraph fnParent = requireNonNull(fn.getParentGraph());
+			if(fnParent.getParentGraph() != null)
+			{
+				fnName = fn.getQualifiedLabel();
+			}
+			sb.append(String.format("fn  [%s]\n", fnName));
+
+			for(int i = 0, end = fn.getSiblingCount(); i < end; i++)
+			{
+				Variable v = fn.getSibling(i);
+
+				String vName = v.getLabel();
+				final FactorGraph vParent = v.getParentGraph();
+				if (vParent != null && // can happen with boundary variables
+					vParent.getParentGraph() != null)
+				{
+					vName = v.getQualifiedLabel();
+				}
+				sb.append(String.format("\t-> [%s]\n", vName));
+			}
+		}
+		VariableList allVariables = fg.getVariables();
+		sb.append(String.format("--Variables (%d)--\n", allVariables.size()));
+		for(Variable v : allVariables)
+		{
+			String vName = v.getLabel();
+			final FactorGraph vParent = v.getParentGraph();
+			if(vParent != null && //can happen with boundary variables
+				vParent.getParentGraph() != null)
+			{
+				vName = v.getQualifiedLabel();
+			}
+			sb.append(String.format("var [%s]\n", vName));
+
+			for(int i = 0, end = v.getSiblingCount(); i < end; i++)
+			{
+				Factor fn = v.getFactors()[i];
+				String fnName = fn.getLabel();
+				final FactorGraph fnParent = requireNonNull(fn.getParentGraph());
+				if(fnParent.getParentGraph() != null)
+				{
+					fnName = fn.getQualifiedLabel();
+				}
+				sb.append(String.format("\t-> [%s]\n", fnName));
+			}
+		}
+
+		return sb.toString();
+	}
+	
+	public static String getDegreeString(FactorGraph fg)
+	{
+		StringBuilder sb = new StringBuilder("------Degrees------\n");
+		HashMap<Integer, ArrayList<INode>> variablesByDegree = getVariablesByDegree(fg);
+		HashMap<Integer, ArrayList<INode>> factorsByDegree = getFactorsByDegree(fg);
+		sb.append("Variables:\n");
+		for(Entry<Integer, ArrayList<INode>> entry : variablesByDegree.entrySet())
+		{
+			sb.append(String.format("\tdegree:%02d  count:%03d\n", entry.getKey(), entry.getValue().size()));
+		}
+		sb.append("Factors:\n");
+		for(Entry<Integer, ArrayList<INode>> entry : factorsByDegree.entrySet())
+		{
+			sb.append(String.format("\tdegree:%02d  count:%03d\n", entry.getKey(), entry.getValue().size()));
+		}
+		sb.append("-------------------\n");
+		return sb.toString();
+	}
+	
+	public static String getDomainSizeString(FactorGraph fg)
+	{
+		StringBuilder sb = new StringBuilder("------Domains------\n");
+		TreeMap<Integer, ArrayList<Variable>> variablesByDomain = getVariablesByDomainSize(fg);
+		for(Entry<Integer, ArrayList<Variable>> entry : variablesByDomain.entrySet())
+		{
+			sb.append(String.format("\tdomain:[%03d]  count:%03d\n", entry.getKey(), entry.getValue().size()));
+		}
+		sb.append("-------------------\n");
+		return sb.toString();
+	}
+	
+	public static String getDomainString(FactorGraph fg)
+	{
+		StringBuilder sb = new StringBuilder("------Domains------\n");
+		TreeMap<Integer, ArrayList<Variable>> variablesByDomain = getVariablesByDomainSize(fg);
+		for(Entry<Integer, ArrayList<Variable>> entry : variablesByDomain.entrySet())
+		{
+			for(Variable vb : entry.getValue())
+			{
+				sb.append(String.format("\t[%-20s]  Domain [%-40s]\n", vb.getLabel(), vb.getDomain().toString()));
+			}
+		}
+		sb.append("-------------------\n");
+		return sb.toString();
+	}
+	
+	public static String getFullString(FactorGraph fg)
+	{
+		StringBuilder sb = new StringBuilder(fg.toString() + "\n");
+		sb.append(getNodeString(fg));
+		sb.append(getAdjacencyString(fg));
+		sb.append(getDegreeString(fg));
+		return sb.toString();
+	}
+	
+	public static String getNodeString(FactorGraph fg)
+	{
+		return getNodeString(fg, 0);
+	}
+
+	private static String getNodeString(FactorGraph fg, int tabDepth)
+	{
+		String tabString = Strings.repeat("\t", tabDepth);
+		//graph itself
+		StringBuilder sb = new StringBuilder(tabString + 	"------Nodes------\n");
+
+		//functions
+		sb.append(tabString);
+		//		sb.append("Functions:\n");
+		for(Factor fn : fg.getOwnedFactors())
+		{
+			sb.append(tabString);
+			sb.append("\t");
+			sb.append(fn.getQualifiedLabel());
+			sb.append("\n");
+		}
+
+		//boundary variables
+		sb.append(tabString);
+		sb.append("Boundary variables:\n");
+		for (Variable v : FactorGraphIterables.boundary(fg))
+		{
+			sb.append(tabString);
+			sb.append("\t");
+			sb.append(v.getQualifiedLabel());
+			sb.append("\n");
+		}
+
+		//owned variables
+		sb.append(tabString);
+		sb.append("Owned variables:\n");
+		for(Variable v : fg.getOwnedVariables())
+		{
+			sb.append(tabString);
+			sb.append("\t");
+			sb.append(v.getQualifiedLabel());
+			sb.append("\n");
+		}
+
+		//child graphs
+		sb.append(tabString);
+		sb.append("Sub graphs:\n");
+		for(FactorGraph g : fg.getOwnedGraphs())
+		{
+			sb.append(tabString);
+			sb.append(g.toString());
+			sb.append("\n");
+			sb.append(getNodeString(g, tabDepth + 1));
+		}
+		return sb.toString();
+	}
+	
+	static public HashMap<Integer, ArrayList<INode>> getNodesByDegree(ArrayList<INode> nodes)
+	{
+		HashMap<Integer, ArrayList<INode>> nodesByDegree = new HashMap<Integer, ArrayList<INode>>();
+		for(INode node : nodes)
+		{
+			int degree = node.getSiblingCount();
+			if(!nodesByDegree.containsKey(degree))
+			{
+				ArrayList<INode> degreeNNodes = new ArrayList<INode>();
+				nodesByDegree.put(degree, degreeNNodes);
+			}
+			nodesByDegree.get(degree).add(node);
+		}
+		return nodesByDegree;
+	}
+
+	public static HashMap<Integer, ArrayList<INode>> getNodesByDegree(FactorGraph fg)
+	{
+		ArrayList<INode> nodes = new ArrayList<INode>();
+		nodes.addAll(fg.getNonGraphFactors());
+		nodes.addAll(fg.getVariables());
+		return getNodesByDegree(nodes);
+	}
+
+	public static HashMap<Integer, ArrayList<INode>> getVariablesByDegree(FactorGraph fg)
+	{
+		ArrayList<INode> nodes = new ArrayList<INode>();
+		nodes.addAll(fg.getVariables());
+		return getNodesByDegree(nodes);
+	}
+
+	public static HashMap<Integer, ArrayList<INode>> getFactorsByDegree(FactorGraph fg)
+	{
+		ArrayList<INode> nodes = new ArrayList<INode>();
+		nodes.addAll(fg.getNonGraphFactors());
+		return getNodesByDegree(nodes);
+	}
+
+	public static TreeMap<Integer, ArrayList<Variable>> getVariablesByDomainSize(FactorGraph fg)
+	{
+		ArrayList<Variable> variables = new ArrayList<Variable>();
+		variables.addAll(fg.getVariables());
+		TreeMap<Integer, ArrayList<Variable>> variablesByDomain = new TreeMap<Integer, ArrayList<Variable>>();
+		for(Variable vb : variables)
+		{
+			if(!(vb.getDomain() instanceof DiscreteDomain))
+			{
+				throw new DimpleException("whoops");
+			}
+			DiscreteDomain domain = (DiscreteDomain) vb.getDomain();
+			int size = domain.size();
+			if(!variablesByDomain.containsKey(size))
+			{
+				ArrayList<Variable> variablesForDomain = new ArrayList<Variable>();
+				variablesByDomain.put(size, variablesForDomain);
+			}
+			variablesByDomain.get(size).add(vb);
+		}
+		return variablesByDomain;
 	}
 	
 }
