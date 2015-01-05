@@ -135,8 +135,8 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	public void moveMessages(ISolverNode other)
 	{
 		SFactorGraphBase sother = (SFactorGraphBase)other;
-		FactorList otherFactors = sother._factorGraph.getFactorsFlat();
-		FactorList myFactors = _factorGraph.getFactorsFlat();
+		FactorList otherFactors = sother._factorGraph.getFactors();
+		FactorList myFactors = _factorGraph.getFactors();
 		
 		if (otherFactors.size() != myFactors.size())
 			throw new DimpleException("Graphs dont' match");
@@ -319,7 +319,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		double sum = 0;
 		
 		// Sum up factor entropy
-		for (Factor f : _factorGraph.getFactorsFlat())
+		for (Factor f : _factorGraph.getFactors())
 			sum += f.getBetheEntropy();
 		
 		// The following would be unnecessary if we implemented inputs as single node factors
@@ -354,7 +354,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		double sum = 0;
 		
 		//Sum up factor internal energy
-		for (Factor f : _factorGraph.getFactorsFlat())
+		for (Factor f : _factorGraph.getFactors())
 			sum += f.getInternalEnergy();
 		
 		//The following would be unnecessary if we implemented inputs as single node factors
@@ -574,7 +574,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		}
 		for (Factor f : fg.getNonGraphFactorsTop())
 			f.requireSolver("initialize").initialize();
-		for (FactorGraph g : fg.getNestedGraphs())
+		for (FactorGraph g : fg.getOwnedGraphs())
 			g.requireSolver("initialize").initialize();
 	}
 	

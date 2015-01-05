@@ -23,6 +23,9 @@ import java.util.LinkedList;
 import java.util.Random;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -32,8 +35,6 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 
 /*
  * The pseudolikelihood class uses the Pseudolikelihood algorithm
@@ -61,7 +62,7 @@ public class PseudoLikelihood extends ParameterEstimator
 		_vars = vars;
 		
 		//Get all factors for this grah
-		FactorList fl = fg.getFactorsFlat();
+		FactorList fl = fg.getFactors();
 		
 		//create a mapping from the input variables to the index into the input variable array
 		for (int i = 0; i < vars.length; i++)

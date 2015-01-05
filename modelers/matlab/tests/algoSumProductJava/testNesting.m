@@ -243,7 +243,7 @@ function testNesting()
     %NonGraphFactors in between
     factors = fg.getNonGraphFactors(1);
     assertEqual(length(factors),3);
-    expectedNames = {'f3mid','f3mid','f3top'};
+    expectedNames = {'f3top','f3mid','f3mid'};
     for i = 1:length(expectedNames)
        assertEqual(expectedNames{i},factors{i}.Name); 
     end
@@ -251,7 +251,7 @@ function testNesting()
     %at lower level
     factors = fg.NestedGraphs{1}.getNonGraphFactors(1);
     assertEqual(length(factors),5);
-    expectedNames = {'f1bottom','f2bottom','f1bottom','f2bottom','f3mid'};
+    expectedNames = {'f3mid','f1bottom','f2bottom','f1bottom','f2bottom'};
     for i = 1:length(expectedNames)
        assertEqual(expectedNames{i},factors{i}.Name); 
     end

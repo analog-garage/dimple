@@ -102,6 +102,7 @@ public class NodeId
 	public static final int FACTOR_TYPE =    0;
 	public static final int GRAPH_TYPE =     1;
 	public static final int VARIABLE_TYPE =  2;
+	public static final int BOUNDARY_VARIABLE_TYPE = 6;
 	
 	/**
 	 * Maximum value for the index portion of a local identifier.

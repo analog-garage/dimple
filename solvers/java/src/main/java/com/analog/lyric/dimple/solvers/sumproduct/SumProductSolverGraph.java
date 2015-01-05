@@ -618,7 +618,7 @@ public class SumProductSolverGraph extends SFactorGraphBase
 		_currentFactorTable = ft;
 		
 				
-		for (Factor f : _factorGraph.getFactorsFlat())
+		for (Factor f : _factorGraph.getFactors())
 		{
 			((SumProductTableFactor)f.getSolver()).initializeDerivativeMessages(ft.sparseSize());
 		}
@@ -631,7 +631,7 @@ public class SumProductSolverGraph extends SFactorGraphBase
 		try
 		{
 			_factorGraph.solve();
-			for (Factor f : _factorGraph.getFactorsFlat())
+			for (Factor f : _factorGraph.getFactors())
 			{
 				SumProductTableFactor stf = (SumProductTableFactor)f.getSolver();
 				result += stf.calculateDerivativeOfInternalEnergyWithRespectToWeight(weightIndex);
@@ -656,7 +656,7 @@ public class SumProductSolverGraph extends SFactorGraphBase
 	@SuppressWarnings("null")
 	public void setCalculateDerivative(boolean val)
 	{
-		for (Factor f : _factorGraph.getFactorsFlat())
+		for (Factor f : _factorGraph.getFactors())
 		{
 			SumProductTableFactor stf = (SumProductTableFactor)f.getSolver();
 			stf.setUpdateDerivative(val);

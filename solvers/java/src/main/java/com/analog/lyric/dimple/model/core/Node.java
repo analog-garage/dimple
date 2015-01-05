@@ -68,8 +68,6 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	 */
 	protected static final int RESERVED = 0xFF000000;
 	
-	
-	
 	/*-------
 	 * State
 	 */
@@ -494,9 +492,7 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 		disconnect(getPortNum(node));
 	}
 
-	@Internal
-	@Override
-	public void setParentGraph(@Nullable FactorGraph parentGraph)
+	protected void setParentGraph(@Nullable FactorGraph parentGraph)
 	{
 		// TODO: combine with adding to owned list?
 		_parentGraph = parentGraph;
@@ -579,7 +575,7 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 		final FactorGraph parentGraph = _parentGraph;
 		if(parentGraph != null)
 		{
-			parentGraph.setChildName(this, name);
+			parentGraph.setChildNameInternal(this, name);
 		}
 
 		this._name = name;

@@ -84,7 +84,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 		double entropy = 0;
 		
 		// Sum up factor entropy
-		for (Factor factor : sourceModel.getFactorsFlat())
+		for (Factor factor : sourceModel.getFactors())
 		{
 			entropy += factor.getBetheEntropy();
 		}
@@ -116,7 +116,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 		double energy = 0;
 		
 		//Sum up factor internal energy
-		for (Factor factor : transformMap.target().getFactorsFlat())
+		for (Factor factor : transformMap.target().getFactors())
 		{
 			energy += factor.getInternalEnergy();
 		}

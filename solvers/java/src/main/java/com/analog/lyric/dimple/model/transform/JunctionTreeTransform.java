@@ -717,7 +717,7 @@ public class JunctionTreeTransform
 		targetModel.setSchedule(null); // don't use the copied schedule!
 		
 		// Make copied factors undirected.
-		for (Factor factor : targetModel.getFactorsFlat())
+		for (Factor factor : targetModel.getFactors())
 		{
 			factor.setUndirected();
 		}

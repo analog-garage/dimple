@@ -54,6 +54,7 @@ import com.analog.lyric.dimple.factorfunctions.Poisson;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.DirectedNodeSorter;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraphIterables;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
@@ -270,7 +271,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 
 		FactorGraph fg = _factorGraph;
 		Map<Node,Integer> nodeOrder = DirectedNodeSorter.orderDirectedNodes(fg);
-		for (Factor factor : fg.getFactorsFlat())
+		for (Factor factor : fg.getFactors())
 		{
 			ISolverFactorGibbs sfactor = requireNonNull(getSolverFactor(factor));
 			Integer order = nodeOrder.get(factor);
@@ -290,7 +291,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		processDeferredDeterministicUpdates();
 		for (Factor f : fg.getNonGraphFactorsTop())
 			f.requireSolver("initialize").initialize();
-		for (FactorGraph g : fg.getNestedGraphs())
+		for (FactorGraph g : fg.getOwnedGraphs())
 			g.requireSolver("initialize").initialize();
 		deferDeterministicUpdates();
 		final ArrayList<IBlockInitializer> blockInitializers = _blockInitializers;
@@ -499,7 +500,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 		{
 			
 			FactorGraph ng = fgs.getNestedGraphs().get(fgs.getNestedGraphs().size()-1);
-			for (Variable vb : ng.getBoundaryVariables())
+			for (Variable vb : FactorGraphIterables.boundary(ng))
 			{
 				getSolverVariable(vb).randomRestart(0);
 			}

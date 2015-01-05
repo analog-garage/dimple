@@ -19,6 +19,8 @@ package com.analog.lyric.dimple.model.core;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -26,7 +28,6 @@ import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Base interface for model components.
@@ -148,7 +149,6 @@ public interface INode  extends INameable, IModelEventSource
 	
 	public @Nullable ISolverNode getSolver();
 	
-	public void setParentGraph(@Nullable FactorGraph parentGraph) ;
 	public @Nullable FactorGraph getParentGraph();
 	public @Nullable FactorGraph getRootGraph();
 	public boolean hasParentGraph();

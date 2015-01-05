@@ -35,7 +35,6 @@ import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.factors.DiscreteFactor;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorBase;
-import com.analog.lyric.dimple.model.factors.FactorList;
 import com.analog.lyric.dimple.model.repeated.DoubleArrayDataSink;
 import com.analog.lyric.dimple.model.repeated.DoubleArrayDataSource;
 import com.analog.lyric.dimple.model.repeated.MultivariateDataSink;
@@ -137,7 +136,7 @@ public class PHelpers
 			return new PFactorBaseVector(nodes);
 	}
 	
-	public static PFactorVector [] convertToFactorVector(FactorList factors)
+	public static PFactorVector [] convertToFactorVector(Collection<Factor> factors)
 	{
 		return convertFactorListToFactors(factors);
 	}

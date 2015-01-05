@@ -62,7 +62,7 @@ public class TestDirectedNodeSorter extends DimpleTestBase
 	
 	private void testInvariants(FactorGraph fg, Map<Node, Integer> orderMap)
 	{
-		for (Factor factor : fg.getFactorsFlat())
+		for (Factor factor : fg.getFactors())
 		{
 			assertEquals(factor.isDirected(), orderMap.containsKey(factor));
 

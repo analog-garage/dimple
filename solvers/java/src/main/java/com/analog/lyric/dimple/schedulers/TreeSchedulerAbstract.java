@@ -71,15 +71,14 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 
 		HashMap<Long,NodeUpdateState> updateState = new HashMap<>();
 		
-		@SuppressWarnings("all")
-		IMapList allIncludedNodes = g.getNodes();
+		IMapList<INode> allIncludedNodes = g.getNodes();
 		ArrayList<INode> startingNodes = new ArrayList<INode>();
 
 		// For all nodes, set up the node update state
 		// Edges connected to nodes outside the graph have already been updated
 		if (g.hasParentGraph())
 		{
-			for (INode node : (IMapList<INode>)allIncludedNodes)
+			for (INode node : allIncludedNodes)
 			{
 				List<? extends INode> siblings = node.getSiblings();
 				int numSiblings = siblings.size();
@@ -97,7 +96,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 		}
 		else	// If there's no parent, then nothing has already been updated
 		{
-			for (INode node : (IMapList<INode>)allIncludedNodes)
+			for (INode node : allIncludedNodes)
 			{
 				int numSiblings = node.getSiblingCount();
 				updateState.put(node.getId(), new NodeUpdateState(numSiblings));

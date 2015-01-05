@@ -46,7 +46,7 @@ public abstract class ParameterEstimator
 		
 		HashMap<IFactorTable,ArrayList<Factor>> table2factors = new HashMap<IFactorTable, ArrayList<Factor>>();
 
-		for (Factor f  : fg.getFactorsFlat())
+		for (Factor f  : fg.getFactors())
 		{
 			IFactorTable ft = f.getFactorTable();
 			if (! table2factors.containsKey(ft))

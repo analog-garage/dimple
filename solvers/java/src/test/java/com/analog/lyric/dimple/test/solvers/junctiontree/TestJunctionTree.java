@@ -43,7 +43,7 @@ import com.analog.lyric.dimple.solvers.junctiontreemap.JunctionTreeMAPSolver;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.dimple.test.model.RandomGraphGenerator;
 import com.analog.lyric.dimple.test.model.TestJunctionTreeTransform;
-import com.analog.lyric.util.misc.MapList;
+import com.analog.lyric.util.misc.IMapList;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.math.DoubleMath;
@@ -178,7 +178,7 @@ public class TestJunctionTree extends DimpleTestBase
 		final BiMap<Node,Node> old2new = HashBiMap.create();
 		final BiMap<Node,Node> new2old = old2new.inverse();
 		FactorGraph model2 = model.copyRoot(old2new);
-		MapList<Factor> factors2 = model2.getFactors();
+		IMapList<Factor> factors2 = model2.getFactors();
 		Factor factor2 = null;
 		if (factors2.size() > 0)
 		{

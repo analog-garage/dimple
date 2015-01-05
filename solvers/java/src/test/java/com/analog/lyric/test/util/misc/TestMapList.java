@@ -26,7 +26,6 @@ import org.junit.Test;
 
 import com.analog.lyric.collect.tests.CollectionTester;
 import com.analog.lyric.dimple.model.core.NodeId;
-import com.analog.lyric.util.misc.FlaggedMapList;
 import com.analog.lyric.util.misc.IGetId;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.MapList;
@@ -73,9 +72,6 @@ public class TestMapList
 	{
 		MapList<Value> maplist = new MapList<Value>();
 		testMapList(maplist);
-		
-		FlaggedMapList<Value> fmaplist = new FlaggedMapList<Value>();
-		testMapList(fmaplist);
 	}
 	
 	private void testMapList(IMapList<Value> maplist)

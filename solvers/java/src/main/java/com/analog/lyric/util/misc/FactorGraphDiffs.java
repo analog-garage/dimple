@@ -17,13 +17,13 @@
 package com.analog.lyric.util.misc;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraphIterables;
 import com.analog.lyric.dimple.model.core.INameable;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Port;
@@ -31,7 +31,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 
 
-
+@Internal
 public class FactorGraphDiffs
 {
 	private @Nullable INameable _a = null;
@@ -547,16 +547,10 @@ public class FactorGraphDiffs
 		if(!a.hasParentGraph())
 		{
 			@SuppressWarnings("all")
-			NameableMap aMap
-			= new NameableMap((Collection)
-					a.getBoundaryVariables()
-						.values());
+			NameableMap aMap = new NameableMap(FactorGraphIterables.boundary(a));
 
 			@SuppressWarnings("all")
-			NameableMap bMap
-				= new NameableMap((Collection)
-						b.getBoundaryVariables()
-							.values());
+			NameableMap bMap = new NameableMap(FactorGraphIterables.boundary(b));
 			
 			compareNameableMaps(diffs,
 							 aMap,
@@ -569,15 +563,13 @@ public class FactorGraphDiffs
 		{
 			@SuppressWarnings("all")
 			NameableMap aMap
-			= new NameableMap((Collection)
-					a.getNodesTop()
-						.values());
+			= new NameableMap(a.getNodesTop()
+				.values());
 
 			@SuppressWarnings("all")
 			NameableMap bMap
-				= new NameableMap((Collection)
-						b.getNodesTop()
-							.values());
+				= new NameableMap(b.getNodesTop()
+					.values());
 
 			compareNameableMaps(diffs,
 					 aMap,
@@ -589,13 +581,11 @@ public class FactorGraphDiffs
 		{
 			@SuppressWarnings("all")
 			NameableMap aMap
-			= new NameableMap((Collection)
-					a.getNestedGraphs());
+			= new NameableMap(a.getOwnedGraphs());
 
 			@SuppressWarnings("all")
 			NameableMap bMap
-				= new NameableMap((Collection)
-						b.getNestedGraphs());
+				= new NameableMap(b.getOwnedGraphs());
 
 			compareNameableMaps(diffs,
 					 aMap,

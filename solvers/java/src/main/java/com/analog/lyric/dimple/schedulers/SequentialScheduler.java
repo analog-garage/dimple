@@ -68,7 +68,7 @@ public class SequentialScheduler implements IScheduler
 		}
 
 		// Update all sub-graphs
-		for (FactorGraph sg : g.getNestedGraphs())
+		for (FactorGraph sg : g.getOwnedGraphs())
 		{
 			// For each sub-graph, update the variable edges connecting to that sub-graph
 			for (INode p : sg.getSiblings())

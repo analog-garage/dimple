@@ -29,4 +29,13 @@ public class FactorList extends MapList<Factor>
 	{
 		super(initialCapacity);
 	}
+	
+	/**
+	 * Construct from an iterable.
+	 * @since 0.08
+	 */
+	public FactorList(Iterable<Factor> iterable)
+	{
+		super(iterable);
+	}
 }

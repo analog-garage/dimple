@@ -21,12 +21,13 @@ import static java.util.Objects.*;
 import java.util.ArrayList;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.Variable;
-import org.eclipse.jdt.annotation.Nullable;
 
 
 
@@ -76,7 +77,7 @@ public class NodeScheduleEntry implements IScheduleEntry
 		if (node instanceof Variable)
 		{
 			final FactorGraph fg = requireNonNull(node.getParentGraph());
-			isBoundaryVariable = fg.getBoundaryVariables().contains(node);
+			isBoundaryVariable = fg.isBoundaryVariable((Variable)node);
 			
 			if(copyToRoot)
 			{

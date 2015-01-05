@@ -39,8 +39,9 @@ import com.google.common.collect.Iterators;
 @NotThreadSafe
 public class MapList<T extends IGetId>  implements IMapList<T>
 {
-	final OpenLongObjectHashMap _hashMap;
-	final ArrayList<T> _arrayList;
+	private @Nullable Iterable<T> _iterable;
+	private @Nullable OpenLongObjectHashMap _hashMap;
+	private @Nullable ArrayList<T> _arrayList;
 		
 	/*---------------
 	 * Construction
@@ -57,11 +58,19 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 		_arrayList = new ArrayList<T>(initialCapacity);
 	}
 	
-	public MapList(Iterable<T> vars)
+	/**
+	 * Construct lazily from an iterable.
+	 * <p>
+	 * The contents will be read from the {@code iterable} the first time a method other
+	 * than {@link #iterator} is invoked. This is to avoid copying many objects in the common
+	 * situation in which the list is only used to iterate over its contents.
+	 * <p>
+	 * @param iterable
+	 * @since 0.08
+	 */
+	public MapList(Iterable<T> iterable)
 	{
-		this();
-		for (T v : vars)
-			add(v);
+		_iterable = iterable;
 	}
 	
 	/*--------------------
@@ -79,8 +88,8 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	@NonNullByDefault(false)
 	public boolean add(T node)
 	{
-		_hashMap.put(node.getId(), node);
-		_arrayList.add(node);
+		hashMap().put(node.getId(), node);
+		arrayList().add(node);
 		return true;
 	}
 	
@@ -107,8 +116,17 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	@Override
 	public void clear()
 	{
-		_arrayList.clear();
-		_hashMap.clear();
+		_iterable = null;
+		final ArrayList<T> arrayList = _arrayList;
+		if (arrayList != null)
+		{
+			arrayList.clear();
+		}
+		final OpenLongObjectHashMap hashMap = _hashMap;
+		if (hashMap != null)
+		{
+			hashMap.clear();
+		}
 	}
 
 	@Override
@@ -133,17 +151,26 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 
 	/**
 	 * Visits entries in index order. {@link Iterator#remove()} is not supported.
+	 * <p>
+	 * If this collection was constructed using the {@link #MapList(Iterable)} constructor
+	 * and no other method has been called, this will simply use the iterable to create
+	 * an iterator.
 	 */
 	@Override
 	public Iterator<T> iterator()
 	{
-		return Iterators.unmodifiableIterator(_arrayList.iterator());
+		Iterable<T> iterable = _iterable;
+		if (iterable == null)
+		{
+			iterable = requireNonNull(_arrayList);
+		}
+		return Iterators.unmodifiableIterator(iterable.iterator());
 	}
 	
 	@Override
 	public boolean isEmpty()
 	{
-		return _arrayList.isEmpty();
+		return arrayList().isEmpty();
 	}
 
 	/**
@@ -152,24 +179,28 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	 * @see #removeByIndex(int)
 	 */
 	@Override
-	public boolean remove(@Nullable Object node)
+	public boolean remove(@Nullable Object obj)
 	{
 		boolean removed = false;
 		
-		if (node instanceof IGetId)
+		if (obj instanceof IGetId)
 		{
-			removed = _hashMap.removeKey(((IGetId)node).getId());
+			final IGetId node = (IGetId)obj;
+			OpenLongObjectHashMap hashMap = hashMap();
+			
+			removed = hashMap.removeKey(node.getId());
 			if (removed)
 			{
-				int nLeft = _arrayList.size() - _hashMap.size();
+				final ArrayList<T> arrayList = arrayList();
+				int nLeft = arrayList.size() - hashMap.size();
 				if (nLeft <= 1)
 				{
 					// There can only be one instance, so a simple remove call is sufficient.
-					_arrayList.remove(node);
+					arrayList.remove(node);
 				}
 				else
 				{
-					Iterator<T> arrayIter = _arrayList.iterator();
+					Iterator<T> arrayIter = arrayList.iterator();
 					while (arrayIter.hasNext())
 					{
 						if (arrayIter.next() == node)
@@ -216,21 +247,20 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	@Override
 	public int size()
 	{
-		return _arrayList.size();
-		//return _hashMap.size();
+		return arrayList().size();
 	}
 	
 	@Override
 	public Object[] toArray()
 	{
-		return _arrayList.toArray();
+		return arrayList().toArray();
 	}
 
 	@Override
 	@NonNullByDefault(false)
 	public <T2> T2[] toArray(T2[] array)
 	{
-		return _arrayList.toArray(array);
+		return arrayList().toArray(array);
 	}
 
 	/*------------------
@@ -250,21 +280,21 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	@Override
 	public boolean contains(IGetId node)
 	{
-		return _hashMap.containsKey(node.getId());
+		return hashMap().containsKey(node.getId());
 	}
 	
 	@Override
 	public void ensureCapacity(int minCapacity)
 	{
-		_hashMap.ensureCapacity(minCapacity);
-		_arrayList.ensureCapacity(minCapacity);
+		hashMap().ensureCapacity(minCapacity);
+		arrayList().ensureCapacity(minCapacity);
 	}
 
 	@Override
 	public @Nullable T getByKey(long id)
 	{
 		@SuppressWarnings("unchecked")
-		T value = (T) _hashMap.get(id);
+		T value = (T) hashMap().get(id);
 		return value;
 	}
 	
@@ -275,7 +305,7 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	@Override
 	public T getByIndex(int index)
 	{
-		return _arrayList.get(index);
+		return arrayList().get(index);
 	}
 	
 	/**
@@ -287,12 +317,14 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	@Override
 	public @Nullable T removeByIndex(int index)
 	{
-		T elt = _arrayList.remove(index);
-		if (_hashMap.size() < _arrayList.size() || !_arrayList.contains(elt))
+		final ArrayList<T> arrayList = arrayList();
+		final T elt = arrayList.remove(index);
+		final OpenLongObjectHashMap hashMap = hashMap();
+		if (hashMap.size() < arrayList.size() || !arrayList.contains(elt))
 		{
 			// If map is smaller than the array, then there can't have been more than
 			// one instance of each element so we can skip the contains test.
-			_hashMap.removeKey(elt.getId());
+			hashMap.removeKey(elt.getId());
 		}
 		return elt;
 	}
@@ -300,6 +332,44 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	@Override
 	public List<T> values()
 	{
-		return _arrayList;
+		return arrayList();
+	}
+	
+	/*-----------------
+	 * Private methods
+	 */
+	
+	private ArrayList<T> arrayList()
+	{
+		if (_arrayList == null)
+		{
+			load();
+		}
+		return requireNonNull(_arrayList);
+	}
+	
+	private OpenLongObjectHashMap hashMap()
+	{
+		if (_hashMap == null)
+		{
+			load();
+		}
+		return requireNonNull(_hashMap);
+	}
+	
+	private void load()
+	{
+		final ArrayList<T> arrayList = _arrayList = new ArrayList<>();
+		final OpenLongObjectHashMap hashMap = _hashMap = new OpenLongObjectHashMap();
+		Iterable<T> iterable = _iterable;
+		if (iterable != null)
+		{
+			for (T node : iterable)
+			{
+				arrayList.add(node);
+				hashMap.put(node.getId(), node);
+			}
+			_iterable = null;
+		}
 	}
 }

@@ -14,15 +14,18 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.util.misc;
+package com.analog.lyric.dimple.model.core;
 
-import com.analog.lyric.dimple.model.variables.Variable;
+import java.util.Collection;
 
-
-public class FlaggedVariableMapList extends FlaggedMapList<Variable> implements IVariableMapList
+/**
+ * 
+ * @since 0.08
+ * @author Christopher Barber
+ */
+public interface IFactorGraphChildren<T> extends Collection<T>
 {
-	public FlaggedVariableMapList(int initialCapacity)
-	{
-		super(initialCapacity);
-	}
+	public int maxNestingDepth();
+	
+	public FactorGraph root();
 }

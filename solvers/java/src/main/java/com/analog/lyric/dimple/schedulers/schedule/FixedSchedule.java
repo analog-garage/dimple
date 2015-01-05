@@ -23,6 +23,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
@@ -37,7 +39,6 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import org.eclipse.jdt.annotation.Nullable;
 
 
 /**
@@ -121,7 +122,7 @@ public class FixedSchedule extends ScheduleBase implements IGibbsSchedule
 
 			//Create our set of all sub graphs.
 			HashSet<FactorGraph> subGraphs = new HashSet<FactorGraph>();
-			for (FactorGraph graph : factorGraph.getNestedGraphs())
+			for (FactorGraph graph : factorGraph.getOwnedGraphs())
 			{
 				subGraphs.add(graph);
 			}

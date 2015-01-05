@@ -54,17 +54,12 @@ public class FloodingScheduler implements IScheduler
 		for (Variable v : factorGraph.getVariablesTop())
 			schedule.add(new NodeScheduleEntry(v));
 		
-		// Include boundary variables only if there's no parent to do it
-		if (!factorGraph.hasParentGraph())
-			for (Variable v : factorGraph.getBoundaryVariables())
-				schedule.add(new NodeScheduleEntry(v));
-		
 		// Update all the function nodes
 		for (Factor f : factorGraph.getNonGraphFactorsTop())
 			schedule.add(new NodeScheduleEntry(f));
 		
 		// Update all the sub-graphs
-		for (FactorGraph sg : factorGraph.getNestedGraphs())
+		for (FactorGraph sg : factorGraph.getOwnedGraphs())
 		{
 			final IScheduler scheduler = sg.getExplicitlySetScheduler();
 			if (scheduler != null)	// If there's a scheduler associated with the sub-graph, use that and re-create the sub-graph schedule

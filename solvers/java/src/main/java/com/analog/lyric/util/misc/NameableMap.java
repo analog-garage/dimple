@@ -16,7 +16,6 @@
 
 package com.analog.lyric.util.misc;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.UUID;
@@ -36,7 +35,7 @@ public class NameableMap implements Iterable<INameable>
 	{
 		this(null);
 	}
-	public NameableMap(@Nullable Collection<INameable> collection)
+	public NameableMap(@Nullable Iterable<? extends INameable> collection)
 	{
 		_nameMap = new HashMap<String, INameable>();
 		_UUIDMap = new HashMap<UUID, INameable>();

@@ -51,7 +51,6 @@ import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.util.misc.FactorGraphDiffs;
 import com.analog.lyric.util.misc.IMapList;
-import com.analog.lyric.util.misc.MapList;
 import com.analog.lyric.util.misc.Matlab;
 
 @Matlab
@@ -78,7 +77,7 @@ public class PFactorGraphVector extends PFactorBaseVector
 	@Override
 	public boolean isDiscrete()
 	{
-		for (Factor f : getGraph().getFactorsFlat())
+		for (Factor f : getGraph().getFactors())
 			if (!f.isDiscrete())
 				return false;
 		
@@ -370,7 +369,7 @@ public class PFactorGraphVector extends PFactorBaseVector
 
 	public PFactorGraphVector [] getNestedGraphs()
 	{
-		Collection<FactorGraph> graphs = getGraph().getNestedGraphs();
+		Collection<FactorGraph> graphs = getGraph().getOwnedGraphs();
 		
 		PFactorGraphVector [] retval = new PFactorGraphVector[graphs.size()];
 		
@@ -399,7 +398,7 @@ public class PFactorGraphVector extends PFactorBaseVector
 		if (root.size() != 1)
 			throw new DimpleException("choose one root");
 		
-		MapList<INode> nodes = getGraph().depthFirstSearch(root.getModelerNode(0), searchDepth,relativeNestingDepth);
+		IMapList<INode> nodes = getGraph().depthFirstSearch(root.getModelerNode(0), searchDepth,relativeNestingDepth);
 		
 		PNodeVector [] retval = new PNodeVector[nodes.size()];
 		

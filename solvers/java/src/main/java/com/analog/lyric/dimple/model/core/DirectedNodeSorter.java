@@ -57,7 +57,7 @@ public class DirectedNodeSorter
 		
 		final Map<Node,NodeInfo> nodes = new HashMap<>();
 		
-		for (Factor factor : fg.getFactorsFlat())
+		for (Factor factor : fg.getFactors())
 		{
 			final int[] directedTo = factor.getDirectedTo();
 			if (directedTo == null)
