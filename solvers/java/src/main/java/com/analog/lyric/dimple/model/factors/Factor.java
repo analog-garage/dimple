@@ -40,6 +40,7 @@ import com.analog.lyric.dimple.model.domains.DomainList;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
+import com.analog.lyric.dimple.options.DimpleOptions;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.util.misc.Internal;
@@ -163,7 +164,7 @@ public class Factor extends FactorBase implements Cloneable
 	@Override
 	public String getLabel()
 	{
-		String name = _label;
+		String name = getOption(DimpleOptions.label);
 		if(name == null)
 		{
 			name = _name;

@@ -53,15 +53,19 @@ public interface INameable extends IGetId
 	public void setName(@Nullable String name) ;
 
 	/**
-	 * Does not have to be unique. Object cannot be found with this name.
+	 * Explicitly set or clear the label.
+	 * <p>
+	 * Sets the value to be returned by {@link #getLabel()}.
+	 * Does not have to be unique.
 	 */
 	public void setLabel(@Nullable String name) ;
 	
 	/**
-	 * Returns explicitly setLabel or, if not set, explicitly set name, or if none set,
-	 *	then a some shortened version of the UUID,
-	 *	suitable for printing, but not guaranteed to be
-	 *	unique
+	 * Returns a string suitable for use in GUI labels or plots.
+	 * <p>
+	 * Unless set explicitly via {@link #setLabel}, this will typically be the same as {@link #getName()}.
+	 * Unlike the name, this value is not required to be unique within its parent graph and is not
+	 * intended to be used for lookup.
 	 */
 	public String getLabel();
 

@@ -16,8 +16,10 @@
 
 package com.analog.lyric.dimple.options;
 
+import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.LongOptionKey;
 import com.analog.lyric.options.OptionKeyDeclarer;
+import com.analog.lyric.options.StringOptionKey;
 
 /**
  * Base of dimple option hierarchy.
@@ -33,6 +35,14 @@ import com.analog.lyric.options.OptionKeyDeclarer;
  */
 public class DimpleOptions extends OptionKeyDeclarer
 {
+	/**
+	 * Optional label for nodes.
+	 * <p>
+	 * @since 0.08
+	 */
+	public static final StringOptionKey label =
+		new StringOptionKey(DimpleOptions.class, "label", "", IOptionKey.Lookup.LOCAL);
+	
 	/**
 	 * Random seed for testing purposes.
 	 * <p>

@@ -40,6 +40,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
+import com.analog.lyric.dimple.options.DimpleOptions;
 import com.analog.lyric.math.Utilities;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
@@ -74,7 +75,6 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	
 	private int _id;
 	protected @Nullable String _name;
-	protected @Nullable String _label;
 	private @Nullable FactorGraph _parentGraph;
 	
 	private List<INode> _siblings;
@@ -126,8 +126,6 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 			n._siblings = new ArrayList<INode>();	// Clear the ports in the clone
 			n._parentGraph = null;
 			n._name = _name;
-			if (_label != null)
-				n._label = _label;
 
 			return n;
 		}
@@ -585,7 +583,14 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	@Override
 	public void setLabel(@Nullable String name)
 	{
-		_label = name;
+		if (name != null)
+		{
+			setOption(DimpleOptions.label, name);
+		}
+		else
+		{
+			unsetOption(DimpleOptions.label);
+		}
 	}
 
 	/**
@@ -632,15 +637,10 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	@Override
 	public String getLabel()
 	{
-		String name = _label;
+		String name = getOption(DimpleOptions.label);
 		if (name == null)
 		{
-			// FIXME: instead use getName()
-			name = _name;
-			if (name == null)
-			{
-				name = String.format("%s_%d", getClassLabel(), getGlobalId());
-			}
+			name = getName();
 		}
 		return name;
 	}
