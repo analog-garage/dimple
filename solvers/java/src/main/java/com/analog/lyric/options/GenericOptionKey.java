@@ -45,6 +45,18 @@ public class GenericOptionKey<T extends Serializable> extends OptionKey<T>
 		_defaultValue = defaultValue;
 	}
 	
+	/**
+	 * Construct new generic option key with specified attributes.
+	 * @since 0.08
+	 */
+	public GenericOptionKey(Class<?> declaringClass, String name, Class<T> type, T defaultValue,
+		IOptionKey.Lookup lookupMethod)
+	{
+		super(declaringClass, name, lookupMethod);
+		_type = type;
+		_defaultValue = defaultValue;
+	}
+
 	/*--------------------
 	 * IOptionKey methods
 	 */

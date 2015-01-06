@@ -22,6 +22,7 @@ import static org.junit.Assert.*;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
 
 import com.analog.lyric.collect.ReleasableIterator;
@@ -34,7 +35,6 @@ import com.analog.lyric.options.LocalOptionHolder;
 import com.analog.lyric.options.Option;
 import com.analog.lyric.options.StatelessOptionHolder;
 import com.analog.lyric.options.StringOptionKey;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 
@@ -51,6 +51,9 @@ public class TestOptionHolder
 	
 	public final static IntegerOptionKey I = new IntegerOptionKey(TestOptionHolder.class, "I");
 	
+	public final static StringOptionKey L =
+		new StringOptionKey(TestOptionHolder.class, "L", "default", IOptionKey.Lookup.LOCAL);
+	
 	@Test
 	public void test()
 	{
@@ -62,6 +65,7 @@ public class TestOptionHolder
 		holder.clearLocalOptions(); // doesn't do anything
 		holder.unsetOption(K); // also doesn't do anything
 		assertNull(holder.getLocalOption(K));
+		assertNull(holder.getLocalOption(L));
 		expectThrow(UnsupportedOperationException.class, holder, "setOption", K, "foo");
 		assertEquals(0, Iterables.size(holder.getLocalOptions()));
 		
@@ -113,16 +117,22 @@ public class TestOptionHolder
 		assertInvariants(child);
 		assertNull(child.getOption(K));
 		parent.setOption(K, "bar");
+		parent.setOption(L,  "bar");
 		assertEquals("bar", child.getOption(K));
 		assertEquals("bar", child.getOptionAndSource(K, null));
 		assertEquals("bar", child.getOptionAndSource(K, new IOptionHolder[0]));
 		assertEquals("bar", child.getOptionAndSource(K, source));
+		assertEquals(null, child.getOption(L));
+		assertEquals("default", child.getOptionOrDefault(L));
+		assertEquals("bar", parent.getOption(L));
 		assertArrayEquals(new Object[] { parent, null }, source);
 		assertInvariants(child);
 		
 		child.setOption(K, "gag");
+		child.setOption(L, "gag");
 		assertEquals("gag", child.getOption(K));
 		assertEquals("gag", child.getOptionAndSource(K, source));
+		assertEquals("gag", child.getOption(L));
 		assertArrayEquals(new Object[] { child, null }, source);
 		assertInvariants(child);
 		
@@ -191,15 +201,23 @@ public class TestOptionHolder
 			assertNotSame(delegate, holder);
 			for (IOption<?> option : delegate.getLocalOptions())
 			{
-				if (seen.add(option.key()))
+				final IOptionKey<?> key = option.key();
+				if (seen.add(key))
 				{
-					assertEquals(option.value(), delegate.getLocalOption(option.key()));
-					assertEquals(option.value(), holder.getOption(option.key()));
+					assertEquals(option.value(), delegate.getLocalOption(key));
+					if (option.key().local())
+					{
+						assertNull(holder.getOption(key));
+					}
+					else
+					{
+						assertEquals(option.value(), holder.getOption(key));
+					}
 				}
 				else
 				{
 					// Option is set, but value will come from previous delegate.
-					assertNotNull(holder.getOption(option.key()));
+					assertNotNull(holder.getOption(key));
 				}
 			}
 		}

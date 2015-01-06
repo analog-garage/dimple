@@ -49,14 +49,22 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 	
 	private final String _name;
 	
+	private final boolean _local;
+	
 	/*--------------
 	 * Construction
 	 */
 	
-	protected OptionKey(Class<?> declaringClass, String name)
+	protected OptionKey(Class<?> declaringClass, String name, IOptionKey.Lookup lookupMethod)
 	{
 		_declaringClass = declaringClass;
 		_name = name;
+		_local = lookupMethod == IOptionKey.Lookup.LOCAL;
+	}
+	
+	protected OptionKey(Class<?> declaringClass, String name)
+	{
+		this(declaringClass, name, IOptionKey.Lookup.NONLOCAL);
 	}
 	
 	/**
@@ -159,6 +167,18 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 	public final Class<?> getDeclaringClass()
 	{
 		return _declaringClass;
+	}
+	
+	@Override
+	public final boolean local()
+	{
+		return _local;
+	}
+	
+	@Override
+	public final IOptionKey.Lookup lookupMethod()
+	{
+		return _local ? IOptionKey.Lookup.LOCAL : IOptionKey.Lookup.NONLOCAL;
 	}
 	
 	@Override

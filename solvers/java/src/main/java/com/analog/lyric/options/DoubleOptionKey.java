@@ -72,10 +72,27 @@ public class DoubleOptionKey extends OptionKey<Double>
 	public DoubleOptionKey(Class<?> declaringClass, String name, double defaultValue,
 		double lowerBound, double upperBound)
 	{
-		super(declaringClass, name);
+		this(declaringClass, name, defaultValue, lowerBound, upperBound, IOptionKey.Lookup.NONLOCAL);
+	}
+
+	/**
+	 * Creates a new double-valued option key with default value and bounds.
+	 * @param declaringClass is the class containing the static field declaration for this key.
+	 * @param name is the name of static field declaration for this key.
+	 * @param defaultValue is the default value of the option. Used when option is not set.
+	 * @param lowerBound is the lowest allowable value for the option.
+	 * @param upperBound is the highest allowable value for the option.
+	 * @param lookupMethod specifies how the option value should be looked up.
+	 * @since 0.08
+	 */
+	public DoubleOptionKey(Class<?> declaringClass, String name, double defaultValue, double lowerBound, double upperBound,
+		IOptionKey.Lookup lookupMethod)
+	{
+		super(declaringClass, name, lookupMethod);
 		_defaultValue = defaultValue;
 		_lowerBound = lowerBound;
 		_upperBound = upperBound;
+		validate(defaultValue, null);
 	}
 
 	/*--------------------

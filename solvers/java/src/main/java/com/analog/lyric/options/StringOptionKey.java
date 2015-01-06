@@ -41,6 +41,16 @@ public class StringOptionKey extends OptionKey<String>
 		_defaultValue = defaultValue;
 	}
 
+	/**
+	 * Construct option key with specified attributes.
+	 * @since 0.08
+	 */
+	public StringOptionKey(Class<?> declaringClass, String name, String defaultValue, IOptionKey.Lookup lookupMethod)
+	{
+		super(declaringClass, name, lookupMethod);
+		_defaultValue = defaultValue;
+	}
+	
 	/*--------------------
 	 * IOptionKey methods
 	 */

@@ -75,25 +75,32 @@ public abstract class AbstractOptionHolder implements IOptionHolder
 	@Nullable
 	public <T extends Serializable> T getOptionAndSource(IOptionKey<T> key, @Nullable IOptionHolder[] source)
 	{
-		T result = null;
-		final ReleasableIterator<? extends IOptionHolder> delegates = getOptionDelegates();
-		
-		while (delegates.hasNext())
+		T result = getLocalOption(key);
+		IOptionHolder delegate = this;
+
+		if (result == null && !key.local())
 		{
-			final IOptionHolder delegate = delegates.next();
-		
-			result = delegate.getLocalOption(key);
-			if (result != null)
+			final ReleasableIterator<? extends IOptionHolder> delegates = getOptionDelegates();
+
+			delegates.next(); // skip first delegate, which is this option holder.
+			while (delegates.hasNext())
 			{
-				if (source != null && source.length > 0)
+				delegate = delegates.next();
+
+				result = delegate.getLocalOption(key);
+				if (result != null)
 				{
-					source[0] = delegate;
+					break;
 				}
-				break;
 			}
+
+			delegates.release();
 		}
 		
-		delegates.release();
+		if (result != null && source != null && source.length > 0)
+		{
+			source[0] = delegate;
+		}
 
 		return result;
 	}
@@ -103,7 +110,8 @@ public abstract class AbstractOptionHolder implements IOptionHolder
      * <p>
      * @param key is a non-null option key.
      * @param maxDepth is the maximum number of {@linkplain #getOptionDelegates option delegates} to examine.
-     * If zero, then only the current object will be examined.
+     * If zero, then only the current object will be examined. This will be implicitly set to zero if
+     * {@code key} is {@linkplain IOptionKey#local local}.
      * @param depthReference is a non-empty array whose first entry will be set to the depth of the option
      * setting in the delegation chain or else set to Integer.MAX_VALUE if no option setting was found.
      * @return option value set for given {@code key}. Will be null if option is not set within the first
@@ -115,6 +123,11 @@ public abstract class AbstractOptionHolder implements IOptionHolder
     {
         T result = null;
         final ReleasableIterator<? extends IOptionHolder> delegates = getOptionDelegates();
+        
+        if (key.local())
+        {
+        	maxDepth = 0;
+        }
         
         int depth = 0;
         for (; depth < maxDepth && delegates.hasNext(); ++depth)

@@ -52,14 +52,26 @@ public class TestOptionKey
 	public static final BooleanOptionKey YES =
 		new BooleanOptionKey(TestOptionKey.class, "YES");
 	
+	public static final BooleanOptionKey LOCAL_YES =
+		new BooleanOptionKey(TestOptionKey.class, "LOCAL_YES", false, IOptionKey.Lookup.LOCAL);
+	
 	public static final IOptionKey<Double> P =
 		new DoubleOptionKey(TestOptionKey.class, "P");
+	
+	public static final IOptionKey<Double> LOCAL_P =
+		new DoubleOptionKey(TestOptionKey.class, "LOCAL_P", 0.0, 0.0, 1.0, IOptionKey.Lookup.LOCAL);
 	
 	public static final IOptionKey<Integer> I =
 		new IntegerOptionKey(TestOptionKey.class, "I");
 	
+	public static final IOptionKey<Integer> LOCAL_I =
+		new IntegerOptionKey(TestOptionKey.class, "LOCAL_I", 0, 0, 100, IOptionKey.Lookup.LOCAL);
+
 	public static final IOptionKey<String> S =
 		new StringOptionKey(TestOptionKey.class, "S");
+	
+	public static final IOptionKey<String> LOCAL_S =
+		new StringOptionKey(TestOptionKey.class, "LOCAL_S", "", IOptionKey.Lookup.LOCAL);
 	
 	public static final IOptionKey<String> G =
 		new GenericOptionKey<String>(TestOptionKey.class, "G", String.class, "g");
@@ -107,6 +119,9 @@ public class TestOptionKey
 	
 	public static final EnumOptionKey<Color> COLOR =
 		new EnumOptionKey<Color>(TestOptionKey.class, "COLOR", Color.class, Color.RED);
+	
+	public static final EnumOptionKey<Color> LOCAL_COLOR =
+		new EnumOptionKey<Color>(TestOptionKey.class, "LOCAL_COLOR", Color.class, Color.RED, IOptionKey.Lookup.LOCAL);
 	
 	@SuppressWarnings("null")
 	public static enum Option implements IOptionKey<Serializable>
@@ -156,6 +171,18 @@ public class TestOptionKey
 		}
 
 		@Override
+		public boolean local()
+		{
+			return false;
+		}
+
+		@Override
+		public IOptionKey.Lookup lookupMethod()
+		{
+			 return IOptionKey.Lookup.NONLOCAL;
+		}
+
+		 @Override
 		public void set(IOptionHolder holder, Serializable value)
 		{
 			holder.setOption(this, value);
@@ -297,6 +324,8 @@ public class TestOptionKey
 	{
 		Class<T> type = key.type();
 		Class<?> declaringClass = key.getDeclaringClass();
+		assertEquals(key.local(), key.lookupMethod()== IOptionKey.Lookup.LOCAL);
+		assertEquals(key.local(), key.name().startsWith("LOCAL_"));
 		assertNotNull(key.name());
 		assertNotNull(type);
 		assertTrue(type.isInstance(key.defaultValue()));

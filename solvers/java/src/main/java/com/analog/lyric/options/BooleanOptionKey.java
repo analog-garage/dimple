@@ -42,6 +42,16 @@ public class BooleanOptionKey extends OptionKey<Boolean>
 		_defaultValue = defaultValue;
 	}
 
+	/**
+	 * Construct option key with specified attributes.
+	 * @since 0.08
+	 */
+	public BooleanOptionKey(Class<?> declaringClass, String name, boolean defaultValue, IOptionKey.Lookup lookupMethod)
+	{
+		super(declaringClass, name, lookupMethod);
+		_defaultValue = defaultValue;
+	}
+	
 	@Override
 	public final Class<Boolean> type()
 	{

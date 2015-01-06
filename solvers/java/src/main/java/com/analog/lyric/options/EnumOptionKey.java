@@ -54,6 +54,22 @@ public class EnumOptionKey<E extends Enum<E>> extends OptionKey<E>
 		_defaultValue = defaultValue;
 	}
 
+	/**
+	 * @param declaringClass is the class containing the static field declaration for this key.
+	 * @param name is the name of static field declaration for this key.
+	 * @param enumClass is the enum class itself.
+	 * @param defaultValue is the default value of the option. Used when option is not set.
+	 * @param lookupMethod specifies how the option value should be looked up.
+	 * @since 0.08
+	 */
+	public EnumOptionKey(Class<?> declaringClass, String name, Class<E> enumClass, E defaultValue,
+		IOptionKey.Lookup lookupMethod)
+	{
+		super(declaringClass, name, lookupMethod);
+		_enumClass = enumClass;
+		_defaultValue = defaultValue;
+	}
+
 	@Override
 	public Class<E> type()
 	{

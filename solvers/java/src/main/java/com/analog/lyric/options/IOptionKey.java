@@ -50,7 +50,7 @@ public interface IOptionKey<T extends Serializable> extends Serializable
 	 * 
 	 * @since 0.07
 	 */
-	public enum CompareByName implements Comparator<IOptionKey<?>>
+	public static enum CompareByName implements Comparator<IOptionKey<?>>
 	{
 		INSTANCE;
 		
@@ -60,6 +60,24 @@ public interface IOptionKey<T extends Serializable> extends Serializable
 		{
 			return key1.name().compareTo(key2.name());
 		}
+	}
+	
+	/**
+	 * Identifies the option lookup method used for an option key.
+	 * 
+	 * @since 0.08
+	 */
+	public static enum Lookup
+	{
+		/**
+		 * Look up option values be searching delegates. This is the standard method.
+		 */
+		NONLOCAL,
+		
+		/**
+		 * Look up option values only locally.
+		 */
+		LOCAL;
 	}
 	
 	/**
@@ -92,6 +110,22 @@ public interface IOptionKey<T extends Serializable> extends Serializable
 	 * Should be the class that contains the declaration of this instance.
 	 */
 	public abstract Class<?> getDeclaringClass();
+	
+	/**
+	 * Indicates whether this is a local option.
+	 * <p>
+	 * Local options are only looked up locally in the option holder and not its delegates.
+	 * True if {@link #lookupMethod} is {@code LOCAL}.
+	 * @since 0.08
+	 */
+	public abstract boolean local();
+	
+	/**
+	 * Identifies the lookup method used to retrieve option values for this key.
+	 * @since 0.08
+	 * @see #local
+	 */
+	public abstract Lookup lookupMethod();
 	
 	/**
 	 * The unqualified name of the option.
