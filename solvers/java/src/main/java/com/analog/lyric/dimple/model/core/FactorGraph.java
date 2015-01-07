@@ -435,24 +435,6 @@ public class FactorGraph extends FactorBase
 	}
 	
 	/**
-	 * Sets event listener.
-	 * <p>
-	 * Sets the value to be returned by {@link #getEventListener()}.
-	 * This should only be set on a root graph.
-	 * <p>
-	 * @param listener is the event listener to be used for this graph and all of its
-	 * contents. May be set to null to turn off listening.
-	 * @deprecated As of release 0.07, this functionality has been moved to {@link DimpleEnvironment#setEventListener}.
-	 * @since 0.06
-	 */
-	@Deprecated
-	public void setEventListener(@Nullable DimpleEventListener listener)
-	{
-		getEnvironment().setEventListener(listener);
-		notifyListenerChanged();
-	}
-
-	/**
 	 * Sets the option/event parent object to specified value.
 	 * <p>
 	 * Sets the value returned by {@link #getOptionParent()}/{@link #getEventParent()} to {@code parent},
@@ -2451,19 +2433,6 @@ public class FactorGraph extends FactorBase
 	}
 	
 	/**
-	 * Returns the ith variable contained directly in this graph
-	 * (i.e. not in subgraphs).
-	 * @param i an index in the range [0,{@link #getOwnedVariableCount()} - 1]
-	 * @since 0.05
-	 * @deprecated As of 0.08 use {@link #getOwnedVariables()} instead.
-	 */
-	@Deprecated
-	public Variable getOwnedVariable(int i)
-	{
-		return _ownedVariables.getNth(i);
-	}
-	
-	/**
 	 * Unmodifiable collection that enumerates variables whose parent is this graph..
 	 * @since 0.08
 	 */
@@ -2635,12 +2604,6 @@ public class FactorGraph extends FactorBase
 		return new FactorList(FactorGraphIterables.factors(this));
 	}
 
-	@Deprecated
-	public FactorList getFactorsFlat()
-	{
-		return getFactors();
-	}
-
 	/**
 	 * Returns newly constructed collection containing all of the factors
 	 * and subgraphs that are directly owned by this graph.
@@ -2705,24 +2668,6 @@ public class FactorGraph extends FactorBase
 	}
 
 	/**
-	 * @deprecated Use {@link #getOwnedGraphs()} instead.
-	 */
-	@Deprecated
-	public ArrayList<FactorGraph> getNestedGraphs()
-	{
-		return new ArrayList<>(_ownedSubGraphs);
-	}
-	
-	/**
-	 * @deprecated Use {@link #structureVersion() instead}.
-	 */
-	@Deprecated
-	public long getVersionId()
-	{
-		return _structureVersion;
-	}
-	
-	/**
 	 * Counter that is incremented whenever structure of any graph below shared root changes.
 	 * <p>
 	 * May be used to verify cached information that depends on the graph structure.
@@ -2783,16 +2728,6 @@ public class FactorGraph extends FactorBase
 		structureChanged();
 	}
 
-	/**
-	 * @deprecated Instead use {@link Node#setName} method on {@code child}.
-	 */
-	@Deprecated
-	public void setChildName(Node child, @Nullable String newName)
-	{
-		setChildNameInternal(child, newName);
-	}
-	
-	
 	void setChildNameInternal(Node child, @Nullable String newName)
 	{
 		Node childFound = getNodeByGlobalId(child.getGlobalId());
@@ -3004,46 +2939,6 @@ public class FactorGraph extends FactorBase
 		return String.format("[FactorGraph %s]", getQualifiedName());
 	}
 
-	@Matlab
-	@Deprecated
-	public String getNodeString()
-	{
-		return Helpers.getNodeString(this);
-	}
-
-	@Matlab
-	@Deprecated
-	public String getAdjacencyString()
-	{
-		return Helpers.getAdjacencyString(this);
-	}
-
-	@Deprecated
-	public String getDegreeString()
-	{
-		return Helpers.getDegreeString(this);
-	}
-	
-	@Deprecated
-	public String getDomainSizeString()
-	{
-		return Helpers.getDomainSizeString(this);
-	}
-
-	@Deprecated
-	public String getDomainString()
-	{
-		return Helpers.getDomainString(this);
-	}
-
-	@Matlab
-	@Deprecated
-	public String getFullString()
-	{
-		return Helpers.getFullString(this);
-	}
-
-
 	public boolean isSolverRunning()
 	{
 		final ISolverFactorGraph sfg = _solverFactorGraph;
@@ -3066,58 +2961,6 @@ public class FactorGraph extends FactorBase
 	public FactorGraph getRootGraph()
 	{
 		return _rootState._root;
-	}
-
-	@Deprecated
-	public void clearNames()
-	{
-		Helpers.clearNames(this);
-	}
-
-	@Deprecated
-	public void setNamesByStructure()
-	{
-		Helpers.setNamesByStructure(this);
-	}
-
-	@Deprecated
-	public void setNamesByStructure(String boundaryString,
-			String ownedString,
-			String factorString,
-			String rootGraphString,
-			String childGraphString)
-	{
-		Helpers.setNamesByStructure(this, boundaryString, ownedString, factorString, rootGraphString, childGraphString);
-	}
-
-	@Deprecated
-	static public HashMap<Integer, ArrayList<INode>> getNodesByDegree(ArrayList<INode> nodes)
-	{
-		return Helpers.getNodesByDegree(nodes);
-	}
-	
-	@Deprecated
-	public HashMap<Integer, ArrayList<INode>> getNodesByDegree()
-	{
-		return Helpers.getNodesByDegree(this);
-	}
-
-	@Deprecated
-	public HashMap<Integer, ArrayList<INode>> getVariablesByDegree()
-	{
-		return Helpers.getVariablesByDegree(this);
-	}
-
-	@Deprecated
-	public HashMap<Integer, ArrayList<INode>> getFactorsByDegree()
-	{
-		return Helpers.getFactorsByDegree(this);
-	}
-
-	@Deprecated
-	public TreeMap<Integer, ArrayList<Variable>> getVariablesByDomainSize()
-	{
-		return Helpers.getVariablesByDomainSize(this);
 	}
 
 	public @Nullable IFactorGraphFactory<?> getFactorGraphFactory()
@@ -3226,7 +3069,7 @@ public class FactorGraph extends FactorBase
 	{
 		return _boundaryVariables.iterator();
 	}
-
+	
 	/**
 	 * Iterates over boundary variables not owned by this graph.
 	 * @see #boundaryVariableIterator()
@@ -3267,11 +3110,170 @@ public class FactorGraph extends FactorBase
 	{
 		return _ownedVariables.iterator();
 	}
-
+	
 	final int ownedVariableCount()
 	{
 		return _ownedVariables.size();
 	}
 	
+	/**********************
+	 * Deprecated methods
+	 */
+	
+	@Deprecated
+	public void clearNames()
+	{
+		Helpers.clearNames(this);
+	}
+	
+	@Matlab
+	@Deprecated
+	public String getAdjacencyString()
+	{
+		return Helpers.getAdjacencyString(this);
+	}
+	
+	@Deprecated
+	public String getDegreeString()
+	{
+		return Helpers.getDegreeString(this);
+	}
+	
+	@Deprecated
+	public String getDomainSizeString()
+	{
+		return Helpers.getDomainSizeString(this);
+	}
+	
+	@Deprecated
+	public String getDomainString()
+	{
+		return Helpers.getDomainString(this);
+	}
+	
+	@Deprecated
+	public HashMap<Integer, ArrayList<INode>> getFactorsByDegree()
+	{
+		return Helpers.getFactorsByDegree(this);
+	}
+	
+	@Deprecated
+	public FactorList getFactorsFlat()
+	{
+		return getFactors();
+	}
+	
+	@Matlab
+	@Deprecated
+	public String getFullString()
+	{
+		return Helpers.getFullString(this);
+	}
+	
+	/**
+	 * @deprecated Use {@link #getOwnedGraphs()} instead.
+	 */
+	@Deprecated
+	public ArrayList<FactorGraph> getNestedGraphs()
+	{
+		return new ArrayList<>(_ownedSubGraphs);
+	}
+	
+	@Deprecated
+	static public HashMap<Integer, ArrayList<INode>> getNodesByDegree(ArrayList<INode> nodes)
+	{
+		return Helpers.getNodesByDegree(nodes);
+	}
+	
+	@Deprecated
+	public HashMap<Integer, ArrayList<INode>> getNodesByDegree()
+	{
+		return Helpers.getNodesByDegree(this);
+	}
+	
+	@Matlab
+	@Deprecated
+	public String getNodeString()
+	{
+		return Helpers.getNodeString(this);
+	}
+	
+	/**
+	 * Returns the ith variable contained directly in this graph
+	 * (i.e. not in subgraphs).
+	 * @param i an index in the range [0,{@link #getOwnedVariableCount()} - 1]
+	 * @since 0.05
+	 * @deprecated As of 0.08 use {@link #getOwnedVariables()} instead.
+	 */
+	@Deprecated
+	public Variable getOwnedVariable(int i)
+	{
+		return _ownedVariables.getNth(i);
+	}
+	
+	@Deprecated
+	public HashMap<Integer, ArrayList<INode>> getVariablesByDegree()
+	{
+		return Helpers.getVariablesByDegree(this);
+	}
+
+	@Deprecated
+	public TreeMap<Integer, ArrayList<Variable>> getVariablesByDomainSize()
+	{
+		return Helpers.getVariablesByDomainSize(this);
+	}
+
+	/**
+	 * @deprecated Use {@link #structureVersion() instead}.
+	 */
+
+	@Deprecated
+	public long getVersionId()
+	{
+		return _structureVersion;
+	}
+	
+	/**
+	 * @deprecated Instead use {@link Node#setName} method on {@code child}.
+	 */
+	@Deprecated
+	public void setChildName(Node child, @Nullable String newName)
+	{
+		setChildNameInternal(child, newName);
+	}
+	
+	/**
+	 * Sets event listener.
+	 * <p>
+	 * Sets the value to be returned by {@link #getEventListener()}.
+	 * This should only be set on a root graph.
+	 * <p>
+	 * @param listener is the event listener to be used for this graph and all of its
+	 * contents. May be set to null to turn off listening.
+	 * @deprecated As of release 0.07, this functionality has been moved to {@link DimpleEnvironment#setEventListener}.
+	 * @since 0.06
+	 */
+	@Deprecated
+	public void setEventListener(@Nullable DimpleEventListener listener)
+	{
+		getEnvironment().setEventListener(listener);
+		notifyListenerChanged();
+	}
+	
+	@Deprecated
+	public void setNamesByStructure()
+	{
+		Helpers.setNamesByStructure(this);
+	}
+	
+	@Deprecated
+	public void setNamesByStructure(String boundaryString,
+			String ownedString,
+			String factorString,
+			String rootGraphString,
+			String childGraphString)
+	{
+		Helpers.setNamesByStructure(this, boundaryString, ownedString, factorString, rootGraphString, childGraphString);
+	}
 }
 
