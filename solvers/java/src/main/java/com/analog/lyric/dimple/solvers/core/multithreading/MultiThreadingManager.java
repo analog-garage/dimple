@@ -20,12 +20,13 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraph;
 import com.analog.lyric.dimple.solvers.core.multithreading.phasealgorithm.PhaseMultithreadingAlgorithm;
 import com.analog.lyric.dimple.solvers.core.multithreading.singlequeuealgorithm.SingleQueueMutlithreadingAlgorithm;
-import org.eclipse.jdt.annotation.Nullable;
 
 /*
  * The MultiThreading Manager handles the collection of multithreading algorithms
@@ -35,7 +36,7 @@ public class MultiThreadingManager
 {
 	private int _numWorkers;
 	private FactorGraph _factorGraph;
-	private long _cachedVersionId = -1;
+	private long _cachedVersion = -1;
 	private @Nullable StaticDependencyGraph _cachedDependencyGraph;
 	private HashMap<MultithreadingMode,MultithreadingAlgorithm> _mode2alg = new HashMap<MultithreadingMode, MultithreadingAlgorithm>();
 	private MultithreadingMode _whichAlg = MultithreadingMode.Phase;
@@ -117,10 +118,10 @@ public class MultiThreadingManager
 	 */
 	public StaticDependencyGraph getDependencyGraph()
 	{
-		long id = _factorGraph.getVersionId();
-		if (id != _cachedVersionId)
+		long version = _factorGraph.structureVersion();
+		if (version != _cachedVersion)
 		{
-			_cachedVersionId = id;
+			_cachedVersion = version;
 			_cachedDependencyGraph = new StaticDependencyGraph(_factorGraph);
 		}
 		

@@ -305,6 +305,7 @@ public class Factor extends FactorBase implements Cloneable
 		return new FactorFunctionWithConstants(oldFunction,	constantValues,	constantIndices);
 	}
 	
+	@Internal
 	public void replace(Variable oldVariable, Variable newVariable)
 	{
 		replaceSibling(oldVariable, newVariable);

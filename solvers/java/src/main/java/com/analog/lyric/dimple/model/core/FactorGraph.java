@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.UUID;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -144,6 +143,7 @@ public class FactorGraph extends FactorBase
 	private static class RootState
 	{
 		private final FactorGraph _root;
+		private long _globalStructureVersion = 0;
 		
 		private RootState(FactorGraph root)
 		{
@@ -158,7 +158,17 @@ public class FactorGraph extends FactorBase
 	private @Nullable ISchedule _schedule = null;
 	private @Nullable IScheduler _explicitlyAssociatedScheduler = null;
 	private @Nullable IScheduler _solverSpecificDefaultScheduler = null;
-	private long _versionId = 0;
+	
+	/**
+	 * Incremented for every change to the structure of this graph.
+	 */
+	private long _structureVersion = 0;
+	
+	/**
+	 * If not equal to _structureVersion, indicates that the graph siblings list is out-of-date.
+	 */
+	private long _siblingVersionId = -1;
+
 	private long _scheduleVersionId = 0;
 	private long _scheduleAssociatedGraphVerisionId = -1;
 	private boolean _hasCustomScheduleSet = false;
@@ -1190,9 +1200,6 @@ public class FactorGraph extends FactorBase
 		//Remove the original variables
 		removeVariables(variables);
 
-		//update the version Id so that we can recalculate the schedule
-		_versionId++;
-
 		return joint;
 	}
 
@@ -1220,7 +1227,6 @@ public class FactorGraph extends FactorBase
 	private FactorBase addFactor(Factor function, Variable ... variables)
 	{
 		addOwnedFactor(function, false);
-		_versionId++;							// The graph has changed
 		return function;
 	}
 
@@ -1314,7 +1320,7 @@ public class FactorGraph extends FactorBase
 		}
 		_schedule = schedule;
 		_scheduleVersionId++;
-		_scheduleAssociatedGraphVerisionId = _versionId;
+		_scheduleAssociatedGraphVerisionId = _structureVersion;
 		final ISolverFactorGraph sfg = _solverFactorGraph;
 		_schedulerSolverClass = (sfg == null) ? null : sfg.getClass();
 	}
@@ -1358,7 +1364,7 @@ public class FactorGraph extends FactorBase
 	{
 		if (_schedule == null)											// Not up-to-date if no current schedule
 			return false;
-		else if (_scheduleAssociatedGraphVerisionId != _versionId)		// Not up-to-date if graph has changed
+		else if (_scheduleAssociatedGraphVerisionId != _structureVersion)		// Not up-to-date if graph has changed
 			return false;
 		else if (_hasCustomScheduleSet)									// If custom schedule has been set, then keep that regardless of whether the solver has changed
 			return true;
@@ -1431,8 +1437,6 @@ public class FactorGraph extends FactorBase
 		{
 			subGraphCopy.setSolverFactory(_solverFactory);
 		}
-
-		_versionId++;							// The graph has changed
 
 		return subGraphCopy;
 	}
@@ -1551,18 +1555,7 @@ public class FactorGraph extends FactorBase
 			{
 				Variable var = (Variable)old2newObjs.get(vTemplate);
 				fCopy.connect(var);
-				// FIXME - remove if, both branches are the same!
-				if (templateGraph._boundaryVariables.contains(vTemplate))
-				{
-					// Boundary variable in template graph: connect port to corresponding boundary
-					// variable in this graph
-					var.connect(fCopy);
-				}
-				else
-				{
-					// Owned variable in template graph: connect port to new copy of template variable
-					var.connect(fCopy);
-				}
+				var.connect(fCopy);
 			}
 		}
 
@@ -1675,17 +1668,15 @@ public class FactorGraph extends FactorBase
 		return super.getSibling(index);
 	}
 	
-	private long _siblingVersionId = -1;
-	
 	private void updateSiblings()
 	{
-		if (_siblingVersionId != _versionId)
+		if (_siblingVersionId != _structureVersion)
 		{
 			// Recompute siblings
 			clearSiblings();
 			for (Port p : getPorts())
 				connect(p.node.getSibling(p.index));
-			_siblingVersionId = _versionId;
+			_siblingVersionId = _structureVersion;
 		}
 	}
 
@@ -2015,7 +2006,7 @@ public class FactorGraph extends FactorBase
 		{
 			_name2object.remove(explicitName);
 		}
-
+		structureChanged();
 	}
 
 	/**
@@ -2046,8 +2037,6 @@ public class FactorGraph extends FactorBase
 		{
 			raiseEvent(new FactorRemoveEvent(this, factor));
 		}
-
-		_versionId++;							// The graph has changed
 	}
 
 	//===================
@@ -2724,9 +2713,43 @@ public class FactorGraph extends FactorBase
 		return new ArrayList<>(_ownedSubGraphs);
 	}
 	
+	/**
+	 * @deprecated Use {@link #structureVersion() instead}.
+	 */
+	@Deprecated
 	public long getVersionId()
 	{
-		return _versionId;
+		return _structureVersion;
+	}
+	
+	/**
+	 * Counter that is incremented whenever structure of any graph below shared root changes.
+	 * <p>
+	 * May be used to verify cached information that depends on the graph structure.
+	 * @since 0.08
+	 * @see #structureVersion
+	 */
+	public long globalStructureVersion()
+	{
+		return _rootState._globalStructureVersion;
+	}
+	
+	/**
+	 * Counter that is incremented whenever structure of graph changes.
+	 * <p>
+	 * May be used to verify cached information that depends on the graph structure.
+	 * @since 0.08
+	 * @see #globalStructureVersion()
+	 */
+	public long structureVersion()
+	{
+		return _structureVersion;
+	}
+	
+	final void structureChanged()
+	{
+		++_structureVersion;
+		++_rootState._globalStructureVersion;
 	}
 
 	public long getScheduleVersionId()
@@ -2756,6 +2779,8 @@ public class FactorGraph extends FactorBase
 
 			_name2object.put(explicitName, nameable);
 		}
+		
+		structureChanged();
 	}
 
 	/**
@@ -3100,23 +3125,6 @@ public class FactorGraph extends FactorBase
 		return _solverFactory;
 	}
 
-	public TreeSet<Edge> getEdges()
-	{
-		TreeSet<Edge> edges = new TreeSet<Edge>();
-		FactorList factors = getNonGraphFactorsFlat();
-		for(Factor factor : factors)
-		{
-			//ArrayList<Port> ports = factor.getPorts();
-			for (int i = 0, end = factor.getSiblingCount(); i < end; i++)
-			//for(Port port : ports)
-			{
-				INode variable = factor.getConnectedNodeFlat(i);
-				edges.add(new Edge(factor, variable));
-				edges.add(new Edge(variable, factor));
-			}
-		}
-		return edges;
-	}
 	@Override
 	public double getScore()
 	{

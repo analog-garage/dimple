@@ -20,7 +20,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 
-public class Edge implements Comparable<Edge>
+class Edge implements Comparable<Edge>
 {
 	private INameable _left;
 	private INameable _right;

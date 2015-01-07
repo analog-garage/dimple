@@ -461,7 +461,16 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 		return getConnectedNodes(0);
 	}
 
-	@Override
+    /**
+     * Adds {@code node} as a sibling of this node.
+     * <p>
+     * Note that this does not perform the converse operation so to connect two nodes to each
+     * other you need to invoke this on each of them:
+     * <pre>
+     *    node1.connect(node2);
+     *    node2.connect(node1);
+     * </pre>
+     */
 	public void connect(INode node)
 	{
 		_siblings.add(node);
@@ -470,11 +479,22 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 		{
 			siblingToIndex.put(node, _siblings.size() - 1);
 		}
+		FactorGraph parent = _parentGraph;
+		if (parent != null)
+		{
+			parent.structureChanged();
+		}
 		notifyConnectionsChanged();
 	}
 	
-	@Override
-	public void disconnect(int portNum)
+    /**
+     * Removes sibling node with given index from list of siblings.
+     * <p>
+     * Note that as with {@link #connect(INode)}, this does not perform the converse operation.
+     * 
+     * @throws ArrayIndexOutOfBoundsException if index is not in the range [0,{@link #getSiblingCount()}-1].
+     */
+	protected void disconnect(int portNum)
 	{
 		_siblings.remove(portNum);
 		_siblingToIndex = null;
@@ -485,12 +505,6 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 		notifyConnectionsChanged();
 	}
 	
-	@Override
-	public void disconnect(INode node)
-	{
-		disconnect(getPortNum(node));
-	}
-
 	protected void setParentGraph(@Nullable FactorGraph parentGraph)
 	{
 		// TODO: combine with adding to owned list?

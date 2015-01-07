@@ -23,7 +23,6 @@ import java.util.List;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.events.IModelEventSource;
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -103,38 +102,6 @@ public interface INode  extends INameable, IModelEventSource
      */
     public INode getSibling(int i);
 
-    /**
-     * Adds {@code node} as a sibling of this node.
-     * <p>
-     * Note that this does not perform the converse operation so to connect two nodes to each
-     * other you need to invoke this on each of them:
-     * <pre>
-     *    node1.connect(node2);
-     *    node2.connect(node1);
-     * </pre>
-     */
-    public void connect(INode node);
-    
-    /**
-     * Removes sibling node with given index from list of siblings.
-     * <p>
-     * Note that as with {@link #connect(INode)}, this does not perform the converse operation.
-     * 
-     * @throws ArrayIndexOutOfBoundsException if index is not in the range [0,{@link #getSiblingCount()}-1].
-     * @see #disconnect(INode)
-     */
-    public void disconnect(int index);
-    
-    /**
-     * Removes sibling node from list of siblings.
-     * <p>
-     * Note that as with {@link #connect(INode)}, this does not perform the converse operation.
-     * 
-     * @throws DimpleException if node is not a sibling of this node.
-     * @see #disconnect(int)
-     */
-    public void disconnect(INode node);
-    
     public boolean isConnected(INode node);
     public IMapList<INode> getConnectedNodes();
 	public INode getConnectedNodeFlat(int portNum);

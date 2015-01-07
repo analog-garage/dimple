@@ -194,7 +194,7 @@ public class JunctionTreeTransformMap
 	{
 		final boolean identity = (source == target);
 		_sourceModel = source;
-		_sourceVersion = source.getVersionId();
+		_sourceVersion = source.structureVersion();
 		_targetModel = target;
 		_sourceToTargetVariables = identity? null : new HashMap<Variable,Variable>(source.getVariableCount());
 		_sourceToTargetFactors = identity? null : new HashMap<Factor,Factor>(source.getFactorCount());
@@ -256,7 +256,7 @@ public class JunctionTreeTransformMap
 	 */
 	public boolean isValid()
 	{
-		if (_sourceVersion != _sourceModel.getVersionId())
+		if (_sourceVersion != _sourceModel.structureVersion())
 		{
 			return false;
 		}

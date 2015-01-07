@@ -469,7 +469,10 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	 * NOTE: this does not remove the edge back from the factor to the variable!
 	 * 
 	 * @throws DimpleException if variable is not connected to the factor.
+	 * 
+	 * @category internal
 	 */
+	@Internal
 	public void remove(Factor factor)
 	{
 		List<Factor> siblings = getSiblings();
