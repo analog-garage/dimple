@@ -20,6 +20,7 @@ import static java.util.Objects.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -523,7 +524,7 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	}
 	
 	@Override
-	public ArrayList<Port> getPorts()
+	public Collection<Port> getPorts()
 	{
 		final int size = _siblings.size();
 		ArrayList<Port> ports = new ArrayList<Port>(size);

@@ -25,6 +25,10 @@ import com.analog.lyric.dimple.model.variables.Variable;
 
 /**
  * Contains static methods for constructing {@link Iterable}s over contents of {@link FactorGraph}s.
+ * <p>
+ * Note that the methods in this class typically return an unmodifiable subclass of {@link java.util.Collection}
+ * for convenience.
+ * <p>
  * @since 0.08
  * @author Christopher Barber
  * @see FactorGraphIterators

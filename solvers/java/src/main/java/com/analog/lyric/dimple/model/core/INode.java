@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.model.core;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -155,7 +156,7 @@ public interface INode  extends INameable, IModelEventSource
 	public int getPortNum(INode node) ;
 	public ArrayList<INode> getConnectedNodeAndParents(int index);
 	public Port getPort(int i);
-	public ArrayList<Port> getPorts();
+	public Collection<Port> getPorts();
 	
 	/**
 	 * Returns the ancestor of this node at the specified height, where height zero

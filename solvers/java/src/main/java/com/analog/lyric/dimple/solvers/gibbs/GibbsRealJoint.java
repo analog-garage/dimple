@@ -214,7 +214,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 				Factor factorNode = requireNonNull(_var.getSibling(portIndex));
 				ISolverFactor factor = factorNode.requireSolver("update");
 				int factorPortNumber = factorNode.getPortNum(_var);
-				ports[portIndex] = factorNode.getPorts().get(factorPortNumber);
+				ports[portIndex] = factorNode.getPort(factorPortNumber);
 				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
 			}
 			setCurrentSample(conjugateSampler.nextSample(ports, _inputJoint));
@@ -359,7 +359,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 				Factor factorNode = requireNonNull(_var.getSibling(port));
 				ISolverFactor factor = requireNonNull(factorNode.getSolver());
 				int factorPortNumber = factorNode.getPortNum(_var);
-				ports[i++] = factorNode.getPorts().get(factorPortNumber);
+				ports[i++] = factorNode.getPort(factorPortNumber);
 				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
 			}
 		}

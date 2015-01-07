@@ -19,16 +19,18 @@ package com.analog.lyric.dimple.model.repeated;
 import static java.util.Objects.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Objects;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import org.eclipse.jdt.annotation.Nullable;
 
 /*
  * This class represents one stream of Nested Factor Graphs.
@@ -85,7 +87,7 @@ public class FactorGraphStream
 		//Get first Factor Graph's ports
 		FactorGraph firstGraph = _nestedGraphs.get(0);
 
-		ArrayList<Port> ports = firstGraph.getPorts();
+		Collection<Port> ports = firstGraph.getPorts();
 
 		
 		//For each port
@@ -140,7 +142,7 @@ public class FactorGraphStream
 						bfc.add(f);
 						
 						//Set the next port
-						nextPort = f.getPorts().get(0);
+						nextPort = f.getPort(0);
 					}
 				}
 
@@ -199,7 +201,7 @@ public class FactorGraphStream
 			_myVar.setInputObject(null);
 			_fg = fg;
 			_mainFlastFromThePast = originalPlastFromPast;
-			Port factorPort = originalPlastFromPast.getPorts().get(0);
+			Port factorPort = originalPlastFromPast.getPort(0);
 			//   create a data structure to represent it
 			//   Add a blast from the past for this variable
 			//   Create a Factor Graph for this variable (maybe share with others)

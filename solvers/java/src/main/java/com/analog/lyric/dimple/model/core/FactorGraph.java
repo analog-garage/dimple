@@ -1612,38 +1612,45 @@ public class FactorGraph extends FactorBase
 		return rootCopy;
 	}
 
-
-
-	private long _portVersionId = -1;
-	private @Nullable ArrayList<Port> _ports;
-
 	@Override
-	public ArrayList<Port> getPorts()
+	public Port getPort(int i)
 	{
-		ArrayList<Port> ports = _ports;
-		
-		if (ports != null && _portVersionId != _versionId)
+		return ((List<Port>)getPorts()).get(i);
+	}
+	
+	@Override
+	public Collection<Port> getPorts()
+	{
+		if (_boundaryVariables.isEmpty())
 		{
-			return ports;
+			return Collections.emptyList();
 		}
+		
+		ArrayList<Port> ports = new ArrayList<>();
 
-		ports = _ports = new ArrayList<Port>();
-
-		FactorList factors = getNonGraphFactorsFlat();
-
-		//for each boundary variable
-		for (FactorBase f : factors)
+		for (Variable var : _boundaryVariables)
 		{
-			for (int i = 0, endi = f.getSiblingCount(); i < endi; i++)
+			if (ownsDirectly(var))
 			{
-				if (_boundaryVariables.contains(f.getSibling(i)))
+				continue;
+			}
+	
+			for (int i = 0, ni = var.getSiblingCount(); i < ni; ++i)
+			{
+				final Factor factor = var.getSibling(i);
+				if (isAncestorOf(factor))
 				{
-					ports.add(new Port(f,i));
+					for (int j = 0, nj = factor.getSiblingCount(); j < nj; ++j)
+					{
+						if (var == factor.getSibling(j))
+						{
+							ports.add(new Port(factor, j));
+						}
+					}
 				}
 			}
 		}
-		_portVersionId = _versionId;
-		
+
 		return ports;
 	}
 
@@ -1668,15 +1675,17 @@ public class FactorGraph extends FactorBase
 		return super.getSibling(index);
 	}
 	
+	private long _siblingVersionId = -1;
+	
 	private void updateSiblings()
 	{
-		if (_portVersionId != _versionId && _ports == null)
+		if (_siblingVersionId != _versionId)
 		{
 			// Recompute siblings
 			clearSiblings();
-			ArrayList<Port> ports = getPorts();
-			for (Port p : ports)
+			for (Port p : getPorts())
 				connect(p.node.getSibling(p.index));
+			_siblingVersionId = _versionId;
 		}
 	}
 

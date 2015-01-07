@@ -21,6 +21,7 @@ import static java.util.Objects.*;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -276,19 +277,6 @@ public class PNodeVector extends POptionHolder
 		return retval;
 	}
 	
-	Port [][] getModelerPorts()
-	{
-		Port [][] ports = new Port[_nodes.length][];
-		
-		for (int i = 0; i < _nodes.length; i++)
-		{
-			ArrayList<Port> tmp = _nodes[i].getPorts();
-			ports[i] = new Port[tmp.size()];
-			tmp.toArray(ports[i]);
-		}
-		return ports;
-	}
-
 	public int getPortNum(PNodeVector nodeVector)
 	{
 		Node thisNode = PHelpers.convertToNode(this);
@@ -302,7 +290,7 @@ public class PNodeVector extends POptionHolder
 	public Port [] getPorts(int index)
 	{
 		Port [] ports;
-		ArrayList<Port> alports = getModelerNode(index).getPorts();
+		Collection<Port> alports = getModelerNode(index).getPorts();
 		ports = new Port[alports.size()];
 		alports.toArray(ports);
 		return ports;

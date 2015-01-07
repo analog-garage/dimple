@@ -337,8 +337,8 @@ public class FactorGraphDiffs
 	{
 		INode ndA = (INode) a;
 		INode ndB = (INode) b;
-		ArrayList<Port> aPorts = ndA.getPorts();
-		ArrayList<Port> bPorts = ndB.getPorts();
+		ArrayList<Port> aPorts = new ArrayList<>(ndA.getPorts());
+		ArrayList<Port> bPorts = new ArrayList<>(ndB.getPorts());
 
 		FactorGraphDiffs diffs = new FactorGraphDiffs(a, b);
 		

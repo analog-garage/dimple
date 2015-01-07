@@ -342,7 +342,7 @@ public class GibbsReal extends SRealVariableBase
 				Factor factorNode = requireNonNull(_var.getSibling(port));
 				ISolverFactor factor = requireNonNull(factorNode.getSolver());
 				int factorPortNumber = factorNode.getPortNum(_var);
-				ports[i++] = factorNode.getPorts().get(factorPortNumber);
+				ports[i++] = factorNode.getPort(factorPortNumber);
 				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
 			}
 		}
