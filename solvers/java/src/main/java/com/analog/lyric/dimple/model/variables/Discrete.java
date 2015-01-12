@@ -20,6 +20,7 @@ import static java.util.Objects.*;
 
 import java.util.Arrays;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -53,11 +54,21 @@ public class Discrete extends VariableBase
 		super(domain, modelerClassName);
 	}
 	
-
+	protected Discrete(Discrete that)
+	{
+		super(that);
+	}
 
     public double [] getInput()
     {
     	return (double[])getInputObject();
+    }
+    
+    @Override
+    @NonNull
+    public Discrete clone()
+    {
+    	return new Discrete(this);
     }
     
     /*---------------------

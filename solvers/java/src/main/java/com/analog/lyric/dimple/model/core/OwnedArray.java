@@ -226,6 +226,12 @@ abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
 		}
 	}
 	
+	@SuppressWarnings("null")
+	T get(int n)
+	{
+		return _nodes[n];
+	}
+	
 	/**
 	 * Return's nth node in array (skipping null entries).
 	 */

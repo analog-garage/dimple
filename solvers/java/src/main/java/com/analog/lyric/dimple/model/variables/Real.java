@@ -43,6 +43,17 @@ public class Real extends VariableBase
 	{
 		super(domain, modelerClassName);
 	}
+	
+	protected Real(Real that)
+	{
+		super(that);
+	}
+	
+	@Override
+	public Real clone()
+	{
+		return new Real(this);
+	}
 
 	@Override
 	public RealDomain getDomain()

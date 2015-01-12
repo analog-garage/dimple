@@ -225,6 +225,11 @@ public class NodeId
 		return (long)graphId << 32 | 0xFFFFFFFFL & localId;
 	}
 	
+	public static long globalIdFromParts(int graphId, int nodeType, int localIndex)
+	{
+		return globalIdFromParts(graphId, localIdFromParts(nodeType, localIndex));
+	}
+
 	/**
 	 * Extracts graph id from default graph name.
 	 * <p>
@@ -262,6 +267,15 @@ public class NodeId
 	public static int graphIdFromGlobalId(long globalId)
 	{
 		return (int)(globalId >>> 32);
+	}
+	
+	/**
+	 * Constructs local id from type and index.
+	 * @since 0.08
+	 */
+	public static int localIdFromParts(int nodeType, int index)
+	{
+		return (nodeType << LOCAL_ID_NODE_TYPE_OFFSET) | index;
 	}
 	
 	/**

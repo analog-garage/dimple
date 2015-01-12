@@ -27,6 +27,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.variables.Discrete;
@@ -49,16 +50,21 @@ public class DiscreteFactor extends Factor
 	 */
 	
 	@Internal
-	@Deprecated
-	public DiscreteFactor(int id, FactorFunction factorFunc, Variable[] variables)
+	public DiscreteFactor(FactorFunction factorFunc)
 	{
-		this(factorFunc, variables);
+		super(factorFunc);
+	}
+
+	protected DiscreteFactor(DiscreteFactor that)
+	{
+		super(that);
+		_domainList = that._domainList;
 	}
 	
-	@Internal
-	public DiscreteFactor(FactorFunction factorFunc, Variable[] variables)
+	@Override
+	public DiscreteFactor clone()
 	{
-		super(factorFunc, variables);
+		return new DiscreteFactor(this);
 	}
 
 	/*--------------
@@ -179,7 +185,9 @@ public class DiscreteFactor extends Factor
 			setFactorFunction(new TableFactorFunction(getFactorFunction().getName(), newTable));
 			
 			for (Variable v : newVariables)
-				addVariable(v);
+			{
+				addEdge(this, v);
+			}
 		}
 
 		//Now get the indices of all the variables
@@ -216,20 +224,16 @@ public class DiscreteFactor extends Factor
 				((Discrete)newJoint).getDiscreteDomain());
 		setFactorFunction(new TableFactorFunction(getFactorFunction().getName(),newTable2));
 		
-		//Remove old ports in descending order (they were added in ascending order above)
+		//Remove old edges in descending order (they were added in ascending order above)
 		for (int i = factorVarIndices.length; --i>=0;)
 		{
-			disconnect(factorVarIndices[i]);
+			FactorGraphEdgeState edge = getEdgeState(factorVarIndices[i]);
+			removeEdge(edge);
 		}
 		
 		//Add the new joint variable
-		addVariable(newJoint);
+		addEdge(this, newJoint);
 
-		//Tell all old variables to remove this factor graph.
-		for (Variable v : variablesToJoin)
-			v.remove(this);
-		
-		
 	}
 
 	public String getFactorTableString()

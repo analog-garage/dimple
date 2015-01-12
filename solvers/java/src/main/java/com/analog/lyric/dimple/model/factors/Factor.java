@@ -32,6 +32,8 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.NodeId;
 import com.analog.lyric.dimple.model.core.NodeType;
@@ -83,22 +85,29 @@ public class Factor extends FactorBase implements Cloneable
 	}
 	
 	@Internal
-	@Deprecated
-	public Factor(int id,FactorFunction factorFunc, Variable [] variables)
-	{
-		this(factorFunc, variables);
-	}
-	
-	@Internal
-	public Factor(FactorFunction factorFunc, Variable[] variables)
+	public Factor(FactorFunction factorFunc)
 	{
 		super(NodeId.INITIAL_FACTOR_ID);
 		
 		_factorFunction = factorFunc;
 		_modelerFunctionName = factorFunc.getName();
-		
-		for (int i = 0; i < variables.length; i++)
-			addVariable(variables[i]);
+	}
+	
+	protected Factor(Factor that)
+	{
+		super(that);
+		_modelerFunctionName = that._modelerFunctionName;
+		_factorFunction = that._factorFunction; // clone?
+		int[] directedTo = _directedTo = that._directedTo;
+		if (directedTo != null && directedTo != NOT_YET_SET && directedTo != ArrayUtil.EMPTY_INT_ARRAY)
+		{
+			_directedTo = directedTo.clone();
+		}
+		int[] directedFrom = _directedFrom = that._directedFrom;
+		if (directedFrom != null && directedFrom != ArrayUtil.EMPTY_INT_ARRAY)
+		{
+			_directedFrom = directedFrom.clone();
+		}
 	}
 	
 //	public Factor(int id,VariableBase [] variables, String modelerFunctionName)
@@ -152,14 +161,6 @@ public class Factor extends FactorBase implements Cloneable
 			setDirectedTo(Objects.requireNonNull(_factorFunction.getDirectedToIndices(getSiblingCount())));
 		}
 	}
-	
-	protected void addVariable(Variable variable)
-	{
-		connect(variable);
-		variable.connect(this);
-	}
-	
-
 	
 	@Override
 	public String getLabel()
@@ -222,10 +223,14 @@ public class Factor extends FactorBase implements Cloneable
 		final IntArrayList constantIndices = new IntArrayList(nEdges);
 		IFactorTable oldFactorTable = null;
 		
+		final FactorGraph parent = requireNonNull(getParentGraph());
+		
 		// Visit in reverse order so that disconnect is safe.
+		
 		for (int i = nEdges; --i>=0;)
 		{
-			final Variable var = getSibling(i);
+			final FactorGraphEdgeState edge = getEdgeState(i);
+			final Variable var = edge.getVariable(parent);
 			if (var.hasFixedValue())
 			{
 				if (constantIndices.isEmpty() && isDiscrete())
@@ -235,10 +240,9 @@ public class Factor extends FactorBase implements Cloneable
 					// the original edges.
 					oldFactorTable = getFactorTable();
 				}
-				var.remove(this);
+				removeEdge(edge);
 				constantVariables.add(var);
 				constantIndices.add(i);
-				disconnect(i);
 			}
 		}
 		
@@ -305,12 +309,6 @@ public class Factor extends FactorBase implements Cloneable
 		return new FactorFunctionWithConstants(oldFunction,	constantValues,	constantIndices);
 	}
 	
-	@Internal
-	public void replace(Variable oldVariable, Variable newVariable)
-	{
-		replaceSibling(oldVariable, newVariable);
-	}
-	
 	public DomainList<?> getDomainList()
 	{
 		int numVariables = getSiblingCount();
@@ -329,17 +327,7 @@ public class Factor extends FactorBase implements Cloneable
 	@Override
 	public Factor clone()
 	{
-		/*******
-		 * NOTE: Any derived class that defines instance variables that are
-		 * objects (rather than primitive types) must implement clone(), which
-		 * must first call super.clone(), and then deep-copy those instance
-		 * variables to the clone.
-		 *******/
-		Factor f = (Factor) super.clone();
-		
-		//TODO: cloning solver factor?
-		
-		return f;
+		return new Factor(this);
 	}
 
 	@Override

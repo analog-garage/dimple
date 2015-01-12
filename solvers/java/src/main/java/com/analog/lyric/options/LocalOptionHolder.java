@@ -46,6 +46,27 @@ public class LocalOptionHolder extends AbstractOptionHolder
 	
 	private volatile @Nullable ConcurrentMap<IOptionKey<?>,Object> _localOptions = null;
 	
+	/*--------------
+	 * Construction
+	 */
+	
+	public LocalOptionHolder()
+	{
+	}
+	
+	/**
+	 * Copies options from other option holder
+	 * @since 0.08
+	 */
+	protected LocalOptionHolder(LocalOptionHolder other)
+	{
+		final ConcurrentMap<IOptionKey<?>,Object> otherMap = other._localOptions;
+		if (otherMap != null)
+		{
+			_localOptions = new ConcurrentHashMap<>(otherMap);
+		}
+	}
+	
 	/*---------------
 	 * IOptionHolder
 	 */

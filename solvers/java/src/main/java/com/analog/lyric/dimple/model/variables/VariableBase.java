@@ -28,4 +28,9 @@ public abstract class VariableBase extends Variable
 	{
 		super(domain, modelerClassName);
 	}
+	
+	protected VariableBase(VariableBase that)
+	{
+		super(that);
+	}
 }

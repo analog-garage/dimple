@@ -49,6 +49,19 @@ public abstract class DimpleOptionHolder
 	extends LocalOptionHolder
 	implements IDimpleEventSource, IDimpleEnvironmentHolder
 {
+	/*--------------
+	 * Construction
+	 */
+	
+	protected DimpleOptionHolder()
+	{
+	}
+	
+	protected DimpleOptionHolder(DimpleOptionHolder other)
+	{
+		super(other);
+	}
+
 	/*-----------------------
 	 * IOptionHolder methods
 	 */

@@ -52,6 +52,11 @@ public abstract class FactorBase extends Node
 		super(id);
 	}
 	
+	protected FactorBase(FactorBase that)
+	{
+		super(that);
+	}
+	
 	/*--------------
 	 * Node methods
 	 */

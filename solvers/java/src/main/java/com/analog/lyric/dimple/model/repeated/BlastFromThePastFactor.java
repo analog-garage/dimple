@@ -32,20 +32,18 @@ public class BlastFromThePastFactor extends Factor
 	private Variable _variableConnectedToBlast;
 	
 	@Internal
-	@Deprecated
-	public BlastFromThePastFactor(int id, Variable varConnectedToBlast,
-			Port portForOtherVar)
-	{
-		this(varConnectedToBlast, portForOtherVar);
-	}
-	
-	@Internal
 	public BlastFromThePastFactor(Variable varConnectedToBlast, Port portForOtherVar)
 	{
-		super(((Factor)portForOtherVar.getSibling()).getFactorFunction(),new Variable[]{varConnectedToBlast});
+		super(((Factor)portForOtherVar.getSibling()).getFactorFunction());
 		
 		_portForOtherVariable = portForOtherVar;
 		_variableConnectedToBlast = varConnectedToBlast;
+	}
+	
+	@Override
+	public Factor clone()
+	{
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

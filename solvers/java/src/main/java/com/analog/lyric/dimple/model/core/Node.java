@@ -18,10 +18,10 @@ package com.analog.lyric.dimple.model.core;
 
 import static java.util.Objects.*;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
@@ -48,7 +47,7 @@ import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.MapList;
 import com.google.common.collect.Iterators;
 
-public abstract class Node extends DimpleOptionHolder implements INode, Cloneable
+public abstract class Node extends DimpleOptionHolder implements INode
 {
 	/*-----------
 	 * Constants
@@ -78,7 +77,7 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	protected @Nullable String _name;
 	private @Nullable FactorGraph _parentGraph;
 	
-	private List<INode> _siblings;
+	private final ArrayList<FactorGraphEdgeState> _edges = new ArrayList<>();
 	
 	/**
 	 * Temporary flags that can be used to mark the node during the execution of various algorithms
@@ -108,32 +107,13 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	protected Node(int id)
 	{
 		_id = id;
-		_siblings = new ArrayList<>();
 	}
-		
-	@Override
-	public @NonNull Node clone()
+	
+	protected Node(Node other)
 	{
-		/*******
-		 * NOTE: Any derived class that defines instance variables that are
-		 * objects (rather than primitive types) must implement clone(), which
-		 * must first call super.clone(), and then deep-copy those instance
-		 * variables to the clone.
-		 *******/
-		try
-		{
-			final Node n = (Node)(super.clone());
-		
-			n._siblings = new ArrayList<INode>();	// Clear the ports in the clone
-			n._parentGraph = null;
-			n._name = _name;
-
-			return n;
-		}
-		catch (CloneNotSupportedException e)
-		{
-			throw new RuntimeException(e); // should never happen
-		}
+		super(other);
+		_id = other._id | NodeId.LOCAL_ID_INDEX_MAX;
+		_name = other._name;
 	}
 	
 	/*----------------------------
@@ -185,7 +165,7 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 		{
 			// Round up to next power of two no larger than the sibling size to avoid
 			// thrashing if this is called for each index in order.
-			int newSize = Math.min(_siblings.size(), Utilities.nextPow2(index + 1));
+			int newSize = Math.min(_edges.size(), Utilities.nextPow2(index + 1));
 			_siblingIndices = Arrays.copyOf(_siblingIndices, newSize);
 		}
 		
@@ -193,7 +173,7 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 		
 		int reverseIndex = _siblingIndices[index] - 1;
 		
-		INode sibling = _siblings.get(index);
+		INode sibling = _edges.get(index).getSibling(this);
 		if (reverseIndex < 0 || sibling.getSibling(reverseIndex) != this)
 		{
 			// Update reverse index if it was not yet initialized or it points to the wrong node,
@@ -330,26 +310,39 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	@Override
 	public INode getConnectedNodeFlat(int portNum)
 	{
-		return _siblings.get(portNum);
+		return _edges.get(portNum).getSibling(this);
 	}
 
 	
 	@Override
 	public List<? extends INode> getSiblings()
 	{
-		return Collections.unmodifiableList(_siblings);
+		return new AbstractList<INode>()
+		{
+			@Override
+			public Node get(int index)
+			{
+				return getSibling(index);
+			}
+
+			@Override
+			public int size()
+			{
+				return getSiblingCount();
+			}
+		};
 	}
 	
 	@Override
 	public int getSiblingCount()
 	{
-		return _siblings.size();
+		return _edges.size();
 	}
 	
 	@Override
-	public INode getSibling(int i)
+	public Node getSibling(int i)
 	{
-		return _siblings.get(i);
+		return _edges.get(i).getSibling(this);
 	}
 
 	@Override
@@ -374,7 +367,7 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 		if (desiredDepth < 0)
 			desiredDepth = Integer.MAX_VALUE;
 		
-		INode node = _siblings.get(portNum);
+		INode node = _edges.get(portNum).getSibling(this);
 		
 		// TODO: Instead of computing depths, which is O(depth), could we instead
 		// just look for matching parent. For example, if relativedDepth is zero
@@ -394,7 +387,7 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	{
 		ArrayList<INode> retval = new ArrayList<INode>();
 		
-		INode n = _siblings.get(index);
+		INode n = _edges.get(index).getSibling(this);
 		
 		while (n != null)
 		{
@@ -460,50 +453,6 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	{
 		return getConnectedNodes(0);
 	}
-
-    /**
-     * Adds {@code node} as a sibling of this node.
-     * <p>
-     * Note that this does not perform the converse operation so to connect two nodes to each
-     * other you need to invoke this on each of them:
-     * <pre>
-     *    node1.connect(node2);
-     *    node2.connect(node1);
-     * </pre>
-     */
-	public void connect(INode node)
-	{
-		_siblings.add(node);
-		final HashMap<INode,Integer> siblingToIndex = _siblingToIndex;
-		if (siblingToIndex != null)
-		{
-			siblingToIndex.put(node, _siblings.size() - 1);
-		}
-		FactorGraph parent = _parentGraph;
-		if (parent != null)
-		{
-			parent.structureChanged();
-		}
-		notifyConnectionsChanged();
-	}
-	
-    /**
-     * Removes sibling node with given index from list of siblings.
-     * <p>
-     * Note that as with {@link #connect(INode)}, this does not perform the converse operation.
-     * 
-     * @throws ArrayIndexOutOfBoundsException if index is not in the range [0,{@link #getSiblingCount()}-1].
-     */
-	protected void disconnect(int portNum)
-	{
-		_siblings.remove(portNum);
-		_siblingToIndex = null;
-		if (portNum < _siblingIndices.length)
-		{
-			_siblingIndices = ArrayUtil.EMPTY_INT_ARRAY;
-		}
-		notifyConnectionsChanged();
-	}
 	
 	protected void setParentGraph(@Nullable FactorGraph parentGraph)
 	{
@@ -540,7 +489,7 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	@Override
 	public Collection<Port> getPorts()
 	{
-		final int size = _siblings.size();
+		final int size = _edges.size();
 		ArrayList<Port> ports = new ArrayList<Port>(size);
 		for (int i = 0; i < size; i++ )
 			ports.add(getPort(i));
@@ -713,6 +662,47 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 		return getPortNumNoThrow(node) >= 0;
 	}
 
+	/*--------------
+	 * Node methods
+	 */
+	
+	/**
+	 * Gets representation of i'th edge.
+	 * <p>
+     * @param i should be between 0 (inclusive) and {@link #getSiblingCount()} (exclusive)
+     * @since 0.08
+     * @throws IndexOutOfBoundsException if {@code i} is not in range.
+	 * @since 0.08
+	 * @see #getEdgeState(int)
+	 */
+	public Edge getEdge(int i)
+	{
+		return new Edge(requireNonNull(_parentGraph), getEdgeState(i));
+	}
+	
+    /**
+     * Get state for i'th edge.
+     * <p>
+     * @param i should be between 0 (inclusive) and {@link #getSiblingCount()} (exclusive)
+     * @since 0.08
+     * @throws IndexOutOfBoundsException if {@code i} is not in range.
+     */
+	public FactorGraphEdgeState getEdgeState(int i)
+	{
+		return _edges.get(i);
+	}
+	
+	/**
+	 * Returns the index of the edge state
+	 * @param edge an edge attached to this node
+	 * @return the index of the edge or -1 if edge is not currently attached.
+	 * @since 0.08
+	 */
+	public int indexOfEdgeState(FactorGraphEdgeState edge)
+	{
+		return _edges.indexOf(edge);
+	}
+	
 	/*------------------
 	 * Internal methods
 	 */
@@ -762,6 +752,57 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	/*-------------------
 	 * Protected methods
 	 */
+
+    @Internal
+	protected void addEdge(Factor factor, Variable variable)
+	{
+		requireNonNull(_parentGraph).addEdge(factor, variable);
+	}
+	
+    @Internal
+	protected void addEdgeState(FactorGraphEdgeState edge)
+	{
+		final HashMap<INode,Integer> siblingToIndex = _siblingToIndex;
+		if (siblingToIndex != null)
+		{
+			siblingToIndex.put(edge.getSibling(this), _edges.size());
+		}
+		_edges.add(edge);
+
+		notifyConnectionsChanged();
+	}
+	
+	@Internal
+	protected void clearEdgeState()
+	{
+		_edges.clear();
+		_siblingIndices = ArrayUtil.EMPTY_INT_ARRAY;
+		_siblingToIndex = null;
+		notifyConnectionsChanged();
+	}
+	
+	@Internal
+	protected void removeEdge(FactorGraphEdgeState edge)
+	{
+		requireNonNull(_parentGraph).removeEdge(edge);
+	}
+	
+	@Internal
+	protected void removeEdgeState(FactorGraphEdgeState edge)
+	{
+		_edges.remove(edge);
+		_siblingToIndex = null;
+		_siblingIndices = ArrayUtil.EMPTY_INT_ARRAY;
+		notifyConnectionsChanged();
+	}
+	
+	@Internal
+	protected void replaceEdgeState(FactorGraphEdgeState oldEdge, FactorGraphEdgeState newEdge)
+	{
+		// TODO : update computed state
+		_edges.set(_edges.indexOf(oldEdge), newEdge);
+		notifyConnectionsChanged();
+	}
 	
 	/**
 	 * Clear all flag values. Invoked automatically by {@link #initialize()}.
@@ -779,14 +820,6 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	protected void clearFlags(int mask)
 	{
 		_flags = BitSetUtil.clearMask(_flags, mask);
-	}
-	
-	protected void clearSiblings()
-	{
-		_siblings.clear();
-		_siblingIndices = ArrayUtil.EMPTY_INT_ARRAY;
-		_siblingToIndex = null;
-		notifyConnectionsChanged();
 	}
 	
 	/**
@@ -847,7 +880,6 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 		if (oldNode != newNode)
 		{
 			int index = getPortNum(oldNode);
-			_siblings.set(index, newNode);
 			if (_siblingIndices.length > index)
 			{
 				_siblingIndices[index] = 0;
@@ -858,7 +890,6 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 				siblingToIndex.remove(oldNode);
 				siblingToIndex.put(newNode, index);
 			}
-			notifyConnectionsChanged();
 		}
 	}
 	
@@ -887,7 +918,7 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 
 	private int getPortNumNoThrow(INode node)
 	{
-		int nSiblings = _siblings.size();
+		int nSiblings = _edges.size();
 		
 		HashMap<INode,Integer> siblingToIndex = _siblingToIndex;
 		
@@ -896,7 +927,7 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 			siblingToIndex = _siblingToIndex = new HashMap<>(nSiblings);
 			for (int i = 0; i < nSiblings; ++i)
 			{
-				siblingToIndex.put(_siblings.get(i), i);
+				siblingToIndex.put(_edges.get(i).getSibling(this), i);
 			}
 		}
 		
@@ -907,7 +938,7 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 		}
 		else
 		{
-			for (int i = 0; i < _siblings.size(); i++)
+			for (int i = 0; i < _edges.size(); i++)
 			{
 				// FIXME: isConnected walks up parent chain. I don't think that is what
 				// we want.
@@ -920,7 +951,7 @@ public abstract class Node extends DimpleOptionHolder implements INode, Cloneabl
 	
 	private boolean isConnected(INode node, int portIndex)
 	{
-		INode other = requireNonNull(_siblings.get(portIndex));
+		INode other = requireNonNull(_edges.get(portIndex).getSibling(this));
 		
 		if (other == node)
 			return true;

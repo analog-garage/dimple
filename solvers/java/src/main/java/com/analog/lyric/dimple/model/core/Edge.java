@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -16,56 +16,85 @@
 
 package com.analog.lyric.dimple.model.core;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Variable;
 
-class Edge implements Comparable<Edge>
+
+public final class Edge
 {
-	private INameable _left;
-	private INameable _right;
+	private final FactorGraph _graph;
+	private final FactorGraphEdgeState _edge;
 	
-	public Edge(INameable left, INameable right)
+	/*--------------
+	 * Construction
+	 */
+	
+	public Edge(FactorGraph graph, FactorGraphEdgeState edgeState)
 	{
-		_left = left;
-		_right = right;
+		_graph = graph;
+		_edge = edgeState;
 	}
+
+	/*----------------
+	 * Object methods
+	 */
 	
-	public INameable getLeft(){return _left;}
-	public INameable getRight(){return _right;}
-	
-	@Override
-	@NonNullByDefault(false)
-	public int compareTo(Edge e)
-	{
-		int diff = 0;
-		if(this != e)
-		{
-			diff = _left.getUUID().compareTo(e._left.getUUID());
-			if(diff == 0)
-			{
-				diff = _right.getUUID().compareTo(e._right.getUUID());
-			}
-		}
-		return diff;
-	}
 	@Override
 	public int hashCode()
 	{
-		return (_left.getUUID().toString() +
-				_right.getUUID().toString()).hashCode();
+		return _edge.hashCode();
 	}
+
 	@Override
-	public boolean equals(@Nullable Object o)
+	public boolean equals(@Nullable Object obj)
 	{
-		return this == o ||
-			   (o instanceof Edge &&
-				compareTo((Edge)o) == 0);
+		return obj instanceof Edge && _edge == ((Edge)obj)._edge;
 	}
 
 	@Override
 	public String toString()
 	{
-		return String.format("Edge [%s] <-> [%s]", _left.getLabel(), _right.getLabel());
+		return String.format("[Edge %s - %s]", _edge.getFactor(_graph), _edge.getVariable(_graph));
+	}
+	
+	/*--------------
+	 * Edge methods
+	 */
+	
+	public int edgeIndex()
+	{
+		return _edge.edgeIndex();
+	}
+	
+	public FactorGraphEdgeState edgeState()
+	{
+		return _edge;
+	}
+	
+	public Factor factor()
+	{
+		return _edge.getFactor(_graph);
+	}
+	
+	public Node getSibling(Node node)
+	{
+		return _edge.getSibling(node);
+	}
+	
+	public FactorGraph graph()
+	{
+		return _graph;
+	}
+	
+	public boolean isLocal()
+	{
+		return _edge.isLocal();
+	}
+	
+	public Variable variable()
+	{
+		return _edge.getVariable(_graph);
 	}
 }

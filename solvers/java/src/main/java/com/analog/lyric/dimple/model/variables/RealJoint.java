@@ -39,6 +39,17 @@ public class RealJoint extends VariableBase
 	{
 		super(domain, modelerClassName);
 	}
+	
+	protected RealJoint(RealJoint that)
+	{
+		super(that);
+	}
+	
+	@Override
+	public RealJoint clone()
+	{
+		return new RealJoint(this);
+	}
 
 	@Override
 	public RealJointDomain getDomain()

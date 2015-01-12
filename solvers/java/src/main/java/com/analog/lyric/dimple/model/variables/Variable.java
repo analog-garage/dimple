@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.model.variables;
 
-import static java.util.Objects.*;
-
 import java.util.Comparator;
 import java.util.List;
 
@@ -30,6 +28,7 @@ import com.analog.lyric.dimple.events.IDimpleEventListener;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Equality;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.NodeId;
 import com.analog.lyric.dimple.model.core.NodeType;
@@ -100,6 +99,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	{
 		this(domain, "Variable");
 	}
+	
 	public Variable(Domain domain, String modelerClassName)
 	{
 		super(NodeId.INITIAL_VARIABLE_ID);
@@ -108,23 +108,23 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		_domain = domain;
 	}
 	
+	protected Variable(Variable that)
+	{
+		super(that);
+		_modelerClassName = that._modelerClassName;
+		_domain = that._domain;
+		// FIXME
+		_input = that._input;
+		_fixedValue = that._fixedValue;
+		_hasFixedValue = that._hasFixedValue;
+	}
+	
 	/*----------------
 	 * Object methods
 	 */
 	
 	@Override
-	public @NonNull Variable clone()
-	{
-		/*******
-		 * NOTE: Any derived class that defines instance variables that are
-		 * objects (rather than primitive types) must implement clone(), which
-		 * must first call super.clone(), and then deep-copy those instance
-		 * variables to the clone.
-		 *******/
-		Variable v = (Variable)(super.clone());
-		v._solverVariable = null;
-		return v;
-	}
+	public abstract @NonNull Variable clone();
 
 	/*---------------
 	 * INode methods
@@ -463,48 +463,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		
 	}
 	
-	/**
-	 * Remove all edges from this variable to the specified factor.
-	 * <p>
-	 * NOTE: this does not remove the edge back from the factor to the variable!
-	 * 
-	 * @throws DimpleException if variable is not connected to the factor.
-	 * 
-	 * @category internal
-	 */
 	@Internal
-	public void remove(Factor factor)
-	{
-		List<Factor> siblings = getSiblings();
-		
-		boolean found=false;
-		
-		for (int i = 0; i < siblings.size(); i++)
-		{
-			if (getConnectedNodeFlat(i) == factor)
-			{
-				found = true;
-				disconnect(i);
-				break;
-			}
-		}
-		
-		if (!found)
-			throw new DimpleException("Tried to delete factor from variable that does not reference that factor");
-		
-		
-		if (_solverVariable != null)
-		{
-			final FactorGraph parent = requireNonNull(getParentGraph());
-			createSolverObject(parent.getSolver());
-			
-			for (Factor f : getFactors())
-				f.createSolverObject(parent.getSolver());
-		}
-	}
-	
-
-	
     public Variable split(FactorGraph fg,Factor [] factorsToBeMovedToCopy)
     {
     	//create a copy of this variable
@@ -522,11 +481,10 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
     		//Replace the connection from this variable to the copy in the factor
     		for (int j = 0, endj = factor.getSiblingCount(); j < endj; j++)
     		{
-    			if (factor.getConnectedNodeFlat(j) == this)
+    			FactorGraphEdgeState edge = factor.getEdgeState(j);
+    			if (edge.getVariable(fg) == this)
     			{
-    				remove(factor);
-    				mycopy.connect(factor);
-    				factor.replace(this,mycopy);
+    				fg.replaceEdge(factor, j, mycopy);
     			}
     		}
     		

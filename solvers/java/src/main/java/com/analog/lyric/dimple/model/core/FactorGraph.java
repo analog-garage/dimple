@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 
+import net.jcip.annotations.Immutable;
 import net.jcip.annotations.NotThreadSafe;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -41,6 +42,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import cern.colt.list.IntArrayList;
 
+import com.analog.lyric.collect.IndexedArrayList;
 import com.analog.lyric.collect.Tuple2;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.events.DimpleEventListener;
@@ -130,7 +132,7 @@ public class FactorGraph extends FactorBase
 	
 	private final OwnedVariables _ownedVariables = new OwnedVariables();
 
-	private final VariableList _boundaryVariables = new VariableList();
+	private final IndexedArrayList<Variable> _boundaryVariables = new IndexedArrayList<>();
 	
 	/**
 	 * Factors and subgraphs contained directly by this graph. Does not include
@@ -183,7 +185,250 @@ public class FactorGraph extends FactorBase
 	
 	//new identity related members
 	private final HashMap<String, Node> _name2object = new HashMap<>();
+	
+	private final ArrayList<FactorGraphEdgeState> _edges;
+	
+	/*--------------
+	 * Edge classes
+	 */
+	
+	// Note that because we expect there to be potentially many edges, we go to the effort of
+	// of providing implementations that require less memory. We assume that Java will use 8-byte
+	// alignment, so we aim to have the size be a multiple of that.
+	
+	/**
+	 * Edge connecting factor and variable owned by same graph.
+	 */
+	@Immutable
+	private static abstract class LocalEdgeState extends FactorGraphEdgeState
+	{
+		static LocalEdgeState create(int edgeIndex, int factorIndex, int variableIndex)
+		{
+			if (edgeIndex <= SmallLocalEdgeState.EDGE_MASK &&
+				factorIndex <= SmallLocalEdgeState.NODE_MASK &&
+				variableIndex <= SmallLocalEdgeState.NODE_MASK)
+			{
+				return new SmallLocalEdgeState(edgeIndex, factorIndex, variableIndex);
+			}
+			return new FullLocalEdgeState(edgeIndex, factorIndex, variableIndex);
+		}
 
+		@Override
+		public final Factor getFactor(FactorGraph fg)
+		{
+			return fg._ownedFactors.get(factorIndex());
+		}
+		
+		@Override
+		public final Variable getVariable(FactorGraph fg)
+		{
+			return fg._ownedVariables.get(variableIndex());
+		}
+
+		@Override
+		public final boolean isLocal()
+		{
+			return true;
+		}
+
+		@Override
+		public final int variableLocalId()
+		{
+			return NodeId.localIdFromParts(NodeId.VARIABLE_TYPE, variableIndex());
+		}
+	}
+	
+	@Immutable
+	private static final class SmallLocalEdgeState extends LocalEdgeState
+	{
+		final private long _data;
+		
+		private static final int EDGE_BITS = 26;
+		private static final int NODE_BITS = 19;
+		private static final int EDGE_MASK = (1 << EDGE_BITS) - 1;
+		private static final int NODE_MASK = (1 << NODE_BITS) - 1;
+		private static final int FACTOR_OFFSET = EDGE_BITS;
+		private static final int VARIABLE_OFFSET = EDGE_BITS + NODE_BITS;
+		
+		private SmallLocalEdgeState(int edgeIndex, int factorIndex, int variableIndex)
+		{
+			_data = edgeIndex | (long)factorIndex << FACTOR_OFFSET | (long)variableIndex << VARIABLE_OFFSET;
+		}
+
+		@Override
+		public int edgeIndex()
+		{
+			return (int)_data & EDGE_MASK;
+		}
+
+		@Override
+		public int factorIndex()
+		{
+			return (int)(_data >>> FACTOR_OFFSET) & NODE_MASK;
+		}
+
+		@Override
+		public int variableIndex()
+		{
+			return (int)(_data >>> VARIABLE_OFFSET) & NODE_MASK;
+		}
+	}
+	
+	@Immutable
+	private static final class FullLocalEdgeState extends LocalEdgeState
+	{
+		final private int _edgeIndex;
+		final private int _factorIndex;
+		final private int _variableIndex;
+		
+		private FullLocalEdgeState(int edgeIndex, int factorOffset, int variableOffset)
+		{
+			_edgeIndex = edgeIndex;
+			_factorIndex = factorOffset;
+			_variableIndex = variableOffset;
+		}
+		
+		@Override
+		public int edgeIndex()
+		{
+			return _edgeIndex;
+		}
+		
+		@Override
+		public int factorIndex()
+		{
+			return _factorIndex;
+		}
+		
+		@Override
+		public int variableIndex()
+		{
+			return _variableIndex;
+		}
+	}
+	
+
+	/**
+	 * Edge connecting factor owned by this graph to one of its boundary variables.
+	 */
+	static abstract class BoundaryEdge extends FactorGraphEdgeState
+	{
+		private final Factor _factor;
+		
+		private BoundaryEdge(Factor factor)
+		{
+			_factor = factor;
+		}
+		
+		/**
+		 * @deprecated Use {@link #create(Factor,int,int)} instead
+		 */
+		@Deprecated
+		static BoundaryEdge create(int edgeIndex, Factor factor, int boundaryIndex)
+		{
+			return create(factor, edgeIndex, boundaryIndex);
+		}
+
+		static BoundaryEdge create(Factor factor, int edgeIndex, int boundaryIndex)
+		{
+			if (edgeIndex <= SmallBoundaryEdge.EDGE_MASK && boundaryIndex <= SmallBoundaryEdge.VARIABLE_MASK)
+			{
+				return new SmallBoundaryEdge(factor, edgeIndex, boundaryIndex);
+			}
+			return new FullBoundaryEdge(factor, edgeIndex,  boundaryIndex);
+		}
+		
+		@Override
+		public final Factor getFactor(FactorGraph fg)
+		{
+			return _factor;
+		}
+		
+		@Override
+		public final Variable getVariable(FactorGraph fg)
+		{
+			fg = requireNonNull(_factor.getParentGraph());
+			return fg._boundaryVariables.get(variableIndex());
+		}
+
+		@Override
+		public final int factorLocalId()
+		{
+			return _factor.getLocalId();
+		}
+		
+		@Override
+		public final int factorIndex()
+		{
+			return NodeId.indexFromLocalId(_factor.getLocalId());
+		}
+		
+		@Override
+		public final boolean isLocal()
+		{
+			return false;
+		}
+
+		@Override
+		public int variableLocalId()
+		{
+			return NodeId.localIdFromParts(NodeId.BOUNDARY_VARIABLE_TYPE, variableIndex());
+		}
+	}
+	
+	private static final class SmallBoundaryEdge extends BoundaryEdge
+	{
+		private final int _data;
+		
+		private static final int EDGE_BITS = 17;
+		private static final int EDGE_MASK = (EDGE_BITS << 1) - 1;
+		private static final int VARIABLE_BITS = 15;
+		private static final int VARIABLE_MASK = (VARIABLE_BITS << 1) - 1;
+		
+		private SmallBoundaryEdge(Factor factor, int edgeIndex, int boundaryIndex)
+		{
+			super(factor);
+			_data = edgeIndex | boundaryIndex << EDGE_BITS;
+		}
+
+		@Override
+		public int edgeIndex()
+		{
+			return _data & EDGE_MASK;
+		}
+
+		@Override
+		public int variableIndex()
+		{
+			return _data >>> EDGE_BITS;
+		}
+	}
+	
+	private static final class FullBoundaryEdge extends BoundaryEdge
+	{
+		private final int _edgeIndex;
+		private final int _boundaryIndex;
+		
+		private FullBoundaryEdge(Factor factor, int edgeIndex, int boundaryIndex)
+		{
+			super(factor);
+			_edgeIndex = edgeIndex;
+			_boundaryIndex = boundaryIndex;
+		}
+
+		@Override
+		public int edgeIndex()
+		{
+			return _edgeIndex;
+		}
+
+		@Override
+		public int variableIndex()
+		{
+			return _boundaryIndex;
+		}
+	}
+	
 	/*--------------
 	 * Construction
 	 */
@@ -235,6 +480,8 @@ public class FactorGraph extends FactorBase
 		_graphId = _env.factorGraphs().registerIdForFactorGraph(this);
 		_eventAndOptionParent = _env;
 		_rootState = rootState != null ? rootState : new RootState(this);
+		
+		_edges = new ArrayList<>();
 		
 		if (boundaryVariables != null)
 		{
@@ -297,7 +544,7 @@ public class FactorGraph extends FactorBase
 		if (getParentGraph() == null)
 		{
 			// If there is no parent graph, then use the graph id as the id.
-			return _graphId | (NodeId.GRAPH_TYPE<<NodeId.LOCAL_ID_NODE_TYPE_OFFSET);
+			return  NodeId.globalIdFromParts(0, NodeId.GRAPH_TYPE, _graphId);
 		}
 		else
 		{
@@ -779,9 +1026,9 @@ public class FactorGraph extends FactorBase
 
 		Factor f;
 		if (allDomainsAreDiscrete(vars))
-			f = new DiscreteFactor(factorFunction,vars);
+			f = new DiscreteFactor(factorFunction);
 		else
-			f = new Factor(factorFunction,vars);
+			f = new Factor(factorFunction);
 
 		addFactor(f,vars);
 
@@ -1209,6 +1456,10 @@ public class FactorGraph extends FactorBase
 	private FactorBase addFactor(Factor function, Variable ... variables)
 	{
 		addOwnedFactor(function, false);
+		for (Variable var : variables)
+		{
+			addEdge(function, var);
+		}
 		return function;
 	}
 
@@ -1536,8 +1787,7 @@ public class FactorGraph extends FactorBase
 			for (Variable vTemplate : fTemplate.getSiblings())
 			{
 				Variable var = (Variable)old2newObjs.get(vTemplate);
-				fCopy.connect(var);
-				var.connect(fCopy);
+				addEdge(fCopy, var);
 			}
 		}
 
@@ -1593,6 +1843,9 @@ public class FactorGraph extends FactorBase
 		return ((List<Port>)getPorts()).get(i);
 	}
 	
+	/**
+	 * Returns ports for edges from factors contained in this graph to its boundary variables.
+	 */
 	@Override
 	public Collection<Port> getPorts()
 	{
@@ -1655,11 +1908,44 @@ public class FactorGraph extends FactorBase
 		if (_siblingVersionId != _structureVersion)
 		{
 			// Recompute siblings
-			clearSiblings();
-			for (Port p : getPorts())
-				connect(p.node.getSibling(p.index));
+			clearEdgeState();
+			
+			if (!_boundaryVariables.isEmpty())
+			{
+				for (Variable var : _boundaryVariables)
+				{
+					final FactorGraph varGraph = requireNonNull(var.getParentGraph());
+					if (ownsDirectly(var))
+					{
+						continue;
+					}
+					for (int i = 0, ni = var.getSiblingCount(); i < ni; ++i)
+					{
+						final FactorGraphEdgeState edge = var.getEdgeState(i);
+						
+						if (isAncestorOf(edge.getFactor(varGraph)))
+						{
+							addEdgeState(edge);
+						}
+					}
+				}
+			}
 			_siblingVersionId = _structureVersion;
 		}
+	}
+	
+	@Override
+	public FactorGraphEdgeState getEdgeState(int i)
+	{
+		updateSiblings();
+		return super.getEdgeState(i);
+	}
+
+	@Override
+	public int indexOfEdgeState(FactorGraphEdgeState edge)
+	{
+		updateSiblings();
+		return super.indexOfEdgeState(edge);
 	}
 
 	//============================
@@ -1942,7 +2228,7 @@ public class FactorGraph extends FactorBase
 		VariableList varList = subgraph.getVariablesFlat();
 		IMapList<FactorBase> factors = subgraph.getFactorsTop();
 
-		VariableList boundary = subgraph._boundaryVariables;
+		List<Variable> boundary = subgraph._boundaryVariables;
 
 		Variable [] arr = varList.toArray(new Variable[varList.size()]);
 
@@ -2005,10 +2291,9 @@ public class FactorGraph extends FactorBase
 			throw new DimpleException("Cannot delete factor.  It is not a member of this graph");
 		}
 
-		for (int i = 0, nVars = factor.getSiblingCount(); i < nVars; ++i)
+		for (int i = factor.getSiblingCount(); --i>=0;)
 		{
-			Variable var = factor.getSibling(i);
-			var.remove(factor);
+			removeEdge(factor.getEdgeState(i));
 		}
 
 		_ownedFactors.removeNode(factor);
@@ -2401,7 +2686,7 @@ public class FactorGraph extends FactorBase
 	 */
 	public Variable getBoundaryVariable(int i)
 	{
-		return _boundaryVariables.getByIndex(i);
+		return _boundaryVariables.get(i);
 	}
 	
 	/**
@@ -2859,7 +3144,7 @@ public class FactorGraph extends FactorBase
 		case NodeId.VARIABLE_TYPE:
 			return _ownedVariables.getByLocalId(id);
 		case NodeId.BOUNDARY_VARIABLE_TYPE:
-			return _boundaryVariables.getByIndex(NodeId.indexFromLocalId(id));
+			return _boundaryVariables.get(NodeId.indexFromLocalId(id));
 		default:
 			return null;
 		}
@@ -3041,25 +3326,91 @@ public class FactorGraph extends FactorBase
 				false);
 	}
 	
-	/**
-	 * Returns solver graph or throws an error if null.
-	 * <p>
-	 * For internal use only.
+	/*------------------
+	 * Internal methods
 	 */
-	@Internal
-	public ISolverFactorGraph requireSolver(String method)
+	
+	@Override
+	protected void addEdge(Factor factor, Variable variable)
 	{
-		ISolverFactorGraph solver = getSolver();
-		if (solver == null)
+		assert(factor.getParentGraph() == this);
+
+		final FactorGraphEdgeState edge = createEdge(_edges.size(), factor, variable);
+		_edges.add(edge);
+		factor.addEdgeState(edge);
+		variable.addEdgeState(edge);
+		
+		structureChanged();
+		if (!edge.isLocal())
 		{
-			throw new DimpleException("Solver not set. Required by '%s'", method);
+			requireNonNull(variable.getParentGraph()).structureChanged();
 		}
-		return solver;
 	}
 	
-	/*-----------------
-	 * Package methods
-	 */
+	private FactorGraphEdgeState createEdge(int edgeIndex, Factor factor, Variable variable)
+	{
+		final int factorOffset = NodeId.indexFromLocalId(factor.getLocalId());
+		
+		if (variable.getParentGraph() == this)
+		{
+			final int variableOffset = NodeId.indexFromLocalId(variable.getLocalId());
+			return LocalEdgeState.create(edgeIndex, factorOffset, variableOffset);
+		}
+		else
+		{
+			final int boundaryOffset = _boundaryVariables.indexOf(variable);
+			assert(boundaryOffset >= 0);
+			
+			return BoundaryEdge.create(factor, edgeIndex, boundaryOffset);
+		}
+	}
+	
+	@Override
+	@Internal
+	protected void removeEdge(FactorGraphEdgeState edge)
+	{
+		final Factor factor = edge.getFactor(this);
+		final Variable variable = edge.getVariable(this);
+
+		_edges.set(edge.edgeIndex(), null);
+		factor.removeEdgeState(edge);
+		variable.removeEdgeState(edge);
+		
+		structureChanged();
+		if (!edge.isLocal())
+		{
+			requireNonNull(variable.getParentGraph()).structureChanged();
+		}
+	}
+	
+	@Internal
+	public void replaceEdge(Factor factor, int edgeIndex, Variable newVariable)
+	{
+		final FactorGraph fg = requireNonNull(factor.getParentGraph());
+		final FactorGraphEdgeState oldEdge = factor.getEdgeState(edgeIndex);
+		final Variable oldVariable = oldEdge.getVariable(fg);
+
+		// Old sibling code
+		factor.replaceSibling(oldVariable, newVariable);
+		
+		final int graphEdgeIndex = oldEdge.edgeIndex();
+		final FactorGraphEdgeState newEdge = createEdge(graphEdgeIndex, factor, newVariable);
+		_edges.set(graphEdgeIndex, newEdge);
+		
+		oldVariable.removeEdgeState(oldEdge);
+		newVariable.addEdgeState(newEdge);
+		factor.replaceEdgeState(oldEdge, newEdge);
+
+		fg.structureChanged();
+		if (!oldEdge.isLocal())
+		{
+			requireNonNull(oldVariable.getParentGraph()).structureChanged();
+		}
+		if (!newEdge.isLocal())
+		{
+			requireNonNull(oldVariable.getParentGraph()).structureChanged();
+		}
+	}
 	
 	/**
 	 * Iterates over all boundary variables in this graph.
@@ -3114,6 +3465,22 @@ public class FactorGraph extends FactorBase
 	final int ownedVariableCount()
 	{
 		return _ownedVariables.size();
+	}
+	
+	/**
+	 * Returns solver graph or throws an error if null.
+	 * <p>
+	 * For internal use only.
+	 */
+	@Internal
+	public ISolverFactorGraph requireSolver(String method)
+	{
+		ISolverFactorGraph solver = getSolver();
+		if (solver == null)
+		{
+			throw new DimpleException("Solver not set. Required by '%s'", method);
+		}
+		return solver;
 	}
 	
 	/**********************
