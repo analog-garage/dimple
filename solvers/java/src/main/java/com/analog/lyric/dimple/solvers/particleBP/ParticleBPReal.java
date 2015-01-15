@@ -550,7 +550,7 @@ public class ParticleBPReal extends SRealVariableBase
 	}
 
 	@Override
-	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixedValue)
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
 	{
 		if (input == null)
 			_input = null;

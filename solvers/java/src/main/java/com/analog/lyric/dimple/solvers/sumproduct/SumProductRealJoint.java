@@ -52,9 +52,9 @@ public class SumProductRealJoint extends SRealJointVariableBase
 	}
 	
 	@Override
-	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixedValue)
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
 	{
-		if (hasFixedValue)
+		if (fixedValue != null)
 			_input = createFixedValueMessage((double[])Objects.requireNonNull(fixedValue));
 		else if (input == null)
 			_input = null;

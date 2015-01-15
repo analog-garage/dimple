@@ -458,14 +458,14 @@ public class GibbsReal extends SRealVariableBase
 	}
 
 	@Override
-	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixedValue)
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
 	{
 		if (input == null)
 			_input = null;
 		else
 			_input = (FactorFunction)input;
 
-		if (hasFixedValue)
+		if (fixedValue != null)
 			setCurrentSampleForce(FactorFunctionUtilities.toDouble(fixedValue));
 	}
 

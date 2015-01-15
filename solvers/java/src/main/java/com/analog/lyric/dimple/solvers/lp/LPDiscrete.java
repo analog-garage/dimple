@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.lp;
 
-import static java.util.Objects.*;
-
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -158,13 +156,13 @@ public class LPDiscrete extends SDiscreteVariableBase
 	 */
 	
 	@Override
-	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixedValue)
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
 	{
 		int fixedValueIndex = -1;
 		
-		if (hasFixedValue)
+		if (fixedValue != null)
 		{
-			fixedValueIndex = (Integer)requireNonNull(fixedValue);
+			fixedValueIndex = (Integer)fixedValue;
 		}
 		else if (input != null)
 		{

@@ -22,11 +22,12 @@ import java.util.UUID;
 
 import net.jcip.annotations.Immutable;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * @author cbarber
@@ -212,10 +213,10 @@ public abstract class TrainingAssignment implements ITrainingAssignment, Seriali
 		switch (type)
 		{
 		case FIXED:
-			var.setInputOrFixedValue(null, value, true);
+			var.setInputOrFixedValue(null, value);
 			break;
 		case INPUTS:
-			var.setInputOrFixedValue(value, null, false);
+			var.setInputOrFixedValue(value, null);
 			break;
 		case MISSING:
 			// FIXME: is this the right way to set a missing assignment?

@@ -80,7 +80,6 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	protected String _modelerClassName;
 	protected @Nullable ISolverVariable _solverVariable = null;
 	private final Domain _domain;
-    private boolean _hasFixedValue = false;
     
     public static Comparator<Variable> orderById = new Comparator<Variable>() {
 		@Override
@@ -116,7 +115,6 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		// FIXME
 		_input = that._input;
 		_fixedValue = that._fixedValue;
-		_hasFixedValue = that._hasFixedValue;
 	}
 	
 	/*----------------
@@ -344,8 +342,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	{
 		_input = other._input;
 		_fixedValue = other._fixedValue;
-		_hasFixedValue = other._hasFixedValue;
-		requireSolver("moveInputs").setInputOrFixedValue(_input,_fixedValue,_hasFixedValue);
+		requireSolver("moveInputs").setInputOrFixedValue(_input,_fixedValue);
 	}
 
 	
@@ -355,7 +352,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		{
 			final ISolverVariable svar = _solverVariable = factorGraph.createVariable(this);
 			svar.createNonEdgeSpecificState();
-			svar.setInputOrFixedValue(_input,_fixedValue,_hasFixedValue);
+			svar.setInputOrFixedValue(_input,_fixedValue);
 		}
 		else
 		{
@@ -398,22 +395,9 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
     // For setting the variable to a fixed value in lieu of an input
 	public final boolean hasFixedValue()
 	{
-		return _hasFixedValue;
+		return _fixedValue != null;
 	}
 	
-	@Deprecated
-	protected final void fixValue()
-	{
-		_hasFixedValue = true;
-	}
-	
-	@Deprecated
-	protected final void unfixValue()
-	{
-		_hasFixedValue = false;
-	}
-
-    
     public String getModelerClassName()
     {
     	return _modelerClassName;
@@ -575,19 +559,16 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
     
     protected final void setInputOrFixedValue(@Nullable Object newFixedValue, @Nullable Object newInput)
     {
-    	final boolean fixedValue = newFixedValue != null;
     	final Object prevInput = _input;
     	final Object prevFixedValue = _fixedValue;
-    	final boolean hadFixedValue = _hasFixedValue;
     	
-    	_hasFixedValue = fixedValue;
     	_fixedValue = newFixedValue;
     	_input = newInput;
     	
     	final ISolverVariable svar = _solverVariable;
     	if (svar != null)
     	{
-			svar.setInputOrFixedValue(_input,_fixedValue,_hasFixedValue);
+			svar.setInputOrFixedValue(_input,_fixedValue);
     	}
     
     	final int eventFlags = getChangeEventFlags();
@@ -595,7 +576,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
     	if (eventFlags != NO_CHANGE_EVENT)
     	{
     		if ((eventFlags & FIXED_VALUE_CHANGE_EVENT) != 0 &&
-    			(fixedValue || hadFixedValue))
+    			(newFixedValue != null || prevFixedValue != null))
     		{
     			raiseEvent(new VariableFixedValueChangeEvent(this, prevFixedValue, _fixedValue));
     		}

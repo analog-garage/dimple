@@ -16,11 +16,12 @@
 
 package com.analog.lyric.dimple.test.dummySolver;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class DummyRealVariable extends SRealVariableBase
 {
@@ -31,7 +32,7 @@ public class DummyRealVariable extends SRealVariableBase
 	}
 
 	@Override
-	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixedValue)
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
 	{
 	}
 

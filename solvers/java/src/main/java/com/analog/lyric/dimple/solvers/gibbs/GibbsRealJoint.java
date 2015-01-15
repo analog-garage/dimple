@@ -579,7 +579,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 
 
 	@Override
-	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixedValue)
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
 	{
 		if (input == null)
 		{
@@ -601,8 +601,8 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		else
 			throw new DimpleException("Invalid input type");
 
-		if (hasFixedValue)
-			setCurrentSampleForce((double[])Objects.requireNonNull(fixedValue));
+		if (fixedValue != null)
+			setCurrentSampleForce((double[])fixedValue);
 	}
 
 	@SuppressWarnings("null")

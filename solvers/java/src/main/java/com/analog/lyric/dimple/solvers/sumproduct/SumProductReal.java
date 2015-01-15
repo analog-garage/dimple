@@ -53,10 +53,10 @@ public class SumProductReal extends SRealVariableBase
 
 
 	@Override
-	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixedValue)
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
 	{
-		if (hasFixedValue)
-			_input = createFixedValueMessage(requireNonNull((Double)fixedValue));
+		if (fixedValue != null)
+			_input = createFixedValueMessage((Double)fixedValue);
 		else if (input == null)
     		_input = null;
     	else

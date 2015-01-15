@@ -147,12 +147,12 @@ public abstract class ProxySolverVariable<Delegate extends ISolverVariable>
 	 */
 	
 	@Override
-	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixedValue)
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
 	{
 		ISolverVariable delegate = getDelegate();
 		if (delegate != null)
 		{
-			delegate.setInputOrFixedValue(input, fixedValue, hasFixedValue);
+			delegate.setInputOrFixedValue(input, fixedValue);
 		}
 	}
 }

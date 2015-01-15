@@ -414,7 +414,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 
 	
 	@Override
-	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixed)
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
 	{
 		if (input == null)
 		{
@@ -432,7 +432,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 				_input[i] = -Math.log(vals[i]);
 		}
 		
-		if (hasFixed)
+		if (fixedValue != null)
 		{
 			// FIXME: is this correct? Why does it ignore fixedValue argument?
 			setCurrentSampleIndexForce(requireNonNull((Integer)_var.getFixedValueObject()));

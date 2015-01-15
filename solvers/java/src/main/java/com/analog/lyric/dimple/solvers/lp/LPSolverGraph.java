@@ -324,7 +324,7 @@ public class LPSolverGraph extends SFactorGraphBase
 			
 			if (copyInputs)
 			{
-				svar.setInputOrFixedValue(var.getInputObject(), var.getFixedValueObject(), var.hasFixedValue());
+				svar.setInputOrFixedValue(var.getInputObject(), var.getFixedValueObject());
 			}
 		}
 		

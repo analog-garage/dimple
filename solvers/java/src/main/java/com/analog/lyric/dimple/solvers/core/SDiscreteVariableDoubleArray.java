@@ -19,12 +19,13 @@ package com.analog.lyric.dimple.solvers.core;
 import java.util.Arrays;
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * @since 0.05
@@ -60,8 +61,7 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	 * reasons, it'soften good to cache the input.
 	 */
 	@Override
-	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue,
-			boolean hasFixedValue)
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
 	{
 		if (input == null)
 		{

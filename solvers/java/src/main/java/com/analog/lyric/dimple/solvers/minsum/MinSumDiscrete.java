@@ -205,7 +205,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 
 
 	@Override
-	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixedValue)
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
 	{
 		if (input == null)
 			_input = MessageConverter.initialValue(((DiscreteDomain)_var.getDomain()).size());
