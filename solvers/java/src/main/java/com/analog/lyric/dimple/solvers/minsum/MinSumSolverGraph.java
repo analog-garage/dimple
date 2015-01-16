@@ -32,6 +32,7 @@ import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.minsum.customFactors.CustomXor;
 import com.analog.lyric.dimple.solvers.optimizedupdate.CostEstimationTableWrapper;
@@ -56,7 +57,7 @@ import com.analog.lyric.options.IOptionKey;
  *  <p>
  * @since 0.07
  */
-public class MinSumSolverGraph extends SFactorGraphBase
+public class MinSumSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVariable>
 {
 	protected double _damping = 0;
 
@@ -118,6 +119,13 @@ public class MinSumSolverGraph extends SFactorGraphBase
 		{
 			return new STableFactor(factor);
 		}
+	}
+	
+	@SuppressWarnings("deprecation") // TODO remove when SFactorGraph removed
+	@Override
+	public ISolverFactorGraph createSubgraph(FactorGraph subgraph)
+	{
+		return new SFactorGraph(subgraph);
 	}
 	
 	// For backward compatibility only; preferable to use "Xor" factor function, which can

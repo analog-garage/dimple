@@ -22,6 +22,7 @@ import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.sumproduct.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.sumproduct.STableFactor;
@@ -36,7 +37,7 @@ import com.analog.lyric.math.DimpleRandomGenerator;
  * @since 0.07
  */
 @SuppressWarnings("deprecation") // TODO remove when SDiscreteVariable removed
-public class ParticleBPSolverGraph extends SFactorGraphBase
+public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, ISolverVariable>
 {
 	protected int _numIterationsBetweenResampling = 1;
 //	protected int _defaultNumParticles = 1;
@@ -68,7 +69,12 @@ public class ParticleBPSolverGraph extends SFactorGraphBase
 			return new SRealFactor(factor);
 	}
 	
-
+	@Override
+	public ISolverFactorGraph createSubgraph(FactorGraph subgraph)
+	{
+		return new SFactorGraph(subgraph);
+	}
+	
 	@SuppressWarnings("deprecation") // TODO remove when S*Variable classes removed.
 	@Override
 	public ISolverVariable createVariable(Variable var)

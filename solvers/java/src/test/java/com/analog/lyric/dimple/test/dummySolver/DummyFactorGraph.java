@@ -16,17 +16,21 @@
 
 package com.analog.lyric.dimple.test.dummySolver;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.solvers.core.FactorGraphSolverState;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import org.eclipse.jdt.annotation.Nullable;
 
-public class DummyFactorGraph extends SFactorGraphBase
+public class DummyFactorGraph extends SFactorGraphBase<ISolverFactor,ISolverVariable>
 {
 	public DummyFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph)
 	{
@@ -53,6 +57,11 @@ public class DummyFactorGraph extends SFactorGraphBase
 			return new DummyTableFactor(factor);
 	}
 
+	@Override
+	public ISolverFactorGraph createSubgraph(FactorGraph subgraph)
+	{
+		return new DummyFactorGraph(subgraph);
+	}
 	
 	@Override
 	public ISolverVariable createVariable(Variable var)
@@ -92,4 +101,8 @@ public class DummyFactorGraph extends SFactorGraphBase
 	{
 	}
 
+	public FactorGraphSolverState solverState()
+	{
+		return _state;
+	}
 }

@@ -16,16 +16,21 @@
 
 package com.analog.lyric.dimple.solvers.interfaces;
 
+import java.util.Collection;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.util.misc.Matlab;
-import org.eclipse.jdt.annotation.Nullable;
 
-public interface ISolverFactorGraph extends ISolverNode
+public interface ISolverFactorGraph	extends ISolverNode
 {
+	// FIXME review new names!
+	
 	/**
 	 * Returns the factor graph represented by this solver graph.
 	 */
@@ -38,22 +43,48 @@ public interface ISolverFactorGraph extends ISolverNode
 	public @Nullable ISolverFactorGraph createSubGraph(FactorGraph subgraph, @Nullable IFactorGraphFactory<?> factory);
 	
 	/**
-	 * Create a new solver-specific variable representing the given model variable.
-	 */
-	public ISolverVariable createVariable(Variable var);
-	
-	/**
 	 * @return solver-specific factor representing the given model factor or else null.
 	 */
 	public @Nullable ISolverFactor getSolverFactor(Factor factor);
+
+	public Collection<? extends ISolverFactor> getSolverFactors();
+	
+	/**
+	 * Get solver factor for given factor.
+	 * 
+	 * @param factor must a factor whose parent is the same as the model object ({@link #getModelObject()}).
+	 * @param create if true, the solver will attempt to create the solver factor if it has not already done so
+	 * @since 0.08
+	 */
+	public @Nullable ISolverFactor getSolverFactor(Factor factor, boolean create);
+	
+	public Collection<? extends ISolverFactor> getSolverFactorsRecursive();
+	
+	public @Nullable ISolverFactorGraph getSolverSubgraph(FactorGraph subgraph);
+	
+	public Collection<? extends ISolverFactorGraph> getSolverSubgraphs();
+	
+	public Collection<? extends ISolverFactorGraph> getSolverSubgraphsRecursive();
 
 	/**
 	 * @return solver-specific variable representing the given model variable or else null.
 	 */
 	public @Nullable ISolverVariable getSolverVariable(Variable var);
+	
+	/**
+	 * Get solver variable for given variable.
+	 * 
+	 * @param variable must a variable whose parent is the same as the model object ({@link #getModelObject()}).
+	 * @param create if true, the solver will attempt to create the solver variable if it has not already done so
+	 * @since 0.08
+	 */
+	public @Nullable ISolverVariable getSolverVariable(Variable variable, boolean create);
+	
+	public Collection<? extends ISolverVariable> getSolverVariables();
+	
+	public Collection<? extends ISolverVariable> getSolverVariablesRecursive();
 
 	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor factor);
-	public ISolverFactor createFactor(Factor factor);
 
 	/**
 	 * Indicates whether or not the specified factor is available only as a custom factor.

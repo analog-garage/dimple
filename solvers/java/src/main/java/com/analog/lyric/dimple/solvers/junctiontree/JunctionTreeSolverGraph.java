@@ -16,10 +16,12 @@
 
 package com.analog.lyric.dimple.solvers.junctiontree;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * @since 0.05
@@ -66,6 +68,12 @@ public class JunctionTreeSolverGraph extends JunctionTreeSolverGraphBase<SumProd
 	/*----------------------------
 	 * ISolverFactorGraph methods
 	 */
+	
+	@Override
+	public ISolverFactorGraph createSubgraph(FactorGraph subgraph)
+	{
+		return new JunctionTreeSolverGraph(subgraph, getDelegateSolverFactory(), this);
+	}
 	
 	@Override
 	public JunctionTreeSolverGraph createSubGraph(FactorGraph subgraph, @Nullable IFactorGraphFactory<?> factory)

@@ -16,18 +16,28 @@
 
 package com.analog.lyric.dimple.solvers.core.proxy;
 
+import java.util.Collection;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.solvers.core.FactorGraphSolverState;
+import com.analog.lyric.dimple.solvers.interfaces.IParameterizedSolverFactorGraph;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import org.eclipse.jdt.annotation.Nullable;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 /**
  * @since 0.05
  */
-public abstract class ProxySolverFactorGraph<Delegate extends ISolverFactorGraph>
-	extends ProxySolverNode<Delegate> implements ISolverFactorGraph
+public abstract class ProxySolverFactorGraph<SFactor extends ISolverFactor, SVariable extends ISolverVariable,
+		Delegate extends ISolverFactorGraph>
+	extends ProxySolverNode<Delegate>
+	implements IParameterizedSolverFactorGraph<SFactor, SVariable>
 {
 	/*-------
 	 * State
@@ -36,6 +46,8 @@ public abstract class ProxySolverFactorGraph<Delegate extends ISolverFactorGraph
 	protected final FactorGraph _modelFactorGraph;
 	protected boolean _useMultithreading = false;
 	protected int _numIterations = 1;
+	
+	private final FactorGraphSolverState<SFactor,SVariable> _state;
 	
 	/*--------------
 	 * Construction
@@ -47,6 +59,7 @@ public abstract class ProxySolverFactorGraph<Delegate extends ISolverFactorGraph
 	protected ProxySolverFactorGraph(FactorGraph modelFactorGraph)
 	{
 		_modelFactorGraph = modelFactorGraph;
+		_state = new FactorGraphSolverState<>(modelFactorGraph, this);
 	}
 
 	/*---------------------
@@ -101,6 +114,72 @@ public abstract class ProxySolverFactorGraph<Delegate extends ISolverFactorGraph
 		return sfg != null ? sfg.getMatlabSolveWrapper() : null;
 	}
 
+	@Override
+	public @Nullable ISolverFactor getSolverFactor(Factor factor)
+	{
+		return _state.getSolverFactorRecursive(factor, true);
+	}
+	
+	@Override
+	public @Nullable SFactor getSolverFactor(Factor factor, boolean create)
+	{
+		return _state.getSolverFactor(factor, create);
+	}
+	
+	@Override
+	public Collection<SFactor> getSolverFactors()
+	{
+		return _state.getSolverFactors();
+	}
+	
+	@Override
+	public Collection<ISolverFactor> getSolverFactorsRecursive()
+	{
+		return _state.getSolverFactorsRecursive();
+	}
+	
+	@Override
+	public @Nullable ISolverFactorGraph getSolverSubgraph(FactorGraph subgraph)
+	{
+		return _state.getSolverSubgraphRecursive(subgraph, true);
+	}
+	
+	@Override
+	public Collection<? extends ISolverFactorGraph> getSolverSubgraphs()
+	{
+		return _state.getSolverSubgraphs();
+	}
+
+	@Override
+	public Collection<? extends ISolverFactorGraph> getSolverSubgraphsRecursive()
+	{
+		return _state.getSolverSubgraphsRecursive();
+	}
+
+	@Override
+	public @Nullable ISolverVariable getSolverVariable(Variable var)
+	{
+		return _state.getSolverVariableRecursive(var, true);
+	}
+	
+	@Override
+	public @Nullable SVariable getSolverVariable(Variable variable, boolean create)
+	{
+		return _state.getSolverVariable(variable, create);
+	}
+	
+	@Override
+	public Collection<SVariable> getSolverVariables()
+	{
+		return _state.getSolverVariables();
+	}
+	
+	@Override
+	public Collection<ISolverVariable> getSolverVariablesRecursive()
+	{
+		return _state.getSolverVariablesRecursive();
+	}
+	
 	@Override
 	public void setNumIterations(int numIterations)
 	{

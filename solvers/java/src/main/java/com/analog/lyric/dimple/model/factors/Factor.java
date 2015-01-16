@@ -190,12 +190,13 @@ public class Factor extends FactorBase implements Cloneable
     	return "Factor";
     }
 	
+	@Internal
 	public void createSolverObject(@Nullable ISolverFactorGraph factorGraph)
 	{
 		if (factorGraph != null)
 		{
-			ISolverFactor factor = _solverFactor = factorGraph.createFactor(this);
-			factor.createMessages();
+			ISolverFactor factor = _solverFactor = factorGraph.getSolverFactor(this, true);
+			requireNonNull(factor).createMessages();
 		}
 		else
 		{
@@ -333,7 +334,7 @@ public class Factor extends FactorBase implements Cloneable
 	@Override
 	public void initialize(int portNum)
 	{
-		final ISolverFactor sfactor = _solverFactor;
+		final ISolverFactor sfactor = getSolver();
 		if (sfactor != null)
 			sfactor.resetEdgeMessages(portNum);
 	}
@@ -384,7 +385,7 @@ public class Factor extends FactorBase implements Cloneable
 	@Internal
 	public ISolverFactor requireSolver(String method)
 	{
-		return requireSolver(method, _solverFactor);
+		return requireSolver(method, getSolver());
 	}
 	
 	protected <T extends ISolverFactor> T requireSolver(String method, @Nullable T solverFactor)
@@ -560,7 +561,7 @@ public class Factor extends FactorBase implements Cloneable
 			}
 		}
 
-		ISolverFactor sfactor = _solverFactor;
+		ISolverFactor sfactor = getSolver();
 		if (sfactor != null)
 		{
 			sfactor.setDirectedTo(directedTo);

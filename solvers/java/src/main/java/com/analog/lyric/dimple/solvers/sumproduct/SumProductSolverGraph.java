@@ -55,6 +55,7 @@ import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.optimizedupdate.CostEstimationTableWrapper;
 import com.analog.lyric.dimple.solvers.optimizedupdate.CostType;
@@ -96,7 +97,7 @@ import com.analog.lyric.options.IOptionKey;
  * 
  * @since 0.07
  */
-public class SumProductSolverGraph extends SFactorGraphBase
+public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVariable>
 {
 	private double _damping = 0;
 	private @Nullable IFactorTable _currentFactorTable = null;
@@ -219,7 +220,13 @@ public class SumProductSolverGraph extends SFactorGraphBase
 		}
 	}
 	
-
+	@SuppressWarnings("deprecation") // TODO remove when SFactorGraph removed
+	@Override
+	public ISolverFactorGraph createSubgraph(FactorGraph subgraph)
+	{
+		return new SFactorGraph(subgraph);
+	}
+	
 	// This should return true only for custom factors that do not have a corresponding FactorFunction of the same name
 	@Override
 	public boolean customFactorExists(String funcName)

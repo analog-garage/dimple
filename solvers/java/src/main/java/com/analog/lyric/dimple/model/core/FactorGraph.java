@@ -214,6 +214,12 @@ public class FactorGraph extends FactorBase
 		}
 
 		@Override
+		public String toString()
+		{
+			return String.format("[LocalEdgeState #d: %d -> %d]", edgeIndex(), factorIndex(), variableIndex());
+		}
+		
+		@Override
 		public final Factor getFactor(FactorGraph fg)
 		{
 			return fg._ownedFactors.get(factorIndex());
@@ -320,6 +326,13 @@ public class FactorGraph extends FactorBase
 			_factor = factor;
 		}
 		
+		@Override
+		public String toString()
+		{
+			return String.format("[BoundaryEdgeState #d: %d (%s) -> %d (%s)]",
+				edgeIndex(), factorIndex(), _factor, variableIndex(), getVariable());
+		}
+		
 		/**
 		 * @deprecated Use {@link #create(Factor,int,int)} instead
 		 */
@@ -344,11 +357,16 @@ public class FactorGraph extends FactorBase
 			return _factor;
 		}
 		
+		final Variable getVariable()
+		{
+			final FactorGraph fg = requireNonNull(_factor.getParentGraph());
+			return fg._boundaryVariables.get(variableIndex());
+		}
+		
 		@Override
 		public final Variable getVariable(FactorGraph fg)
 		{
-			fg = requireNonNull(_factor.getParentGraph());
-			return fg._boundaryVariables.get(variableIndex());
+			return getVariable();
 		}
 
 		@Override
@@ -729,7 +747,7 @@ public class FactorGraph extends FactorBase
 		@Nullable IFactorGraphFactory<?> factory)
 	{
 		_solverFactory = factory;
-		return _solverFactorGraph = parentSolverGraph != null ? parentSolverGraph.createSubGraph(this, factory) : null;
+		return _solverFactorGraph = parentSolverGraph != null ? parentSolverGraph.getSolverSubgraph(this) : null;
 	}
 
 	private void setSolverFactorySubGraphRecursive(@Nullable ISolverFactorGraph parentSolverGraph,
@@ -772,12 +790,18 @@ public class FactorGraph extends FactorBase
 		_solverFactory = factory;
 		_solverFactorGraph = solverGraph;
 
-		for (Variable var : getVariablesFlat())
-			var.createSolverObject(_solverFactorGraph);
-
 		for (FactorGraph fg : _ownedSubGraphs)
 			fg.setSolverFactorySubGraphRecursive(solverGraph, factory);
 
+		for (FactorGraph graph : FactorGraphIterables.subgraphs(this))
+		{
+			ISolverFactorGraph sgraph = graph.getSolver();
+			for (Variable var : graph._ownedVariables)
+			{
+				var.createSolverObject(sgraph);
+			}
+		}
+		
 		createSolverFactors(solverGraph);
 	
 		return solverGraph;
@@ -791,7 +815,7 @@ public class FactorGraph extends FactorBase
 		
 		for (FactorGraph subgraph : _ownedSubGraphs)
 		{
-			subgraph.createSolverFactors(solverGraph);
+			subgraph.createSolverFactors(subgraph.getSolver());
 		}
 		
 		for (Factor factor : _ownedFactors)
@@ -1947,6 +1971,16 @@ public class FactorGraph extends FactorBase
 		updateSiblings();
 		return super.indexOfEdgeState(edge);
 	}
+	
+	public FactorGraphEdgeState getGraphEdgeState(int i)
+	{
+		return _edges.get(i);
+	}
+
+	public int getGraphEdgeCount()
+	{
+		return _edges.size();
+	}
 
 	//============================
 	//
@@ -2814,6 +2848,19 @@ public class FactorGraph extends FactorBase
 	{
 		return (Variable)getNodeByGlobalId(id);
 	}
+	
+	public @Nullable Variable getVariableByLocalId(int id)
+	{
+		switch (id >>> NodeId.LOCAL_ID_NODE_TYPE_OFFSET)
+		{
+		case NodeId.VARIABLE_TYPE:
+			return _ownedVariables.getByLocalId(id);
+		case NodeId.BOUNDARY_VARIABLE_TYPE:
+			return _boundaryVariables.get(NodeId.indexFromLocalId(id));
+		default:
+			return null;
+		}
+	}
 
 	public FactorList getNonGraphFactors()
 	{
@@ -2901,6 +2948,11 @@ public class FactorGraph extends FactorBase
 	public @Nullable Factor getFactor(long id)
 	{
 		return (Factor)getNodeByGlobalId(id);
+	}
+	
+	public @Nullable Factor getFactorByLocalId(int id)
+	{
+		return NodeId.nodeTypeFromLocalId(id) == NodeType.FACTOR ? _ownedFactors.getByLocalId(id) : null;
 	}
 
 	@Nullable INode getFirstNode()

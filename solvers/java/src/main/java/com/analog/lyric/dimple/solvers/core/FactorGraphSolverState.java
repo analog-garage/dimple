@@ -16,11 +16,15 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import static java.util.Objects.*;
+
 import java.util.AbstractCollection;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Deque;
 import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -29,16 +33,19 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.NodeId;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.IParameterizedSolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Internal;
 import com.google.common.collect.UnmodifiableIterator;
 
 /**
- * 
+ * Provides shared implementation of management of common solver state.
+ * <p>
  * @since 0.08
  * @category internal
  */
@@ -49,11 +56,27 @@ public class FactorGraphSolverState<SFactor extends ISolverFactor, SVariable ext
 	 * State
 	 */
 
-	private final IParameterizedSolverFactorGraph<SFactor,SVariable> _sgraph;
+	/**
+	 * The solver graph that owns this state.
+	 */
+	private final IParameterizedSolverFactorGraph<SFactor,SVariable> _owner;
+	
+	/**
+	 * Solver factors belonging to {@link _owner} indexed by {@link Factor}s local index.
+	 */
 	private final ExtendedArrayList<SFactor> _factors;
+	
+	/**
+	 * Solver variables belonging to {@link _owner} indexed by {@link Variable}s local index.
+	 */
 	private final ExtendedArrayList<SVariable> _variables;
+	
+	/**
+	 * Solver subgraphs belonging to {@link _owner} indexed by each {@link FactorGraph}s local index.
+	 */
 	private final ExtendedArrayList<ISolverFactorGraph> _subgraphs;
-//	private final ObjectArrayList _edges;
+	
+	// TODO add solver edge state (e.g. messages)
 	
 	/*--------------
 	 * Construction
@@ -61,102 +84,255 @@ public class FactorGraphSolverState<SFactor extends ISolverFactor, SVariable ext
 	
 	public FactorGraphSolverState(FactorGraph graph, IParameterizedSolverFactorGraph<SFactor,SVariable> sgraph)
 	{
-		_sgraph = sgraph;
+		_owner = sgraph;
 		_factors = new ExtendedArrayList<>(graph.getFactorCount(0));
 		_variables = new ExtendedArrayList<>(graph.getVariableCount(0));
 		_subgraphs = new ExtendedArrayList<>(graph.getOwnedGraphs().size());
-//		_edges = new ObjectArrayList(graph.getGraphEdgeCount());
 	}
 	
 	/*---------------
 	 * Inner classes
+	 * 
+	 * These provide iterable views of solver objects in this graph and subgraphs.
 	 */
 	
-	private abstract static class SNodeIterator<T> extends UnmodifiableIterator<T>
+	// TODO - make implicit instantiation optional
+
+	private abstract static class SNodeIterator<N extends Node,SN extends ISolverNode>
+		extends UnmodifiableIterator<SN>
 	{
-		private final List<T> _list;
-		private int _index;
+		private final Iterator<N> _iter;
 		
-		private SNodeIterator(List<T> list)
+		private SNodeIterator(Collection<N> collection)
 		{
-			_list = list;
-			_index = 0;
+			_iter = collection.iterator();
 		}
 		
 		@Override
 		public final boolean hasNext()
 		{
-			return peek() != null;
+			return _iter.hasNext();
 		}
-
+		
 		@Override
-		public final T next()
+		public final SN next()
 		{
-			final T element = peek();
-			
-			if (element != null)
-			{
-				++_index;
-				return element;
-			}
-			
-			throw new NoSuchElementException();
+			return map(_iter.next());
 		}
 		
-		private @Nullable T peek()
-		{
-			T element = null;
-			
-			for (; _index < _list.size(); ++_index)
-			{
-				element = _list.get(_index);
-				
-				if (element != null)
-				{
-					break;
-				}
-				
-				element = instantiate(_index);
-				
-				if (element != null)
-				{
-					break;
-				}
-			}
-			
-			return element;
-		}
-		
-		abstract @Nullable T instantiate(int index);
+		abstract SN map(N node);
 	}
 	
-	private class SFactorIterator extends SNodeIterator<SFactor>
+	private abstract static class SNodes<N extends Node, SN extends ISolverNode>
+		extends AbstractCollection<SN>
 	{
-		SFactorIterator()
+		final Collection<N> _nodes;
+		
+		private SNodes(Collection<N> nodes)
 		{
-			super(_factors);
+			_nodes = nodes;
 		}
-
+		
 		@Override
-		@Nullable SFactor instantiate(int index)
+		public int size()
 		{
-			Factor factor = null; // FIXME modelGraph().getFactorByLocalId(NodeId.factorIdFromIndex(index));
-			return factor != null ? instantiateFactor(factor) : null;
+			return _nodes.size();
 		}
 	}
 	
-	private class SVariableIterator extends SNodeIterator<SVariable>
+	private class OwnedSFactorIterator extends SNodeIterator<Factor,SFactor>
 	{
-		SVariableIterator()
+		private OwnedSFactorIterator(Collection<Factor> iterable)
 		{
-			super(_variables);
+			super(iterable);
+			_factors.setSize(iterable.size());
 		}
-
+		
 		@Override
-		@Nullable SVariable instantiate(int index)
+		public SFactor map(Factor factor)
 		{
-			Variable variable = null; // FIXME modelGraph().getVariableByLocalId(NodeId.variableIdFromIndex(index));
-			return variable != null ? instantiateVariable(variable) : null;
+			return requireNonNull(getSolverFactor(factor, true));
+		}
+	}
+	
+	private class OwnedSFactors extends SNodes<Factor, SFactor>
+	{
+		private OwnedSFactors()
+		{
+			super(getModelGraph().getOwnedFactors());
+		}
+		
+		@Override
+		public Iterator<SFactor> iterator()
+		{
+			return new OwnedSFactorIterator(_nodes);
+		}
+	}
+
+	private class OwnedSVarIterator extends SNodeIterator<Variable,SVariable>
+	{
+		private OwnedSVarIterator(Collection<Variable> iterable)
+		{
+			super(iterable);
+			_variables.setSize(iterable.size());
+		}
+		
+		@Override
+		public SVariable map(Variable variable)
+		{
+			return requireNonNull(getSolverVariable(variable, true));
+		}
+	}
+	
+	private class OwnedSVars extends SNodes<Variable, SVariable>
+	{
+		private OwnedSVars()
+		{
+			super(getModelGraph().getOwnedVariables());
+		}
+		
+		@Override
+		public Iterator<SVariable> iterator()
+		{
+			return new OwnedSVarIterator(_nodes);
+		}
+	}
+
+	private class OwnedSubgraphIterator extends SNodeIterator<FactorGraph,ISolverFactorGraph>
+	{
+		private OwnedSubgraphIterator(Collection<FactorGraph> iterable)
+		{
+			super(iterable);
+			_subgraphs.setSize(iterable.size());
+		}
+		
+		@Override
+		public ISolverFactorGraph map(FactorGraph subgraph)
+		{
+			return instantiateSubgraph(subgraph);
+		}
+	}
+	
+	private class OwnedSubgraphs extends SNodes<FactorGraph, ISolverFactorGraph>
+	{
+		private OwnedSubgraphs()
+		{
+			super(getModelGraph().getOwnedGraphs());
+		}
+		
+		@Override
+		public Iterator<ISolverFactorGraph> iterator()
+		{
+			return new OwnedSubgraphIterator(_nodes);
+		}
+	}
+
+	/**
+	 * Collection of subgraphs rooted at _owner in breadth-first order
+	 */
+	private class RecursiveSubgraphs extends ArrayList<ISolverFactorGraph>
+	{
+		private static final long serialVersionUID = 1L;
+
+		private RecursiveSubgraphs()
+		{
+			super();
+			
+			add(_owner);
+			
+			// Add all subgraphs recursively in bread-first order.
+			for (int i = 0; i < size(); ++i)
+			{
+				ISolverFactorGraph subgraph = get(i);
+				addAll(subgraph.getSolverSubgraphs());
+			}
+		}
+	}
+	
+	private abstract class RecursiveSNodeIterator<SN extends ISolverNode> extends UnmodifiableIterator<SN>
+	{
+		private final Iterator<ISolverFactorGraph> _sgraphIterator = getSolverSubgraphsRecursive().iterator();
+		private Iterator<? extends SN> _snodeIterator = Collections.emptyIterator();
+		
+		@Override
+		public boolean hasNext()
+		{
+			while (!_snodeIterator.hasNext() && _sgraphIterator.hasNext())
+			{
+				_snodeIterator = getNodes(_sgraphIterator.next()).iterator();
+			}
+			
+			return _snodeIterator.hasNext();
+		}
+	
+		@Override
+		public SN next()
+		{
+			hasNext();
+			
+			return _snodeIterator.next();
+		}
+		
+		int count()
+		{
+			int n = 0;
+
+			while (_sgraphIterator.hasNext())
+			{
+				n += getNodes(_sgraphIterator.next()).size();
+			}
+			
+			return n;
+		}
+		
+		abstract Collection<? extends SN> getNodes(ISolverFactorGraph graph);
+	}
+	
+	private abstract class RecursiveSNodes<SN extends ISolverNode> extends AbstractCollection<SN>
+	{
+		@Override
+		public abstract RecursiveSNodeIterator<SN> iterator();
+		
+		@Override
+		public int size()
+		{
+			return iterator().count();
+		}
+	}
+
+	private class RecursiveSFactorIterator extends RecursiveSNodeIterator<ISolverFactor>
+	{
+		@Override
+		Collection<? extends ISolverFactor> getNodes(ISolverFactorGraph graph)
+		{
+			return graph.getSolverFactors();
+		}
+	}
+	
+	private class RecursiveSFactors extends RecursiveSNodes<ISolverFactor>
+	{
+		@Override
+		public RecursiveSFactorIterator iterator()
+		{
+			return new RecursiveSFactorIterator();
+		}
+	}
+	
+	private class RecursiveSVariableIterator extends RecursiveSNodeIterator<ISolverVariable>
+	{
+		@Override
+		Collection<? extends ISolverVariable> getNodes(ISolverFactorGraph graph)
+		{
+			return graph.getSolverVariables();
+		}
+	}
+	
+	private class RecursiveSVariables extends RecursiveSNodes<ISolverVariable>
+	{
+		@Override
+		public RecursiveSVariableIterator iterator()
+		{
+			return new RecursiveSVariableIterator();
 		}
 	}
 	
@@ -164,32 +340,125 @@ public class FactorGraphSolverState<SFactor extends ISolverFactor, SVariable ext
 	 * Methods
 	 */
 	
-	public final FactorGraph modelGraph()
+	public final FactorGraph getModelGraph()
 	{
-		return _sgraph.getModelObject();
+		return _owner.getModelObject();
 	}
 	
-	public Collection<SFactor> factors()
+	public final IParameterizedSolverFactorGraph<SFactor,SVariable> getSolverGraph()
 	{
-		final int nFactors = modelGraph().getFactorCount(0);
-		_factors.setSize(nFactors);
+		return _owner;
+	}
+	
+	/**
+	 * Unmodifiable collection over owned solver factors, implicitly instantiated if necessary.
+	 * @since 0.08
+	 */
+	public Collection<SFactor> getSolverFactors()
+	{
+		return new OwnedSFactors();
+	}
+	
+	public Collection<ISolverFactor> getSolverFactorsRecursive()
+	{
+		return new RecursiveSFactors();
+	}
+	
+	/**
+	 * Unmodifiable collection over owned solver variables, implicitly instantiated if necessary.
+	 * @since 0.08
+	 */
+	public Collection<SVariable> getSolverVariables()
+	{
+		return new OwnedSVars();
+	}
+	
+	public Collection<ISolverVariable> getSolverVariablesRecursive()
+	{
+		return new RecursiveSVariables();
+	}
+	
+	public @Nullable ISolverFactor getSolverFactorRecursive(Factor factor, boolean create)
+	{
+		final FactorGraph factorParent = factor.requireParentGraph();
 		
-		return new AbstractCollection<SFactor>() {
-			@Override
-			public Iterator<SFactor> iterator()
+		if (factorParent == getModelGraph())
+		{
+			return getSolverFactor(factor, create);
+		}
+		
+		ISolverFactorGraph ssubgraph = getSolverSubgraphRecursive(factorParent, true);
+		return ssubgraph != null ? ssubgraph.getSolverFactor(factor, create) : null;
+	}
+	
+	public @Nullable ISolverFactorGraph getSolverSubgraphRecursive(FactorGraph subgraph, boolean create)
+	{
+		final FactorGraph graph = getModelGraph();
+		FactorGraph parent = subgraph.getParentGraph();
+		
+		if (parent == graph)
+		{
+			return instantiateSubgraph(subgraph);
+		}
+		
+		Deque<FactorGraph> subgraphs = new ArrayDeque<>();
+		
+		final FactorGraph originalSubgraph = subgraph;
+		
+		while (true)
+		{
+			if (parent == null)
 			{
-				return new SFactorIterator();
+				throw new IllegalArgumentException(
+					String.format("Cannot get solver graph for %s because it is not in %s", originalSubgraph, graph));
 			}
 
-			@Override
-			public int size()
+			subgraphs.push(subgraph);
+			subgraph = parent;
+			parent = subgraph.getParentGraph();
+
+			if (parent == graph)
 			{
-				return nFactors;
+				ISolverFactorGraph sgraph = instantiateSubgraph(subgraph);
+				while (!subgraphs.isEmpty())
+				{
+					subgraph = subgraphs.pop();
+					sgraph = sgraph.getSolverSubgraph(subgraph);
+					if (sgraph == null)
+					{
+						break;
+					}
+				}
+				return sgraph;
 			}
-		};
+		}
 	}
 	
-	public SFactor instantiateFactor(Factor factor)
+	public Collection<ISolverFactorGraph> getSolverSubgraphs()
+	{
+		return new OwnedSubgraphs();
+	}
+	
+	public Collection<ISolverFactorGraph> getSolverSubgraphsRecursive()
+	{
+		return new RecursiveSubgraphs();
+	}
+	
+	public @Nullable ISolverVariable getSolverVariableRecursive(Variable variable, boolean create)
+	{
+		final FactorGraph factorParent = variable.requireParentGraph();
+		
+		if (factorParent == getModelGraph())
+		{
+			return getSolverVariable(variable, create);
+		}
+		
+		ISolverFactorGraph ssubgraph = getSolverSubgraphRecursive(factorParent, true);
+		return ssubgraph != null ? ssubgraph.getSolverVariable(variable, create) : null;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public @Nullable SFactor getSolverFactor(Factor factor, boolean create)
 	{
 		assertSameGraph(factor);
 		
@@ -198,11 +467,26 @@ public class FactorGraphSolverState<SFactor extends ISolverFactor, SVariable ext
 		
 		@SuppressWarnings("unchecked")
 		SFactor sfactor = factors.getOrNull(index);
-		
+
 		if (sfactor == null || sfactor.getModelObject() != factor)
 		{
-			sfactor = _sgraph.createFactor(factor);
-			sfactor.createMessages();
+			if (create)
+			{
+				if (factor instanceof BlastFromThePastFactor)
+				{
+					// FIXME - hacky
+					sfactor = (SFactor)_owner.createBlastFromThePast((BlastFromThePastFactor)factor);
+				}
+				else
+				{
+					sfactor = _owner.createFactor(factor);
+				}
+//				sfactor.createMessages();
+			}
+			else
+			{
+				sfactor = null;
+			}
 			factors.set(index, sfactor);
 		}
 		
@@ -221,14 +505,14 @@ public class FactorGraphSolverState<SFactor extends ISolverFactor, SVariable ext
 		
 		if (sgraph == null || sgraph.getModelObject() != subgraph)
 		{
-//			sgraph = _sgraph.createSubgraph(subgraph);
+			sgraph = _owner.createSubgraph(subgraph);
 			graphs.set(index, sgraph);
 		}
 		
 		return sgraph;
 	}
 	
-	public SVariable instantiateVariable(Variable variable)
+	public @Nullable SVariable getSolverVariable(Variable variable, boolean create)
 	{
 		assertSameGraph(variable);
 		
@@ -240,34 +524,36 @@ public class FactorGraphSolverState<SFactor extends ISolverFactor, SVariable ext
 		
 		if (svar == null || svar.getModelObject() != variable)
 		{
-			svar = _sgraph.createVariable(variable);
-			svar.createNonEdgeSpecificState();
-			svar.setInputOrFixedValue(variable.getInputObject(), variable.getFixedValueObject());
+			if (create)
+			{
+				svar = _owner.createVariable(variable);
+//				svar.createNonEdgeSpecificState();
+//				svar.setInputOrFixedValue(variable.getInputObject(), variable.getFixedValueObject());
+			}
+			else
+			{
+				svar = null;
+			}
 			variables.set(index, svar);
 		}
 		
 		return svar;
 	}
 	
-	public Collection<SVariable> variables()
-	{
-		final int nVariables = modelGraph().getVariableCount(0);
-		_variables.setSize(nVariables);
-		
-		return new AbstractCollection<SVariable>() {
-			@Override
-			public Iterator<SVariable> iterator()
-			{
-				return new SVariableIterator();
-			}
-
-			@Override
-			public int size()
-			{
-				return nVariables;
-			}
-		};
-	}
+//	public void instantiateAll()
+//	{
+//		// Instantiate and get solver subgraphs
+//		ArrayList<ISolverFactorGraph> sgraphs = new ArrayList<>(getSolverSubgraphsRecursive());
+//
+//		// Instantiate all solver variables
+//		Iterators.size(getSolverVariablesRecursive().iterator());
+//
+//		// Instantiate solver factors from bottom up (see bug 404)
+//		for (int i = sgraphs.size(); --i>=0;)
+//		{
+//			Iterators.size(sgraphs.get(i).getSolverFactors().iterator());
+//		}
+//	}
 	
 	/*-----------------
 	 * Private methods
@@ -275,9 +561,9 @@ public class FactorGraphSolverState<SFactor extends ISolverFactor, SVariable ext
 	
 	private void assertSameGraph(Node node)
 	{
-		if (node.getParentGraph() != _sgraph.getModelObject())
+		if (node.getParentGraph() != _owner.getModelObject())
 		{
-			throw new IllegalArgumentException(String.format("The %s '%s' does not belong to graph",
+			throw new IllegalArgumentException(String.format("The %s '%s' does not belong to graph.",
 				node.getNodeType().name().toLowerCase(), node));
 		}
 	}

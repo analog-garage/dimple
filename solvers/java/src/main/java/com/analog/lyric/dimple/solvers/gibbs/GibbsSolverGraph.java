@@ -91,7 +91,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockInitializer;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockMCMCSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.math.DimpleRandomGenerator;
@@ -103,7 +103,7 @@ import com.analog.lyric.math.DimpleRandomGenerator;
  *  <p>
  * @since 0.07
  */
-public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFactorGraph
+public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolverVariableGibbs>
 {
 	/*
 	 * Constants
@@ -161,7 +161,7 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public ISolverVariable createVariable(Variable var)
+	public ISolverVariableGibbs createVariable(Variable var)
 	{
 		if (var.getModelerClassName().equals("RealJoint") || var.getModelerClassName().equals("Complex"))
 			return new SRealJointVariable(var);
@@ -171,13 +171,19 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 			return new SDiscreteVariable((Discrete)var);
 	}
 	
+	@SuppressWarnings("deprecation") // TODO: remove when SFactorGraph is removed.
+	@Override
+	public ISolverFactorGraph createSubgraph(FactorGraph subgraph)
+	{
+		return new SFactorGraph(subgraph, null);
+	}
 	
 	// Note, customFactorExists is intentionally not overridden and therefore returns false
 	// This is because all of the custom factors for this solver also exist as FactorFunctions,
 	// and therefore we still want the MATLAB code to create a factor with the specified FactorFunctions.
 	@SuppressWarnings("deprecation") // TODO: remove when S*Factor classes removed.
 	@Override
-	public ISolverFactor createFactor(Factor factor)
+	public ISolverFactorGibbs createFactor(Factor factor)
 	{
 		FactorFunction factorFunction = factor.getFactorFunction().getContainedFactorFunction();	// In case it's wrapped
 		

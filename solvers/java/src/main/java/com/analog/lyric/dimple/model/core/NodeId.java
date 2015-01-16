@@ -204,6 +204,11 @@ public class NodeId
 		return msb & UUID_NON_VERSION_MASK | msb >>> UUID_NON_VERSION_SHIFT;
 	}
 	
+	public static int factorIdFromIndex(int index)
+	{
+		return localIdFromParts(FACTOR_TYPE, index);
+	}
+	
 	/**
 	 * Extracts global id from Dimple UUID
 	 * <p>
@@ -400,5 +405,10 @@ public class NodeId
 		}
 		
 		return null;
+	}
+	
+	public static int variableIdFromIndex(int index)
+	{
+		return NodeId.localIdFromParts(VARIABLE_TYPE, index);
 	}
 }

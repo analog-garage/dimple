@@ -101,6 +101,34 @@ public class FactorGraphIterators
 	}
 	
 	/**
+	 * Returns iterator over {@link Factor}s directly owned by a graph.
+	 * @since 0.08
+	 */
+	public static Iterator<Factor> ownedFactors(FactorGraph graph)
+	{
+		return graph.ownedFactorIterator();
+	}
+	
+	/**
+	 * Returns iterator over subgraphs directly owned by a graph.
+	 * @since 0.08
+	 */
+	public static Iterator<FactorGraph> ownedSubgraphs(FactorGraph graph)
+	{
+		return graph.ownedGraphIterator();
+	}
+	
+
+	/**
+	 * Returns iterator over {@link Variable}s directly owned by a graph.
+	 * @since 0.08
+	 */
+	public static Iterator<Variable> ownedVariables(FactorGraph graph)
+	{
+		return graph.ownedVariableIterator();
+	}
+	
+	/**
 	 * Returns iterator over all nested subgraphs of the root graph, including the root itself.
 	 * <p>
 	 * Subgraphs are visited in top-down order, i.e. those farther away from the root will be visited after

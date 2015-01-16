@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.solvers.lp;
 import static java.util.Objects.*;
 
 import java.io.PrintStream;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -52,7 +53,7 @@ import com.analog.lyric.util.misc.Matlab;
  * @since 0.07
  */
 @NotThreadSafe
-public class LPSolverGraph extends SFactorGraphBase
+public class LPSolverGraph extends SFactorGraphBase<LPTableFactor, LPDiscrete>
 {
 	/*-------
 	 * State
@@ -275,11 +276,11 @@ public class LPSolverGraph extends SFactorGraphBase
 		
 		if (sfactor == null)
 		{
-			if (!(factor instanceof DiscreteFactor))
-			{
-				throw new DimpleException("Factor '%s' is not a DiscreteFactor. LP solver only supports discrete factors.",
-					factor.getName());
-			}
+		if (!(factor instanceof DiscreteFactor))
+		{
+			throw new DimpleException("Factor '%s' is not a DiscreteFactor. LP solver only supports discrete factors.",
+				factor.getName());
+		}
 
 			sfactor = new STableFactor(this, (DiscreteFactor)factor);
 			_factorMap.put(factor,  sfactor);
@@ -293,20 +294,20 @@ public class LPSolverGraph extends SFactorGraphBase
 	{
 		return createVariable(var, false);
 	}
-
+		
 	@SuppressWarnings("deprecation") // TODO remove when SVariable removed
 	private LPDiscrete createVariable(Variable var, boolean copyInputs)
 	{
 		LPDiscrete svar = _varMap.get(var);
 		
 		if (svar == null)
+	{
+		if (!(var instanceof Discrete))
 		{
-			if (!(var instanceof Discrete))
-			{
-				throw new DimpleException("Variable '%s' is not discrete. LP solver only supports discrete variables.",
-					var.getName());
-			}
-			
+			throw new DimpleException("Variable '%s' is not discrete. LP solver only supports discrete variables.",
+				var.getName());
+		}
+
 			// Reuse svar already associated with var if applicable.
 			svar = var.getSolverIfTypeAndGraph(LPDiscrete.class, this);
 			if (svar == null)
@@ -331,6 +332,12 @@ public class LPSolverGraph extends SFactorGraphBase
 		return svar;
 	}
 
+	@Override
+	public ISolverFactorGraph createSubgraph(FactorGraph subgraph)
+	{
+		return new LPSolverGraph(subgraph);
+	}
+
 	/**
 	 * Always returns false.
 	 */
@@ -350,6 +357,20 @@ public class LPSolverGraph extends SFactorGraphBase
 	public @Nullable String getMatlabSolveWrapper()
 	{
 		return useMatlabSolver() ? "dimpleLPSolve" : null;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public Collection<LPTableFactor> getSolverFactorsRecursive()
+	{
+		return (Collection<LPTableFactor>) super.getSolverFactorsRecursive();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public Collection<LPDiscrete> getSolverVariablesRecursive()
+	{
+		return (Collection<LPDiscrete>) super.getSolverVariablesRecursive();
 	}
 	
 	private boolean useMatlabSolver()
@@ -726,4 +747,5 @@ public class LPSolverGraph extends SFactorGraphBase
 	protected void doUpdateEdge(int edge)
 	{
 	}
+
 }

@@ -21,6 +21,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 /**
@@ -29,7 +30,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
  * @author shershey
  *
  */
-public class SFactorGraph  extends SFactorGraphBase
+public class SFactorGraph  extends SFactorGraphBase<ISolverFactor,ISolverVariable>
 {
 
 	/**
@@ -37,7 +38,7 @@ public class SFactorGraph  extends SFactorGraphBase
 	 * 
 	 * @param fg
 	 */
-	public SFactorGraph(FactorGraph fg) 
+	public SFactorGraph(FactorGraph fg)
 	{
 		super(fg);
 	}
@@ -46,7 +47,7 @@ public class SFactorGraph  extends SFactorGraphBase
 	 * createVariable creates a solver object for a model variable object.
 	 */
 	@Override
-	public ISolverVariable createVariable(Variable var) 
+	public ISolverVariable createVariable(Variable var)
 	{
 		return new SVariable(var);
 	}
@@ -55,14 +56,21 @@ public class SFactorGraph  extends SFactorGraphBase
 	 * createFactor creates a solver object for a model factor object.
 	 */
 	@Override
-	public ISolverFactor createFactor(Factor factor) 
+	public ISolverFactor createFactor(Factor factor)
 	{
 		return new STableFactor(factor);
 	}
 
+	@Override
+	public ISolverFactorGraph createSubgraph(FactorGraph subgraph)
+	{
+		return new SFactorGraph(subgraph);
+	}
+	
 	/*
 	 * 
 	 */
+	@Override
 	protected void doUpdateEdge(int edge)
 	{
 	}

@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.variables;
 
+import static java.util.Objects.*;
+
 import java.util.Comparator;
 import java.util.List;
 
@@ -198,7 +200,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	@Override
 	public void initialize(int portNum)
 	{
-		final ISolverVariable svar = _solverVariable;
+		final ISolverVariable svar = getSolver();
 		if (svar != null)
 		{
 			svar.resetEdgeMessages(portNum);
@@ -268,7 +270,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
      */
 	public @Nullable <T extends ISolverVariable> T getSolverIfType(Class<? extends T> solverVariableClass)
 	{
-		final ISolverVariable svar = _solverVariable;
+		final ISolverVariable svar = getSolver();
 		T result = null;
 		
 		if (svar != null && solverVariableClass.isAssignableFrom(svar.getClass()))
@@ -329,7 +331,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 
     public boolean guessWasSet()
     {
-    	ISolverVariable svar = _solverVariable;
+    	ISolverVariable svar = getSolver();
     	return svar != null && svar.guessWasSet();
     }
     
@@ -345,12 +347,12 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		requireSolver("moveInputs").setInputOrFixedValue(_input,_fixedValue);
 	}
 
-	
+	@Internal
 	public void createSolverObject(@Nullable ISolverFactorGraph factorGraph)
 	{
 		if (factorGraph != null)
 		{
-			final ISolverVariable svar = _solverVariable = factorGraph.createVariable(this);
+			final ISolverVariable svar = _solverVariable = requireNonNull(factorGraph.getSolverVariable(this, true));
 			svar.createNonEdgeSpecificState();
 			svar.setInputOrFixedValue(_input,_fixedValue);
 		}
@@ -405,7 +407,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
         
     public @Nullable Object getBeliefObject()
     {
-    	final ISolverVariable svar = _solverVariable;
+    	final ISolverVariable svar = getSolver();
     	if (svar != null)
     		return svar.getBelief();
     	else
@@ -519,7 +521,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
     @Internal
     public ISolverVariable requireSolver(String methodName)
     {
-    	final ISolverVariable svar = _solverVariable;
+    	final ISolverVariable svar = getSolver();
     	if (svar == null)
     	{
     		throw new DimpleException("solver must be set before using '%s'", methodName);
@@ -565,7 +567,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
     	_fixedValue = newFixedValue;
     	_input = newInput;
     	
-    	final ISolverVariable svar = _solverVariable;
+    	final ISolverVariable svar = getSolver();
     	if (svar != null)
     	{
 			svar.setInputOrFixedValue(_input,_fixedValue);

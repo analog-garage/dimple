@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.core;
 
 import static java.util.Objects.*;
 
+import java.util.Collection;
 import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -38,13 +39,16 @@ import com.analog.lyric.dimple.options.SolverOptions;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
+import com.analog.lyric.dimple.solvers.interfaces.IParameterizedSolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
-public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGraph
+public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable extends ISolverVariable>
+	extends SNode
+	implements IParameterizedSolverFactorGraph<SFactor, SVariable>
 {
 	/**
 	 * Bits in {@link #_flags} reserved by this class and its superclasses.
@@ -52,10 +56,12 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	@SuppressWarnings("hiding")
 	protected static final int RESERVED_FLAGS = 0xFFFF0000;
 	
-	protected FactorGraph _factorGraph;
+	protected final FactorGraph _factorGraph;
 	protected int _numIterations = 1;		// Default number of iterations unless otherwise specified
 	private @Nullable MultiThreadingManager _multithreader; // = new MultiThreadingManager();
 	private boolean _useMultithreading = false;
+	
+	protected final FactorGraphSolverState<SFactor,SVariable> _state;
 
 	/*--------------
 	 * Construction
@@ -65,6 +71,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	{
 		super(fg);
 		_factorGraph = fg;
+		_state = new FactorGraphSolverState<>(fg, this);
 	}
 
 	/*----------------------------
@@ -72,7 +79,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	 */
 	
 	@Override
-	public SFactorGraphBase getContainingSolverGraph()
+	public SFactorGraphBase<SFactor,SVariable> getContainingSolverGraph()
 	{
 		return this;
 	}
@@ -92,6 +99,16 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		return _factorGraph;
 	}
 
+	/*----------------------------
+	 * ISolverFactorGraph methods
+	 */
+	
+	@Override
+	public abstract SFactor createFactor(Factor factor);
+	
+	@Override
+	public abstract SVariable createVariable(Variable variable);
+	
 	/**
 	 * {@inheritDoc}
 	 * <p>
@@ -111,10 +128,54 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	 * Subclasses may override this to return a more precise type or to support solvers that
 	 * can still be used when they are detached from the model.
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public @Nullable ISolverFactor getSolverFactor(Factor factor)
 	{
-		return factor.getSolver();
+		ISolverFactor sfactor = factor.getSolver();
+		// FIXME!
+//		ISolverFactor sfactor2 = _state.getSolverFactorRecursive(factor, false);
+//		if (sfactor != sfactor2)
+//		{
+//			System.err.println(sfactor + ", " + sfactor2);
+//		}
+		return sfactor;
+	}
+
+	@Override
+	public @Nullable SFactor getSolverFactor(Factor factor, boolean create)
+	{
+		return _state.getSolverFactor(factor, create);
+	}
+	
+	@Override
+	public Collection<SFactor> getSolverFactors()
+	{
+		return _state.getSolverFactors();
+	}
+	
+	@Override
+	public Collection<? extends ISolverFactor> getSolverFactorsRecursive()
+	{
+		return _state.getSolverFactorsRecursive();
+	}
+	
+	@Override
+	public @Nullable ISolverFactorGraph getSolverSubgraph(FactorGraph subgraph)
+	{
+		return _state.getSolverSubgraphRecursive(subgraph, true);
+	}
+	
+	@Override
+	public Collection<? extends ISolverFactorGraph> getSolverSubgraphs()
+	{
+		return _state.getSolverSubgraphs();
+	}
+
+	@Override
+	public Collection<? extends ISolverFactorGraph> getSolverSubgraphsRecursive()
+	{
+		return _state.getSolverSubgraphsRecursive();
 	}
 
 	/**
@@ -125,16 +186,42 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	 * Subclasses may override this to return a more precise type or to support solvers that
 	 * can still be used when they are detached from the model.
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public @Nullable ISolverVariable getSolverVariable(Variable variable)
 	{
-		return variable.getSolver();
+		ISolverVariable svar = variable.getSolver();
+		// FIXME!
+//		ISolverVariable svar2 = _state.getSolverVariableRecursive(variable, false);
+//		if (svar != svar2)
+//		{
+//			System.err.println(svar + ", " + svar2);
+//		}
+		return svar;
+	}
+	
+	@Override
+	public @Nullable SVariable getSolverVariable(Variable variable, boolean create)
+	{
+		return _state.getSolverVariable(variable, create);
+	}
+	
+	@Override
+	public Collection<SVariable> getSolverVariables()
+	{
+		return _state.getSolverVariables();
+	}
+	
+	@Override
+	public Collection<? extends ISolverVariable> getSolverVariablesRecursive()
+	{
+		return _state.getSolverVariablesRecursive();
 	}
 	
 	@Override
 	public void moveMessages(ISolverNode other)
 	{
-		SFactorGraphBase sother = (SFactorGraphBase)other;
+		SFactorGraphBase<?,?> sother = (SFactorGraphBase<?,?>)other;
 		FactorList otherFactors = sother._factorGraph.getFactors();
 		FactorList myFactors = _factorGraph.getFactors();
 		
@@ -568,9 +655,9 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		if (!fg.hasParentGraph())
 		{
 			for (int i = 0, end = fg.getBoundaryVariableCount(); i <end; ++i)
-			{
+		{
 				fg.getBoundaryVariable(i).requireSolver("initialize").initialize();
-			}
+		}
 		}
 		for (Factor f : fg.getNonGraphFactorsTop())
 			f.requireSolver("initialize").initialize();

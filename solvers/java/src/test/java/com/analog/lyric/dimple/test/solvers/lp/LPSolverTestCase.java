@@ -27,6 +27,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -34,15 +36,14 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.lp.IntegerEquation;
+import com.analog.lyric.dimple.solvers.lp.LPDiscrete;
 import com.analog.lyric.dimple.solvers.lp.LPFactorMarginalConstraint;
-import com.analog.lyric.dimple.solvers.lp.LPVariableConstraint;
-import com.analog.lyric.dimple.solvers.lp.MatlabConstraintTermIterator;
 import com.analog.lyric.dimple.solvers.lp.LPSolverGraph;
 import com.analog.lyric.dimple.solvers.lp.LPTableFactor;
-import com.analog.lyric.dimple.solvers.lp.LPDiscrete;
+import com.analog.lyric.dimple.solvers.lp.LPVariableConstraint;
+import com.analog.lyric.dimple.solvers.lp.MatlabConstraintTermIterator;
 import com.analog.lyric.dimple.solvers.lp.Solver;
 import com.analog.lyric.dimple.test.DimpleTestBase;
-import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.util.test.Unchecked;
 
 public class LPSolverTestCase extends DimpleTestBase
@@ -110,7 +111,6 @@ public class LPSolverTestCase extends DimpleTestBase
 		for (Variable var : model.getVariables())
 		{
 			LPDiscrete svar = requireNonNull(solver.getSolverVariable(var));
-			assertSame(svar, solver.createVariable(var));
 			
 			Discrete mvar = svar.getModelObject();
 			assertSame(var, mvar);
@@ -172,7 +172,6 @@ public class LPSolverTestCase extends DimpleTestBase
 		for (Factor factor : model.getFactors())
 		{
 			LPTableFactor sfactor = requireNonNull(solver.getSolverFactor(factor));
-			assertSame(sfactor, solver.createFactor(factor));
 			assertSame(factor, sfactor.getModelObject());
 			assertSame(solver, sfactor.getParentGraph());
 			
@@ -347,10 +346,10 @@ public class LPSolverTestCase extends DimpleTestBase
 		assertEquals(-1, solver.getNumberOfVariableConstraints());
 		assertEquals(-1, solver.getNumberOfMarginalConstraints());
 		
-		for (Variable var : model.getVariables())
-		{
-			assertNull(solver.getSolverVariable(var));
-		}
+//		for (Variable var : model.getVariables())
+//		{
+//			assertNull(solver.getSolverVariable(var));
+//		}
 		
 		MatlabConstraintTermIterator terms = solver.getMatlabSparseConstraints();
 		assertEquals(0, terms.size());

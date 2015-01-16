@@ -20,6 +20,7 @@ import java.util.Collection;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 
@@ -34,27 +35,29 @@ public interface IParameterizedSolverFactorGraph
 	<SFactor extends ISolverFactor, SVariable extends ISolverVariable>
 	extends ISolverFactorGraph
 {
-	@Override
 	public SFactor createFactor(Factor factor);
 	
-	@Override
 	public SVariable createVariable(Variable variable);
+
+	public ISolverFactorGraph createSubgraph(FactorGraph subgraph);
 	
 	@Override
-	public @Nullable SFactor getSolverFactor(Factor factor);
+	public @Nullable SFactor getSolverFactor(Factor factor, boolean create);
+	
+	@Override
+	public @Nullable SVariable getSolverVariable(Variable variable, boolean create);
 	
 	/**
 	 * Unmodifiable collection of solver factors directly owned by this solver graph.
 	 * @since 0.08
 	 */
-	public Collection<SFactor> getSolverFactors();
-	
 	@Override
-	public @Nullable SVariable getSolverVariable(Variable var);
+	public Collection<SFactor> getSolverFactors();
 	
 	/**
 	 * Unmodifiable collection of solver variables directly owned by this solver graph.
 	 * @since 0.08
 	 */
+	@Override
 	public Collection<SVariable> getSolverVariables();
 }

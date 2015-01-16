@@ -463,6 +463,8 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	/**
 	 * Returns the graph that immediately contains this node, or null if node does not belong to any graph
 	 * or this is the root graph.
+	 * <p>
+	 * @see #requireParentGraph()
 	 */
 	@Override
 	public @Nullable FactorGraph getParentGraph()
@@ -701,6 +703,23 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	public int indexOfEdgeState(FactorGraphEdgeState edge)
 	{
 		return _edges.indexOf(edge);
+	}
+	
+	/**
+	 * Returns parent {@link FactorGraph} or throws an exception if none.
+	 * @since 0.08
+	 * @throws IllegalStateException if {@link #getParentGraph()} is null.
+	 */
+	public FactorGraph requireParentGraph()
+	{
+		final FactorGraph parent = _parentGraph;
+		
+		if (parent != null)
+		{
+			return parent;
+		}
+		
+		throw new IllegalStateException(String.format("Node '%s' does not belong to a graph.", this));
 	}
 	
 	/*------------------

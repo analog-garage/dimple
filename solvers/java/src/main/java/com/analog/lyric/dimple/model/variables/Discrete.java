@@ -151,7 +151,7 @@ public class Discrete extends VariableBase
     @Override
 	public Object getBeliefObject()
     {
-    	final ISolverVariable svar = _solverVariable;
+    	final ISolverVariable svar = getSolver();
     	if (svar != null)
     	{
     		final Object belief = svar.getBelief();

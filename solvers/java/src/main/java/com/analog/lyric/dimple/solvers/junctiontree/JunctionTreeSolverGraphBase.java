@@ -37,7 +37,6 @@ import com.analog.lyric.dimple.options.DimpleOptions;
 import com.analog.lyric.dimple.solvers.core.proxy.ProxySolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Matlab;
@@ -54,7 +53,7 @@ import com.analog.lyric.util.misc.Misc;
  * @author Christopher Barber
  */
 public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactorGraph>
-	extends ProxySolverFactorGraph<Delegate>
+	extends ProxySolverFactorGraph<JunctionTreeSolverFactor, IJunctionTreeSolverVariable<?>, Delegate>
 {
 	private final JunctionTreeTransform _transformer;
 	private final @Nullable IFactorGraphFactory<?> _solverFactory;
@@ -200,7 +199,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 		@Nullable IFactorGraphFactory<?> factory);
 
 	@Override
-	public ISolverVariable createVariable(Variable var)
+	public IJunctionTreeSolverVariable<?> createVariable(Variable var)
 	{
 		if (var instanceof Discrete)
 		{
@@ -213,7 +212,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	}
 
 	@Override
-	public ISolverFactor createFactor(Factor factor)
+	public JunctionTreeSolverFactor createFactor(Factor factor)
 	{
 		return new JunctionTreeSolverFactor(factor, this);
 	}
@@ -234,18 +233,6 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	public void setNumIterations(int numIterations)
 	{
 		super.setNumIterations(1);
-	}
-	
-	@Override
-	public @Nullable JunctionTreeSolverFactor getSolverFactor(Factor factor)
-	{
-		return (JunctionTreeSolverFactor)factor.getSolver();
-	}
-	
-	@Override
-	public @Nullable JunctionTreeSolverVariable getSolverVariable(Variable variable)
-	{
-		return (JunctionTreeSolverVariable)variable.getSolver();
 	}
 	
 	@Override
