@@ -30,7 +30,6 @@ import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 /**
@@ -44,9 +43,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
 	 */
-    double [][] _logInPortMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
     double [][] _savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
-    double [][] _outPortDerivativeMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
     double [] _dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
     private boolean _calculateDerivative = false;
 	protected boolean _dampingInUse = false;
@@ -196,17 +193,18 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         
         
         //Compute alphas
-        double[] alphas = new double[M];
+        final double[] logInPortMsgs = DimpleEnvironment.doubleArrayCache.allocate(M*D);
+        final double[] alphas = DimpleEnvironment.doubleArrayCache.allocate(M);
         for (int m = 0; m < M; m++)
         {
         	double prior = priors[m];
         	double alpha = (prior == 0) ? minLog : Math.log(prior);
 
-        	for (int d = 0; d < D; d++)
+        	for (int d = 0, i = m; d < D; d++, i += M)
 	        {
 	        	double tmp = _inputMessages[d][m];
         		double logtmp = (tmp == 0) ? minLog : Math.log(tmp);
-        		_logInPortMsgs[d][m] = logtmp;
+        		logInPortMsgs[i] = logtmp;
         		alpha += logtmp;
 	        }
 	        alphas[m] = alpha;
@@ -214,7 +212,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         
         
         //Now compute output messages for each outgoing edge
-	    for (int out_d = 0; out_d < D; out_d++ )
+	    for (int out_d = 0, dm = 0; out_d < D; out_d++, dm += M )
 	    {
             double[] outMsgs = _outputMessages[out_d];
             
@@ -235,10 +233,9 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
             
             //set outMsgs to alpha - mu_d,m
             //find max alpha
-            double[] logInPortMsgsD = _logInPortMsgs[out_d];
             for (int m = 0; m < M; m++)
             {
-            	double out = alphas[m] - logInPortMsgsD[m];
+            	double out = alphas[m] - logInPortMsgs[dm + m];
                 if (out > maxLog) maxLog = out;
                 outMsgs[m] = out;
             }
@@ -271,6 +268,9 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
             }
             
 	    }
+	    
+	    DimpleEnvironment.doubleArrayCache.release(logInPortMsgs);
+	    DimpleEnvironment.doubleArrayCache.release(alphas);
 	   
 	    if (_calculateDerivative)
 		    for (int i = 0; i < _inputMessages.length; i++)
@@ -581,18 +581,6 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     }
 
 	@Override
-	public Object [] createMessages(ISolverFactor factor)
-	{
-		Object [] retval = super.createMessages(factor);
-		int portNum = _var.getPortNum(Objects.requireNonNull(factor.getModelObject()));
-		int newArraySize = _inputMessages.length;
-		_logInPortMsgs = Arrays.copyOf(_logInPortMsgs, newArraySize);
-		_logInPortMsgs[portNum] = new double[_inputMessages[portNum].length];
-
-		return retval;
-	}
-	
-	@Override
 	public double[] resetInputMessage(Object message)
 	{
     	double [] retval = (double[])message;
@@ -609,7 +597,6 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		super.moveMessages(other, portNum, otherPortNum);
 		
 		SumProductDiscrete sother = (SumProductDiscrete)other;
-		_logInPortMsgs[portNum] = sother._logInPortMsgs[otherPortNum];
 		
 		if (_dampingInUse)
 		{

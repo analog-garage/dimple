@@ -79,7 +79,6 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	private DiscreteValue _outputMsg;
 	private @Nullable long[] _beliefHistogram;
 	private double[] _input;
-	private double[] _conditional;
 	private @Nullable IntArrayList _sampleIndexArray;
 	private int _bestSampleIndex;
 	private @Nullable DiscreteValue _initialSampleValue = null;
@@ -149,6 +148,9 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		final int messageLength = _input.length;
 		final int numPorts = _var.getSiblingCount();
 		double minEnergy = Double.POSITIVE_INFINITY;
+		
+		// Conditional probability in log domain
+		final double[] conditional = DimpleEnvironment.doubleArrayCache.allocate(messageLength);
 
 		// Compute the conditional probability
 		if (!_var.isDeterministicInput())
@@ -175,7 +177,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 
 				if (out < minEnergy) minEnergy = out;			// For normalization
 
-				_conditional[index] = out;						// Save in log domain representation
+				conditional[index] = out;						// Save in log domain representation
 			}
 		}
 		else	// There are deterministic dependents, so must account for these
@@ -196,7 +198,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 
 				if (out < minEnergy) minEnergy = out;			// For normalization
 
-				_conditional[index] = out;						// Save in log domain representation
+				conditional[index] = out;						// Save in log domain representation
 			}
 		}
 		
@@ -209,7 +211,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 			if (_sampler instanceof IDiscreteDirectSampler)
 			{
 				((IDiscreteDirectSampler)Objects.requireNonNull(_sampler)).nextSample(_outputMsg.clone(),
-					_conditional, minEnergy, this);
+					conditional, minEnergy, this);
 			}
 			else if (_sampler instanceof IMCMCSampler)
 			{
@@ -220,6 +222,8 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		{
 			rejected = true;
 		}
+		
+		DimpleEnvironment.doubleArrayCache.release(conditional);
 		
 		if (rejected) _rejectCount++;
 		
@@ -826,8 +830,6 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	    _inPortMsgs = Arrays.copyOf(_inPortMsgs, length);
     	_inPortMsgs[portNum] = createDefaultMessage();
     	
-	    _conditional = new double[_input.length];
-		
 		return new Object []{_inPortMsgs[portNum],_outputMsg};
 	}
 
@@ -902,7 +904,6 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		_sampleIndexArray = ovar._sampleIndexArray;
 		_beliefHistogram = ovar._beliefHistogram;
 		_outputMsg = ovar._outputMsg;
-		_conditional = ovar._conditional;
 		_bestSampleIndex = ovar._bestSampleIndex;
 		_initialSampleValue = ovar._initialSampleValue;
 		_beta = ovar._beta;
