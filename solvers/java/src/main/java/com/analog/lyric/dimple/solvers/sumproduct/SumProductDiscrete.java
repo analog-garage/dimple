@@ -30,7 +30,6 @@ import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 /**
  * Solver variable for Discrete variables under Sum-Product solver.
@@ -43,7 +42,6 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
 	 */
-    double [][] _savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
     double [] _dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
     private boolean _calculateDerivative = false;
 	protected boolean _dampingInUse = false;
@@ -124,14 +122,16 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 
         double[] outMsgs = _outputMessages[outPortNum];
 
+        double[] savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+        	
         if (_dampingInUse)
         {
+        	savedOutMsgArray = DimpleEnvironment.doubleArrayCache.allocate(M);
         	double damping = _dampingParams[outPortNum];
         	if (damping != 0)
         	{
-        		double[] saved = _savedOutMsgArray[outPortNum];
-        		for (int i = 0; i < outMsgs.length; i++)
-        			saved[i] = outMsgs[i];
+        		for (int m = 0; m < outMsgs.length; m++)
+        			savedOutMsgArray[m] = outMsgs[m];
         	}
         }
 
@@ -171,10 +171,11 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         	double damping = _dampingParams[outPortNum];
         	if (damping != 0)
         	{
-        		double[] saved = _savedOutMsgArray[outPortNum];
         		for (int m = 0; m < M; m++)
-        			outMsgs[m] = outMsgs[m]*(1-damping) + saved[m]*damping;
+        			outMsgs[m] = outMsgs[m]*(1-damping) + savedOutMsgArray[m]*damping;
         	}
+        	
+        	DimpleEnvironment.doubleArrayCache.release(savedOutMsgArray);
         }
 	    
         if (_calculateDerivative)
@@ -212,6 +213,8 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         
         
         //Now compute output messages for each outgoing edge
+        final double[] savedOutMsgArray =
+        	_dampingInUse ? DimpleEnvironment.doubleArrayCache.allocate(M) : ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	    for (int out_d = 0, dm = 0; out_d < D; out_d++, dm += M )
 	    {
             double[] outMsgs = _outputMessages[out_d];
@@ -222,9 +225,8 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
             	double damping = _dampingParams[out_d];
             	if (damping != 0)
             	{
-            		double[] saved = _savedOutMsgArray[out_d];
-            		for (int i = 0; i < outMsgs.length; i++)
-            			saved[i] = outMsgs[i];
+            		for (int m = 0; m < M; m++)
+            			savedOutMsgArray[m] = outMsgs[m];
             	}
             }
             
@@ -261,9 +263,8 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
             	double damping = _dampingParams[out_d];
             	if (damping != 0)
             	{
-            		double[] saved = _savedOutMsgArray[out_d];
             		for (int m = 0; m < M; m++)
-            			outMsgs[m] = outMsgs[m]*(1-damping) + saved[m]*damping;
+            			outMsgs[m] = outMsgs[m]*(1-damping) + savedOutMsgArray[m]*damping;
             	}
             }
             
@@ -271,6 +272,10 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	    
 	    DimpleEnvironment.doubleArrayCache.release(logInPortMsgs);
 	    DimpleEnvironment.doubleArrayCache.release(alphas);
+	    if (savedOutMsgArray.length > 0)
+	    {
+	    	DimpleEnvironment.doubleArrayCache.release(savedOutMsgArray);
+	    }
 	   
 	    if (_calculateDerivative)
 		    for (int i = 0; i < _inputMessages.length; i++)
@@ -591,19 +596,6 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     	return retval;
 	}
 
-	@Override
-	public void moveMessages(ISolverNode other, int portNum, int otherPortNum)
-	{
-		super.moveMessages(other, portNum, otherPortNum);
-		
-		SumProductDiscrete sother = (SumProductDiscrete)other;
-		
-		if (_dampingInUse)
-		{
-			_savedOutMsgArray[portNum] = sother._savedOutMsgArray[otherPortNum];
-		}
-	}
-
 	/*---------------
 	 * SNode methods
 	 */
@@ -640,18 +632,5 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     	}
     	
     	_dampingInUse = _dampingParams.length > 0;
-    	
-    	if (!_dampingInUse)
-    	{
-    		_savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
-    	}
-    	else if (_savedOutMsgArray.length != size)
-    	{
-    		_savedOutMsgArray = new double[size][];
-    		for (int i = 0; i < size; i++)
-    	    {
-    			_savedOutMsgArray[i] = new double[_inputMessages[i].length];
-    	    }
-    	}
     }
 }
