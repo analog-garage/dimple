@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
-import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.Discrete;
 
 /**
  * @deprecated Use {@link SumProductFiniteFieldVariable} instead.
@@ -24,7 +24,7 @@ import com.analog.lyric.dimple.model.variables.Variable;
 @Deprecated
 public class SFiniteFieldVariable extends SumProductFiniteFieldVariable
 {
-	public SFiniteFieldVariable(Variable var)
+	public SFiniteFieldVariable(Discrete var)
 	{
 		super(var);
 	}

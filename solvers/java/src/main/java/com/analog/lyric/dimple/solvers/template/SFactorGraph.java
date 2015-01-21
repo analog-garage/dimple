@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.solvers.template;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -49,7 +50,12 @@ public class SFactorGraph  extends SFactorGraphBase<ISolverFactor,ISolverVariabl
 	@Override
 	public ISolverVariable createVariable(Variable var)
 	{
-		return new SVariable(var);
+		if (var instanceof Discrete)
+		{
+			return new SVariable((Discrete)var);
+		}
+		
+		throw unsupportedVariableType(var);
 	}
 
 	/**
@@ -75,4 +81,9 @@ public class SFactorGraph  extends SFactorGraphBase<ISolverFactor,ISolverVariabl
 	{
 	}
 
+	@Override
+	protected String getSolverName()
+	{
+		return "template";
+	}
 }

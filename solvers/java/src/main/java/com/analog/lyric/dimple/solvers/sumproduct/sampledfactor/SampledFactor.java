@@ -18,6 +18,9 @@ package com.analog.lyric.dimple.solvers.sumproduct.sampledfactor;
 
 import static java.util.Objects.*;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
@@ -26,8 +29,6 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * @author jeff
@@ -104,7 +105,7 @@ public class SampledFactor extends SFactorBase
 	@Override
 	public void doUpdateEdge(int outPortNum)
 	{
-		int numSiblings = _factor.getSiblingCount();
+		int numSiblings = _model.getSiblingCount();
 		
 		// Set inputs of the message-graph variables to the incoming message value; all except the output variable
 		for (int edge = 0; edge < numSiblings; edge++)
@@ -201,7 +202,7 @@ public class SampledFactor extends SFactorBase
 	@Override
 	public void createMessages()
 	{
-		final Factor factor = _factor;
+		final Factor factor = _model;
 		for (int i = 0, nVars = factor.getSiblingCount(); i < nVars; i++)
 		{
 			ISolverVariable var = requireNonNull(factor.getSibling(i).getSolver());

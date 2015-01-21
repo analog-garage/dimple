@@ -244,7 +244,7 @@ public class ParticleBPRealFactor extends SFactorBase
 	@Override
 	public void createMessages()
 	{
-		final Factor factor = _factor;
+		final Factor factor = _model;
 		_numPorts = factor.getSiblingCount();
     	_inPortMsgs = new double[_numPorts][];
     	_outMsgArray = new double[_numPorts][];

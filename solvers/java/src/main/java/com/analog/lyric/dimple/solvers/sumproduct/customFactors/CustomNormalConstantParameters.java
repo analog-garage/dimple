@@ -52,7 +52,7 @@ public class CustomNormalConstantParameters extends GaussianFactorBase
 		super.initialize();
 		
 		// Pre-compute output message
-		FactorFunction factorFunction = _factor.getFactorFunction();
+		FactorFunction factorFunction = _model.getFactorFunction();
 		Normal specificFactorFunction = (Normal)factorFunction.getContainedFactorFunction(); 	// In case it's wrapped
 
 		NormalParameters outputMessage;

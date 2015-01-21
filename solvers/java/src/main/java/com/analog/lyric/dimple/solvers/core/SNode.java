@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.solvers.core;
 
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.events.IDimpleEventListener;
 import com.analog.lyric.dimple.events.SolverEvent;
 import com.analog.lyric.dimple.events.SolverEventSource;
@@ -25,9 +27,8 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import org.eclipse.jdt.annotation.Nullable;
 
-public abstract class SNode extends SolverEventSource implements ISolverNode
+public abstract class SNode<MNode extends Node> extends SolverEventSource implements ISolverNode
 {
 	/*-----------
 	 * Constants
@@ -53,13 +54,13 @@ public abstract class SNode extends SolverEventSource implements ISolverNode
 	 * State
 	 */
 
-	private final Node _model;
+	protected final MNode _model;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	public SNode(Node n)
+	public SNode(MNode n)
 	{
 		_model = n;
 	}
@@ -73,7 +74,7 @@ public abstract class SNode extends SolverEventSource implements ISolverNode
 	 */
 	
 	@Override
-	public Node getModelObject()
+	public MNode getModelObject()
     {
     	return _model;
     }

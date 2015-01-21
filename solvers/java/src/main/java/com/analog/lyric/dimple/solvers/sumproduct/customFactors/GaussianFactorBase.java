@@ -47,7 +47,7 @@ public abstract class GaussianFactorBase extends SFactorBase
 	@Override
 	public void createMessages()
 	{
-		final Factor factor = _factor;
+		final Factor factor = _model;
 		final int nVars = factor.getSiblingCount();
 		
 	    final NormalParameters[] inputMsgs = _inputMsgs = new NormalParameters[nVars];

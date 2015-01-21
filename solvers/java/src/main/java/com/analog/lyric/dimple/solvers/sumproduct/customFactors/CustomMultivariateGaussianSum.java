@@ -58,7 +58,7 @@ public class CustomMultivariateGaussianSum extends MultivariateGaussianFactorBas
 				mean[i] = -_constantSum[i];		// For summands, use negative of constant sum
 
 		
-		for (int i = 0, end = _factor.getSiblingCount(); i < end; i++ )
+		for (int i = 0, end = _model.getSiblingCount(); i < end; i++ )
 		{
 			if (i != outPortNum)
 			{
@@ -92,7 +92,7 @@ public class CustomMultivariateGaussianSum extends MultivariateGaussianFactorBas
 		super.initialize();
 		
 		// Pre-compute sum associated with any constant edges
-		FactorFunction factorFunction = _factor.getFactorFunction();
+		FactorFunction factorFunction = _model.getFactorFunction();
 		_sumPort = factorFunction.isConstantIndex(_sumIndex) ? -1 : _sumIndex;	// If sum isn't a variable, then set port to invalid value
 		int dimension = _inputMsgs[0].getVectorLength();
 		_constantSum = new double[dimension];	// Assume all zero

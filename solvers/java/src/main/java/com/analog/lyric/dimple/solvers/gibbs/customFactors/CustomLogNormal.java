@@ -168,14 +168,14 @@ public class CustomLogNormal extends GibbsRealFactor implements IRealConjugateFa
 	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
-		FactorFunction factorFunction = _factor.getFactorFunction();
+		FactorFunction factorFunction = _model.getFactorFunction();
 		LogNormal specificFactorFunction = (LogNormal)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 		boolean hasFactorFunctionConstants = factorFunction.hasConstants();
 		boolean hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		List<? extends Variable> siblings = _factor.getSiblings();
+		List<? extends Variable> siblings = _model.getSiblings();
 		_hasConstantMean = false;
 		_hasConstantPrecision = false;
 		_meanParameterPort = NO_PORT;

@@ -38,7 +38,7 @@ public abstract class STableFactorIntArray extends STableFactorBase
 	@Override
 	public void createMessages()
 	{
-		final Factor factor = _factor;
+		final Factor factor = _model;
 		int nVars = factor.getSiblingCount();
 		
 	    _inputMsgs = new int[nVars][];

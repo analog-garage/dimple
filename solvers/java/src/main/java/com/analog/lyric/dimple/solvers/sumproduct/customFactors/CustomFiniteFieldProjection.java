@@ -41,7 +41,7 @@ public class CustomFiniteFieldProjection extends SFiniteFieldFactor
 		if (nVars <= 1)
 			throw new DimpleException("need to specify at least one bit for projection");
 		
-		final int nEdges = _factor.getSiblingCount();
+		final int nEdges = _model.getSiblingCount();
 		
 		//First variable is the FiniteFieldVariable
 		//Other variables should be bits.
@@ -52,7 +52,7 @@ public class CustomFiniteFieldProjection extends SFiniteFieldFactor
 			_portIndex2bitIndex[i] = -1;
 		
 		//get constant value and make sure it's in range
-		FactorFunction ff = _factor.getFactorFunction();
+		FactorFunction ff = _model.getFactorFunction();
 		int [] constIndices = ff.getConstantIndices();
 		Object [] constants = ff.getConstants();
 		if (constIndices.length != 1)

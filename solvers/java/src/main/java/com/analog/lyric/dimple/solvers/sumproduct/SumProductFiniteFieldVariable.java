@@ -20,7 +20,7 @@ import java.util.HashMap;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.FiniteFieldDomain;
-import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.Discrete;
 
 
 /**
@@ -47,7 +47,7 @@ public class SumProductFiniteFieldVariable extends SDiscreteVariable
 	private final LookupTables _tables;
 	private final int _numBits;
 
-	public SumProductFiniteFieldVariable(Variable var)
+	public SumProductFiniteFieldVariable(Discrete var)
 	{
 		super(var);
 		

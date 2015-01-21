@@ -101,7 +101,13 @@ public class DummyFactorGraph extends SFactorGraphBase<ISolverFactor,ISolverVari
 	{
 	}
 
-	public FactorGraphSolverState solverState()
+	@Override
+	protected String getSolverName()
+	{
+		return "Dummy";
+	}
+
+	public FactorGraphSolverState<?,?> solverState()
 	{
 		return _state;
 	}

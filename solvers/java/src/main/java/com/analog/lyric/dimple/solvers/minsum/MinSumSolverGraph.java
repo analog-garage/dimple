@@ -21,13 +21,14 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.Tuple2;
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Xor;
 import com.analog.lyric.dimple.factorfunctions.core.CustomFactorFunctionWrapper;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
@@ -73,7 +74,7 @@ public class MinSumSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVar
 		_damping = getOptionOrDefault(BPOptions.damping);
 		super.initialize();
 		UpdateCostOptimizer optimizer = new UpdateCostOptimizer(_optimizedUpdateAdapter);
-		optimizer.optimize(_factorGraph);
+		optimizer.optimize(_model);
 		for (Factor f : getModelObject().getFactors())
 		{
 			ISolverFactor sf = f.getSolver();
@@ -87,12 +88,14 @@ public class MinSumSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVar
 	
 	@SuppressWarnings("deprecation") // TODO remove when SVariable removed
 	@Override
-	public ISolverVariable createVariable(com.analog.lyric.dimple.model.variables.Variable var)
+	public ISolverVariable createVariable(Variable var)
 	{
-		if (!var.getDomain().isDiscrete())
-			throw new DimpleException("only support discrete variables");
+		if (var instanceof Discrete)
+		{
+			return new SVariable((Discrete)var);
+		}
 		
-		return new SVariable(var);
+		throw unsupportedVariableType(var);
 	}
 
 
@@ -173,6 +176,12 @@ public class MinSumSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVar
 	{
 	}
 
+	@Override
+	protected String getSolverName()
+	{
+		return "min-sum";
+	}
+	
 	private final ISFactorGraphToOptimizedUpdateAdapter _optimizedUpdateAdapter = new SFactorGraphToOptimizedUpdateAdapter(this);
 
 	private static class SFactorGraphToOptimizedUpdateAdapter implements ISFactorGraphToOptimizedUpdateAdapter

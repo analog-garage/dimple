@@ -23,9 +23,8 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
-import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
@@ -47,12 +46,9 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	protected boolean _dampingInUse = false;
     @Nullable private double [][][] _outMessageDerivative;
 
-	public SumProductDiscrete(Variable var)
+	public SumProductDiscrete(Discrete var)
     {
 		super(var);
-		
-		if (!var.getDomain().isDiscrete())
-			throw new DimpleException("only discrete variables supported");
 	}
 		
 	@Override
@@ -65,7 +61,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 
 	public Variable getVariable()
 	{
-		return _var;
+		return _model;
 	}
 	
 	public void setCalculateDerivative(boolean val)
@@ -79,7 +75,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	@Override
 	public double getScore()
 	{
-		if (!_var.hasFixedValue())
+		if (!_model.hasFixedValue())
 			return -Math.log(_input[getGuessIndex()]);
 		else
 			return 0;	// If the value is fixed, ignore the guess
@@ -117,7 +113,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         final double minLog = -100;
         double[] priors = _input;
         int M = priors.length;
-        int D = _var.getSiblingCount();
+        int D = _model.getSiblingCount();
         double maxLog = Double.NEGATIVE_INFINITY;
 
         double[] outMsgs = _outputMessages[outPortNum];
@@ -190,7 +186,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         final double minLog = -100;
         double[] priors = _input;
         int M = priors.length;
-        int D = _var.getSiblingCount();
+        int D = _model.getSiblingCount();
         
         
         //Compute alphas
@@ -291,7 +287,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         final double minLog = -100;
         double[] priors = _input;
         int M = priors.length;
-        int D = _var.getSiblingCount();
+        int D = _model.getSiblingCount();
         double maxLog = Double.NEGATIVE_INFINITY;
 
         
@@ -370,7 +366,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	@Override
 	public double getInternalEnergy()
 	{
-		int domainLength = ((DiscreteDomain)_var.getDomain()).size();
+		int domainLength = _model.getDomain().size();
 		double sum = 0;
 		
 		double [] belief = getBelief();

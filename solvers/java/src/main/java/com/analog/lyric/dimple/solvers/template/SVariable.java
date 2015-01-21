@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.template;
 
 import java.util.Arrays;
 
-import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
 
 /**
@@ -33,7 +33,7 @@ import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
  */
 public class SVariable extends SDiscreteVariableDoubleArray
 {
-	public SVariable(Variable var)
+	public SVariable(Discrete var)
 	{
 		super(var);
 	}

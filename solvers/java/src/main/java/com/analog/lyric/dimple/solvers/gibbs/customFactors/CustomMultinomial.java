@@ -165,7 +165,7 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 		BlockScheduleEntry blockScheduleEntry = new BlockScheduleEntry(blockSampler, nodeList);
 		
 		// Add the block updater to the schedule
-		FactorGraph rootGraph = requireNonNull(_factor.getRootGraph());
+		FactorGraph rootGraph = requireNonNull(_model.getRootGraph());
 		if (rootGraph.hasCustomSchedule())	// If there's a custom schedule
 		{
 			FixedSchedule schedule = (FixedSchedule)rootGraph.getSchedule();	// A custom schedule is a fixed schedule
@@ -185,12 +185,12 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 	
 	private void determineConstantsAndEdges()
 	{
-		FactorFunction factorFunction = _factor.getFactorFunction();
+		FactorFunction factorFunction = _model.getFactorFunction();
 		Multinomial specificFactorFunction = (Multinomial)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 
 		
 		// Pre-determine whether or not the parameters are constant
-		List<? extends Variable> siblings = _factor.getSiblings();
+		List<? extends Variable> siblings = _model.getSiblings();
 		int alphaParameterIndex;
 		int outputMinIndex;
 		_constantN = -1;

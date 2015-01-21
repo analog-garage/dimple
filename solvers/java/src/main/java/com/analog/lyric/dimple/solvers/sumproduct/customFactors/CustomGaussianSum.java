@@ -111,7 +111,7 @@ public class CustomGaussianSum extends GaussianFactorBase
 		super.initialize();
 		
 		// Pre-compute sum associated with any constant edges
-		FactorFunction factorFunction = _factor.getFactorFunction();
+		FactorFunction factorFunction = _model.getFactorFunction();
 		_sumPort = factorFunction.isConstantIndex(_sumIndex) ? -1 : _sumIndex;	// If sum isn't a variable, then set port to invalid value
 		_constantSum = 0;
 		if (factorFunction.hasConstants())

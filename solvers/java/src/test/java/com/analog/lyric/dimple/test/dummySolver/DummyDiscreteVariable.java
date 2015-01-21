@@ -48,7 +48,7 @@ public class DummyDiscreteVariable extends SDiscreteVariableBase
 	
 	public Variable getVariable()
 	{
-		return _var;
+		return _model;
 	}
 
 	public @Nullable Object getDefaultMessage(@Nullable Port port)

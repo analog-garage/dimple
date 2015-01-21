@@ -23,7 +23,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
@@ -44,7 +44,7 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	 * Construction
 	 */
 	
-	public SDiscreteVariableDoubleArray(Variable var)
+	public SDiscreteVariableDoubleArray(Discrete var)
 	{
 		super(var);
 		_input = createDefaultMessage();
@@ -70,7 +70,7 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 		else
 		{
 	    	double[] vals = (double[])input;
-	    	if (vals.length != _var.asDiscreteVariable().getDiscreteDomain().size())
+	    	if (vals.length != _model.asDiscreteVariable().getDiscreteDomain().size())
 	    		throw new DimpleException("length of priors does not match domain");
 	    	
 	    	_input = vals;
@@ -88,7 +88,7 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	public Object[] createMessages(ISolverFactor factor)
 	{
 		//Retrieve the variable port associated with this factor
-		int portNum = _var.getPortNum(Objects.requireNonNull(factor.getModelObject()));
+		int portNum = _model.getPortNum(Objects.requireNonNull(factor.getModelObject()));
 		
 		//Resize the message arrays if necessary.
 		int newArraySize = getSiblingCount();
@@ -161,7 +161,7 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	public double [] createDefaultMessage()
 	{
 		//TODO: both variable and factor do this.  Why doesn't factor just ask variable?
-		int domainLength = _var.asDiscreteVariable().getDiscreteDomain().size();
+		int domainLength = _model.asDiscreteVariable().getDiscreteDomain().size();
     	double[] retVal = new double[domainLength];
     	return resetInputMessage(retVal);
     }

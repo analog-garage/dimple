@@ -16,7 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
-import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.RealJoint;
+
 
 /**
  * @deprecated Use {@link SumProductRealJoint} instead.
@@ -24,7 +25,7 @@ import com.analog.lyric.dimple.model.variables.Variable;
 @Deprecated
 public class SRealJointVariable extends SumProductRealJoint
 {
-	public SRealJointVariable(Variable var)
+	public SRealJointVariable(RealJoint var)
 	{
 		super(var);
 	}

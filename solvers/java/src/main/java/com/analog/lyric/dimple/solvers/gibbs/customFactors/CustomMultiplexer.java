@@ -110,7 +110,7 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 			GibbsReal outputVariable = ((GibbsReal)_outputVariable);
 			List<Factor> outputNeighboringFactors = new ArrayList<Factor>();
 			for (Factor n : outputVariable.getModelObject().getSiblings())
-				if (!n.equals(_factor))		// Don't include this factor to test conjugacy
+				if (!n.equals(_model))		// Don't include this factor to test conjugacy
 					outputNeighboringFactors.add(n);
 			availableSamplers.addAll(outputVariable.findConjugateSamplerFactories(outputNeighboringFactors));
 		}
@@ -132,7 +132,7 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 			GibbsRealJoint outputVariable = ((GibbsRealJoint)_outputVariable);
 			List<Factor> outputNeighboringFactors = new ArrayList<Factor>();
 			for (Factor n : outputVariable.getModelObject().getSiblings())
-				if (!n.equals(_factor))		// Don't include this factor to test conjugacy
+				if (!n.equals(_model))		// Don't include this factor to test conjugacy
 					outputNeighboringFactors.add(n);
 			availableSamplers.addAll(outputVariable.findConjugateSamplerFactories(outputNeighboringFactors));
 		}
@@ -155,8 +155,8 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 		final ISampler[] conjugateSampler = _conjugateSampler = new ISampler[_numPorts];
 		for (int port = 0; port < _numPorts; port++)
 		{
-			INode var = _factor.getSibling(port);
-			int varPortNum = _factor.getSiblingPortIndex(port);
+			INode var = _model.getSibling(port);
+			int varPortNum = _model.getSiblingPortIndex(port);
 			if (var instanceof Real)
 			{
 				GibbsReal svar = (GibbsReal)var.getSolver();
@@ -195,7 +195,7 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 		final int[] inputPortMap = _inputPortMap = new int[numInputEdges];
 		if (_hasFactorFunctionConstants)
 		{
-			FactorFunction factorFunction = _factor.getFactorFunction();
+			FactorFunction factorFunction = _model.getFactorFunction();
 			int numConstants = factorFunction.getConstantIndices().length;
 			
 			int numIndices = _numPorts + numConstants;
@@ -226,7 +226,7 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
-		FactorFunction factorFunction = _factor.getFactorFunction();
+		FactorFunction factorFunction = _model.getFactorFunction();
 		Multiplexer specificFactorFunction = (Multiplexer)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 		_hasFactorFunctionConstants = factorFunction.hasConstants();
 		if (specificFactorFunction.hasSmoothing())
@@ -245,10 +245,10 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 		_selectorConstantValue = -1;
 		
 		_outputPortNumber = factorFunction.getEdgeByIndex(OUTPUT_INDEX);	// Must be a variable if not returned already
-		ISolverVariable outputVariable = _factor.getSibling(_outputPortNumber).getSolver();
+		ISolverVariable outputVariable = _model.getSibling(_outputPortNumber).getSolver();
 		if (outputVariable instanceof ISolverRealVariableGibbs)
 			_outputVariable = (ISolverRealVariableGibbs)outputVariable;
-		_outputVariableSiblingPortIndex = _factor.getSiblingPortIndex(_outputPortNumber);
+		_outputVariableSiblingPortIndex = _model.getSiblingPortIndex(_outputPortNumber);
 
 		_hasConstantSelector = factorFunction.isConstantIndex(SELECTOR_INDEX);
 		if (_hasConstantSelector)
@@ -259,7 +259,7 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 		else
 		{
 			_selectorPortNumber = factorFunction.getEdgeByIndex(SELECTOR_INDEX);
-			_selectorVariable = (GibbsDiscrete)(_factor.getSibling(_selectorPortNumber).getSolver());
+			_selectorVariable = (GibbsDiscrete)(_model.getSibling(_selectorPortNumber).getSolver());
 			_firstInputPortNumber = FIRST_INPUT_PORT_INDEX;
 		}
 	}

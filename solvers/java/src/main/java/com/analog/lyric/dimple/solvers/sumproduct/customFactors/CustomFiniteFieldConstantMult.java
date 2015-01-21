@@ -41,7 +41,7 @@ public class CustomFiniteFieldConstantMult extends SFiniteFieldFactor
 	{
 		super(factor);
 		
-		FactorFunction ff = _factor.getFactorFunction();
+		FactorFunction ff = _model.getFactorFunction();
 		int [] constIndices = ff.getConstantIndices();
 		Object [] constants = ff.getConstants();
 		if (constIndices.length != 1)

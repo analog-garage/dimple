@@ -51,8 +51,8 @@ public class CustomMultivariateGaussianProduct extends MultivariateGaussianFacto
 			throw new DimpleException("Expect matrix to be second arg");
 		
 		
-		Variable a = _factor.getSibling(0);
-		Variable b = _factor.getSibling(1);
+		Variable a = _model.getSibling(0);
+		Variable b = _model.getSibling(1);
 		
 		if (a.getDomain().isDiscrete() || b.getDomain().isDiscrete())
 			throw new DimpleException("Variables must be reals");

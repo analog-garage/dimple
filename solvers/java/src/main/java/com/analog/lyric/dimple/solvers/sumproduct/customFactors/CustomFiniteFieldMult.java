@@ -96,7 +96,7 @@ public class CustomFiniteFieldMult extends SFiniteFieldFactor
 	public void updateBackward(double [] yInput,double [] zInput, double [] xOutput)
 	{
 		@SuppressWarnings("null")
-		final LookupTables tables = ((SFiniteFieldVariable)_factor.getSibling(0).getSolver()).getTables();
+		final LookupTables tables = ((SFiniteFieldVariable)_model.getSibling(0).getSolver()).getTables();
 		int [] dlogTable = tables.getDlogTable();
 		int [] powTable = tables.getPowerTable();
 
@@ -166,7 +166,7 @@ public class CustomFiniteFieldMult extends SFiniteFieldFactor
 
 		
 		@SuppressWarnings("null")
-		final LookupTables tables = ((SumProductFiniteFieldVariable)_factor.getSibling(0).getSolver()).getTables();
+		final LookupTables tables = ((SumProductFiniteFieldVariable)_model.getSibling(0).getSolver()).getTables();
 		int [] dlogTable = tables.getDlogTable();
 		int [] powTable = tables.getPowerTable();
 		

@@ -25,7 +25,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Normal;
-import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -46,7 +46,7 @@ public class SumProductReal extends SRealVariableBase
 	private NormalParameters[] _inputMsgs = new NormalParameters[0];
 	private NormalParameters[] _outputMsgs = new NormalParameters[0];
     
-	public SumProductReal(Variable var)
+	public SumProductReal(Real var)
     {
 		super(var);
 	}
@@ -93,13 +93,13 @@ public class SumProductReal extends SRealVariableBase
     	final NormalParameters input = _input;
 
     	// If fixed value, just return the input, which has been set to a zero-variance message
-    	if (_var.hasFixedValue())
+    	if (_model.hasFixedValue())
     	{
         	_outputMsgs[outPortNum].set(Objects.requireNonNull(input));
         	return;
     	}
     	
-    	final int nEdges = _var.getSiblingCount();
+    	final int nEdges = _model.getSiblingCount();
     	
     	double mu = 0;
     	double tau = 0;
@@ -178,7 +178,7 @@ public class SumProductReal extends SRealVariableBase
     	final NormalParameters input = _input;
 
     	// If fixed value, just return the input, which has been set to a zero-variance message
-    	if (_var.hasFixedValue())
+    	if (_model.hasFixedValue())
     		return requireNonNull(input).clone();
     	
     	double mu = 0;
@@ -267,7 +267,7 @@ public class SumProductReal extends SRealVariableBase
 	@Override
 	public Object[] createMessages(ISolverFactor factor)
 	{
-		int portNum = _var.getPortNum(Objects.requireNonNull(factor.getModelObject()));
+		int portNum = _model.getPortNum(Objects.requireNonNull(factor.getModelObject()));
 		int newArraySize = Math.max(_inputMsgs.length,portNum + 1);
 		_inputMsgs = Arrays.copyOf(_inputMsgs,newArraySize);
 		_inputMsgs[portNum] = createDefaultMessage();

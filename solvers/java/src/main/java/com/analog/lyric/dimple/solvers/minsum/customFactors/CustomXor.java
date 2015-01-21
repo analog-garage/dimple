@@ -172,7 +172,7 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 	@Override
 	public void createMessages()
 	{
-		final Factor factor = _factor;
+		final Factor factor = _model;
 		int nVars = factor.getSiblingCount();
 		
 	    _inPortMsgs = new double[nVars][];
@@ -212,11 +212,11 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 	{
 		super.initialize();
 		
-		_numPorts = _factor.getSiblingCount();
+		_numPorts = _model.getSiblingCount();
 		
 		// Pre-compute parity associated with any constant edges
 		_constantParity = 1;
-		FactorFunction factorFunction = _factor.getFactorFunction();
+		FactorFunction factorFunction = _model.getFactorFunction();
 		if (factorFunction.hasConstants())
 		{
 			Object[] constantValues = factorFunction.getConstants();

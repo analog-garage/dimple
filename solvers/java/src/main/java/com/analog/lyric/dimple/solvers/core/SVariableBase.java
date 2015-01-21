@@ -30,7 +30,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
-public abstract class SVariableBase extends SNode implements ISolverVariable
+public abstract class SVariableBase<MVariable extends Variable> extends SNode<MVariable> implements ISolverVariable
 {
 	/*-----------
 	 * Constants
@@ -42,32 +42,19 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	@SuppressWarnings("hiding")
 	protected static final int RESERVED_FLAGS = 0xFFF00000;
 	
-	/*-------
-	 * State
-	 */
-	
-	protected Variable _var;
-	
 	/*--------------
 	 * Construction
 	 */
 	
-	public SVariableBase(Variable var)
+	public SVariableBase(MVariable var)
 	{
 		super(var);
-		_var = var;
 	}
 	
 	/*---------------------
 	 * ISolverNode methods
 	 */
 
-	@Override
-	public Variable getModelObject()
-	{
-		return _var;
-	}
-	
 	@Override
 	public ISolverFactor getSibling(int edge)
 	{
@@ -87,7 +74,7 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	public @Nullable ISolverFactorGraph getParentGraph()
 	{
 		ISolverFactorGraph graph = null;
-		FactorGraph mgraph = _var.getParentGraph();
+		FactorGraph mgraph = _model.getParentGraph();
 		if(mgraph != null)
 		{
 			graph = mgraph.getSolver();
@@ -99,7 +86,7 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	public @Nullable ISolverFactorGraph getRootGraph()
 	{
 		ISolverFactorGraph graph = null;
-		FactorGraph mgraph = _var.getRootGraph();
+		FactorGraph mgraph = _model.getRootGraph();
 		if(mgraph != null)
 		{
 			graph = mgraph.getSolver();

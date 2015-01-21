@@ -31,7 +31,7 @@ import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorBase;
 import com.analog.lyric.dimple.model.values.RealValue;
-import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
@@ -69,17 +69,14 @@ public class ParticleBPReal extends SRealVariableBase
 
 
 
-	public ParticleBPReal(Variable var)
+	public ParticleBPReal(Real var)
 	{
 		super(var);
-
-		if (!(var.getDomain() instanceof RealDomain))
-			throw new DimpleException("Expected real domain");
 
 		// Since numParticles is used to configure the message sizes, we set this at construction
 		// time to make it less likely that the messages will have to be recreated at initialize time.
 		_numParticles = getOptionOrDefault(ParticleBPOptions.numParticles);
-		_initialParticleDomain = _domain = (RealDomain)var.getDomain();
+		_initialParticleDomain = _domain = var.getDomain();
 		_particleValues = new Double[_numParticles];
 		_logWeight = new double[_numParticles];
 	}
@@ -122,7 +119,7 @@ public class ParticleBPReal extends SRealVariableBase
 	{
 		final double minLog = -100;
 		int M = _numParticles;
-		int D = _var.getSiblingCount();
+		int D = _model.getSiblingCount();
 		double maxLog = Double.NEGATIVE_INFINITY;
 
 
@@ -173,7 +170,7 @@ public class ParticleBPReal extends SRealVariableBase
 	{
 		final double minLog = -100;
 		int M = _numParticles;
-		int D = _var.getSiblingCount();
+		int D = _model.getSiblingCount();
 
 		final FactorFunction input = _input;
 		
@@ -238,8 +235,8 @@ public class ParticleBPReal extends SRealVariableBase
 
 	public void resample()
 	{
-		int numPorts = _var.getSiblingCount();
-		Domain varDomain = _var.getDomain();
+		int numPorts = _model.getSiblingCount();
+		Domain varDomain = _model.getDomain();
 		double _lowerBound = _domain.getLowerBound();
 		double _upperBound = _domain.getUpperBound();
 		int M = _numParticles;
@@ -268,10 +265,10 @@ public class ParticleBPReal extends SRealVariableBase
 
 			for (int portIndex = 0; portIndex < numPorts; portIndex++)
 			{
-				Factor factorNode = _var.getSibling(portIndex);
+				Factor factorNode = _model.getSibling(portIndex);
 				int factorPortNumber = 0;
 				try {
-					factorPortNumber = factorNode.getPortNum(_var);
+					factorPortNumber = factorNode.getPortNum(_model);
 				}
 				catch (Exception e)
 				{
@@ -301,9 +298,9 @@ public class ParticleBPReal extends SRealVariableBase
 
 					for (int portIndex = 0; portIndex < numPorts; portIndex++)
 					{
-						Factor factorNode = requireNonNull(_var.getSibling(portIndex));
+						Factor factorNode = requireNonNull(_model.getSibling(portIndex));
 						int factorPortNumber = 0;
-						try {factorPortNumber = factorNode.getPortNum(_var);} catch (Exception e) {e.printStackTrace(); System.exit(1);}
+						try {factorPortNumber = factorNode.getPortNum(_model);} catch (Exception e) {e.printStackTrace(); System.exit(1);}
 						ParticleBPRealFactor factor = (ParticleBPRealFactor)(factorNode.requireSolver("resample"));
 						potentialProposed += factor.getMarginalPotential(proposalValue, factorPortNumber);
 					}
@@ -332,9 +329,9 @@ public class ParticleBPReal extends SRealVariableBase
 			// Update the incoming messages for the new particle value
 			for (int d = 0; d < numPorts; d++)
 			{
-				Factor factorNode = requireNonNull(_var.getSibling(d));
+				Factor factorNode = requireNonNull(_model.getSibling(d));
 				int factorPortNumber = 0;
-				try {factorPortNumber = factorNode.getPortNum(_var);} catch (Exception e) {e.printStackTrace(); System.exit(1);}
+				try {factorPortNumber = factorNode.getPortNum(_model);} catch (Exception e) {e.printStackTrace(); System.exit(1);}
 				ParticleBPRealFactor factor = (ParticleBPRealFactor)(factorNode.requireSolver("resample"));
 				_inPortMsgs[d][m] = Math.exp(factor.getMarginalPotential(sampleValue, factorPortNumber));
 			}
@@ -356,7 +353,7 @@ public class ParticleBPReal extends SRealVariableBase
 	{
 		final double minLog = -100;
 		int M = _numParticles;
-		int D = _var.getSiblingCount();
+		int D = _model.getSiblingCount();
 		double maxLog = Double.NEGATIVE_INFINITY;
 
 		final FactorFunction input = _input;
@@ -403,7 +400,7 @@ public class ParticleBPReal extends SRealVariableBase
 	{
 		final double minLog = -100;
 		int M = valueSet.length;
-		int D = _var.getSiblingCount();
+		int D = _model.getSiblingCount();
 		double maxLog = Double.NEGATIVE_INFINITY;
 
 		final FactorFunction input = _input;
@@ -419,8 +416,8 @@ public class ParticleBPReal extends SRealVariableBase
 
 			for (int d = 0; d < D; d++)
 			{
-				FactorBase factorNode = _var.getSibling(d);
-				int factorPortNumber = factorNode.getPortNum(_var);
+				FactorBase factorNode = _model.getSibling(d);
+				int factorPortNumber = factorNode.getPortNum(_model);
 				ParticleBPRealFactor factor = requireNonNull((ParticleBPRealFactor)(factorNode.getSolver()));
 				out -= factor.getMarginalPotential(value, factorPortNumber);	// Potential is -log(p)
 			}
@@ -463,7 +460,7 @@ public class ParticleBPReal extends SRealVariableBase
 		if (numParticles != _numParticles)
 		{
 			_numParticles = numParticles;
-			for (Factor factor : _var.getFactors())
+			for (Factor factor : _model.getFactors())
 				factor.requireSolver("setNumParticles").createMessages();
 		}
 	}
@@ -579,7 +576,7 @@ public class ParticleBPReal extends SRealVariableBase
 		Arrays.fill(_particleValues, 0.0);
 		_logWeight = new double[_numParticles];
 
-		int portNum = _var.getPortNum(Objects.requireNonNull(factor.getModelObject()));
+		int portNum = _model.getPortNum(Objects.requireNonNull(factor.getModelObject()));
 		int numPorts = Math.max(_inPortMsgs.length, portNum+1);
 		
 		_inPortMsgs = Arrays.copyOf(_inPortMsgs,numPorts);

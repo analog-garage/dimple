@@ -102,13 +102,13 @@ public class CustomBeta extends GibbsRealFactor implements IRealConjugateFactor
 	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
-		FactorFunction factorFunction = _factor.getFactorFunction();
+		FactorFunction factorFunction = _model.getFactorFunction();
 		Beta specificFactorFunction = (Beta)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		List<? extends Variable> siblings = _factor.getSiblings();
+		List<? extends Variable> siblings = _model.getSiblings();
 		_hasConstantAlpha = false;
 		_hasConstantBeta = false;
 		_alphaParameterPort = NO_PORT;

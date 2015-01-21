@@ -113,19 +113,19 @@ public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFac
 		determineConstantsAndEdges();
 		
 		// Create a block initializer to initialize the neighboring variables
-		((GibbsSolverGraph)_factor.getRootGraph().getSolver()).addBlockInitializer(new CustomBinomial.BlockInitializer());
+		((GibbsSolverGraph)_model.getRootGraph().getSolver()).addBlockInitializer(new CustomBinomial.BlockInitializer());
 	}
 	
 	
 	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
-		FactorFunction factorFunction = _factor.getFactorFunction();
+		FactorFunction factorFunction = _model.getFactorFunction();
 		Binomial specificFactorFunction = (Binomial)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		List<? extends Variable> siblings = _factor.getSiblings();
+		List<? extends Variable> siblings = _model.getSiblings();
 		_hasConstantNParameter = false;
 		_hasConstantOutput = false;
 		_constantNParameterValue = -1;

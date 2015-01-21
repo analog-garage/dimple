@@ -47,7 +47,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable extends ISolverVariable>
-	extends SNode
+	extends SNode<FactorGraph>
 	implements IParameterizedSolverFactorGraph<SFactor, SVariable>
 {
 	/**
@@ -56,7 +56,6 @@ public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable 
 	@SuppressWarnings("hiding")
 	protected static final int RESERVED_FLAGS = 0xFFFF0000;
 	
-	protected final FactorGraph _factorGraph;
 	protected int _numIterations = 1;		// Default number of iterations unless otherwise specified
 	private @Nullable MultiThreadingManager _multithreader; // = new MultiThreadingManager();
 	private boolean _useMultithreading = false;
@@ -70,7 +69,6 @@ public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable 
 	public SFactorGraphBase(FactorGraph fg)
 	{
 		super(fg);
-		_factorGraph = fg;
 		_state = new FactorGraphSolverState<>(fg, this);
 	}
 
@@ -90,15 +88,9 @@ public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable 
 	
 	public FactorGraph getModel()
 	{
-		return _factorGraph;
+		return _model;
 	}
 	
-	@Override
-	public FactorGraph getModelObject()
-	{
-		return _factorGraph;
-	}
-
 	/*----------------------------
 	 * ISolverFactorGraph methods
 	 */
@@ -222,8 +214,8 @@ public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable 
 	public void moveMessages(ISolverNode other)
 	{
 		SFactorGraphBase<?,?> sother = (SFactorGraphBase<?,?>)other;
-		FactorList otherFactors = sother._factorGraph.getFactors();
-		FactorList myFactors = _factorGraph.getFactors();
+		FactorList otherFactors = sother._model.getFactors();
+		FactorList myFactors = _model.getFactors();
 		
 		if (otherFactors.size() != myFactors.size())
 			throw new DimpleException("Graphs dont' match");
@@ -234,8 +226,8 @@ public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable 
 			sf.moveMessages(Objects.requireNonNull(otherFactors.getByIndex(i).getSolver()));
 		}
 		
-		VariableList myVars = _factorGraph.getVariablesFlat();
-		VariableList otherVars = sother._factorGraph.getVariablesFlat();
+		VariableList myVars = _model.getVariablesFlat();
+		VariableList otherVars = sother._model.getVariablesFlat();
 		
 		for (int i = 0; i < myVars.size(); i++)
 		{
@@ -282,7 +274,7 @@ public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable 
 	@Override
 	public void update()
 	{
-		for (IScheduleEntry entry : _factorGraph.getSchedule())
+		for (IScheduleEntry entry : _model.getSchedule())
 		{
 			entry.update();
 		}
@@ -335,7 +327,7 @@ public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable 
 	public void solve()
 	{
 			
-		_factorGraph.initialize();
+		_model.initialize();
 		
 		solveOneStep();
 		continueSolve();
@@ -347,8 +339,8 @@ public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable 
 	{
 		
 		int i = 0;
-		int maxSteps = _factorGraph.getNumSteps();
-		boolean infinite = _factorGraph.getNumStepsInfinite();
+		int maxSteps = _model.getNumSteps();
+		boolean infinite = _model.getNumStepsInfinite();
 		
 		while (getModel().hasNext())
 		{
@@ -367,7 +359,7 @@ public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable 
 	public @Nullable ISolverFactorGraph getParentGraph()
 	{
 		ISolverFactorGraph graph = null;
-		FactorGraph mgraph = _factorGraph.getParentGraph();
+		FactorGraph mgraph = _model.getParentGraph();
 		if(mgraph != null)
 		{
 			graph = mgraph.getSolver();
@@ -377,7 +369,7 @@ public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable 
 	@Override
 	public @Nullable ISolverFactorGraph getRootGraph()
 	{
-		return _factorGraph.getRootGraph().getSolver();
+		return _model.getRootGraph().getSolver();
 	}
 
 	@Override
@@ -406,11 +398,11 @@ public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable 
 		double sum = 0;
 		
 		// Sum up factor entropy
-		for (Factor f : _factorGraph.getFactors())
+		for (Factor f : _model.getFactors())
 			sum += f.getBetheEntropy();
 		
 		// The following would be unnecessary if we implemented inputs as single node factors
-		for (Variable v : _factorGraph.getVariablesFlat())
+		for (Variable v : _model.getVariablesFlat())
 			sum -= v.getBetheEntropy() * (v.getSiblingCount() - 1);
 		
 		return sum;
@@ -441,11 +433,11 @@ public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable 
 		double sum = 0;
 		
 		//Sum up factor internal energy
-		for (Factor f : _factorGraph.getFactors())
+		for (Factor f : _model.getFactors())
 			sum += f.getInternalEnergy();
 		
 		//The following would be unnecessary if we implemented inputs as single node factors
-		for (Variable v : _factorGraph.getVariablesFlat())
+		for (Variable v : _model.getVariablesFlat())
 			sum += v.getInternalEnergy();
 		
 		return sum;
@@ -647,7 +639,7 @@ public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable 
 		_numIterations = getOptionOrDefault(BPOptions.iterations);
 		_useMultithreading = getOptionOrDefault(SolverOptions.enableMultithreading);
 		
-		FactorGraph fg = _factorGraph;
+		FactorGraph fg = _model;
 		for (Variable variable : fg.getOwnedVariables())
 		{
 			variable.requireSolver("initialize").initialize();
@@ -734,5 +726,21 @@ public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable 
 	public boolean checkAllEdgesAreIncludedInSchedule()
 	{
 		return true;	// By default assume all edges must be included unless told otherwise; TODO: should this be the default?
+	}
+	
+	/*--------------------------
+	 * Protected helper methods
+	 */
+
+	/**
+	 * Description name for solver for use in error messages.
+	 * @since 0.08
+	 */
+	abstract protected String getSolverName();
+	
+	protected DimpleException unsupportedVariableType(Variable var)
+	{
+		return new DimpleException("'%s' solver does not support %s variables",
+			getSolverName(), var.getClass().getSimpleName());
 	}
 }

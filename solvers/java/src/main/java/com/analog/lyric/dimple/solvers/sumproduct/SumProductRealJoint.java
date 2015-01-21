@@ -24,8 +24,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.MultivariateNormal;
 import com.analog.lyric.dimple.factorfunctions.Normal;
-import com.analog.lyric.dimple.model.domains.RealJointDomain;
-import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.solvers.core.SRealJointVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -44,11 +43,11 @@ public class SumProductRealJoint extends SRealJointVariableBase
 	private MultivariateNormalParameters [] _outputMsgs = new MultivariateNormalParameters[0];
 	private MultivariateNormalParameters [] _inputMsgs = new MultivariateNormalParameters[0];
 
-	public SumProductRealJoint(Variable var)
+	public SumProductRealJoint(RealJoint var)
 	{
 		super(var);
 		
-		_numVars = ((RealJointDomain)_var.getDomain()).getNumVars();
+		_numVars = _model.getDomain().getNumVars();
 	}
 	
 	@Override
@@ -130,7 +129,7 @@ public class SumProductRealJoint extends SRealJointVariableBase
 		final MultivariateNormalParameters input = _input;
 		
     	// If fixed value, just return the input, which has been set to a zero-variance message
-		if (_var.hasFixedValue())
+		if (_model.hasFixedValue())
 		{
 			outMsg.set(Objects.requireNonNull(_input));
 			return;

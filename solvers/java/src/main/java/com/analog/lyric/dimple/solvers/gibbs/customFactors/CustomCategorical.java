@@ -115,13 +115,13 @@ public class CustomCategorical extends GibbsRealFactor implements IRealJointConj
 	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
-		FactorFunction factorFunction = _factor.getFactorFunction();
+		FactorFunction factorFunction = _model.getFactorFunction();
 		Categorical specificFactorFunction = (Categorical)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 		boolean hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 
 		
 		// Pre-determine whether or not the parameters are constant
-		List<? extends Variable> siblings = _factor.getSiblings();
+		List<? extends Variable> siblings = _model.getSiblings();
 		if (hasFactorFunctionConstructorConstants)
 		{
 			// The factor function has fixed parameters provided in the factor-function constructor

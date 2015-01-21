@@ -181,7 +181,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 		BlockScheduleEntry blockScheduleEntry = new BlockScheduleEntry(blockSampler, nodeList);
 		
 		// Add the block updater to the schedule
-		FactorGraph rootGraph = _factor.getRootGraph();
+		FactorGraph rootGraph = _model.getRootGraph();
 		if (rootGraph.hasCustomSchedule())	// If there's a custom schedule
 		{
 			FixedSchedule schedule = (FixedSchedule)rootGraph.getSchedule();	// A custom schedule is a fixed schedule
@@ -201,7 +201,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 	
 	private void determineConstantsAndEdges()
 	{
-		FactorFunction factorFunction = _factor.getFactorFunction();
+		FactorFunction factorFunction = _model.getFactorFunction();
 		FactorFunction containedFactorFunction = factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 		_factorFunction = factorFunction;
 		boolean hasFactorFunctionConstructorConstantN;
@@ -225,7 +225,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 			throw new DimpleException("Invalid factor function");
 		
 		// Pre-determine whether or not the parameters are constant
-		List<? extends Variable> siblings = _factor.getSiblings();
+		List<? extends Variable> siblings = _model.getSiblings();
 		_NVariable = null;
 		_hasConstantOutputs = false;
 		_outputVariables = null;

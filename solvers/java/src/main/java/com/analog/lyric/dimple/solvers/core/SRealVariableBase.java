@@ -21,9 +21,8 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.model.variables.Variable;
 
-public abstract class SRealVariableBase extends SVariableBase
+public abstract class SRealVariableBase extends SVariableBase<Real>
 {
 	/*-----------
 	 * Constants
@@ -46,7 +45,7 @@ public abstract class SRealVariableBase extends SVariableBase
      * Construction
      */
     
-	public SRealVariableBase(Variable var)
+	public SRealVariableBase(Real var)
 	{
 		super(var);
 	}
@@ -57,17 +56,6 @@ public abstract class SRealVariableBase extends SVariableBase
 		super.initialize();
 		setGuess(null);
 	}
-	
-	/*---------------
-	 * INode objects
-	 */
-	
-	@Override
-	public Real getModelObject()
-	{
-		return (Real)_var;
-	}
-
 	
 	/*-------------------------
 	 * ISolverVariable methods
@@ -90,8 +78,8 @@ public abstract class SRealVariableBase extends SVariableBase
 	{
 		if (_guessWasSet)
 			return Double.valueOf(_guessValue);
-		else if (_var.hasFixedValue())		// If there's a fixed value set, use that
-			return ((Real)_var).getFixedValue();
+		else if (_model.hasFixedValue())		// If there's a fixed value set, use that
+			return _model.getFixedValue();
 		else
 			return getValue();
 	}
@@ -115,7 +103,7 @@ public abstract class SRealVariableBase extends SVariableBase
 				throw new DimpleException("Guess is not a value type (must be Double or Integer)");
 
 			// Make sure the number is within the domain of the variable
-			if (!_var.getDomain().inDomain(_guessValue))
+			if (!_model.getDomain().inDomain(_guessValue))
 				throw new DimpleException("Guess is not within the domain of the variable");
 
 			_guessWasSet = true;

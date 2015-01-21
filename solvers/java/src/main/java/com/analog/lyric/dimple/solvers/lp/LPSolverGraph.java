@@ -124,12 +124,6 @@ public class LPSolverGraph extends SFactorGraphBase<LPTableFactor, LPDiscrete>
 	 */
 	
 	@Override
-	public FactorGraph getModelObject()
-	{
-		return super.getModelObject();
-	}
-	
-	@Override
 	public void initialize()
 	{
 		super.initialize();
@@ -468,6 +462,12 @@ public class LPSolverGraph extends SFactorGraphBase<LPTableFactor, LPDiscrete>
 	public void moveMessages(ISolverNode other)
 	{
 		throw unsupported("moveMessages");
+	}
+
+	@Override
+	protected String getSolverName()
+	{
+		return "LP";
 	}
 
 	/*-------------------------

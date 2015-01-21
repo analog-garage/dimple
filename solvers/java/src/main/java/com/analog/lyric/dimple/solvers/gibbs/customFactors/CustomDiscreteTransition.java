@@ -120,7 +120,7 @@ public class CustomDiscreteTransition extends GibbsRealFactor implements IRealJo
 	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
-		FactorFunction factorFunction = _factor.getFactorFunction();
+		FactorFunction factorFunction = _model.getFactorFunction();
 		_factorFunction = factorFunction;
 
 		
@@ -133,7 +133,7 @@ public class CustomDiscreteTransition extends GibbsRealFactor implements IRealJo
 		_constantXValue = -1;
 		_yDimension = 1;
 		_startingParameterEdge = 0;
-		List<? extends Variable> siblings = _factor.getSiblings();
+		List<? extends Variable> siblings = _model.getSiblings();
 
 		_hasConstantY = factorFunction.isConstantIndex(Y_INDEX);
 		if (_hasConstantY)

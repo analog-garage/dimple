@@ -61,7 +61,7 @@ import com.analog.lyric.dimple.test.DimpleTestBase;
  */
 public class TestSNode extends DimpleTestBase
 {
-	private static class TestNode extends SNode
+	private static class TestNode extends SNode<Node>
 	{
 		private @Nullable ISolverFactorGraph _parent = null;
 		private boolean _supportsMessageEvents = false;

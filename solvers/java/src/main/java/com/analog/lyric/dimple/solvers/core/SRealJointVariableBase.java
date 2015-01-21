@@ -22,18 +22,17 @@ import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.variables.RealJoint;
-import com.analog.lyric.dimple.model.variables.Variable;
 
 /**
  * @since 0.05
  */
-public abstract class SRealJointVariableBase extends SVariableBase
+public abstract class SRealJointVariableBase extends SVariableBase<RealJoint>
 {
 	protected double[] _guessValue = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	protected boolean _guessWasSet = false;
 
     
-	public SRealJointVariableBase(Variable var)
+	public SRealJointVariableBase(RealJoint var)
 	{
 		super(var);
 	}
@@ -44,17 +43,6 @@ public abstract class SRealJointVariableBase extends SVariableBase
 		super.initialize();
 		setGuess(null);
 	}
-	
-	/*---------------
-	 * INode objects
-	 */
-	
-	@Override
-	public RealJoint getModelObject()
-	{
-		return (RealJoint)_var;
-	}
-
 	
 	/*-------------------------
 	 * ISolverVariable methods
@@ -77,8 +65,8 @@ public abstract class SRealJointVariableBase extends SVariableBase
 	{
 		if (_guessWasSet)
 			return _guessValue;
-		else if (_var.hasFixedValue())		// If there's a fixed value set, use that
-			return ((RealJoint)_var).getFixedValue();
+		else if (_model.hasFixedValue())		// If there's a fixed value set, use that
+			return _model.getFixedValue();
 		else
 			return getValue();
 	}
@@ -96,7 +84,7 @@ public abstract class SRealJointVariableBase extends SVariableBase
 			_guessValue = (double[])guess;
 
 			// Make sure the number is within the domain of the variable
-			if (!_var.getDomain().inDomain(_guessValue))
+			if (!_model.getDomain().inDomain(_guessValue))
 				throw new DimpleException("Guess is not within the domain of the variable");
 
 			_guessWasSet = true;

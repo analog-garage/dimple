@@ -124,7 +124,7 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends GibbsRealFa
 	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
-		FactorFunction factorFunction = _factor.getFactorFunction();
+		FactorFunction factorFunction = _model.getFactorFunction();
 		FactorFunction containedFactorFunction = factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 		_factorFunction = factorFunction;
 		boolean hasFactorFunctionConstants = factorFunction.hasConstants();
@@ -147,7 +147,7 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends GibbsRealFa
 			throw new DimpleException("Invalid factor function");
 
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		List<? extends Variable> siblings = _factor.getSiblings();
+		List<? extends Variable> siblings = _model.getSiblings();
 		_numParameterEdges = _parameterDimension;
 		_hasConstantOutputs = false;
 		if (hasFactorFunctionConstructorConstants)

@@ -46,7 +46,7 @@ public abstract class MultivariateGaussianFactorBase extends SFactorBase
 	@Override
 	public void createMessages()
 	{
-		final Factor factor = _factor;
+		final Factor factor = _model;
 		final int nVars = factor.getSiblingCount();
 	    _inputMsgs = new MultivariateNormalParameters[nVars];
 	    _outputMsgs = new MultivariateNormalParameters[nVars];

@@ -61,7 +61,7 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 	{
 		super(factor);
 		_realFactor = factor;
-		_isDeterministicDirected = _factor.getFactorFunction().isDeterministicDirected();
+		_isDeterministicDirected = _model.getFactorFunction().isDeterministicDirected();
 	}
 	
 
@@ -82,7 +82,7 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 	@Override
 	public void updateEdgeMessage(int outPortNum)
 	{
-		INode node = requireNonNull(_factor.getSibling(outPortNum));
+		INode node = requireNonNull(_model.getSibling(outPortNum));
 
 		if (node instanceof Discrete)
 		{
@@ -94,7 +94,7 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 			// This should only be called if this factor is not a deterministic directed factor
 			DiscreteDomain outputVariableDomain = var.getDiscreteDomain();
 			FactorFunction factorFunction = _realFactor.getFactorFunction();
-			int numPorts = _factor.getSiblingCount();
+			int numPorts = _model.getSiblingCount();
 			
 			Object[] values = new Object[numPorts];
 			
@@ -105,7 +105,7 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 			//TODO: these could be cached instead.
 			ISolverVariable svar = var.getSolver();
 			@SuppressWarnings("null")
-			double[] outputMsgs = (double[])svar.getInputMsg(_factor.getSiblingPortIndex(outPortNum));
+			double[] outputMsgs = (double[])svar.getInputMsg(_model.getSiblingPortIndex(outPortNum));
 			
 			@SuppressWarnings("null")
 			int outputMsgLength = outputMsgs.length;
@@ -164,7 +164,7 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 	public void updateNeighborVariableValuesNow(@Nullable Collection<IndexedValue> oldValues)
 	{
 		// Compute the output values of the deterministic factor function from the input values
-		final Factor factor = _factor;
+		final Factor factor = _model;
 		final FactorFunction function = factor.getFactorFunction();
 		int[] directedTo = factor.getDirectedTo();
 
@@ -217,7 +217,7 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 	@Override
 	public void createMessages()
 	{
-		final Factor factor = _factor;
+		final Factor factor = _model;
 		_numPorts = factor.getSiblingCount();
 		final Value[] inputMsgs = _inputMsgs = new Value[_numPorts];
 		_outputsValid = false;

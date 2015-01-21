@@ -23,8 +23,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
-import com.analog.lyric.dimple.model.domains.DiscreteDomain;
-import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergyMessage;
@@ -47,7 +46,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 	protected boolean _dampingInUse = false;
 
 	
-	public MinSumDiscrete(Variable var)
+	public MinSumDiscrete(Discrete var)
 	{
 		super(var);
 	}
@@ -65,7 +64,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 	{
 
 		double[] priors = _input;
-		int numPorts = _var.getSiblingCount();
+		int numPorts = _model.getSiblingCount();
 		int numValue = priors.length;
 
 		// Compute the sum of all messages
@@ -120,7 +119,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 	{
 
 		double[] priors = _input;
-		int numPorts = _var.getSiblingCount();
+		int numPorts = _model.getSiblingCount();
 		int numValue = priors.length;
 
 		// Compute the sum of all messages
@@ -189,7 +188,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		double[] priors = _input;
 		double[] outBelief = new double[priors.length];
 		int numValue = priors.length;
-		int numPorts = _var.getSiblingCount();
+		int numPorts = _model.getSiblingCount();
 
 
 		for (int i = 0; i < numValue; i++)
@@ -208,7 +207,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
 	{
 		if (input == null)
-			_input = MessageConverter.initialValue(((DiscreteDomain)_var.getDomain()).size());
+			_input = MessageConverter.initialValue(_model.getDomain().size());
 		else
 			// Convert from probabilities since that's what the interface provides
 			_input = MessageConverter.fromProb((double[])input);
@@ -218,7 +217,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 	@Override
 	public double getScore()
 	{
-		if (!_var.hasFixedValue())
+		if (!_model.hasFixedValue())
 			return _input[getGuessIndex()];
 		else
 			return 0;	// If the value is fixed, ignore the guess

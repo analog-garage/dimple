@@ -16,7 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
-import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.RealJoint;
+
 
 /**
  * @deprecated Use {@link GibbsRealJoint} instead.
@@ -24,7 +25,7 @@ import com.analog.lyric.dimple.model.variables.Variable;
 @Deprecated
 public class SRealJointVariable extends GibbsRealJoint
 {
-	SRealJointVariable(Variable var)
+	SRealJointVariable(RealJoint var)
 	{
 		super(var);
 	}

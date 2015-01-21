@@ -82,7 +82,7 @@ public class CustomGaussianLinearEquation extends GaussianFactorBase
 		super.initialize();
 		
 		// Pre-compute for any constant edges
-		FactorFunction factorFunction = _factor.getFactorFunction();
+		FactorFunction factorFunction = _model.getFactorFunction();
 		LinearEquation specificFactorFunction = (LinearEquation)factorFunction.getContainedFactorFunction();
 		
 		

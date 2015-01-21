@@ -100,12 +100,6 @@ public class LPDiscrete extends SDiscreteVariableBase
 		return null;
 	}
 
-	@Override
-	public Discrete getModelObject()
-	{
-		return super.getModelObject();
-	}
-	
 	/**
 	 * Returns null.
 	 */

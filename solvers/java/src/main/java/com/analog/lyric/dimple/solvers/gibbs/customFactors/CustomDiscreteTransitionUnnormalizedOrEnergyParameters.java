@@ -140,7 +140,7 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends Gibb
 	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
-		FactorFunction factorFunction = _factor.getFactorFunction();
+		FactorFunction factorFunction = _model.getFactorFunction();
 		FactorFunction containedFactorFunction = factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 		if (containedFactorFunction instanceof DiscreteTransitionUnnormalizedParameters)
 		{
@@ -170,7 +170,7 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends Gibb
 		_constantYValue = -1;
 		_constantXValue = -1;
 		_startingParameterEdge = 0;
-		List<? extends Variable> siblings = _factor.getSiblings();
+		List<? extends Variable> siblings = _model.getSiblings();
 
 		_hasConstantY = factorFunction.isConstantIndex(Y_INDEX);
 		if (_hasConstantY)

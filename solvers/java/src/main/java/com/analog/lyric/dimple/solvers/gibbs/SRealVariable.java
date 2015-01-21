@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
-import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.Real;
 
 /**
  * @deprecated Use {@link GibbsReal} instead.
@@ -24,7 +24,7 @@ import com.analog.lyric.dimple.model.variables.Variable;
 @Deprecated
 public class SRealVariable extends GibbsReal
 {
-	SRealVariable(Variable var)
+	SRealVariable(Real var)
 	{
 		super(var);
 	}

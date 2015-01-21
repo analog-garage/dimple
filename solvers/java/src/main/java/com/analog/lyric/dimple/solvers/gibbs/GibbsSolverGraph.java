@@ -62,6 +62,8 @@ import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.model.variables.Real;
+import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.schedulers.GibbsDefaultScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.IGibbsSchedule;
@@ -156,19 +158,21 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	protected GibbsSolverGraph(FactorGraph factorGraph)
 	{
 		super(factorGraph);
-		_factorGraph.setSolverSpecificDefaultScheduler(new GibbsDefaultScheduler());	// Override the common default scheduler
+		_model.setSolverSpecificDefaultScheduler(new GibbsDefaultScheduler());	// Override the common default scheduler
 	}
 
 	@SuppressWarnings("deprecation")
 	@Override
 	public ISolverVariableGibbs createVariable(Variable var)
 	{
-		if (var.getModelerClassName().equals("RealJoint") || var.getModelerClassName().equals("Complex"))
-			return new SRealJointVariable(var);
-		if (var.getModelerClassName().equals("Real"))
-			return new SRealVariable(var);
-		else
+		if (var instanceof RealJoint)
+			return new SRealJointVariable((RealJoint)var);
+		if (var instanceof Real)
+			return new SRealVariable((Real)var);
+		else if (var instanceof Discrete)
 			return new SDiscreteVariable((Discrete)var);
+		
+		throw unsupportedVariableType(var);
 	}
 	
 	@SuppressWarnings("deprecation") // TODO: remove when SFactorGraph is removed.
@@ -273,9 +277,9 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 		_temperingDecayConstant = 1 - LOG2/getOptionOrDefault(GibbsOptions.annealingHalfLife);
 		
 		// Make sure the schedule is created before factor initialization to allow custom factors to modify the schedule if needed
-		final IGibbsSchedule schedule = _schedule = (IGibbsSchedule)_factorGraph.getSchedule();
+		final IGibbsSchedule schedule = _schedule = (IGibbsSchedule)_model.getSchedule();
 
-		FactorGraph fg = _factorGraph;
+		FactorGraph fg = _model;
 		Map<Node,Integer> nodeOrder = DirectedNodeSorter.orderDirectedNodes(fg);
 		for (Factor factor : fg.getFactors())
 		{
@@ -455,7 +459,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	protected void oneSample()
 	{
 		iterate(_updatesPerSample);
-		for (Variable v : _factorGraph.getVariables())
+		for (Variable v : _model.getVariables())
 		{
 			ISolverVariableGibbs vs = getSolverVariable(v);
 			vs.updateBelief();
@@ -467,7 +471,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 		final boolean wasMininum = totalPotential < _minPotential || _firstSample;
 		if (wasMininum)
 		{
-			for (Variable v : _factorGraph.getVariables())
+			for (Variable v : _model.getVariables())
 				getSolverVariable(v).saveBestSample();
 			_minPotential = totalPotential;
 			_firstSample = false;
@@ -518,7 +522,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	{
 		deferDeterministicUpdates();
 		
-		for (Variable v : _factorGraph.getVariables())
+		for (Variable v : _model.getVariables())
 			getSolverVariable(v).randomRestart(restartCount);
 		
 		final ArrayList<IBlockInitializer> blockInitializers = _blockInitializers;
@@ -552,9 +556,9 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	public double getSampleScore()
 	{
 		double totalPotential = 0;
-		for (Factor f : _factorGraph.getNonGraphFactors())
+		for (Factor f : _model.getNonGraphFactors())
 			totalPotential += requireNonNull(getSolverFactor(f)).getPotential();
-		for (Variable v : _factorGraph.getVariables())		// Variables contribute too because they have inputs, which are factors
+		for (Variable v : _model.getVariables())		// Variables contribute too because they have inputs, which are factors
 			totalPotential += requireNonNull(getSolverVariable(v)).getPotential();
 		return totalPotential;
 	}
@@ -635,7 +639,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 		long rejectCount = 0;
 		
 		// Accumulate the rejection statistics for all variables
-		for (Variable v : _factorGraph.getVariables())
+		for (Variable v : _model.getVariables())
 		{
 			ISolverVariableGibbs variable = requireNonNull(getSolverVariable(v));
 			updateCount += variable.getUpdateCount();
@@ -643,7 +647,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 		}
 		
 		// Accumulate the rejection statistics for any BlockMHSamplers in the schedule
-		ISchedule schedule = _factorGraph.getSchedule();
+		ISchedule schedule = _model.getSchedule();
 		for (IScheduleEntry s : schedule)
 		{
 			if (s instanceof BlockScheduleEntry)
@@ -667,11 +671,11 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	public final void resetRejectionRateStats()
 	{
 		// Reset the rejection statistics for all variables
-		for (Variable v : _factorGraph.getVariables())
+		for (Variable v : _model.getVariables())
 			requireNonNull(getSolverVariable(v)).resetRejectionRateStats();
 		
 		// Reset the rejection statistics for any BlockMHSamplers in the schedule
-		ISchedule schedule = _factorGraph.getSchedule();
+		ISchedule schedule = _model.getSchedule();
 		for (IScheduleEntry s : schedule)
 		{
 			if (s instanceof BlockScheduleEntry)
@@ -690,7 +694,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	{
 		_temperature = T;
 		double beta = 1/T;
-		for (Variable v : _factorGraph.getVariables())
+		for (Variable v : _model.getVariables())
 			getSolverVariable(v).setBeta(beta);
 	}
 	public double getTemperature() {return _temperature;}
@@ -779,7 +783,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 		if (_scansPerSample > 0)
 		{
 			final IGibbsSchedule schedule = _schedule;
-			_updatesPerSample = _scansPerSample * (schedule != null ? schedule.size() : _factorGraph.getVariableCount());
+			_updatesPerSample = _scansPerSample * (schedule != null ? schedule.size() : _model.getVariableCount());
 		}
 	}
 	
@@ -832,7 +836,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 		if (_burnInScans > 0)
 		{
 			final IGibbsSchedule schedule = _schedule;
-			_burnInUpdates = _burnInScans * (schedule != null ? schedule.size() : _factorGraph.getVariableCount());
+			_burnInUpdates = _burnInScans * (schedule != null ? schedule.size() : _model.getVariableCount());
 		}
 	}
 
@@ -958,7 +962,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	// Helpers for operating on pre-specified groups of variables in the graph
 	public double[] getVariableSampleValues(int variableGroupID)
 	{
-		ArrayList<Variable> variableList = _factorGraph.getVariableGroup(variableGroupID);
+		ArrayList<Variable> variableList = _model.getVariableGroup(variableGroupID);
 		if (variableList == null)
 		{
 			return ArrayUtil.EMPTY_DOUBLE_ARRAY;
@@ -981,7 +985,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	public void setAndHoldVariableSampleValues(int variableGroupID, Object[] values) {setAndHoldVariableSampleValues(variableGroupID, (double[])values[0]);}	// Due to the way MATLAB passes objects
 	public void setAndHoldVariableSampleValues(int variableGroupID, double[] values)
 	{
-		ArrayList<Variable> variableList = _factorGraph.getVariableGroup(variableGroupID);
+		ArrayList<Variable> variableList = _model.getVariableGroup(variableGroupID);
 		if (variableList != null)
 		{
 			int numVariables = variableList.size();
@@ -1000,7 +1004,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	}
 	public void holdVariableSampleValues(int variableGroupID)
 	{
-		ArrayList<Variable> variableList = _factorGraph.getVariableGroup(variableGroupID);
+		ArrayList<Variable> variableList = _model.getVariableGroup(variableGroupID);
 		if (variableList != null)
 		{
 			int numVariables = variableList.size();
@@ -1018,7 +1022,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	}
 	public void releaseVariableSampleValues(int variableGroupID)
 	{
-		ArrayList<Variable> variableList = _factorGraph.getVariableGroup(variableGroupID);
+		ArrayList<Variable> variableList = _model.getVariableGroup(variableGroupID);
 		if (variableList != null)
 		{
 			int numVariables = variableList.size();
@@ -1187,5 +1191,11 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	@Override
 	protected void doUpdateEdge(int edge)
 	{
+	}
+
+	@Override
+	protected String getSolverName()
+	{
+		return "Gibbs";
 	}
 }

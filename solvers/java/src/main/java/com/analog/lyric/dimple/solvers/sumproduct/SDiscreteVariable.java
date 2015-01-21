@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
-import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.Discrete;
 
 /**
  * @deprecated Use {@link SumProductDiscrete} instead.
@@ -24,7 +24,7 @@ import com.analog.lyric.dimple.model.variables.Variable;
 @Deprecated
 public class SDiscreteVariable extends SumProductDiscrete
 {
-	public SDiscreteVariable(Variable var)
+	public SDiscreteVariable(Discrete var)
 	{
 		super(var);
 	}

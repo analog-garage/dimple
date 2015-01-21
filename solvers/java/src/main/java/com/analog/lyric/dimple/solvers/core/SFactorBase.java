@@ -20,6 +20,8 @@ import static java.util.Objects.*;
 
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.events.SolverEvent;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -30,9 +32,10 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import org.eclipse.jdt.annotation.Nullable;
 
-public abstract class SFactorBase extends SNode implements ISolverFactor
+// TODO - add MFactor parameter
+
+public abstract class SFactorBase extends SNode<Factor> implements ISolverFactor
 {
 	/*-----------
 	 * Constants
@@ -44,30 +47,19 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	@SuppressWarnings("hiding")
 	protected static final int RESERVED_FLAGS = 0xFFF00000;
 	
-	
-	
-	/*-------
-	 * State
+	/*--------------
+	 * Construction
 	 */
-	
-	protected Factor _factor;
 	
 	public SFactorBase(Factor factor)
 	{
 		super(factor);
-		_factor = factor;
 	}
 		
 	/*---------------------
 	 * ISolverNode methods
 	 */
 
-	@Override
-	public Factor getModelObject()
-	{
-		return _factor;
-	}
-	
 	@Override
 	public ISolverVariable getSibling(int edge)
 	{
@@ -76,7 +68,7 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	
 	public Factor getFactor()
 	{
-		return _factor;
+		return _model;
 	}
 	
 	@Override
@@ -90,7 +82,7 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	public @Nullable ISolverFactorGraph getParentGraph()
 	{
 		ISolverFactorGraph graph = null;
-		FactorGraph mgraph = _factor.getParentGraph();
+		FactorGraph mgraph = _model.getParentGraph();
 		if(mgraph != null)
 		{
 			graph = mgraph.getSolver();
@@ -102,7 +94,7 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	public @Nullable ISolverFactorGraph getRootGraph()
 	{
 		ISolverFactorGraph graph = null;
-		FactorGraph mgraph = _factor.getRootGraph();
+		FactorGraph mgraph = _model.getRootGraph();
 		if(mgraph != null)
 		{
 			graph = mgraph.getSolver();
@@ -113,7 +105,7 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	@Override
     public double getScore()
     {
-		int numPorts = _factor.getSiblingCount();
+		int numPorts = _model.getSiblingCount();
 	    Object[] values = new Object[numPorts];
 
 	    for (int port = 0; port < numPorts; port++)
@@ -121,7 +113,7 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	    	values[port] = getSibling(port).getGuess();
 	    }
 	    
-	    return _factor.getFactorFunction().evalEnergy(values);
+	    return _model.getFactorFunction().evalEnergy(values);
     }
 
 	@Override

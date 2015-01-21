@@ -45,7 +45,7 @@ public abstract class SumProductFiniteFieldFactor extends SFactorBase
 	@Override
 	public void createMessages()
 	{
-		final Factor factor = _factor;
+		final Factor factor = _model;
 		final int nVars = factor.getSiblingCount();
 		
 	    _inputMsgs = new double[nVars][];
@@ -66,7 +66,7 @@ public abstract class SumProductFiniteFieldFactor extends SFactorBase
 	@Override
 	public void resetEdgeMessages(int i)
 	{
-		SumProductDiscrete sv = (SumProductDiscrete)_factor.getSibling(i).getSolver();
+		SumProductDiscrete sv = (SumProductDiscrete)_model.getSibling(i).getSolver();
 		_inputMsgs[i] = sv.resetInputMessage(_inputMsgs[i]);
 	}
 

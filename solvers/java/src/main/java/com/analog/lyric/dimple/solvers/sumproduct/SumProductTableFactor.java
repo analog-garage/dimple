@@ -440,7 +440,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 		
 		if (sum == 0)
 			throw new DimpleException("Update failed in SumProduct Solver.  All probabilities were zero when calculating message for port "
-					+ " on factor " +_factor.getLabel());
+					+ " on factor " +_model.getLabel());
 
 		for (int i = 0; i < outputMsg.length; i++)
 
@@ -512,7 +512,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 		
 		boolean isFactorOfInterest = sfg.getCurrentFactorTable() == getFactor().getFactorTable();
 		
-		double [] weights = _factor.getFactorTable().getWeightsSparseUnsafe();
+		double [] weights = _model.getFactorTable().getWeightsSparseUnsafe();
 		//TODO: avoid recompute
 		double [] beliefs = getBelief();
 		
@@ -541,8 +541,8 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	@SuppressWarnings("null")
 	public double calculateDerivativeOfBeliefNumeratorWithRespectToWeight(int weightIndex, int index, boolean isFactorOfInterest)
 	{
-		double [] weights = _factor.getFactorTable().getWeightsSparseUnsafe();
-		int [][] indices = _factor.getFactorTable().getIndicesSparseUnsafe();
+		double [] weights = _model.getFactorTable().getWeightsSparseUnsafe();
+		int [][] indices = _model.getFactorTable().getIndicesSparseUnsafe();
 		
 		//calculate product of messages and phi
 		double prod = weights[index];

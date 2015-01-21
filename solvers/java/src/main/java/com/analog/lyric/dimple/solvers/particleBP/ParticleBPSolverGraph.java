@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.solvers.particleBP;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
@@ -79,14 +81,18 @@ public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, ISolv
 	@Override
 	public ISolverVariable createVariable(Variable var)
 	{
-		if (var.getModelerClassName().equals("Real"))
+		if (var instanceof Real)
 		{
-			ParticleBPReal v = new SRealVariable(var);
+			ParticleBPReal v = new SRealVariable((Real)var);
 //			v.setNumParticles(_defaultNumParticles);
 			return v;
 		}
-		else
-			return new SDiscreteVariable(var);
+		else if (var instanceof Discrete)
+		{
+			return new SDiscreteVariable((Discrete)var);
+		}
+		
+		throw unsupportedVariableType(var);
 	}
 
 	@Override
@@ -116,7 +122,7 @@ public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, ISolv
 	@Override
 	public void iterate(int numIters)
 	{
-		VariableList vars = _factorGraph.getVariables();
+		VariableList vars = _model.getVariables();
 		
 		int iterationsBeforeResampling = 1;
 		for (int iterNum = 0; iterNum < numIters; iterNum++)
@@ -160,14 +166,14 @@ public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, ISolv
 		double beta = 1/T;
 
 		// All real factors have temperatures
-		for (Factor f : _factorGraph.getNonGraphFactors())
+		for (Factor f : _model.getNonGraphFactors())
 		{
 			ISolverFactor fs = f.getSolver();
 			if (fs instanceof ParticleBPRealFactor)
 				((ParticleBPRealFactor)fs).setBeta(beta);
 		}
 		
-		for (Variable v : _factorGraph.getVariables())
+		for (Variable v : _model.getVariables())
 		{
 			ISolverVariable vs = v.getSolver();
 			if (vs instanceof ParticleBPReal)
@@ -287,4 +293,9 @@ public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, ISolv
 	{
 	}
 	
+	@Override
+	protected String getSolverName()
+	{
+		return "Particle BP";
+	}
 }

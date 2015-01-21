@@ -52,7 +52,7 @@ public class STableFactor  extends STableFactorDoubleArray
 		
 		int firstLen = -1;
 		
-		for (INode sibling : _factor.getSiblings())
+		for (INode sibling : _model.getSiblings())
 		{
 			Discrete d = ((Discrete)sibling);
 			int size = d.getDiscreteDomain().size();

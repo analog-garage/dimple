@@ -100,7 +100,7 @@ public class CustomExchangeableDirichlet extends GibbsRealFactor implements IRea
 	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
-		FactorFunction factorFunction = _factor.getFactorFunction();
+		FactorFunction factorFunction = _model.getFactorFunction();
 		ExchangeableDirichlet specificFactorFunction = (ExchangeableDirichlet)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 		_dimension = specificFactorFunction.getDimension();
 
@@ -126,7 +126,7 @@ public class CustomExchangeableDirichlet extends GibbsRealFactor implements IRea
 			{
 				_numParameterEdges = 1;
 				_constantAlphaMinusOne = 0;
-				List<? extends Variable> siblings = _factor.getSiblings();
+				List<? extends Variable> siblings = _model.getSiblings();
 				_alphaVariable = (GibbsReal)((siblings.get(PARAMETER_INDEX)).getSolver());
 			}
 		}

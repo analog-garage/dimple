@@ -100,14 +100,14 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 		determineConstantsAndEdges();
 		
 		// Create a block initializer to initialize the neighboring variables
-		((GibbsSolverGraph)_factor.getRootGraph().getSolver()).addBlockInitializer(new CustomDirichlet.BlockInitializer());
+		((GibbsSolverGraph)_model.getRootGraph().getSolver()).addBlockInitializer(new CustomDirichlet.BlockInitializer());
 	}
 	
 	
 	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
-		FactorFunction factorFunction = _factor.getFactorFunction();
+		FactorFunction factorFunction = _model.getFactorFunction();
 		Dirichlet specificFactorFunction = (Dirichlet)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 
 		
@@ -137,7 +137,7 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 			{
 				_numParameterEdges = 1;
 				_constantAlphaMinusOne = null;
-				List<? extends Variable> siblings = _factor.getSiblings();
+				List<? extends Variable> siblings = _model.getSiblings();
 				_alphaVariable =
 					(GibbsRealJoint)((siblings.get(factorFunction.getEdgeByIndex(PARAMETER_INDEX))).getSolver());
 				_dimension = requireNonNull(_alphaVariable).getDimension();
@@ -190,7 +190,7 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 			int numOutputEdges = _numPorts - _numParameterEdges;
 			if (numOutputEdges > 0)
 			{
-				List<? extends Variable> siblings = _factor.getSiblings();
+				List<? extends Variable> siblings = _model.getSiblings();
 				double[] value = new double[_dimension];
 				for (int edge = _numParameterEdges; edge < _numPorts; edge++)
 				{

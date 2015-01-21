@@ -45,6 +45,8 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.model.variables.FiniteFieldVariable;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.Variable;
@@ -120,14 +122,18 @@ public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolve
 	@Override
 	public ISolverVariable createVariable(Variable var)
 	{
-		if (var.getModelerClassName().equals("FiniteFieldVariable"))
-			return new SFiniteFieldVariable(var);
+		if (var instanceof FiniteFieldVariable)
+			return new SFiniteFieldVariable((FiniteFieldVariable)var);
 		else if (var instanceof RealJoint)
-			return new SRealJointVariable(var);
+			return new SRealJointVariable((RealJoint)var);
 		else if (var instanceof Real)
-			return new SRealVariable(var);
-		else
-			return new SDiscreteVariable(var);
+			return new SRealVariable((Real)var);
+		else if (var instanceof Discrete)
+		{
+			return new SDiscreteVariable((Discrete)var);
+		}
+		
+		throw unsupportedVariableType(var);
 	}
 
 	
@@ -550,7 +556,7 @@ public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolve
 	@Override
 	public void baumWelch(IFactorTable [] fts, int numRestarts, int numSteps)
 	{
-		ParameterEstimator pe = new ParameterEstimator.BaumWelch(_factorGraph, fts, SumProductSolverGraph.getRandom());
+		ParameterEstimator pe = new ParameterEstimator.BaumWelch(_model, fts, SumProductSolverGraph.getRandom());
 		pe.run(numRestarts, numSteps);
 	}
 	
@@ -604,7 +610,7 @@ public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolve
 	@Override
 	public void estimateParameters(IFactorTable [] fts, int numRestarts, int numSteps, double stepScaleFactor)
 	{
-		new GradientDescent(_factorGraph, fts, getRandom(), stepScaleFactor).run(numRestarts, numSteps);
+		new GradientDescent(_model, fts, getRandom(), stepScaleFactor).run(numRestarts, numSteps);
 	}
 
 	
@@ -625,11 +631,11 @@ public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolve
 		_currentFactorTable = ft;
 		
 				
-		for (Factor f : _factorGraph.getFactors())
+		for (Factor f : _model.getFactors())
 		{
 			((SumProductTableFactor)f.getSolver()).initializeDerivativeMessages(ft.sparseSize());
 		}
-		for (Variable vb : _factorGraph.getVariablesFlat())
+		for (Variable vb : _model.getVariablesFlat())
 			((SumProductDiscrete)vb.getSolver()).initializeDerivativeMessages(ft.sparseSize());
 		
 		setCalculateDerivative(true);
@@ -637,15 +643,15 @@ public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolve
 		double result = 0;
 		try
 		{
-			_factorGraph.solve();
-			for (Factor f : _factorGraph.getFactors())
+			_model.solve();
+			for (Factor f : _model.getFactors())
 			{
 				SumProductTableFactor stf = (SumProductTableFactor)f.getSolver();
 				result += stf.calculateDerivativeOfInternalEnergyWithRespectToWeight(weightIndex);
 				result -= stf.calculateDerivativeOfBetheEntropyWithRespectToWeight(weightIndex);
 						
 			}
-			for (Variable v : _factorGraph.getVariablesFlat())
+			for (Variable v : _model.getVariablesFlat())
 			{
 				SumProductDiscrete sv = (SumProductDiscrete)v.getSolver();
 				result += sv.calculateDerivativeOfInternalEnergyWithRespectToWeight(weightIndex);
@@ -663,12 +669,12 @@ public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolve
 	@SuppressWarnings("null")
 	public void setCalculateDerivative(boolean val)
 	{
-		for (Factor f : _factorGraph.getFactors())
+		for (Factor f : _model.getFactors())
 		{
 			SumProductTableFactor stf = (SumProductTableFactor)f.getSolver();
 			stf.setUpdateDerivative(val);
 		}
-		for (Variable vb : _factorGraph.getVariablesFlat())
+		for (Variable vb : _model.getVariablesFlat())
 		{
 			SumProductDiscrete sv = (SumProductDiscrete)vb.getSolver();
 			sv.setCalculateDerivative(val);
@@ -688,7 +694,7 @@ public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolve
 	{
 		super.initialize();
 		UpdateCostOptimizer optimizer = new UpdateCostOptimizer(_optimizedUpdateAdapter);
-		optimizer.optimize(_factorGraph);
+		optimizer.optimize(_model);
 		for (Factor f : getModelObject().getFactors())
 		{
 			ISolverFactor sf = f.getSolver();
@@ -726,6 +732,10 @@ public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolve
 	{
 	}
 	
-
+	@Override
+	protected String getSolverName()
+	{
+		return "sum-product";
+	}
 
 }

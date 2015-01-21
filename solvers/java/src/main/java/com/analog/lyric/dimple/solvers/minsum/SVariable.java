@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.minsum;
 
-import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.Discrete;
 
 /**
  * @deprecated Use {@link MinSumDiscrete} instead.
@@ -24,7 +24,7 @@ import com.analog.lyric.dimple.model.variables.Variable;
 @Deprecated
 public class SVariable extends MinSumDiscrete
 {
-	public SVariable(Variable var)
+	public SVariable(Discrete var)
 	{
 		super(var);
 	}

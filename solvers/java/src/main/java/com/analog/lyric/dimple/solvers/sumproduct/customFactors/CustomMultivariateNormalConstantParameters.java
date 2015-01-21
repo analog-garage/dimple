@@ -46,7 +46,7 @@ public class CustomMultivariateNormalConstantParameters extends MultivariateGaus
 		super.initialize();
 		
 		// Pre-compute output message
-		FactorFunction factorFunction = _factor.getFactorFunction();
+		FactorFunction factorFunction = _model.getFactorFunction();
 		MultivariateNormal specificFactorFunction = (MultivariateNormal)factorFunction.getContainedFactorFunction(); 	// In case it's wrapped
 
 		MultivariateNormalParameters outputMessage;

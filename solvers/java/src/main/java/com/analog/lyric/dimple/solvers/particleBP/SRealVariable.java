@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.particleBP;
 
-import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.Real;
 
 /**
  * @deprecated Use {@link ParticleBPReal} instead.
@@ -24,7 +24,7 @@ import com.analog.lyric.dimple.model.variables.Variable;
 @Deprecated
 public class SRealVariable extends ParticleBPReal
 {
-	public SRealVariable(Variable var)
+	public SRealVariable(Real var)
 	{
 		super(var);
 	}

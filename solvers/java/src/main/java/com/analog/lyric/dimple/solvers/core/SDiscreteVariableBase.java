@@ -21,16 +21,15 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.IDiscreteSolverVariable;
 
-public abstract class SDiscreteVariableBase extends SVariableBase implements IDiscreteSolverVariable
+public abstract class SDiscreteVariableBase extends SVariableBase<Discrete> implements IDiscreteSolverVariable
 {
 	protected int _guessIndex = -1;
 	protected boolean _guessWasSet = false;
 
     
-	public SDiscreteVariableBase(Variable var)
+	public SDiscreteVariableBase(Discrete var)
 	{
 		super(var);
 	}
@@ -42,16 +41,6 @@ public abstract class SDiscreteVariableBase extends SVariableBase implements IDi
 		setGuess(null);
 	}
 
-	/*---------------
-	 * INode objects
-	 */
-	
-	@Override
-	public Discrete getModelObject()
-	{
-		return (Discrete)_var;
-	}
-	
 	/*-------------------------
 	 * ISolverVariable methods
 	 */
@@ -69,13 +58,14 @@ public abstract class SDiscreteVariableBase extends SVariableBase implements IDi
 	public Object getValue()
 	{
 		int index = getValueIndex();
-		return ((Discrete)_var).getDiscreteDomain().getElement(index);
+		return _model.getDiscreteDomain().getElement(index);
 	}
 	
+	@Override
 	public int getValueIndex()
 	{
-		if (_var.hasFixedValue())	// If there's a fixed value set, use that instead of the belief
-			return ((Discrete)_var).getFixedValueIndex();
+		if (_model.hasFixedValue())	// If there's a fixed value set, use that instead of the belief
+			return _model.getFixedValueIndex();
 					
 		double[] belief = getBelief();
 		int numValues = belief.length;
@@ -103,7 +93,7 @@ public abstract class SDiscreteVariableBase extends SVariableBase implements IDi
 	public Object getGuess()
 	{
 		int index = getGuessIndex();
-		return ((DiscreteDomain)_var.getDomain()).getElement(index);
+		return _model.getDomain().getElement(index);
 	}
 	
 	@Override
@@ -116,7 +106,7 @@ public abstract class SDiscreteVariableBase extends SVariableBase implements IDi
 		}
 		else
 		{
-			DiscreteDomain domain = (DiscreteDomain)_var.getDomain();
+			DiscreteDomain domain = _model.getDomain();
 			int guessIndex = domain.getIndex(guess);
 			if (guessIndex == -1)
 				throw new DimpleException("Guess is not a valid value");
@@ -141,7 +131,7 @@ public abstract class SDiscreteVariableBase extends SVariableBase implements IDi
 	@Override
 	public void setGuessIndex(int index)
 	{
-		if (index < 0 || index >= ((DiscreteDomain)_var.getDomain()).size())
+		if (index < 0 || index >= _model.getDomain().size())
 			throw new DimpleException("illegal index");
 		
 		_guessWasSet = true;

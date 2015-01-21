@@ -36,7 +36,7 @@ public abstract class STableFactorDoubleArray extends STableFactorBase
 	@Override
 	public void createMessages()
 	{
-		final Factor factor = _factor;
+		final Factor factor = _model;
 		int nVars = factor.getSiblingCount();
 		
 	    _inputMsgs = new double[nVars][];

@@ -42,7 +42,6 @@ import com.analog.lyric.dimple.model.values.RealJointValue;
 import com.analog.lyric.dimple.model.values.RealValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.RealJoint;
-import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SRealJointVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
@@ -87,7 +86,6 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	 * State
 	 */
 	
-	private RealJoint _varReal;
 	private RealJointValue _outputMsg;
 	private @Nullable Object[] _inputMsg = null;
 	private double[] _sampleValue;
@@ -122,15 +120,11 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	 * Construction
 	 */
 
-	public GibbsRealJoint(Variable var)
+	public GibbsRealJoint(RealJoint var)
 	{
 		super(var);
 
-		if (!(var.getDomain() instanceof RealJointDomain))
-			throw new DimpleException("expected real joint domain");
-
-		_varReal = (RealJoint)_var;
-		_domain = (RealJointDomain)var.getDomain();
+		_domain = var.getDomain();
 		
 		_numRealVars = _domain.getNumVars();
 		_sampleValue = new double[_numRealVars];
@@ -166,7 +160,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		if (_holdSampleValue) return;
 		
 		// Also return if the variable is set to a fixed value
-		if (_var.hasFixedValue()) return;
+		if (_model.hasFixedValue()) return;
 
 		final int updateEventFlags = GibbsSolverVariableEvent.getVariableUpdateEventFlags(this);
 		Value oldValue = null;
@@ -207,13 +201,13 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		{
 			// Use conjugate sampler, first update the messages from all factors
 			// Factor messages represent the current distribution parameters from each factor
-			int numPorts = _var.getSiblingCount();
+			int numPorts = _model.getSiblingCount();
 			Port[] ports = new Port[numPorts];
 			for (int portIndex = 0; portIndex < numPorts; portIndex++)
 			{
-				Factor factorNode = requireNonNull(_var.getSibling(portIndex));
+				Factor factorNode = requireNonNull(_model.getSibling(portIndex));
 				ISolverFactor factor = factorNode.requireSolver("update");
-				int factorPortNumber = factorNode.getPortNum(_var);
+				int factorPortNumber = factorNode.getPortNum(_model);
 				ports[portIndex] = factorNode.getPort(factorPortNumber);
 				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
 			}
@@ -350,15 +344,15 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	@Override
 	public final void getAggregateMessages(IParameterizedMessage outputMessage, int outPortNum, ISampler conjugateSampler)
 	{
-		int numPorts = _var.getSiblingCount();
+		int numPorts = _model.getSiblingCount();
 		Port[] ports = new Port[numPorts - 1];
 		for (int port = 0, i = 0; port < numPorts; port++)
 		{
 			if (port != outPortNum)
 			{
-				Factor factorNode = requireNonNull(_var.getSibling(port));
+				Factor factorNode = requireNonNull(_model.getSibling(port));
 				ISolverFactor factor = requireNonNull(factorNode.getSolver());
-				int factorPortNumber = factorNode.getPortNum(_var);
+				int factorPortNumber = factorNode.getPortNum(_model);
 				ports[i++] = factorNode.getPort(factorPortNumber);
 				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
 			}
@@ -404,9 +398,9 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		if (getModelObject().isDeterministicOutput()) return;
 
 		// If the variable has a fixed value, then set the current sample to that value and return
-		if (_var.hasFixedValue())
+		if (_model.hasFixedValue())
 		{
-			setCurrentSample(_varReal.getFixedValue());
+			setCurrentSample(_model.getFixedValue());
 			return;
 		}
 		if (_initialSampleValueSet && restartCount == 0)
@@ -616,7 +610,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	public final double getScore()
 	{
 		// If fixed value there's no input
-		if (_var.hasFixedValue())
+		if (_model.hasFixedValue())
 			return 0;
 		
 		// Which value to score
@@ -648,8 +642,8 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	{
 		if (_guessWasSet)
 			return _guessValue;
-		else if (_var.hasFixedValue())
-			return (_varReal).getFixedValue();
+		else if (_model.hasFixedValue())
+			return _model.getFixedValue();
 		else
 			return _sampleValue;
 	}
@@ -694,7 +688,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	@Override
 	public final double getPotential()
 	{
-		if (_var.hasFixedValue())
+		if (_model.hasFixedValue())
 			return 0;
 		
 		if (!_domain.inDomain(_sampleValue))
@@ -719,7 +713,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	@Override
 	public final boolean hasPotential()
 	{
-		return !_var.hasFixedValue() && (_inputJoint != null || _inputArray != null || _domain.isBounded());
+		return !_model.hasFixedValue() && (_inputJoint != null || _inputArray != null || _domain.isBounded());
 	}
 
 	@Override
@@ -744,7 +738,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		if (_holdSampleValue) return;
 		
 		// Also return if the variable is set to a fixed value
-		if (_var.hasFixedValue()) return;
+		if (_model.hasFixedValue()) return;
 
 		setCurrentSampleForce(value);
 	}
@@ -1006,7 +1000,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 			Objects.requireNonNull(_sampler).initializeFromVariable(this);
 			return _sampler;
 		}
-		else if (_var.hasParentGraph())
+		else if (_model.hasParentGraph())
 		{
 			
 			initialize();	// To determine the appropriate sampler
@@ -1054,14 +1048,14 @@ public class GibbsRealJoint extends SRealJointVariableBase
 
 	public RealJointValue createDefaultMessage()
 	{
-		return Value.create(_domain, _var.hasFixedValue() ? _varReal.getFixedValue().clone() : _initialSampleValue.clone());
+		return Value.create(_domain, _model.hasFixedValue() ? _model.getFixedValue().clone() : _initialSampleValue.clone());
 	}
 
 	// TODO Move to ISolverVariable
 	@Override
 	public Object resetInputMessage(Object message)
 	{
-		((RealJointValue)message).setValue(_var.hasFixedValue() ? _varReal.getFixedValue().clone() : _initialSampleValue.clone());
+		((RealJointValue)message).setValue(_model.hasFixedValue() ? _model.getFixedValue().clone() : _initialSampleValue.clone());
 		return message;
 	}
 
@@ -1091,7 +1085,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	{
 		Object[] inputMsg = _inputMsg;
 		if (inputMsg == null)
-			inputMsg = new Object[_var.getSiblingCount()];
+			inputMsg = new Object[_model.getSiblingCount()];
 		inputMsg[portIndex] = obj;
 	}
 
@@ -1116,7 +1110,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		
 		if (!getModelObject().isDeterministicOutput())
 		{
-			double[] initialSampleValue = _var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue;
+			double[] initialSampleValue = _model.hasFixedValue() ? _model.getFixedValue() : _initialSampleValue;
 			if (!_holdSampleValue)
 				setCurrentSampleForce(initialSampleValue);
 		}
@@ -1167,7 +1161,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		{
 			IOptionHolder[] source = new IOptionHolder[1];
 			Class<? extends IGenericSampler> samplerClass = getOptionAndSource(GibbsOptions.realSampler, source);
-			if (samplerClass == null || source[0] != this && source[0] != _var)
+			if (samplerClass == null || source[0] != this && source[0] != _model)
 			{
 				if (getOptionOrDefault(GibbsOptions.enableAutomaticConjugateSampling))
 				{
@@ -1267,7 +1261,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	// Find the set of all available conjugate samplers, but don't create it yet
 	public Set<IRealJointConjugateSamplerFactory> findConjugateSamplerFactories()
 	{
-		return findConjugateSamplerFactories(_var.getSiblings());
+		return findConjugateSamplerFactories(_model.getSiblings());
 	}
 	
 	// Find the set of available conjugate samplers consistent with a specific set of neighboring factors (as well as the Input)
@@ -1286,7 +1280,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 				commonSamplers.clear();	// At least one connected factor does not support conjugate sampling
 				return commonSamplers;
 			}
-			int factorPortNumber = factorNode.getPortNum(_var);
+			int factorPortNumber = factorNode.getPortNum(_model);
 			Set<IRealJointConjugateSamplerFactory> availableSamplers = ((IRealJointConjugateFactor)factor).getAvailableRealJointConjugateSamplers(factorPortNumber);
 			if (i == 0)  // First time through
 				commonSamplers.addAll(availableSamplers);

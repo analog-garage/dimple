@@ -61,7 +61,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	public GibbsTableFactor(Factor factor)
 	{
 		super(factor);
-		_isDeterministicDirected = _factor.getFactorFunction().isDeterministicDirected();
+		_isDeterministicDirected = _model.getFactorFunction().isDeterministicDirected();
 	}
 	
 	/*---------------
@@ -111,7 +111,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 		else
 		{
 			final Value changedValue = _inPortMsgs[outPortNum];
-			final FactorFunction function = _factor.getFactorFunction();
+			final FactorFunction function = _model.getFactorFunction();
 			final int savedIndex = changedValue.getIndex();
 			final int sliceLength = outMessage.length;
 
@@ -197,7 +197,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	public void updateNeighborVariableValuesNow(@Nullable Collection<IndexedValue> oldValues)
 	{
 		// Compute the output values of the deterministic factor function from the input values
-		final Factor factor = _factor;
+		final Factor factor = _model;
 		factor.getFactorFunction().evalDeterministic(_inPortMsgs);
 		
 		// Update the directed-to variables with the computed values
@@ -220,7 +220,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	@Override
 	public void createMessages()
 	{
-		final Factor factor = _factor;
+		final Factor factor = _model;
     	int size = factor.getSiblingCount();
     	
 	    _inPortMsgs = new DiscreteValue[size];
@@ -240,7 +240,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	public void initialize()
 	{
 		super.initialize();
-		_isDeterministicDirected = _factor.getFactorFunction().isDeterministicDirected();
+		_isDeterministicDirected = _model.getFactorFunction().isDeterministicDirected();
 	}
 	
 	@Override
