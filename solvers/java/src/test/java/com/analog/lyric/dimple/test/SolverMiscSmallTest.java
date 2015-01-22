@@ -57,24 +57,24 @@ public class SolverMiscSmallTest extends DimpleTestBase
 		ISolverFactor SfMid 		= fMid.getSolver();
 		ISolverFactor SfLeaf 		= fLeaf.getSolver();
 		
-		assertTrue(SfgRoot.getParentGraph() 	== null);
-		assertTrue(SfgMid.getParentGraph() 		== SfgRoot);
-		assertTrue(SfgLeaf.getParentGraph() 	== SfgMid);
-		assertTrue(SvRootO1.getParentGraph() 	== SfgRoot);
-		assertTrue(SvMidO1.getParentGraph() 	== SfgMid);
-		assertTrue(SvLeafO1.getParentGraph() 	== SfgLeaf);
-		assertTrue(SfRoot.getParentGraph() 		== SfgRoot);
-		assertTrue(SfMid.getParentGraph() 		== SfgMid);
-		assertTrue(SfLeaf.getParentGraph() 		== SfgLeaf);
+		assertNull(SfgRoot.getParentGraph());
+		assertEquals(SfgRoot, SfgMid.getParentGraph());
+		assertEquals(SfgMid, SfgLeaf.getParentGraph());
+		assertEquals(SfgRoot, SvRootO1.getParentGraph());
+		assertEquals(SfgMid, SvMidO1.getParentGraph());
+		assertEquals(SfgLeaf, SvLeafO1.getParentGraph());
+		assertEquals(SfgRoot, SfRoot.getParentGraph());
+		assertEquals(SfgMid, SfMid.getParentGraph());
+		assertEquals(SfgLeaf, SfLeaf.getParentGraph());
 		
-		assertTrue(SfgRoot.getRootGraph() 		== SfgRoot);
-		assertTrue(SfgMid.getRootGraph() 		== SfgRoot);
-		assertTrue(SfgLeaf.getRootGraph() 		== SfgRoot);
-		assertTrue(SvRootO1.getRootGraph() 		== SfgRoot);
-		assertTrue(SvMidO1.getRootGraph() 		== SfgRoot);
-		assertTrue(SvLeafO1.getRootGraph() 		== SfgRoot);
-		assertTrue(SfRoot.getRootGraph() 		== SfgRoot);
-		assertTrue(SfMid.getRootGraph() 		== SfgRoot);
-		assertTrue(SfLeaf.getRootGraph() 		== SfgRoot);
+		assertEquals(SfgRoot, SfgRoot.getRootGraph());
+		assertEquals(SfgRoot, SfgMid.getRootGraph());
+		assertEquals(SfgRoot, SfgLeaf.getRootGraph());
+		assertEquals(SfgRoot, SvRootO1.getRootGraph());
+		assertEquals(SfgRoot, SvMidO1.getRootGraph());
+		assertEquals(SfgRoot, SvLeafO1.getRootGraph());
+		assertEquals(SfgRoot, SfRoot.getRootGraph());
+		assertEquals(SfgRoot, SfMid.getRootGraph());
+		assertEquals(SfgRoot, SfLeaf.getRootGraph());
 	}
 }

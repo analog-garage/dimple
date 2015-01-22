@@ -786,10 +786,21 @@ public class FactorGraph extends FactorBase
 		// First, clear out solver-specific state
 		_solverSpecificDefaultScheduler = null;
 		
-		SG solverGraph = factory != null ? factory.createFactorGraph(this) : null;
 		_solverFactory = factory;
+
+		SG solverGraph = factory != null ? factory.createFactorGraph(this) : null;
 		_solverFactorGraph = solverGraph;
 
+		final FactorGraph parent = getParentGraph();
+		if (parent != null)
+		{
+			final ISolverFactorGraph parentSolverGraph = parent._solverFactorGraph;
+			if (parentSolverGraph != null)
+			{
+				parentSolverGraph.recordDefaultSubgraphSolver(this);
+			}
+		}
+		
 		for (FactorGraph fg : _ownedSubGraphs)
 			fg.setSolverFactorySubGraphRecursive(solverGraph, factory);
 
@@ -3435,6 +3446,9 @@ public class FactorGraph extends FactorBase
 		}
 	}
 	
+	/**
+	 * @category internal
+	 */
 	@Internal
 	public void replaceEdge(Factor factor, int edgeIndex, Variable newVariable)
 	{
@@ -3462,6 +3476,15 @@ public class FactorGraph extends FactorBase
 		{
 			requireNonNull(oldVariable.getParentGraph()).structureChanged();
 		}
+	}
+	
+	/**
+	 * @category internal
+	 */
+	@Internal
+	public void setSolver(ISolverFactorGraph solver)
+	{
+		_solverFactorGraph = solver;
 	}
 	
 	/**

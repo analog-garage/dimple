@@ -22,10 +22,9 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.events.SolverEventSource;
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.Internal;
 
 /**
  * @since 0.0.5
@@ -35,6 +34,12 @@ public abstract class ProxySolverNode<Delegate extends ISolverNode>
 	extends SolverEventSource
 	implements ISolverNode, IProxySolverNode<Delegate>
 {
+	/*-------
+	 * State
+	 */
+	
+	protected @Nullable ISolverFactorGraph _parent = null;
+	
 	/*--------------
 	 * Construction
 	 */
@@ -74,33 +79,22 @@ public abstract class ProxySolverNode<Delegate extends ISolverNode>
 	@Override
 	public @Nullable ISolverFactorGraph getParentGraph()
 	{
-		final INode node = getModelObject();
-		if (node != null)
-		{
-			final FactorGraph parent = node.getParentGraph();
-			if (parent != null)
-			{
-				return parent.getSolver();
-			}
-		}
-		return null;
+		return _parent;
 	}
 
 	@Override
 	public @Nullable ISolverFactorGraph getRootGraph()
 	{
-		final INode node = getModelObject();
-		if (node != null)
+		ISolverFactorGraph root = getContainingSolverGraph();
+		
+		for (ISolverFactorGraph parent = root; parent != null; parent = parent.getParentGraph())
 		{
-			final FactorGraph root = node.getRootGraph();
-			if (root != null)
-			{
-				return root.getSolver();
-			}
+			root = parent;
 		}
-		return null;
+		
+		return root;
 	}
-
+	
 	@SuppressWarnings("null")
 	@Override
 	public ISolverNode getSibling(int edge)
@@ -164,6 +158,13 @@ public abstract class ProxySolverNode<Delegate extends ISolverNode>
 		throw unsupported("setOutputMsgValues");
 	}
 
+	@Internal
+	@Override
+	public void setParent(ISolverFactorGraph parent)
+	{
+		_parent = parent;
+	}
+	
 	@Override
 	public void update()
 	{

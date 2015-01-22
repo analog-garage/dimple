@@ -26,7 +26,9 @@ import com.analog.lyric.dimple.events.SolverEventSource;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.Internal;
 
 public abstract class SNode<MNode extends Node> extends SolverEventSource implements ISolverNode
 {
@@ -55,6 +57,8 @@ public abstract class SNode<MNode extends Node> extends SolverEventSource implem
 	 */
 
 	protected final MNode _model;
+
+	protected @Nullable ISolverFactorGraph _parent = null;
 	
 	/*--------------
 	 * Construction
@@ -78,6 +82,25 @@ public abstract class SNode<MNode extends Node> extends SolverEventSource implem
     {
     	return _model;
     }
+	
+	@Override
+	public @Nullable ISolverFactorGraph getParentGraph()
+	{
+		return _parent;
+	}
+	
+	@Override
+	public @Nullable ISolverFactorGraph getRootGraph()
+	{
+		ISolverFactorGraph root = getContainingSolverGraph();
+		
+		for (ISolverFactorGraph parent = root; parent != null; parent = parent.getParentGraph())
+		{
+			root = parent;
+		}
+		
+		return root;
+	}
 	
 	@Override
 	public ISolverNode getSibling(int edge)
@@ -121,7 +144,14 @@ public abstract class SNode<MNode extends Node> extends SolverEventSource implem
 	public void setOutputMsgValues(int portIndex, Object obj) {
 		throw new DimpleException("Not supported by " + this);
 	}
-
+	
+	@Internal
+	@Override
+	public void setParent(ISolverFactorGraph parent)
+	{
+		_parent = parent;
+	}
+	
 	@Override
 	public void update()
 	{

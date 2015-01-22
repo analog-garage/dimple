@@ -354,24 +354,6 @@ public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable 
 		}
 	}
 
-
-	@Override
-	public @Nullable ISolverFactorGraph getParentGraph()
-	{
-		ISolverFactorGraph graph = null;
-		FactorGraph mgraph = _model.getParentGraph();
-		if(mgraph != null)
-		{
-			graph = mgraph.getSolver();
-		}
-		return graph;
-	}
-	@Override
-	public @Nullable ISolverFactorGraph getRootGraph()
-	{
-		return _model.getRootGraph().getSolver();
-	}
-
 	@Override
 	public double getBetheFreeEnergy()
 	{
@@ -448,6 +430,12 @@ public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable 
 	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor f)
 	{
 		return new SBlastFromThePast(f);
+	}
+	
+	@Override
+	public void recordDefaultSubgraphSolver(FactorGraph subgraph)
+	{
+		_state.setSubgraphSolver(subgraph,  subgraph.getSolver());
 	}
 	
 	/***********************************************

@@ -62,6 +62,16 @@ public abstract class ProxySolverFactorGraph<SFactor extends ISolverFactor, SVar
 		_state = new FactorGraphSolverState<>(modelFactorGraph, this);
 	}
 
+	/*----------------------------
+	 * ISolverEventSource methods
+	 */
+	
+	@Override
+	public ProxySolverFactorGraph<SFactor,SVariable,Delegate> getContainingSolverGraph()
+	{
+		return this;
+	}
+	
 	/*---------------------
 	 * ISolverNode methods
 	 */
@@ -291,6 +301,12 @@ public abstract class ProxySolverFactorGraph<SFactor extends ISolverFactor, SVar
 		}
 	}
 
+	@Override
+	public void recordDefaultSubgraphSolver(FactorGraph subgraph)
+	{
+		_state.setSubgraphSolver(subgraph,  subgraph.getSolver());
+	}
+	
 	@Override
 	public boolean useMultithreading()
 	{

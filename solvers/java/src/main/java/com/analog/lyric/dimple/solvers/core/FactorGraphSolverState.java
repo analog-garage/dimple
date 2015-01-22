@@ -476,10 +476,12 @@ public class FactorGraphSolverState<SFactor extends ISolverFactor, SVariable ext
 				{
 					// FIXME - hacky
 					sfactor = (SFactor)_owner.createBlastFromThePast((BlastFromThePastFactor)factor);
+					sfactor.setParent(_owner);
 				}
 				else
 				{
 					sfactor = _owner.createFactor(factor);
+					sfactor.setParent(_owner);
 				}
 //				sfactor.createMessages();
 			}
@@ -506,7 +508,13 @@ public class FactorGraphSolverState<SFactor extends ISolverFactor, SVariable ext
 		if (sgraph == null || sgraph.getModelObject() != subgraph)
 		{
 			sgraph = _owner.createSubgraph(subgraph);
+			sgraph.setParent(_owner);
 			graphs.set(index, sgraph);
+			if (_owner == getModelGraph().getSolver())
+			{
+				// If parent is default solver for it's graph, make this the default solver for the subgraph.
+				subgraph.setSolver(sgraph);
+			}
 		}
 		
 		return sgraph;
@@ -527,6 +535,7 @@ public class FactorGraphSolverState<SFactor extends ISolverFactor, SVariable ext
 			if (create)
 			{
 				svar = _owner.createVariable(variable);
+				svar.setParent(_owner);
 //				svar.createNonEdgeSpecificState();
 //				svar.setInputOrFixedValue(variable.getInputObject(), variable.getFixedValueObject());
 			}
@@ -554,6 +563,17 @@ public class FactorGraphSolverState<SFactor extends ISolverFactor, SVariable ext
 //			Iterators.size(sgraphs.get(i).getSolverFactors().iterator());
 //		}
 //	}
+	
+	public void setSubgraphSolver(FactorGraph subgraph, @Nullable ISolverFactorGraph sgraph)
+	{
+		assertSameGraph(subgraph);
+		
+		final int index = NodeId.indexFromLocalId(subgraph.getLocalId());
+		final ExtendedArrayList<ISolverFactorGraph> graphs = _subgraphs;
+		
+		((SNode<?>)sgraph)._parent = _owner;
+		graphs.set(index,  sgraph);
+	}
 	
 	/*-----------------
 	 * Private methods

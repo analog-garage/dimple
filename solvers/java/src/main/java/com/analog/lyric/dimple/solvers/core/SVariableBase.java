@@ -22,11 +22,9 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.events.SolverEvent;
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
@@ -59,39 +57,6 @@ public abstract class SVariableBase<MVariable extends Variable> extends SNode<MV
 	public ISolverFactor getSibling(int edge)
 	{
 		return Objects.requireNonNull(getModelObject().getSibling(edge).getSolver());
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 * <p>
-	 * The implementation provided by this class simply returns the solver object
-	 * associated with the model variable's {@link FactorGraph}.
-	 * <p>
-	 * This means that if the solver is changed on the model, this will return the
-	 * new solver graph object, which may not be applicable to this instance.
-	 */
-	@Override
-	public @Nullable ISolverFactorGraph getParentGraph()
-	{
-		ISolverFactorGraph graph = null;
-		FactorGraph mgraph = _model.getParentGraph();
-		if(mgraph != null)
-		{
-			graph = mgraph.getSolver();
-		}
-		return graph;
-	}
-	
-	@Override
-	public @Nullable ISolverFactorGraph getRootGraph()
-	{
-		ISolverFactorGraph graph = null;
-		FactorGraph mgraph = _model.getRootGraph();
-		if(mgraph != null)
-		{
-			graph = mgraph.getSolver();
-		}
-		return graph;
 	}
 	
 	@Override

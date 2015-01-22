@@ -24,6 +24,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.events.ISolverEventSource;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.options.IOptionHolder;
+import com.analog.lyric.util.misc.Internal;
 
 /**
  * @author schweitz
@@ -102,4 +103,10 @@ public interface ISolverNode extends IOptionHolder, ISolverEventSource
     //Move messages from the other node's port to this node's port.
     public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum);
     
+    // TODO - see if we can remove this and force the parent to be set when the node is created...
+    /**
+     * @category internal
+     */
+    @Internal
+    public void setParent(ISolverFactorGraph parent);
 }

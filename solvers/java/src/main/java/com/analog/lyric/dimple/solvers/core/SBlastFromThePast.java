@@ -20,6 +20,8 @@ import static java.util.Objects.*;
 
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.events.SolverEventSource;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Port;
@@ -30,13 +32,14 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import org.eclipse.jdt.annotation.Nullable;
+import com.analog.lyric.util.misc.Internal;
 
 public class SBlastFromThePast extends SolverEventSource implements ISolverBlastFromThePastFactor
 {
 	private BlastFromThePastFactor _factor;
 	protected @Nullable Port _portForOtherVar;
 	protected @Nullable Port _portForBlastVar;
+	protected @Nullable ISolverFactorGraph _parent = null;
 	
 	public SBlastFromThePast(BlastFromThePastFactor f)
 	{
@@ -207,6 +210,13 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 		throw new DimpleException("Not implemented");
 	}
 
+	@Internal
+	@Override
+	public void setParent(ISolverFactorGraph parent)
+	{
+		_parent = parent;
+	}
+	
 	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum,
 			int otherPortNum)

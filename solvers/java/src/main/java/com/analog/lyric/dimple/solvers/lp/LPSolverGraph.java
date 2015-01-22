@@ -156,46 +156,6 @@ public class LPSolverGraph extends SFactorGraphBase<LPTableFactor, LPDiscrete>
 	}
 
 	/**
-	 * If the associated model {@link FactorGraph} has {@link FactorGraph#getSolver()} equal to this,
-	 * the model's parent graph's solver will be returned. Otherwise null.
-	 */
-	@Override
-	public @Nullable ISolverFactorGraph getParentGraph()
-	{
-		ISolverFactorGraph parentSolver = null;
-
-		FactorGraph fg = getModelObject();
-		if (fg.getSolver() == this)
-		{
-			FactorGraph parent = fg.getParentGraph();
-			if (parent != null)
-			{
-				parentSolver = parent.getSolver();
-			}
-		}
-
-		return parentSolver;
-	}
-
-	/**
-	 * If the associated model {@link FactorGraph} has {@link FactorGraph#getSolver()} equal to this,
-	 * the model's root graph's solver will be returned. Otherwise this.
-	 */
-	@Override
-	public @Nullable ISolverFactorGraph getRootGraph()
-	{
-		ISolverFactorGraph rootSolver = this;
-
-		FactorGraph fg = getModelObject();
-		if (fg.getSolver() == this)
-		{
-			rootSolver = fg.getRootGraph().getSolver();
-		}
-
-		return rootSolver;
-	}
-
-	/**
 	 * Unsupported.
 	 */
 	@Override

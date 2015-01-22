@@ -24,12 +24,10 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.events.SolverEvent;
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
@@ -75,31 +73,6 @@ public abstract class SFactorBase extends SNode<Factor> implements ISolverFactor
 	public double [] getBelief()
 	{
 		throw new DimpleException("not supported");
-	}
-
-
-	@Override
-	public @Nullable ISolverFactorGraph getParentGraph()
-	{
-		ISolverFactorGraph graph = null;
-		FactorGraph mgraph = _model.getParentGraph();
-		if(mgraph != null)
-		{
-			graph = mgraph.getSolver();
-		}
-		return graph;
-	}
-
-	@Override
-	public @Nullable ISolverFactorGraph getRootGraph()
-	{
-		ISolverFactorGraph graph = null;
-		FactorGraph mgraph = _model.getRootGraph();
-		if(mgraph != null)
-		{
-			graph = mgraph.getSolver();
-		}
-		return graph;
 	}
 
 	@Override

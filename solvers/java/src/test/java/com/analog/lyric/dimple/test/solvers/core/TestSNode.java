@@ -63,7 +63,6 @@ public class TestSNode extends DimpleTestBase
 {
 	private static class TestNode extends SNode<Node>
 	{
-		private @Nullable ISolverFactorGraph _parent = null;
 		private boolean _supportsMessageEvents = false;
 		final private Set<Integer> _updatedEdges = new HashSet<Integer>();
 		final private Map<Integer,TestMessage> _messages = new HashMap<Integer, TestMessage>();
@@ -79,18 +78,6 @@ public class TestSNode extends DimpleTestBase
 		{
 			_updatedEdges.remove(edge);
 			_messages.clear();
-		}
-
-		@Override
-		public @Nullable ISolverFactorGraph getParentGraph()
-		{
-			return _parent;
-		}
-
-		@Override
-		public @Nullable ISolverFactorGraph getRootGraph()
-		{
-			return _parent;
 		}
 
 		@Override
@@ -196,6 +183,12 @@ public class TestSNode extends DimpleTestBase
 		{
 			return _supportsMessageEvents || super.supportsMessageEvents();
 		}
+		
+		@Override
+		public void setParent(ISolverFactorGraph sfg)
+		{
+			_parent = sfg;
+		}
 	}
 	
 	private static class TestMessage extends ParameterizedMessageBase
@@ -298,7 +291,7 @@ public class TestSNode extends DimpleTestBase
 		expectThrow(DimpleException.class, "Not supported.*", n1, "setOutputMsgValues", 42, null);
 		
 		ISolverFactorGraph sfg = new SumProductSolverGraph(fg);
-		n1._parent = sfg;
+		n1.setParent(sfg);
 		assertSame(sfg, n1.getParentGraph());
 		assertSame(sfg, n1.getOptionParent());
 		
