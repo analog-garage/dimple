@@ -22,6 +22,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.variables.Variable;
@@ -42,6 +43,8 @@ public interface ISolverFactorGraph	extends ISolverNode
 	 * Create a new solver-specific solver graph representing given subgraph.
 	 */
 	public @Nullable ISolverFactorGraph createSubGraph(FactorGraph subgraph, @Nullable IFactorGraphFactory<?> factory);
+	
+	public @Nullable Object getSolverEdge(FactorGraphEdgeState edge);
 	
 	/**
 	 * @return solver-specific factor representing the given model factor or else null.
@@ -84,7 +87,7 @@ public interface ISolverFactorGraph	extends ISolverNode
 	public Collection<? extends ISolverVariable> getSolverVariables();
 	
 	public Collection<? extends ISolverVariable> getSolverVariablesRecursive();
-
+	
 	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor factor);
 
 	/**

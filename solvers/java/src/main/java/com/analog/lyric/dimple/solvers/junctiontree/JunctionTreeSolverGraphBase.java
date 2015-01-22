@@ -53,7 +53,7 @@ import com.analog.lyric.util.misc.Misc;
  * @author Christopher Barber
  */
 public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactorGraph>
-	extends ProxySolverFactorGraph<JunctionTreeSolverFactor, IJunctionTreeSolverVariable<?>, Delegate>
+	extends ProxySolverFactorGraph<JunctionTreeSolverFactor, IJunctionTreeSolverVariable<?>, Void, Delegate>
 {
 	private final JunctionTreeTransform _transformer;
 	private final @Nullable IFactorGraphFactory<?> _solverFactory;

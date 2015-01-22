@@ -21,6 +21,7 @@ import java.util.Collection;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 
@@ -32,14 +33,19 @@ import com.analog.lyric.dimple.model.variables.Variable;
  * @author Christopher Barber
  */
 public interface IParameterizedSolverFactorGraph
-	<SFactor extends ISolverFactor, SVariable extends ISolverVariable>
+	<SFactor extends ISolverFactor, SVariable extends ISolverVariable, SEdge>
 	extends ISolverFactorGraph
 {
+	public SEdge createEdgeState(FactorGraphEdgeState edge);
+	
 	public SFactor createFactor(Factor factor);
 	
 	public SVariable createVariable(Variable variable);
 
 	public ISolverFactorGraph createSubgraph(FactorGraph subgraph);
+	
+	@Override
+	public @Nullable SEdge getSolverEdge(FactorGraphEdgeState edge);
 	
 	@Override
 	public @Nullable SFactor getSolverFactor(Factor factor, boolean create);
@@ -60,4 +66,10 @@ public interface IParameterizedSolverFactorGraph
 	 */
 	@Override
 	public Collection<SVariable> getSolverVariables();
+	
+	/**
+	 * True if solver uses edge-specific state.
+	 * @since 0.08
+	 */
+	public boolean hasEdgeState();
 }

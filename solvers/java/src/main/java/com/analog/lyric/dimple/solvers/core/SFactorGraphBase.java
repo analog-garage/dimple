@@ -28,6 +28,7 @@ import com.analog.lyric.dimple.environment.DimpleThread;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorBase;
 import com.analog.lyric.dimple.model.factors.FactorList;
@@ -46,9 +47,10 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
-public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable extends ISolverVariable>
+public abstract class SFactorGraphBase
+	<SFactor extends ISolverFactor, SVariable extends ISolverVariable, SEdge>
 	extends SNode<FactorGraph>
-	implements IParameterizedSolverFactorGraph<SFactor, SVariable>
+	implements IParameterizedSolverFactorGraph<SFactor, SVariable, SEdge>
 {
 	/**
 	 * Bits in {@link #_flags} reserved by this class and its superclasses.
@@ -60,7 +62,7 @@ public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable 
 	private @Nullable MultiThreadingManager _multithreader; // = new MultiThreadingManager();
 	private boolean _useMultithreading = false;
 	
-	protected final FactorGraphSolverState<SFactor,SVariable> _state;
+	protected final FactorGraphSolverState<SFactor,SVariable,SEdge> _state;
 
 	/*--------------
 	 * Construction
@@ -77,7 +79,7 @@ public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable 
 	 */
 	
 	@Override
-	public SFactorGraphBase<SFactor,SVariable> getContainingSolverGraph()
+	public SFactorGraphBase<SFactor,SVariable,SEdge> getContainingSolverGraph()
 	{
 		return this;
 	}
@@ -95,6 +97,13 @@ public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable 
 	 * ISolverFactorGraph methods
 	 */
 	
+	@SuppressWarnings("null")
+	@Override
+	public SEdge createEdgeState(FactorGraphEdgeState edge)
+	{
+		return null;
+	}
+	
 	@Override
 	public abstract SFactor createFactor(Factor factor);
 	
@@ -110,6 +119,12 @@ public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable 
 	public @Nullable ISolverFactorGraph createSubGraph(FactorGraph subgraph, @Nullable IFactorGraphFactory<?> factory)
 	{
 		return factory != null ? factory.createFactorGraph(subgraph) : null;
+	}
+
+	@Override
+	public @Nullable SEdge getSolverEdge(FactorGraphEdgeState edge)
+	{
+		return _state.getSolverEdge(edge, true);
 	}
 	
 	/**
@@ -210,10 +225,20 @@ public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable 
 		return _state.getSolverVariablesRecursive();
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 */
+	@Override
+	public boolean hasEdgeState()
+	{
+		return false;
+	}
+
 	@Override
 	public void moveMessages(ISolverNode other)
 	{
-		SFactorGraphBase<?,?> sother = (SFactorGraphBase<?,?>)other;
+		SFactorGraphBase<?,?,?> sother = (SFactorGraphBase<?,?,?>)other;
 		FactorList otherFactors = sother._model.getFactors();
 		FactorList myFactors = _model.getFactors();
 		
@@ -626,6 +651,8 @@ public abstract class SFactorGraphBase<SFactor extends ISolverFactor, SVariable 
 	{
 		_numIterations = getOptionOrDefault(BPOptions.iterations);
 		_useMultithreading = getOptionOrDefault(SolverOptions.enableMultithreading);
+
+		_state.instantiateSolverEdges();
 		
 		FactorGraph fg = _model;
 		for (Variable variable : fg.getOwnedVariables())

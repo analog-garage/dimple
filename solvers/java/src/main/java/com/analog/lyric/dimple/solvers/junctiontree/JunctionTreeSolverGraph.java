@@ -29,7 +29,7 @@ import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
  */
 public class JunctionTreeSolverGraph extends JunctionTreeSolverGraphBase<SumProductSolverGraph>
 {
-	private final @Nullable JunctionTreeSolverGraph _parent;
+	private final @Nullable JunctionTreeSolverGraph _jtparent;
 	private final JunctionTreeSolverGraph _root;
 
 	/*--------------
@@ -40,7 +40,7 @@ public class JunctionTreeSolverGraph extends JunctionTreeSolverGraphBase<SumProd
 		@Nullable JunctionTreeSolverGraph parent)
 	{
 		super(sourceModel, solverFactory);
-		_parent = parent;
+		_jtparent = parent;
 		_root = parent != null ? parent.getRootGraph() : this;
 	}
 
@@ -56,7 +56,7 @@ public class JunctionTreeSolverGraph extends JunctionTreeSolverGraphBase<SumProd
 	@Override
 	public @Nullable JunctionTreeSolverGraph getParentGraph()
 	{
-		return _parent;
+		return _jtparent;
 	}
 	
 	@Override

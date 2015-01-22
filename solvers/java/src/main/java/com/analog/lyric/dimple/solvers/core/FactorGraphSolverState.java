@@ -30,6 +30,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ExtendedArrayList;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.NodeId;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -50,7 +51,8 @@ import com.google.common.collect.UnmodifiableIterator;
  * @category internal
  */
 @Internal
-public class FactorGraphSolverState<SFactor extends ISolverFactor, SVariable extends ISolverVariable>
+public class FactorGraphSolverState
+	<SFactor extends ISolverFactor, SVariable extends ISolverVariable, SEdge>
 {
 	/*-------
 	 * State
@@ -59,7 +61,7 @@ public class FactorGraphSolverState<SFactor extends ISolverFactor, SVariable ext
 	/**
 	 * The solver graph that owns this state.
 	 */
-	private final IParameterizedSolverFactorGraph<SFactor,SVariable> _owner;
+	private final IParameterizedSolverFactorGraph<SFactor,SVariable,SEdge> _owner;
 	
 	/**
 	 * Solver factors belonging to {@link _owner} indexed by {@link Factor}s local index.
@@ -76,18 +78,19 @@ public class FactorGraphSolverState<SFactor extends ISolverFactor, SVariable ext
 	 */
 	private final ExtendedArrayList<ISolverFactorGraph> _subgraphs;
 	
-	// TODO add solver edge state (e.g. messages)
+	private final @Nullable ExtendedArrayList<SEdge> _edges;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	public FactorGraphSolverState(FactorGraph graph, IParameterizedSolverFactorGraph<SFactor,SVariable> sgraph)
+	public FactorGraphSolverState(FactorGraph graph, IParameterizedSolverFactorGraph<SFactor,SVariable,SEdge> sgraph)
 	{
 		_owner = sgraph;
 		_factors = new ExtendedArrayList<>(graph.getFactorCount(0));
 		_variables = new ExtendedArrayList<>(graph.getVariableCount(0));
 		_subgraphs = new ExtendedArrayList<>(graph.getOwnedGraphs().size());
+		_edges = sgraph.hasEdgeState() ? new ExtendedArrayList<SEdge>(graph.getGraphEdgeCount()) : null;
 	}
 	
 	/*---------------
@@ -345,7 +348,7 @@ public class FactorGraphSolverState<SFactor extends ISolverFactor, SVariable ext
 		return _owner.getModelObject();
 	}
 	
-	public final IParameterizedSolverFactorGraph<SFactor,SVariable> getSolverGraph()
+	public final IParameterizedSolverFactorGraph<SFactor,SVariable,SEdge> getSolverGraph()
 	{
 		return _owner;
 	}
@@ -457,6 +460,51 @@ public class FactorGraphSolverState<SFactor extends ISolverFactor, SVariable ext
 		return ssubgraph != null ? ssubgraph.getSolverVariable(variable, create) : null;
 	}
 	
+	public @Nullable SEdge getSolverEdge(FactorGraphEdgeState edge, boolean create)
+	{
+		final ExtendedArrayList<SEdge> edges = _edges;
+		if (edges == null)
+		{
+			return null;
+		}
+		
+		final int index = edge.edgeIndex();
+		SEdge result = edges.get(index);
+		
+		if (result == null)
+		{
+			if (create)
+			{
+				result = _owner.createEdgeState(edge);
+			}
+			edges.set(index,  result);
+		}
+		
+		return result;
+	}
+	
+	public @Nullable SEdge getSolverEdge(int edgeIndex, boolean create)
+	{
+		final ExtendedArrayList<SEdge> edges = _edges;
+		if (edges == null)
+		{
+			return null;
+		}
+		
+		SEdge result = edges.getOrNull(edgeIndex);
+		
+		if (result == null)
+		{
+			if (create)
+			{
+				result = _owner.createEdgeState(getModelGraph().getGraphEdgeState(edgeIndex));
+			}
+			edges.set(edgeIndex,  result);
+		}
+		
+		return result;
+	}
+	
 	@SuppressWarnings("unchecked")
 	public @Nullable SFactor getSolverFactor(Factor factor, boolean create)
 	{
@@ -493,6 +541,20 @@ public class FactorGraphSolverState<SFactor extends ISolverFactor, SVariable ext
 		}
 		
 		return sfactor;
+	}
+	
+	public void instantiateSolverEdges()
+	{
+		ExtendedArrayList<SEdge> edges = _edges;
+		if (edges != null)
+		{
+			final int n = getModelGraph().getGraphEdgeCount();
+			edges.setSize(n);
+			for (int i = 0; i < n; ++i)
+			{
+				getSolverEdge(i, true);
+			}
+		}
 	}
 	
 	public ISolverFactorGraph instantiateSubgraph(FactorGraph subgraph)

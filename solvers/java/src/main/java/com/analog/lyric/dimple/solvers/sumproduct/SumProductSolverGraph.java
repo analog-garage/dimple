@@ -99,7 +99,7 @@ import com.analog.lyric.options.IOptionKey;
  * 
  * @since 0.07
  */
-public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVariable>
+public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVariable,Object>
 {
 	private double _damping = 0;
 	private @Nullable IFactorTable _currentFactorTable = null;
@@ -116,7 +116,6 @@ public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolve
 		setOption(GibbsOptions.burnInScans, SampledFactor.DEFAULT_BURN_IN_SCANS_PER_UPDATE);
 		setOption(GibbsOptions.scansPerSample, SampledFactor.DEFAULT_SCANS_PER_SAMPLE);
 	}
-	
 
 	@SuppressWarnings("deprecation") // TODO remove when S* classes removed
 	@Override

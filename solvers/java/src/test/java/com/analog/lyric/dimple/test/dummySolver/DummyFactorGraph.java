@@ -30,7 +30,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
-public class DummyFactorGraph extends SFactorGraphBase<ISolverFactor,ISolverVariable>
+public class DummyFactorGraph extends SFactorGraphBase<ISolverFactor,ISolverVariable,Object>
 {
 	public DummyFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph)
 	{
@@ -107,7 +107,7 @@ public class DummyFactorGraph extends SFactorGraphBase<ISolverFactor,ISolverVari
 		return "Dummy";
 	}
 
-	public FactorGraphSolverState<?,?> solverState()
+	public FactorGraphSolverState<?,?,?> solverState()
 	{
 		return _state;
 	}

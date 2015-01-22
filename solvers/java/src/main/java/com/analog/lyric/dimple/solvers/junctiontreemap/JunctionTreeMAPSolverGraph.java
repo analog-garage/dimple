@@ -31,7 +31,7 @@ import com.analog.lyric.dimple.solvers.minsum.MinSumSolverGraph;
  */
 public class JunctionTreeMAPSolverGraph extends JunctionTreeSolverGraphBase<MinSumSolverGraph>
 {
-	private final @Nullable JunctionTreeMAPSolverGraph _parent;
+	private final @Nullable JunctionTreeMAPSolverGraph _jtparent;
 	private final JunctionTreeMAPSolverGraph _root;
 
 	/*--------------
@@ -42,7 +42,7 @@ public class JunctionTreeMAPSolverGraph extends JunctionTreeSolverGraphBase<MinS
 		@Nullable JunctionTreeMAPSolverGraph parent)
 	{
 		super(sourceModel, solverFactory);
-		_parent = parent;
+		_jtparent = parent;
 		_root = parent != null ? parent.getRootGraph() : this;
 	}
 
@@ -58,7 +58,7 @@ public class JunctionTreeMAPSolverGraph extends JunctionTreeSolverGraphBase<MinS
 	@Override
 	public @Nullable JunctionTreeMAPSolverGraph getParentGraph()
 	{
-		return _parent;
+		return _jtparent;
 	}
 	
 	@Override

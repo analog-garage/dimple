@@ -39,7 +39,7 @@ import com.analog.lyric.math.DimpleRandomGenerator;
  * @since 0.07
  */
 @SuppressWarnings("deprecation") // TODO remove when SDiscreteVariable removed
-public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, ISolverVariable>
+public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, ISolverVariable, Object>
 {
 	protected int _numIterationsBetweenResampling = 1;
 //	protected int _defaultNumParticles = 1;

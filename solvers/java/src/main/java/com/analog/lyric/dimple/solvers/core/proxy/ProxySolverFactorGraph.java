@@ -22,6 +22,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.FactorGraphSolverState;
@@ -35,9 +36,9 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
  * @since 0.05
  */
 public abstract class ProxySolverFactorGraph<SFactor extends ISolverFactor, SVariable extends ISolverVariable,
-		Delegate extends ISolverFactorGraph>
+	SEdge, Delegate extends ISolverFactorGraph>
 	extends ProxySolverNode<Delegate>
-	implements IParameterizedSolverFactorGraph<SFactor, SVariable>
+	implements IParameterizedSolverFactorGraph<SFactor, SVariable, SEdge>
 {
 	/*-------
 	 * State
@@ -47,7 +48,7 @@ public abstract class ProxySolverFactorGraph<SFactor extends ISolverFactor, SVar
 	protected boolean _useMultithreading = false;
 	protected int _numIterations = 1;
 	
-	private final FactorGraphSolverState<SFactor,SVariable> _state;
+	private final FactorGraphSolverState<SFactor,SVariable, SEdge> _state;
 	
 	/*--------------
 	 * Construction
@@ -67,7 +68,7 @@ public abstract class ProxySolverFactorGraph<SFactor extends ISolverFactor, SVar
 	 */
 	
 	@Override
-	public ProxySolverFactorGraph<SFactor,SVariable,Delegate> getContainingSolverGraph()
+	public ProxySolverFactorGraph<SFactor,SVariable,SEdge,Delegate> getContainingSolverGraph()
 	{
 		return this;
 	}
@@ -98,6 +99,13 @@ public abstract class ProxySolverFactorGraph<SFactor extends ISolverFactor, SVar
 		requireDelegate("continueSolve").continueSolve();
 	}
 
+	@SuppressWarnings("null")
+	@Override
+	public SEdge createEdgeState(FactorGraphEdgeState edge)
+	{
+		return null;
+	}
+	
 	@Override
 	public boolean customFactorExists(String funcName)
 	{
@@ -124,6 +132,17 @@ public abstract class ProxySolverFactorGraph<SFactor extends ISolverFactor, SVar
 		return sfg != null ? sfg.getMatlabSolveWrapper() : null;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Default implementation returns null.
+	 */
+	@Override
+	public @Nullable SEdge getSolverEdge(FactorGraphEdgeState edge)
+	{
+		return _state.getSolverEdge(edge, true);
+	}
+	
 	@Override
 	public @Nullable ISolverFactor getSolverFactor(Factor factor)
 	{
@@ -210,6 +229,12 @@ public abstract class ProxySolverFactorGraph<SFactor extends ISolverFactor, SVar
 		return _numIterations;
 	}
 
+	@Override
+	public boolean hasEdgeState()
+	{
+		return false;
+	}
+	
 	@Override
 	public void interruptSolver()
 	{

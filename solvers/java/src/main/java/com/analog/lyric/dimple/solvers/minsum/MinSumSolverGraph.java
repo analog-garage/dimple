@@ -58,7 +58,7 @@ import com.analog.lyric.options.IOptionKey;
  *  <p>
  * @since 0.07
  */
-public class MinSumSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVariable>
+public class MinSumSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVariable,Object>
 {
 	protected double _damping = 0;
 

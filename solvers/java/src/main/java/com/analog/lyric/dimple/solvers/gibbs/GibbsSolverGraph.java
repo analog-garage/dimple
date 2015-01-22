@@ -105,7 +105,7 @@ import com.analog.lyric.math.DimpleRandomGenerator;
  *  <p>
  * @since 0.07
  */
-public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolverVariableGibbs>
+public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolverVariableGibbs, Object>
 {
 	/*
 	 * Constants

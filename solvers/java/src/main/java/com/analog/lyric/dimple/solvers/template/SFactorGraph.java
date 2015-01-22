@@ -31,7 +31,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
  * @author shershey
  *
  */
-public class SFactorGraph  extends SFactorGraphBase<ISolverFactor,ISolverVariable>
+public class SFactorGraph  extends SFactorGraphBase<ISolverFactor,ISolverVariable,Object>
 {
 
 	/**

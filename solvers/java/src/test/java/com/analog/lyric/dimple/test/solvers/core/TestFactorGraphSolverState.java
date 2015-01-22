@@ -63,7 +63,7 @@ public class TestFactorGraphSolverState extends DimpleTestBase
 	}
 	
 	
-	private void assertInvariants(FactorGraphSolverState<?,?> state, ISolverFactorGraph sroot)
+	private void assertInvariants(FactorGraphSolverState<?,?,?> state, ISolverFactorGraph sroot)
 	{
 		final FactorGraph root = sroot.getModelObject();
 		assertSame(sroot, state.getSolverGraph());

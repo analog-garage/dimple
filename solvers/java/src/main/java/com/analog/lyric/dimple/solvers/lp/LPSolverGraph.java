@@ -53,7 +53,7 @@ import com.analog.lyric.util.misc.Matlab;
  * @since 0.07
  */
 @NotThreadSafe
-public class LPSolverGraph extends SFactorGraphBase<LPTableFactor, LPDiscrete>
+public class LPSolverGraph extends SFactorGraphBase<LPTableFactor, LPDiscrete, Void>
 {
 	/*-------
 	 * State
@@ -325,6 +325,12 @@ public class LPSolverGraph extends SFactorGraphBase<LPTableFactor, LPDiscrete>
 	public Collection<LPDiscrete> getSolverVariablesRecursive()
 	{
 		return (Collection<LPDiscrete>) super.getSolverVariablesRecursive();
+	}
+	
+	@Override
+	public boolean hasEdgeState()
+	{
+		return false;
 	}
 	
 	private boolean useMatlabSolver()
