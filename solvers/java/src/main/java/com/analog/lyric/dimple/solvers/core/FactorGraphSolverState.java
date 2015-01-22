@@ -570,8 +570,10 @@ public class FactorGraphSolverState<SFactor extends ISolverFactor, SVariable ext
 		
 		final int index = NodeId.indexFromLocalId(subgraph.getLocalId());
 		final ExtendedArrayList<ISolverFactorGraph> graphs = _subgraphs;
-		
-		((SNode<?>)sgraph)._parent = _owner;
+		if (sgraph != null)
+		{
+			sgraph.setParent(_owner);
+		}
 		graphs.set(index,  sgraph);
 	}
 	
