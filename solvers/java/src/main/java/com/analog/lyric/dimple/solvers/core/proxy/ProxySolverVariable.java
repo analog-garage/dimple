@@ -20,8 +20,9 @@ import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.solvers.core.SVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -29,12 +30,10 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 /**
  * @since 0.05
  */
-public abstract class ProxySolverVariable<Delegate extends ISolverVariable>
-	extends ProxySolverNode<Delegate>
+public abstract class ProxySolverVariable<MVariable extends Variable, Delegate extends ISolverVariable>
+	extends SVariableBase<MVariable>
 	implements IProxySolverVariable<Delegate>
 {
-	protected final Variable _modelVariable;
-	
 	/*--------------
 	 * Construction
 	 */
@@ -42,9 +41,9 @@ public abstract class ProxySolverVariable<Delegate extends ISolverVariable>
 	/**
 	 * @param modelVariable
 	 */
-	protected ProxySolverVariable(Variable modelVariable)
+	protected ProxySolverVariable(MVariable modelVariable)
 	{
-		_modelVariable = modelVariable;
+		super(modelVariable);
 	}
 
 	/*---------------------
@@ -52,21 +51,94 @@ public abstract class ProxySolverVariable<Delegate extends ISolverVariable>
 	 */
 	
 	@Override
-	public Domain getDomain()
+	public double getBetheEntropy()
 	{
-		return _modelVariable.getDomain();
+		return requireDelegate("getBetheEntropy").getBetheEntropy();
+	}
+
+	@Override
+	public double getInternalEnergy()
+	{
+		return requireDelegate("getInternalEnergy").getInternalEnergy();
+	}
+
+	@Override
+	public Object getInputMsg(int portIndex)
+	{
+		throw unsupported("getInputMsg");
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex)
+	{
+		throw unsupported("getOutputMsg");
+	}
+
+	@Override
+	public double getScore()
+	{
+		return requireDelegate("getScore").getScore();
+	}
+
+	@Override
+	public void initialize()
+	{
+		clearFlags();
+		requireDelegate("initialize").initialize();
+	}
+
+	@Override
+	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
+	{
+		throw unsupported("moveMessages");
+	}
+
+	@Override
+	public void resetEdgeMessages(int portNum)
+	{
+		throw unsupported("resetEdgeMessages");
+	}
+
+	@Override
+	public void setInputMsg(int portIndex, Object obj)
+	{
+		throw unsupported("setInputMsg");
+	}
+
+	@Override
+	public void setOutputMsg(int portIndex, Object obj)
+	{
+		throw unsupported("setOutputMsg");
+	}
+
+	@Override
+	public void setInputMsgValues(int portIndex, Object obj)
+	{
+		throw unsupported("setInputMsgValues");
+	}
+
+	@Override
+	public void setOutputMsgValues(int portIndex, Object obj)
+	{
+		throw unsupported("setOutputMsgValues");
+	}
+
+	@Override
+	public void update()
+	{
+		requireDelegate("update").update();
+	}
+
+	@Override
+	public void updateEdge(int outPortNum)
+	{
+		throw unsupported("updateEdge");
 	}
 	
 	@Override
-	public Variable getModelObject()
+	protected void doUpdateEdge(int edge)
 	{
-		return _modelVariable;
-	}
-	
-	@Override
-	public ISolverFactor getSibling(int edge)
-	{
-		return Objects.requireNonNull(getModelObject().getSibling(edge).getSolver());
+		throw unsupported("doUpdateEdge");
 	}
 
 	/*-------------------------
@@ -123,9 +195,9 @@ public abstract class ProxySolverVariable<Delegate extends ISolverVariable>
 	@Override
 	public void moveNonEdgeSpecificState(ISolverNode other)
 	{
-		if (other instanceof ProxySolverNode)
+		if (other instanceof IProxySolverNode)
 		{
-			other = Objects.requireNonNull(((ProxySolverNode<?>)other).getDelegate());
+			other = Objects.requireNonNull(((IProxySolverNode<?>)other).getDelegate());
 		}
 		requireDelegate("moveNonEdgeSpecificState").moveNonEdgeSpecificState(other);
 	}
@@ -154,5 +226,30 @@ public abstract class ProxySolverVariable<Delegate extends ISolverVariable>
 		{
 			delegate.setInputOrFixedValue(input, fixedValue);
 		}
+	}
+	
+	/*---------------
+	 * Local methods
+	 */
+	
+	/**
+	 * Returns non-null delegate or throws an error indicating method requires that
+	 * delegate solver has been set.
+	 * @since 0.06
+	 */
+	protected Delegate requireDelegate(String method)
+	{
+		Delegate delegate = getDelegate();
+		if (delegate == null)
+		{
+			throw new DimpleException("Delegate solver required by '%s' has not been set.", method);
+		}
+		return delegate;
+	}
+	
+	protected RuntimeException unsupported(String method)
+	{
+		return DimpleException.unsupportedMethod(getClass(), method,
+			"Not supported for proxy solver because graph topology may be different.");
 	}
 }

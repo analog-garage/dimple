@@ -82,4 +82,14 @@ public class JunctionTreeMAPSolverGraph extends JunctionTreeSolverGraphBase<MinS
 	{
 		return new JunctionTreeMAPSolverGraph(subgraph, factory, this);
 	}
+	
+	/*--------------------------
+	 * SFactorGraphBase methods
+	 */
+	
+	@Override
+	protected String getSolverName()
+	{
+		return "Junction tree MAP";
+	}
 }

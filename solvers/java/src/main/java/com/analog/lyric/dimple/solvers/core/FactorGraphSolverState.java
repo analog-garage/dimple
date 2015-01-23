@@ -51,8 +51,7 @@ import com.google.common.collect.UnmodifiableIterator;
  * @category internal
  */
 @Internal
-public class FactorGraphSolverState
-	<SFactor extends ISolverFactor, SVariable extends ISolverVariable, SEdge>
+public class FactorGraphSolverState<SFactor extends ISolverFactor, SVariable extends ISolverVariable, SEdge>
 {
 	/*-------
 	 * State

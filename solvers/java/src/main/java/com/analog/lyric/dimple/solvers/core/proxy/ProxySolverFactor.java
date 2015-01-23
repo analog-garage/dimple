@@ -18,16 +18,19 @@ package com.analog.lyric.dimple.solvers.core.proxy;
 
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 /**
  * @since 0.05
  */
 public abstract class ProxySolverFactor<Delegate extends ISolverFactor>
-	extends ProxySolverNode<Delegate> implements ISolverFactor
+	extends SFactorBase implements ISolverFactor, IProxySolverNode<Delegate>
 {
 	protected final Factor _modelFactor;
 	
@@ -40,6 +43,7 @@ public abstract class ProxySolverFactor<Delegate extends ISolverFactor>
 	 */
 	protected ProxySolverFactor(Factor modelFactor)
 	{
+		super(modelFactor);
 		_modelFactor = modelFactor;
 	}
 
@@ -48,15 +52,88 @@ public abstract class ProxySolverFactor<Delegate extends ISolverFactor>
 	 */
 	
 	@Override
-	public Factor getModelObject()
+	public double getBetheEntropy()
 	{
-		return _modelFactor;
+		return requireDelegate("getBetheEntropy").getBetheEntropy();
 	}
-	
+
 	@Override
-	public ISolverVariable getSibling(int edge)
+	public double getInternalEnergy()
 	{
-		return Objects.requireNonNull(getModelObject().getSibling(edge).getSolver());
+		return requireDelegate("getInternalEnergy").getInternalEnergy();
+	}
+
+	@Override
+	public Object getInputMsg(int portIndex)
+	{
+		throw unsupported("getInputMsg");
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex)
+	{
+		throw unsupported("getOutputMsg");
+	}
+
+	@Override
+	public double getScore()
+	{
+		return requireDelegate("getScore").getScore();
+	}
+
+	@Override
+	public void initialize()
+	{
+		clearFlags();
+		requireDelegate("initialize").initialize();
+	}
+
+	@Override
+	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
+	{
+		throw unsupported("moveMessages");
+	}
+
+	@Override
+	public void resetEdgeMessages(int portNum)
+	{
+		throw unsupported("resetEdgeMessages");
+	}
+
+	@Override
+	public void setInputMsg(int portIndex, Object obj)
+	{
+		throw unsupported("setInputMsg");
+	}
+
+	@Override
+	public void setOutputMsg(int portIndex, Object obj)
+	{
+		throw unsupported("setOutputMsg");
+	}
+
+	@Override
+	public void setInputMsgValues(int portIndex, Object obj)
+	{
+		throw unsupported("setInputMsgValues");
+	}
+
+	@Override
+	public void setOutputMsgValues(int portIndex, Object obj)
+	{
+		throw unsupported("setOutputMsgValues");
+	}
+
+	@Override
+	public void update()
+	{
+		requireDelegate("update").update();
+	}
+
+	@Override
+	public void updateEdge(int outPortNum)
+	{
+		throw unsupported("updateEdge");
 	}
 
 	/*-----------------------
@@ -82,9 +159,9 @@ public abstract class ProxySolverFactor<Delegate extends ISolverFactor>
 	@Override
 	public void moveMessages(ISolverNode other)
 	{
-		if (other instanceof ProxySolverNode)
+		if (other instanceof IProxySolverNode)
 		{
-			other = Objects.requireNonNull(((ProxySolverNode<?>)other).getDelegate());
+			other = Objects.requireNonNull(((IProxySolverNode<?>)other).getDelegate());
 		}
 		requireDelegate("moveMessages").moveMessages(other);
 	}
@@ -99,5 +176,42 @@ public abstract class ProxySolverFactor<Delegate extends ISolverFactor>
 	public void setDirectedTo(int[] indices)
 	{
 		throw unsupported("setDirectedTo");
+	}
+	
+	/*---------------
+	 * SNode methods
+	 */
+	
+	@Override
+	protected void doUpdateEdge(int edge)
+	{
+	}
+	
+	/*---------------
+	 * Local methods
+	 */
+	
+	@Override
+	public abstract @Nullable Delegate getDelegate();
+
+	/**
+	 * Returns non-null delegate or throws an error indicating method requires that
+	 * delegate solver has been set.
+	 * @since 0.06
+	 */
+	protected Delegate requireDelegate(String method)
+	{
+		Delegate delegate = getDelegate();
+		if (delegate == null)
+		{
+			throw new DimpleException("Delegate solver required by '%s' has not been set.", method);
+		}
+		return delegate;
+	}
+	
+	protected RuntimeException unsupported(String method)
+	{
+		return DimpleException.unsupportedMethod(getClass(), method,
+			"Not supported for proxy solver because graph topology may be different.");
 	}
 }

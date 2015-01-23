@@ -27,8 +27,10 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.Internal;
 
 /**
- * @since 0.0.5
+ * @since 0.05
+ * @deprecated No longer used.
  */
+@Deprecated
 @NotThreadSafe
 public abstract class ProxySolverNode<Delegate extends ISolverNode>
 	extends SolverEventSource

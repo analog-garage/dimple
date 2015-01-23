@@ -27,8 +27,8 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
  * @author Christopher Barber
  *
  */
-public class JunctionTreeSolverVariable
-	extends ProxySolverVariable<ISolverVariable>
+public class JunctionTreeSolverVariable<MVariable extends Variable>
+	extends ProxySolverVariable<MVariable, ISolverVariable>
 	implements IJunctionTreeSolverVariable<ISolverVariable>
 {
 	/*-------
@@ -44,7 +44,7 @@ public class JunctionTreeSolverVariable
 	/**
 	 * @param modelVariable
 	 */
-	protected JunctionTreeSolverVariable(Variable modelVariable, JunctionTreeSolverGraphBase<?> root)
+	protected JunctionTreeSolverVariable(MVariable modelVariable, JunctionTreeSolverGraphBase<?> root)
 	{
 		super(modelVariable);
 		_root = root;

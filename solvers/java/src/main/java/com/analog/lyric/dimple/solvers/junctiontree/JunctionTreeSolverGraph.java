@@ -80,4 +80,10 @@ public class JunctionTreeSolverGraph extends JunctionTreeSolverGraphBase<SumProd
 	{
 		return new JunctionTreeSolverGraph(subgraph, factory, this);
 	}
+	
+	@Override
+	protected String getSolverName()
+	{
+		return "Junction tree";
+	}
 }

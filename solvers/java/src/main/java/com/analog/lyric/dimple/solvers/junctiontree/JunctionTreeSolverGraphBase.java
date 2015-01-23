@@ -207,7 +207,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 		}
 		else
 		{
-			return new JunctionTreeSolverVariable(var, getRootGraph());
+			return new JunctionTreeSolverVariable<Variable>(var, getRootGraph());
 		}
 	}
 

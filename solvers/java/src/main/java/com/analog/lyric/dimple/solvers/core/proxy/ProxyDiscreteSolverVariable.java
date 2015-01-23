@@ -26,7 +26,7 @@ import com.analog.lyric.dimple.solvers.interfaces.IDiscreteSolverVariable;
  * @author Christopher Barber
  */
 public abstract class ProxyDiscreteSolverVariable<Delegate extends IDiscreteSolverVariable>
-	extends ProxySolverVariable<Delegate>
+	extends ProxySolverVariable<Discrete, Delegate>
 	implements IProxyDiscreteSolverVariable<Delegate>
 {
 
@@ -43,12 +43,6 @@ public abstract class ProxyDiscreteSolverVariable<Delegate extends IDiscreteSolv
 	public DiscreteDomain getDomain()
 	{
 		return getModelObject().getDomain();
-	}
-
-	@Override
-	public Discrete getModelObject()
-	{
-		return (Discrete)_modelVariable;
 	}
 
 	@Override

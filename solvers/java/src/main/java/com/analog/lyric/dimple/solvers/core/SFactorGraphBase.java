@@ -60,7 +60,7 @@ public abstract class SFactorGraphBase
 	
 	protected int _numIterations = 1;		// Default number of iterations unless otherwise specified
 	private @Nullable MultiThreadingManager _multithreader; // = new MultiThreadingManager();
-	private boolean _useMultithreading = false;
+	protected boolean _useMultithreading = false;
 	
 	protected final FactorGraphSolverState<SFactor,SVariable,SEdge> _state;
 

@@ -22,6 +22,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.events.SolverEvent;
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -114,6 +115,16 @@ public abstract class SVariableBase<MVariable extends Variable> extends SNode<MV
 	public void createNonEdgeSpecificState()
 	{
 		
+	}
+	
+	/*-------------------------
+	 * ISolverVariable methods
+	 */
+	
+	@Override
+	public Domain getDomain()
+	{
+		return _model.getDomain();
 	}
 	
 	/*---------------

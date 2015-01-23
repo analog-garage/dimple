@@ -70,7 +70,7 @@ public abstract class SFactorBase extends SNode<Factor> implements ISolverFactor
 	}
 	
 	@Override
-	public double [] getBelief()
+	public Object getBelief()
 	{
 		throw new DimpleException("not supported");
 	}
