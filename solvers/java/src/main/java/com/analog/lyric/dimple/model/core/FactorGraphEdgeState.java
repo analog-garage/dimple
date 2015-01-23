@@ -70,8 +70,17 @@ public abstract class FactorGraphEdgeState
 	 */
 	@Internal
 	public abstract int variableEdgeIndex();
-	
-	
+
+	/**
+	 * Given an end node for this edge, return the corresponding edge index.
+	 * 
+	 * @param node Must be a variable or factor at one end of the edge.
+	 * @return {@link #variableEdgeIndex()} or {@link #factorEdgeIndex()} as appropriate.
+	 * @since 0.08
+	 * @category internal
+	 */
+	@Internal
+	public abstract int edgeIndex(Node node);
 	
 	/**
 	 * Return instance of {@link Factor} end of edge, given parent graph.

@@ -31,6 +31,8 @@ import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import cern.colt.list.IntArrayList;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.events.DimpleEvent;
@@ -77,7 +79,12 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	protected @Nullable String _name;
 	private @Nullable FactorGraph _parentGraph;
 	
-	private final ArrayList<FactorGraphEdgeState> _siblingEdges = new ArrayList<>();
+	/**
+	 * Identifies the edges that connect to this node.
+	 * <p>
+	 * Contains integer indexes into the parent graph's edge list.
+	 */
+	private final IntArrayList _siblingEdges = new IntArrayList();
 	
 	/**
 	 * Temporary flags that can be used to mark the node during the execution of various algorithms
@@ -173,7 +180,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 		
 		int reverseIndex = _siblingIndices[index] - 1;
 		
-		INode sibling = _siblingEdges.get(index).getSibling(this);
+		INode sibling = getSibling(index);
 		if (reverseIndex < 0 || sibling.getSibling(reverseIndex) != this)
 		{
 			// Update reverse index if it was not yet initialized or it points to the wrong node,
@@ -310,7 +317,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	@Override
 	public INode getConnectedNodeFlat(int portNum)
 	{
-		return _siblingEdges.get(portNum).getSibling(this);
+		return getSibling(portNum);
 	}
 
 	
@@ -342,7 +349,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	@Override
 	public Node getSibling(int i)
 	{
-		return _siblingEdges.get(i).getSibling(this);
+		return getEdgeState(i).getSibling(this);
 	}
 
 	@Override
@@ -367,7 +374,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 		if (desiredDepth < 0)
 			desiredDepth = Integer.MAX_VALUE;
 		
-		INode node = _siblingEdges.get(portNum).getSibling(this);
+		INode node = getSibling(portNum);
 		
 		// TODO: Instead of computing depths, which is O(depth), could we instead
 		// just look for matching parent. For example, if relativedDepth is zero
@@ -387,7 +394,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	{
 		ArrayList<INode> retval = new ArrayList<INode>();
 		
-		INode n = _siblingEdges.get(index).getSibling(this);
+		INode n = getSibling(index);
 		
 		while (n != null)
 		{
@@ -691,7 +698,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
      */
 	public FactorGraphEdgeState getEdgeState(int i)
 	{
-		return _siblingEdges.get(i);
+		return requireParentGraph().getGraphEdgeState(_siblingEdges.get(i));
 	}
 	
 	/**
@@ -702,7 +709,16 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	 */
 	public int indexOfEdgeState(FactorGraphEdgeState edge)
 	{
-		return _siblingEdges.indexOf(edge);
+		FactorGraph parent = requireParentGraph();
+		for (int i = 0, n = _siblingEdges.size(); i < n; ++i)
+		{
+			if (edge == parent.getGraphEdgeState(_siblingEdges.get(i)))
+			{
+				return i;
+			}
+		}
+		
+		return -1;
 	}
 	
 	/**
@@ -786,7 +802,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 		{
 			siblingToIndex.put(edge.getSibling(this), _siblingEdges.size());
 		}
-		_siblingEdges.add(edge);
+		_siblingEdges.add(edge.edgeIndex(this));
 
 		notifyConnectionsChanged();
 	}
@@ -809,7 +825,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	@Internal
 	protected void removeEdgeState(FactorGraphEdgeState edge)
 	{
-		_siblingEdges.remove(edge);
+		_siblingEdges.remove(indexOfEdgeState(edge));
 		_siblingToIndex = null;
 		_siblingIndices = ArrayUtil.EMPTY_INT_ARRAY;
 		notifyConnectionsChanged();
@@ -818,8 +834,8 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	@Internal
 	protected void replaceEdgeState(FactorGraphEdgeState oldEdge, FactorGraphEdgeState newEdge)
 	{
-		// TODO : update computed state
-		_siblingEdges.set(_siblingEdges.indexOf(oldEdge), newEdge);
+		assert(isFactor());
+		_siblingEdges.set(indexOfEdgeState(oldEdge), newEdge.edgeIndex(this));
 		notifyConnectionsChanged();
 	}
 	
@@ -946,7 +962,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 			siblingToIndex = _siblingToIndex = new HashMap<>(nSiblings);
 			for (int i = 0; i < nSiblings; ++i)
 			{
-				siblingToIndex.put(_siblingEdges.get(i).getSibling(this), i);
+				siblingToIndex.put(getSibling(i), i);
 			}
 		}
 		
@@ -970,7 +986,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	
 	private boolean isConnected(INode node, int portIndex)
 	{
-		INode other = requireNonNull(_siblingEdges.get(portIndex).getSibling(this));
+		INode other = requireNonNull(getSibling(portIndex));
 		
 		if (other == node)
 			return true;

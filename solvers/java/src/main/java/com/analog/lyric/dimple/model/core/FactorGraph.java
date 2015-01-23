@@ -188,6 +188,14 @@ public class FactorGraph extends FactorBase
 	
 	private final ArrayList<FactorGraphEdgeState> _edges;
 	
+	/**
+	 * Edges defining the graph's siblings.
+	 * <p>
+	 * This replaces the sibling indexes from Node, which cannot be used for this due to the
+	 * fact the edges may not be a member of this graph's edge list.
+	 */
+	private final ArrayList<FactorGraphEdgeState> _graphSiblings = new ArrayList<>();
+	
 	/*--------------
 	 * Edge classes
 	 */
@@ -260,6 +268,12 @@ public class FactorGraph extends FactorBase
 		{
 			_data = edgeIndex | (long)factorIndex << FACTOR_OFFSET | (long)variableIndex << VARIABLE_OFFSET;
 		}
+		
+		@Override
+		public int edgeIndex(Node node)
+		{
+			return (int)_data & EDGE_MASK;
+		}
 
 		@Override
 		public int factorEdgeIndex()
@@ -300,6 +314,12 @@ public class FactorGraph extends FactorBase
 			_variableIndex = variableOffset;
 		}
 		
+		@Override
+		public int edgeIndex(Node node)
+		{
+			return _edgeIndex;
+		}
+
 		@Override
 		public int factorEdgeIndex()
 		{
@@ -417,6 +437,12 @@ public class FactorGraph extends FactorBase
 		}
 
 		@Override
+		public int edgeIndex(Node node)
+		{
+			return node.isVariable() ? variableEdgeIndex() : factorEdgeIndex();
+		}
+		
+		@Override
 		public int factorEdgeIndex()
 		{
 			return (_data >>> FACTOR_EDGE_OFFSET) & EDGE_MASK;
@@ -450,6 +476,12 @@ public class FactorGraph extends FactorBase
 			_variableEdgeIndex = variableEdgeIndex;
 		}
 
+		@Override
+		public int edgeIndex(Node node)
+		{
+			return node.isVariable() ? _variableEdgeIndex : _factorEdgeIndex;
+		}
+		
 		@Override
 		public int factorEdgeIndex()
 		{
@@ -1950,7 +1982,7 @@ public class FactorGraph extends FactorBase
 	public int getSiblingCount()
 	{
 		updateSiblings();
-		return super.getSiblingCount();
+		return _graphSiblings.size();
 	}
 	
 	@Override
@@ -1965,7 +1997,7 @@ public class FactorGraph extends FactorBase
 		if (_siblingVersionId != _structureVersion)
 		{
 			// Recompute siblings
-			clearEdgeState();
+			_graphSiblings.clear();
 			
 			if (!_boundaryVariables.isEmpty())
 			{
@@ -1982,7 +2014,7 @@ public class FactorGraph extends FactorBase
 						
 						if (isAncestorOf(edge.getFactor(varGraph)))
 						{
-							addEdgeState(edge);
+							_graphSiblings.add(edge);
 						}
 					}
 				}
@@ -1995,14 +2027,14 @@ public class FactorGraph extends FactorBase
 	public FactorGraphEdgeState getEdgeState(int i)
 	{
 		updateSiblings();
-		return super.getEdgeState(i);
+		return _graphSiblings.get(i);
 	}
 
 	@Override
 	public int indexOfEdgeState(FactorGraphEdgeState edge)
 	{
 		updateSiblings();
-		return super.indexOfEdgeState(edge);
+		return _graphSiblings.indexOf(edge);
 	}
 	
 	public FactorGraphEdgeState getGraphEdgeState(int i)
@@ -3469,13 +3501,14 @@ public class FactorGraph extends FactorBase
 		final Variable variable = edge.getVariable(this);
 		final FactorGraph variableGraph = requireNonNull(variable.getParentGraph());
 		
+		factor.removeEdgeState(edge);
+		variable.removeEdgeState(edge);
+
 		_edges.set(edge.factorEdgeIndex(), null);
 		if (!edge.isLocal())
 		{
 			variableGraph._edges.set(edge.variableEdgeIndex(), null);
 		}
-		factor.removeEdgeState(edge);
-		variable.removeEdgeState(edge);
 		
 		structureChanged();
 		if (!edge.isLocal())
@@ -3505,6 +3538,8 @@ public class FactorGraph extends FactorBase
 		
 		final FactorGraphEdgeState newEdge;
 		
+		oldVariable.removeEdgeState(oldEdge);
+
 		if (factorGraph == newVariableGraph)
 		{
 			newEdge = createLocalEdge(factorEdgeIndex, factor, newVariable);
@@ -3521,12 +3556,11 @@ public class FactorGraph extends FactorBase
 			newVariableGraph._edges.add(newEdge);
 		}
 		
-		factorGraph._edges.set(factorEdgeIndex, newEdge);
-		
-		oldVariable.removeEdgeState(oldEdge);
 		newVariable.addEdgeState(newEdge);
 		factor.replaceEdgeState(oldEdge, newEdge);
 
+		factorGraph._edges.set(factorEdgeIndex, newEdge);
+		
 		factorGraph.structureChanged();
 		if (!oldEdge.isLocal())
 		{
