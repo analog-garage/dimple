@@ -216,7 +216,7 @@ public class FactorGraph extends FactorBase
 		@Override
 		public String toString()
 		{
-			return String.format("[LocalEdgeState #d: %d -> %d]", edgeIndex(), factorIndex(), variableIndex());
+			return String.format("[LocalEdgeState #d: %d -> %d]", factorEdgeIndex(), factorIndex(), variableIndex());
 		}
 		
 		@Override
@@ -262,7 +262,13 @@ public class FactorGraph extends FactorBase
 		}
 
 		@Override
-		public int edgeIndex()
+		public int factorEdgeIndex()
+		{
+			return (int)_data & EDGE_MASK;
+		}
+		
+		@Override
+		public int variableEdgeIndex()
 		{
 			return (int)_data & EDGE_MASK;
 		}
@@ -295,7 +301,13 @@ public class FactorGraph extends FactorBase
 		}
 		
 		@Override
-		public int edgeIndex()
+		public int factorEdgeIndex()
+		{
+			return _edgeIndex;
+		}
+		
+		@Override
+		public int variableEdgeIndex()
 		{
 			return _edgeIndex;
 		}
@@ -330,25 +342,18 @@ public class FactorGraph extends FactorBase
 		public String toString()
 		{
 			return String.format("[BoundaryEdgeState #d: %d (%s) -> %d (%s)]",
-				edgeIndex(), factorIndex(), _factor, variableIndex(), getVariable());
+				factorEdgeIndex(), factorIndex(), _factor, variableIndex(), getVariable());
 		}
 		
-		/**
-		 * @deprecated Use {@link #create(Factor,int,int)} instead
-		 */
-		@Deprecated
-		static BoundaryEdge create(int edgeIndex, Factor factor, int boundaryIndex)
+		static BoundaryEdge create(Factor factor, int factorEdgeIndex, int boundaryIndex, int variableEdgeIndex)
 		{
-			return create(factor, edgeIndex, boundaryIndex);
-		}
-
-		static BoundaryEdge create(Factor factor, int edgeIndex, int boundaryIndex)
-		{
-			if (edgeIndex <= SmallBoundaryEdge.EDGE_MASK && boundaryIndex <= SmallBoundaryEdge.VARIABLE_MASK)
+			if (factorEdgeIndex <= SmallBoundaryEdge.EDGE_MASK &&
+				variableEdgeIndex <= SmallBoundaryEdge.EDGE_MASK &&
+				boundaryIndex <= SmallBoundaryEdge.VARIABLE_MASK)
 			{
-				return new SmallBoundaryEdge(factor, edgeIndex, boundaryIndex);
+				return new SmallBoundaryEdge(factor, factorEdgeIndex, boundaryIndex, variableEdgeIndex);
 			}
-			return new FullBoundaryEdge(factor, edgeIndex,  boundaryIndex);
+			return new FullBoundaryEdge(factor, factorEdgeIndex,  boundaryIndex, variableEdgeIndex);
 		}
 		
 		@Override
@@ -398,46 +403,63 @@ public class FactorGraph extends FactorBase
 	{
 		private final int _data;
 		
-		private static final int EDGE_BITS = 17;
-		private static final int EDGE_MASK = (EDGE_BITS << 1) - 1;
-		private static final int VARIABLE_BITS = 15;
-		private static final int VARIABLE_MASK = (VARIABLE_BITS << 1) - 1;
+		private static final int EDGE_BITS = 11;
+		private static final int EDGE_MASK = (1 << EDGE_BITS) - 1;
+		private static final int VARIABLE_BITS = 10;
+		private static final int VARIABLE_MASK = (1 << VARIABLE_BITS) - 1;
+		private static final int FACTOR_EDGE_OFFSET = VARIABLE_BITS;
+		private static final int VARIABLE_EDGE_OFFSET = FACTOR_EDGE_OFFSET + EDGE_BITS;
 		
-		private SmallBoundaryEdge(Factor factor, int edgeIndex, int boundaryIndex)
+		private SmallBoundaryEdge(Factor factor, int factorEdgeIndex, int boundaryIndex, int variableEdgeIndex)
 		{
 			super(factor);
-			_data = edgeIndex | boundaryIndex << EDGE_BITS;
+			_data = boundaryIndex | factorEdgeIndex<<FACTOR_EDGE_OFFSET | variableEdgeIndex<<VARIABLE_EDGE_OFFSET;
 		}
 
 		@Override
-		public int edgeIndex()
+		public int factorEdgeIndex()
 		{
-			return _data & EDGE_MASK;
+			return (_data >>> FACTOR_EDGE_OFFSET) & EDGE_MASK;
+		}
+
+		@Override
+		public int variableEdgeIndex()
+		{
+			// Mask not needed because these are the high-end bits
+			return _data >>> VARIABLE_EDGE_OFFSET;
 		}
 
 		@Override
 		public int variableIndex()
 		{
-			return _data >>> EDGE_BITS;
+			return _data & VARIABLE_MASK;
 		}
 	}
 	
 	private static final class FullBoundaryEdge extends BoundaryEdge
 	{
-		private final int _edgeIndex;
+		private final int _factorEdgeIndex;
 		private final int _boundaryIndex;
+		private final int _variableEdgeIndex;
 		
-		private FullBoundaryEdge(Factor factor, int edgeIndex, int boundaryIndex)
+		private FullBoundaryEdge(Factor factor, int factorEdgeIndex, int boundaryIndex, int variableEdgeIndex)
 		{
 			super(factor);
-			_edgeIndex = edgeIndex;
+			_factorEdgeIndex = factorEdgeIndex;
 			_boundaryIndex = boundaryIndex;
+			_variableEdgeIndex = variableEdgeIndex;
 		}
 
 		@Override
-		public int edgeIndex()
+		public int factorEdgeIndex()
 		{
-			return _edgeIndex;
+			return _factorEdgeIndex;
+		}
+		
+		@Override
+		public int variableEdgeIndex()
+		{
+			return _variableEdgeIndex;
 		}
 
 		@Override
@@ -3398,7 +3420,20 @@ public class FactorGraph extends FactorBase
 	{
 		assert(factor.getParentGraph() == this);
 
-		final FactorGraphEdgeState edge = createEdge(_edges.size(), factor, variable);
+		final FactorGraph variableGraph = requireNonNull(variable.getParentGraph());
+		
+		FactorGraphEdgeState edge;
+		
+		if (this == variableGraph)
+		{
+			edge = createLocalEdge(_edges.size(), factor, variable);
+		}
+		else
+		{
+			edge = createBoundaryEdge(_edges.size(), variableGraph._edges.size(), factor, variable);
+			variableGraph._edges.add(edge);
+		}
+		
 		_edges.add(edge);
 		factor.addEdgeState(edge);
 		variable.addEdgeState(edge);
@@ -3406,43 +3441,46 @@ public class FactorGraph extends FactorBase
 		structureChanged();
 		if (!edge.isLocal())
 		{
-			requireNonNull(variable.getParentGraph()).structureChanged();
+			variableGraph.structureChanged();
 		}
 	}
 	
-	private FactorGraphEdgeState createEdge(int edgeIndex, Factor factor, Variable variable)
+	private FactorGraphEdgeState createLocalEdge(int edgeIndex, Factor factor, Variable variable)
 	{
 		final int factorOffset = NodeId.indexFromLocalId(factor.getLocalId());
-		
-		if (variable.getParentGraph() == this)
-		{
-			final int variableOffset = NodeId.indexFromLocalId(variable.getLocalId());
-			return LocalEdgeState.create(edgeIndex, factorOffset, variableOffset);
-		}
-		else
-		{
-			final int boundaryOffset = _boundaryVariables.indexOf(variable);
-			assert(boundaryOffset >= 0);
-			
-			return BoundaryEdge.create(factor, edgeIndex, boundaryOffset);
-		}
+		final int variableOffset = NodeId.indexFromLocalId(variable.getLocalId());
+		return LocalEdgeState.create(edgeIndex, factorOffset, variableOffset);
 	}
 	
+	private FactorGraphEdgeState createBoundaryEdge(int factorEdgeIndex, int variableEdgeIndex, Factor factor,
+		Variable variable)
+	{
+		final int boundaryOffset = _boundaryVariables.indexOf(variable);
+		assert(boundaryOffset >= 0);
+
+		return BoundaryEdge.create(factor, factorEdgeIndex, boundaryOffset, variableEdgeIndex);
+	}
+
 	@Override
 	@Internal
 	protected void removeEdge(FactorGraphEdgeState edge)
 	{
 		final Factor factor = edge.getFactor(this);
 		final Variable variable = edge.getVariable(this);
-
-		_edges.set(edge.edgeIndex(), null);
+		final FactorGraph variableGraph = requireNonNull(variable.getParentGraph());
+		
+		_edges.set(edge.factorEdgeIndex(), null);
+		if (!edge.isLocal())
+		{
+			variableGraph._edges.set(edge.variableEdgeIndex(), null);
+		}
 		factor.removeEdgeState(edge);
 		variable.removeEdgeState(edge);
 		
 		structureChanged();
 		if (!edge.isLocal())
 		{
-			requireNonNull(variable.getParentGraph()).structureChanged();
+			variableGraph.structureChanged();
 		}
 	}
 	
@@ -3452,29 +3490,51 @@ public class FactorGraph extends FactorBase
 	@Internal
 	public void replaceEdge(Factor factor, int edgeIndex, Variable newVariable)
 	{
-		final FactorGraph fg = requireNonNull(factor.getParentGraph());
+		final FactorGraph factorGraph = requireNonNull(factor.getParentGraph());
+		
 		final FactorGraphEdgeState oldEdge = factor.getEdgeState(edgeIndex);
-		final Variable oldVariable = oldEdge.getVariable(fg);
+		final Variable oldVariable = oldEdge.getVariable(factorGraph);
+		final FactorGraph oldVariableGraph = requireNonNull(oldVariable.getParentGraph());
+		final FactorGraph newVariableGraph = requireNonNull(newVariable.getParentGraph());
 
 		// Old sibling code
 		factor.replaceSibling(oldVariable, newVariable);
 		
-		final int graphEdgeIndex = oldEdge.edgeIndex();
-		final FactorGraphEdgeState newEdge = createEdge(graphEdgeIndex, factor, newVariable);
-		_edges.set(graphEdgeIndex, newEdge);
+		final int factorEdgeIndex = oldEdge.factorEdgeIndex();
+		final int oldVariableEdgeIndex = oldEdge.variableEdgeIndex();
+		
+		final FactorGraphEdgeState newEdge;
+		
+		if (factorGraph == newVariableGraph)
+		{
+			newEdge = createLocalEdge(factorEdgeIndex, factor, newVariable);
+		}
+		else if (oldVariableGraph == newVariableGraph)
+		{
+			newEdge = createBoundaryEdge(factorEdgeIndex, oldVariableEdgeIndex, factor, newVariable);
+			newVariableGraph._edges.set(oldVariableEdgeIndex, newEdge);
+		}
+		else
+		{
+			newEdge = createBoundaryEdge(factorEdgeIndex, newVariableGraph._edges.size(), factor, newVariable);
+			oldVariableGraph._edges.set(oldVariableEdgeIndex, null);
+			newVariableGraph._edges.add(newEdge);
+		}
+		
+		factorGraph._edges.set(factorEdgeIndex, newEdge);
 		
 		oldVariable.removeEdgeState(oldEdge);
 		newVariable.addEdgeState(newEdge);
 		factor.replaceEdgeState(oldEdge, newEdge);
 
-		fg.structureChanged();
+		factorGraph.structureChanged();
 		if (!oldEdge.isLocal())
 		{
-			requireNonNull(oldVariable.getParentGraph()).structureChanged();
+			oldVariableGraph.structureChanged();
 		}
 		if (!newEdge.isLocal())
 		{
-			requireNonNull(oldVariable.getParentGraph()).structureChanged();
+			newVariableGraph.structureChanged();
 		}
 	}
 	

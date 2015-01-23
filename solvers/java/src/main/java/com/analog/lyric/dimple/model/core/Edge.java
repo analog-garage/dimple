@@ -65,7 +65,7 @@ public final class Edge
 	
 	public int edgeIndex()
 	{
-		return _edge.edgeIndex();
+		return _edge.factorEdgeIndex();
 	}
 	
 	public FactorGraphEdgeState edgeState()

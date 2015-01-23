@@ -20,6 +20,7 @@ import static java.util.Objects.*;
 
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.util.misc.Internal;
 
 /**
  * Describes an edge from a factor to a variable.
@@ -40,15 +41,37 @@ public abstract class FactorGraphEdgeState
 	 * FactorGraphEdgeState methods
 	 */
 	
+	// TODO decide whether to keep edge indexes...
+	
 	/**
-	 * The index of this edge within the {@link FactorGraph} that owns it.
+	 * The index of this edge within the {@link FactorGraph} that owns it's factor.
 	 * <p>
-	 * This index can be used to look up this object within its parent graph
+	 * This index can be used to look up this object within the parent graph of the factor
 	 * using the {@link FactorGraph#getEdgeState(int)} method.
 	 * <p>
+	 * If {@link #isLocal()} then this will be the same as {@link #variableEdgeIndex()}.
+	 * <p>
 	 * @since 0.08
+	 * @category internal
 	 */
-	public abstract int edgeIndex();
+	@Internal
+	public abstract int factorEdgeIndex();
+	
+	/**
+	 * The index of this edge within the {@link FactorGraph} that owns it's variable.
+	 * <p>
+	 * This index can be used to look up this object within the parent graph of its variable
+	 * using the {@link FactorGraph#getEdgeState(int)} method.
+	 * <p>
+	 * If {@link #isLocal()} then this will be the same as {@link #factorEdgeIndex()}.
+	 * <p>
+	 * @since 0.08
+	 * @category internal
+	 */
+	@Internal
+	public abstract int variableEdgeIndex();
+	
+	
 	
 	/**
 	 * Return instance of {@link Factor} end of edge, given parent graph.

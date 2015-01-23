@@ -77,7 +77,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	protected @Nullable String _name;
 	private @Nullable FactorGraph _parentGraph;
 	
-	private final ArrayList<FactorGraphEdgeState> _edges = new ArrayList<>();
+	private final ArrayList<FactorGraphEdgeState> _siblingEdges = new ArrayList<>();
 	
 	/**
 	 * Temporary flags that can be used to mark the node during the execution of various algorithms
@@ -165,7 +165,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 		{
 			// Round up to next power of two no larger than the sibling size to avoid
 			// thrashing if this is called for each index in order.
-			int newSize = Math.min(_edges.size(), Utilities.nextPow2(index + 1));
+			int newSize = Math.min(_siblingEdges.size(), Utilities.nextPow2(index + 1));
 			_siblingIndices = Arrays.copyOf(_siblingIndices, newSize);
 		}
 		
@@ -173,7 +173,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 		
 		int reverseIndex = _siblingIndices[index] - 1;
 		
-		INode sibling = _edges.get(index).getSibling(this);
+		INode sibling = _siblingEdges.get(index).getSibling(this);
 		if (reverseIndex < 0 || sibling.getSibling(reverseIndex) != this)
 		{
 			// Update reverse index if it was not yet initialized or it points to the wrong node,
@@ -310,7 +310,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	@Override
 	public INode getConnectedNodeFlat(int portNum)
 	{
-		return _edges.get(portNum).getSibling(this);
+		return _siblingEdges.get(portNum).getSibling(this);
 	}
 
 	
@@ -336,13 +336,13 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	@Override
 	public int getSiblingCount()
 	{
-		return _edges.size();
+		return _siblingEdges.size();
 	}
 	
 	@Override
 	public Node getSibling(int i)
 	{
-		return _edges.get(i).getSibling(this);
+		return _siblingEdges.get(i).getSibling(this);
 	}
 
 	@Override
@@ -367,7 +367,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 		if (desiredDepth < 0)
 			desiredDepth = Integer.MAX_VALUE;
 		
-		INode node = _edges.get(portNum).getSibling(this);
+		INode node = _siblingEdges.get(portNum).getSibling(this);
 		
 		// TODO: Instead of computing depths, which is O(depth), could we instead
 		// just look for matching parent. For example, if relativedDepth is zero
@@ -387,7 +387,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	{
 		ArrayList<INode> retval = new ArrayList<INode>();
 		
-		INode n = _edges.get(index).getSibling(this);
+		INode n = _siblingEdges.get(index).getSibling(this);
 		
 		while (n != null)
 		{
@@ -491,7 +491,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	@Override
 	public Collection<Port> getPorts()
 	{
-		final int size = _edges.size();
+		final int size = _siblingEdges.size();
 		ArrayList<Port> ports = new ArrayList<Port>(size);
 		for (int i = 0; i < size; i++ )
 			ports.add(getPort(i));
@@ -691,7 +691,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
      */
 	public FactorGraphEdgeState getEdgeState(int i)
 	{
-		return _edges.get(i);
+		return _siblingEdges.get(i);
 	}
 	
 	/**
@@ -702,7 +702,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	 */
 	public int indexOfEdgeState(FactorGraphEdgeState edge)
 	{
-		return _edges.indexOf(edge);
+		return _siblingEdges.indexOf(edge);
 	}
 	
 	/**
@@ -784,9 +784,9 @@ public abstract class Node extends DimpleOptionHolder implements INode
 		final HashMap<INode,Integer> siblingToIndex = _siblingToIndex;
 		if (siblingToIndex != null)
 		{
-			siblingToIndex.put(edge.getSibling(this), _edges.size());
+			siblingToIndex.put(edge.getSibling(this), _siblingEdges.size());
 		}
-		_edges.add(edge);
+		_siblingEdges.add(edge);
 
 		notifyConnectionsChanged();
 	}
@@ -794,7 +794,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	@Internal
 	protected void clearEdgeState()
 	{
-		_edges.clear();
+		_siblingEdges.clear();
 		_siblingIndices = ArrayUtil.EMPTY_INT_ARRAY;
 		_siblingToIndex = null;
 		notifyConnectionsChanged();
@@ -809,7 +809,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	@Internal
 	protected void removeEdgeState(FactorGraphEdgeState edge)
 	{
-		_edges.remove(edge);
+		_siblingEdges.remove(edge);
 		_siblingToIndex = null;
 		_siblingIndices = ArrayUtil.EMPTY_INT_ARRAY;
 		notifyConnectionsChanged();
@@ -819,7 +819,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	protected void replaceEdgeState(FactorGraphEdgeState oldEdge, FactorGraphEdgeState newEdge)
 	{
 		// TODO : update computed state
-		_edges.set(_edges.indexOf(oldEdge), newEdge);
+		_siblingEdges.set(_siblingEdges.indexOf(oldEdge), newEdge);
 		notifyConnectionsChanged();
 	}
 	
@@ -937,7 +937,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 
 	private int getPortNumNoThrow(INode node)
 	{
-		int nSiblings = _edges.size();
+		int nSiblings = _siblingEdges.size();
 		
 		HashMap<INode,Integer> siblingToIndex = _siblingToIndex;
 		
@@ -946,7 +946,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 			siblingToIndex = _siblingToIndex = new HashMap<>(nSiblings);
 			for (int i = 0; i < nSiblings; ++i)
 			{
-				siblingToIndex.put(_edges.get(i).getSibling(this), i);
+				siblingToIndex.put(_siblingEdges.get(i).getSibling(this), i);
 			}
 		}
 		
@@ -957,7 +957,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 		}
 		else
 		{
-			for (int i = 0; i < _edges.size(); i++)
+			for (int i = 0; i < _siblingEdges.size(); i++)
 			{
 				// FIXME: isConnected walks up parent chain. I don't think that is what
 				// we want.
@@ -970,7 +970,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	
 	private boolean isConnected(INode node, int portIndex)
 	{
-		INode other = requireNonNull(_edges.get(portIndex).getSibling(this));
+		INode other = requireNonNull(_siblingEdges.get(portIndex).getSibling(this));
 		
 		if (other == node)
 			return true;
