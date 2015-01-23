@@ -467,7 +467,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
     		//Replace the connection from this variable to the copy in the factor
     		for (int j = 0, endj = factor.getSiblingCount(); j < endj; j++)
     		{
-    			FactorGraphEdgeState edge = factor.getEdgeState(j);
+    			FactorGraphEdgeState edge = factor.getSiblingEdgeState(j);
     			if (edge.getVariable(fg) == this)
     			{
     				fg.replaceEdge(factor, j, mycopy);

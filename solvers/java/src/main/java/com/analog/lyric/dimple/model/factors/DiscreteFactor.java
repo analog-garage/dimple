@@ -227,8 +227,8 @@ public class DiscreteFactor extends Factor
 		//Remove old edges in descending order (they were added in ascending order above)
 		for (int i = factorVarIndices.length; --i>=0;)
 		{
-			FactorGraphEdgeState edge = getEdgeState(factorVarIndices[i]);
-			removeEdge(edge);
+			FactorGraphEdgeState edge = getSiblingEdgeState(factorVarIndices[i]);
+			removeSiblingEdge(edge);
 		}
 		
 		//Add the new joint variable

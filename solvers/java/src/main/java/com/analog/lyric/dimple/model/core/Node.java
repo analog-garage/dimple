@@ -349,7 +349,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	@Override
 	public Node getSibling(int i)
 	{
-		return getEdgeState(i).getSibling(this);
+		return getSiblingEdgeState(i).getSibling(this);
 	}
 
 	@Override
@@ -682,11 +682,11 @@ public abstract class Node extends DimpleOptionHolder implements INode
      * @since 0.08
      * @throws IndexOutOfBoundsException if {@code i} is not in range.
 	 * @since 0.08
-	 * @see #getEdgeState(int)
+	 * @see #getSiblingEdgeState(int)
 	 */
-	public Edge getEdge(int i)
+	public Edge getSiblingEdge(int i)
 	{
-		return new Edge(requireNonNull(_parentGraph), getEdgeState(i));
+		return new Edge(requireNonNull(_parentGraph), getSiblingEdgeState(i));
 	}
 	
     /**
@@ -696,7 +696,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
      * @since 0.08
      * @throws IndexOutOfBoundsException if {@code i} is not in range.
      */
-	public FactorGraphEdgeState getEdgeState(int i)
+	public FactorGraphEdgeState getSiblingEdgeState(int i)
 	{
 		return requireParentGraph().getGraphEdgeState(_siblingEdges.get(i));
 	}
@@ -707,7 +707,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	 * @return the index of the edge or -1 if edge is not currently attached.
 	 * @since 0.08
 	 */
-	public int indexOfEdgeState(FactorGraphEdgeState edge)
+	public int indexOfSiblingEdgeState(FactorGraphEdgeState edge)
 	{
 		FactorGraph parent = requireParentGraph();
 		for (int i = 0, n = _siblingEdges.size(); i < n; ++i)
@@ -795,7 +795,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	}
 	
     @Internal
-	protected void addEdgeState(FactorGraphEdgeState edge)
+	protected void addSiblingEdgeState(FactorGraphEdgeState edge)
 	{
 		final HashMap<INode,Integer> siblingToIndex = _siblingToIndex;
 		if (siblingToIndex != null)
@@ -808,7 +808,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	}
 	
 	@Internal
-	protected void clearEdgeState()
+	protected void clearSiblingEdgeState()
 	{
 		_siblingEdges.clear();
 		_siblingIndices = ArrayUtil.EMPTY_INT_ARRAY;
@@ -817,25 +817,25 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	}
 	
 	@Internal
-	protected void removeEdge(FactorGraphEdgeState edge)
+	protected void removeSiblingEdge(FactorGraphEdgeState edge)
 	{
-		requireNonNull(_parentGraph).removeEdge(edge);
+		requireNonNull(_parentGraph).removeSiblingEdge(edge);
 	}
 	
 	@Internal
-	protected void removeEdgeState(FactorGraphEdgeState edge)
+	protected void removeSiblingEdgeState(FactorGraphEdgeState edge)
 	{
-		_siblingEdges.remove(indexOfEdgeState(edge));
+		_siblingEdges.remove(indexOfSiblingEdgeState(edge));
 		_siblingToIndex = null;
 		_siblingIndices = ArrayUtil.EMPTY_INT_ARRAY;
 		notifyConnectionsChanged();
 	}
 	
 	@Internal
-	protected void replaceEdgeState(FactorGraphEdgeState oldEdge, FactorGraphEdgeState newEdge)
+	protected void replaceSiblingEdgeState(FactorGraphEdgeState oldEdge, FactorGraphEdgeState newEdge)
 	{
 		assert(isFactor());
-		_siblingEdges.set(indexOfEdgeState(oldEdge), newEdge.edgeIndex(this));
+		_siblingEdges.set(indexOfSiblingEdgeState(oldEdge), newEdge.edgeIndex(this));
 		notifyConnectionsChanged();
 	}
 	

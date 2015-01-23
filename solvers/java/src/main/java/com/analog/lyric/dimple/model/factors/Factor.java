@@ -230,7 +230,7 @@ public class Factor extends FactorBase implements Cloneable
 		
 		for (int i = nEdges; --i>=0;)
 		{
-			final FactorGraphEdgeState edge = getEdgeState(i);
+			final FactorGraphEdgeState edge = getSiblingEdgeState(i);
 			final Variable var = edge.getVariable(parent);
 			if (var.hasFixedValue())
 			{
@@ -241,7 +241,7 @@ public class Factor extends FactorBase implements Cloneable
 					// the original edges.
 					oldFactorTable = getFactorTable();
 				}
-				removeEdge(edge);
+				removeSiblingEdge(edge);
 				constantVariables.add(var);
 				constantIndices.add(i);
 			}

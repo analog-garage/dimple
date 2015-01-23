@@ -57,6 +57,7 @@ public abstract class SVariableBase<MVariable extends Variable> extends SNode<MV
 	@Override
 	public ISolverFactor getSibling(int edge)
 	{
+		// FIXME don't go through the model object
 		return Objects.requireNonNull(getModelObject().getSibling(edge).getSolver());
 	}
 	

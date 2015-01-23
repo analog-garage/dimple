@@ -58,6 +58,8 @@ public abstract class SNode<MNode extends Node> extends SolverEventSource implem
 
 	protected final MNode _model;
 
+	// TODO - it might be nice to move this down into a SChild subclass and make it non-null and final
+	//        so that SVariables and SFactors could always be assumed to have a parent
 	protected @Nullable ISolverFactorGraph _parent = null;
 	
 	/*--------------
@@ -105,13 +107,14 @@ public abstract class SNode<MNode extends Node> extends SolverEventSource implem
 	@Override
 	public ISolverNode getSibling(int edge)
 	{
+		// FIXME don't go through the model object
 		return Objects.requireNonNull(getModelObject().getSibling(edge).getSolver());
 	}
 	
 	@Override
 	public int getSiblingCount()
 	{
-		return getModelObject().getSiblingCount();
+		return _model.getSiblingCount();
 	}
 	
 	/**

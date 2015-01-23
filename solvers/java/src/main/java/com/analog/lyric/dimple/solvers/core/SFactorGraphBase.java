@@ -1138,8 +1138,6 @@ public abstract class SFactorGraphBase
 	
 	public @Nullable SEdge getSolverEdge(int edgeIndex, boolean create)
 	{
-		// FIXME: get state from factor's solver graph if not this one!
-		
 		final ExtendedArrayList<SEdge> edges = _edges;
 		if (edges == null)
 		{
@@ -1150,8 +1148,11 @@ public abstract class SFactorGraphBase
 		
 		if (result == null)
 		{
+			// FIXME: get state from factor's solver graph if not this one!
+			
 			if (create)
 			{
+				
 				result = this.createEdgeState(getModelGraph().getGraphEdgeState(edgeIndex));
 			}
 			edges.set(edgeIndex,  result);

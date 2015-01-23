@@ -47,7 +47,7 @@ public abstract class FactorGraphEdgeState
 	 * The index of this edge within the {@link FactorGraph} that owns it's factor.
 	 * <p>
 	 * This index can be used to look up this object within the parent graph of the factor
-	 * using the {@link FactorGraph#getEdgeState(int)} method.
+	 * using the {@link FactorGraph#getSiblingEdgeState(int)} method.
 	 * <p>
 	 * If {@link #isLocal()} then this will be the same as {@link #variableEdgeIndex()}.
 	 * <p>
@@ -61,7 +61,7 @@ public abstract class FactorGraphEdgeState
 	 * The index of this edge within the {@link FactorGraph} that owns it's variable.
 	 * <p>
 	 * This index can be used to look up this object within the parent graph of its variable
-	 * using the {@link FactorGraph#getEdgeState(int)} method.
+	 * using the {@link FactorGraph#getSiblingEdgeState(int)} method.
 	 * <p>
 	 * If {@link #isLocal()} then this will be the same as {@link #factorEdgeIndex()}.
 	 * <p>
