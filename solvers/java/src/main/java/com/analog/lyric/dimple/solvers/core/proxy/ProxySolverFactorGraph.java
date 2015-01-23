@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.core.proxy;
 
-import java.util.Collection;
-
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -25,7 +23,6 @@ import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
@@ -190,83 +187,6 @@ public abstract class ProxySolverFactorGraph<SFactor extends ISolverFactor, SVar
 		return sfg != null ? sfg.getMatlabSolveWrapper() : null;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * <p>
-	 * Default implementation returns null.
-	 */
-	@Override
-	public @Nullable SEdge getSolverEdge(FactorGraphEdgeState edge)
-	{
-		return _state.getSolverEdge(edge, true);
-	}
-	
-	@Override
-	public @Nullable ISolverFactor getSolverFactor(Factor factor)
-	{
-		return _state.getSolverFactorRecursive(factor, true);
-	}
-	
-	@Override
-	public @Nullable SFactor getSolverFactor(Factor factor, boolean create)
-	{
-		return _state.getSolverFactor(factor, create);
-	}
-	
-	@Override
-	public Collection<SFactor> getSolverFactors()
-	{
-		return _state.getSolverFactors();
-	}
-	
-	@Override
-	public Collection<ISolverFactor> getSolverFactorsRecursive()
-	{
-		return _state.getSolverFactorsRecursive();
-	}
-	
-	@Override
-	public @Nullable ISolverFactorGraph getSolverSubgraph(FactorGraph subgraph)
-	{
-		return _state.getSolverSubgraphRecursive(subgraph, true);
-	}
-	
-	@Override
-	public Collection<? extends ISolverFactorGraph> getSolverSubgraphs()
-	{
-		return _state.getSolverSubgraphs();
-	}
-
-	@Override
-	public Collection<? extends ISolverFactorGraph> getSolverSubgraphsRecursive()
-	{
-		return _state.getSolverSubgraphsRecursive();
-	}
-
-	@Override
-	public @Nullable ISolverVariable getSolverVariable(Variable var)
-	{
-		return _state.getSolverVariableRecursive(var, true);
-	}
-	
-	@Override
-	public @Nullable SVariable getSolverVariable(Variable variable, boolean create)
-	{
-		return _state.getSolverVariable(variable, create);
-	}
-	
-	@Override
-	public Collection<SVariable> getSolverVariables()
-	{
-		return _state.getSolverVariables();
-	}
-	
-	@Override
-	public Collection<ISolverVariable> getSolverVariablesRecursive()
-	{
-		return _state.getSolverVariablesRecursive();
-	}
-	
 	@Override
 	public void setNumIterations(int numIterations)
 	{
@@ -382,18 +302,6 @@ public abstract class ProxySolverFactorGraph<SFactor extends ISolverFactor, SVar
 		{
 			sfg.postSetSolverFactory();
 		}
-	}
-
-	@Override
-	public void recordDefaultSubgraphSolver(FactorGraph subgraph)
-	{
-		_state.setSubgraphSolver(subgraph,  subgraph.getSolver());
-	}
-	
-	@Override
-	public boolean useMultithreading()
-	{
-		return _useMultithreading;
 	}
 
 	@Override

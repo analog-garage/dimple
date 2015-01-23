@@ -23,7 +23,6 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
-import com.analog.lyric.dimple.solvers.core.FactorGraphSolverState;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -107,8 +106,4 @@ public class DummyFactorGraph extends SFactorGraphBase<ISolverFactor,ISolverVari
 		return "Dummy";
 	}
 
-	public FactorGraphSolverState<?,?,?> solverState()
-	{
-		return _state;
-	}
 }

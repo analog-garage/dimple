@@ -31,7 +31,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
-import com.analog.lyric.dimple.solvers.core.FactorGraphSolverState;
+import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -42,11 +42,9 @@ import com.analog.lyric.util.test.Helpers;
 import com.google.common.collect.Iterables;
 
 /**
- * 
- * @since 0.08
- * @author Christopher Barber
+ * Unit tests for {@link SFactorGraphBase} class.
  */
-public class TestFactorGraphSolverState extends DimpleTestBase
+public class TestSFactorGraphBase extends DimpleTestBase
 {
 	@Test
 	public void test()
@@ -59,14 +57,13 @@ public class TestFactorGraphSolverState extends DimpleTestBase
 	private void test(FactorGraph fg)
 	{
 		DummyFactorGraph sfg = requireNonNull(fg.setSolverFactory(new DummySolver()));
-		assertInvariants(sfg.solverState(), sfg);
+		assertInvariants(sfg);
 	}
 	
 	
-	private void assertInvariants(FactorGraphSolverState<?,?,?> state, ISolverFactorGraph sroot)
+	private void assertInvariants(SFactorGraphBase<?,?,?> state)
 	{
-		final FactorGraph root = sroot.getModelObject();
-		assertSame(sroot, state.getSolverGraph());
+		final FactorGraph root = state.getModelObject();
 		assertSame(root, state.getModelGraph());
 		
 		for (Variable variable :FactorGraphIterables.variables(root))
@@ -94,7 +91,7 @@ public class TestFactorGraphSolverState extends DimpleTestBase
 		assertEquals(graphs.size(), state.getSolverSubgraphsRecursive().size());
 		Set<ISolverFactorGraph> sgraphs = new LinkedHashSet<>(state.getSolverSubgraphsRecursive());
 		assertEquals(graphs.size(), sgraphs.size());
-		assertSame(sroot, Iterables.getFirst(sgraphs, null));
+		assertSame(state, Iterables.getFirst(sgraphs, null));
 		
 		for (ISolverFactorGraph sgraph : sgraphs)
 		{
@@ -105,10 +102,9 @@ public class TestFactorGraphSolverState extends DimpleTestBase
 			{
 				assertSame(sgraph, state.getSolverSubgraphRecursive(graph, false));
 				
-				if (sgraph instanceof DummyFactorGraph)
+				if (sgraph instanceof SFactorGraphBase)
 				{
-					DummyFactorGraph dsgraph = (DummyFactorGraph)sgraph;
-					assertInvariants(dsgraph.solverState(), dsgraph);
+					assertInvariants((SFactorGraphBase<?,?,?>)sgraph);
 				}
 			}
 			
