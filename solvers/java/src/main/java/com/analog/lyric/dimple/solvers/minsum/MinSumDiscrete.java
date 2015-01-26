@@ -27,7 +27,6 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergyMessage;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 /**
@@ -252,14 +251,6 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 			return _dampingParams[portIndex];
 	}
 
-
-	@Override
-	public Object [] createMessages(ISolverFactor factor)
-	{
-		Object [] retval = super.createMessages(factor);
-		
-		return retval;
-	}
 
 	@Override
 	public @NonNull double[] resetInputMessage(Object message)

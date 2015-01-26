@@ -21,6 +21,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -31,7 +32,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
  * @author shershey
  *
  */
-public class SFactorGraph  extends SFactorGraphBase<ISolverFactor,ISolverVariable,Object>
+public class SFactorGraph  extends SFactorGraphBase<ISolverFactor,ISolverVariable,ISolverEdge>
 {
 
 	/**

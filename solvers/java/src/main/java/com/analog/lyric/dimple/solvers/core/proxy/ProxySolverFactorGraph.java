@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -33,7 +34,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
  * @since 0.05
  */
 public abstract class ProxySolverFactorGraph<SFactor extends ISolverFactor, SVariable extends ISolverVariable,
-	SEdge, Delegate extends ISolverFactorGraph>
+	SEdge extends ISolverEdge, Delegate extends ISolverFactorGraph>
 	extends SFactorGraphBase<SFactor, SVariable, SEdge>
 	implements IProxySolverNode<ISolverFactorGraph>
 {

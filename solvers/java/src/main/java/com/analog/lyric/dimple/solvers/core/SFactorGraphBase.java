@@ -51,6 +51,7 @@ import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.interfaces.IParameterizedSolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -58,7 +59,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.google.common.collect.UnmodifiableIterator;
 
 public abstract class SFactorGraphBase
-	<SFactor extends ISolverFactor, SVariable extends ISolverVariable, SEdge>
+	<SFactor extends ISolverFactor, SVariable extends ISolverVariable, SEdge extends ISolverEdge>
 	extends SNode<FactorGraph>
 	implements IParameterizedSolverFactorGraph<SFactor, SVariable, SEdge>
 {
@@ -1113,6 +1114,7 @@ public abstract class SFactorGraphBase
 		return ssubgraph != null ? ssubgraph.getSolverVariable(variable, create) : null;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public @Nullable SEdge getSolverEdge(FactorGraphEdgeState edge, boolean create)
 	{
 		final ExtendedArrayList<SEdge> edges = _edges;
@@ -1121,14 +1123,25 @@ public abstract class SFactorGraphBase
 			return null;
 		}
 		
-		final int index = edge.factorEdgeIndex();
-		SEdge result = edges.get(index);
+		final int index = edge.edgeIndexInParent(_model);
+		SEdge result = edges.getOrNull(index);
 		
 		if (result == null)
 		{
 			if (create)
 			{
-				result = this.createEdgeState(edge);
+				FactorGraph factorParent = edge.getFactorParent(_model);
+				if (factorParent != _model)
+				{
+					// If the factor is from a different graph, it must be a subgraph.
+					// Get the edge from there.
+					ISolverFactorGraph sgraph = requireNonNull(getSolverSubgraphRecursive(factorParent, true));
+					result = (SEdge) sgraph.getSolverEdge(edge);
+				}
+				else
+				{
+					result = this.createEdgeState(edge);
+				}
 			}
 			edges.set(index,  result);
 		}
@@ -1148,14 +1161,12 @@ public abstract class SFactorGraphBase
 		
 		if (result == null)
 		{
-			// FIXME: get state from factor's solver graph if not this one!
-			
 			if (create)
 			{
+				final FactorGraphEdgeState modelEdge = _model.getGraphEdgeState(edgeIndex);
 				
-				result = this.createEdgeState(getModelGraph().getGraphEdgeState(edgeIndex));
+				return getSolverEdge(modelEdge, true);
 			}
-			edges.set(edgeIndex,  result);
 		}
 		
 		return result;

@@ -81,6 +81,14 @@ public abstract class FactorGraphEdgeState
 	 */
 	@Internal
 	public abstract int edgeIndex(Node node);
+
+	/**
+	 * Given the parent graph containing this edge, return its index in the graph.
+	 * @since 0.08
+	 * @category internal
+	 */
+	@Internal
+	public abstract int edgeIndexInParent(FactorGraph graph);
 	
 	/**
 	 * Return instance of {@link Factor} end of edge, given parent graph.
@@ -91,12 +99,28 @@ public abstract class FactorGraphEdgeState
 	abstract public Factor getFactor(FactorGraph graph);
 	
 	/**
+	 * Return instance of parent of factor end of edge, given parent of either edge.
+	 * @since 0.08
+	 * @category internal
+	 */
+	@Internal
+	abstract public FactorGraph getFactorParent(FactorGraph graph);
+	
+	/**
 	 * Return instance of {@link Variable} end of edge, given parent graph.
 	 * <p>
 	 * @param graph is the parent graph of either the variable or factor ends of the edge.
 	 * @since 0.08
 	 */
 	abstract public Variable getVariable(FactorGraph graph);
+	
+	/**
+	 * Return instance of parent of variable end of edge, given parent of either edge.
+	 * @since 0.08
+	 * @category internal
+	 */
+	@Internal
+	abstract public FactorGraph getVariableParent(FactorGraph graph);
 	
 	/**
 	 * Given one endpoint of edge, return the other one.

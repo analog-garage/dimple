@@ -33,7 +33,7 @@ import com.analog.lyric.dimple.model.variables.Variable;
  * @author Christopher Barber
  */
 public interface IParameterizedSolverFactorGraph
-	<SFactor extends ISolverFactor, SVariable extends ISolverVariable, SEdge>
+	<SFactor extends ISolverFactor, SVariable extends ISolverVariable, SEdge extends ISolverEdge>
 	extends ISolverFactorGraph
 {
 	public SEdge createEdgeState(FactorGraphEdgeState edge);

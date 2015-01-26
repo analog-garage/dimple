@@ -234,11 +234,23 @@ public class FactorGraph extends FactorBase
 		}
 		
 		@Override
+		public FactorGraph getFactorParent(FactorGraph graph)
+		{
+			return graph;
+		}
+		
+		@Override
 		public final Variable getVariable(FactorGraph fg)
 		{
 			return fg._ownedVariables.get(variableIndex());
 		}
 
+		@Override
+		public FactorGraph getVariableParent(FactorGraph graph)
+		{
+			return graph;
+		}
+		
 		@Override
 		public final boolean isLocal()
 		{
@@ -271,6 +283,12 @@ public class FactorGraph extends FactorBase
 		
 		@Override
 		public int edgeIndex(Node node)
+		{
+			return (int)_data & EDGE_MASK;
+		}
+		
+		@Override
+		public int edgeIndexInParent(FactorGraph graph)
 		{
 			return (int)_data & EDGE_MASK;
 		}
@@ -321,6 +339,12 @@ public class FactorGraph extends FactorBase
 		}
 
 		@Override
+		public int edgeIndexInParent(FactorGraph graph)
+		{
+			return _edgeIndex;
+		}
+		
+		@Override
 		public int factorEdgeIndex()
 		{
 			return _edgeIndex;
@@ -351,7 +375,7 @@ public class FactorGraph extends FactorBase
 	 */
 	static abstract class BoundaryEdge extends FactorGraphEdgeState
 	{
-		private final Factor _factor;
+		final Factor _factor;
 		
 		private BoundaryEdge(Factor factor)
 		{
@@ -381,6 +405,12 @@ public class FactorGraph extends FactorBase
 		{
 			return _factor;
 		}
+
+		@Override
+		public FactorGraph getFactorParent(FactorGraph graph)
+		{
+			return requireNonNull(_factor.getParentGraph());
+		}
 		
 		final Variable getVariable()
 		{
@@ -392,6 +422,12 @@ public class FactorGraph extends FactorBase
 		public final Variable getVariable(FactorGraph fg)
 		{
 			return getVariable();
+		}
+		
+		@Override
+		public FactorGraph getVariableParent(FactorGraph graph)
+		{
+			return requireNonNull(getVariable().getParentGraph());
 		}
 
 		@Override
@@ -441,6 +477,12 @@ public class FactorGraph extends FactorBase
 		{
 			return node.isVariable() ? variableEdgeIndex() : factorEdgeIndex();
 		}
+
+		@Override
+		public int edgeIndexInParent(FactorGraph graph)
+		{
+			return _factor.getParentGraph() == graph ? factorEdgeIndex() : variableEdgeIndex();
+		}
 		
 		@Override
 		public int factorEdgeIndex()
@@ -480,6 +522,12 @@ public class FactorGraph extends FactorBase
 		public int edgeIndex(Node node)
 		{
 			return node.isVariable() ? _variableEdgeIndex : _factorEdgeIndex;
+		}
+
+		@Override
+		public int edgeIndexInParent(FactorGraph graph)
+		{
+			return _factor.getParentGraph() == graph ? _factorEdgeIndex : _variableEdgeIndex;
 		}
 		
 		@Override

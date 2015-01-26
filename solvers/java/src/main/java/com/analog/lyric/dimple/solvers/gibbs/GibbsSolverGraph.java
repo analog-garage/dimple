@@ -93,6 +93,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockInitializer;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockMCMCSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -105,7 +106,7 @@ import com.analog.lyric.math.DimpleRandomGenerator;
  *  <p>
  * @since 0.07
  */
-public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolverVariableGibbs, Object>
+public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolverVariableGibbs, ISolverEdge>
 {
 	/*
 	 * Constants

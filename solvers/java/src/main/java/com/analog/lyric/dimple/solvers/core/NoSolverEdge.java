@@ -19,18 +19,15 @@ package com.analog.lyric.dimple.solvers.core;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 
 /**
- * 
+ * A dummy solver edge type.
+ * <p>
+ * You can use this in place of {@link ISolverEdge} to document that there is no edge state as in
+ * {@linkplain com.analog.lyric.dimple.solvers.lp.LPSolverGraph LPSolverGraph}.
+ * <p>
  * @since 0.08
  * @author Christopher Barber
  */
-public class SEdgeWithMessages<VarToFactorMsg, FactorToVarMsg> implements ISolverEdge
+public abstract class NoSolverEdge implements ISolverEdge
 {
-	public final VarToFactorMsg varToFactorMsg;
-	public final FactorToVarMsg factorToVarMsg;
-	
-	protected SEdgeWithMessages(VarToFactorMsg varToFactorMsg, FactorToVarMsg factorToVarMsg)
-	{
-		this.varToFactorMsg = varToFactorMsg;
-		this.factorToVarMsg = factorToVarMsg;
-	}
+	private NoSolverEdge() {}
 }
