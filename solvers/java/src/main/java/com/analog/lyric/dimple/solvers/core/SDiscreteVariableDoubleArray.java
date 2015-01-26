@@ -120,7 +120,7 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	public void resetEdgeMessages(int portNum)
 	{
 		resetInputMessage(_inputMessages[portNum]);
-		resetInputMessage(_outputMessages[portNum]);
+		resetOutputMessage(_outputMessages[portNum]);
 		
 	}
 
