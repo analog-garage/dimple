@@ -43,6 +43,8 @@ public class StandardJointDomainIndexer extends JointDomainIndexer
 	 */
 	private final int _cardinality;
 	
+	private final int _sumOfSizes;
+	
 	/*--------------
 	 * Construction
 	 */
@@ -55,12 +57,16 @@ public class StandardJointDomainIndexer extends JointDomainIndexer
 		
 		_products = new int[nDomains];
 		int product = 1;
+		int sum = 0;
 		for (int i = 0; i < nDomains; ++i)
 		{
+			final int size = domains[i].size();
 			_products[i] = product;
-			product *= domains[i].size();
+			product *= size;
+			sum += size;
 		}
 		_cardinality = product;
+		_sumOfSizes = sum;
 	}
 	
 	StandardJointDomainIndexer(DiscreteDomain[] domains)
@@ -124,6 +130,12 @@ public class StandardJointDomainIndexer extends JointDomainIndexer
 	public int getStride(int i)
 	{
 		return _products[i];
+	}
+	
+	@Override
+	public int getSumOfDomainSizes()
+	{
+		return _sumOfSizes;
 	}
 	
 	/**

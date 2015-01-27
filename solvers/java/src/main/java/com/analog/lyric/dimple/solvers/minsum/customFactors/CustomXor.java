@@ -21,6 +21,7 @@ import static java.util.Objects.*;
 import org.eclipse.jdt.annotation.NonNull;
 
 import com.analog.lyric.collect.ArrayUtil;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -32,7 +33,6 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 {
 	private double[][] _inPortMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
     private double[][] _outPortMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
-    private double [] _savedOutMsgsLLR = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	private int _constantParity;
 	private int _numPorts;
 
@@ -46,15 +46,9 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 	@Override
 	public void doUpdateEdge(int outPortNum)
 	{
-	    if (_dampingInUse)
-	    {
-	    	if (_dampingParams[outPortNum] != 0)
-	    	{
-	    		double[] outputMsgs = _outPortMsgs[outPortNum];
-	    		_savedOutMsgsLLR[outPortNum] = outputMsgs[1];		// LLR value is only in the 1 entry
-	    	}
-	    }
-
+		final double[] outMsg = _outPortMsgs[outPortNum];
+		final double savedLLR = outMsg[1];		// LLR value is only in the 1 entry
+		
 		int hardXor = _constantParity;						// Initialize to parity of any constant inputs
 		double min = Double.POSITIVE_INFINITY;
 		for (int inPortIndex = 0; inPortIndex < _numPorts; inPortIndex++)
@@ -75,7 +69,6 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 			}
 		}
 		
-		double[] outMsg = _outPortMsgs[outPortNum];
 		outMsg[1] = min * hardXor;
 		outMsg[0] = 0;
 	    
@@ -86,8 +79,7 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 			double damping = _dampingParams[outPortNum];
 			if (damping != 0)
 			{
-				double[] outputMsgs = _outPortMsgs[outPortNum];
-				outputMsgs[1] = (1-damping)*outputMsgs[1] + damping*_savedOutMsgsLLR[outPortNum];
+				outMsg[1] = (1-damping)*outMsg[1] + damping*savedLLR;
 			}
 		}
 
@@ -97,14 +89,19 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 	@Override
 	protected void doUpdate()
 	{
-	    if (_dampingInUse)
+		final boolean useDamping = _dampingInUse;
+		final int numPorts = _numPorts;
+		double[] savedLLR =
+			useDamping ? DimpleEnvironment.doubleArrayCache.allocate(numPorts) : ArrayUtil.EMPTY_DOUBLE_ARRAY;
+		
+			
+	    if (useDamping)
 	    {
-	    	for (int port = 0; port < _numPorts; port++)
+	    	for (int port = 0; port < numPorts; port++)
 	    	{
 	    		if (_dampingParams[port] != 0)
 	    		{
-	    			double[] outputMsgs = _outPortMsgs[port];
-	    			_savedOutMsgsLLR[port] = outputMsgs[1];		// LLR value is only in the 1 entry
+	    			savedLLR[port] = _outPortMsgs[port][1];		// LLR value is only in the 1 entry
 	    		}
 	    	}
 	    }
@@ -156,17 +153,13 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 				if (damping != 0)
 				{
 					double[] outputMsgs = _outPortMsgs[port];
-					outputMsgs[1] = (1-damping)*outputMsgs[1] + damping*_savedOutMsgsLLR[port];
+					outputMsgs[1] = (1-damping)*outputMsgs[1] + damping*savedLLR[port];
 				}
 			}
+			
+			DimpleEnvironment.doubleArrayCache.release(savedLLR);
 		}
 
-	}
-	
-	@Override
-	protected void configureSavedMessages(int size)
-	{
-		_savedOutMsgsLLR = _dampingInUse ? new double[_dampingParams.length] : ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	}
 	
 	@Override
@@ -177,9 +170,6 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 		
 	    _inPortMsgs = new double[nVars][];
 	    _outPortMsgs = new double[nVars][];
-	    
-	    if (_dampingInUse)
-	    	_savedOutMsgsLLR = new double[nVars];
 	    
 		for (int i = 0; i < nVars; i++)
 		{
@@ -198,7 +188,6 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 		CustomXor x = (CustomXor)other;
 		_inPortMsgs[portNum] = x._inPortMsgs[otherPort];
 		_outPortMsgs[portNum] = x._outPortMsgs[otherPort];
-		_savedOutMsgsLLR[portNum] = x._savedOutMsgsLLR[otherPort];
 	}
 
     @Override

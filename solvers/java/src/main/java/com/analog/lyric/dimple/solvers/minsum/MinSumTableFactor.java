@@ -54,7 +54,6 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
 	 */
-	protected double[][] _savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
 	protected double[] _dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	protected @Nullable TableFactorEngine _tableFactorEngine;
 	protected KBestFactorEngine _kbestFactorEngine;
@@ -125,9 +124,6 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 	public void moveMessages(ISolverNode other, int portNum, int otherPort)
 	{
 		super.moveMessages(other,portNum,otherPort);
-		if (_dampingInUse)
-			_savedOutMsgArray[portNum] = ((MinSumTableFactor)other)._savedOutMsgArray[otherPort];
-
 	}
 
 	private TableFactorEngine getTableFactorEngine()
@@ -375,12 +371,6 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 		return _dampingInUse;
 	}
 
-	@Override
-	public double[] getSavedOutMsgArray(int _outPortNum)
-	{
-		return _savedOutMsgArray[_outPortNum];
-	}
-
 	/*------------------
 	 * Internal methods
 	 */
@@ -401,26 +391,7 @@ public class MinSumTableFactor extends STableFactorDoubleArray
     	}
     	
     	_dampingInUse = _dampingParams.length > 0;
-    	
-    	configureSavedMessages(size);
     }
     
-    protected void configureSavedMessages(int size)
-    {
-    	if (!_dampingInUse)
-    	{
-    		_savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
-    	}
-    	else if (_savedOutMsgArray.length != size)
-    	{
-    		_savedOutMsgArray = new double[size][];
-    		for (int i = 0; i < size; i++)
-    	    {
-    			_savedOutMsgArray[i] = new double[_inputMsgs[i].length];
-    	    }
-    	}
-    }
-
-
 }
 

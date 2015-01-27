@@ -89,6 +89,13 @@ public class LargeJointDomainIndexer extends JointDomainIndexer
 	{
 		throw noJointIndexing("getStride");
 	}
+	
+	@Override
+	public int getSumOfDomainSizes()
+	{
+		// FIXME - could allow if small enough...
+		throw noJointIndexing("getSumOfDomainSizes");
+	}
 
 	@Override
 	public int getUndirectedStride(int i)

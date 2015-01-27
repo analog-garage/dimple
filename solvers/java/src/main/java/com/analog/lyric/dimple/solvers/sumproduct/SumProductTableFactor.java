@@ -777,12 +777,6 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 		return _dampingInUse;
 	}
 
-	@Override
-	public double[] getSavedOutMsgArray(int _outPortNum)
-	{
-		return _savedOutMsgArray[_outPortNum];
-	}
-
 	/*------------------
 	 * Internal methods
 	 */

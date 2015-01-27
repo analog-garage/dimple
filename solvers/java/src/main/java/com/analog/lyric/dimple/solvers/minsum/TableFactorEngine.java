@@ -16,6 +16,12 @@
 
 package com.analog.lyric.dimple.solvers.minsum;
 
+import java.util.Arrays;
+
+import com.analog.lyric.collect.ArrayUtil;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
+import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.factors.Factor;
 
 /*
@@ -41,16 +47,16 @@ public class TableFactorEngine
 
 
         double[] outputMsgs = _tableFactor.getOutPortMsgs()[outPortNum];
-        int outputMsgLength = outputMsgs.length;
+        final int outputMsgLength = outputMsgs.length;
+		double[] saved = ArrayUtil.EMPTY_DOUBLE_ARRAY;
         
         if (_tableFactor._dampingInUse)
         {
         	double damping = _tableFactor._dampingParams[outPortNum];
         	if (damping != 0)
         	{
-        		double[] saved = _tableFactor._savedOutMsgArray[outPortNum];
-        		for (int i = 0; i < outputMsgs.length; i++)
-        			saved[i] = outputMsgs[i];
+				saved = DimpleEnvironment.doubleArrayCache.allocate(outputMsgLength);
+				System.arraycopy(outputMsgs, 0, saved, 0, outputMsgLength);
         	}
         }
 
@@ -91,12 +97,16 @@ public class TableFactorEngine
         	double damping = _tableFactor._dampingParams[outPortNum];
         	if (damping != 0)
         	{
-        		double[] saved = _tableFactor._savedOutMsgArray[outPortNum];
         		for (int i = 0; i < outputMsgLength; i++)
         			outputMsgs[i] = (1-damping)*outputMsgs[i] + damping*saved[i];
         	}
         }
         
+		if (saved.length > 0)
+		{
+			DimpleEnvironment.doubleArrayCache.release(saved);
+		}
+
 		// Normalize min value
         for (int i = 0; i < outputMsgLength; i++)
         	outputMsgs[i] -= minPotential;
@@ -105,30 +115,37 @@ public class TableFactorEngine
 	
 	public void update()
 	{
-	    int[][] table = _tableFactor.getFactorTable().getIndicesSparseUnsafe();
-	    double[] values = _tableFactor.getFactorTable().getEnergiesSparseUnsafe();
-	    int tableLength = table.length;
-	    int numPorts = _factor.getSiblingCount();
+		final IFactorTable table = _tableFactor.getFactorTable();
+		final JointDomainIndexer indexer = table.getDomainIndexer();
+	    final int[][] tableIndices = table.getIndicesSparseUnsafe();
+	    final double[] values = table.getEnergiesSparseUnsafe();
+	    final int tableLength = tableIndices.length;
+	    final int numPorts = _factor.getSiblingCount();
 	    double [][] outPortMsgs = _tableFactor.getOutPortMsgs();
 
-	    for (int port = 0; port < numPorts; port++)
-	    {
-	    	double[] outputMsgs = outPortMsgs[port];
-	    	int outputMsgLength = outputMsgs.length;
+	    final boolean useDamping = _tableFactor._dampingInUse;
+	    
+	    final double[] saved =
+	    	useDamping ?
+	    		DimpleEnvironment.doubleArrayCache.allocate(indexer.getSumOfDomainSizes()) :
+	    			ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	    	
-	    	if (_tableFactor._dampingInUse)
+	    for (int port = 0, savedOffset = 0; port < numPorts; port++)
+	    {
+	    	final double[] outputMsgs = outPortMsgs[port];
+	    	final int outputMsgLength = outputMsgs.length;
+	    	
+	    	if (useDamping)
 	    	{
 	    		double damping = _tableFactor._dampingParams[port];
 	    		if (damping != 0)
 	    		{
-	    			double[] saved = _tableFactor._savedOutMsgArray[port];
-	    			for (int i = 0; i < outputMsgs.length; i++)
-	    				saved[i] = outputMsgs[i];
+	    			System.arraycopy(outputMsgs, 0, saved, savedOffset, outputMsgLength);
 	    		}
 	    	}
 
-	    	for (int i = 0; i < outputMsgLength; i++)
-	    		outputMsgs[i] = Double.POSITIVE_INFINITY;
+	    	Arrays.fill(outputMsgs, Double.POSITIVE_INFINITY);
+    		savedOffset += outputMsgLength;
 	    }
 	    
 	    double [][] inPortMsgs = _tableFactor.getInPortMsgs();
@@ -137,7 +154,7 @@ public class TableFactorEngine
 	    // Run through each row of the function table
 	    for (int tableIndex = 0; tableIndex < tableLength; tableIndex++)
 	    {
-	    	int[] tableRow = table[tableIndex];
+	    	int[] tableRow = tableIndices[tableIndex];
 	    	
 	    	// Sum up the function value plus the messages on all ports
 	    	double L = values[tableIndex];
@@ -156,21 +173,24 @@ public class TableFactorEngine
 	    }
 	   
 	    // Damping
-	    if (_tableFactor._dampingInUse)
+	    if (useDamping)
 	    {
-	    	for (int port = 0; port < numPorts; port++)
+	    	for (int port = 0, savedOffset = 0; port < numPorts; port++)
 	    	{
-	    		double damping = _tableFactor._dampingParams[port];
+		    	final double[] outputMsgs = outPortMsgs[port];
+		    	final int outputMsgLength = outputMsgs.length;
+	    		final double damping = _tableFactor._dampingParams[port];
+
 	    		if (damping != 0)
 	    		{
-	    			double[] saved = _tableFactor._savedOutMsgArray[port];
-	    			double[] outputMsgs = outPortMsgs[port];
-
-	    			int outputMsgLength = outputMsgs.length;
 	    			for (int i = 0; i < outputMsgLength; i++)
-	    				outputMsgs[i] = (1-damping)*outputMsgs[i] + damping*saved[i];
+	    				outputMsgs[i] = (1-damping)*outputMsgs[i] + damping*saved[i+savedOffset];
 	    		}
+	    		
+	    		savedOffset += outputMsgLength;
 	    	}
+	    	
+	    	DimpleEnvironment.doubleArrayCache.release(saved);
 	    }
     	
 	    

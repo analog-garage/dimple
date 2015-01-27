@@ -579,6 +579,12 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	{
 		return size();
 	}
+
+	/**
+	 * Returns sum of sizes of all of the domains.
+	 * @since 0.08
+	 */
+	public abstract int getSumOfDomainSizes();
 	
 	/**
 	 * Returns amount by which joint index returned by {@link #jointIndexFromIndices(int...)} changes

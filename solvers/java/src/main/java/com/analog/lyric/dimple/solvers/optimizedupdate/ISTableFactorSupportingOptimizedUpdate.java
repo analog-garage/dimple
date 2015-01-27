@@ -21,7 +21,5 @@ public interface ISTableFactorSupportingOptimizedUpdate
 
 	boolean isDampingInUse();
 
-	double[] getSavedOutMsgArray(int _outPortNum);
-
 	Factor getFactor();
 }
