@@ -40,7 +40,6 @@ import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorTableEngine;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.optimizedupdate.FactorTableUpdateSettings;
 import com.analog.lyric.dimple.solvers.optimizedupdate.FactorUpdatePlan;
 import com.analog.lyric.dimple.solvers.optimizedupdate.ISTableFactorSupportingOptimizedUpdate;
@@ -59,7 +58,6 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
 	 */
-	protected double [][] _savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
 	protected @Nullable double [][][] _outPortDerivativeMsgs;
 	protected double [] _dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	protected @Nullable TableFactorEngine _tableFactorEngine;
@@ -135,16 +133,6 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	/*---------------------
 	 * ISolverNode methods
 	 */
-	
-	@Override
-	public void moveMessages(ISolverNode other, int portNum, int otherPort)
-	{
-		super.moveMessages(other,portNum,otherPort);
-		SumProductTableFactor sother = (SumProductTableFactor)other;
-		if (_dampingInUse)
-			_savedOutMsgArray[portNum] = sother._savedOutMsgArray[otherPort];
-
-	}
 	
 	private TableFactorEngine getTableFactorEngine()
 	{
@@ -797,25 +785,6 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 		}
 
 		_dampingInUse = _dampingParams.length > 0;
-
-		configureSavedMessages(size);
 	}
-
-	protected void configureSavedMessages(int size)
-	{
-		if (!_dampingInUse)
-		{
-			_savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
-		}
-		else if (_savedOutMsgArray.length != size)
-		{
-			_savedOutMsgArray = new double[size][];
-			for (int i = 0; i < size; i++)
-			{
-				_savedOutMsgArray[i] = new double[_inputMsgs[i].length];
-			}
-		}
-	}
-
 
 }
