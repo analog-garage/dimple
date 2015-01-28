@@ -23,5 +23,5 @@ package com.analog.lyric.dimple.solvers.interfaces;
  */
 public interface ISolverEdge
 {
-	
+	public void reset();
 }

@@ -27,7 +27,14 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
  * @since 0.08
  * @author Christopher Barber
  */
-public abstract class NoSolverEdge implements ISolverEdge
+public enum NoSolverEdge implements ISolverEdge
 {
+	INSTANCE;
+	
 	private NoSolverEdge() {}
+	
+	@Override
+	public void reset()
+	{
+	}
 }

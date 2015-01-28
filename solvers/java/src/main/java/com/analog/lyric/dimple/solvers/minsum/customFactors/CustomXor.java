@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.minsum.customFactors;
 
-import static java.util.Objects.*;
-
 import org.eclipse.jdt.annotation.NonNull;
 
 import com.analog.lyric.collect.ArrayUtil;
@@ -26,13 +24,11 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.dimple.solvers.minsum.MinSumDiscreteEdge;
 
 @SuppressWarnings("deprecation") // TODO remove when STableFactor removed
 public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFactor
 {
-	private double[][] _inPortMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
-    private double[][] _outPortMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
 	private int _constantParity;
 	private int _numPorts;
 
@@ -46,7 +42,8 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 	@Override
 	public void doUpdateEdge(int outPortNum)
 	{
-		final double[] outMsg = _outPortMsgs[outPortNum];
+		final MinSumDiscreteEdge outEdge = getEdge(outPortNum);
+		final double[] outMsg = outEdge.factorToVarMsg.representation();
 		final double savedLLR = outMsg[1];		// LLR value is only in the 1 entry
 		
 		int hardXor = _constantParity;						// Initialize to parity of any constant inputs
@@ -55,7 +52,7 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 		{
 			if (inPortIndex != outPortNum)
 			{
-				double[] inMsg = _inPortMsgs[inPortIndex];
+				double[] inMsg = getEdge(inPortIndex).varToFactorMsg.representation();
 				double in = inMsg[1] - inMsg[0];			// Get the input LLR value
 				if (in < 0)
 				{
@@ -101,7 +98,7 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 	    	{
 	    		if (_dampingParams[port] != 0)
 	    		{
-	    			savedLLR[port] = _outPortMsgs[port][1];		// LLR value is only in the 1 entry
+	    			savedLLR[port] = getEdge(port).factorToVarMsg.getEnergy(1);		// LLR value is only in the 1 entry
 	    		}
 	    	}
 	    }
@@ -112,7 +109,7 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 		int minIndex = -1;
 		for (int inPortIndex = 0; inPortIndex < _numPorts; inPortIndex++)
 		{
-			double[] inMsg = _inPortMsgs[inPortIndex];
+			double[] inMsg = getEdge(inPortIndex).varToFactorMsg.representation();
 			double in = inMsg[1] - inMsg[0];			// Get the input LLR value
 			if (in < 0)
 			{
@@ -131,8 +128,9 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 		
 		for (int outPortIndex = 0; outPortIndex < _numPorts; outPortIndex++)
 		{
-			double[] outMsg = _outPortMsgs[outPortIndex];
-			double[] inMsg = _inPortMsgs[outPortIndex];
+			final MinSumDiscreteEdge edge = getEdge(outPortIndex);
+			double[] outMsg = edge.factorToVarMsg.representation();
+			double[] inMsg = edge.varToFactorMsg.representation();
 			double in = inMsg[1] - inMsg[0];				// Get the input LLR value
 			double out;
 			if (in < 0)
@@ -152,7 +150,7 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 				double damping = _dampingParams[port];
 				if (damping != 0)
 				{
-					double[] outputMsgs = _outPortMsgs[port];
+					double[] outputMsgs = getEdge(port).factorToVarMsg.representation();
 					outputMsgs[1] = (1-damping)*outputMsgs[1] + damping*savedLLR[port];
 				}
 			}
@@ -165,19 +163,6 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 	@Override
 	public void createMessages()
 	{
-		final Factor factor = _model;
-		int nVars = factor.getSiblingCount();
-		
-	    _inPortMsgs = new double[nVars][];
-	    _outPortMsgs = new double[nVars][];
-	    
-		for (int i = 0; i < nVars; i++)
-		{
-			ISolverVariable sv = requireNonNull(factor.getSibling(i).getSolver());
-			Object [] messages = requireNonNull(sv.createMessages(this));
-			_outPortMsgs[i] = (double[])messages[0];
-			_inPortMsgs[i] = (double[])messages[1];
-		}
 	}
 
 
@@ -185,9 +170,6 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 	@Override
 	public void moveMessages(@NonNull ISolverNode other, int portNum, int otherPort)
 	{
-		CustomXor x = (CustomXor)other;
-		_inPortMsgs[portNum] = x._inPortMsgs[otherPort];
-		_outPortMsgs[portNum] = x._outPortMsgs[otherPort];
 	}
 
     @Override
@@ -216,4 +198,9 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 		}
 	}
 
+    @SuppressWarnings("null")
+	private MinSumDiscreteEdge getEdge(int siblingIndex)
+	{
+		return (MinSumDiscreteEdge)_parent.getSolverEdge(_model.getSiblingEdgeIndex(siblingIndex));
+	}
 }

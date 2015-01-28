@@ -689,6 +689,18 @@ public abstract class Node extends DimpleOptionHolder implements INode
 		return new Edge(requireNonNull(_parentGraph), getSiblingEdgeState(i));
 	}
 	
+	/**
+	 * Returns the graph index of the i'th edge connected to this node.
+	 * @param i is a number in the range from 0 to {@link #getSiblingCount()} - 1.
+	 * @return non-negative index in parent graph for the sibling edge, which can be used
+	 * {@link FactorGraph#getGraphEdgeState(int)}.
+	 * @since 0.08
+	 */
+	public final int getSiblingEdgeIndex(int i)
+	{
+		return _siblingEdges.get(i);
+	}
+	
     /**
      * Get state for i'th edge.
      * <p>
@@ -698,7 +710,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
      */
 	public FactorGraphEdgeState getSiblingEdgeState(int i)
 	{
-		return requireParentGraph().getGraphEdgeState(_siblingEdges.get(i));
+		return requireNonNull(requireParentGraph().getGraphEdgeState(_siblingEdges.get(i)));
 	}
 	
 	/**

@@ -224,7 +224,7 @@ public class FactorGraph extends FactorBase
 		@Override
 		public String toString()
 		{
-			return String.format("[LocalEdgeState #d: %d -> %d]", factorEdgeIndex(), factorIndex(), variableIndex());
+			return String.format("[LocalEdgeState #%d: %d - %d]", factorEdgeIndex(), factorIndex(), variableIndex());
 		}
 		
 		@Override
@@ -385,8 +385,8 @@ public class FactorGraph extends FactorBase
 		@Override
 		public String toString()
 		{
-			return String.format("[BoundaryEdgeState #d: %d (%s) -> %d (%s)]",
-				factorEdgeIndex(), factorIndex(), _factor, variableIndex(), getVariable());
+			return String.format("[BoundaryEdgeState %d/%d: %d (%s) - %d (%s)]",
+				factorEdgeIndex(), variableEdgeIndex(), factorIndex(), _factor, variableIndex(), getVariable());
 		}
 		
 		static BoundaryEdge create(Factor factor, int factorEdgeIndex, int boundaryIndex, int variableEdgeIndex)
@@ -2085,7 +2085,7 @@ public class FactorGraph extends FactorBase
 		return _graphSiblings.indexOf(edge);
 	}
 	
-	public FactorGraphEdgeState getGraphEdgeState(int i)
+	public @Nullable FactorGraphEdgeState getGraphEdgeState(int i)
 	{
 		return _edges.get(i);
 	}

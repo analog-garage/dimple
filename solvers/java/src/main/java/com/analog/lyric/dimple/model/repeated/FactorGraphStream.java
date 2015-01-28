@@ -258,7 +258,7 @@ public class FactorGraphStream
 			requireNonNull(_nestedGraphs.get(j).getSolver()).moveMessages(otherGraph);
 		}
 
-		//Newest nested graph should initialiaze its messages
+		//Newest nested graph should initialize its messages
 		_nestedGraphs.get(_nestedGraphs.size()-1).recreateMessages();
 		
 

@@ -48,6 +48,9 @@ public interface IParameterizedSolverFactorGraph
 	public @Nullable SEdge getSolverEdge(FactorGraphEdgeState edge);
 	
 	@Override
+	public @Nullable SEdge getSolverEdge(int edgeIndex);
+	
+	@Override
 	public @Nullable SFactor getSolverFactor(Factor factor, boolean create);
 	
 	@Override

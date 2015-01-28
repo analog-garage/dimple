@@ -63,7 +63,7 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 		
 		for (int i = msg.size(); --i>=0;)
 		{
-			assertEquals(.1, msg.getWeight(i), 1e-14);
+			assertEquals(1.0, msg.getWeight(i), 1e-14);
 			msg.setWeight(i,i);
 			assertEquals(i, msg.getWeight(i), 1e-14);
 			assertEquals(weightToEnergy(i), msg.getEnergy(i), 1e-14);

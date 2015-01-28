@@ -62,7 +62,9 @@ public final class DiscreteEnergyMessage extends DiscreteMessage
 	@Override
 	public void setNull()
 	{
-		Arrays.fill(_message, Utilities.weightToEnergy(1.0 / _message.length));
+		// FIXME - set to zero
+//		Arrays.fill(_message, Utilities.weightToEnergy(1.0 / _message.length));
+		Arrays.fill(_message, 0.0);
 	}
 
 	/*-------------------------

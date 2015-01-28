@@ -139,6 +139,7 @@ public class TestJunctionTree extends DimpleTestBase
 	
 	private void testGraphImpl(FactorGraph model)
 	{
+		// FIXME
 		testGraphImpl(model, false);
 		testGraphImpl(model, true);
 	}

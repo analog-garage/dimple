@@ -161,6 +161,15 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	public abstract void setEnergy(int i, double energy);
 	
 	/**
+	 * Returns underlying message representation.
+	 * @since 0.08
+	 */
+	public final double[] representation()
+	{
+		return _message;
+	}
+	
+	/**
 	 * True if underlying representation uses weights, false if it uses energies.
 	 * @since 0.06
 	 */

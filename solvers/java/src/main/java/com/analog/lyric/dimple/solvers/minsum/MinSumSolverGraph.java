@@ -26,10 +26,12 @@ import com.analog.lyric.dimple.factorfunctions.core.CustomFactorFunctionWrapper;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.BPOptions;
+import com.analog.lyric.dimple.solvers.core.NoSolverEdge;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
@@ -67,6 +69,12 @@ public class MinSumSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVar
 	{
 		super(factorGraph);
 		setMultithreadingManager(new MultiThreadingManager(getModelObject()));
+	}
+	
+	@Override
+	public boolean hasEdgeState()
+	{
+		return true;
 	}
 
 	@Override
@@ -123,6 +131,19 @@ public class MinSumSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVar
 		{
 			return new STableFactor(factor);
 		}
+	}
+	
+	@Override
+	public ISolverEdge createEdgeState(FactorGraphEdgeState edge)
+	{
+		final Variable var = edge.getVariable(_model);
+
+		if (var instanceof Discrete)
+		{
+			return new MinSumDiscreteEdge((Discrete)var);
+		}
+		
+		return NoSolverEdge.INSTANCE;
 	}
 	
 	@SuppressWarnings("deprecation") // TODO remove when SFactorGraph removed

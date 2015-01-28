@@ -157,6 +157,12 @@ public abstract class SFactorGraphBase
 		return getSolverEdge(edge, true);
 	}
 	
+	@Override
+	public @Nullable SEdge getSolverEdge(int edgeIndex)
+	{
+		return getSolverEdge(edgeIndex, true);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * <p>
@@ -220,7 +226,8 @@ public abstract class SFactorGraphBase
 	@Override
 	public void moveMessages(ISolverNode other)
 	{
-		SFactorGraphBase<?,?,?> sother = (SFactorGraphBase<?,?,?>)other;
+		@SuppressWarnings("unchecked")
+		SFactorGraphBase<SFactor,SVariable,SEdge> sother = (SFactorGraphBase<SFactor,SVariable,SEdge>)other;
 		FactorList otherFactors = sother._model.getFactors();
 		FactorList myFactors = _model.getFactors();
 		
@@ -634,7 +641,7 @@ public abstract class SFactorGraphBase
 		_numIterations = getOptionOrDefault(BPOptions.iterations);
 		_useMultithreading = getOptionOrDefault(SolverOptions.enableMultithreading);
 
-		instantiateSolverEdges();
+		initializeSolverEdges();
 		
 		FactorGraph fg = _model;
 		for (Variable variable : fg.getOwnedVariables())
@@ -1164,8 +1171,10 @@ public abstract class SFactorGraphBase
 			if (create)
 			{
 				final FactorGraphEdgeState modelEdge = _model.getGraphEdgeState(edgeIndex);
-				
-				return getSolverEdge(modelEdge, true);
+				if (modelEdge != null)
+				{
+					return getSolverEdge(modelEdge, true);
+				}
 			}
 		}
 		
@@ -1211,7 +1220,7 @@ public abstract class SFactorGraphBase
 		return sfactor;
 	}
 	
-	public void instantiateSolverEdges()
+	public void initializeSolverEdges()
 	{
 		ExtendedArrayList<SEdge> edges = _edges;
 		if (edges != null)
@@ -1220,7 +1229,11 @@ public abstract class SFactorGraphBase
 			edges.setSize(n);
 			for (int i = 0; i < n; ++i)
 			{
-				getSolverEdge(i, true);
+				SEdge sedge = getSolverEdge(i, true);
+				if (sedge != null)
+				{
+					sedge.reset();
+				}
 			}
 		}
 	}

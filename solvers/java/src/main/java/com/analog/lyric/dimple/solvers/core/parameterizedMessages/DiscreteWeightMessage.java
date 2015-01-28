@@ -54,6 +54,11 @@ public class DiscreteWeightMessage extends DiscreteMessage
 	 * IParameterizedMessage methods
 	 */
 	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * This implementation normalizes all weight values to 1 / {@link #size()}.
+	 */
 	@Override
 	public void setNull()
 	{

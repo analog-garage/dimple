@@ -28,6 +28,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
 import com.analog.lyric.dimple.solvers.core.kbest.IKBestFactor;
@@ -119,11 +120,10 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 	/*---------------------
 	 * ISolverNode methods
 	 */
-	
+
 	@Override
 	public void moveMessages(ISolverNode other, int portNum, int otherPort)
 	{
-		super.moveMessages(other,portNum,otherPort);
 	}
 
 	private TableFactorEngine getTableFactorEngine()
@@ -176,9 +176,9 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 			_k = k;
 			_kbestFactorEngine.setK(k);
 			_kIsSmallerThanDomain = false;
-			for (int i = 0; i < _inputMsgs.length; i++)
+			for (Variable var : _model.getSiblings())
 			{
-				if (_k < _inputMsgs[i].length)
+				if (k < var.asDiscreteVariable().getDomain().size())
 				{
 					_kIsSmallerThanDomain = true;
 					break;
@@ -194,7 +194,6 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 	@Override
 	public void createMessages()
 	{
-		super.createMessages();
 	}
 
 	/*--------------------------
@@ -275,17 +274,32 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 	}
 
 
+	// FIXME eliminate this method
 	@Override
 	public double[][] getInPortMsgs()
 	{
-		return _inputMsgs;
+		final int nSiblings = getSiblingCount();
+		final double[][] messages = new double[nSiblings][];
+		for (int i = 0; i < nSiblings; ++i)
+		{
+			MinSumDiscreteEdge edge = getEdge(i);
+			messages[i] = edge.varToFactorMsg.representation();
+		}
+		return messages;
 	}
 
-
+	// FIXME eliminate this method
 	@Override
 	public double[][] getOutPortMsgs()
 	{
-		return _outputMsgs;
+		final int nSiblings = getSiblingCount();
+		final double[][] messages = new double[nSiblings][];
+		for (int i = 0; i < nSiblings; ++i)
+		{
+			MinSumDiscreteEdge edge = getEdge(i);
+			messages[i] = edge.factorToVarMsg.representation();
+		}
+		return messages;
 	}
 	
 	/*---------------
@@ -295,7 +309,7 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 	@Override
 	protected DiscreteEnergyMessage cloneMessage(int edge)
 	{
-		return new DiscreteEnergyMessage(_outputMsgs[edge]);
+		return getEdge(edge).factorToVarMsg.clone();
 	}
 	
 	@Override
@@ -393,5 +407,10 @@ public class MinSumTableFactor extends STableFactorDoubleArray
     	_dampingInUse = _dampingParams.length > 0;
     }
     
+    @SuppressWarnings("null")
+	private MinSumDiscreteEdge getEdge(int siblingIndex)
+	{
+		return (MinSumDiscreteEdge)_parent.getSolverEdge(_model.getSiblingEdgeIndex(siblingIndex));
+	}
 }
 
