@@ -65,8 +65,8 @@ public class CustomGaussianProduct extends GaussianFactorBase
 
 	private void updateProduct()
 	{
-		NormalParameters outMsg = _outputMsgs[PRODUCT_INDEX];
-		NormalParameters inMsg = _inputMsgs[MULTIPLICAND_INDEX];
+		NormalParameters outMsg = getEdge(PRODUCT_INDEX).factorToVarMsg;
+		NormalParameters inMsg = getEdge(MULTIPLICAND_INDEX).varToFactorMsg;
 		
 		// Up = C*Uv
 		outMsg.setMean(inMsg.getMean() * _constant);
@@ -77,8 +77,8 @@ public class CustomGaussianProduct extends GaussianFactorBase
 
 	private void updateMultiplicand()
 	{
-		NormalParameters outMsg = _outputMsgs[MULTIPLICAND_INDEX];
-		NormalParameters inMsg = _inputMsgs[PRODUCT_INDEX];
+		NormalParameters outMsg = getEdge(MULTIPLICAND_INDEX).factorToVarMsg;
+		NormalParameters inMsg = getEdge(PRODUCT_INDEX).varToFactorMsg;
 		
 		// Uv = Up/C
 		outMsg.setMean(inMsg.getMean() / _constant);

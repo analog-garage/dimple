@@ -27,6 +27,7 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergyMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
@@ -303,6 +304,20 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		Arrays.fill(result, 0);
 		return result;
 	}
+	
+	@Override
+	public Object getInputMsg(int portIndex)
+	{
+		// FIXME return actual message object
+		return getEdge(portIndex).factorToVarMsg.representation();
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex)
+	{
+		// FIXME return actual message object
+		return getEdge(portIndex).varToFactorMsg.representation();
+	}
 
 	@Override
 	public void moveMessages(ISolverNode other, int portNum, int otherPort)
@@ -324,6 +339,44 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		}
 	}
 
+	@Override
+	public void setInputMsg(int portIndex, Object obj)
+	{
+		setInputMsgValues(portIndex, obj);
+	}
+
+	@Override
+	public void setInputMsgValues(int portIndex, Object obj)
+	{
+		final DiscreteMessage message = getEdge(portIndex).factorToVarMsg;
+		
+		if (obj instanceof DiscreteMessage)
+		{
+			message.setFrom((DiscreteMessage)obj);
+		}
+		else
+		{
+			double[] target  = message.representation();
+			System.arraycopy(obj, 0, target, 0, target.length);
+		}
+	}
+	
+	@Override
+	public void setOutputMsgValues(int portIndex, Object obj)
+	{
+		final DiscreteMessage message = getEdge(portIndex).varToFactorMsg;
+		
+		if (obj instanceof DiscreteMessage)
+		{
+			message.setFrom((DiscreteMessage)obj);
+		}
+		else
+		{
+			double[] target  = message.representation();
+			System.arraycopy(obj, 0, target, 0, target.length);
+		}
+	}
+	
 	/*---------------
 	 * SNode methods
 	 */
@@ -362,9 +415,10 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
     	_dampingInUse = _dampingParams.length > 0;
     }
 
-    @SuppressWarnings("null")
-	private MinSumDiscreteEdge getEdge(int siblingIndex)
+    @Override
+	@SuppressWarnings("null")
+	protected MinSumDiscreteEdge getEdge(int siblingIndex)
 	{
-		return (MinSumDiscreteEdge)_parent.getSolverEdge(_model.getSiblingEdgeIndex(siblingIndex));
+		return (MinSumDiscreteEdge)super.getEdge(siblingIndex);
 	}
 }

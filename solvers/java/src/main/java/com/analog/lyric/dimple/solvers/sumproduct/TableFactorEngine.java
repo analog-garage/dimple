@@ -29,8 +29,8 @@ import com.analog.lyric.dimple.model.factors.Factor;
  */
 public class TableFactorEngine
 {
-	SumProductTableFactor _tableFactor;
-	Factor _factor;
+	final SumProductTableFactor _tableFactor;
+	final Factor _factor;
 	
 	public TableFactorEngine(SumProductTableFactor tableFactor)
 	{
@@ -40,21 +40,22 @@ public class TableFactorEngine
 		
 	public void updateEdge(int outPortNum)
 	{
-	    final int[][] table = _tableFactor.getFactorTable().getIndicesSparseUnsafe();
-	    final double[] values = _tableFactor.getFactorTable().getWeightsSparseUnsafe();
+		final SumProductTableFactor tableFactor = _tableFactor;
+	    final int[][] table = tableFactor.getFactorTable().getIndicesSparseUnsafe();
+	    final double[] values = tableFactor.getFactorTable().getWeightsSparseUnsafe();
 	    final int tableLength = table.length;
 	    final int numPorts = _factor.getSiblingCount();
 	    
-        final double[] outputMsgs = _tableFactor.getOutPortMsgs()[outPortNum];
-        final double [][] inputMsgs = _tableFactor.getInPortMsgs();
+        final double[] outputMsgs = tableFactor.getEdge(outPortNum).factorToVarMsg.representation();
+        final double [][] inputMsgs = tableFactor.getInPortMsgs();
         
     	final int outputMsgLength = outputMsgs.length;
 
     	double damping = 0;
     	
-    	if (_tableFactor._dampingInUse)
+    	if (tableFactor._dampingInUse)
     	{
-    		damping = _tableFactor._dampingParams[outPortNum];
+    		damping = tableFactor._dampingParams[outPortNum];
     	}
     	
     	final boolean useDamping = damping != 0;
@@ -72,7 +73,7 @@ public class TableFactorEngine
         for (int tableIndex = 0; tableIndex < tableLength; tableIndex++)
         {
         	double prob = values[tableIndex];
-        	int[] tableRow = table[tableIndex];
+        	final int[] tableRow = table[tableIndex];
     		int outputIndex = tableRow[outPortNum];
         	
 			for (int inPortNum = 0; inPortNum < outPortNum; ++inPortNum)
@@ -109,17 +110,17 @@ public class TableFactorEngine
 	
 	public void update()
 	{
-		final IFactorTable table = _tableFactor.getFactorTable();
+		final SumProductTableFactor tableFactor = _tableFactor;
+		final IFactorTable table = tableFactor.getFactorTable();
 	    final int[][] tableIndices = table.getIndicesSparseUnsafe();
 	    final double[] values = table.getWeightsSparseUnsafe();
 	    final int tableLength = tableIndices.length;
 	    final int numPorts = _factor.getSiblingCount();
 	    
 	    
-	    final double [][] outMsgs = _tableFactor.getOutPortMsgs();
-	    final double [][] inMsgs = _tableFactor.getInPortMsgs();
+	    final double [][] inMsgs = tableFactor.getInPortMsgs();
 	    
-	    final boolean useDamping = _tableFactor._dampingInUse;
+	    final boolean useDamping = tableFactor._dampingInUse;
 	    
 	    final double[] saved = useDamping ?
 	    	DimpleEnvironment.doubleArrayCache.allocate(table.getDomainIndexer().getSumOfDomainSizes()) :
@@ -127,12 +128,12 @@ public class TableFactorEngine
 	    
 	    for (int outPortNum = 0, savedOffset = 0; outPortNum < numPorts; outPortNum++)
 	    {
-	    	final double[] outputMsgs = outMsgs[outPortNum];
+	    	final double[] outputMsgs = tableFactor.getEdge(outPortNum).factorToVarMsg.representation();
 	    	final int outputMsgLength = outputMsgs.length;
 	    		    	
 	    	if (useDamping)
 	    	{
-	    		final double damping = _tableFactor._dampingParams[outPortNum];
+	    		final double damping = tableFactor._dampingParams[outPortNum];
 	    		if (damping != 0)
 	    		{
 	    			System.arraycopy(outputMsgs, 0, saved, savedOffset, outputMsgLength);
@@ -144,7 +145,7 @@ public class TableFactorEngine
 	    	for (int tableIndex = 0; tableIndex < tableLength; tableIndex++)
 	    	{
 	    		double prob = values[tableIndex];
-	    		int[] tableRow = tableIndices[tableIndex];
+	    		final int[] tableRow = tableIndices[tableIndex];
 	    		int outputIndex = tableRow[outPortNum];
 
 				for (int inPortNum = 0; inPortNum < outPortNum; ++inPortNum)
@@ -167,7 +168,7 @@ public class TableFactorEngine
 	    	
 	    	if (useDamping)
 	    	{
-	    		final double damping = _tableFactor._dampingParams[outPortNum];
+	    		final double damping = tableFactor._dampingParams[outPortNum];
 	    		if (damping != 0)
 	    		{
 	    			for (int i = 0; i < outputMsgLength; i++)

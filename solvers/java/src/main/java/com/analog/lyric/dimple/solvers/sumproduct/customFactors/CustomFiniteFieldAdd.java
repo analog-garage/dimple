@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscreteEdge;
 
 @SuppressWarnings("deprecation") // TODO remove when SFiniteFieldFactor removed
 public class CustomFiniteFieldAdd extends SFiniteFieldFactor
@@ -43,16 +44,17 @@ public class CustomFiniteFieldAdd extends SFiniteFieldFactor
 
 		for (int i = 0; i < 3; i++)
 		{
+			final SumProductDiscreteEdge edge = getEdge(i);
 			if (outPortNum == i)
 			{
-				outputs = _outputMsgs[i];
+				outputs = edge.factorToVarMsg.representation();
 			}
 			else
 			{
 				if (inputs1 == null)
-					inputs1 = _inputMsgs[i];
+					inputs1 = edge.varToFactorMsg.representation();
 				else
-					inputs2 = _inputMsgs[i];
+					inputs2 = edge.varToFactorMsg.representation();
 			}
 		}
 

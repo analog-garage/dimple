@@ -18,14 +18,15 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 
 import static java.util.Objects.*;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.model.variables.Real;
+import com.analog.lyric.dimple.solvers.core.SNormalEdge;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -43,8 +44,6 @@ public class SumProductReal extends SRealVariableBase
 	 * time when performing the update.
 	 */
 	private @Nullable NormalParameters _input;
-	private NormalParameters[] _inputMsgs = new NormalParameters[0];
-	private NormalParameters[] _outputMsgs = new NormalParameters[0];
     
 	public SumProductReal(Real var)
     {
@@ -91,11 +90,12 @@ public class SumProductReal extends SRealVariableBase
 	protected void doUpdateEdge(int outPortNum)
     {
     	final NormalParameters input = _input;
-
+    	final NormalParameters outMsg = getEdge(outPortNum).varToFactorMsg;
+   	
     	// If fixed value, just return the input, which has been set to a zero-variance message
     	if (_model.hasFixedValue())
     	{
-        	_outputMsgs[outPortNum].set(Objects.requireNonNull(input));
+    		outMsg.set(Objects.requireNonNull(input));
         	return;
     	}
     	
@@ -125,7 +125,7 @@ public class SumProductReal extends SRealVariableBase
     	{
     		if (i != outPortNum)
     		{
-    			NormalParameters msg = _inputMsgs[i];
+    			final NormalParameters msg = getEdge(i).factorToVarMsg;
     			double tmpTau = msg.getPrecision();
     			
     			if (tmpTau == Double.POSITIVE_INFINITY)
@@ -165,7 +165,6 @@ public class SumProductReal extends SRealVariableBase
 	    		muTau = 0;
     	}
     	
-    	NormalParameters outMsg = _outputMsgs[outPortNum];
     	outMsg.setMean(muTau);
     	outMsg.setPrecision(tau);
     }
@@ -200,9 +199,9 @@ public class SumProductReal extends SRealVariableBase
     		muOfInf = mu;
     	}
     	
-    	for (int i = 0; i < _inputMsgs.length; i++)
+    	for (int i = 0, n = getSiblingCount(); i < n; i++)
     	{
-    		NormalParameters msg = _inputMsgs[i];
+    		final NormalParameters msg = getEdge(i).factorToVarMsg;
 			double tmpTau = msg.getPrecision();
 			
 			
@@ -267,13 +266,7 @@ public class SumProductReal extends SRealVariableBase
 	@Override
 	public Object[] createMessages(ISolverFactor factor)
 	{
-		int portNum = _model.getPortNum(Objects.requireNonNull(factor.getModelObject()));
-		int newArraySize = Math.max(_inputMsgs.length,portNum + 1);
-		_inputMsgs = Arrays.copyOf(_inputMsgs,newArraySize);
-		_inputMsgs[portNum] = createDefaultMessage();
-		_outputMsgs = Arrays.copyOf(_outputMsgs, newArraySize);
-		_outputMsgs[portNum] = createDefaultMessage();
-		return new Object [] {_inputMsgs[portNum],_outputMsgs[portNum]};
+		return ArrayUtil.EMPTY_OBJECT_ARRAY;
 	}
 
 	public NormalParameters createDefaultMessage()
@@ -285,43 +278,47 @@ public class SumProductReal extends SRealVariableBase
 	@Override
 	public Object resetInputMessage(Object message)
 	{
-		((NormalParameters)message).setNull();
+		((NormalParameters)message).setUniform();
 		return message;
 	}
 
+	// FIXME - reset edge messages from graph methods, not node
 	@Override
 	public void resetEdgeMessages(int i)
 	{
-		_inputMsgs[i] = (NormalParameters)resetInputMessage(_inputMsgs[i]);
-		_outputMsgs[i] = (NormalParameters)resetOutputMessage(_outputMsgs[i]);
+		getEdge(i).reset();
 	}
     
     
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
-		return _inputMsgs[portIndex];
+		return getEdge(portIndex).factorToVarMsg;
 	}
 
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
-		return _outputMsgs[portIndex];
+		return getEdge(portIndex).varToFactorMsg;
 	}
 
 
 	@Override
 	public void moveMessages(ISolverNode other, int portNum, int otherPort)
 	{
-		SumProductReal s = (SumProductReal)other;
-	
-		_inputMsgs[portNum] = s._inputMsgs[otherPort];
-		_outputMsgs[portNum] = s._outputMsgs[otherPort];
+		final SumProductReal s = (SumProductReal)other;
+		final SNormalEdge thisEdge = getEdge(portNum);
+		final SNormalEdge otherEdge = s.getEdge(otherPort);
+
+		thisEdge.factorToVarMsg.set(otherEdge.factorToVarMsg);
+		thisEdge.varToFactorMsg.set(otherEdge.varToFactorMsg);
+		otherEdge.reset();
 	}
 
 	@Override
-	public void setInputMsg(int portIndex, Object obj) {
-		_inputMsgs[portIndex] = (NormalParameters)obj;
+	public void setInputMsg(int portIndex, Object obj)
+	{
+		getEdge(portIndex).factorToVarMsg.set((NormalParameters)obj);
 	}
 	
 	public NormalParameters createFixedValueMessage(double fixedValue)
@@ -339,12 +336,19 @@ public class SumProductReal extends SRealVariableBase
 	@Override
 	protected NormalParameters cloneMessage(int edge)
 	{
-		return _outputMsgs[edge].clone();
+		return getEdge(edge).varToFactorMsg.clone();
 	}
 	
 	@Override
 	protected boolean supportsMessageEvents()
 	{
 		return true;
+	}
+
+	@Override
+	@SuppressWarnings("null")
+	protected SNormalEdge getEdge(int siblingIndex)
+	{
+		return (SNormalEdge)super.getEdge(siblingIndex);
 	}
 }

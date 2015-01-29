@@ -38,8 +38,8 @@ import com.analog.lyric.dimple.solvers.core.kbest.IKBestFactor;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorEngine;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorTableEngine;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
-import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.optimizedupdate.FactorTableUpdateSettings;
 import com.analog.lyric.dimple.solvers.optimizedupdate.FactorUpdatePlan;
 import com.analog.lyric.dimple.solvers.optimizedupdate.ISTableFactorSupportingOptimizedUpdate;
@@ -134,6 +134,11 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	 * ISolverNode methods
 	 */
 	
+	@Override
+	public void moveMessages(ISolverNode other, int portNum, int otherPort)
+	{
+	}
+
 	private TableFactorEngine getTableFactorEngine()
 	{
 		final TableFactorEngine tableFactorEngine = _tableFactorEngine;
@@ -158,8 +163,10 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 			getTableFactorEngine().update();
 		
 		if (_updateDerivative)
-			for (int i = 0; i < _inputMsgs.length ;i++)
+		{
+			for (int i = 0, n = getSiblingCount(); i < n; i++)
 				updateDerivative(i);
+		}
 		
 	}
 	
@@ -184,7 +191,6 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	@Override
 	public void createMessages()
 	{
-		super.createMessages();
 	}
 
 	/*
@@ -212,7 +218,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	@Override
 	public DiscreteMessage cloneMessage(int edge)
 	{
-		return new DiscreteWeightMessage(_outputMsgs[edge]);
+		return getEdge(edge).factorToVarMsg.clone();
 	}
 	
 	
@@ -353,9 +359,9 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 			_k = k;
 			_kbestFactorEngine.setK(k);
 			_kIsSmallerThanDomain = false;
-			for (int i = 0; i < _inputMsgs.length; i++)
+			for (Variable var : _model.getSiblings())
 			{
-				if (_inputMsgs[i] != null && _k < _inputMsgs[i].length)
+				if (k < var.asDiscreteVariable().getDomain().size())
 				{
 					_kIsSmallerThanDomain = true;
 					break;
@@ -387,7 +393,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 			final int[] indices = table[i];
 			for (int j = 0; j < indices.length; j++)
 			{
-				retval[i] *= _inputMsgs[j][indices[j]];
+				retval[i] *= getEdge(j).varToFactorMsg.getWeight(indices[j]);
 			}
 		}
 		
@@ -529,29 +535,36 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	@SuppressWarnings("null")
 	public double calculateDerivativeOfBeliefNumeratorWithRespectToWeight(int weightIndex, int index, boolean isFactorOfInterest)
 	{
-		double [] weights = _model.getFactorTable().getWeightsSparseUnsafe();
-		int [][] indices = _model.getFactorTable().getIndicesSparseUnsafe();
+		final int nEdges = getSiblingCount();
+		final IFactorTable table = _model.getFactorTable();
+		final double weight = table.getWeightForSparseIndex(index);
+		final int [] entryIndices = table.getIndicesSparseUnsafe()[index];
 		
 		//calculate product of messages and phi
-		double prod = weights[index];
-		for (int i = 0; i < _inputMsgs.length; i++)
-			prod *= _inputMsgs[i][indices[index][i]];
+		double prod = weight;
+		for (int i = 0; i < nEdges; i++)
+		{
+			prod *= getEdge(i).varToFactorMsg.getWeight(entryIndices[i]);
+		}
 
 		double sum = 0;
 		
 		//if index == weightIndex, add in this term
 		if (index == weightIndex && isFactorOfInterest)
 		{
-			sum = prod / weights[index];
+			sum = prod / weight;
 		}
 		
+		final Factor factor = getFactor();
+		
 		//for each variable
-		for (int i = 0; i < _inputMsgs.length; i++)
+		for (int i = 0; i < nEdges; i++)
 		{
-			SumProductDiscrete var = (SumProductDiscrete)getFactor().getConnectedNodesFlat().getByIndex(i).getSolver();
+			final SumProductDiscrete var = (SumProductDiscrete)getSibling(i);
 			
 			//divide out contribution
-			sum += prod / _inputMsgs[i][indices[index][i]] * var.getMessageDerivative(weightIndex,getFactor())[indices[index][i]];
+			final int j = entryIndices[i];
+			sum += prod / getEdge(i).varToFactorMsg.getWeight(j) * var.getMessageDerivative(weightIndex, factor)[j];
 		}
 		return sum;
 	}
@@ -580,10 +593,15 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	
 	public void initializeDerivativeMessages(int weights)
 	{
-		final double[][][] msgs = _outPortDerivativeMsgs = new double[weights][_inputMsgs.length][];
+		final int nEdges = getSiblingCount();
+		final double[][][] msgs = _outPortDerivativeMsgs = new double[weights][nEdges][];
 		for (int i = 0; i < weights; i++)
-			for (int j = 0; j < _inputMsgs.length; j++)
-				msgs[i][j] = new double[_inputMsgs[j].length];
+		{
+			for (int j = 0; j < nEdges; j++)
+			{
+				msgs[i][j] = new double[getSiblingDimension(j)];
+			}
+		}
 	}
 	
 	public double [] getMessageDerivative(int wn, Variable var)
@@ -595,17 +613,17 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	public double calculateMessageForDomainValueAndTableIndex(int domainValue, int outPortNum, int tableIndex)
 	{
 		IFactorTable ft = getFactor().getFactorTable();
-		int [][] indices = ft.getIndicesSparseUnsafe();
-		double [] weights = ft.getWeightsSparseUnsafe();
+		int [] entryIndices = ft.getIndicesSparseUnsafe()[tableIndex];
 
-		if (indices[tableIndex][outPortNum] == domainValue)
+		if (entryIndices[outPortNum] == domainValue)
 		{
-			double prod = weights[tableIndex];
-			for (int j = 0; j < _inputMsgs.length; j++)
+			final double weight = ft.getWeightForSparseIndex(tableIndex);
+			double prod = weight;
+			for (int j = 0, n = getSiblingCount(); j < n; j++)
 			{
 				if (outPortNum != j)
 				{
-					prod *= _inputMsgs[j][indices[tableIndex][j]];
+					prod *= getEdge(j).varToFactorMsg.getWeight(entryIndices[j]);
 				}
 			}
 			
@@ -633,30 +651,34 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	{
 		IFactorTable ft = getFactor().getFactorTable();
 		double sum = 0;
-		int [][] indices = ft.getIndicesSparseUnsafe();
-		double [] weights = ft.getWeightsSparseUnsafe();
+		final int [][] indices = ft.getIndicesSparseUnsafe();
+		final double [] weights = ft.getWeightsSparseUnsafe();
+		final int nEdges = getSiblingCount();
 		
-		for (int i = 0; i < indices.length; i++)
+		for (int si = 0, n = indices.length; si < n; si++)
 		{
-			if (indices[i][outPortNum] == domainValue)
+			final int[] entryIndices = indices[si];
+			
+			if (entryIndices[outPortNum] == domainValue)
 			{
-				double prod = calculateMessageForDomainValueAndTableIndex(domainValue,outPortNum,i);
+				double prod = calculateMessageForDomainValueAndTableIndex(domainValue,outPortNum,si);
 				
-				if (factorUsesTable && (wn == i))
+				if (factorUsesTable && (wn == si))
 				{
-					sum += prod/weights[i];
+					sum += prod/weights[si];
 				}
 				
-				for (int j = 0; j < _inputMsgs.length; j++)
+				for (int i = 0; i < nEdges; i++)
 				{
 					
-					if (j != outPortNum)
+					if (i != outPortNum)
 					{
-						SumProductDiscrete sv = (SumProductDiscrete)getFactor().getConnectedNodesFlat().getByIndex(j).getSolver();
+						SumProductDiscrete sv = (SumProductDiscrete)getSibling(i);
 						@SuppressWarnings("null")
 						double [] dvar = sv.getMessageDerivative(wn,getFactor());
 								
-						sum += (prod / _inputMsgs[j][indices[i][j]]) * dvar[indices[i][j]];
+						final int j = entryIndices[i];
+						sum += (prod / getEdge(i).varToFactorMsg.getWeight(j)) * dvar[j];
 					}
 				}
 								
@@ -669,7 +691,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	public double calculatedg(int outPortNum, int wn, boolean factorUsesTable)
 	{
 		double sum = 0;
-		for (int i = 0; i < _inputMsgs[outPortNum].length; i++)
+		for (int i = 0, n = getSiblingDimension(outPortNum); i < n; i++)
 			sum += calculatedf(outPortNum,i,wn,factorUsesTable);
 		
 		return sum;
@@ -685,7 +707,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 		
 		//calculate g
 		double g = 0;
-		for (int i = 0; i < _inputMsgs[outPortNum].length; i++)
+		for (int i = 0, n = getSiblingDimension(outPortNum); i < n; i++)
 			g += calculateMessageForDomainValue(i,outPortNum);
 		
 		double derivative = 0;
@@ -707,7 +729,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	
 	public void updateDerivativeForWeight(int outPortNum, int wn,boolean factorUsesTable)
 	{
-		int D = _inputMsgs[outPortNum].length;
+		int D = getSiblingDimension(outPortNum);
 		
 		for (int d = 0; d < D; d++)
 		{
@@ -748,15 +770,75 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	}
 
 	@Override
-	public double[][] getInPortMsgs()
+	public Object getInputMsg(int portIndex)
 	{
-		return _inputMsgs;
+		// FIXME return DiscreteMessage
+		return getEdge(portIndex).varToFactorMsg.representation();
 	}
 
 	@Override
+	public Object getOutputMsg(int portIndex)
+	{
+		// FIXME return DiscreteMessage
+		return getEdge(portIndex).factorToVarMsg.representation();
+	}
+
+	@Override
+	public void setInputMsgValues(int portIndex, Object obj)
+	{
+		final DiscreteMessage message = getEdge(portIndex).varToFactorMsg;
+		
+		if (obj instanceof DiscreteMessage)
+		{
+			message.setFrom((DiscreteMessage)obj);
+		}
+		else
+		{
+			double[] target  = message.representation();
+			System.arraycopy(obj, 0, target, 0, target.length);
+		}
+	}
+	
+	@Override
+	public void setOutputMsgValues(int portIndex, Object obj)
+	{
+		final DiscreteMessage message = getEdge(portIndex).factorToVarMsg;
+		
+		if (obj instanceof DiscreteMessage)
+		{
+			message.setFrom((DiscreteMessage)obj);
+		}
+		else
+		{
+			double[] target  = message.representation();
+			System.arraycopy(obj, 0, target, 0, target.length);
+		}
+	}
+
+	// FIXME eliminate this method
+	@Override
+	public double[][] getInPortMsgs()
+	{
+		final int nSiblings = getSiblingCount();
+		final double[][] messages = new double[nSiblings][];
+		for (int i = 0; i < nSiblings; ++i)
+		{
+			messages[i] = getEdge(i).varToFactorMsg.representation();
+		}
+		return messages;
+	}
+
+	// FIXME eliminate this method
+	@Override
 	public double[][] getOutPortMsgs()
 	{
-		return _outputMsgs;
+		final int nSiblings = getSiblingCount();
+		final double[][] messages = new double[nSiblings][];
+		for (int i = 0; i < nSiblings; ++i)
+		{
+			messages[i] = getEdge(i).factorToVarMsg.representation();
+		}
+		return messages;
 	}
 
 	@Override
@@ -787,4 +869,10 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 		_dampingInUse = _dampingParams.length > 0;
 	}
 
+	@SuppressWarnings("null")
+	@Override
+	protected SumProductDiscreteEdge getEdge(int siblingIndex)
+	{
+		return (SumProductDiscreteEdge)super.getEdge(siblingIndex);
+	}
 }

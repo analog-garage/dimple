@@ -103,16 +103,16 @@ public class CustomFiniteFieldProjection extends SFiniteFieldFactor
 	public void updateFiniteField()
 	{
 		//for every value of the finite field
-		//TODO: cast shouldn't be necessary
-		double [] outputs = _outputMsgs[0];
+		double [] outputs = getEdge(0).factorToVarMsg.representation();
 		int numBits = _ffVar.getNumBits();
 
+		final int nEdges = getSiblingCount();
+		
 		double prod;
 		double [][] inputMsgs = new double[numBits][];
-		for (int i = 0; i < _inputMsgs.length-1; i++)
+		for (int i = 1; i < nEdges; i++)
 		{
-			if (_inputMsgs[i+1] != null)
-				inputMsgs[i] = _inputMsgs[i+1];
+			inputMsgs[i-1] = getEdge(i).varToFactorMsg.representation();
 		}
 		
 		//Multiply bit probabilities
@@ -153,7 +153,7 @@ public class CustomFiniteFieldProjection extends SFiniteFieldFactor
 	{
 		
 		//get output msg for bit
-		double [] outputs = _outputMsgs[portNum];
+		double [] outputs = getEdge(portNum).factorToVarMsg.representation();
 		
 		//init to 1 for each
 		outputs[0] = 0;
@@ -162,7 +162,7 @@ public class CustomFiniteFieldProjection extends SFiniteFieldFactor
 		int bit = _portIndex2bitIndex[portNum];
 		
 		//Iterate each value of finite field
-		double [] inputs = _inputMsgs[0];
+		double [] inputs = getEdge(0).varToFactorMsg.representation();
 		
 		for (int i = 0; i < inputs.length; i++)
 		{

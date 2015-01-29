@@ -1,15 +1,10 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
-import static java.util.Objects.*;
-
-import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
-import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 /*******************************************************************************
 *   Copyright 2013 Analog Devices, Inc.
 *
@@ -34,9 +29,6 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 public abstract class SumProductFiniteFieldFactor extends SFactorBase
 {
 
-	protected double [][] _inputMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
-	protected double [][] _outputMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
-	
 	public SumProductFiniteFieldFactor(Factor factor)
 	{
 		super(factor);
@@ -45,20 +37,6 @@ public abstract class SumProductFiniteFieldFactor extends SFactorBase
 	@Override
 	public void createMessages()
 	{
-		final Factor factor = _model;
-		final int nVars = factor.getSiblingCount();
-		
-	    _inputMsgs = new double[nVars][];
-	    _outputMsgs = new double[nVars][];
-	    
-	    for (int index = 0; index < nVars; index++)
-	    {
-	    	ISolverVariable svar =  requireNonNull(factor.getSibling(index).getSolver());
-	    	Object [] messages = requireNonNull(svar.createMessages(this));
-	    	_outputMsgs[index] = (double[])messages[0];
-	    	_inputMsgs[index] = (double[])messages[1];
-	    }
-	    
 	}
 
 
@@ -66,30 +44,25 @@ public abstract class SumProductFiniteFieldFactor extends SFactorBase
 	@Override
 	public void resetEdgeMessages(int i)
 	{
-		SumProductDiscrete sv = (SumProductDiscrete)_model.getSibling(i).getSolver();
-		_inputMsgs[i] = sv.resetInputMessage(_inputMsgs[i]);
+		getEdge(i).reset();
 	}
 
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
-		return _inputMsgs[portIndex];
+		return getEdge(portIndex).varToFactorMsg;
 	}
 
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
-		return _outputMsgs[portIndex];
+		return getEdge(portIndex).factorToVarMsg;
 	}
 
 	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum,
 			int otherPortNum)
 	{
-
-		SumProductFiniteFieldFactor sother = (SumProductFiniteFieldFactor)other;
-	    _inputMsgs[thisPortNum] = sother._inputMsgs[otherPortNum];
-	    _outputMsgs[thisPortNum] = sother._outputMsgs[otherPortNum];
 	}
 
 	/*---------------
@@ -99,12 +72,19 @@ public abstract class SumProductFiniteFieldFactor extends SFactorBase
 	@Override
 	public DiscreteMessage cloneMessage(int edge)
 	{
-		return new DiscreteWeightMessage(_outputMsgs[edge]);
+		return getEdge(edge).factorToVarMsg.clone();
 	}
 	
 	@Override
 	public boolean supportsMessageEvents()
 	{
 		return true;
+	}
+	
+	@SuppressWarnings("null")
+	@Override
+	protected SumProductDiscreteEdge getEdge(int siblingIndex)
+	{
+		return (SumProductDiscreteEdge)super.getEdge(siblingIndex);
 	}
 }

@@ -16,32 +16,30 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.model.variables.RealJoint;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 
 /**
  * 
  * @since 0.08
  * @author Christopher Barber
  */
-public abstract class SEdgeWithMessages<VarToFactorMsg, FactorToVarMsg> implements ISolverEdge
+public class SMultivariateNormalEdge extends SEdgeWithSymetricParameterizedMessages<MultivariateNormalParameters>
 {
-	public final VarToFactorMsg varToFactorMsg;
-	public final FactorToVarMsg factorToVarMsg;
-	
-	protected SEdgeWithMessages(VarToFactorMsg varToFactorMsg, FactorToVarMsg factorToVarMsg)
-	{
-		this.varToFactorMsg = varToFactorMsg;
-		this.factorToVarMsg = factorToVarMsg;
-	}
-	
-	/*----------------
-	 * Object methods
+
+	/**
+	 * @param varToFactorMsg
+	 * @param factorToVarMsg
+	 * @since 0.08
 	 */
-	
-	@Override
-	public String toString()
+	public SMultivariateNormalEdge(MultivariateNormalParameters varToFactorMsg,
+		MultivariateNormalParameters factorToVarMsg)
 	{
-		return String.format("[%s var2factor=%s, factor2var=%s]",
-			getClass().getSimpleName(), varToFactorMsg, factorToVarMsg);
+		super(varToFactorMsg, factorToVarMsg);
+	}
+
+	public SMultivariateNormalEdge(RealJoint var)
+	{
+		super(new MultivariateNormalParameters(var), new MultivariateNormalParameters(var));
 	}
 }

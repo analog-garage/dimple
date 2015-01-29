@@ -110,9 +110,8 @@ public class CustomFiniteFieldConstantMult extends SFiniteFieldFactor
 	
 	private void updateMultInputEdge()
 	{
-		//TODO: can I get rid of cast?
-		double [] inputMsg = _outputMsgs[0];
-		double [] outputMsg = _inputMsgs[1];
+		double [] inputMsg = getEdge(0).factorToVarMsg.representation();
+		double [] outputMsg = getEdge(1).varToFactorMsg.representation();
 		
 		int [] outputDlogTable = _varOutput.getTables().getDlogTable();
 		int [] inputPowerTable = _varInput.getTables().getPowerTable();
@@ -138,9 +137,8 @@ public class CustomFiniteFieldConstantMult extends SFiniteFieldFactor
 	
 	private void updateMultOutputEdge()
 	{
-		//TODO: can I get rid of cast?
-		double [] inputMsg = _inputMsgs[0];
-		double [] outputMsg = _outputMsgs[1];
+		double [] inputMsg = getEdge(0).varToFactorMsg.representation();
+		double [] outputMsg = getEdge(1).factorToVarMsg.representation();
 		int [] inputDlogTable = _varInput.getTables().getDlogTable();
 		int [] outputPowerTable = _varOutput.getTables().getPowerTable();
 		

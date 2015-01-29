@@ -28,7 +28,9 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 /**
  * Solver variable for Discrete variables under Sum-Product solver.
@@ -59,6 +61,14 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		configureDampingFromOptions();
 	}
 
+	// FIXME - reset edge messages from graph methods, not node
+	@Override
+	public void resetEdgeMessages(int portNum)
+	{
+		final SumProductDiscreteEdge edge = getEdge(portNum);
+		edge.reset();
+	}
+	
 	public Variable getVariable()
 	{
 		return _model;
@@ -116,7 +126,9 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         int D = _model.getSiblingCount();
         double maxLog = Double.NEGATIVE_INFINITY;
 
-        double[] outMsgs = _outputMessages[outPortNum];
+		final SumProductDiscreteEdge edge = getEdge(outPortNum);
+
+		final double[] outMsgs = edge.varToFactorMsg.representation();
 
         double[] savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY;
         	
@@ -141,7 +153,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	        {
 	        	if (d != outPortNum)		// For all ports except the output port
 	        	{
-	        		double tmp = _inputMessages[d][m];
+	        		double tmp = getEdge(d).factorToVarMsg.getWeight(m);
 	        		out += (tmp == 0) ? minLog : Math.log(tmp);
 	        	}
 	        }
@@ -199,7 +211,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 
         	for (int d = 0, i = m; d < D; d++, i += M)
 	        {
-	        	double tmp = _inputMessages[d][m];
+	        	double tmp = getEdge(d).factorToVarMsg.getWeight(m);
         		double logtmp = (tmp == 0) ? minLog : Math.log(tmp);
         		logInPortMsgs[i] = logtmp;
         		alpha += logtmp;
@@ -213,7 +225,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         	_dampingInUse ? DimpleEnvironment.doubleArrayCache.allocate(M) : ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	    for (int out_d = 0, dm = 0; out_d < D; out_d++, dm += M )
 	    {
-            double[] outMsgs = _outputMessages[out_d];
+            final double[] outMsgs = getEdge(out_d).varToFactorMsg.representation();
             
 
             if (_dampingInUse)
@@ -274,8 +286,10 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	    }
 	   
 	    if (_calculateDerivative)
-		    for (int i = 0; i < _inputMessages.length; i++)
+	    {
+		    for (int i = 0; i < D; i++)
 		    	updateDerivative(i);
+	    }
 	    
     }
     
@@ -284,12 +298,12 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	public double[] getBelief()
     {
 
-        final double minLog = -100;
-        double[] priors = _input;
-        int M = priors.length;
-        int D = _model.getSiblingCount();
-        double maxLog = Double.NEGATIVE_INFINITY;
+        final double[] priors = _input;
+        final int M = priors.length;
+        final int D = _model.getSiblingCount();
 
+        final double minLog = -100;
+        double maxLog = Double.NEGATIVE_INFINITY;
         
         double[] outBelief = new double[M];
 
@@ -300,7 +314,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         	
 	        for (int d = 0; d < D; d++)
 	        {
-	        	double tmp = _inputMessages[d][m];
+	        	double tmp = getEdge(d).factorToVarMsg.getWeight(m);
 	        	out += (tmp == 0) ? minLog : Math.log(tmp);
 	        }
         	if (out > maxLog) maxLog = out;
@@ -347,11 +361,12 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		for (int i = 0; i <  retval.length ; i++)
 			retval[i] = input[i];
 		
-		for (int i = 0; i < _inputMessages.length; i++)
+		for (int i = 0, n = getSiblingCount(); i < n; i++)
 		{
+			final double[] inMsg = getEdge(i).factorToVarMsg.representation();
 			for (int j=  0; j < retval.length; j++)
 			{
-				retval[j] *= _inputMessages[i][j];
+				retval[j] *= inMsg[j];
 			}
 		}
 		
@@ -405,10 +420,10 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	public double calculatedf(double f, int weightIndex, int domain)
 	{
 		double sum = 0;
-		for (int i = 0; i < _inputMessages.length; i++)
+		for (int i = 0, n = getSiblingCount(); i < n; i++)
 		{
 			SumProductTableFactor sft = (SumProductTableFactor)getVariable().getConnectedNodesFlat().getByIndex(i).getSolver();
-			double inputMsg = _inputMessages[i][domain];
+			double inputMsg = getEdge(i).factorToVarMsg.getWeight(domain);
 			double tmp = f / inputMsg;
 			@SuppressWarnings("null")
 			double der = sft.getMessageDerivative(weightIndex,getVariable())[domain];
@@ -477,18 +492,18 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 			sum += dbelief * (Math.log(beliefd)) + dbelief;
 		}
 		
-		return -sum * (_inputMessages.length-1);
+		return -sum * (getSiblingCount()-1);
 	}
 
 
     private double calculateProdFactorMessagesForDomain(int outPortNum, int d)
     {
 		double f = getNormalizedInputs()[d];
-		for (int i = 0; i < _inputMessages.length; i++)
+		for (int i = 0, n = getSiblingCount(); i < n; i++)
 		{
 			if (i != outPortNum)
 			{
-				f *= _inputMessages[i][d];
+				f *= getEdge(i).factorToVarMsg.getWeight(d);
 			}
 		}
 		return f;
@@ -533,7 +548,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 
 	public void initializeDerivativeMessages(int weights)
 	{
-		_outMessageDerivative = new double[weights][_inputMessages.length][_input.length];
+		_outMessageDerivative = new double[weights][getSiblingCount()][_input.length];
 	}
     
     public double [] getMessageDerivative(int wn, Factor f)
@@ -546,11 +561,11 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     {
     	double df = 0;
 		
-		for (int i = 0; i < _inputMessages.length; i++)
+		for (int i = 0, n = getSiblingCount(); i < n; i++)
 		{
 			if (i != outPortNum)
 			{
-				double thisMsg = _inputMessages[i][d];
+				double thisMsg = getEdge(i).factorToVarMsg.getWeight(d);
 				SumProductTableFactor stf = (SumProductTableFactor)getVariable().getConnectedNodesFlat().getByIndex(i).getSolver();
 				@SuppressWarnings("null")
 				double [] dfactor = stf.getMessageDerivative(wn,getVariable());
@@ -592,6 +607,78 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     	return retval;
 	}
 
+	@Override
+	public Object getInputMsg(int portIndex)
+	{
+		// FIXME return actual message object
+		return getEdge(portIndex).factorToVarMsg.representation();
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex)
+	{
+		// FIXME return actual message object
+		return getEdge(portIndex).varToFactorMsg.representation();
+	}
+
+	@Override
+	public void moveMessages(ISolverNode other, int portNum, int otherPort)
+	{
+		SumProductDiscrete sother = (SumProductDiscrete)other;
+		
+		SumProductDiscreteEdge thisEdge = getEdge(portNum);
+		SumProductDiscreteEdge otherEdge = sother.getEdge(otherPort);
+		
+		double[] target = thisEdge.factorToVarMsg.representation();
+		System.arraycopy(otherEdge.factorToVarMsg.representation(), 0, target, 0, target.length);
+		target = thisEdge.varToFactorMsg.representation();
+		System.arraycopy(otherEdge.varToFactorMsg.representation(), 0, target, 0, target.length);
+		otherEdge.reset();
+		
+		if (_dampingInUse)
+		{
+			_dampingParams[portNum] = sother._dampingParams[otherPort];
+		}
+	}
+
+	@Override
+	public void setInputMsg(int portIndex, Object obj)
+	{
+		setInputMsgValues(portIndex, obj);
+	}
+
+	@Override
+	public void setInputMsgValues(int portIndex, Object obj)
+	{
+		final DiscreteMessage message = getEdge(portIndex).factorToVarMsg;
+		
+		if (obj instanceof DiscreteMessage)
+		{
+			message.setFrom((DiscreteMessage)obj);
+		}
+		else
+		{
+			double[] target  = message.representation();
+			System.arraycopy(obj, 0, target, 0, target.length);
+		}
+	}
+	
+	@Override
+	public void setOutputMsgValues(int portIndex, Object obj)
+	{
+		final DiscreteMessage message = getEdge(portIndex).varToFactorMsg;
+		
+		if (obj instanceof DiscreteMessage)
+		{
+			message.setFrom((DiscreteMessage)obj);
+		}
+		else
+		{
+			double[] target  = message.representation();
+			System.arraycopy(obj, 0, target, 0, target.length);
+		}
+	}
+	
 	/*---------------
 	 * SNode methods
 	 */
@@ -599,7 +686,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	@Override
 	protected DiscreteWeightMessage cloneMessage(int edge)
 	{
-		return new DiscreteWeightMessage(_outputMessages[edge]);
+		return getEdge(edge).varToFactorMsg.clone();
 	}
 	
 	@Override
@@ -629,4 +716,11 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     	
     	_dampingInUse = _dampingParams.length > 0;
     }
+
+    @Override
+	@SuppressWarnings("null")
+	protected SumProductDiscreteEdge getEdge(int siblingIndex)
+	{
+		return (SumProductDiscreteEdge)super.getEdge(siblingIndex);
+	}
 }

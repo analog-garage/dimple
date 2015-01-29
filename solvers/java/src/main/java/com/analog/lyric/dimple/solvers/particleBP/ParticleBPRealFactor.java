@@ -30,6 +30,7 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscreteEdge;
 
 /**
  * Real solver factor under Particle BP solver.
@@ -257,25 +258,28 @@ public class ParticleBPRealFactor extends SFactorBase
 		for (int iPort = 0; iPort < _numPorts; iPort++)
 	    {
 	    	Variable var = factor.getSibling(iPort);
-	    	@SuppressWarnings("null")
-			Object [] messages = requireNonNull(var.getSolver().createMessages(this));
 
 	    	// Is the variable connected to the port real or discrete
 	    	if (var instanceof Real)
 	    	{
+		    	@SuppressWarnings("null")
+				Object [] messages = requireNonNull(var.getSolver().createMessages(this));
 	    		ParticleBPSolverVariableToFactorMessage tmp = (ParticleBPSolverVariableToFactorMessage)messages[1];
 	    		realVariable[iPort] = true;
 	    		_variableDomains[iPort] = tmp.particleValues;
 	    		_inPortMsgs[iPort] = tmp.messageValues;
+	    		_outMsgArray[iPort] = (double[])messages[0];
 	    	}
 	    	else
 	    	{
-	    		realVariable[iPort] = true;
+	    		realVariable[iPort] = false;
 	    		_variableDomains[iPort] = ((Discrete)var).getDiscreteDomain().getElements();
-	    		_inPortMsgs[iPort] = (double[])messages[1];
+	    		
+	    		SumProductDiscreteEdge edge = requireNonNull((SumProductDiscreteEdge)getEdge(iPort));
+	    		_inPortMsgs[iPort] = edge.varToFactorMsg.representation();
+	    		_outMsgArray[iPort] = edge.factorToVarMsg.representation();
 	    	}
 	    	
-    		_outMsgArray[iPort] = (double[])messages[0];
 	    	_variableDomainLengths[iPort] = _variableDomains[iPort].length;
 	    }
 	}

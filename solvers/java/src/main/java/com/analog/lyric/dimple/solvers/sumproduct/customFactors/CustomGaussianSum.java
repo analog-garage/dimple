@@ -63,17 +63,17 @@ public class CustomGaussianSum extends GaussianFactorBase
 		double mean = _constantSum;
 		double variance = 0;
 		
-		for (int i = 0; i < _inputMsgs.length; i++)
+		for (int i = 0, n = getSiblingCount(); i < n; i++)
 		{
 			if (i != _sumPort)
 			{
-				NormalParameters msg = _inputMsgs[i];
+				NormalParameters msg = getEdge(i).varToFactorMsg;
 				mean += msg.getMean();
 				variance += msg.getVariance();
 			}
 		}
 
-		NormalParameters outMsg = _outputMsgs[_sumPort];
+		NormalParameters outMsg = getEdge(_sumPort).factorToVarMsg;
 		outMsg.setMean(mean);
 		outMsg.setVariance(variance);
 	}
@@ -85,11 +85,11 @@ public class CustomGaussianSum extends GaussianFactorBase
 		double mean = -_constantSum;		// For summands, use negative of constant sum
 		double variance = 0;
 		
-		for (int i = 0; i < _inputMsgs.length; i++)
+		for (int i = 0, n = getSiblingCount(); i < n; i++)
 		{
 			if (i != outPortNum)
 			{
-				NormalParameters msg = _inputMsgs[i];
+				NormalParameters msg = getEdge(i).varToFactorMsg;
 				if (i == _sumPort)
 					mean += msg.getMean();
 				else
@@ -99,7 +99,7 @@ public class CustomGaussianSum extends GaussianFactorBase
 			}
 		}
 
-		NormalParameters outMsg = _outputMsgs[outPortNum];
+		NormalParameters outMsg = getEdge(outPortNum).factorToVarMsg;
 		outMsg.setMean(mean);
 		outMsg.setVariance(variance);
 	}

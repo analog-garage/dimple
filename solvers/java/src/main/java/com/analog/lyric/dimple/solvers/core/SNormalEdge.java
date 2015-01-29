@@ -16,32 +16,28 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 
 /**
  * 
  * @since 0.08
  * @author Christopher Barber
  */
-public abstract class SEdgeWithMessages<VarToFactorMsg, FactorToVarMsg> implements ISolverEdge
+public class SNormalEdge extends SEdgeWithSymetricParameterizedMessages<NormalParameters>
 {
-	public final VarToFactorMsg varToFactorMsg;
-	public final FactorToVarMsg factorToVarMsg;
-	
-	protected SEdgeWithMessages(VarToFactorMsg varToFactorMsg, FactorToVarMsg factorToVarMsg)
-	{
-		this.varToFactorMsg = varToFactorMsg;
-		this.factorToVarMsg = factorToVarMsg;
-	}
-	
-	/*----------------
-	 * Object methods
+
+	/**
+	 * @param varToFactorMsg
+	 * @param factorToVarMsg
+	 * @since 0.08
 	 */
-	
-	@Override
-	public String toString()
+	protected SNormalEdge(NormalParameters varToFactorMsg, NormalParameters factorToVarMsg)
 	{
-		return String.format("[%s var2factor=%s, factor2var=%s]",
-			getClass().getSimpleName(), varToFactorMsg, factorToVarMsg);
+		super(varToFactorMsg, factorToVarMsg);
+	}
+
+	public SNormalEdge()
+	{
+		this(new NormalParameters(), new NormalParameters());
 	}
 }

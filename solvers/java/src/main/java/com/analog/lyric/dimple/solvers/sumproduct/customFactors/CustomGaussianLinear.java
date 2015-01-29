@@ -83,11 +83,11 @@ public class CustomGaussianLinear extends GaussianFactorBase
 			mu = _total;
 			sigma2 = 0;
 			
-			for (int i = 0; i < _inputMsgs.length; i++)
+			for (int i = 0, n = getSiblingCount(); i < n; i++)
 			{
 				if (i != outPortNum)
 				{
-					NormalParameters msg = _inputMsgs[i];
+					NormalParameters msg = getEdge(i).varToFactorMsg;
 					mu -= msg.getMean() * _constants[i];
 					sigma2 += _constants[i]*_constants[i]*msg.getVariance();
 				}
@@ -96,7 +96,7 @@ public class CustomGaussianLinear extends GaussianFactorBase
 			sigma2 /= (_constants[outPortNum]*_constants[outPortNum]);
 		}
 		 
-		NormalParameters msg = _outputMsgs[outPortNum];
+		NormalParameters msg = getEdge(outPortNum).factorToVarMsg;
 		msg.setMean(mu);
 		msg.setVariance(sigma2);
 	}

@@ -16,21 +16,16 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
-import static java.util.Objects.*;
+import org.eclipse.jdt.annotation.NonNull;
 
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
+import com.analog.lyric.dimple.solvers.core.SMultivariateNormalEdge;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import org.eclipse.jdt.annotation.NonNull;
 
 public abstract class MultivariateGaussianFactorBase extends SFactorBase
 {
-
-	protected MultivariateNormalParameters [] _inputMsgs;
-	protected MultivariateNormalParameters [] _outputMsgs;
-	
 	@SuppressWarnings("null")
 	public MultivariateGaussianFactorBase(Factor factor)
 	{
@@ -46,40 +41,23 @@ public abstract class MultivariateGaussianFactorBase extends SFactorBase
 	@Override
 	public void createMessages()
 	{
-		final Factor factor = _model;
-		final int nVars = factor.getSiblingCount();
-	    _inputMsgs = new MultivariateNormalParameters[nVars];
-	    _outputMsgs = new MultivariateNormalParameters[nVars];
-
-		//messages were created in constructor
-		for (int index = 0; index < nVars; ++index)
-		{
-			ISolverVariable sv = requireNonNull(factor.getSibling(index).getSolver());
-			Object [] messages = requireNonNull(sv.createMessages(this));
-			_outputMsgs[index] = (MultivariateNormalParameters)messages[0];
-			_inputMsgs[index] = (MultivariateNormalParameters)messages[1];
-		}
-		
 	}
+
 	@Override
 	public void moveMessages(@NonNull ISolverNode other, int portNum, int otherPort)
 	{
-		MultivariateGaussianFactorBase s = (MultivariateGaussianFactorBase)other;
-	
-		_inputMsgs[portNum] = s._inputMsgs[otherPort];
-		_outputMsgs[portNum] = s._outputMsgs[otherPort];
-
 	}
 	
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
-		return _inputMsgs[portIndex];
+		return getEdge(portIndex).varToFactorMsg;
 	}
 
 	@Override
-	public Object getOutputMsg(int portIndex) {
-		return _outputMsgs[portIndex];
+	public Object getOutputMsg(int portIndex)
+	{
+		return getEdge(portIndex).factorToVarMsg;
 	}
 	
 	/*---------------
@@ -89,12 +67,19 @@ public abstract class MultivariateGaussianFactorBase extends SFactorBase
 	@Override
 	protected MultivariateNormalParameters cloneMessage(int edge)
 	{
-		return _outputMsgs[edge].clone();
+		return getEdge(edge).factorToVarMsg.clone();
 	}
 	
 	@Override
 	protected boolean supportsMessageEvents()
 	{
 		return true;
+	}
+	
+	@SuppressWarnings("null")
+	@Override
+	protected SMultivariateNormalEdge getEdge(int siblingIndex)
+	{
+		return (SMultivariateNormalEdge)super.getEdge(siblingIndex);
 	}
 }

@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import static java.util.Objects.*;
+
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -143,6 +145,15 @@ public abstract class STableFactorBase extends SFactorBase
     public final @Nullable IFactorTable getFactorTableIfComputed()
     {
     	return _factorTable;
+    }
+    
+    /**
+     * Returns the dimension of the ith variable, assumed to be discrete
+     * @since 0.08
+     */
+    protected int getSiblingDimension(int i)
+    {
+    	return requireNonNull(getSibling(i).getDomain().asDiscrete()).size();
     }
     
     /**

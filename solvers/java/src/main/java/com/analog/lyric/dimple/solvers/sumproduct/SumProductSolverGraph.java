@@ -44,6 +44,7 @@ import com.analog.lyric.dimple.factorfunctions.core.CustomFactorFunctionWrapper;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.FiniteFieldVariable;
@@ -52,8 +53,11 @@ import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.options.DimpleOptions;
+import com.analog.lyric.dimple.solvers.core.NoSolverEdge;
 import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
+import com.analog.lyric.dimple.solvers.core.SMultivariateNormalEdge;
+import com.analog.lyric.dimple.solvers.core.SNormalEdge;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
@@ -118,6 +122,34 @@ public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolve
 		setOption(GibbsOptions.scansPerSample, SampledFactor.DEFAULT_SCANS_PER_SAMPLE);
 	}
 
+	@Override
+	public boolean hasEdgeState()
+	{
+		return true;
+	}
+
+	@Override
+	public ISolverEdge createEdgeState(FactorGraphEdgeState edge)
+	{
+		final Variable var = edge.getVariable(_model);
+		
+		if (var instanceof Discrete)
+		{
+			return new SumProductDiscreteEdge((Discrete)var);
+		}
+		else if (var instanceof Real)
+		{
+			return new SNormalEdge();
+		}
+		else if (var instanceof RealJoint)
+		{
+			return new SMultivariateNormalEdge((RealJoint)var);
+		}
+		
+		return NoSolverEdge.INSTANCE;
+		
+	}
+	
 	@SuppressWarnings("deprecation") // TODO remove when S* classes removed
 	@Override
 	public ISolverVariable createVariable(Variable var)
@@ -615,8 +647,7 @@ public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolve
 
 	
 	@SuppressWarnings("null")
-	public double calculateDerivativeOfBetheFreeEnergyWithRespectToWeight(IFactorTable ft,
-			int weightIndex)
+	public double calculateDerivativeOfBetheFreeEnergyWithRespectToWeight(IFactorTable ft, int weightIndex)
 	{
 		//BFE = InternalEnergy - BetheEntropy
 		//InternalEnergy = Sum over all factors (Internal Energy of Factor)

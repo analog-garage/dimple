@@ -33,8 +33,8 @@ public class CustomMultivariateGaussianNegate extends MultivariateGaussianFactor
 	{
 		int inPortNum = 1 - outPortNum;		// Exactly two ports
 		
-		MultivariateNormalParameters inputMsg = _inputMsgs[inPortNum];
-		MultivariateNormalParameters outMsg = _outputMsgs[outPortNum];
+		MultivariateNormalParameters inputMsg = getEdge(inPortNum).varToFactorMsg;
+		MultivariateNormalParameters outMsg = getEdge(outPortNum).factorToVarMsg;
 
 		double[] mean = inputMsg.getMean();
 		for (int i = 0; i < mean.length; i++)

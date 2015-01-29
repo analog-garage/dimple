@@ -16,16 +16,19 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
+import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.solvers.core.SDiscreteWeightEdge;
+
 
 /**
  * 
  * @since 0.08
  * @author Christopher Barber
  */
-public class SumProductDiscreteEdge
+public class SumProductDiscreteEdge extends SDiscreteWeightEdge
 {
-	private double[] _msgFromVar;
-	private double[] _msgToVar;
-	private double[] _msgToVarLog;
-	
+	public SumProductDiscreteEdge(Discrete discrete)
+	{
+		super(discrete);
+	}
 }

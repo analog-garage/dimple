@@ -46,8 +46,8 @@ public class CustomGaussianNegate extends GaussianFactorBase
 	{
 		int inPortNum = 1 - outPortNum;		// Exactly two ports
 		
-		NormalParameters inputMsg = _inputMsgs[inPortNum];
-		NormalParameters outMsg = _outputMsgs[outPortNum];
+		NormalParameters inputMsg = getEdge(inPortNum).varToFactorMsg;
+		NormalParameters outMsg = getEdge(outPortNum).factorToVarMsg;
 
 		outMsg.setMean(-inputMsg.getMean());	// Negate the mean
 		outMsg.setPrecision(inputMsg.getPrecision());

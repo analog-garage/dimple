@@ -81,10 +81,14 @@ public interface ISolverVariable extends ISolverNode
     
     public void createNonEdgeSpecificState();
     
-    //Create messages that will be passed to and from the specified factor.
-    //This method should return an Object array with two elements, the first
-    //being the newly created input message and the second being the newly created
-    //output message.
+    /**
+     * Create messages that will be passed to and from the specified factor.
+     * This method should return an Object array with two elements, the first
+     * being the newly created input message and the second being the newly created
+     * output message.
+     * <p>
+     * NOTE: this method is going to be factored out in the near future!
+     */
     public @Nullable Object [] createMessages(ISolverFactor factor);
     
     //Method to reset an input message's values

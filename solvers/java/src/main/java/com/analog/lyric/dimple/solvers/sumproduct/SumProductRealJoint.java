@@ -21,10 +21,12 @@ import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.MultivariateNormal;
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.model.variables.RealJoint;
+import com.analog.lyric.dimple.solvers.core.SMultivariateNormalEdge;
 import com.analog.lyric.dimple.solvers.core.SRealJointVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -40,8 +42,6 @@ public class SumProductRealJoint extends SRealJointVariableBase
 
 	private int _numVars;
 	private @Nullable MultivariateNormalParameters _input;
-	private MultivariateNormalParameters [] _outputMsgs = new MultivariateNormalParameters[0];
-	private MultivariateNormalParameters [] _inputMsgs = new MultivariateNormalParameters[0];
 
 	public SumProductRealJoint(RealJoint var)
 	{
@@ -120,8 +120,7 @@ public class SumProductRealJoint extends SRealJointVariableBase
 	@Override
 	protected void doUpdateEdge(int outPortNum)
 	{
-		MultivariateNormalParameters outMsg = _outputMsgs[outPortNum];
-		doUpdate(outMsg,outPortNum);
+		doUpdate(getEdge(outPortNum).varToFactorMsg, outPortNum);
 	}
 
 	private void doUpdate(MultivariateNormalParameters outMsg, int outPortNum)
@@ -148,11 +147,11 @@ public class SumProductRealJoint extends SRealJointVariableBase
 			matrix = input.getInformationMatrix();
 		}
 		
-		for (int i = 0; i < _outputMsgs.length; i++ )
+		for (int i = 0, n = getSiblingCount(); i < n; i++ )
 		{
 			if (i != outPortNum)
 			{
-				MultivariateNormalParameters inMsg = _inputMsgs[i];
+				final MultivariateNormalParameters inMsg = getEdge(i).factorToVarMsg;
 				
 				double [] inMsgVector = inMsg.getInformationVector();
 				
@@ -173,13 +172,7 @@ public class SumProductRealJoint extends SRealJointVariableBase
 	@Override
 	public Object [] createMessages(ISolverFactor factor)
 	{
-		int portNum = getModelObject().getPortNum(Objects.requireNonNull(factor.getModelObject()));
-		int arrayLength = Math.max(_inputMsgs.length, portNum+1);
-		_inputMsgs = Arrays.copyOf(_inputMsgs, arrayLength);
-		_inputMsgs[portNum] = createDefaultMessage();
-		_outputMsgs = Arrays.copyOf(_outputMsgs,arrayLength);
-		_outputMsgs[portNum] = createDefaultMessage();
-		return new Object [] {_inputMsgs[portNum],_outputMsgs[portNum]};
+		return ArrayUtil.EMPTY_OBJECT_ARRAY;
 	}
 
 	public MultivariateNormalParameters createDefaultMessage()
@@ -207,33 +200,37 @@ public class SumProductRealJoint extends SRealJointVariableBase
 	@Override
 	public void resetEdgeMessages( int i )
 	{
-		_inputMsgs[i] = (MultivariateNormalParameters)resetInputMessage(_inputMsgs[i]);
-		_outputMsgs[i] = (MultivariateNormalParameters)resetOutputMessage(_outputMsgs[i]);
+		getEdge(i).reset();
 	}
 	
 	@Override
 	public void moveMessages(ISolverNode other, int portNum, int otherPort)
 	{
 		SumProductRealJoint s = (SumProductRealJoint)other;
-	
-		_inputMsgs[portNum] = s._inputMsgs[otherPort];
-		_outputMsgs[portNum] = s._outputMsgs[otherPort];
+		final SMultivariateNormalEdge thisEdge = getEdge(portNum);
+		final SMultivariateNormalEdge otherEdge = s.getEdge(otherPort);
 
+		thisEdge.factorToVarMsg.set(otherEdge.factorToVarMsg);
+		thisEdge.varToFactorMsg.set(otherEdge.varToFactorMsg);
+		otherEdge.reset();
 	}
 	
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
-		return _inputMsgs[portIndex];
+		return getEdge(portIndex).factorToVarMsg;
 	}
 
 	@Override
-	public Object getOutputMsg(int portIndex) {
-		return _outputMsgs[portIndex];
+	public Object getOutputMsg(int portIndex)
+	{
+		return getEdge(portIndex).varToFactorMsg;
 	}
+	
 	@Override
-	public void setInputMsg(int portIndex, Object obj) {
-		_inputMsgs[portIndex] = (MultivariateNormalParameters)obj;
+	public void setInputMsg(int portIndex, Object obj)
+	{
+		getEdge(portIndex).factorToVarMsg.set((MultivariateNormalParameters)obj);
 	}
 
 
@@ -253,12 +250,19 @@ public class SumProductRealJoint extends SRealJointVariableBase
 	@Override
 	protected MultivariateNormalParameters cloneMessage(int edge)
 	{
-		return _outputMsgs[edge].clone();
+		return getEdge(edge).varToFactorMsg.clone();
 	}
 	
 	@Override
 	protected boolean supportsMessageEvents()
 	{
 		return true;
+	}
+	
+	@SuppressWarnings("null")
+	@Override
+	protected SMultivariateNormalEdge getEdge(int siblingIndex)
+	{
+		return (SMultivariateNormalEdge)super.getEdge(siblingIndex);
 	}
 }

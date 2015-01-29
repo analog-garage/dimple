@@ -16,32 +16,34 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 
 /**
  * 
  * @since 0.08
  * @author Christopher Barber
  */
-public abstract class SEdgeWithMessages<VarToFactorMsg, FactorToVarMsg> implements ISolverEdge
+public class SDiscreteWeightEdge extends SEdgeWithSymetricParameterizedMessages<DiscreteWeightMessage>
 {
-	public final VarToFactorMsg varToFactorMsg;
-	public final FactorToVarMsg factorToVarMsg;
-	
-	protected SEdgeWithMessages(VarToFactorMsg varToFactorMsg, FactorToVarMsg factorToVarMsg)
+
+	/**
+	 * @param varToFactorMsg
+	 * @param factorToVarMsg
+	 * @since 0.08
+	 */
+	protected SDiscreteWeightEdge(DiscreteWeightMessage varToFactorMsg, DiscreteWeightMessage factorToVarMsg)
 	{
-		this.varToFactorMsg = varToFactorMsg;
-		this.factorToVarMsg = factorToVarMsg;
+		super(varToFactorMsg, factorToVarMsg);
+	}
+
+	protected SDiscreteWeightEdge(int size)
+	{
+		super(new DiscreteWeightMessage(size), new DiscreteWeightMessage(size));
 	}
 	
-	/*----------------
-	 * Object methods
-	 */
-	
-	@Override
-	public String toString()
+	protected SDiscreteWeightEdge(Discrete var)
 	{
-		return String.format("[%s var2factor=%s, factor2var=%s]",
-			getClass().getSimpleName(), varToFactorMsg, factorToVarMsg);
+		this(var.getDomain().size());
 	}
 }

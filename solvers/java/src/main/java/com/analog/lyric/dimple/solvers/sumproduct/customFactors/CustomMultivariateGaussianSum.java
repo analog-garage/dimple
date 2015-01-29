@@ -39,7 +39,7 @@ public class CustomMultivariateGaussianSum extends MultivariateGaussianFactorBas
 	@Override
 	public void doUpdateEdge(int outPortNum)
 	{
-		MultivariateNormalParameters outMsg = _outputMsgs[outPortNum];
+		MultivariateNormalParameters outMsg = getEdge(outPortNum).factorToVarMsg;
 		
 		int size = outMsg.getMean().length;
 		
@@ -62,7 +62,7 @@ public class CustomMultivariateGaussianSum extends MultivariateGaussianFactorBas
 		{
 			if (i != outPortNum)
 			{
-				MultivariateNormalParameters inMsg = _inputMsgs[i];
+				MultivariateNormalParameters inMsg = getEdge(i).varToFactorMsg;
 				
 				double [] inMsgMean = inMsg.getMean();
 				
@@ -94,7 +94,7 @@ public class CustomMultivariateGaussianSum extends MultivariateGaussianFactorBas
 		// Pre-compute sum associated with any constant edges
 		FactorFunction factorFunction = _model.getFactorFunction();
 		_sumPort = factorFunction.isConstantIndex(_sumIndex) ? -1 : _sumIndex;	// If sum isn't a variable, then set port to invalid value
-		int dimension = _inputMsgs[0].getVectorLength();
+		int dimension = getEdge(0).varToFactorMsg.getVectorLength();
 		_constantSum = new double[dimension];	// Assume all zero
 		if (factorFunction.hasConstants())
 		{

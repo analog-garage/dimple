@@ -17,11 +17,13 @@
 package com.analog.lyric.dimple.solvers.particleBP;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
+import com.analog.lyric.dimple.solvers.core.NoSolverEdge;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -29,6 +31,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.sumproduct.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.sumproduct.STableFactor;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscreteEdge;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductTableFactor;
 import com.analog.lyric.math.DimpleRandomGenerator;
 
@@ -56,11 +59,34 @@ public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, ISolv
 	}
 
 	@Override
+	public boolean hasEdgeState()
+	{
+		return true;
+	}
+	
+	@Override
 	public boolean customFactorExists(String funcName)
 	{
 		return false;
 	}
 
+	@Override
+	public ISolverEdge createEdgeState(FactorGraphEdgeState edge)
+	{
+		Variable var = edge.getVariable(_model);
+		
+		if (var instanceof Real)
+		{
+			// FIXME - implement ParticleBPRealEdge
+			return NoSolverEdge.INSTANCE;
+		}
+		else if (var instanceof Discrete)
+		{
+			return new SumProductDiscreteEdge((Discrete)var);
+		}
+
+		return NoSolverEdge.INSTANCE;
+	}
 
 	@SuppressWarnings("deprecation") // TODO remove when S*Factor classes removed.
 	@Override

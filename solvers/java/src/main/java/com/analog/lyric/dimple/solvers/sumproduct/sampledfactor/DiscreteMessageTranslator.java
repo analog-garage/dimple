@@ -18,15 +18,18 @@ package com.analog.lyric.dimple.solvers.sumproduct.sampledfactor;
 
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscrete;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class DiscreteMessageTranslator extends MessageTranslatorBase
 {
+	// FIXME change to DiscreteMessage
 	private @Nullable double[] _inputMessage;
 	private @Nullable double[] _outputMessage;
 
@@ -79,13 +82,27 @@ public class DiscreteMessageTranslator extends MessageTranslatorBase
 	@Override
 	public final void createInputMessage(Object msg)
 	{
-		_inputMessage = (double[])msg;
+		if (msg instanceof DiscreteMessage)
+		{
+			_inputMessage = ((DiscreteMessage) msg).representation();
+		}
+		else
+		{
+			_inputMessage = (double[])msg;
+		}
 	}
 	
 	@Override
 	public final void createOutputMessage(Object msg)
 	{
-		_outputMessage = (double[])msg;
+		if (msg instanceof DiscreteMessage)
+		{
+			_outputMessage = ((DiscreteMessage) msg).representation();
+		}
+		else
+		{
+			_outputMessage = (double[])msg;
+		}
 	}
 		
 	@Override

@@ -19,13 +19,15 @@ package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import java.util.ArrayList;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
-import org.eclipse.jdt.annotation.NonNull;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscreteEdge;
 
 /*
  * The Multiplexer factor is a directed factor
@@ -120,6 +122,11 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 	}
 
 	@Override
+	public void createMessages()
+	{
+	}
+
+	@Override
 	public void doUpdateEdge(int outPortNum)
 	{
 		if (outPortNum == 0)
@@ -147,23 +154,27 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 		
 		double total = 0;
 	
+		final double[] yWeights = getEdge(0).varToFactorMsg.representation();
+		final double[] aWeights = getEdge(1).factorToVarMsg.representation();
+			
 		for (int i = 0; i < _aDomainSize; i++)
 		{
+			final double[] zWeights = getEdge(i+2).varToFactorMsg.representation();
 			double sm = 0;
 			
 			for (int j = 0; j < _zIndices2yIndex[i].length; j++)
 			{
 				int yIndex = _zIndices2yIndex[i][j];
-				sm += _inputMsgs[0][yIndex] * _inputMsgs[i+2][j];
+				sm += yWeights[yIndex] * zWeights[j];
 			}
 			
-			_outputMsgs[1][i] = sm;
+			aWeights[i] = sm;
 			total += sm;
 		}
 				
 		//normalize
 		for (int i = 0; i < _aDomainSize; i++)
-			_outputMsgs[1][i] /= total;
+			aWeights[i] /= total;
 		
 	}
 	
@@ -171,8 +182,8 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 	{
 		//P(Y=y) = sum_{a} p(a)p(za=y)
 		
-		double [] outMsg = _outputMsgs[0];
-		double [] aInputMsg = _inputMsgs[1];
+		double [] outMsg = getEdge(0).factorToVarMsg.representation();
+		double [] aInputMsg = getEdge(1).varToFactorMsg.representation();
 		
 		double total = 0;
 		
@@ -185,7 +196,7 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 			{
 				int a = tmp[0];
 				int z = tmp[1];
-				sm += aInputMsg[a] * _inputMsgs[a+2][z];
+				sm += aInputMsg[a] * getEdge(a+2).varToFactorMsg.getWeight(z);
 			}
 			
 			outMsg[i] = sm;
@@ -205,7 +216,9 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 		
 		//P(Zi=x) = p(a=i)p(y=x) + sum_{j not i} sum_{z in za} p(aj)p(y=z)p(za=z)
 		
-		double [] zBelief = _outputMsgs[index+2];
+		double [] zBelief = getEdge(index+2).factorToVarMsg.representation();
+		double [] yWeights = getEdge(0).varToFactorMsg.representation();
+		double [] aWeights = getEdge(1).varToFactorMsg.representation();
 		
 		double offset = 0;
 		
@@ -213,10 +226,14 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 		{
 			if (j != index)
 			{
-				for (int k = 0; k < _zIndices2yIndex[j].length; k++)
+				final double a = aWeights[j];
+				final int[] zIndices2yIndex = _zIndices2yIndex[j];
+				final double[] zWeights = getEdge(j+2).varToFactorMsg.representation();
+				
+				for (int k = 0, nk = zIndices2yIndex.length; k < nk; k++)
 				{
-					int yIndex = _zIndices2yIndex[j][k];
-					offset += _inputMsgs[1][j] * _inputMsgs[0][yIndex] * _inputMsgs[j+2][k];
+					int yIndex = zIndices2yIndex[k];
+					offset += a * yWeights[yIndex] * zWeights[k];
 				}
 			}
 		}
@@ -227,7 +244,7 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 		for (int i = 0; i < _zIndices2yIndex[index].length; i++)
 		{
 			int yIndex = _zIndices2yIndex[index][i];
-			zBelief[i] = _inputMsgs[1][index] * _inputMsgs[0][yIndex] + offset;
+			zBelief[i] = aWeights[index] * yWeights[yIndex] + offset;
 			total += zBelief[i];
 		}
 		
@@ -237,5 +254,10 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 		
 	}
 	
-
+	@SuppressWarnings("null")
+	@Override
+	protected SumProductDiscreteEdge getEdge(int siblingIndex)
+	{
+		return (SumProductDiscreteEdge)super.getEdge(siblingIndex);
+	}
 }

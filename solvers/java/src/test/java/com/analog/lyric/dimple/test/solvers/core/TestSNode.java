@@ -221,7 +221,7 @@ public class TestSNode extends DimpleTestBase
 		}
 
 		@Override
-		public void setNull()
+		public void setUniform()
 		{
 			_counter = 0;
 		}
