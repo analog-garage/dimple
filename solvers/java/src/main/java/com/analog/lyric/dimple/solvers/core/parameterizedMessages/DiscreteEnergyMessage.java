@@ -59,11 +59,14 @@ public final class DiscreteEnergyMessage extends DiscreteMessage
 	 * IParameterizedMessage methods
 	 */
 	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Sets all energies to zero (i.e. not normalized).
+	 */
 	@Override
-	public void setNull()
+	public void setUniform()
 	{
-		// FIXME - set to zero
-//		Arrays.fill(_message, Utilities.weightToEnergy(1.0 / _message.length));
 		Arrays.fill(_message, 0.0);
 	}
 

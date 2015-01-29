@@ -151,8 +151,13 @@ public class BetaParameters extends ParameterizedMessageBase
 		throw new IllegalArgumentException(String.format("Expected '%s' but got '%s'", getClass(), that.getClass()));
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Sets alpha and beta parameters both to 1.
+	 */
 	@Override
-	public final void setNull()
+	public final void setUniform()
 	{
 		_alphaMinusOne = 0;
 		_betaMinusOne = 0;

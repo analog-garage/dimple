@@ -19,12 +19,15 @@ package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 import static java.util.Objects.*;
 
 import java.io.PrintStream;
+import java.util.Arrays;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 import Jama.Matrix;
 
 import com.analog.lyric.collect.ArrayUtil;
+import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.math.LyricEigenvalueDecomposition;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class MultivariateNormalParameters extends ParameterizedMessageBase
 {
@@ -35,7 +38,7 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 	private @Nullable double [] _mean = null;
 	private double [][] _matrix = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
 	private boolean _isInInformationForm;
-	private double eps = 0.0000001; //minimum value for small eigenvalues or 1/(max value)
+	private final double eps = 0.0000001; //minimum value for small eigenvalues or 1/(max value)
 
 	
 	// Constructors
@@ -62,6 +65,30 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 		}
 	}
 
+	/**
+	 * Multivariate normal with specified number of dimensions, zero mean, and infinite covariance.
+	 * @param dimensions a positive number
+	 * @since 0.08
+	 */
+	public MultivariateNormalParameters(int dimensions)
+	{
+		this(new double[dimensions], new double[dimensions][dimensions]);
+		for (double[] row : _matrix)
+		{
+			Arrays.fill(row, Double.POSITIVE_INFINITY);
+		}
+	}
+	
+	/**
+	 * Multivariate normal with dimensions matching variable domain, zero mean, and infinite covariance.
+	 * @param var
+	 * @since 0.08
+	 */
+	public MultivariateNormalParameters(RealJoint var)
+	{
+		this(var.getDomain().getDimensions());
+	}
+	
 	public MultivariateNormalParameters(MultivariateNormalParameters other)		// Copy constructor
 	{
 		set(other);
@@ -269,6 +296,27 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 		_matrix = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
 		_mean = null;
 		_isInInformationForm = true;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Sets all means to zero and all covariances to infinity.
+	 */
+	@Override
+	public void setUniform()
+	{
+		if (_isInInformationForm)
+		{
+			// Implement for information form rather than toggling.
+			_mean = _vector;
+			_isInInformationForm = false;
+		}
+		Arrays.fill(_mean, 0.0);
+		for (double[] array : _matrix)
+		{
+			Arrays.fill(array, Double.POSITIVE_INFINITY);
+		}
 	}
 	
 	public final double[] getMeans() {return getMean();}	// For backward compatibility

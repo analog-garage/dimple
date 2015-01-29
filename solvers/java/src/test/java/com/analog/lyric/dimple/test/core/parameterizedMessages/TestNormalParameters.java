@@ -75,6 +75,11 @@ public class TestNormalParameters extends TestParameterizedMessage
 		msg.setNull();
 		assertEquals(0.0, msg.getMean(), 0.0);
 		assertEquals(0.0, msg.getPrecision(), 0.0);
+		
+		msg2.setUniform();
+		assertEquals(0.0, msg2.getMean(), 0.0);
+		assertEquals(0.0, msg2.getPrecision(), 0.0);
+		
 	}
 	
 	private void assertInvariants(NormalParameters message)

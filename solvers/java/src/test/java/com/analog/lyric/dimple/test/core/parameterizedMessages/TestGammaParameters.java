@@ -57,6 +57,10 @@ public class TestGammaParameters extends TestParameterizedMessage
 		assertEquals(3.0, msg.getBeta(), 0.0);
 		assertInvariants(msg);
 		
+		msg.setUniform();
+		assertEquals(0.0, msg.getAlphaMinusOne(), 0.0);
+		assertEquals(0.0, msg.getBeta(), 0.0);
+		
 		GammaParameters msg2 = new GammaParameters(4.0, 4.0);
 		
 		// Values computed by hand in MATLAB

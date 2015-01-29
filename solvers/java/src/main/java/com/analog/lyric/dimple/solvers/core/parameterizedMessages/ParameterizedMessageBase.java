@@ -55,5 +55,10 @@ public abstract class ParameterizedMessageBase implements IParameterizedMessage
 	
 	@Override
 	public abstract ParameterizedMessageBase clone();
-
+	
+	@Override
+	public void setNull()
+	{
+		setUniform();
+	}
 }

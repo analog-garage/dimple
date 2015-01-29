@@ -128,8 +128,13 @@ public class GammaParameters extends ParameterizedMessageBase
 		throw new IllegalArgumentException(String.format("Expected '%s' but got '%s'", getClass(), that.getClass()));
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Sets alpha to one and beta to zero.
+	 */
 	@Override
-	public final void setNull()
+	public final void setUniform()
 	{
 		_alphaMinusOne = 0;
 		_beta = 0;

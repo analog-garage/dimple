@@ -107,6 +107,13 @@ public class TestDirichletParameters extends TestParameterizedMessage
 			assertEquals(0.0, msg2.getAlphaMinusOne(i), 0.0);
 		}
 		
+		msg2.setUniform();
+		assertEquals(3, msg2.getSize());
+		for (int i = 0; i < 3; ++i)
+		{
+			assertEquals(0.0, msg2.getAlphaMinusOne(i), 0.0);
+		}
+		
 		msg2.setAlphaMinusOne(new double[] { 1, 2, 3});
 		for (int i = 0; i < 3; ++i)
 		{

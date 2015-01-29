@@ -57,7 +57,7 @@ public class TestParameterizedMessage extends DimpleTestBase
 		}
 
 		@Override
-		public void setNull()
+		public void setUniform()
 		{
 		}
 	}

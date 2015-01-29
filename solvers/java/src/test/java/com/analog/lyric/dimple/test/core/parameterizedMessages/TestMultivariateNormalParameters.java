@@ -79,6 +79,14 @@ public class TestMultivariateNormalParameters extends TestParameterizedMessage
 		assertEquals(.75198640216297, msg.computeKLDivergence(msg2), 1e-10);
 		assertEquals(1.5646802645036, msg2.computeKLDivergence(msg), 1e-10);
 		
+		msg2.setUniform();
+		assertFalse(msg2.isNull());
+		assertArrayEquals(new double[2], msg2.getMean(), 0.0);
+		for (double[] array : msg2.getCovariance())
+		{
+			assertArrayEquals(new double[] { Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY }, array, 0.0);
+		}
+		
 		msg2.setNull();
 		assertTrue(msg2.isNull());
 		assertTrue(msg2.isInInformationForm());

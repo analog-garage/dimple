@@ -20,6 +20,7 @@ import static com.analog.lyric.math.Utilities.*;
 import static com.analog.lyric.util.test.ExceptionTester.*;
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
 import java.util.Random;
 
 import org.junit.Test;
@@ -52,6 +53,20 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 			assertEquals(i, msg.getEnergy(i), 0.0);
 		}
 		
+		Arrays.fill(msg.representation(), 23);
+		msg.setNull();
+		for (int i=  msg.size(); --i>= 0;)
+		{
+			assertEquals(.1, msg.getWeight(i), 1e-14);
+		}
+
+		Arrays.fill(msg.representation(), 23);
+		msg.setUniform();
+		for (int i=  msg.size(); --i>= 0;)
+		{
+			assertEquals(.1, msg.getWeight(i), 1e-14);
+		}
+		
 		msg = new DiscreteWeightMessage(new double[] { 4, 5, 6 });
 		assertInvariants(msg);
 		assertEquals(4, msg.getWeight(0), 0.0);
@@ -69,6 +84,20 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 			assertEquals(weightToEnergy(i), msg.getEnergy(i), 1e-14);
 			msg.setEnergy(i,i);
 			assertEquals(i, msg.getEnergy(i), 0.0);
+		}
+		
+		Arrays.fill(msg.representation(), 23);
+		msg.setNull();
+		for (int i=  msg.size(); --i>= 0;)
+		{
+			assertEquals(0, msg.getEnergy(i), 0.0);
+		}
+
+		Arrays.fill(msg.representation(), 23);
+		msg.setUniform();
+		for (int i=  msg.size(); --i>= 0;)
+		{
+			assertEquals(0, msg.getEnergy(i), 0.0);
 		}
 		
 		msg = new DiscreteEnergyMessage(new double[] { 4, 5, 6 });
@@ -120,6 +149,21 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 		for (int i = 0; i < size; ++i)
 		{
 			assertEquals(message.getWeight(i), energyToWeight(message.getEnergy(i)), 1e-15);
+		}
+		
+		if (message.storesWeights())
+		{
+			for (int i = 0; i < size; ++i)
+			{
+				assertEquals(message.getWeight(i), message.representation()[i], 0.0);
+			}
+		}
+		else
+		{
+			for (int i = 0; i < size; ++i)
+			{
+				assertEquals(message.getEnergy(i), message.representation()[i], 0.0);
+			}
 		}
 		
 		expectThrow(ArrayIndexOutOfBoundsException.class, message, "getWeight", -1);

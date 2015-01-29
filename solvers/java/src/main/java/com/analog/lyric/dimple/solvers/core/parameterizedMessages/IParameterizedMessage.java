@@ -44,7 +44,16 @@ public interface IParameterizedMessage extends Cloneable, Serializable, IPrintab
 	/**
 	 * Sets message to its "null" form.
 	 * <p>
-	 * Usually this means the parameters will be set to represent a weak uniform distribution.
+	 * Usually, but not always, this means the parameters will be set to represent a weak uniform distribution.
+	 * <p>
+	 * @see #setUniform()
 	 */
 	public void setNull();
+	
+	/**
+	 * Sets parameters to approximate a uniform distribution.
+	 * <p>
+	 * @since 0.08
+	 */
+	public void setUniform();
 }

@@ -54,6 +54,10 @@ public class TestBetaParameters extends TestParameterizedMessage
 		assertEquals(0.0, msg.getAlphaMinusOne(), 0.0);
 		assertEquals(0.0, msg.getBetaMinusOne(), 0.0);
 		
+		msg.setUniform();
+		assertEquals(0.0, msg.getAlphaMinusOne(), 0.0);
+		assertEquals(0.0, msg.getBetaMinusOne(), 0.0);
+		
 		//
 		// KL divergence tests
 		//

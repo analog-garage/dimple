@@ -149,8 +149,13 @@ public class NormalParameters extends ParameterizedMessageBase
 		
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Sets mean to zero and variance to infinity (i.e. precision to zero).
+	 */
 	@Override
-	public final void setNull()
+	public final void setUniform()
 	{
 		_mean = 0;
 		_precision = 0;

@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
 import java.io.PrintStream;
 
+import com.analog.lyric.math.Utilities;
+
 
 /**
  * 
@@ -159,6 +161,41 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	
 	public abstract double getEnergy(int i);
 	public abstract void setEnergy(int i, double energy);
+	
+	/**
+	 * Sets values from another message of the same size.
+	 * 
+	 * @param other is another message with the same {@link #size()} as this one but not necessarily
+	 * the same representation.
+	 * @since 0.08
+	 * @throws IllegalArgumentException if {@code other} does not have the same size.
+	 */
+	public void setFrom(DiscreteMessage other)
+	{
+		final int n = _message.length;
+		
+		if (other.size() != n)
+		{
+			throw new IllegalArgumentException(String.format("Cannot set from message with different size (%d vs %d)",
+				size(), other.size()));
+		}
+
+		System.arraycopy(other.representation(), 0, _message, 0, n);
+
+		if (storesWeights() != other.storesWeights())
+		{
+			if (storesWeights())
+			{
+				for (int i = 0; i < n; ++i)
+					_message[i] = Utilities.energyToWeight(_message[i]);
+			}
+			else
+			{
+				for (int i = 0; i < n; ++i)
+					_message[i] = Utilities.weightToEnergy(_message[i]);
+			}
+		}
+	}
 	
 	/**
 	 * Returns underlying message representation.

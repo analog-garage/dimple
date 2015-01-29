@@ -217,8 +217,13 @@ public class DirichletParameters extends ParameterizedMessageBase
 		throw new IllegalArgumentException(String.format("Expected '%s' but got '%s'", getClass(), that.getClass()));
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Sets all alphas to one.
+	 */
 	@Override
-	public final void setNull()
+	public final void setUniform()
 	{
 		Arrays.fill(_alphaMinusOne, 0);
 	}

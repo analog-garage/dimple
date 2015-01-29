@@ -60,7 +60,7 @@ public class DiscreteWeightMessage extends DiscreteMessage
 	 * This implementation normalizes all weight values to 1 / {@link #size()}.
 	 */
 	@Override
-	public void setNull()
+	public void setUniform()
 	{
 		Arrays.fill(_message, 1.0 / _message.length);
 	}
