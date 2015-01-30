@@ -52,14 +52,14 @@ public class TestGammaParameters extends TestParameterizedMessage
 		assertEquals(0.0, msg.getAlphaMinusOne(), 0.0);
 		assertEquals(0.0, msg.getBeta(), 0.0);
 		
+		msg.setUniform();
+		assertEquals(0.0, msg.getAlphaMinusOne(), 0.0);
+		assertEquals(0.0, msg.getBeta(), 0.0);
+		
 		msg = new GammaParameters(3.0, 3.0);
 		assertEquals(3.0, msg.getAlphaMinusOne(), 0.0);
 		assertEquals(3.0, msg.getBeta(), 0.0);
 		assertInvariants(msg);
-		
-		msg.setUniform();
-		assertEquals(0.0, msg.getAlphaMinusOne(), 0.0);
-		assertEquals(0.0, msg.getBeta(), 0.0);
 		
 		GammaParameters msg2 = new GammaParameters(4.0, 4.0);
 		
