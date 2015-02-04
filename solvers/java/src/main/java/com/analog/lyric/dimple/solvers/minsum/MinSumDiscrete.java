@@ -26,9 +26,6 @@ import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
-import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergyMessage;
-import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 /**
@@ -66,14 +63,6 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		configureDampingFromOptions();
 	}
 
-	// FIXME - reset edge messages from graph methods, not node
-	@Override
-	public void resetEdgeMessages(int portNum)
-	{
-		final MinSumDiscreteEdge edge = getEdge(portNum);
-		edge.reset();
-	}
-	
 	/*---------------
 	 * SNode methods
 	 */
@@ -216,12 +205,6 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 	 */
 	
 	@Override
-	public Object[] createMessages(ISolverFactor factor)
-	{
-		return ArrayUtil.EMPTY_OBJECT_ARRAY;
-	}
-	
-	@Override
 	public double[] getBelief()
 	{
 
@@ -306,32 +289,11 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 	}
 	
 	@Override
-	public Object getInputMsg(int portIndex)
-	{
-		// FIXME return actual message object
-		return getEdge(portIndex).factorToVarMsg.representation();
-	}
-
-	@Override
-	public Object getOutputMsg(int portIndex)
-	{
-		// FIXME return actual message object
-		return getEdge(portIndex).varToFactorMsg.representation();
-	}
-
-	@Override
 	public void moveMessages(ISolverNode other, int portNum, int otherPort)
 	{
 		MinSumDiscrete sother = (MinSumDiscrete)other;
-		
-		MinSumDiscreteEdge thisEdge = getEdge(portNum);
-		MinSumDiscreteEdge otherEdge = sother.getEdge(otherPort);
-		
-		double[] target = thisEdge.factorToVarMsg.representation();
-		System.arraycopy(otherEdge.factorToVarMsg.representation(), 0, target, 0, target.length);
-		target = thisEdge.varToFactorMsg.representation();
-		System.arraycopy(otherEdge.varToFactorMsg.representation(), 0, target, 0, target.length);
-		otherEdge.reset();
+
+		super.moveMessages(other, portNum, otherPort);
 		
 		if (_dampingInUse)
 		{
@@ -339,53 +301,9 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		}
 	}
 
-	@Override
-	public void setInputMsg(int portIndex, Object obj)
-	{
-		setInputMsgValues(portIndex, obj);
-	}
-
-	@Override
-	public void setInputMsgValues(int portIndex, Object obj)
-	{
-		final DiscreteMessage message = getEdge(portIndex).factorToVarMsg;
-		
-		if (obj instanceof DiscreteMessage)
-		{
-			message.setFrom((DiscreteMessage)obj);
-		}
-		else
-		{
-			double[] target  = message.representation();
-			System.arraycopy(obj, 0, target, 0, target.length);
-		}
-	}
-	
-	@Override
-	public void setOutputMsgValues(int portIndex, Object obj)
-	{
-		final DiscreteMessage message = getEdge(portIndex).varToFactorMsg;
-		
-		if (obj instanceof DiscreteMessage)
-		{
-			message.setFrom((DiscreteMessage)obj);
-		}
-		else
-		{
-			double[] target  = message.representation();
-			System.arraycopy(obj, 0, target, 0, target.length);
-		}
-	}
-	
 	/*---------------
 	 * SNode methods
 	 */
-	
-	@Override
-	protected DiscreteEnergyMessage cloneMessage(int edge)
-	{
-		return getEdge(edge).varToFactorMsg.clone();
-	}
 	
 	@Override
 	protected boolean supportsMessageEvents()

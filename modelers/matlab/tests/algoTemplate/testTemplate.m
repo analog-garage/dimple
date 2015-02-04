@@ -54,6 +54,7 @@ function testTemplate()
     b = BitStream();
     fg = FactorGraph();
     fg.Solver = 'template';
+%    fg.Solver = 'sumproduct';
     fs = fg.addFactor(ng,b,b.getSlice(2));
     fs.BufferSize = 1;
     input = [0.7 0.3];

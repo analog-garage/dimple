@@ -16,36 +16,41 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
-import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
+import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 
 /**
  * 
  * @since 0.08
  * @author Christopher Barber
  */
-public abstract class SEdgeWithSymetricParameterizedMessages<Message extends IParameterizedMessage>
-	extends SEdgeWithSymetricMessages<Message>
+public class SDiscreteZeroedWeightEdge extends SDiscreteWeightEdge
 {
-
-	/**
-	 * @param varToFactorMsg
-	 * @param factorToVarMsg
-	 * @since 0.08
-	 */
-	protected SEdgeWithSymetricParameterizedMessages(Message varToFactorMsg, Message factorToVarMsg)
+	public SDiscreteZeroedWeightEdge(DiscreteWeightMessage varToFactorMsg, DiscreteWeightMessage factorToVarMsg)
 	{
 		super(varToFactorMsg, factorToVarMsg);
+	}
+
+	public SDiscreteZeroedWeightEdge(int size)
+	{
+		super(new DiscreteWeightMessage(size), new DiscreteWeightMessage(size));
+	}
+	
+	public SDiscreteZeroedWeightEdge(Discrete var)
+	{
+		this(var.getDomain().size());
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * <p>
-	 * The default implementation invokes {@link IParameterizedMessage#setUniform()} on each message.
+	 * This implementation sets all message weights to zero instead of normalizing them
+	 * to sum to one.
 	 */
 	@Override
 	public void reset()
 	{
-		varToFactorMsg.setUniform();
-		factorToVarMsg.setUniform();
+		varToFactorMsg.setWeightsToZero();
+		factorToVarMsg.setWeightsToZero();
 	}
 }

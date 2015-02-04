@@ -156,11 +156,28 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 		return _message.length;
 	}
 	
+	public void addWeightsFrom(DiscreteMessage other)
+	{
+		assertSameSize(other.size());
+		
+		for (int i = _message.length; --i>=0;)
+		{
+			setWeight(i, getWeight(i) + other.getWeight(i));
+		}
+	}
+	
 	public abstract double getWeight(int i);
 	public abstract void setWeight(int i, double weight);
 	
 	public abstract double getEnergy(int i);
 	public abstract void setEnergy(int i, double energy);
+	
+	public abstract void setWeights(double ... weights);
+	public abstract void setEnergies(double ... energies);
+	
+	public abstract void setWeightsToZero();
+	
+	public abstract void normalize();
 	
 	/**
 	 * Sets values from another message of the same size.
@@ -174,11 +191,7 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	{
 		final int n = _message.length;
 		
-		if (other.size() != n)
-		{
-			throw new IllegalArgumentException(String.format("Cannot set from message with different size (%d vs %d)",
-				size(), other.size()));
-		}
+		assertSameSize(other.size());
 
 		System.arraycopy(other.representation(), 0, _message, 0, n);
 
@@ -211,4 +224,13 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	 * @since 0.06
 	 */
 	public abstract boolean storesWeights();
+	
+	protected void assertSameSize(int otherSize)
+	{
+		if (size() != otherSize)
+		{
+			throw new IllegalArgumentException(String.format("Cannot set from message with different size (%d vs %d)",
+				size(), otherSize));
+		}
+	}
 }

@@ -16,14 +16,11 @@
 
 package com.analog.lyric.dimple.solvers.minsum.customFactors;
 
-import org.eclipse.jdt.annotation.NonNull;
-
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.minsum.MinSumDiscreteEdge;
 
 @SuppressWarnings("deprecation") // TODO remove when STableFactor removed
@@ -161,18 +158,6 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 	}
 	
 	@Override
-	public void createMessages()
-	{
-	}
-
-
-
-	@Override
-	public void moveMessages(@NonNull ISolverNode other, int portNum, int otherPort)
-	{
-	}
-
-    @Override
 	protected boolean createFactorTableOnInit()
     {
     	return false;

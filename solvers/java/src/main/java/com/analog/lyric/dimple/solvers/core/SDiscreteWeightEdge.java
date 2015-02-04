@@ -24,7 +24,7 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeight
  * @since 0.08
  * @author Christopher Barber
  */
-public class SDiscreteWeightEdge extends SEdgeWithSymetricParameterizedMessages<DiscreteWeightMessage>
+public class SDiscreteWeightEdge extends SDiscreteEdge<DiscreteWeightMessage>
 {
 
 	/**
@@ -32,17 +32,17 @@ public class SDiscreteWeightEdge extends SEdgeWithSymetricParameterizedMessages<
 	 * @param factorToVarMsg
 	 * @since 0.08
 	 */
-	protected SDiscreteWeightEdge(DiscreteWeightMessage varToFactorMsg, DiscreteWeightMessage factorToVarMsg)
+	public SDiscreteWeightEdge(DiscreteWeightMessage varToFactorMsg, DiscreteWeightMessage factorToVarMsg)
 	{
 		super(varToFactorMsg, factorToVarMsg);
 	}
 
-	protected SDiscreteWeightEdge(int size)
+	public SDiscreteWeightEdge(int size)
 	{
 		super(new DiscreteWeightMessage(size), new DiscreteWeightMessage(size));
 	}
 	
-	protected SDiscreteWeightEdge(Discrete var)
+	public SDiscreteWeightEdge(Discrete var)
 	{
 		this(var.getDomain().size());
 	}

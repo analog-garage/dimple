@@ -122,11 +122,6 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 	}
 
 	@Override
-	public void createMessages()
-	{
-	}
-
-	@Override
 	public void doUpdateEdge(int outPortNum)
 	{
 		if (outPortNum == 0)

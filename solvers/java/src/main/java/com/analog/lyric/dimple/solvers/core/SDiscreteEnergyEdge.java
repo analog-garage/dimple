@@ -24,7 +24,7 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergy
  * @since 0.08
  * @author Christopher Barber
  */
-public class SDiscreteEnergyEdge extends SEdgeWithSymetricParameterizedMessages<DiscreteEnergyMessage>
+public class SDiscreteEnergyEdge extends SDiscreteEdge<DiscreteEnergyMessage>
 {
 
 	/**
@@ -32,17 +32,17 @@ public class SDiscreteEnergyEdge extends SEdgeWithSymetricParameterizedMessages<
 	 * @param factorToVarMsg
 	 * @since 0.08
 	 */
-	protected SDiscreteEnergyEdge(DiscreteEnergyMessage varToFactorMsg, DiscreteEnergyMessage factorToVarMsg)
+	public SDiscreteEnergyEdge(DiscreteEnergyMessage varToFactorMsg, DiscreteEnergyMessage factorToVarMsg)
 	{
 		super(varToFactorMsg, factorToVarMsg);
 	}
 
-	protected SDiscreteEnergyEdge(int size)
+	public SDiscreteEnergyEdge(int size)
 	{
 		super(new DiscreteEnergyMessage(size), new DiscreteEnergyMessage(size));
 	}
 	
-	protected SDiscreteEnergyEdge(Discrete var)
+	public SDiscreteEnergyEdge(Discrete var)
 	{
 		this(var.getDomain().size());
 	}

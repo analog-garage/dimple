@@ -17,9 +17,12 @@
 package com.analog.lyric.dimple.solvers.template;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.solvers.core.NoSolverEdge;
+import com.analog.lyric.dimple.solvers.core.SDiscreteZeroedWeightEdge;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -45,6 +48,25 @@ public class SFactorGraph  extends SFactorGraphBase<ISolverFactor,ISolverVariabl
 		super(fg);
 	}
 
+	@Override
+	public boolean hasEdgeState()
+	{
+		return true;
+	}
+	
+	@Override
+	public ISolverEdge createEdgeState(FactorGraphEdgeState edge)
+	{
+		Variable var = edge.getVariable(_model);
+		
+		if (var instanceof Discrete)
+		{
+			return new SDiscreteZeroedWeightEdge((Discrete)var);
+		}
+		
+		return NoSolverEdge.INSTANCE;
+	}
+	
 	/**
 	 * createVariable creates a solver object for a model variable object.
 	 */

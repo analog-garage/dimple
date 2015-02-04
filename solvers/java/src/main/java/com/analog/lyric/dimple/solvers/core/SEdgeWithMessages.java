@@ -25,8 +25,8 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
  */
 public abstract class SEdgeWithMessages<VarToFactorMsg, FactorToVarMsg> implements ISolverEdge
 {
-	public final VarToFactorMsg varToFactorMsg;
-	public final FactorToVarMsg factorToVarMsg;
+	public VarToFactorMsg varToFactorMsg;
+	public FactorToVarMsg factorToVarMsg;
 	
 	protected SEdgeWithMessages(VarToFactorMsg varToFactorMsg, FactorToVarMsg factorToVarMsg)
 	{

@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
+import static com.analog.lyric.math.Utilities.*;
+
 import java.util.Arrays;
 
 import com.analog.lyric.math.Utilities;
@@ -41,7 +43,7 @@ public class DiscreteWeightMessage extends DiscreteMessage
 	public DiscreteWeightMessage(int size)
 	{
 		super(new double[size]);
-		setNull();
+		setUniform();
 	}
 	
 	@Override
@@ -70,6 +72,30 @@ public class DiscreteWeightMessage extends DiscreteMessage
 	 */
 
 	@Override
+	public void addWeightsFrom(DiscreteMessage other)
+	{
+		assertSameSize(other.size());
+		
+		final double[] message = _message;
+		
+		if (other.storesWeights())
+		{
+			final double[] otherMessage = other._message;
+			for (int i = _message.length; --i >= 0; )
+			{
+				message[i] += otherMessage[i];
+			}
+		}
+		else
+		{
+			for (int i = _message.length; --i >= 0; )
+			{
+				message[i] += other.getWeight(i);
+			}
+		}
+	}
+	
+	@Override
 	public double getWeight(int i)
 	{
 		return _message[i];
@@ -79,6 +105,15 @@ public class DiscreteWeightMessage extends DiscreteMessage
 	public void setWeight(int i, double weight)
 	{
 		_message[i] = weight;
+	}
+	
+	@Override
+	public void setWeights(double... weights)
+	{
+		final int length = weights.length;
+		assertSameSize(length);
+		
+		System.arraycopy(weights, 0, _message, 0, length);
 	}
 
 	@Override
@@ -91,6 +126,34 @@ public class DiscreteWeightMessage extends DiscreteMessage
 	public void setEnergy(int i, double energy)
 	{
 		_message[i] = Utilities.energyToWeight(energy);
+	}
+	
+	@Override
+	public void setEnergies(double... energies)
+	{
+		final int length = energies.length;
+		assertSameSize(length);
+
+		for (int i = 0; i < length; ++i)
+		{
+			_message[i] = energyToWeight(energies[i]);
+		}
+	}
+	
+	@Override
+	public void normalize()
+	{
+		double sum = 0.0;
+		for (double w : _message)
+			sum += w;
+		for (int i = _message.length; --i >=0;)
+			_message[i] /= sum;
+	}
+	
+	@Override
+	public void setWeightsToZero()
+	{
+		Arrays.fill(_message, 0.0);
 	}
 	
 	@Override

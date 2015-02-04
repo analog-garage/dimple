@@ -16,18 +16,12 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
-import static java.util.Objects.*;
-
-import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public abstract class STableFactorDoubleArray extends STableFactorBase
 {
-	protected double [][] _inputMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
-	protected double [][] _outputMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
-
 	public STableFactorDoubleArray(Factor factor)
 	{
 		super(factor);
@@ -36,20 +30,6 @@ public abstract class STableFactorDoubleArray extends STableFactorBase
 	@Override
 	public void createMessages()
 	{
-		final Factor factor = _model;
-		int nVars = factor.getSiblingCount();
-		
-	    _inputMsgs = new double[nVars][];
-	    _outputMsgs = new double[nVars][];
-	    
-	    for (int index = 0, end = nVars; index < end; index++)
-	    {
-	    	ISolverVariable is = requireNonNull(factor.getSibling(index).getSolver());
-	    	Object [] messages = requireNonNull(is.createMessages(this));
-	    	_outputMsgs[index] = (double[])messages[0];
-	    	_inputMsgs[index] = (double[])messages[1];
-	    }
-	    
 	}
 
 
@@ -62,40 +42,59 @@ public abstract class STableFactorDoubleArray extends STableFactorBase
 	@Override
 	public void moveMessages(ISolverNode other, int portNum, int otherPort)
 	{
-
-		STableFactorDoubleArray sother = (STableFactorDoubleArray)other;
-	    _inputMsgs[portNum] = sother._inputMsgs[otherPort];
-	    _outputMsgs[portNum] = sother._outputMsgs[otherPort];
-	    
 	}
-
 
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
-		return _inputMsgs[portIndex];
+		// FIXME return DiscreteMessage
+		return getEdge(portIndex).varToFactorMsg.representation();
 	}
 
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
-		return _outputMsgs[portIndex];
+		// FIXME return DiscreteMessage
+		return getEdge(portIndex).factorToVarMsg.representation();
 	}
 
 	@Override
 	public void setInputMsgValues(int portIndex, Object obj)
 	{
-		double [] tmp = (double[])obj;
-		for (int i = 0; i <tmp.length; i++)
-			_inputMsgs[portIndex][i] = tmp[i];
+		final DiscreteMessage message = getEdge(portIndex).varToFactorMsg;
+		
+		if (obj instanceof DiscreteMessage)
+		{
+			message.setFrom((DiscreteMessage)obj);
+		}
+		else
+		{
+			double[] target  = message.representation();
+			System.arraycopy(obj, 0, target, 0, target.length);
+		}
 	}
 	
 	@Override
 	public void setOutputMsgValues(int portIndex, Object obj)
 	{
-		double [] tmp = (double[])obj;
-		for (int i = 0; i <tmp.length; i++)
-			_outputMsgs[portIndex][i] = tmp[i];
+		final DiscreteMessage message = getEdge(portIndex).factorToVarMsg;
+		
+		if (obj instanceof DiscreteMessage)
+		{
+			message.setFrom((DiscreteMessage)obj);
+		}
+		else
+		{
+			double[] target  = message.representation();
+			System.arraycopy(obj, 0, target, 0, target.length);
+		}
 	}
+
 	
+	@SuppressWarnings({ "null" })
+	@Override
+	protected SDiscreteEdge<?> getEdge(int siblingIndex)
+	{
+		return (SDiscreteEdge<?>)super.getEdge(siblingIndex);
+	}
 }

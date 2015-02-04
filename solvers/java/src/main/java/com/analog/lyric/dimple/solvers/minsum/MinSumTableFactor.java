@@ -35,9 +35,7 @@ import com.analog.lyric.dimple.solvers.core.kbest.IKBestFactor;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorEngine;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorTableEngine;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergyMessage;
-import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.optimizedupdate.FactorTableUpdateSettings;
 import com.analog.lyric.dimple.solvers.optimizedupdate.FactorUpdatePlan;
 import com.analog.lyric.dimple.solvers.optimizedupdate.ISTableFactorSupportingOptimizedUpdate;
@@ -122,11 +120,6 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 	 * ISolverNode methods
 	 */
 
-	@Override
-	public void moveMessages(ISolverNode other, int portNum, int otherPort)
-	{
-	}
-
 	private TableFactorEngine getTableFactorEngine()
 	{
 		final TableFactorEngine tableFactorEngine = _tableFactorEngine;
@@ -191,11 +184,6 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 	/*-----------------------
 	 * ISolverFactor methods
 	 */
-
-	@Override
-	public void createMessages()
-	{
-	}
 
 	/*--------------------------
 	 * STableFactorBase methods
@@ -272,52 +260,6 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 	public int[] findKBestForMsg(double[] msg, int k)
 	{
 		return Selection.findFirstKIndices(msg, k);
-	}
-
-	@Override
-	public Object getInputMsg(int portIndex)
-	{
-		// FIXME return DiscreteMessage
-		return getEdge(portIndex).varToFactorMsg.representation();
-	}
-
-	@Override
-	public Object getOutputMsg(int portIndex)
-	{
-		// FIXME return DiscreteMessage
-		return getEdge(portIndex).factorToVarMsg.representation();
-	}
-
-	@Override
-	public void setInputMsgValues(int portIndex, Object obj)
-	{
-		final DiscreteMessage message = getEdge(portIndex).varToFactorMsg;
-		
-		if (obj instanceof DiscreteMessage)
-		{
-			message.setFrom((DiscreteMessage)obj);
-		}
-		else
-		{
-			double[] target  = message.representation();
-			System.arraycopy(obj, 0, target, 0, target.length);
-		}
-	}
-	
-	@Override
-	public void setOutputMsgValues(int portIndex, Object obj)
-	{
-		final DiscreteMessage message = getEdge(portIndex).factorToVarMsg;
-		
-		if (obj instanceof DiscreteMessage)
-		{
-			message.setFrom((DiscreteMessage)obj);
-		}
-		else
-		{
-			double[] target  = message.representation();
-			System.arraycopy(obj, 0, target, 0, target.length);
-		}
 	}
 
 	// FIXME eliminate this method

@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
+import static com.analog.lyric.math.Utilities.*;
+
 import java.util.Arrays;
 
 import com.analog.lyric.math.Utilities;
@@ -85,6 +87,18 @@ public final class DiscreteEnergyMessage extends DiscreteMessage
 	{
 		_message[i] = Utilities.weightToEnergy(weight);
 	}
+	
+	@Override
+	public void setWeights(double... weights)
+	{
+		final int length = weights.length;
+		assertSameSize(length);
+
+		for (int i = 0; i < length; ++i)
+		{
+			_message[i] = weightToEnergy(weights[i]);
+		}
+	}
 
 	@Override
 	public double getEnergy(int i)
@@ -97,10 +111,63 @@ public final class DiscreteEnergyMessage extends DiscreteMessage
 	{
 		_message[i] = energy;
 	}
+
+	@Override
+	public void setEnergies(double ... energies)
+	{
+		final int length = energies.length;
+		assertSameSize(length);
+		
+		System.arraycopy(energies, 0, _message, 0, length);
+	}
+	
+	@Override
+	public void normalize()
+	{
+		double sum = 0.0;
+		for (double e : _message)
+			sum += Utilities.energyToWeight(e);
+		double normalizer = Utilities.weightToEnergy(sum);
+		for (int i = _message.length; --i >=0;)
+			_message[i] += normalizer;
+	}
+	
+	@Override
+	public void setWeightsToZero()
+	{
+		Arrays.fill(_message, Double.POSITIVE_INFINITY);
+	}
 	
 	@Override
 	public boolean storesWeights()
 	{
 		return false;
+	}
+	
+	/*-------------------------------
+	 * DiscreteEnergyMessage methods
+	 */
+
+	/**
+	 * Normalizes energy values by subtracting the min energy from all of them.
+	 * <p>
+	 * Does nothing if the minimum value is not finite.
+	 * @since 0.08
+	 */
+	public void normalizeEnergy()
+	{
+		double min = Double.POSITIVE_INFINITY;
+		for (double d : _message)
+		{
+			min = Math.min(min, d);
+		}
+		
+		if (!Double.isInfinite(min))
+		{
+			for (int i = _message.length; --i >=0;)
+			{
+				_message[i] -= min;
+			}
+		}
 	}
 }

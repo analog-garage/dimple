@@ -16,14 +16,13 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
-import java.util.Arrays;
-import java.util.Objects;
-
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
@@ -36,9 +35,8 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	 * State
 	 */
 	
+	// FIXME - turn this into a DiscreteMessage
 	protected double [] _input;
-	protected double [][] _inputMessages = new double[0][];
-	protected double [][] _outputMessages = new double[0][];
 	
 	/*--------------
 	 * Construction
@@ -82,36 +80,19 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	 * an edge connecting the variable to the specified factor.  It must return
 	 * an object array where the first item is a double array for the input message
 	 * and the second item is a double array for the output message.
-	 *
 	 */
 	@Override
 	public Object[] createMessages(ISolverFactor factor)
 	{
-		//Retrieve the variable port associated with this factor
-		int portNum = _model.getPortNum(Objects.requireNonNull(factor.getModelObject()));
-		
-		//Resize the message arrays if necessary.
-		int newArraySize = getSiblingCount();
-		if (_inputMessages.length != newArraySize)
-		{
-			_inputMessages = Arrays.copyOf(_inputMessages,newArraySize);
-		}
-		if (_outputMessages.length != newArraySize)
-		{
-			_outputMessages = Arrays.copyOf(_outputMessages,newArraySize);
-		}
-		
-		_inputMessages[portNum] = createDefaultMessage();
-		_outputMessages[portNum] = createDefaultMessage();
-
-		/**
-		 * Return the new messages so that the factor can cache them.
-		 */
-		return new Object [] {_inputMessages[portNum],_outputMessages[portNum]};
+		return ArrayUtil.EMPTY_OBJECT_ARRAY;
 	}
 
+	@Override
+	protected DiscreteMessage cloneMessage(int edge)
+	{
+		return getEdge(edge).varToFactorMsg.clone();
+	}
 	
-
 	/**
 	 * This method is called during initialize() to reset the input and output
 	 * messages.
@@ -119,43 +100,40 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	@Override
 	public void resetEdgeMessages(int portNum)
 	{
-		resetInputMessage(_inputMessages[portNum]);
-		resetOutputMessage(_outputMessages[portNum]);
-		
+		getEdge(portNum).reset();
 	}
 
 	@Override
 	public abstract @NonNull double[] resetInputMessage(Object message);
 	
-	/**
-	 * This method is used for introspection
-	 */
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
-		return _inputMessages[portIndex];
+		// FIXME return actual message object
+		return getEdge(portIndex).factorToVarMsg.representation();
 	}
 
-	/**
-	 * This method is used for introspection
-	 */
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
-		return _outputMessages[portIndex];
+		// FIXME return actual message object
+		return getEdge(portIndex).varToFactorMsg.representation();
 	}
 
 	/**
 	 * This method must be implemented if the solver is to support streaming graphs.
 	 */
 	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum,
-			int otherPortNum)
+	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
 	{
-		SDiscreteVariableDoubleArray sother = (SDiscreteVariableDoubleArray)other;
-		_inputMessages[thisPortNum] = sother._inputMessages[otherPortNum];
-		_outputMessages[thisPortNum] = sother._outputMessages[otherPortNum];
+		final SDiscreteVariableDoubleArray sother = (SDiscreteVariableDoubleArray) other;
 
+		final SDiscreteEdge<?> thisEdge = getEdge(thisPortNum);
+		final SDiscreteEdge<?> otherEdge = sother.getEdge(otherPortNum);
+		
+		thisEdge.factorToVarMsg.setFrom(otherEdge.factorToVarMsg);
+		thisEdge.varToFactorMsg.setFrom(otherEdge.varToFactorMsg);
+		otherEdge.reset();
 	}
 
 	public double [] createDefaultMessage()
@@ -166,28 +144,49 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
     	return resetInputMessage(retVal);
     }
 	
-
 	@Override
 	public void setInputMsg(int portIndex, Object obj)
 	{
-		_inputMessages[portIndex] = (double[])obj;
-		
+		setInputMsgValues(portIndex, obj);
 	}
 
 	@Override
 	public void setInputMsgValues(int portIndex, Object obj)
 	{
-		double [] tmp = (double[])obj;
-		for (int i = 0; i <tmp.length; i++)
-			_inputMessages[portIndex][i] = tmp[i];
+		final DiscreteMessage message = getEdge(portIndex).factorToVarMsg;
+		
+		if (obj instanceof DiscreteMessage)
+		{
+			message.setFrom((DiscreteMessage)obj);
+		}
+		else
+		{
+			double[] target  = message.representation();
+			System.arraycopy(obj, 0, target, 0, target.length);
+		}
 	}
 	
 	@Override
 	public void setOutputMsgValues(int portIndex, Object obj)
 	{
-		double [] tmp = (double[])obj;
-		for (int i = 0; i <tmp.length; i++)
-			_outputMessages[portIndex][i] = tmp[i];
+		final DiscreteMessage message = getEdge(portIndex).varToFactorMsg;
+		
+		if (obj instanceof DiscreteMessage)
+		{
+			message.setFrom((DiscreteMessage)obj);
+		}
+		else
+		{
+			double[] target  = message.representation();
+			System.arraycopy(obj, 0, target, 0, target.length);
+		}
 	}
+	
 
+	@SuppressWarnings("null")
+	@Override
+	protected SDiscreteEdge<?> getEdge(int siblingIndex)
+	{
+		return (SDiscreteEdge<?>) super.getEdge(siblingIndex);
+	}
 }

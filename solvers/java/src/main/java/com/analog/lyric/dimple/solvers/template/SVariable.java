@@ -20,6 +20,8 @@ import java.util.Arrays;
 
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 
 /**
  * Solvers are responsible for managing memory required for messages.
@@ -38,7 +40,6 @@ public class SVariable extends SDiscreteVariableDoubleArray
 		super(var);
 	}
 
-
 	/**
 	 * This is the main work horse of the variable message passing.
 	 * This is a toy solver that simply adds all input messages and the input
@@ -50,18 +51,16 @@ public class SVariable extends SDiscreteVariableDoubleArray
 	@Override
 	protected void doUpdateEdge(int outPortNum)
 	{
-		double [] output = _outputMessages[outPortNum];
+		final DiscreteMessage output = getEdge(outPortNum).varToFactorMsg;
 		
-		System.arraycopy(_input, 0, output, 0, output.length);
+		output.setWeights(_input);
 		
-		for (int i = 0; i < _inputMessages.length; i++)
+		for (int i = 0, n = getSiblingCount(); i < n; i++)
 		{
 			if (i != outPortNum)
 			{
-				for (int j = 0; j < output.length; j++)
-				{
-					output[j] += _inputMessages[i][j];
-				}
+				DiscreteMessage input = getEdge(i).factorToVarMsg;
+				output.addWeightsFrom(input);
 			}
 		}
 	}
@@ -74,19 +73,16 @@ public class SVariable extends SDiscreteVariableDoubleArray
 	@Override
 	public double[] getBelief()
 	{
-		double [] output = new double[_input.length];
+		DiscreteMessage output = new DiscreteWeightMessage(_input);
 		
-		System.arraycopy(_input, 0, output, 0, output.length);
-		
-		for (int i = 0; i < _inputMessages.length; i++)
+		for (int i = 0, n = getSiblingCount(); i < n; i++)
 		{
-			for (int j = 0; j < output.length; j++)
-			{
-				output[j] += _inputMessages[i][j];
-			}
+			output.addWeightsFrom(getEdge(i).factorToVarMsg);
 		}
-		return output;
+		
+		return output.representation();
 	}
+	
 	/**
 	 * This method is called to initialize the input.
 	 */

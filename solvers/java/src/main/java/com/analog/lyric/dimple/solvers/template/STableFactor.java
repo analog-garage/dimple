@@ -23,11 +23,12 @@ import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 
 /**
  * The Solver Factor object is responsible for performing the message passing
- * math of the Factor.  This toy factor implementation inherits from 
- * STableFactorDoubleArray. The base class takes care of telling variables to 
+ * math of the Factor.  This toy factor implementation inherits from
+ * STableFactorDoubleArray. The base class takes care of telling variables to
  * create messages and caching the results.
  * 
  * The actual updateEdge math is simplistic and not useful since it ignores the
@@ -36,7 +37,7 @@ import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
  * @author shershey
  *
  */
-public class STableFactor  extends STableFactorDoubleArray 
+public class STableFactor extends STableFactorDoubleArray
 {
 
 	/**
@@ -46,7 +47,7 @@ public class STableFactor  extends STableFactorDoubleArray
 	 * 
 	 * @param factor
 	 */
-	public STableFactor(Factor factor) 
+	public STableFactor(Factor factor)
 	{
 		super(factor);
 		
@@ -70,31 +71,25 @@ public class STableFactor  extends STableFactorDoubleArray
 	/**
 	 * The updateEdge method is the work horse of the solver.  This toy solver
 	 * simply adds all the messages together (excluding the port it's updating)
-	 * and ignores the FactorTable.  
+	 * and ignores the FactorTable.
 	 * 
 	 * Developers can also override update() if they want to speed up computation
 	 * when terms can be reused.
 	 */
 	@Override
-	public void doUpdateEdge(int outPortNum) 
+	public void doUpdateEdge(int outPortNum)
 	{
-		double [] out = _outputMsgs[outPortNum];
-		for (int i = 0; i < out.length; i++)
-		{
-			out[i] = 0;
-		}
+		DiscreteMessage out = getEdge(outPortNum).factorToVarMsg;
 		
-		for (int i = 0; i < _inputMsgs.length; i++)
+		out.setWeightsToZero();
+		
+		for (int i = 0, n = getSiblingCount(); i < n; i++)
 		{
 			if (outPortNum != i)
 			{
-				for (int j = 0; j < out.length; j++)
-				{
-					out[j] += _inputMsgs[i][j];
-				}
+				out.addWeightsFrom(getEdge(i).varToFactorMsg);
 			}
 		}
-		
 	}
 
 	/**
@@ -103,7 +98,7 @@ public class STableFactor  extends STableFactorDoubleArray
 	 * they want in this method so that the representation is constructed in advance of solving.
 	 */
 	@Override
-	protected void setTableRepresentation(IFactorTable table) 
+	protected void setTableRepresentation(IFactorTable table)
 	{
 		table.setRepresentation(FactorTableRepresentation.SPARSE_WEIGHT_WITH_INDICES);
 	}
