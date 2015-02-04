@@ -21,7 +21,6 @@ import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.MultivariateNormal;
 import com.analog.lyric.dimple.factorfunctions.Normal;
@@ -29,7 +28,6 @@ import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.solvers.core.SMultivariateNormalEdge;
 import com.analog.lyric.dimple.solvers.core.SRealJointVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 /**
@@ -167,12 +165,6 @@ public class SumProductRealJoint extends SRealJointVariableBase
 		}
 		
 		outMsg.setInformation(vector, matrix);
-	}
-
-	@Override
-	public Object [] createMessages(ISolverFactor factor)
-	{
-		return ArrayUtil.EMPTY_OBJECT_ARRAY;
 	}
 
 	public MultivariateNormalParameters createDefaultMessage()

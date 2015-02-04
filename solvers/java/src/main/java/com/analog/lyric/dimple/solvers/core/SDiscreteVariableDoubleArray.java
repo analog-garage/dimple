@@ -19,11 +19,9 @@ package com.analog.lyric.dimple.solvers.core;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 /**
@@ -73,18 +71,6 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	    	
 	    	_input = vals;
 		}
-	}
-
-	/**
-	 * This method is responsible for creating the messages associated with
-	 * an edge connecting the variable to the specified factor.  It must return
-	 * an object array where the first item is a double array for the input message
-	 * and the second item is a double array for the output message.
-	 */
-	@Override
-	public Object[] createMessages(ISolverFactor factor)
-	{
-		return ArrayUtil.EMPTY_OBJECT_ARRAY;
 	}
 
 	@Override

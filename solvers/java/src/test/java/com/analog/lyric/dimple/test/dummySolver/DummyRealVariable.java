@@ -20,7 +20,6 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class DummyRealVariable extends SRealVariableBase
@@ -38,12 +37,6 @@ public class DummyRealVariable extends SRealVariableBase
 
 	@Override
 	public @Nullable Object getBelief()
-	{
-		return null;
-	}
-
-	@Override
-	public @Nullable Object[] createMessages(ISolverFactor factor)
 	{
 		return null;
 	}

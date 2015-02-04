@@ -25,7 +25,6 @@ import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 
@@ -103,13 +102,6 @@ public class DummyDiscreteVariable extends SDiscreteVariableBase
 	public double[] getBelief()
 	{
 		return requireNonNull(_input);
-	}
-
-
-	@Override
-	public @Nullable Object[] createMessages(ISolverFactor factor)
-	{
-		return null;
 	}
 
 	@Override

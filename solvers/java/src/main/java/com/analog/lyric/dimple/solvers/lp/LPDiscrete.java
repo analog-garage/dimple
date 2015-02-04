@@ -29,7 +29,6 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 /**
@@ -202,15 +201,6 @@ public class LPDiscrete extends SDiscreteVariableBase
 			Arrays.fill(beliefs,1.0/size);
 		}
 		return beliefs;
-	}
-
-	/**
-	 * Returns null.
-	 */
-	@Override
-	public @Nullable Object[] createMessages(ISolverFactor factor)
-	{
-		return null;
 	}
 
 	/**

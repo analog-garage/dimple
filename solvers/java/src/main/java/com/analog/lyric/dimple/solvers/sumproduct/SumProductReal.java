@@ -22,14 +22,12 @@ import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.core.SNormalEdge;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 /**
@@ -262,13 +260,6 @@ public class SumProductReal extends SRealVariableBase
 			return (new Normal(input)).evalEnergy(getGuess());
 	}
 	
-
-	@Override
-	public Object[] createMessages(ISolverFactor factor)
-	{
-		return ArrayUtil.EMPTY_OBJECT_ARRAY;
-	}
-
 	public NormalParameters createDefaultMessage()
 	{
 		NormalParameters message = new NormalParameters();
