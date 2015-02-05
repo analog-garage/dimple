@@ -25,7 +25,7 @@ import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.model.values.RealValue;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
@@ -43,8 +43,8 @@ public class ParticleBPRealFactor extends SFactorBase
 	protected int _numPorts;
 	protected double [][] _inPortMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
 	protected double [][] _outMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
-	protected Object[][] _variableDomains = ArrayUtil.EMPTY_OBJECT_ARRAY_ARRAY;
-	protected Object[] _variableValues = ArrayUtil.EMPTY_OBJECT_ARRAY;
+	protected RealValue[][] _variableDomains = new RealValue[0][];
+	protected RealValue[] _variableValues = new RealValue[0];
 	protected int[] _variableIndices = ArrayUtil.EMPTY_INT_ARRAY;
 	protected int[] _variableDomainLengths = ArrayUtil.EMPTY_INT_ARRAY;
 	protected @Nullable boolean[] _realVariable; // FIXME: not currently used
@@ -66,11 +66,11 @@ public class ParticleBPRealFactor extends SFactorBase
 
         double marginal = 0;
         initializeVariableCombinations();
-		_variableValues[outPortIndex] = value;	// Use the specified value for the output port
+		_variableValues[outPortIndex].setDouble(value);	// Use the specified value for the output port
         while (true)
         {
         	double prob = 1;
-			try {prob = factorFunction.eval(_variableValues);} catch (Exception e) {e.printStackTrace(); System.exit(1);}
+			prob = factorFunction.eval(_variableValues);
 			if (_beta != 1) prob = Math.pow(prob, _beta);
 
         	for (int inPortNum = 0; inPortNum < _numPorts; inPortNum++)
@@ -101,7 +101,7 @@ public class ParticleBPRealFactor extends SFactorBase
         while (true)
         {
         	double prob = 1;
-			try {prob = factorFunction.eval(_variableValues);} catch (Exception e) {e.printStackTrace(); System.exit(1);}
+			prob = factorFunction.eval(_variableValues);
 			if (_beta != 1) prob = Math.pow(prob, _beta);
 
         	for (int inPortNum = 0; inPortNum < _numPorts; inPortNum++)
@@ -135,7 +135,7 @@ public class ParticleBPRealFactor extends SFactorBase
 			while (true)
 			{
 				double prob = 1;
-				try {prob = factorFunction.eval(_variableValues);} catch (Exception e) {e.printStackTrace(); System.exit(1);}
+				prob = factorFunction.eval(_variableValues);
 				if (_beta != 1) prob = Math.pow(prob, _beta);
 
 				for (int inPortNum = 0; inPortNum < _numPorts; inPortNum++)
@@ -162,7 +162,7 @@ public class ParticleBPRealFactor extends SFactorBase
 		for (int iPort = 0; iPort < _numPorts; iPort++)
 		{
 			_variableIndices[iPort] = 0;
-			_variableValues[iPort] = _variableDomains[iPort][0];
+			_variableValues[iPort].setFrom(_variableDomains[iPort][0]);
 		}
 	}
 	
@@ -191,7 +191,7 @@ public class ParticleBPRealFactor extends SFactorBase
 		
 		// Get values for indices
 		for (int i = 0; i < _numPorts; i++)
-			_variableValues[i] =_variableDomains[i][_variableIndices[i]];
+			_variableValues[i].setFrom(_variableDomains[i][_variableIndices[i]]);
 		
 	}
 	
@@ -225,8 +225,8 @@ public class ParticleBPRealFactor extends SFactorBase
 		
 		// Get values for indices
 		for (int i = 0; i < _numPorts; i++)
-			_variableValues[i] =_variableDomains[i][_variableIndices[i]];
-		_variableValues[exceptionIndex] = exceptionValue;
+			_variableValues[i].setFrom(_variableDomains[i][_variableIndices[i]]);
+		_variableValues[exceptionIndex].setDouble(exceptionValue);
 	}
 	
 	
@@ -249,8 +249,12 @@ public class ParticleBPRealFactor extends SFactorBase
 		_numPorts = factor.getSiblingCount();
     	_inPortMsgs = new double[_numPorts][];
     	_outMsgArray = new double[_numPorts][];
-		_variableDomains = new Object[_numPorts][];
-		_variableValues = new Object[_numPorts];
+		_variableDomains = new RealValue[_numPorts][];
+		_variableValues = new RealValue[_numPorts];
+		for (int i = 0; i < _numPorts; ++i)
+		{
+			_variableValues[i] = RealValue.create();
+		}
 		_variableIndices = new int[_numPorts];
 		_variableDomainLengths = new int[_numPorts];
 		final boolean[] realVariable = _realVariable = new boolean[_numPorts];
@@ -270,10 +274,10 @@ public class ParticleBPRealFactor extends SFactorBase
 	    		_inPortMsgs[iPort] = tmp.messageValues;
 	    		_outMsgArray[iPort] = (double[])messages[0];
 	    	}
-	    	else
+	    	else // Discrete
 	    	{
 	    		realVariable[iPort] = false;
-	    		_variableDomains[iPort] = ((Discrete)var).getDiscreteDomain().getElements();
+	    		_variableDomains[iPort] = RealValue.createFromDiscreteDomain(var.asDiscreteVariable().getDomain());
 	    		
 	    		SumProductDiscreteEdge edge = requireNonNull((SumProductDiscreteEdge)getEdge(iPort));
 	    		_inPortMsgs[iPort] = edge.varToFactorMsg.representation();

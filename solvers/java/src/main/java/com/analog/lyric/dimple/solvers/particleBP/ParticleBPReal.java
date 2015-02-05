@@ -31,6 +31,7 @@ import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorBase;
 import com.analog.lyric.dimple.model.values.RealValue;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
@@ -49,7 +50,7 @@ import com.analog.lyric.options.OptionValidationException;
  */
 public class ParticleBPReal extends SRealVariableBase
 {
-	protected Double[] _particleValues; // TODO use DoubleValue instead of Double for particleValues
+	protected RealValue[] _particleValues;
 
 	protected int _numParticles = 1;
 	protected int _resamplingUpdatesPerSample = 1;
@@ -77,7 +78,11 @@ public class ParticleBPReal extends SRealVariableBase
 		// time to make it less likely that the messages will have to be recreated at initialize time.
 		_numParticles = getOptionOrDefault(ParticleBPOptions.numParticles);
 		_initialParticleDomain = _domain = var.getDomain();
-		_particleValues = new Double[_numParticles];
+		_particleValues = new RealValue[_numParticles];
+		for (int i = 0; i < _numParticles; ++i)
+		{
+			_particleValues[i] = RealValue.create();
+		}
 		_logWeight = new double[_numParticles];
 	}
 
@@ -131,7 +136,7 @@ public class ParticleBPReal extends SRealVariableBase
 		{
 			double prior = 1;
 			if (input != null)
-				try {prior = input.eval(new Object[]{_particleValues[m]});} catch (Exception e) {e.printStackTrace(); System.exit(1);}
+				prior = input.eval(_particleValues[m]);
 				double out = (prior == 0) ? minLog : Math.log(prior) * _beta;
 
 				for (int d = 0; d < D; d++)
@@ -181,7 +186,7 @@ public class ParticleBPReal extends SRealVariableBase
 		{
 			double prior = 1;
 			if (input != null)
-				try {prior = input.eval(new Object[]{_particleValues[m]});} catch (Exception e) {e.printStackTrace(); System.exit(1);}
+				prior = input.eval(_particleValues[m]);
 				double alpha = (prior == 0) ? minLog : Math.log(prior) * _beta;
 
 				for (int d = 0, i = m; d < D; d++, i += M)
@@ -251,43 +256,31 @@ public class ParticleBPReal extends SRealVariableBase
 		// For each sample value
 		for (int m = 0; m < M; m++)
 		{
-			double sampleValue = _particleValues[m];
+			final RealValue sampleValue = _particleValues[m];
 			double potential = 0;
 			double potentialProposed = 0;
 
 
 			// Start with the potential for the current particle value
 			if (input != null)
-				try {
-					potential = input.evalEnergy(new Object[]{sampleValue}) * _beta;
-				}
-				catch (Exception e)
-				{
-					e.printStackTrace(); System.exit(1);
-				}
+			{
+				potential = input.evalEnergy(new Value[]{sampleValue}) * _beta;
+			}
 
 			for (int portIndex = 0; portIndex < numPorts; portIndex++)
 			{
 				Factor factorNode = _model.getSibling(portIndex);
-				int factorPortNumber = 0;
-				try {
-					factorPortNumber = factorNode.getPortNum(_model);
-				}
-				catch (Exception e)
-				{
-					// FIXME: why is this here? Was this meant to be a temporary debugging hack?
-					e.printStackTrace(); System.exit(1);
-				}
+				int factorPortNumber = factorNode.getPortNum(_model);
 				
 				ParticleBPRealFactor factor = requireNonNull((ParticleBPRealFactor)(factorNode.getSolver()));
-				potential += factor.getMarginalPotential(sampleValue, factorPortNumber);
+				potential += factor.getMarginalPotential(sampleValue.getDouble(), factorPortNumber);
 			}
 
 
 			// Now repeat resampling this sample
 			for (int update = 0; update < _resamplingUpdatesPerSample; update++)
 			{
-				Proposal proposal = kernel.next(RealValue.create(sampleValue), varDomain);
+				Proposal proposal = kernel.next(sampleValue, varDomain);
 				double proposalValue = proposal.value.getDouble();
 
 				// If outside the bounds, then reject
@@ -297,35 +290,36 @@ public class ParticleBPReal extends SRealVariableBase
 				// Sum up the potentials from the input and all connected factors
 				potentialProposed = 0;
 				if (input != null)
-					try {potentialProposed = input.evalEnergy(new Object[]{proposalValue}) * _beta;} catch (Exception e) {e.printStackTrace(); System.exit(1);}
+				{
+					potentialProposed = input.evalEnergy(proposal.value) * _beta;
+				}
+				
+				for (int portIndex = 0; portIndex < numPorts; portIndex++)
+				{
+					Factor factorNode = requireNonNull(_model.getSibling(portIndex));
+					int factorPortNumber = 0;
+					factorPortNumber = factorNode.getPortNum(_model);
+					ParticleBPRealFactor factor = (ParticleBPRealFactor)(factorNode.requireSolver("resample"));
+					potentialProposed += factor.getMarginalPotential(proposalValue, factorPortNumber);
+				}
 
-					for (int portIndex = 0; portIndex < numPorts; portIndex++)
-					{
-						Factor factorNode = requireNonNull(_model.getSibling(portIndex));
-						int factorPortNumber = 0;
-						try {factorPortNumber = factorNode.getPortNum(_model);} catch (Exception e) {e.printStackTrace(); System.exit(1);}
-						ParticleBPRealFactor factor = (ParticleBPRealFactor)(factorNode.requireSolver("resample"));
-						potentialProposed += factor.getMarginalPotential(proposalValue, factorPortNumber);
-					}
 
-
-					// Accept or reject
-					double rejectionThreshold = Math.exp(potential - potentialProposed + proposal.forwardEnergy - proposal.reverseEnergy);
-					if (Double.isNaN(rejectionThreshold))	// Account for invalid forward or reverse proposals
-					{
-						if (potentialProposed != Double.POSITIVE_INFINITY && proposal.forwardEnergy != Double.POSITIVE_INFINITY)
-							rejectionThreshold = Double.POSITIVE_INFINITY;
-						else
-							rejectionThreshold = 0;
-					}
-					if (DimpleRandomGenerator.rand.nextDouble() < rejectionThreshold)
-					{
-						sampleValue = proposalValue;
-						potential = potentialProposed;
-					}
+				// Accept or reject
+				double rejectionThreshold = Math.exp(potential - potentialProposed + proposal.forwardEnergy - proposal.reverseEnergy);
+				if (Double.isNaN(rejectionThreshold))	// Account for invalid forward or reverse proposals
+				{
+					if (potentialProposed != Double.POSITIVE_INFINITY && proposal.forwardEnergy != Double.POSITIVE_INFINITY)
+						rejectionThreshold = Double.POSITIVE_INFINITY;
+					else
+						rejectionThreshold = 0;
+				}
+				if (DimpleRandomGenerator.rand.nextDouble() < rejectionThreshold)
+				{
+					sampleValue.setDouble(proposalValue);
+					potential = potentialProposed;
+				}
 			}
 
-			_particleValues[m] = sampleValue;	// Keep this sample
 			_logWeight[m] = -potential;			// Sum-product code uses log(p) instead of -log(p)
 
 
@@ -334,9 +328,9 @@ public class ParticleBPReal extends SRealVariableBase
 			{
 				Factor factorNode = requireNonNull(_model.getSibling(d));
 				int factorPortNumber = 0;
-				try {factorPortNumber = factorNode.getPortNum(_model);} catch (Exception e) {e.printStackTrace(); System.exit(1);}
+				factorPortNumber = factorNode.getPortNum(_model);
 				ParticleBPRealFactor factor = (ParticleBPRealFactor)(factorNode.requireSolver("resample"));
-				_inPortMsgs[d][m] = Math.exp(factor.getMarginalPotential(sampleValue, factorPortNumber));
+				_inPortMsgs[d][m] = Math.exp(factor.getMarginalPotential(sampleValue.getDouble(), factorPortNumber));
 			}
 
 
@@ -366,7 +360,9 @@ public class ParticleBPReal extends SRealVariableBase
 		{
 			double prior = 1;
 			if (input != null)
-				prior = input.eval(new Object[]{_particleValues[m]});
+			{
+				prior = input.eval(_particleValues[m]);
+			}
 			double out = (prior == 0) ? minLog : Math.log(prior) * _beta;
 
 			for (int d = 0; d < D; d++)
@@ -448,7 +444,10 @@ public class ParticleBPReal extends SRealVariableBase
 	public double[] getParticleValues()
 	{
 		double[] particles = new double[_numParticles];
-		for (int i = 0; i < _numParticles; i++) particles[i] = _particleValues[i];
+		for (int i = 0; i < _numParticles; i++)
+		{
+			particles[i] = _particleValues[i].getDouble();
+		}
 		return particles;
 	}
 
@@ -462,9 +461,12 @@ public class ParticleBPReal extends SRealVariableBase
 	{
 		if (numParticles != _numParticles)
 		{
+			_particleValues = Arrays.copyOf(_particleValues, numParticles);
+			for (int i = _numParticles; i < numParticles; ++i)
+			{
+				_particleValues[i] = RealValue.create();
+			}
 			_numParticles = numParticles;
-			_particleValues = new Double[numParticles];
-			Arrays.fill(_particleValues, new Double(0));
 			_logWeight = Arrays.copyOf(_logWeight, numParticles);
 			for (Factor factor : _model.getFactors())
 				factor.requireSolver("setNumParticles").createMessages();
@@ -647,7 +649,7 @@ public class ParticleBPReal extends SRealVariableBase
     	
     	for (int i = 0; i < length; i++)
     	{
-    		_particleValues[i] = particleValue;
+    		_particleValues[i].setDouble(particleValue);
     		particleValue += particleIncrement;
     	}
 

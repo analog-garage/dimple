@@ -16,11 +16,13 @@
 
 package com.analog.lyric.dimple.solvers.particleBP;
 
+import com.analog.lyric.dimple.model.values.RealValue;
+
 public class ParticleBPSolverVariableToFactorMessage
 {
 	public int length;
 	public int resamplingVersion;
-	public Double[] particleValues;
+	public RealValue[] particleValues;
 	public double[] messageValues;
 	
 	
@@ -28,7 +30,7 @@ public class ParticleBPSolverVariableToFactorMessage
 	{
 		length = numParticles;
 		resamplingVersion = 0;
-		particleValues = new Double[numParticles];
+		particleValues = new RealValue[numParticles];
 		messageValues = new double[numParticles];
 		
     	double initialMessageValue = 1.0/numParticles;
