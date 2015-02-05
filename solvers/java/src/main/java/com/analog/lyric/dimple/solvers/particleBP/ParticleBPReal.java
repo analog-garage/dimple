@@ -49,7 +49,8 @@ import com.analog.lyric.options.OptionValidationException;
  */
 public class ParticleBPReal extends SRealVariableBase
 {
-	protected Double[] _particleValues;
+	protected Double[] _particleValues; // TODO use DoubleValue instead of Double for particleValues
+
 	protected int _numParticles = 1;
 	protected int _resamplingUpdatesPerSample = 1;
 	protected @Nullable IProposalKernel _proposalKernel;
@@ -462,6 +463,9 @@ public class ParticleBPReal extends SRealVariableBase
 		if (numParticles != _numParticles)
 		{
 			_numParticles = numParticles;
+			_particleValues = new Double[numParticles];
+			Arrays.fill(_particleValues, new Double(0));
+			_logWeight = Arrays.copyOf(_logWeight, numParticles);
 			for (Factor factor : _model.getFactors())
 				factor.requireSolver("setNumParticles").createMessages();
 		}
@@ -574,10 +578,6 @@ public class ParticleBPReal extends SRealVariableBase
 	@Override
 	public Object[] createMessages(ISolverFactor factor)
 	{
-		_particleValues = new Double[_numParticles];
-		Arrays.fill(_particleValues, 0.0);
-		_logWeight = new double[_numParticles];
-
 		int portNum = _model.getPortNum(Objects.requireNonNull(factor.getModelObject()));
 		int numPorts = Math.max(_inPortMsgs.length, portNum+1);
 		
