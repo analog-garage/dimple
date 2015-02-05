@@ -21,6 +21,9 @@ import static java.util.Objects.*;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.DoubleDiscreteDomain;
+import com.analog.lyric.dimple.model.domains.IntDiscreteDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 
 /**
@@ -36,11 +39,17 @@ public class RealValue extends Value
 	 * Construction
 	 */
 	
+	/**
+	 * Creates a new instance with initial value of zero.
+	 */
 	public static RealValue create()
 	{
 		return new RealValue(0.0);
 	}
-	
+
+	/**
+	 * Creates a new instance with given initial value.
+	 */
 	public static RealValue create(double value)
 	{
 		return new RealValue(value);
@@ -54,6 +63,47 @@ public class RealValue extends Value
 	RealValue(RealValue that)
 	{
 		this(that._value);
+	}
+	
+	/**
+	 * Create an array of RealValues holding elements of a discrete domain.
+	 * <p>
+	 * @param domain a discrete domain that must contain only numeric elements.
+	 * @since 0.08
+	 * @throws ClassCastException if a domain element is not a subclass of {@link Number}.
+	 */
+	public static RealValue[] createFromDiscreteDomain(DiscreteDomain domain)
+	{
+		final int n = domain.size();
+		final RealValue[] values = new RealValue[n];
+
+		// Special cases are to avoid boxing of primitives
+		if (domain instanceof DoubleDiscreteDomain)
+		{
+			final DoubleDiscreteDomain ddomain = (DoubleDiscreteDomain)domain;
+			for (int i = 0; i < n; ++i)
+			{
+				values[i] = new RealValue(ddomain.getDoubleElement(i));
+			}
+		}
+		else if (domain instanceof IntDiscreteDomain)
+		{
+			final IntDiscreteDomain idomain = (IntDiscreteDomain)domain;
+			for (int i = 0; i < n; ++i)
+			{
+				values[i] = new RealValue(idomain.getIntElement(i));
+			}
+		}
+		else
+		{
+			for (int i = 0; i < n; ++i)
+			{
+				values[i] = new RealValue(((Number)domain.getElement(i)).doubleValue());
+			}
+		}
+		
+		
+		return values;
 	}
 
 	/*----------------

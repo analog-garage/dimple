@@ -28,6 +28,7 @@ import com.analog.lyric.dimple.model.domains.IntDomain;
 import com.analog.lyric.dimple.model.domains.ObjectDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
+import com.analog.lyric.dimple.model.values.DoubleRangeValue;
 import com.analog.lyric.dimple.model.values.GenericDiscreteValue;
 import com.analog.lyric.dimple.model.values.GenericIntDiscreteValue;
 import com.analog.lyric.dimple.model.values.IntRangeValue;
@@ -62,6 +63,7 @@ public class TestValue extends DimpleTestBase
 		assertEquals(0, value.getIndex());
 		assertEquals(0, value.getObject());
 		assertTrue(value instanceof SimpleIntRangeValue);
+		testRealsFromDiscrete((DiscreteDomain)domain);
 		
 		domain = DiscreteDomain.range(2, 5);
 		value = Value.create(domain);
@@ -70,6 +72,16 @@ public class TestValue extends DimpleTestBase
 		assertEquals(2, value.getInt());
 		assertEquals(0, value.getIndex());
 		assertTrue(value instanceof IntRangeValue);
+		testRealsFromDiscrete((DiscreteDomain)domain);
+		
+		domain = DiscreteDomain.range(2.0, 5.0);
+		value = Value.create(domain);
+		assertInvariants(value);
+		assertSame(domain, value.getDomain());
+		assertEquals(2, value.getInt());
+		assertEquals(0, value.getIndex());
+		assertTrue(value instanceof DoubleRangeValue);
+		testRealsFromDiscrete((DiscreteDomain)domain);
 		
 		domain = DiscreteDomain.range(0, 4, 2);
 		value = Value.create(domain);
@@ -78,6 +90,7 @@ public class TestValue extends DimpleTestBase
 		assertEquals(0, value.getInt());
 		assertEquals(0, value.getIndex());
 		assertTrue(value instanceof IntRangeValue);
+		testRealsFromDiscrete((DiscreteDomain)domain);
 		
 		domain = DiscreteDomain.create(1,2,3,5,8,13);
 		value = Value.create(domain);
@@ -86,6 +99,7 @@ public class TestValue extends DimpleTestBase
 		assertEquals(1, value.getInt());
 		assertEquals(0, value.getIndex());
 		assertTrue(value instanceof GenericIntDiscreteValue);
+		testRealsFromDiscrete((DiscreteDomain)domain);
 		
 		domain = DiscreteDomain.create(1,2,3.5);
 		value = Value.create(domain);
@@ -94,6 +108,7 @@ public class TestValue extends DimpleTestBase
 		assertEquals(1, value.getObject());
 		assertEquals(0, value.getIndex());
 		assertTrue(value instanceof GenericDiscreteValue);
+		testRealsFromDiscrete((DiscreteDomain)domain);
 		
 		domain = RealDomain.unbounded();
 		value = Value.create(domain);
@@ -127,6 +142,7 @@ public class TestValue extends DimpleTestBase
 		assertSame(domain, value.getDomain());
 		assertEquals(3, value.getInt());
 		assertEquals(7, value.getIndex());
+		testRealsFromDiscrete((DiscreteDomain)domain);
 		
 		domain = DiscreteDomain.range(0,6,3);
 		value = Value.create(domain, 3);
@@ -141,6 +157,7 @@ public class TestValue extends DimpleTestBase
 		assertSame(domain, value.getDomain());
 		assertEquals(3, value.getInt());
 		assertEquals(2, value.getIndex());
+		testRealsFromDiscrete((DiscreteDomain)domain);
 		
 		domain = DiscreteDomain.create("rabbit", 3, 4.2);
 		value = Value.create(domain, 3);
@@ -149,6 +166,7 @@ public class TestValue extends DimpleTestBase
 		assertEquals(3, value.getInt());
 		assertEquals(3, value.getObject());
 		assertEquals(1, value.getIndex());
+		testRealsFromDiscrete((DiscreteDomain)domain);
 		
 		value = Value.create(42);
 		assertInvariants(value);
@@ -330,6 +348,24 @@ public class TestValue extends DimpleTestBase
 		/*
 		 * 
 		 */
+	}
+	
+	private void testRealsFromDiscrete(DiscreteDomain domain)
+	{
+		try
+		{
+			RealValue[] values = RealValue.createFromDiscreteDomain(domain);
+		
+			assertEquals(domain.size(), values.length);
+			for (int i = values.length; --i >=0;)
+			{
+				assertEquals(((Number)domain.getElement(i)).doubleValue(), values[i].getDouble(), 0.0);
+			}
+		}
+		catch (ClassCastException ex)
+		{
+			assertFalse(Number.class.isAssignableFrom(domain.getElementClass()));
+		}
 	}
 
 	private void assertInvariants(Value value)
