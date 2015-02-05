@@ -34,7 +34,6 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.lp.IntegerEquation;
 import com.analog.lyric.dimple.solvers.lp.LPDiscrete;
 import com.analog.lyric.dimple.solvers.lp.LPFactorMarginalConstraint;
@@ -44,7 +43,6 @@ import com.analog.lyric.dimple.solvers.lp.LPVariableConstraint;
 import com.analog.lyric.dimple.solvers.lp.MatlabConstraintTermIterator;
 import com.analog.lyric.dimple.solvers.lp.Solver;
 import com.analog.lyric.dimple.test.DimpleTestBase;
-import com.analog.lyric.util.test.Unchecked;
 
 public class LPSolverTestCase extends DimpleTestBase
 {
@@ -122,7 +120,6 @@ public class LPSolverTestCase extends DimpleTestBase
 			svar.moveMessages(svar, 0, 1);
 			assertNull(svar.getInputMsg(0));
 			assertNull(svar.getOutputMsg(0));
-			assertNull(svar.createMessages(Unchecked.nullValue(ISolverFactor.class)));
 			assertNull(svar.resetInputMessage(""));
 			
 			int lpVar = svar.getLPVarIndex();
