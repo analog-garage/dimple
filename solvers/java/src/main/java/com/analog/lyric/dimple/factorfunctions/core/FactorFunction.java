@@ -70,15 +70,26 @@ public abstract class FactorFunction implements IFactorFunction
      * Abstract methods
      */
     
-    // Evaluate the factor function with the specified values and return the energy
-    // All factor functions must implement this method
 	@Override
 	public abstract double evalEnergy(Value[] values);
 
     /*------------------------
      * FactorFunction methods
      */
-    
+
+	/**
+	 * Single argument version of {@link #evalEnergy(Value[])}
+	 * <p>
+	 * Simply wraps the {@code value} in an an array and calls the former.
+	 * <p>
+	 * The existence of this method helps to avoid accidental invocation of {@link #evalEnergy(Object...)}.
+	 * @since 0.08
+	 */
+	public double evalEnergy(Value value)
+	{
+		return evalEnergy(new Value[] { value });
+	}
+	
 	// Evaluate the factor function energy using unwrapped object arguments
 	@Matlab
 	public double evalEnergy(Object... arguments)
@@ -104,6 +115,19 @@ public abstract class FactorFunction implements IFactorFunction
 		return Math.exp(-energy);
 	}
 
+	/**
+	 * Single argument version of {@link #eval(Value[])}
+	 * <p>
+	 * Simply wraps the {@code value} in an an array and calls the former.
+	 * <p>
+	 * The existence of this method helps to avoid accidental invocation of {@link #eval(Object...)}.
+	 * @since 0.08
+	 */
+	public double eval(Value value)
+	{
+		return eval(new Value[] { value });
+	}
+	
 	// Evaluate the factor and return a weight value using unwrapped object arguments
 	@Matlab
 	public double eval(Object... arguments)
