@@ -62,7 +62,6 @@ public class ParticleBPReal extends SRealVariableBase
 	protected @Nullable FactorFunction _input;
 	protected RealDomain _domain;
 	double[][] _inPortMsgs = new double[0][];
-	double[][] _logInPortMsgs = new double[0][];
 	ParticleBPSolverVariableToFactorMessage[] _outMsgArray = new ParticleBPSolverVariableToFactorMessage[0];
 	double [] _logWeight;
 	protected double _beta = 1;
@@ -169,13 +168,14 @@ public class ParticleBPReal extends SRealVariableBase
 	protected void doUpdate()
 	{
 		final double minLog = -100;
-		int M = _numParticles;
-		int D = _model.getSiblingCount();
+		final int M = _numParticles;
+		final int D = _model.getSiblingCount();
 
 		final FactorFunction input = _input;
 		
 		//Compute alphas
-		double[] alphas = new double[M];
+        final double[] logInPortMsgs = DimpleEnvironment.doubleArrayCache.allocate(M*D);
+        final double[] alphas = DimpleEnvironment.doubleArrayCache.allocate(M);
 		for (int m = 0; m < M; m++)
 		{
 			double prior = 1;
@@ -183,18 +183,18 @@ public class ParticleBPReal extends SRealVariableBase
 				try {prior = input.eval(new Object[]{_particleValues[m]});} catch (Exception e) {e.printStackTrace(); System.exit(1);}
 				double alpha = (prior == 0) ? minLog : Math.log(prior) * _beta;
 
-				for (int d = 0; d < D; d++)
+				for (int d = 0, i = m; d < D; d++, i += M)
 				{
 					double tmp = _inPortMsgs[d][m];
 					double logtmp = (tmp == 0) ? minLog : Math.log(tmp);
-					_logInPortMsgs[d][m] = logtmp;
+					logInPortMsgs[i] = logtmp;
 					alpha += logtmp;
 				}
 				alphas[m] = alpha;
 		}
 
 		//Now compute output messages for each outgoing edge
-		for (int out_d = 0; out_d < D; out_d++ )
+		for (int out_d = 0, dm = 0; out_d < D; out_d++, dm += M )
 		{
 			double[] outMsgs = _outMsgArray[out_d].messageValues;
 
@@ -203,10 +203,9 @@ public class ParticleBPReal extends SRealVariableBase
 
 			//set outMsgs to alpha - mu_d,m
 			//find max alpha
-			double[] logInPortMsgsD = _logInPortMsgs[out_d];
 			for (int m = 0; m < M; m++)
 			{
-				double out = alphas[m] - logInPortMsgsD[m];
+				double out = alphas[m] - logInPortMsgs[dm + m];
 
 				// Subtract the log weight
 				out -= _logWeight[m];
@@ -231,6 +230,9 @@ public class ParticleBPReal extends SRealVariableBase
 			}
 
 		}
+
+		DimpleEnvironment.doubleArrayCache.release(logInPortMsgs);
+	    DimpleEnvironment.doubleArrayCache.release(alphas);
 	}
 
 	public void resample()
@@ -580,12 +582,10 @@ public class ParticleBPReal extends SRealVariableBase
 		int numPorts = Math.max(_inPortMsgs.length, portNum+1);
 		
 		_inPortMsgs = Arrays.copyOf(_inPortMsgs,numPorts);
-		_logInPortMsgs = Arrays.copyOf(_logInPortMsgs,numPorts);
 		_outMsgArray = Arrays.copyOf(_outMsgArray,numPorts);
 		
 
 		_inPortMsgs[portNum] = getDefaultFactorToVariableMessage();
-		_logInPortMsgs[portNum] = new double[_numParticles];
 
 			// Overwrite the output message so that it can be created in the correct form
 		_outMsgArray[portNum] = getDefaultVariableToFactorMessage();
