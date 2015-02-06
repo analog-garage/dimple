@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012-2015 Analog Devices, Inc.
+*   Copyright 2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -17,24 +17,14 @@
 package com.analog.lyric.dimple.solvers.particleBP;
 
 import com.analog.lyric.dimple.model.values.RealValue;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
-public class ParticleBPSolverVariableToFactorMessage
+/**
+ * 
+ * @since 0.08
+ * @author Christopher Barber
+ */
+public interface IParticleBPVariable extends ISolverVariable
 {
-	public int resamplingVersion;
-	public RealValue[] particleValues;
-	public double[] messageValues;
-	
-	
-	public ParticleBPSolverVariableToFactorMessage(int numParticles)
-	{
-		resamplingVersion = 0;
-		particleValues = new RealValue[numParticles];
-		messageValues = new double[numParticles];
-		
-    	double initialMessageValue = 1.0/numParticles;
-    	
-    	for (int i = 0; i < numParticles; i++)
-    		messageValues[i] = initialMessageValue;
-	}
-	
+	public RealValue[] getParticleValueObjects();
 }

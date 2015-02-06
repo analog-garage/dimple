@@ -29,8 +29,8 @@ import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.solvers.particleBP.ParticleBPSolverGraph;
 import com.analog.lyric.dimple.solvers.particleBP.ParticleBPReal;
+import com.analog.lyric.dimple.solvers.particleBP.ParticleBPSolverGraph;
 
 // TODO: move to particleBP test directory
 
@@ -38,6 +38,15 @@ public class RealVariableParticleBPTest extends DimpleTestBase
 {
 	protected static boolean debugPrint = false;
 	protected static boolean repeatable = true;
+	
+//	@Test
+//	public void profileTest1()
+//	{
+//		while (true)
+//		{
+//			basicTest1();
+//		}
+//	}
 	
 	@SuppressWarnings({ "null", "deprecation" })
 	@Test

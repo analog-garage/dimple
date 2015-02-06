@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012-2015 Analog Devices, Inc.
+*   Copyright 2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -16,25 +16,45 @@
 
 package com.analog.lyric.dimple.solvers.particleBP;
 
-import com.analog.lyric.dimple.model.values.RealValue;
+import com.analog.lyric.dimple.solvers.core.SDiscreteWeightEdge;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 
-public class ParticleBPSolverVariableToFactorMessage
+
+/**
+ * 
+ * @since 0.08
+ * @author Christopher Barber
+ */
+public class ParticleBPRealEdge extends SDiscreteWeightEdge
 {
-	public int resamplingVersion;
-	public RealValue[] particleValues;
-	public double[] messageValues;
+	/*-------
+	 * State
+	 */
+
+	/*--------------
+	 * Construction
+	 */
 	
-	
-	public ParticleBPSolverVariableToFactorMessage(int numParticles)
+	ParticleBPRealEdge(ParticleBPReal svar)
 	{
-		resamplingVersion = 0;
-		particleValues = new RealValue[numParticles];
-		messageValues = new double[numParticles];
-		
-    	double initialMessageValue = 1.0/numParticles;
-    	
-    	for (int i = 0; i < numParticles; i++)
-    		messageValues[i] = initialMessageValue;
+		super(svar.getNumParticles());
 	}
+
+	/*-----------------
+	 * Package methods
+	 */
 	
+	final int numParticles()
+	{
+		return varToFactorMsg.size();
+	}
+
+	void resize(int newNumParticles)
+	{
+		if (newNumParticles != numParticles())
+		{
+			varToFactorMsg = new DiscreteWeightMessage(newNumParticles);
+			factorToVarMsg = new DiscreteWeightMessage(newNumParticles);
+		}
+	}
 }

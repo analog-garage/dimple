@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -17,18 +17,13 @@
 package com.analog.lyric.dimple.solvers.particleBP;
 
 
-import static java.util.Objects.*;
-
-import org.eclipse.jdt.annotation.Nullable;
-
-import com.analog.lyric.collect.ArrayUtil;
-import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.collect.CombinatoricIterator;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.RealValue;
-import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.solvers.core.SDiscreteWeightEdge;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscreteEdge;
 
@@ -39,48 +34,45 @@ import com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscreteEdge;
  */
 public class ParticleBPRealFactor extends SFactorBase
 {
-	protected Factor _realFactor;
-	protected int _numPorts;
-	protected double [][] _inPortMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
-	protected double [][] _outMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
-	protected RealValue[][] _variableDomains = new RealValue[0][];
-	protected RealValue[] _variableValues = new RealValue[0];
-	protected int[] _variableIndices = ArrayUtil.EMPTY_INT_ARRAY;
-	protected int[] _variableDomainLengths = ArrayUtil.EMPTY_INT_ARRAY;
-	protected @Nullable boolean[] _realVariable; // FIXME: not currently used
-	protected boolean _moreCombinations;
 	protected double _beta = 1;
-
-
 	
-	public ParticleBPRealFactor(Factor factor)
+	ParticleBPRealFactor(Factor factor)
 	{
 		super(factor);
-		_realFactor = factor;
 	}
 	
 
 	public double getMarginalPotential(double value, int outPortIndex)
 	{
-		FactorFunction factorFunction = _realFactor.getFactorFunction();
+		final int nEdges = getSiblingCount();
+		FactorFunction factorFunction = _model.getFactorFunction();
 
         double marginal = 0;
-        initializeVariableCombinations();
-		_variableValues[outPortIndex].setDouble(value);	// Use the specified value for the output port
-        while (true)
+        
+        CombinatoricIterator<RealValue> iter = getCombinatoricIterator(value, outPortIndex);
+        final int[] variableIndices = iter.indices();
+        
+        final double[][] inputWeightsPerEdge = new double[nEdges][];
+    	for (int i = 0; i < nEdges; ++i)
+    	{
+    		inputWeightsPerEdge[i] = getEdge(i).varToFactorMsg.representation();
+    	}
+    	
+        while (iter.hasNext())
         {
-        	double prob = 1;
-			prob = factorFunction.eval(_variableValues);
+        	double prob = factorFunction.eval(iter.next());
 			if (_beta != 1) prob = Math.pow(prob, _beta);
 
-        	for (int inPortNum = 0; inPortNum < _numPorts; inPortNum++)
-        		if (inPortNum != outPortIndex)
-        			prob *= _inPortMsgs[inPortNum][_variableIndices[inPortNum]];
+        	for (int i = 0; i < outPortIndex; ++i)
+        	{
+        		prob *= inputWeightsPerEdge[i][variableIndices[i]];
+        	}
+        	for (int i = outPortIndex + 1; i < nEdges; ++i)
+        	{
+        		prob *= inputWeightsPerEdge[i][variableIndices[i]];
+        	}
 
         	marginal += prob;
-        	
-        	nextVariableCombination(outPortIndex, value);
-        	if (!_moreCombinations) break;
         }
         
         // FIXME: Should do bounds checking
@@ -91,144 +83,75 @@ public class ParticleBPRealFactor extends SFactorBase
 	@Override
 	public void doUpdateEdge(int outPortNum)
 	{
-		FactorFunction factorFunction = _realFactor.getFactorFunction();
+		final int nEdges = getSiblingCount();
+		FactorFunction factorFunction = _model.getFactorFunction();
 
-        double[] outputMsgs = _outMsgArray[outPortNum];
-    	int outputMsgLength = outputMsgs.length;
-        for (int i = 0; i < outputMsgLength; i++) outputMsgs[i] = 0;
+		final DiscreteMessage outputMsg = getEdge(outPortNum).factorToVarMsg;
+		outputMsg.setWeightsToZero();
+        final double[] outputWeights = outputMsg.representation();
         
-        initializeVariableCombinations();
-        while (true)
+        final CombinatoricIterator<RealValue> iter = getCombinatoricIterator();
+        final int[] variableIndices = iter.indices();
+        while (iter.hasNext())
         {
-        	double prob = 1;
-			prob = factorFunction.eval(_variableValues);
+        	RealValue[] values = iter.next();
+        	double prob = factorFunction.eval(values);
+			
 			if (_beta != 1) prob = Math.pow(prob, _beta);
 
-        	for (int inPortNum = 0; inPortNum < _numPorts; inPortNum++)
+        	for (int inPortNum = 0; inPortNum < nEdges; inPortNum++)
+        	{
         		if (inPortNum != outPortNum)
-        			prob *= _inPortMsgs[inPortNum][_variableIndices[inPortNum]];
+        		{
+        			prob *= getEdge(inPortNum).varToFactorMsg.getWeight(variableIndices[inPortNum]);
+        		}
+        	}
 
-        	outputMsgs[_variableIndices[outPortNum]] += prob;
-        	
-        	nextVariableCombination();
-        	if (!_moreCombinations) break;
+        	outputWeights[variableIndices[outPortNum]] += prob;
         }
         
-        double sum = 0;
-    	for (int i = 0; i < outputMsgLength; i++) sum += outputMsgs[i];
-    	for (int i = 0; i < outputMsgLength; i++) outputMsgs[i] /= sum;
+        outputMsg.normalize();
 	}
 	
 	
 	@Override
 	protected void doUpdate()
 	{
-		FactorFunction factorFunction = _realFactor.getFactorFunction();
+		FactorFunction factorFunction = _model.getFactorFunction();
 
-		for (int outPortNum = 0; outPortNum < _numPorts; outPortNum++)
+        final CombinatoricIterator<RealValue> iter = getCombinatoricIterator();
+        final int[] variableIndices = iter.indices();
+        
+		for (int outPortNum = 0, n = getSiblingCount(); outPortNum < n; outPortNum++)
 		{
-			double[] outputMsgs = _outMsgArray[outPortNum];
-			int outputMsgLength = outputMsgs.length;
-			for (int i = 0; i < outputMsgLength; i++) outputMsgs[i] = 0;
+			final DiscreteMessage outputMsg = getEdge(outPortNum).factorToVarMsg;
+			outputMsg.setWeightsToZero();
+			
+			final double[] outputWeights = outputMsg.representation();
 
-			initializeVariableCombinations();
-			while (true)
+			iter.reset();
+			while (iter.hasNext())
 			{
+				RealValue[] variableValues = iter.next();
 				double prob = 1;
-				prob = factorFunction.eval(_variableValues);
+				prob = factorFunction.eval(variableValues);
 				if (_beta != 1) prob = Math.pow(prob, _beta);
 
-				for (int inPortNum = 0; inPortNum < _numPorts; inPortNum++)
-					if (inPortNum != outPortNum)
-						prob *= _inPortMsgs[inPortNum][_variableIndices[inPortNum]];
-
-				outputMsgs[_variableIndices[outPortNum]] += prob;
-
-				nextVariableCombination();
-				if (!_moreCombinations) break;
-			}
-
-			double sum = 0;
-			for (int i = 0; i < outputMsgLength; i++) sum += outputMsgs[i];
-			for (int i = 0; i < outputMsgLength; i++) outputMsgs[i] /= sum;
-		}
-	}
-	
-	
-	
-	protected void initializeVariableCombinations()
-	{
-		_moreCombinations = true;
-		for (int iPort = 0; iPort < _numPorts; iPort++)
-		{
-			_variableIndices[iPort] = 0;
-			_variableValues[iPort].setFrom(_variableDomains[iPort][0]);
-		}
-	}
-	
-	// Walk through the dynamically generated equivalent of a combo table
-	// Updates _variableIndices, _variableValues, and _moreCombinations
-	// Uses _variableDomains
-	protected void nextVariableCombination()
-	{
-		// Increment indices
-		_moreCombinations = false;
-		for (int i = 0; i < _numPorts; i++)
-		{
-			int newIndex = _variableIndices[i] + 1;
-
-			if (newIndex >= _variableDomainLengths[i])
-			{
-				_variableIndices[i] = 0;
-			}
-			else
-			{
-				_variableIndices[i] = newIndex;
-				_moreCombinations = true;
-				break;
-			}
-		}
-		
-		// Get values for indices
-		for (int i = 0; i < _numPorts; i++)
-			_variableValues[i].setFrom(_variableDomains[i][_variableIndices[i]]);
-		
-	}
-	
-	
-	// Walk through the dynamically generated equivalent of a combo table
-	// Skip the index of the exception variable and replace its value with the exceptionValue argument
-	// Updates _variableIndices, _variableValues, and _moreCombinations
-	// Uses _variableDomains
-	protected void nextVariableCombination(int exceptionIndex, double exceptionValue)
-	{
-		// Increment indices
-		_moreCombinations = false;
-		for (int i = 0; i < _numPorts; i++)
-		{
-			if (i != exceptionIndex)
-			{
-				int newIndex = _variableIndices[i] + 1;
-
-				if (newIndex >= _variableDomainLengths[i])
+				for (int inPortNum = 0; inPortNum < outPortNum; inPortNum++)
 				{
-					_variableIndices[i] = 0;
+					prob *= getEdge(inPortNum).varToFactorMsg.getWeight(variableIndices[inPortNum]);
 				}
-				else
+				for (int inPortNum = outPortNum + 1; inPortNum < n; inPortNum++)
 				{
-					_variableIndices[i] = newIndex;
-					_moreCombinations = true;
-					break;
+					prob *= getEdge(inPortNum).varToFactorMsg.getWeight(variableIndices[inPortNum]);
 				}
+
+				outputWeights[variableIndices[outPortNum]] += prob;
 			}
+
+			outputMsg.normalize();
 		}
-		
-		// Get values for indices
-		for (int i = 0; i < _numPorts; i++)
-			_variableValues[i].setFrom(_variableDomains[i][_variableIndices[i]]);
-		_variableValues[exceptionIndex].setDouble(exceptionValue);
 	}
-	
 	
     public void setBeta(double beta)	// beta = 1/temperature
     {
@@ -245,47 +168,6 @@ public class ParticleBPRealFactor extends SFactorBase
 	@Override
 	public void createMessages()
 	{
-		final Factor factor = _model;
-		_numPorts = factor.getSiblingCount();
-    	_inPortMsgs = new double[_numPorts][];
-    	_outMsgArray = new double[_numPorts][];
-		_variableDomains = new RealValue[_numPorts][];
-		_variableValues = new RealValue[_numPorts];
-		for (int i = 0; i < _numPorts; ++i)
-		{
-			_variableValues[i] = RealValue.create();
-		}
-		_variableIndices = new int[_numPorts];
-		_variableDomainLengths = new int[_numPorts];
-		final boolean[] realVariable = _realVariable = new boolean[_numPorts];
-
-		for (int iPort = 0; iPort < _numPorts; iPort++)
-	    {
-	    	Variable var = factor.getSibling(iPort);
-
-	    	// Is the variable connected to the port real or discrete
-	    	if (var instanceof Real)
-	    	{
-		    	@SuppressWarnings("null")
-				Object [] messages = requireNonNull(var.getSolver().createMessages(this));
-	    		ParticleBPSolverVariableToFactorMessage tmp = (ParticleBPSolverVariableToFactorMessage)messages[1];
-	    		realVariable[iPort] = true;
-	    		_variableDomains[iPort] = tmp.particleValues;
-	    		_inPortMsgs[iPort] = tmp.messageValues;
-	    		_outMsgArray[iPort] = (double[])messages[0];
-	    	}
-	    	else // Discrete
-	    	{
-	    		realVariable[iPort] = false;
-	    		_variableDomains[iPort] = RealValue.createFromDiscreteDomain(var.asDiscreteVariable().getDomain());
-	    		
-	    		SumProductDiscreteEdge edge = requireNonNull((SumProductDiscreteEdge)getEdge(iPort));
-	    		_inPortMsgs[iPort] = edge.varToFactorMsg.representation();
-	    		_outMsgArray[iPort] = edge.factorToVarMsg.representation();
-	    	}
-	    	
-	    	_variableDomainLengths[iPort] = _variableDomains[iPort].length;
-	    }
 	}
 
 
@@ -298,14 +180,16 @@ public class ParticleBPRealFactor extends SFactorBase
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
-		return _inPortMsgs[portIndex];
+		// FIXME - return actual DiscreteMessage object
+		return getEdge(portIndex).varToFactorMsg.representation();
 	}
 
 
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
-		return _outMsgArray[portIndex];
+		// FIXME - return actual DiscreteMessage object
+		return getEdge(portIndex).factorToVarMsg.representation();
 	}
 
 
@@ -313,9 +197,65 @@ public class ParticleBPRealFactor extends SFactorBase
 	public void moveMessages(ISolverNode other, int thisPortNum,
 			int otherPortNum)
 	{
-		throw new DimpleException("Not supported by this: " + this);
-		
+	}
+	
+	@SuppressWarnings("null")
+	@Override
+	protected SDiscreteWeightEdge getEdge(int siblingIndex)
+	{
+		return (SDiscreteWeightEdge) super.getEdge(siblingIndex);
 	}
 
+	@SuppressWarnings("null")
+	protected SumProductDiscreteEdge getDiscreteEdge(int siblingIndex)
+	{
+		return (SumProductDiscreteEdge)getEdge(siblingIndex);
+	}
 
+	@SuppressWarnings("null")
+	protected ParticleBPRealEdge getRealEdge(int siblingIndex)
+	{
+		return (ParticleBPRealEdge)getEdge(siblingIndex);
+	}
+
+	@Override
+	public IParticleBPVariable getSibling(int edge)
+	{
+		return (IParticleBPVariable) super.getSibling(edge);
+	}
+	
+	/**
+	 * Returns an iterator over all combination of variable values
+	 */
+	private CombinatoricIterator<RealValue> getCombinatoricIterator()
+	{
+		final int nEdges = getSiblingCount();
+		final RealValue[][] particlesPerVar = new RealValue[nEdges][];
+		for (int i = 0; i < nEdges; ++i)
+		{
+			particlesPerVar[i] = getSibling(i).getParticleValueObjects();
+		}
+		return new CombinatoricIterator<>(RealValue.class, particlesPerVar);
+	}
+	
+	/**
+	 * Returns an iterator over all combination of variable values except for edge
+	 */
+	private CombinatoricIterator<RealValue> getCombinatoricIterator(double frozenValue, int frozenEdge)
+	{
+		final int nEdges = getSiblingCount();
+		final RealValue[][] particlesPerVar = new RealValue[nEdges][];
+		for (int i = 0; i < nEdges; ++i)
+		{
+			if (i == frozenEdge)
+			{
+				particlesPerVar[i] = new RealValue[] { RealValue.create(frozenValue) };
+			}
+			else
+			{
+				particlesPerVar[i] = getSibling(i).getParticleValueObjects();
+			}
+		}
+		return new CombinatoricIterator<>(RealValue.class, particlesPerVar);
+	}
 }

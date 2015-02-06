@@ -16,6 +16,10 @@
 
 package com.analog.lyric.dimple.solvers.particleBP;
 
+import static java.util.Objects.*;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -29,7 +33,6 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import com.analog.lyric.dimple.solvers.sumproduct.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.sumproduct.STableFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscreteEdge;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductTableFactor;
@@ -43,10 +46,9 @@ import com.analog.lyric.math.DimpleRandomGenerator;
  * @since 0.07
  */
 @SuppressWarnings("deprecation") // TODO remove when SDiscreteVariable removed
-public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, ISolverVariable, ISolverEdge>
+public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, IParticleBPVariable, ISolverEdge>
 {
 	protected int _numIterationsBetweenResampling = 1;
-//	protected int _defaultNumParticles = 1;
 	protected boolean _temper = false;
 	protected double _initialTemperature;
 	protected double _temperingDecayConstant;
@@ -77,8 +79,7 @@ public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, ISolv
 		
 		if (var instanceof Real)
 		{
-			// FIXME - implement ParticleBPRealEdge
-			return NoSolverEdge.INSTANCE;
+			return new ParticleBPRealEdge(requireNonNull(getRealSolverVariable((Real)var)));
 		}
 		else if (var instanceof Discrete)
 		{
@@ -106,18 +107,19 @@ public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, ISolv
 	
 	@SuppressWarnings("deprecation") // TODO remove when S*Variable classes removed.
 	@Override
-	public ISolverVariable createVariable(Variable var)
+	public IParticleBPVariable createVariable(Variable var)
 	{
 		if (var instanceof Real)
 		{
 			ParticleBPReal v = new SRealVariable((Real)var);
-//			v.setNumParticles(_defaultNumParticles);
 			return v;
 		}
 		else if (var instanceof Discrete)
 		{
-			return new SDiscreteVariable((Discrete)var);
+			return new ParticleBPDiscrete((Discrete)var);
 		}
+		
+		// TODO support RealJoint variables
 		
 		throw unsupportedVariableType(var);
 	}
@@ -242,6 +244,15 @@ public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, ISolv
 	public int getNumIterationsBetweenResampling() {return _numIterationsBetweenResampling;}
 	
 	/**
+	 * Returns real solver variable for given model variable.
+	 * @since 0.08
+	 */
+	public @Nullable ParticleBPReal getRealSolverVariable(Real modelVar)
+	{
+		return (ParticleBPReal)super.getSolverVariable(modelVar);
+	}
+	
+	/**
 	 * @deprecated Instead set {@link ParticleBPOptions#initialTemperature} option using {@link #setOption}.
 	 */
 	@Deprecated
@@ -325,4 +336,5 @@ public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, ISolv
 	{
 		return "Particle BP";
 	}
+	
 }

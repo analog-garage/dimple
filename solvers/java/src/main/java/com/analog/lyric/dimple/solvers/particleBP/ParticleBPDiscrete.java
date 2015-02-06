@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012-2015 Analog Devices, Inc.
+*   Copyright 2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -17,24 +17,28 @@
 package com.analog.lyric.dimple.solvers.particleBP;
 
 import com.analog.lyric.dimple.model.values.RealValue;
+import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscrete;
 
-public class ParticleBPSolverVariableToFactorMessage
+/**
+ * 
+ * @since 0.08
+ * @author Christopher Barber
+ */
+public class ParticleBPDiscrete extends SumProductDiscrete implements IParticleBPVariable
 {
-	public int resamplingVersion;
-	public RealValue[] particleValues;
-	public double[] messageValues;
+	private final RealValue[] _particleValues;
 	
-	
-	public ParticleBPSolverVariableToFactorMessage(int numParticles)
+	public ParticleBPDiscrete(Discrete var)
 	{
-		resamplingVersion = 0;
-		particleValues = new RealValue[numParticles];
-		messageValues = new double[numParticles];
-		
-    	double initialMessageValue = 1.0/numParticles;
-    	
-    	for (int i = 0; i < numParticles; i++)
-    		messageValues[i] = initialMessageValue;
+		super(var);
+		_particleValues = RealValue.createFromDiscreteDomain(var.getDomain());
 	}
-	
+
+	@Override
+	public final RealValue[] getParticleValueObjects()
+	{
+		return _particleValues;
+	}
+
 }

@@ -24,7 +24,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 @Deprecated
 public class SRealFactor extends ParticleBPRealFactor
 {
-	public SRealFactor(Factor factor)
+	SRealFactor(Factor factor)
 	{
 		super(factor);
 	}
