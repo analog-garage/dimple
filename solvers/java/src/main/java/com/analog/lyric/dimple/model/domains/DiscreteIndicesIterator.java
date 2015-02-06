@@ -30,9 +30,10 @@ import org.eclipse.jdt.annotation.Nullable;
  * <p>
  * For example, the following code:
  * <pre>
- *     for (int[] indices : new DiscreteIndicesIterator(2, 3))
+ * 	   DiscreteIndicesIterator iter =  new DiscreteIndicesIterator(2, 3);
+ *     while (iter.hasNext())
  *     {
- *        System.out.format("%s\n", indices);
+ *        System.out.format("%s\n", Arrays.toString(iter.next()));
  *     }
  * </pre>
  * will produce the output:
