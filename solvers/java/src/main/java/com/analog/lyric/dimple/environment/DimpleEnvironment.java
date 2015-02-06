@@ -30,6 +30,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ConstructorRegistry;
 import com.analog.lyric.collect.DoubleArrayCache;
+import com.analog.lyric.collect.IntArrayCache;
 import com.analog.lyric.collect.WeakLongHashMap;
 import com.analog.lyric.dimple.events.DimpleEventListener;
 import com.analog.lyric.dimple.events.IDimpleEventSource;
@@ -148,6 +149,11 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 * Cache of double[] for temporary use.
 	 */
 	public static DoubleArrayCache doubleArrayCache = new DoubleArrayCache();
+	
+	/**
+	 * Cache of int[] for temporary use.
+	 */
+	public static IntArrayCache intArrayCache = new IntArrayCache();
 	
 	// Hack to determine if class was loaded from within the MATLAB environment. We do this by
 	// checking to see if class loader comes from a package whose name starts with "com.mathworks".
