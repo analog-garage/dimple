@@ -129,7 +129,7 @@ public abstract class SNode<MNode extends Node> extends SolverEventSource implem
 	public void initialize()
 	{
 		clearFlags();
-		for (int i = 0, end = getModelObject().getSiblingCount(); i < end; i++)
+		for (int i = 0, end = getSiblingCount(); i < end; i++)
 			resetEdgeMessages(i);
 	}
 	

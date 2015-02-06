@@ -149,7 +149,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 
 
 		// Now compute output messages for each outgoing edge
-        final double[] _savedOutMsgArray =
+        final double[] savedOutMsgArray =
         	_dampingInUse ? DimpleEnvironment.doubleArrayCache.allocate(numValue) : ArrayUtil.EMPTY_DOUBLE_ARRAY;
 		for (int port = 0; port < numPorts; port++ )
 		{
@@ -164,7 +164,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 				if (damping != 0)
 				{
 					for (int i = 0; i < outMsgs.length; i++)
-						_savedOutMsgArray[i] = outMsgs[i];
+						savedOutMsgArray[i] = outMsgs[i];
 				}
 			}
 
@@ -184,7 +184,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 				if (damping != 0)
 				{
 					for (int m = 0; m < numValue; m++)
-						outMsgs[m] = outMsgs[m]*(1-damping) + _savedOutMsgArray[m]*damping;
+						outMsgs[m] = outMsgs[m]*(1-damping) + savedOutMsgArray[m]*damping;
 				}
 			}
 
@@ -193,9 +193,9 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 				outMsgs[i] -= minPotential;
 		}
 
-	    if (_savedOutMsgArray.length > 0)
+	    if (savedOutMsgArray.length > 0)
 	    {
-	    	DimpleEnvironment.doubleArrayCache.release(_savedOutMsgArray);
+	    	DimpleEnvironment.doubleArrayCache.release(savedOutMsgArray);
 	    }
 
 	}
