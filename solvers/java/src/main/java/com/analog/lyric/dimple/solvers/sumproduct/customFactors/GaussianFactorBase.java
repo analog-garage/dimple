@@ -40,11 +40,6 @@ public abstract class GaussianFactorBase extends SFactorBase
 	}
 
 	@Override
-	public void createMessages()
-	{
-	}
-
-	@Override
 	public Object getInputMsg(int portIndex)
 	{
 		return getEdge(portIndex).varToFactorMsg;

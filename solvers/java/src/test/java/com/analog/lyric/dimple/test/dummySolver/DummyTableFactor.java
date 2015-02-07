@@ -16,11 +16,12 @@
 
 package com.analog.lyric.dimple.test.dummySolver;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class DummyTableFactor extends STableFactorBase
 {
@@ -42,11 +43,6 @@ public class DummyTableFactor extends STableFactorBase
 		
 	@Override
 	protected void doUpdate()
-	{
-	}
-
-	@Override
-	public void createMessages()
 	{
 	}
 

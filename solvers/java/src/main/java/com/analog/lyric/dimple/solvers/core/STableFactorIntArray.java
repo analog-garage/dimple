@@ -16,45 +16,16 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
-import static java.util.Objects.*;
-
-import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public abstract class STableFactorIntArray extends STableFactorBase
 {
-	protected int [][] _inputMsgs = ArrayUtil.EMPTY_INT_ARRAY_ARRAY;
-	protected int [][] _outputMsgs = ArrayUtil.EMPTY_INT_ARRAY_ARRAY;
-
 	public STableFactorIntArray(Factor factor)
 	{
 		super(factor);
 	}
 	
-	
-
-	@Override
-	public void createMessages()
-	{
-		final Factor factor = _model;
-		int nVars = factor.getSiblingCount();
-		
-	    _inputMsgs = new int[nVars][];
-	    _outputMsgs = new int[nVars][];
-	    
-	    for (int index = 0, end = nVars; index < end; index++)
-	    {
-	    	ISolverVariable is = requireNonNull(factor.getSibling(index).getSolver());
-	    	Object [] messages = requireNonNull(is.createMessages(this));
-	    	_outputMsgs[index] = (int[])messages[0];
-	    	_inputMsgs[index] = (int[])messages[1];
-	    }
-	    
-	}
-
-
 	@Override
 	public void resetEdgeMessages(int i)
 	{
@@ -63,40 +34,39 @@ public abstract class STableFactorIntArray extends STableFactorBase
 	@Override
 	public void moveMessages(ISolverNode other, int portNum, int otherPort)
 	{
-
-		STableFactorIntArray sother = (STableFactorIntArray)other;
-	    _inputMsgs[portNum] = sother._inputMsgs[otherPort];
-	    _outputMsgs[portNum] = sother._outputMsgs[otherPort];
-	    
 	}
 
 
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
-		return _inputMsgs[portIndex];
+		return getEdge(portIndex).varToFactorMsg;
 	}
 
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
-		return _outputMsgs[portIndex];
+		return getEdge(portIndex).factorToVarMsg;
 	}
 
 	@Override
 	public void setInputMsgValues(int portIndex, Object obj)
 	{
-		int [] tmp = (int[])obj;
-		for (int i = 0; i <tmp.length; i++)
-			_inputMsgs[portIndex][i] = tmp[i];
+		final int[] inputMsg = getEdge(portIndex).varToFactorMsg;
+		System.arraycopy(obj,  0, inputMsg, 0, inputMsg.length);
 	}
 	
 	@Override
 	public void setOutputMsgValues(int portIndex, Object obj)
 	{
-		int [] tmp = (int[])obj;
-		for (int i = 0; i <tmp.length; i++)
-			_outputMsgs[portIndex][i] = tmp[i];
+		final int[] outputMsg = getEdge(portIndex).factorToVarMsg;
+		System.arraycopy(obj,  0, outputMsg, 0, outputMsg.length);
 	}
-	
+
+	@SuppressWarnings({ "null", "unchecked" })
+	@Override
+	protected SEdgeWithIntArrayMessages getEdge(int siblingIndex)
+	{
+		return (SEdgeWithIntArrayMessages) super.getEdge(siblingIndex);
+	}
 }

@@ -28,12 +28,6 @@ public abstract class STableFactorDoubleArray extends STableFactorBase
 	}
 
 	@Override
-	public void createMessages()
-	{
-	}
-
-
-	@Override
 	public void resetEdgeMessages(int i)
 	{
 		

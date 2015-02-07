@@ -34,12 +34,6 @@ public abstract class SumProductFiniteFieldFactor extends SFactorBase
 		super(factor);
 	}
 
-	@Override
-	public void createMessages()
-	{
-	}
-
-
 	@SuppressWarnings("null")
 	@Override
 	public void resetEdgeMessages(int i)

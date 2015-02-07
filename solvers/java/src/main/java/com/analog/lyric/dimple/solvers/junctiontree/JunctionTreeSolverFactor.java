@@ -160,11 +160,6 @@ public class JunctionTreeSolverFactor extends SFactorBase
 	 */
 	
 	@Override
-	public void createMessages()
-	{
-	}
-
-	@Override
 	public double[] getBelief()
 	{
 		final ISolverFactor delegate = requireNonNull(getDelegate());

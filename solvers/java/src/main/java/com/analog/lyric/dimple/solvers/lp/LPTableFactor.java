@@ -119,14 +119,6 @@ public class LPTableFactor extends STableFactorBase
 	 * Does nothing.
 	 */
 	@Override
-	public void createMessages()
-	{
-	}
-
-	/**
-	 * Does nothing.
-	 */
-	@Override
 	public void doUpdateEdge(int outPortNum)
 	{
 	}

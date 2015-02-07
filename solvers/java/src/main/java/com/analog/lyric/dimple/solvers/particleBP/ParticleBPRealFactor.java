@@ -166,12 +166,6 @@ public class ParticleBPRealFactor extends SFactorBase
 	}
 
 	@Override
-	public void createMessages()
-	{
-	}
-
-
-	@Override
 	public void resetEdgeMessages(int portNum)
 	{
 	}

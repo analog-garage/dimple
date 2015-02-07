@@ -59,6 +59,11 @@ public abstract class SFactorBase extends SNode<Factor> implements ISolverFactor
 	 */
 
 	@Override
+	public void createMessages()
+	{
+	}
+	
+	@Override
 	public ISolverVariable getSibling(int edge)
 	{
 		// FIXME don't go through the model object

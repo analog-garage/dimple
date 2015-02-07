@@ -23,7 +23,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
@@ -145,12 +144,6 @@ public abstract class ProxySolverVariable<MVariable extends Variable, Delegate e
 	 * ISolverVariable methods
 	 */
 	
-	@Override
-	public Object[] createMessages(ISolverFactor factor)
-	{
-		throw unsupported("createMessages");
-	}
-
 	@Override
 	public void createNonEdgeSpecificState()
 	{

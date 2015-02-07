@@ -16,10 +16,11 @@
 
 package com.analog.lyric.dimple.test.dummySolver;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class DummyCustomFactor extends SFactorBase
 {
@@ -45,11 +46,6 @@ public class DummyCustomFactor extends SFactorBase
 
 	@Override
 	public void initialize()
-	{
-	}
-
-	@Override
-	public void createMessages()
 	{
 	}
 

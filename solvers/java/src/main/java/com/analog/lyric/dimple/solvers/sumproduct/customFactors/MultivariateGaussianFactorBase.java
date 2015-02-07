@@ -39,11 +39,6 @@ public abstract class MultivariateGaussianFactorBase extends SFactorBase
 	}
 
 	@Override
-	public void createMessages()
-	{
-	}
-
-	@Override
 	public void moveMessages(@NonNull ISolverNode other, int portNum, int otherPort)
 	{
 	}
