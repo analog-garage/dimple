@@ -22,12 +22,12 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import com.analog.lyric.dimple.model.variables.Real;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.model.variables.Real;
 
 /**
  * An iterator that walks through connected nodes in a {@link FactorGraph}
@@ -413,8 +413,8 @@ public class FactorGraphWalker implements Iterator<INode>
 				continue;
 			}
 			
-			List<? extends INode> siblingNodes = requireNonNull(node).getSiblings();
-			int nSiblings = siblingNodes.size();
+//			List<? extends INode> siblingNodes = requireNonNull(node).getSiblings();
+			final int nSiblings = requireNonNull(node).getSiblingCount();
 			if (nSiblings > 0)
 			{
 				int newDepth = this._currentDepth + 1;
@@ -427,10 +427,10 @@ public class FactorGraphWalker implements Iterator<INode>
 					}
 					for (int i = 0, size = nSiblings; i < size; ++i)
 					{
-						INode siblingNode = siblingNodes.get(i);
 						if (i != portIn.index)
 						{
-							queue.add(new Port(siblingNode,siblingNode.getPortNum(node)));
+							final FactorGraphEdgeState edge = node.getSiblingEdgeState(i);
+							queue.add(Port.createPortFromNode(edge, edge.getSibling(node)));
 						}
 					}
 				}
@@ -445,6 +445,8 @@ public class FactorGraphWalker implements Iterator<INode>
 	private @Nullable INode nextDepthFirst()
 	{
 		INode node = null;
+		
+		// TODO implement using FactorGraphEdgeState instead of Ports
 		
 		Deque<Port> stack = this._portDeque;
 		
@@ -479,8 +481,7 @@ public class FactorGraphWalker implements Iterator<INode>
 				continue;
 			}
 			
-			List<? extends INode> portsOut = requireNonNull(node).getSiblings();
-			int nPortsOut = portsOut.size();
+			final int nPortsOut = requireNonNull(node).getSiblingCount();
 			if (nPortsOut > 0)
 			{
 				int newDepth = this._currentDepth + 1;
@@ -491,10 +492,10 @@ public class FactorGraphWalker implements Iterator<INode>
 					this._maxDepthSeen = Math.max(this._maxDepthSeen, this._currentDepth);
 					for (int i = 0, size = nPortsOut; i < size; ++i)
 					{
-						INode portOut = portsOut.get(i);
 						if (i != portIn.index)
 						{
-							stack.push(new Port(portOut,portOut.getPortNum(node)));
+							final FactorGraphEdgeState edge = node.getSiblingEdgeState(i);
+							stack.push(Port.createPortFromNode(edge, edge.getSibling(node)));
 						}
 					}
 				}

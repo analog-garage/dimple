@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.core;
 
+import static java.util.Objects.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -167,6 +169,11 @@ public interface INode  extends INameable, IModelEventSource
 	// REFACTOR: give this a better name to make it clear this is returning the siblings index
 	// back to this node, e.g. getSiblingInversePortIndex. Also, wouldn't it be better to use the
 	// term "edge index" or "sibling index" instead?
+	/**
+	 * Returns reverse sibling edge index from sibling at given index back to this node.
+	 * @param index
+	 * @since 0.08
+	 */
 	public int getSiblingPortIndex(int index);
 	
 	public void initialize();
@@ -228,4 +235,8 @@ public interface INode  extends INameable, IModelEventSource
      */
     @Internal
     public  void setVisited();
+
+	public abstract FactorGraphEdgeState getSiblingEdgeState(int i);
+
+	public abstract Edge getSiblingEdge(int i);
 }

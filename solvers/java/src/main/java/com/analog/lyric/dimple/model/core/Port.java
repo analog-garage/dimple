@@ -32,6 +32,21 @@ public class Port
 		this.index = index;
 	}
 	
+	public static Port createFactorPort(FactorGraphEdgeState edge, FactorGraph fg)
+	{
+		return new Port(edge.getFactor(fg), edge._factorToVariableIndex);
+	}
+	
+	public static Port createVariablePort(FactorGraphEdgeState edge, FactorGraph fg)
+	{
+		return new Port(edge.getVariable(fg), edge._variableToFactorIndex);
+	}
+	
+	public static Port createPortFromNode(FactorGraphEdgeState edge, Node node)
+	{
+		return new Port(node, node.isVariable() ? edge.getVariableToFactorIndex() : edge.getFactorToVariableIndex());
+	}
+	
 	@Override
 	public int hashCode()
 	{

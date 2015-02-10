@@ -20,15 +20,16 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.INode;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorList;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
 import com.analog.lyric.math.DimpleRandomGenerator;
-import org.eclipse.jdt.annotation.NonNull;
 
 /**
  * @author jeffb
@@ -98,9 +99,11 @@ public class RandomWithoutReplacementSchedule extends ScheduleBase
 		{
 			int factorIndex = _factorIndices[iFactor];
 			Factor f = ((ArrayList<Factor>)_factors.values()).get(factorIndex);
-			for (INode p : f.getSiblings())
+			final FactorGraph fg = f.requireParentGraph();
+			for (int i = 0, n = f.getSiblingCount(); i < n; ++i)
 			{
-				updateList.add(new EdgeScheduleEntry(p,f));
+				final FactorGraphEdgeState edge = f.getSiblingEdgeState(i);
+				updateList.add(new EdgeScheduleEntry(edge.getVariable(fg), edge.getVariableToFactorIndex()));
 			}
 			updateList.add(new NodeScheduleEntry(f));
 		}

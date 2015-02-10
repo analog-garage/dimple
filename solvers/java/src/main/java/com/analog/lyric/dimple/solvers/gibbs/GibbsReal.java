@@ -36,6 +36,8 @@ import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.domains.RealDomain;
@@ -204,11 +206,13 @@ public class GibbsReal extends SRealVariableBase
 			// Factor messages represent the current distribution parameters from each factor
 			int numPorts = _model.getSiblingCount();
 			Port[] ports = new Port[numPorts];
+			final FactorGraph fg = _model.requireParentGraph();
 			for (int portIndex = 0; portIndex < numPorts; portIndex++)
 			{
-				Factor factorNode = requireNonNull(_model.getSibling(portIndex));
+				final FactorGraphEdgeState edge = _model.getSiblingEdgeState(portIndex);
+				Factor factorNode = edge.getFactor(fg);
 				ISolverFactor factor = requireNonNull(factorNode.getSolver());
-				int factorPortNumber = factorNode.getPortNum(_model);
+				int factorPortNumber = edge.getFactorToVariableIndex();
 				ports[portIndex] = factorNode.getPort(factorPortNumber);
 				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
 			}
@@ -340,7 +344,7 @@ public class GibbsReal extends SRealVariableBase
 			{
 				Factor factorNode = requireNonNull(_model.getSibling(port));
 				ISolverFactor factor = requireNonNull(factorNode.getSolver());
-				int factorPortNumber = factorNode.getPortNum(_model);
+				int factorPortNumber = _model.getSiblingEdgeIndex(port);
 				ports[i++] = factorNode.getPort(factorPortNumber);
 				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
 			}

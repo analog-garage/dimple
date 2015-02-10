@@ -3578,9 +3578,6 @@ public class FactorGraph extends FactorBase
 		final FactorGraph oldVariableGraph = requireNonNull(oldVariable.getParentGraph());
 		final FactorGraph newVariableGraph = requireNonNull(newVariable.getParentGraph());
 
-		// Old sibling code
-		factor.replaceSibling(oldVariable, newVariable);
-		
 		final int factorEdgeIndex = oldEdge.factorEdgeIndex();
 		final int oldVariableEdgeIndex = oldEdge.variableEdgeIndex();
 		

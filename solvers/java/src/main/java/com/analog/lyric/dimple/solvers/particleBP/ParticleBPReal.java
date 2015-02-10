@@ -26,6 +26,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
@@ -270,6 +271,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 
 	public void resample()
 	{
+		final FactorGraph fg = _model.requireParentGraph();
 		int numPorts = _model.getSiblingCount();
 		Domain varDomain = _model.getDomain();
 		double _lowerBound = _domain.getLowerBound();
@@ -352,9 +354,9 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 			// Update the incoming messages for the new particle value
 			for (int d = 0; d < numPorts; d++)
 			{
-				Factor factorNode = requireNonNull(_model.getSibling(d));
-				int factorPortNumber = 0;
-				factorPortNumber = factorNode.getPortNum(_model);
+				final FactorGraphEdgeState edge = _model.getSiblingEdgeState(d);
+				Factor factorNode = edge.getFactor(fg);
+				int factorPortNumber = edge.getFactorToVariableIndex();
 				ParticleBPRealFactor factor = (ParticleBPRealFactor)(factorNode.requireSolver("resample"));
 				getEdge(d).factorToVarMsg.setWeight(m, Math.exp(factor.getMarginalPotential(sampleValue.getDouble(), factorPortNumber)));
 			}
@@ -438,7 +440,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 			for (int d = 0; d < D; d++)
 			{
 				FactorBase factorNode = _model.getSibling(d);
-				int factorPortNumber = factorNode.getPortNum(_model);
+				int factorPortNumber = _model.getSiblingEdgeIndex(d);
 				ParticleBPRealFactor factor = requireNonNull((ParticleBPRealFactor)(factorNode.getSolver()));
 				out -= factor.getMarginalPotential(value, factorPortNumber);	// Potential is -log(p)
 			}

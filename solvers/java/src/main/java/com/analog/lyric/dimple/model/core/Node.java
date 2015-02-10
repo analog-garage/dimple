@@ -20,7 +20,6 @@ import static java.util.Objects.*;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,7 +32,6 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import cern.colt.list.IntArrayList;
 
-import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.events.DimpleEvent;
 import com.analog.lyric.dimple.events.IDimpleEventListener;
@@ -43,7 +41,6 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.options.DimpleOptions;
-import com.analog.lyric.math.Utilities;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.MapList;
@@ -94,13 +91,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	 */
 	protected int _flags;
 	
-	/**
-	 * Maps sibling index to the inverse index from the corresponding sibling
-	 * back to this node. Indices are stored by adding one, so that the value zero
-	 * can be used to indicate values that have not been initialized.
-	 */
-	private int [] _siblingIndices = ArrayUtil.EMPTY_INT_ARRAY;
-	
+	// FIXME - eliminate this if possible
 	/**
 	 * Reverse mapping of sibling to its index. Created lazily as needed.
 	 */
@@ -168,28 +159,8 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	@Override
 	public int getSiblingPortIndex(int index)
 	{
-		if (_siblingIndices.length <= index)
-		{
-			// Round up to next power of two no larger than the sibling size to avoid
-			// thrashing if this is called for each index in order.
-			int newSize = Math.min(_siblingEdges.size(), Utilities.nextPow2(index + 1));
-			_siblingIndices = Arrays.copyOf(_siblingIndices, newSize);
-		}
-		
-		// Zero values in _siblingIndices indicates not yet initialized, thus the offset by one.
-		
-		int reverseIndex = _siblingIndices[index] - 1;
-		
-		INode sibling = getSibling(index);
-		if (reverseIndex < 0 || sibling.getSibling(reverseIndex) != this)
-		{
-			// Update reverse index if it was not yet initialized or it points to the wrong node,
-			// which can happen if nodes were removed.
-			reverseIndex = sibling.getPortNum(this);
-			_siblingIndices[index] = reverseIndex + 1;
-		}
-		
-		return reverseIndex;
+		final FactorGraphEdgeState edge = getSiblingEdgeState(index);
+		return isVariable() ? edge._factorToVariableIndex : edge._variableToFactorIndex;
 	}
 	
 	@Override
@@ -684,6 +655,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	 * @since 0.08
 	 * @see #getSiblingEdgeState(int)
 	 */
+	@Override
 	public Edge getSiblingEdge(int i)
 	{
 		return new Edge(requireNonNull(_parentGraph), getSiblingEdgeState(i));
@@ -708,6 +680,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
      * @since 0.08
      * @throws IndexOutOfBoundsException if {@code i} is not in range.
      */
+	@Override
 	public FactorGraphEdgeState getSiblingEdgeState(int i)
 	{
 		return requireNonNull(requireParentGraph().getGraphEdgeState(_siblingEdges.get(i)));
@@ -721,16 +694,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	 */
 	public int indexOfSiblingEdgeState(FactorGraphEdgeState edge)
 	{
-		FactorGraph parent = requireParentGraph();
-		for (int i = 0, n = _siblingEdges.size(); i < n; ++i)
-		{
-			if (edge == parent.getGraphEdgeState(_siblingEdges.get(i)))
-			{
-				return i;
-			}
-		}
-		
-		return -1;
+		return isVariable() ? edge._variableToFactorIndex : edge._factorToVariableIndex;
 	}
 	
 	/**
@@ -809,10 +773,19 @@ public abstract class Node extends DimpleOptionHolder implements INode
     @Internal
 	protected void addSiblingEdgeState(FactorGraphEdgeState edge)
 	{
+		final int i = _siblingEdges.size();
 		final HashMap<INode,Integer> siblingToIndex = _siblingToIndex;
 		if (siblingToIndex != null)
 		{
-			siblingToIndex.put(edge.getSibling(this), _siblingEdges.size());
+			siblingToIndex.put(edge.getSibling(this), i);
+		}
+		if (isVariable())
+		{
+			edge._variableToFactorIndex = i;
+		}
+		else
+		{
+			edge._factorToVariableIndex = i;
 		}
 		_siblingEdges.add(edge.edgeIndex(this));
 
@@ -823,7 +796,20 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	protected void clearSiblingEdgeState()
 	{
 		_siblingEdges.clear();
-		_siblingIndices = ArrayUtil.EMPTY_INT_ARRAY;
+		if (isVariable())
+		{
+			for (int j = _siblingEdges.size(); --j >= 0;)
+			{
+				getSiblingEdgeState(j)._variableToFactorIndex = -1;
+			}
+		}
+		else
+		{
+			for (int j = _siblingEdges.size(); --j >= 0;)
+			{
+				getSiblingEdgeState(j)._factorToVariableIndex = -1;
+			}
+		}
 		_siblingToIndex = null;
 		notifyConnectionsChanged();
 	}
@@ -837,9 +823,27 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	@Internal
 	protected void removeSiblingEdgeState(FactorGraphEdgeState edge)
 	{
-		_siblingEdges.remove(indexOfSiblingEdgeState(edge));
+		if (isVariable())
+		{
+			final int i = edge._variableToFactorIndex;
+			_siblingEdges.remove(i);
+			edge._variableToFactorIndex = -1;
+			for (int j = _siblingEdges.size(); --j >= i;)
+			{
+				getSiblingEdgeState(j)._variableToFactorIndex = j;
+			}
+		}
+		else
+		{
+			final int i = edge._factorToVariableIndex;
+			_siblingEdges.remove(i);
+			edge._factorToVariableIndex = -1;
+			for (int j = _siblingEdges.size(); --j >= i;)
+			{
+				getSiblingEdgeState(j)._factorToVariableIndex = j;
+			}
+		}
 		_siblingToIndex = null;
-		_siblingIndices = ArrayUtil.EMPTY_INT_ARRAY;
 		notifyConnectionsChanged();
 	}
 	
@@ -847,7 +851,17 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	protected void replaceSiblingEdgeState(FactorGraphEdgeState oldEdge, FactorGraphEdgeState newEdge)
 	{
 		assert(isFactor());
-		_siblingEdges.set(indexOfSiblingEdgeState(oldEdge), newEdge.edgeIndex(this));
+		final int i = oldEdge._factorToVariableIndex;
+		oldEdge._factorToVariableIndex = -1;
+		_siblingEdges.set(i, newEdge.edgeIndex(this));
+		newEdge._factorToVariableIndex = i;
+		final HashMap<INode,Integer> siblingToIndex = _siblingToIndex;
+		if (siblingToIndex != null)
+		{
+			final FactorGraph fg = requireParentGraph();
+			siblingToIndex.remove(oldEdge.getVariable(fg));
+			siblingToIndex.put(newEdge.getVariable(fg), i);
+		}
 		notifyConnectionsChanged();
 	}
 	
@@ -918,24 +932,6 @@ public abstract class Node extends DimpleOptionHolder implements INode
 				// Listener configuration probably changed. Reconfigure source to
 				// prevent further event creation.
 				notifyListenerChanged();
-			}
-		}
-	}
-	
-	protected void replaceSibling(INode oldNode, INode newNode)
-	{
-		if (oldNode != newNode)
-		{
-			int index = getPortNum(oldNode);
-			if (_siblingIndices.length > index)
-			{
-				_siblingIndices[index] = 0;
-			}
-			final HashMap<INode,Integer> siblingToIndex = _siblingToIndex;
-			if (siblingToIndex != null)
-			{
-				siblingToIndex.remove(oldNode);
-				siblingToIndex.put(newNode, index);
 			}
 		}
 	}

@@ -37,6 +37,13 @@ import com.analog.lyric.util.misc.Internal;
  */
 public abstract class FactorGraphEdgeState
 {
+	/*-------
+	 * State
+	 */
+	
+	int _factorToVariableIndex = -1;
+	int _variableToFactorIndex = -1;
+	
 	/*------------------------------
 	 * FactorGraphEdgeState methods
 	 */
@@ -99,6 +106,18 @@ public abstract class FactorGraphEdgeState
 	abstract public Factor getFactor(FactorGraph graph);
 	
 	/**
+	 * Returns sibling index from the perspective of {@link Factor} endpoint of the edge.
+	 * <p>
+	 * @return sibling index or else -1 if edge is not currently connected to its endpoints.
+	 * @since 0.08
+	 * @see #getVariableToFactorIndex()
+	 */
+	public final int getFactorToVariableIndex()
+	{
+		return _factorToVariableIndex;
+	}
+	
+	/**
 	 * Return instance of parent of factor end of edge, given parent of either edge.
 	 * @since 0.08
 	 * @category internal
@@ -115,6 +134,18 @@ public abstract class FactorGraphEdgeState
 	abstract public Variable getVariable(FactorGraph graph);
 	
 	/**
+	 * Returns sibling index from the perspective of {@link Variable} endpoint of the edge.
+	 * <p>
+	 * @return sibling index or else -1 if edge is not currently connected to its endpoints.
+	 * @since 0.08
+	 * @see #getFactorToVariableIndex()
+	 */
+	public final int getVariableToFactorIndex()
+	{
+		return _variableToFactorIndex;
+	}
+
+	/**
 	 * Return instance of parent of variable end of edge, given parent of either edge.
 	 * @since 0.08
 	 * @category internal
@@ -130,13 +161,13 @@ public abstract class FactorGraphEdgeState
 	 * <p>
 	 * @since 0.08
 	 */
-	public final Node getSibling(Node node)
+	public final Node getSibling(INode node)
 	{
 		final FactorGraph graph = requireNonNull(node.getContainingGraph());
 		
 		return node.isVariable() ? getFactor(graph) : getVariable(graph);
 	}
-
+	
 	/**
 	 * The local id of the {@link Factor} referred to by this edge within its owning {@link FactorGraph}.
 	 * @since 0.08
