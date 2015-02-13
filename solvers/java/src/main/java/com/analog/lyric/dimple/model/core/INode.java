@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.model.core;
 
-import static java.util.Objects.*;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
