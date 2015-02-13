@@ -253,7 +253,7 @@ public class JointFactorFunction extends FactorFunction
 	{
 		//Make sure length of inputs is correct
 		if (input.length != _newNumInputs)
-			throw new DimpleException("expected " + _newNumInputs + " args");
+			throw new DimpleException("expected " + _newNumInputs + " args but got " + input.length);
 		
 		double energy = 0.0;
 		

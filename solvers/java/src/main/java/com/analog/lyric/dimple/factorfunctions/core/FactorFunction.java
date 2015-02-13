@@ -374,7 +374,7 @@ public abstract class FactorFunction implements IFactorFunction
      * @param oldValues contains descriptions of the variable number and old value of each input. Only indexes
      * of input variables should be specified. This list should not contain more than
      * {@link #updateDeterministicLimit(int)} elements.
-     * @param changedOutputsHolder should be set by the function to contains the list of indexes of output variables
+     * @param changedOutputsHolder should be set by the function to contain the list of indexes of output variables
      * that were changed or else set to contain null if all of the outputs were modified.
      * @return true if update was done incrementally (i.e not all inputs were processed), false if full
      * update was done.
