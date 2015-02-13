@@ -200,6 +200,7 @@ ext {
 		'com.analog.lyric.dimple.learning',
 		'com.analog.lyric.dimple.matlabproxy',
 		'com.analog.lyric.dimple.model.serializerdetails',
+		'com.analog.lyric.dimple.model.sugar',
 		'com.analog.lyric.dimple.parameters',
 		'com.analog.lyric.dimple.schedulers.dependencyGraph',
 		'com.analog.lyric.dimple.solvers.core.kbest',
