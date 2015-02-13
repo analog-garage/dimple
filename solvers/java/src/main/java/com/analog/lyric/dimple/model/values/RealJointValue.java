@@ -34,17 +34,17 @@ public class RealJointValue extends Value
 	 * Construction
 	 */
 	
-	RealJointValue(double[] value)
+	protected RealJointValue(double[] value)
 	{
 		_value = value;
 	}
 
-	RealJointValue(RealJointDomain domain)
+	protected RealJointValue(RealJointDomain domain)
 	{
 		_value = new double[domain.getDimensions()];
 	}
 
-	RealJointValue(RealJointValue that)
+	protected RealJointValue(RealJointValue that)
 	{
 		_value = that._value.clone();
 	}
@@ -94,7 +94,7 @@ public class RealJointValue extends Value
 	}
 	
 	public final double[] getValue() {return _value;}
-	public final void setValue(double[] value) {_value = value;}
+	public void setValue(double[] value) {_value = value;}
 
 	
 	// Get/set a specific element of the sample

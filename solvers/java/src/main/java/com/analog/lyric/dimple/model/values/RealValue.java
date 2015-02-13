@@ -55,12 +55,12 @@ public class RealValue extends Value
 		return new RealValue(value);
 	}
 	
-	RealValue(double value)
+	protected RealValue(double value)
 	{
 		_value = value;
 	}
 
-	RealValue(RealValue that)
+	protected RealValue(RealValue that)
 	{
 		this(that._value);
 	}
@@ -129,7 +129,7 @@ public class RealValue extends Value
 	@Override
 	public void setFrom(Value value)
 	{
-		_value = value.getDouble();
+		setDouble(value.getDouble());
 	}
 	
 	@Override
@@ -147,7 +147,7 @@ public class RealValue extends Value
 	@Override
 	public void setObject(@Nullable Object value)
 	{
-		_value = ((Number)requireNonNull(value)).doubleValue();
+		setDouble(((Number)requireNonNull(value)).doubleValue());
 	}
 	
 	@Override
@@ -177,13 +177,13 @@ public class RealValue extends Value
 	@Override
 	public void setInt(int value)
 	{
-		_value = value;
+		setDouble(value);
 	}
 	
 	@Override
 	public void setBoolean(boolean value)
 	{
-		_value = value ? 1.0 : 0.0;
+		setDouble(value ? 1.0 : 0.0);
 	}
 	
 	@Override
