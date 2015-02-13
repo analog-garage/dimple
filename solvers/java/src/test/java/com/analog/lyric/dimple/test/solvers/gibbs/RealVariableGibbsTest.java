@@ -16,21 +16,26 @@
 
 package com.analog.lyric.dimple.test.solvers.gibbs;
 
+import static com.analog.lyric.dimple.model.sugar.ModelSyntacticSugar.*;
 import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
+import org.apache.commons.math3.stat.StatUtils;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.factorfunctions.MixedNormal;
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.sugar.ModelSyntacticSugar.CurrentModel;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
+import com.analog.lyric.dimple.options.DimpleOptions;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
-import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.test.DimpleTestBase;
-
 
 public class RealVariableGibbsTest extends DimpleTestBase
 {
@@ -104,10 +109,10 @@ public class RealVariableGibbsTest extends DimpleTestBase
 		if (debugPrint) System.out.println("aBest: " + (Double)sa.getBestSample());
 		if (debugPrint) System.out.println("bBest: " + (Double)sb.getBestSample());
 		
-		assertTrue(nearlyEquals(aMean,0.8050875226168582));
-		assertTrue(nearlyEquals(bMean,-0.1921312702232493));
-		assertTrue(nearlyEquals(sa.getBestSample(),0.8043550661413381));
-		assertTrue(nearlyEquals(sb.getBestSample(),-0.20700427734616236));
+		assertEquals(aMean,0.8050875226168582,1e-12);
+		assertEquals(bMean,-0.1921312702232493,1e-12);
+		assertEquals(sa.getBestSample(),0.8043550661413381,1e-12);
+		assertEquals(sb.getBestSample(),-0.20700427734616236,1e-12);
 	}
 	
 	
@@ -185,20 +190,120 @@ public class RealVariableGibbsTest extends DimpleTestBase
 		if (debugPrint) System.out.println("aBest: " + (Double)sa.getBestSample());
 		if (debugPrint) System.out.println("bBest: " + sb.getBestSample());
 		
-		assertTrue(nearlyEquals(aMean,0.20867216566185906));
-		assertTrue(nearlyEquals(bMean,0.6055));
-		assertTrue(nearlyEquals(sa.getBestSample(),0.977986266650138));
+		assertEquals(aMean,0.20867216566185906, 1e-12);
+		assertEquals(bMean,0.6055,1e-12);
+		assertEquals(sa.getBestSample(),0.977986266650138,1e-12);
 		assertTrue((Integer)sb.getBestSample() == 1);
 	}
 	
-	
-	private static double TOLLERANCE = 1e-12;
-	private boolean nearlyEquals(double a, double b)
+	@Test
+	public void testBeliefMoments()
 	{
-		double diff = a - b;
-		if (diff > TOLLERANCE) return false;
-		if (diff < -TOLLERANCE) return false;
-		return true;
-	}
+		// Java version of MATLAB testBeliefMoments/test1
+		
+		
+		// Construct model
+		final FactorGraph fg = new FactorGraph();
+		
+		Real a, b, x, y;
+		
+		try (CurrentModel current = using(fg))
+		{
+			a = name("a", normal(0, 1));
+			b = name("b", gamma(1, 1));
+			x = name("x", square(sum(a, b)));
+			y = name("y", sum(x, square(log(lognormal(2,7)))));
+		}
+			
+		// Set data
+		y.setFixedValue(5);
+		
+		// Configure Gibbs options
+		fg.setOption(DimpleOptions.randomSeed, 1L);
+		fg.setOption(GibbsOptions.numSamples, 100);
+		fg.setOption(GibbsOptions.burnInScans, 10);
+		
+		// Run the solver without saving samples.
+		GibbsSolverGraph sfg = requireNonNull(fg.setSolverFactory(new GibbsSolver()));
+		fg.setOption(GibbsOptions.saveAllSamples, false);
+		fg.solve();
+		
+		GibbsReal sa = requireNonNull(sfg.getReal(a));
+		GibbsReal sb = requireNonNull(sfg.getReal(b));
+		GibbsReal sx = requireNonNull(sfg.getReal(x));
+		GibbsReal sy = requireNonNull(sfg.getReal(y));
+		
+		double aMean = sa.getSampleMean();
+		double aVariance = sa.getSampleVariance();
+		double bMean = sb.getSampleMean();
+		double bVariance = sb.getSampleVariance();
+		double xMean = sx.getSampleMean();
+		double xVariance = sx.getSampleVariance();
+		double yMean = sy.getSampleMean();
+		double yVariance = sy.getSampleVariance();
+		
+		// Run the solver again, this time saving all samples
+		fg.setOption(GibbsOptions.saveAllSamples, true);
+		fg.solve();
+	
+		double[] aSamples = sa.getAllSamples();
+		double[] bSamples = sb.getAllSamples();
+		double[] xSamples = sx.getAllSamples();
+		double[] ySamples = sy.getAllSamples();
 
+		assertEquals(aMean, StatUtils.mean(aSamples), 1e-13);
+		assertEquals(bMean, StatUtils.mean(bSamples), 1e-13);
+		assertEquals(xMean, StatUtils.mean(xSamples), 1e-13);
+		assertEquals(yMean, StatUtils.mean(ySamples), 1e-13);
+		assertEquals(aVariance, StatUtils.variance(aSamples), 1e-13);
+		assertEquals(bVariance, StatUtils.variance(bSamples), 1e-13);
+		assertEquals(xVariance, StatUtils.variance(xSamples), 1e-13);
+		assertEquals(yVariance, StatUtils.variance(ySamples), 1e-13);
+		
+		assertEquals(y.getFixedValue(), yMean, 0.0);
+		assertEquals(0.0, yVariance, 0.0);
+		
+		// Make sure moments are the same the next time
+		assertEquals(aMean, sa.getSampleMean(), 0.0);
+		assertEquals(aVariance, sa.getSampleVariance(), 0.0);
+	}
+	
+//	@Test
+//	public void testRolledUpBeliefMoments()
+//	{
+//		// Java version of MATLAB testBeliefMoments/test3
+//
+//		// Construct model
+//		final int numDataPoints = 10;
+//		final double dataPrecision = 1000;
+//		final double transitionPrecision = 10;
+//
+//		final FactorGraph fg = new FactorGraph();
+//		fg.setName("root");
+//
+//		final Real y = new Real();
+//		y.setName("y");
+//		final Real x = new Real();
+//		x.setName("x");
+//
+//		fg.addVariables(x, y);
+//
+//		final FactorGraph nfg = new FactorGraph();
+//		nfg.setName("nested");
+//		nfg.addBoundaryVariables(x,y);
+//		Real mean = new Real();
+//		mean.setName("mean");
+//		nfg.addFactor(new Product(), mean, x, 1.1);
+//		nfg.addFactor(new Normal(), mean, transitionPrecision, y);
+//
+//		final RealStream vars = new RealStream();
+//		fg.addRepeatedFactor(nfg, vars, vars.getSlice(2));
+//
+//		// Configure Gibbs
+//		final GibbsSolverGraph sfg = fg.setSolverFactory(new GibbsSolver());
+//		fg.setOption(GibbsOptions.numSamples,  1000);
+//		fg.setOption(GibbsOptions.burnInScans, 10);
+//
+//
+//	}
 }
