@@ -149,6 +149,20 @@ public final class DiscreteEnergyMessage extends DiscreteMessage
 	 */
 
 	/**
+	 * Returns the minimum energy value in the distribution.
+	 * @since 0.08
+	 */
+	public final double minEnergy()
+	{
+		double min = Double.POSITIVE_INFINITY;
+		for (double d : _message)
+		{
+			min = Math.min(min, d);
+		}
+		return min;
+	}
+	
+	/**
 	 * Normalizes energy values by subtracting the min energy from all of them.
 	 * <p>
 	 * Does nothing if the minimum value is not finite.
@@ -156,11 +170,7 @@ public final class DiscreteEnergyMessage extends DiscreteMessage
 	 */
 	public void normalizeEnergy()
 	{
-		double min = Double.POSITIVE_INFINITY;
-		for (double d : _message)
-		{
-			min = Math.min(min, d);
-		}
+		final double min = minEnergy();
 		
 		if (!Double.isInfinite(min))
 		{

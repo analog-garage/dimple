@@ -29,6 +29,7 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergy
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.util.test.SerializationTester;
+import com.google.common.primitives.Doubles;
 
 /**
  * 
@@ -163,6 +164,11 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 			for (int i = 0; i < size; ++i)
 			{
 				assertEquals(message.getEnergy(i), message.representation()[i], 0.0);
+			}
+			
+			if (message instanceof DiscreteEnergyMessage)
+			{
+				assertEquals(Doubles.min(message.representation()), ((DiscreteEnergyMessage)message).minEnergy(), 0.0);
 			}
 		}
 		
