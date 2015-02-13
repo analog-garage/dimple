@@ -80,7 +80,7 @@ public abstract class Value implements Cloneable, Serializable
 			RealJointDomain realJoint = domain.asRealJoint();
 			if (realJoint != null)
 			{
-				return new RealJointValue(realJoint);
+				return create(realJoint);
 			}
 
 			if (domain.isIntegral())
@@ -100,6 +100,15 @@ public abstract class Value implements Cloneable, Serializable
 	public static RealValue create(RealDomain domain)
 	{
 		return new RealValue(0.0);
+	}
+	
+	/**
+	 * Creates a {@link RealJointValue} instance with dimensions matching {@code domain}.
+	 * @since 0.08
+	 */
+	public static RealJointValue create(RealJointDomain domain)
+	{
+		return new RealJointValue(domain);
 	}
 	
 	/**
