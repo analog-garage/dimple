@@ -128,6 +128,13 @@ public class GammaParameters extends ParameterizedMessageBase
 		throw new IllegalArgumentException(String.format("Expected '%s' but got '%s'", getClass(), that.getClass()));
 	}
 	
+	@Override
+	public void setFrom(IParameterizedMessage other)
+	{
+		GammaParameters that = (GammaParameters)other;
+		_alphaMinusOne = that._alphaMinusOne;
+		_beta = that._beta;
+	}
 	/**
 	 * {@inheritDoc}
 	 * <p>

@@ -221,6 +221,12 @@ public class TestSNode extends DimpleTestBase
 		}
 
 		@Override
+		public void setFrom(IParameterizedMessage other)
+		{
+			_counter = ((TestMessage)other)._counter;
+		}
+		
+		@Override
 		public void setUniform()
 		{
 			_counter = 0;

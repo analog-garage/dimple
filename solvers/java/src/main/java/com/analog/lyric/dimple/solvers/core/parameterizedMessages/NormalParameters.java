@@ -148,6 +148,14 @@ public class NormalParameters extends ParameterizedMessageBase
 		throw new IllegalArgumentException(String.format("Expected '%s' but got '%s'", getClass(), that.getClass()));
 		
 	}
+	
+	@Override
+	public void setFrom(IParameterizedMessage other)
+	{
+		NormalParameters that = (NormalParameters)other;
+		_mean = that._mean;
+		_precision = that._precision;
+	}
 
 	/**
 	 * {@inheritDoc}

@@ -170,11 +170,7 @@ public class DirichletParameters extends ParameterizedMessageBase
 			final double[] alphasP = P._alphaMinusOne, alphasQ = Q._alphaMinusOne;
 			final int size = alphasP.length;
 			
-			if (size != alphasQ.length)
-			{
-				throw new IllegalArgumentException(
-					String.format("Incompatible Dirichlet sizes '%d' and '%d'", size, alphasQ.length));
-			}
+			assertSameSize(alphasQ.length);
 
 			// To summarize the doc comment in plain ascii:
 			//
@@ -217,6 +213,16 @@ public class DirichletParameters extends ParameterizedMessageBase
 		throw new IllegalArgumentException(String.format("Expected '%s' but got '%s'", getClass(), that.getClass()));
 	}
 	
+	@Override
+	public void setFrom(IParameterizedMessage other)
+	{
+		DirichletParameters that = (DirichletParameters)other;
+		double[] newAlphaMinusOne = that._alphaMinusOne;
+		final int size = newAlphaMinusOne.length;
+		assertSameSize(size);
+		System.arraycopy(newAlphaMinusOne, 0, _alphaMinusOne, 0, size);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * <p>
@@ -233,4 +239,14 @@ public class DirichletParameters extends ParameterizedMessageBase
 		Arrays.fill(_alphaMinusOne, 0);
 	}
 
+	protected void assertSameSize(int otherSize)
+	{
+		final int size = _alphaMinusOne.length;
+		
+		if (size != otherSize)
+		{
+			throw new IllegalArgumentException(
+				String.format("Incompatible Dirichlet sizes '%d' and '%d'", size, otherSize));
+		}
+	}
 }

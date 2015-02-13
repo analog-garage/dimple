@@ -257,11 +257,7 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 		
 			final MultivariateNormalParameters P = this, Q = (MultivariateNormalParameters)that;
 			final int K = P.getVectorLength();
-			if (K != Q.getVectorLength())
-			{
-				throw new IllegalArgumentException(
-					String.format("Incompatible vector sizes '%d' and '%d'", K, Q.getVectorLength()));
-			}
+			assertSameSize(Q.getVectorLength());
 			
 			P.toCovarianceFormat();
 			
@@ -287,6 +283,13 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 		}
 		
 		throw new IllegalArgumentException(String.format("Expected '%s' but got '%s'", getClass(), that.getClass()));
+	}
+	
+	@Override
+	public void setFrom(IParameterizedMessage other)
+	{
+		MultivariateNormalParameters that = (MultivariateNormalParameters)other;
+		set(that);
 	}
 	
 	@Override
@@ -464,4 +467,14 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 		}
 	}
 
+	protected void assertSameSize(int otherSize)
+	{
+		final int size = getVectorLength();
+		
+		if (size != otherSize)
+		{
+			throw new IllegalArgumentException(
+				String.format("Incompatible vector sizes '%d' and '%d'", size, otherSize));
+		}
+	}
 }

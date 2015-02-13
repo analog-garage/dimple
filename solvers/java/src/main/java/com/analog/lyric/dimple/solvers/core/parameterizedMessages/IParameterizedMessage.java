@@ -24,7 +24,7 @@ public interface IParameterizedMessage extends Cloneable, Serializable, IPrintab
 {
 	public abstract IParameterizedMessage clone();
 	
-		/**
+	/**
 	 * Computes the KL divergence of this message with respect to a
 	 * another message of the same type. I.e. it should compute:
 	 * <blockquote>
@@ -40,6 +40,18 @@ public interface IParameterizedMessage extends Cloneable, Serializable, IPrintab
 	 * @since 0.06
 	 */
 	public double computeKLDivergence(IParameterizedMessage that);
+	
+	/**
+	 * Sets parameter values from another message.
+	 * <p>
+	 * @param other a message of the same type as this one (although specific subclasses
+	 * could support other message types).
+	 * @throws ClassCastException if {@code other} does not have supported class type
+	 * @throws IllegalArgumentException if {@code other} is otherwise not compatible
+	 * with this message
+	 * @since 0.08
+	 */
+	public void setFrom(IParameterizedMessage other);
 	
 	/**
 	 * Sets message to its "null" form.

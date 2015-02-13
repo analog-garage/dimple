@@ -142,6 +142,12 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 		throw new IllegalArgumentException(String.format("Expected '%s' but got '%s'", getClass(), that.getClass()));
 	}
 	
+	@Override
+	public void setFrom(IParameterizedMessage other)
+	{
+		setFrom((DiscreteMessage)other);
+	}
+	
 	/*-------------------------
 	 * DiscreteMessage methods
 	 */
