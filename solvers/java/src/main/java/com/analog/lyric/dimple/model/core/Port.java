@@ -103,4 +103,9 @@ public class Port
 	{
 		return new Port(getSibling(),node.getSiblingPortIndex(index));
 	}
+	
+	public FactorGraphEdgeState toEdgeState()
+	{
+		return node.getSiblingEdgeState(index);
+	}
 }
