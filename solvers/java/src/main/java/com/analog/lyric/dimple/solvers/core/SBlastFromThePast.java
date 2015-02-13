@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2013 Analog Devices, Inc.
+*   Copyright 2013-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import com.analog.lyric.util.misc.Internal;
 public class SBlastFromThePast extends SolverEventSource implements ISolverBlastFromThePastFactor
 {
 	private BlastFromThePastFactor _factor;
+	// TODO - make final and set when constructed
 	protected @Nullable Port _portForOtherVar;
 	protected @Nullable Port _portForBlastVar;
 	protected @Nullable ISolverFactorGraph _parent = null;
@@ -53,6 +54,7 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 	@Override
 	public ISolverVariable getSibling(int edge)
 	{
+		// FIXME - lookup directly in solver graph
 		return Objects.requireNonNull(getModelObject().getSibling(edge).getSolver());
 	}
 	
@@ -149,15 +151,16 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 	}
 
 	@Override
-	public ISolverFactorGraph getParentGraph()
+	public @Nullable ISolverFactorGraph getParentGraph()
 	{
-		throw new DimpleException("Not implemented");
+		return _parent;
 	}
 
 	@Override
-	public ISolverFactorGraph getRootGraph()
+	public @Nullable ISolverFactorGraph getRootGraph()
 	{
-		throw new DimpleException("Not implemented");
+		final ISolverFactorGraph parent = _parent;
+		return parent != null ? parent.getRootGraph() : null;
 	}
 
 	@Override
@@ -194,7 +197,8 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 	public void setOutputMsg(int portIndex, Object obj)
 	{
 		Variable var = _factor.getSibling(portIndex);
-		int index = var.getPortNum(getModelObject());
+		int index = _factor.getSiblingPortIndex(portIndex);
+		// FIXME - lookup through solver graph
 		var.requireSolver("setOutputMsg").setInputMsg(index,obj);
 	}
 
@@ -228,6 +232,7 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 	@Override
 	public void advance()
 	{
+		// FIXME lookup through solver graph
 		_portForBlastVar.node.getSolver().moveMessages(_portForOtherVar.node.getSolver(),
 				_portForBlastVar.index,_portForOtherVar.index);
 	}
