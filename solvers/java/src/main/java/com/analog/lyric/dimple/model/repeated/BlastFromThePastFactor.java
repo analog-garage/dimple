@@ -30,8 +30,8 @@ import com.analog.lyric.util.misc.Internal;
 public class BlastFromThePastFactor extends Factor
 {
 	
-	private Port _portForOtherVariable;
-	private Variable _variableConnectedToBlast;
+	private final Port _portForOtherVariable;
+	private final Variable _variableConnectedToBlast;
 	
 	@Internal
 	public BlastFromThePastFactor(Variable varConnectedToBlast, Port portForOtherVar)
