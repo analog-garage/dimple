@@ -40,7 +40,7 @@ public class FactorGraphStream
 
 	ArrayList<ArrayList<BlastFromThePastFactor>> _blastFromThePastChains = new ArrayList<ArrayList<BlastFromThePastFactor>>();
 	ArrayList<FactorGraph> _nestedGraphs = new ArrayList<FactorGraph>();
-	ArrayList<VariableStreamBase> _variableStreams = new ArrayList<VariableStreamBase>();
+	ArrayList<VariableStreamBase<?>> _variableStreams = new ArrayList<>();
 	private int _bufferSize = 0;
 	private Object [] _args;
 	private FactorGraph _graph;
@@ -63,19 +63,19 @@ public class FactorGraphStream
 		_parameterFactorGraph.setSolverFactory(_graph.getFactorGraphFactory());
 
 		//The following few lines of code retrieve the unique variable streams
-		HashSet<VariableStreamBase> variableStreams = new HashSet<VariableStreamBase>();
+		HashSet<VariableStreamBase<?>> variableStreams = new HashSet<>();
 
 		//Find unique variable streams
 		for (int i = 0; i < args.length; i++)
 		{
 			if (args[i] instanceof IVariableStreamSlice)
 			{
-				VariableStreamBase vsb = ((IVariableStreamSlice)args[i]).getStream();
+				VariableStreamBase<?> vsb = ((IVariableStreamSlice<?>)args[i]).getStream();
 				variableStreams.add(vsb);
 			}
 		}
 
-		for (VariableStreamBase vsb : variableStreams)
+		for (VariableStreamBase<?> vsb : variableStreams)
 			_variableStreams.add(vsb);
 
 		//Here we build up the nested graphs.
@@ -96,7 +96,7 @@ public class FactorGraphStream
 		
 			//figure out which variable stream this is connected to
 			Variable var = (Variable)p.getSibling();
-			VariableStreamBase vsb = getVariableStream(var);
+			VariableStreamBase<?> vsb = getVariableStream(var);
 
 			if (vsb == null)
 			{
@@ -178,7 +178,7 @@ public class FactorGraphStream
 				_graph.remove(_nestedGraphs.get(i));
 				_nestedGraphs.remove(i);
 			}
-			for (VariableStreamBase v : _variableStreams)
+			for (VariableStreamBase<?> v : _variableStreams)
 				v.cleanupUnusedVariables();
 		}
 	}
@@ -268,7 +268,7 @@ public class FactorGraphStream
 
 	public boolean hasNext()
 	{
-        for (VariableStreamBase s : _variableStreams)
+        for (VariableStreamBase<?> s : _variableStreams)
         {
                 if (!s.hasNext())
                         return false;
@@ -283,7 +283,7 @@ public class FactorGraphStream
 		for (int j = 0; j < _args.length; j++)
 		{
 			if (_args[j] instanceof IVariableStreamSlice)
-				boundaryVariables[j] = ((IVariableStreamSlice)_args[j]).get(_nestedGraphs.size(),true);
+				boundaryVariables[j] = ((IVariableStreamSlice<?>)_args[j]).get(_nestedGraphs.size(),true);
 			else
 				boundaryVariables[j] = (Variable)_args[j];
 		}
@@ -292,7 +292,7 @@ public class FactorGraphStream
 		_nestedGraphs.add(ng);
 	}
 
-	private @Nullable VariableStreamBase getVariableStream(Variable var)
+	private @Nullable VariableStreamBase<?> getVariableStream(Variable var)
 	{
 		for (int i = 0; i < _variableStreams.size(); i++)
 		{

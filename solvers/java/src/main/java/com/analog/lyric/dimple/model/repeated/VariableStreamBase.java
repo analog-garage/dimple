@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.model.repeated;
 
 import static java.util.Objects.*;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -28,34 +29,39 @@ import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
-public abstract class VariableStreamBase implements IVariableStreamSlice
+public abstract class VariableStreamBase<V extends Variable> implements IVariableStreamSlice<V>
 {
 	private Domain _domain;
 	
-	private ArrayList<Variable> _variables = new ArrayList<Variable>();
+	private ArrayList<V> _variables = new ArrayList<>();
 	private @Nullable IDataSource _dataSource = null;
 	private @Nullable IDataSink _dataSink = null;
-	private ArrayList<VariableStreamSlice> _slices = new ArrayList<VariableStreamSlice>();
-	private VariableStreamSlice _slice;
-	
+	private ArrayList<VariableStreamSlice<V>> _slices = new ArrayList<>();
+	private VariableStreamSlice<V> _slice;
+	private final @Nullable String _namePrefix;
 
-	public VariableStreamBase(Domain domain)
+	protected VariableStreamBase(Domain domain, @Nullable String namePrefix)
 	{
 		_domain = domain;
 		_slice = getSlice(0);
-		
+		_namePrefix = namePrefix;
 	}
+	
+	/**
+	 * Return {@link Class} of variable used by this stream.
+	 * @since 0.08
+	 */
+	protected abstract Class<? extends V> variableType();
 	
 	public int size()
 	{
 		return _variables.size();
 	}
 	
-	public Variable [] getVariables()
+	@SuppressWarnings("unchecked")
+	public V [] getVariables()
 	{
-		Variable [] vars = new Variable[_variables.size()];
-		_variables.toArray(vars);
-		return vars;
+		return _variables.toArray((V[])Array.newInstance(variableType(), _variables.size()));
 	}
 	
 	public boolean contains(Variable vb)
@@ -96,9 +102,9 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 	}
 	
 	
-	public VariableStreamSlice getSlice(int start)
+	public VariableStreamSlice<V> getSlice(int start)
 	{
-		VariableStreamSlice ss = new VariableStreamSlice(start,this);
+		VariableStreamSlice<V> ss = new VariableStreamSlice<>(start,this);
 		_slices.add(ss);
 		return ss;
 	}
@@ -141,13 +147,18 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 	}
 
 	
-	abstract protected Variable instantiateVariable(Domain domain) ;
+	abstract protected V instantiateVariable(Domain domain) ;
 	
-	protected Variable createVariable()
+	protected V createVariable(int index)
 	{
-		Variable tmp;
+		V tmp;
 		
 		tmp = instantiateVariable(_domain);
+		
+		if (_namePrefix != null)
+		{
+			tmp.setName(_namePrefix + index);
+		}
 		
 		final IDataSource dataSource = _dataSource;
 		if (dataSource != null)
@@ -170,46 +181,41 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 			return false;
 		}
 
-		double localIndex = index;
-		
-		
-		while (localIndex >= _variables.size() )
+		for (int i = _variables.size(); i <= index; ++i)
 		{
 			if (!hasNext())
 			{
 				return false;
 			}
 			
-			_variables.add(createVariable());
+			_variables.add(createVariable(i));
 		}
 		
-		return localIndex < _variables.size();
+		return index < _variables.size();
 	}
 	
 	
 	@Override
-	public Variable get(int index)
+	public V get(int index)
 	{
 		return get(index,false);
 	}
 	
 	@Override
-	public Variable get(int index,boolean createIfDoesntExist)
+	public V get(int index,boolean createIfDoesntExist)
 	{
 		if (index < 0)
 			throw new DimpleException("negative indexing not allowed");
 		
-		int localIndex = (index);
-		
-		if (!createIfDoesntExist && localIndex >= _variables.size())
+		if (!createIfDoesntExist && index >= _variables.size())
 			throw new DimpleException("A variable has not yet been instantiated for the specified index: " + index);
 		
-		while (localIndex >= _variables.size())
+		for (int i = _variables.size(); i <= index; ++i)
 		{
-			_variables.add(createVariable());
+			_variables.add(createVariable(i));
 		}
 		
-		return _variables.get(localIndex);
+		return _variables.get(index);
 
 	}
 
@@ -223,13 +229,13 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 
 	}
 	
-	public IVariableStreamSlice copy()
+	public IVariableStreamSlice<V> copy()
 	{
 		return _slice.copy();
 	}
 	
 	@Override
-	public VariableStreamBase getStream()
+	public VariableStreamBase<V> getStream()
 	{
 		return this;
 	}

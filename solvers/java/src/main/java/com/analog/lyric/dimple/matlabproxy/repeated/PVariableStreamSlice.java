@@ -23,19 +23,20 @@ import com.analog.lyric.dimple.model.variables.Variable;
 
 public class PVariableStreamSlice implements IPVariableStreamSlice
 {
-	private VariableStreamSlice [] _modelObjects;
+	private VariableStreamSlice<?> [] _modelObjects;
 	
-	public PVariableStreamSlice(VariableStreamSlice [] slices)
+	public PVariableStreamSlice(VariableStreamSlice<?> [] slices)
 	{
 		_modelObjects = slices;
 	}
 	
-	public VariableStreamSlice [] getModelerObjects()
+	@Override
+	public VariableStreamSlice<?> [] getModelerObjects()
 	{
 		return _modelObjects;
 	}
 	
-	public PVariableVector get(int index) 
+	public PVariableVector get(int index)
 	{
 		Variable [] vars = new Variable[_modelObjects.length];
 		for (int i = 0; i < vars.length; i++)

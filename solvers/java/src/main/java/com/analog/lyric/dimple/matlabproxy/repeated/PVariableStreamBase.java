@@ -29,7 +29,7 @@ import com.analog.lyric.dimple.model.variables.Variable;
 
 public abstract class PVariableStreamBase implements IPVariableStreamSlice
 {
-	private VariableStreamBase [] _modelObjects;
+	private VariableStreamBase<?> [] _modelObjects;
 	
 	public PVariableStreamBase(Domain domain, int numVars)
 	{
@@ -38,18 +38,19 @@ public abstract class PVariableStreamBase implements IPVariableStreamSlice
 			_modelObjects[i] = createVariable(domain);
 	}
 	
-	protected abstract VariableStreamBase createVariable(Domain domain);
+	protected abstract VariableStreamBase<?> createVariable(Domain domain);
 	
 	public PVariableStreamSlice getSlice(int startVal)
 	{
-		VariableStreamSlice [] vars = new VariableStreamSlice[_modelObjects.length];
+		VariableStreamSlice<?> [] vars = new VariableStreamSlice<?>[_modelObjects.length];
 		for (int i = 0; i < vars.length; i++)
 			vars[i] = _modelObjects[i].getSlice(startVal);
 
 		return new PVariableStreamSlice(vars);
 	}
 	
-	public VariableStreamBase [] getModelerObjects()
+	@Override
+	public VariableStreamBase<?> [] getModelerObjects()
 	{
 		return _modelObjects;
 	}
@@ -73,7 +74,7 @@ public abstract class PVariableStreamBase implements IPVariableStreamSlice
 		return _modelObjects[0].size();
 	}
 	
-	public PVariableVector get(int index) 
+	public PVariableVector get(int index)
 	{
 		Variable [] vars = new Variable[_modelObjects.length];
 		for (int i = 0; i < vars.length; i++)
@@ -81,7 +82,7 @@ public abstract class PVariableStreamBase implements IPVariableStreamSlice
 		return PHelpers.convertToVariableVector(vars);
 	}
 	
-	public void setDataSource(IPDataSource dataSource) 
+	public void setDataSource(IPDataSource dataSource)
 	{
 		IDataSource [] ds = dataSource.getModelObjects();
 		if (ds.length != _modelObjects.length)
@@ -90,7 +91,7 @@ public abstract class PVariableStreamBase implements IPVariableStreamSlice
 		for (int i = 0; i < ds.length; i++)
 			_modelObjects[i].setDataSource(ds[i]);
 	}
-	public void setDataSink(IPDataSink dataSink) 
+	public void setDataSink(IPDataSink dataSink)
 	{
 		IDataSink [] ds = dataSink.getModelObjects();
 		if (ds.length != _modelObjects.length)
@@ -101,13 +102,13 @@ public abstract class PVariableStreamBase implements IPVariableStreamSlice
 	}
 	
 
-	public IPDataSource getDataSource() 
+	public IPDataSource getDataSource()
 	{
 		return PHelpers.getDataSources(getModelerObjects());
 	}
 
-	public IPDataSink getDataSink() 
+	public IPDataSink getDataSink()
 	{
 		return PHelpers.getDataSinks(getModelerObjects());
-	}	
+	}
 }

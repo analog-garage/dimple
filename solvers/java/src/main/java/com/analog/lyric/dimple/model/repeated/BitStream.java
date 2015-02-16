@@ -17,6 +17,8 @@
 package com.analog.lyric.dimple.model.repeated;
 
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.variables.Bit;
 
 public class BitStream extends DiscreteStream
 {
@@ -25,10 +27,27 @@ public class BitStream extends DiscreteStream
 		super(DiscreteDomain.bit());
 	}
 	
+	public BitStream(String namePrefix)
+	{
+		super(DiscreteDomain.bit(), namePrefix);
+	}
+	
 	@Override
 	public DiscreteDomain getDomain()
 	{
 		return (DiscreteDomain)super.getDomain();
+	}
+
+	@Override
+	protected Bit instantiateVariable(Domain domain)
+	{
+		return new Bit();
+	}
+	
+	@Override
+	protected Class<Bit> variableType()
+	{
+		return Bit.class;
 	}
 
 }

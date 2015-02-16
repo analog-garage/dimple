@@ -19,13 +19,12 @@ package com.analog.lyric.dimple.model.repeated;
 import com.analog.lyric.dimple.model.domains.ComplexDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.variables.Complex;
-import com.analog.lyric.dimple.model.variables.Variable;
 
 /**
  * Variable stream for complex variables.
  * @since 0.07
  */
-public class ComplexStream extends VariableStreamBase
+public class ComplexStream extends RealJointStream
 {
 	public ComplexStream()
 	{
@@ -44,9 +43,32 @@ public class ComplexStream extends VariableStreamBase
 	}
 
 	@Override
-	protected Variable instantiateVariable(Domain domain)
+	protected Complex instantiateVariable(Domain domain)
 	{
 		return new Complex((ComplexDomain)domain);
 	}
+	
+	@Override
+	protected Class<Complex> variableType()
+	{
+		return Complex.class;
+	}
 
+	@Override
+	public Complex get(int index)
+	{
+		return (Complex)super.get(index);
+	}
+	
+	@Override
+	public Complex get(int index, boolean createIfDoesntExist)
+	{
+		return (Complex)super.get(index, createIfDoesntExist);
+	}
+	
+	@Override
+	public Complex[] getVariables()
+	{
+		return (Complex[])super.getVariables();
+	}
 }

@@ -18,24 +18,53 @@ package com.analog.lyric.dimple.model.repeated;
 
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.Variable;
 
-public class DiscreteStream extends VariableStreamBase
+public class DiscreteStream extends VariableStreamBase<Discrete>
 {
-
+	public DiscreteStream(DiscreteDomain domain, String namePrefix)
+	{
+		super(domain, namePrefix);
+	}
+	
 	public DiscreteStream(DiscreteDomain domain)
 	{
-		super(domain);
+		super(domain, null);
 	}
+	
 	public DiscreteStream(Object ... domain)
 	{
 		this(DiscreteDomain.create(domain));
 	}
+	
 	@Override
-	protected Variable instantiateVariable(Domain domain)
+	protected Discrete instantiateVariable(Domain domain)
 	{
 		return new Discrete((DiscreteDomain)domain);
 	}
 
+	@Override
+	protected Class<? extends Discrete> variableType()
+	{
+		return Discrete.class;
+	}
+	
+	@Override
+	public Bit get(int index)
+	{
+		return (Bit)super.get(index);
+	}
+	
+	@Override
+	public Bit get(int index, boolean createIfDoesntExist)
+	{
+		return (Bit)super.get(index, createIfDoesntExist);
+	}
+	
+	@Override
+	public Bit[] getVariables()
+	{
+		return (Bit[])super.getVariables();
+	}
 }

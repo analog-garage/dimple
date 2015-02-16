@@ -18,9 +18,9 @@ package com.analog.lyric.dimple.model.repeated;
 
 import com.analog.lyric.dimple.model.variables.Variable;
 
-public interface IVariableStreamSlice 
+public interface IVariableStreamSlice<V extends Variable>
 {
-	public Variable get(int i);
-	public Variable get(int i,boolean createVariable);
-	public VariableStreamBase getStream();
+	public V get(int i);
+	public V get(int i,boolean createVariable);
+	public VariableStreamBase<V> getStream();
 }

@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.matlabproxy.repeated;
 
 import com.analog.lyric.dimple.model.repeated.IVariableStreamSlice;
 
-public interface IPVariableStreamSlice 
+public interface IPVariableStreamSlice
 {
-	IVariableStreamSlice [] getModelerObjects();
+	IVariableStreamSlice<?> [] getModelerObjects();
 }

@@ -19,32 +19,33 @@ package com.analog.lyric.dimple.model.repeated;
 import com.analog.lyric.dimple.model.variables.Variable;
 
 
-public class VariableStreamSlice implements IVariableStreamSlice
+public class VariableStreamSlice<V extends Variable> implements IVariableStreamSlice<V>
 {
 	private int _start;
-	private VariableStreamBase _stream;
+	private VariableStreamBase<V> _stream;
 	
-	public VariableStreamSlice(int start, VariableStreamBase stream)
+	public VariableStreamSlice(int start, VariableStreamBase<V> stream)
 	{
 		_start = start;
 		_stream = stream;
 	}
-	public IVariableStreamSlice copy()
+	public VariableStreamSlice<V> copy()
 	{
-		return new VariableStreamSlice(_start, _stream);
+		return new VariableStreamSlice<>(_start, _stream);
 	}
 	
-	public VariableStreamBase getStream()
+	@Override
+	public VariableStreamBase<V> getStream()
 	{
 		return _stream;
 	}
 	@Override
-	public Variable get(int i) 
+	public V get(int i)
 	{
 		return getStream().get(_start+i);
 	}
 	@Override
-	public Variable get(int i,boolean createVar) 
+	public V get(int i,boolean createVar)
 	{
 		return getStream().get(_start+i,createVar);
 	}

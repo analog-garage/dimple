@@ -20,18 +20,17 @@ import com.analog.lyric.dimple.matlabproxy.PDiscreteDomain;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.repeated.DiscreteStream;
-import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
 
 public class PDiscreteStream extends PVariableStreamBase
 {
  
-	public PDiscreteStream(PDiscreteDomain domain, int numVars)  
+	public PDiscreteStream(PDiscreteDomain domain, int numVars)
 	{
 		super(domain.getModelerObject(),numVars);
 	}
 
 	@Override
-	protected VariableStreamBase createVariable(Domain domain) 
+	protected DiscreteStream createVariable(Domain domain)
 	{
 		return new DiscreteStream((DiscreteDomain)domain);
 	}
