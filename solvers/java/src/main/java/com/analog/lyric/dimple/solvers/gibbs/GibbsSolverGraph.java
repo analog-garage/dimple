@@ -265,6 +265,18 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 		return (ISolverVariableGibbs)super.getSolverVariable(variable);
 	}
 	
+	/**
+	 * Get {@link GibbsReal} solver variable for given model variable.
+	 * @param variable is a variable contained in corresponding model graph.
+	 * @throws NullPointerException if there is no such solver variable.
+	 * @since 0.08
+	 * @see #getSolverVariable(Variable)
+	 */
+	public GibbsReal getReal(Real variable)
+	{
+		return requireNonNull((GibbsReal)super.getSolverVariable(variable));
+	}
+	
 	@Override
 	public void initialize()
 	{
