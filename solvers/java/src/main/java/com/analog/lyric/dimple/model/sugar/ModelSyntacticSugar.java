@@ -16,22 +16,55 @@
 
 package com.analog.lyric.dimple.model.sugar;
 
+import java.lang.reflect.Array;
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Deque;
 
+import com.analog.lyric.dimple.factorfunctions.ACos;
+import com.analog.lyric.dimple.factorfunctions.ASin;
+import com.analog.lyric.dimple.factorfunctions.ATan;
+import com.analog.lyric.dimple.factorfunctions.Abs;
+import com.analog.lyric.dimple.factorfunctions.Bernoulli;
+import com.analog.lyric.dimple.factorfunctions.Beta;
+import com.analog.lyric.dimple.factorfunctions.Binomial;
+import com.analog.lyric.dimple.factorfunctions.ComplexAbs;
+import com.analog.lyric.dimple.factorfunctions.ComplexExp;
+import com.analog.lyric.dimple.factorfunctions.ComplexNegate;
+import com.analog.lyric.dimple.factorfunctions.ComplexProduct;
+import com.analog.lyric.dimple.factorfunctions.ComplexSum;
+import com.analog.lyric.dimple.factorfunctions.ConstantPower;
+import com.analog.lyric.dimple.factorfunctions.ConstantProduct;
+import com.analog.lyric.dimple.factorfunctions.Cos;
+import com.analog.lyric.dimple.factorfunctions.Cosh;
+import com.analog.lyric.dimple.factorfunctions.Exp;
 import com.analog.lyric.dimple.factorfunctions.Gamma;
+import com.analog.lyric.dimple.factorfunctions.InverseGamma;
 import com.analog.lyric.dimple.factorfunctions.Log;
 import com.analog.lyric.dimple.factorfunctions.LogNormal;
+import com.analog.lyric.dimple.factorfunctions.Negate;
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.factorfunctions.Power;
+import com.analog.lyric.dimple.factorfunctions.Product;
+import com.analog.lyric.dimple.factorfunctions.Sin;
+import com.analog.lyric.dimple.factorfunctions.Sqrt;
 import com.analog.lyric.dimple.factorfunctions.Square;
 import com.analog.lyric.dimple.factorfunctions.Sum;
+import com.analog.lyric.dimple.factorfunctions.Tan;
+import com.analog.lyric.dimple.factorfunctions.Tanh;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
+import com.analog.lyric.dimple.model.domains.ComplexDomain;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
+import com.analog.lyric.dimple.model.domains.RealJointDomain;
+import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Bit;
+import com.analog.lyric.dimple.model.variables.Complex;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
+import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.Variable;
 
 
@@ -111,9 +144,35 @@ public class ModelSyntacticSugar
 		return current().graph;
 	}
 	
-	/*------------
-	 * Variables
+	/*-------
+	 * Nodes
 	 */
+
+	/**
+	 * Set label on a model object and return it.
+	 * @since 0.08
+	 */
+	public static <T extends Node> T label(String label, T node)
+	{
+		node.setLabel(label);
+		return node;
+	}
+	
+	/**
+	 * Set label for all nodes in array and return.
+	 * <p>
+	 * @param labelPrefix is a prefix to which the array index will be added to form the name.
+	 * <p>
+	 * @since 0.08
+	 */
+	public static <T extends Node> T[] label(String labelPrefix, T[] nodes)
+	{
+		for (int i = nodes.length; --i>=0;)
+		{
+			nodes[i].setLabel(labelPrefix + i);
+		}
+		return nodes;
+	}
 	
 	/**
 	 * Set name on a model object and return it.
@@ -126,15 +185,86 @@ public class ModelSyntacticSugar
 	}
 	
 	/**
+	 * Set name for all nodes in array and return.
+	 * <p>
+	 * @param namePrefix is a prefix to which the array index will be added to form the name.
+	 * <p>
+	 * @since 0.08
+	 */
+	public static <T extends Node> T[] name(String namePrefix, T[] nodes)
+	{
+		for (int i = nodes.length; --i>=0;)
+		{
+			nodes[i].setName(namePrefix + i);
+		}
+		return nodes;
+	}
+	
+	/*------------
+	 * Variables
+	 */
+	
+	/**
+	 * Adds variable as boundary variable to current {@link #graph}.
+	 * @param var
+	 * @return {@code var}
+	 * @since 0.08
+	 */
+	public static <V extends Variable> V boundary(V var)
+	{
+		graph().addBoundaryVariables(var);
+		return var;
+	}
+	
+	/**
 	 * Add a new {@link Discrete} variable with given name and domain to current {@link #graph}.
 	 * @since 0.08
 	 */
 	public static Discrete discrete(String name, DiscreteDomain domain)
 	{
-		Discrete var = new Discrete(domain);
-		var.setName(name);
-		graph().addVariables(var);
+		return nameAndAdd(name, new Discrete(domain));
+	}
+	
+	public static Real fixed(String name, double value)
+	{
+		Real var = nameAndAdd(name, new Real());
+		var.setFixedValue(value);
 		return var;
+	}
+	
+	public static Real[] fixed(String name, double ... values)
+	{
+		final int size = values.length;
+		Real[] vars = new Real[size];
+		for (int i = 0; i < size; ++i)
+		{
+			vars[i] = fixed(name + i, values[i]);
+		}
+		return vars;
+	}
+	
+	public static RealJoint fixedJoint(String name, double ... value)
+	{
+		RealJoint var = realjoint(name, value.length);
+		var.setFixedValue(value);
+		return var;
+	}
+	
+	public static Discrete fixed(String name, DiscreteDomain domain, Object value)
+	{
+		Discrete var = discrete(name, domain);
+		var.setFixedValue(value);
+		return var;
+	}
+	
+	public static Complex complex(String name)
+	{
+		return complex(name, ComplexDomain.create());
+	}
+	
+	public static Complex complex(String name, ComplexDomain domain)
+	{
+		return nameAndAdd(name, new Complex(domain));
 	}
 	
 	/**
@@ -158,18 +288,380 @@ public class ModelSyntacticSugar
 		return var;
 	}
 
-	/**
-	 * Add a new {@link Real} variable with given name and bounds to current {@link #graph}.
-	 * @since 0.08
-	 */
-	public static Real real(String name, double lowerBound, double upperBound)
+	public static Real[] reals(String namePrefix, int size, RealDomain domain)
 	{
-		return real(name, RealDomain.create(lowerBound ,upperBound));
+		Real[] vars = new Real[size];
+		for (int i = 0; i < size; ++i)
+		{
+			vars[i] = nameAndAdd(namePrefix + i, new Real(domain));
+		}
+		return vars;
+	}
+	
+	public static Real[] reals(String namePrefix, int size)
+	{
+		return reals(namePrefix, size, RealDomain.unbounded());
 	}
 
+	public static RealJoint realjoint(String name, RealJointDomain domain)
+	{
+		return nameAndAdd(name, new RealJoint(domain));
+	}
+	
+	public static RealJoint realjoint(String name, int size)
+	{
+		return realjoint(name, RealJointDomain.create(size));
+	}
+	
+	/*---------
+	 * Factors
+	 */
+	
+	public static Factor addFactor(FactorFunction function, Object ... args)
+	{
+		int argCount = args.length;
+		
+		for (Object arg : args)
+		{
+			Class<?> argType = arg.getClass();
+			if (argType.isArray() && Variable.class.isAssignableFrom(argType.getComponentType()))
+			{
+				argCount += Array.getLength(arg) - 1;
+			}
+		}
+		
+		Object[] expandedArgs = args;
+		
+		if (argCount > args.length)
+		{
+			expandedArgs = new Object[argCount];
+			int i = 0;
+			for (Object arg : args)
+			{
+				Class<?> argType = arg.getClass();
+				if (argType.isArray() && Variable.class.isAssignableFrom(argType.getComponentType()))
+				{
+					Variable[] vars = (Variable[])arg;
+					for (Variable var : vars)
+					{
+						expandedArgs[i++] = var;
+					}
+				}
+				else
+				{
+					expandedArgs[i++] = arg;
+				}
+			}
+			args = expandedArgs;
+		}
+		
+		return graph().addFactor(function, expandedArgs);
+	}
+	
 	/*------------------
 	 * Factor functions
 	 */
+	
+	public static Real abs(Real x)
+	{
+		return addFactorWithRealFirst(new Abs(), x);
+	}
+	
+	public static Complex abs(Complex x)
+	{
+		return addFactorWithComplexFirst(new ComplexAbs(), x);
+	}
+	
+	public static Real acos(Real x)
+	{
+		return addFactorWithRealFirst(new ACos(), x);
+	}
+	
+	public static Real asin(Real x)
+	{
+		return addFactorWithRealFirst(new ASin(), x);
+	}
+	
+	public static Real atan(Real x)
+	{
+		return addFactorWithRealFirst(new ATan(), x);
+	}
+	
+	public static Bit bernoulli(Object p)
+	{
+		Bit bit = new Bit();
+		
+		if (p instanceof Number)
+		{
+			graph().addFactor(new Bernoulli(toDouble(p)), bit);
+		}
+		else
+		{
+			graph().addFactor(new Bernoulli(), p, bit);
+		}
+		
+		return bit;
+	}
+	
+	public static Real beta(Object alpha, Object beta)
+	{
+		if (alpha instanceof Number && beta instanceof Number)
+		{
+			return addFactorWithRealLast(new Beta(toDouble(alpha), toDouble(beta)));
+		}
+		else
+		{
+			return addFactorWithRealLast(new Beta(), alpha, beta);
+		}
+	}
+	
+	public static Discrete binomial(int N, Object p)
+	{
+		Discrete var = new Discrete(DiscreteDomain.range(0, N));
+		graph().addFactor(new Binomial(N), p, var);
+		return var;
+	}
+	
+	public static Real binomial(Variable N, Object p)
+	{
+		return addFactorWithRealLast(new Binomial(), N, p);
+	}
+	
+	public static Real cos(Real x)
+	{
+		return addFactorWithRealFirst(new Cos(), x);
+	}
+	
+	public static Real cosh(Real x)
+	{
+		return addFactorWithRealFirst(new Cosh(), x);
+	}
+	
+	public static Real exp(Real x)
+	{
+		return addFactorWithRealFirst(new Exp(), x);
+	}
+	
+	public static Complex exp(Complex x)
+	{
+		return addFactorWithComplexFirst(new ComplexExp(), x);
+	}
+	
+	public static Real gamma(Object alpha, Object beta)
+	{
+		if (alpha instanceof Number && beta instanceof Number)
+		{
+			return addFactorWithRealLast(new Gamma(toDouble(alpha), toDouble(beta)));
+		}
+		else
+		{
+			return addFactorWithRealLast(new Gamma(), alpha, beta);
+		}
+	}
+	
+	public static Real inversegamma(Object alpha, Object beta)
+	{
+		if (alpha instanceof Number && beta instanceof Number)
+		{
+			return addFactorWithRealLast(new InverseGamma(toDouble(alpha), toDouble(beta)));
+		}
+		else
+		{
+			return addFactorWithRealLast(new InverseGamma(), alpha, beta);
+		}
+	}
+	
+	public static Real log(Real x)
+	{
+		return addFactorWithRealFirst(new Log(), x);
+	}
+	
+	public static Real lognormal(Object mean, Object precision)
+	{
+		if (mean instanceof Number && precision instanceof Number)
+		{
+			return addFactorWithRealLast(new LogNormal(toDouble(mean), toDouble(precision)));
+		}
+		else
+		{
+			return addFactorWithRealLast(new LogNormal(), mean, precision);
+		}
+	}
+	
+	public static Real negate(Real x)
+	{
+		return addFactorWithRealFirst(new Negate(), x);
+	}
+
+	public static Complex negate(Complex x)
+	{
+		return addFactorWithComplexFirst(new ComplexNegate(), x);
+	}
+
+	public static Real normal(Object mean, Object precision)
+	{
+		if (mean instanceof Number && precision instanceof Number)
+		{
+			return addFactorWithRealLast(new Normal(toDouble(mean), toDouble(precision)));
+		}
+		else
+		{
+			return addFactorWithRealLast(new Normal(), mean, precision);
+		}
+	}
+	
+	public static void normal(Object mean, Object precision, Real ... vars)
+	{
+		if (mean instanceof Number && precision instanceof Number)
+		{
+			graph().addFactor(new Normal(toDouble(mean), toDouble(precision)), vars);
+		}
+		else
+			
+		{
+			graph().addFactor(new Normal(), mean, precision, vars);
+		}
+	}
+	
+	public static Real power(Real base, double exponent)
+	{
+		if (exponent == 2.0)
+		{
+			return square(base);
+		}
+
+		return addFactorWithRealFirst(new ConstantPower(exponent), base);
+	}
+	
+	public static Real power(Real base, Real exponent)
+	{
+		return addFactorWithRealFirst(new Power(), base, exponent);
+	}
+	
+	public static Real product(Real x, Real y)
+	{
+		return addFactorWithRealFirst(new Product(), x, y);
+	}
+	
+	public static Real product(Real x, double y)
+	{
+		return addFactorWithRealFirst(new ConstantProduct(y), x);
+	}
+	
+	public static Real product(double x, Real y)
+	{
+		return addFactorWithRealFirst(new ConstantProduct(x), y);
+	}
+	
+	public static Complex product(Complex x, Variable y)
+	{
+		return addFactorWithComplexFirst(new ComplexProduct(), x, y);
+	}
+	
+	public static Complex product(Variable x, Complex y)
+	{
+		return addFactorWithComplexFirst(new ComplexProduct(), x, y);
+	}
+
+	public static Real square(Real x)
+	{
+		return addFactorWithRealFirst(new Square(), x);
+	}
+	
+	public static Real sin(Real x)
+	{
+		return addFactorWithRealFirst(new Sin(), x);
+	}
+	
+	public static Real sinh(Real x)
+	{
+		return addFactorWithRealFirst(new Sin(), x);
+	}
+	
+	public static Real sqrt(Real x)
+	{
+		return addFactorWithRealFirst(new Sqrt(), x);
+	}
+	
+	public static Real sum(Real x, Real y)
+	{
+		return addFactorWithRealFirst(new Sum(), x, y);
+	}
+	
+//	public static Real sum(Real ... vars)
+//	{
+//		return addFactorWithRealFirstOutput(new Sum(), vars);
+//	}
+	
+	public static Real sum(Real x, double y)
+	{
+		return addFactorWithRealFirst(new Sum(), x, y);
+	}
+
+	public static Real sum(double x, Real y)
+	{
+		return addFactorWithRealFirst(new Sum(), x, y);
+	}
+	
+	public static Complex sum(Complex x, Variable y)
+	{
+		return addFactorWithComplexFirst(new ComplexSum(), x, y);
+	}
+	
+	public static Complex sum(Variable x, Complex y)
+	{
+		return addFactorWithComplexFirst(new ComplexSum(), x, y);
+	}
+
+	public static Real tan(Real x)
+	{
+		return addFactorWithRealFirst(new Tan(), x);
+	}
+	
+	public static Real tanh(Real x)
+	{
+		return addFactorWithRealFirst(new Tanh(), x);
+	}
+	
+	/*-----------------
+	 * Private methods
+	 */
+	
+	private static <V extends Variable> V nameAndAdd(String name, V var)
+	{
+		graph().addVariables(var);
+		var.setName(name);
+		return var;
+	}
+	
+	private static Real addFactorWithRealFirst(FactorFunction function, Object ... args)
+	{
+		Real var = new Real();
+		Object[] expandedArgs = new Object[args.length + 1];
+		expandedArgs[0] = var;
+		System.arraycopy(args, 0, expandedArgs, 1, args.length);
+		graph().addFactor(function, expandedArgs);
+		return var;
+	}
+	
+	private static Real addFactorWithRealLast(FactorFunction function, Object ... args)
+	{
+		Real var = new Real();
+		Object[] expandedArgs = Arrays.copyOf(args, args.length + 1);
+		expandedArgs[args.length] = var;
+		graph().addFactor(function, expandedArgs);
+		return var;
+	}
+	
+	private static Complex addFactorWithComplexFirst(FactorFunction function, Object ... args)
+	{
+		Complex var = new Complex();
+		Object[] expandedArgs = new Object[args.length + 1];
+		expandedArgs[0] = var;
+		System.arraycopy(args, 0, expandedArgs, 1, args.length);
+		graph().addFactor(function, expandedArgs);
+		return var;
+	}
 	
 	private static double toDouble(Object obj)
 	{
@@ -181,103 +673,4 @@ public class ModelSyntacticSugar
 		return Double.NaN;
 	}
 	
-	public static Real gamma(Object alpha, Object beta)
-	{
-		Real var = new Real();
-		if (alpha instanceof Number && beta instanceof Number)
-		{
-			graph().addFactor(new Gamma(toDouble(alpha), toDouble(beta)), var);
-		}
-		else
-		{
-			graph().addFactor(new Gamma(), alpha, beta, var);
-		}
-		return var;
-	}
-	
-	private static Real _log(Object x)
-	{
-		Real var = new Real();
-		graph().addFactor(new Log(), var, x);
-		return var;
-	}
-	
-	public static Real log(Variable x)
-	{
-		return _log(x);
-	}
-
-	public static Real log(Number x)
-	{
-		return _log(x);
-	}
-	
-	private static Real _lognormal(Object mean, Object precision)
-	{
-		Real var = new Real();
-		graph().addFactor(new LogNormal(), mean, precision, var);
-		return var;
-	}
-	
-	public static Real lognormal(Number mean, Number precision)
-	{
-		Real var = new Real();
-		graph().addFactor(new LogNormal(mean.doubleValue(), precision.doubleValue()), var);
-		return var;
-	}
-	
-	public static Real lognormal(Variable mean, Variable precision)
-	{
-		return _lognormal(mean, precision);
-	}
-	
-	public static Real lognormal(Variable mean, Number precision)
-	{
-		return _lognormal(mean, precision);
-	}
-
-	public static Real lognormal(Number mean, Variable precision)
-	{
-		return _lognormal(mean, precision);
-	}
-
-	public static Real normal(Object mean, Object precision)
-	{
-		Real var = new Real();
-		if (mean instanceof Number && precision instanceof Number)
-		{
-			graph().addFactor(new Normal(toDouble(mean), toDouble(precision)), var);
-		}
-		else
-		{
-			graph().addFactor(new Normal(), mean, precision, var);
-		}
-		return var;
-	}
-	
-	public static Real power(Object base, Object exponent)
-	{
-		if (toDouble(exponent) == 2.0)
-		{
-			return square(base);
-		}
-
-		Real var = new Real();
-		graph().addFactor(new Power(), var, base, exponent);
-		return var;
-	}
-	
-	public static Real square(Object x)
-	{
-		Real var = new Real();
-		graph().addFactor(new Square(), var, x);
-		return var;
-	}
-	
-	public static Real sum(Object x, Object y)
-	{
-		Real var = new Real();
-		graph().addFactor(new Sum(), var, x, y);
-		return var;
-	}
 }
