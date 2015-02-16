@@ -65,6 +65,7 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.options.DimpleOptions;
 import com.analog.lyric.dimple.schedulers.GibbsDefaultScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.IGibbsSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
@@ -289,6 +290,12 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 		_initialTemperature = getOptionOrDefault(GibbsOptions.initialTemperature);
 		_temperingDecayConstant = 1 - LOG2/getOptionOrDefault(GibbsOptions.annealingHalfLife);
 		
+		Long seed = getOption(DimpleOptions.randomSeed);
+		if (seed != null)
+		{
+			setSeed(seed);
+		}
+
 		// Make sure the schedule is created before factor initialization to allow custom factors to modify the schedule if needed
 		final IGibbsSchedule schedule = _schedule = (IGibbsSchedule)_model.getSchedule();
 
@@ -346,6 +353,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 			}
 		}
 		_scoreArray = scoreArray;
+		
 	}
 
 	/**
