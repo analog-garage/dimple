@@ -290,7 +290,7 @@ public class RealVariableGibbsTest extends DimpleTestBase
 		try (CurrentModel current = using(nfg))
 		{
 			Real x = boundary(real("x"));
-			Real y = boundary(name("y",normal(name("x11",product(x, 1.1)), transitionPrecision)));
+			/*Real y = */ boundary(name("y",normal(name("x11",product(x, 1.1)), transitionPrecision)));
 		}
 
 		final RealStream vars = new RealStream("r");
@@ -305,7 +305,7 @@ public class RealVariableGibbsTest extends DimpleTestBase
 		
 		// Configure Gibbs
 		DimpleEnvironment env = DimpleEnvironment.active();
-		final GibbsSolverGraph sfg = fg.setSolverFactory(new GibbsSolver());
+		final GibbsSolverGraph sfg = requireNonNull(fg.setSolverFactory(new GibbsSolver()));
 		env.setOption(DimpleOptions.randomSeed, 42L);
 		env.setOption(GibbsOptions.numSamples,  1000);
 		env.setOption(GibbsOptions.burnInScans, 10);
@@ -332,7 +332,7 @@ public class RealVariableGibbsTest extends DimpleTestBase
 		}
 
 		// Configure Gibbs
-		final GibbsSolverGraph sfg2 = fg2.setSolverFactory(new GibbsSolver());
+		final GibbsSolverGraph sfg2 = requireNonNull(fg2.setSolverFactory(new GibbsSolver()));
 		// Options inherited from environment
 		
 		// Run
