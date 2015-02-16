@@ -178,7 +178,7 @@ public class FactorGraph extends FactorBase
 	private @Nullable IFactorGraphFactory<?> _solverFactory;
 	private @Nullable ISolverFactorGraph _solverFactorGraph;
 	private @Nullable LoadingCache<Functions, JointFactorFunction> _jointFactorCache = null;
-	private final HashSet<VariableStreamBase> _variableStreams = new HashSet<VariableStreamBase>();
+	private final HashSet<VariableStreamBase<?>> _variableStreams = new HashSet<>();
 	private final ArrayList<FactorGraphStream> _factorGraphStreams = new ArrayList<FactorGraphStream>();
 	private int _numSteps = 1;
 	private boolean _numStepsInfinite = true;
@@ -1008,7 +1008,7 @@ public class FactorGraph extends FactorBase
 		{
 			if (v instanceof IVariableStreamSlice)
 			{
-				_variableStreams.add(((IVariableStreamSlice) v).getStream());
+				_variableStreams.add(((IVariableStreamSlice<?>) v).getStream());
 			}
 		}
 		return fgs;
@@ -1037,7 +1037,7 @@ public class FactorGraph extends FactorBase
 	{
 		ISolverFactorGraph solver = requireSolver("advance");
 		
-		for (VariableStreamBase vs : _variableStreams)
+		for (VariableStreamBase<?> vs : _variableStreams)
 		{
 			vs.advanceState();
 		}

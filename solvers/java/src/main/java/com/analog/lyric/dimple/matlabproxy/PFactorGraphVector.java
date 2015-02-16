@@ -427,7 +427,7 @@ public class PFactorGraphVector extends PFactorBaseVector
 			}
 			else if (vars[i] instanceof IPVariableStreamSlice)
 			{
-				IVariableStreamSlice [] slices = ((IPVariableStreamSlice)vars[i]).getModelerObjects();
+				IVariableStreamSlice<?> [] slices = ((IPVariableStreamSlice)vars[i]).getModelerObjects();
 				for (int j = 0; j < slices.length; j++)
 					al.add(slices[j]);
 			}

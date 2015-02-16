@@ -371,7 +371,7 @@ public class PHelpers
 		return retval;
 	}
 	
-	public static IPDataSource getDataSources(VariableStreamBase [] streams)
+	public static IPDataSource getDataSources(VariableStreamBase<?> [] streams)
 	{
 		if (streams[0].getDataSource() instanceof DoubleArrayDataSource)
 		{
@@ -391,7 +391,7 @@ public class PHelpers
 		
 	}
 
-	public static IPDataSink getDataSinks(VariableStreamBase [] streams)
+	public static IPDataSink getDataSinks(VariableStreamBase<?> [] streams)
 	{
 		if (streams[0].getDataSink() instanceof DoubleArrayDataSink)
 		{
