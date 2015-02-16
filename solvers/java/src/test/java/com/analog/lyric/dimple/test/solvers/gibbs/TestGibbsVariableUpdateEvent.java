@@ -154,7 +154,7 @@ public class TestGibbsVariableUpdateEvent extends DimpleTestBase
 		
 		GibbsSolverGraph sgraph = requireNonNull(model.setSolverFactory(new GibbsSolver()));
 		ISolverVariableGibbs sd1 = Objects.requireNonNull(sgraph.getSolverVariable(d1));
-		ISolverVariableGibbs sr1 = Objects.requireNonNull(sgraph.getSolverVariable(r1));
+		ISolverVariableGibbs sr1 = Objects.requireNonNull(sgraph.getReal(r1));
 		ISolverVariableGibbs sc1 = Objects.requireNonNull(sgraph.getSolverVariable(c1));
 		
 		sgraph.setBurnInScans(0);

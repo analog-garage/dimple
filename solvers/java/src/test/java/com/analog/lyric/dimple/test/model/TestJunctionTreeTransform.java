@@ -148,6 +148,7 @@ public class TestJunctionTreeTransform extends DimpleTestBase
 		GibbsSolver gibbs = new GibbsSolver();
 		GibbsSolverGraph sourceGibbs = source.setSolverFactory(gibbs);
 		GibbsSolverGraph targetGibbs = target.setSolverFactory(gibbs);
+		targetGibbs.initialize();
 		
 		final int nSamples = 100;
 		

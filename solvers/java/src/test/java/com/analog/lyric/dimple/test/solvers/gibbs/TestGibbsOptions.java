@@ -72,8 +72,8 @@ public class TestGibbsOptions extends DimpleTestBase
 		GibbsSolverGraph sfg = requireNonNull(fg.setSolverFactory(new GibbsSolver()));
 		GibbsDiscrete sb1 = (GibbsDiscrete)sfg.getSolverVariable(b1);
 		GibbsDiscrete sb2 = (GibbsDiscrete)sfg.getSolverVariable(b2);
-		GibbsReal sr1 = (GibbsReal)sfg.getSolverVariable(r1);
-		GibbsReal sr2 = (GibbsReal)sfg.getSolverVariable(r2);
+		GibbsReal sr1 = (GibbsReal)sfg.getReal(r1);
+		GibbsReal sr2 = (GibbsReal)sfg.getReal(r2);
 		GibbsRealJoint sj1 = (GibbsRealJoint)sfg.getSolverVariable(j1);
 		GibbsRealJoint sj2 = (GibbsRealJoint)sfg.getSolverVariable(j2);
 		
@@ -95,8 +95,8 @@ public class TestGibbsOptions extends DimpleTestBase
 		sfg = requireNonNull(fg.setSolverFactory(new GibbsSolver()));
 		sb1 = requireNonNull((GibbsDiscrete)sfg.getSolverVariable(b1));
 		sb2 = requireNonNull((GibbsDiscrete)sfg.getSolverVariable(b2));
-		sr1 = requireNonNull((GibbsReal)sfg.getSolverVariable(r1));
-		sr2 = requireNonNull((GibbsReal)sfg.getSolverVariable(r2));
+		sr1 = requireNonNull((GibbsReal)sfg.getReal(r1));
+		sr2 = requireNonNull((GibbsReal)sfg.getReal(r2));
 		sj1 = requireNonNull((GibbsRealJoint)sfg.getSolverVariable(j1));
 		sj2 = requireNonNull((GibbsRealJoint)sfg.getSolverVariable(j2));
 		fg.setOption(GibbsOptions.numSamples, 3);

@@ -119,10 +119,10 @@ public class TestGibbsDeterministicFactorOrdering
 		ISolverVariableGibbs[] svars = new ISolverVariableGibbs[nVars];
 		for (int i = 0; i < nVars; ++i)
 		{
-			svars[i] = sfg.getSolverVariable(vars[i]);
+			svars[i] = sfg.getReal(vars[i]);
 		}
 		
-		ISolverVariableGibbs startSVar = requireNonNull(sfg.getSolverVariable(startVar));
+		ISolverVariableGibbs startSVar = requireNonNull(sfg.getReal(startVar));
 		startSVar.setCurrentSample(1);
 		assertEquals(Math.pow(2.0, depth - 1), svars[0].getCurrentSampleValue().getDouble(), 0.0);
 		

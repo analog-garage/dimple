@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.test.solvers.gibbs;
 
+import static com.analog.lyric.dimple.model.sugar.ModelSyntacticSugar.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -23,11 +24,14 @@ import org.junit.Test;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.sugar.ModelSyntacticSugar.CurrentModel;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.options.SolverOptions;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsTableFactor;
@@ -57,6 +61,30 @@ public class GibbsTest extends DimpleTestBase
 
 		basicDiscreteCase(true);
 		basicDiscreteCase(false); // make sure it still works without factor tables
+	}
+	
+	@Test
+	public void testFixedSample()
+	{
+		// Adapted from MATLAB test of same name
+		
+		FactorGraph fg = new FactorGraph();
+		Real a,b,c;
+		
+		try (CurrentModel current = using(fg))
+		{
+			b = fixed("b", 2.0);
+			c = fixed("c", 3.0);
+			a = name("a", sum(b,c));
+		}
+		
+		GibbsSolverGraph sfg = fg.setSolverFactory(new GibbsSolver());
+		GibbsReal sa = sfg.getReal(a);
+		
+		fg.initialize();
+		assertEquals(5.0, sa.getCurrentSample(), 0.0);
+		
+		// TODO add more cases...
 	}
 	
 	private void basicDiscreteCase(boolean useFactorTable)

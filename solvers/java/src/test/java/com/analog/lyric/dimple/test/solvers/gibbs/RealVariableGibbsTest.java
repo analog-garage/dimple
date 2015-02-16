@@ -23,9 +23,12 @@ import static org.junit.Assert.*;
 import org.apache.commons.math3.stat.StatUtils;
 import org.junit.Test;
 
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.factorfunctions.MixedNormal;
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.repeated.FactorFunctionDataSource;
+import com.analog.lyric.dimple.model.repeated.RealStream;
 import com.analog.lyric.dimple.model.sugar.ModelSyntacticSugar.CurrentModel;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
@@ -228,10 +231,10 @@ public class RealVariableGibbsTest extends DimpleTestBase
 		fg.setOption(GibbsOptions.saveAllSamples, false);
 		fg.solve();
 		
-		GibbsReal sa = requireNonNull(sfg.getReal(a));
-		GibbsReal sb = requireNonNull(sfg.getReal(b));
-		GibbsReal sx = requireNonNull(sfg.getReal(x));
-		GibbsReal sy = requireNonNull(sfg.getReal(y));
+		GibbsReal sa = sfg.getReal(a);
+		GibbsReal sb = sfg.getReal(b);
+		GibbsReal sx = sfg.getReal(x);
+		GibbsReal sy = sfg.getReal(y);
 		
 		double aMean = sa.getSampleMean();
 		double aVariance = sa.getSampleVariance();
@@ -268,42 +271,86 @@ public class RealVariableGibbsTest extends DimpleTestBase
 		assertEquals(aVariance, sa.getSampleVariance(), 0.0);
 	}
 	
-//	@Test
-//	public void testRolledUpBeliefMoments()
-//	{
-//		// Java version of MATLAB testBeliefMoments/test3
-//
-//		// Construct model
-//		final int numDataPoints = 10;
-//		final double dataPrecision = 1000;
-//		final double transitionPrecision = 10;
-//
-//		final FactorGraph fg = new FactorGraph();
-//		fg.setName("root");
-//
-//		final Real y = new Real();
-//		y.setName("y");
-//		final Real x = new Real();
-//		x.setName("x");
-//
-//		fg.addVariables(x, y);
-//
-//		final FactorGraph nfg = new FactorGraph();
-//		nfg.setName("nested");
-//		nfg.addBoundaryVariables(x,y);
-//		Real mean = new Real();
-//		mean.setName("mean");
-//		nfg.addFactor(new Product(), mean, x, 1.1);
-//		nfg.addFactor(new Normal(), mean, transitionPrecision, y);
-//
-//		final RealStream vars = new RealStream();
-//		fg.addRepeatedFactor(nfg, vars, vars.getSlice(2));
-//
-//		// Configure Gibbs
-//		final GibbsSolverGraph sfg = fg.setSolverFactory(new GibbsSolver());
-//		fg.setOption(GibbsOptions.numSamples,  1000);
-//		fg.setOption(GibbsOptions.burnInScans, 10);
-//
-//
-//	}
+	@Test
+	public void testRolledUpBeliefMoments()
+	{
+		// Java version of MATLAB testBeliefMoments/test3
+
+		// Construct model
+		final int numDataPoints = 10;
+		final double dataPrecision = 1000;
+		final double transitionPrecision = 10;
+
+		final FactorGraph fg = new FactorGraph();
+		fg.setName("root");
+		
+		final FactorGraph nfg = new FactorGraph();
+		nfg.setName("nested");
+		
+		try (CurrentModel current = using(nfg))
+		{
+			Real x = boundary(real("x"));
+			Real y = boundary(name("y",normal(name("x11",product(x, 1.1)), transitionPrecision)));
+		}
+
+		final RealStream vars = new RealStream("r");
+		fg.addRepeatedFactor(nfg, vars, vars.getSlice(2));
+
+		FactorFunctionDataSource dataSource = new FactorFunctionDataSource();
+		for (int i = 0; i < numDataPoints; ++i)
+		{
+			dataSource.add(new Normal(1.0, dataPrecision));
+		}
+		vars.setDataSource(dataSource);
+		
+		// Configure Gibbs
+		DimpleEnvironment env = DimpleEnvironment.active();
+		final GibbsSolverGraph sfg = fg.setSolverFactory(new GibbsSolver());
+		env.setOption(DimpleOptions.randomSeed, 42L);
+		env.setOption(GibbsOptions.numSamples,  1000);
+		env.setOption(GibbsOptions.burnInScans, 10);
+		
+		fg.setSolverFactory(new GibbsSolver());
+		fg.initialize();
+		
+		// Construct second model
+		final FactorGraph fg2 = new FactorGraph();
+		Real[] r = new Real[numDataPoints];
+		
+		try (CurrentModel current = using(fg2))
+		{
+			r[0] = real("r0");
+			for (int i = 1; i < numDataPoints; ++i)
+			{
+				r[i] = name("r"+i, normal(name("r"+i+"x11", product(r[i-1], 1.1)), transitionPrecision));
+			}
+		}
+		
+		for (Real var : r)
+		{
+			var.setInput(new Normal(1, dataPrecision));
+		}
+
+		// Configure Gibbs
+		final GibbsSolverGraph sfg2 = fg2.setSolverFactory(new GibbsSolver());
+		// Options inherited from environment
+		
+		// Run
+		fg2.solve();
+		fg.setNumSteps(0);
+		for (int i = 0; fg.hasNext(); fg.advance(), ++i)
+		{
+			fg.solveOneStep();
+			
+			GibbsReal a = sfg.getReal(vars.get(0));
+			GibbsReal b = sfg.getReal(vars.get(1));
+			GibbsReal a2 = sfg2.getReal(r[i]);
+			GibbsReal b2 = sfg2.getReal(r[i+1]);
+
+			assertEquals(a2.getSampleMean(), a.getSampleMean(), 0.01);
+			assertEquals(1.0, a2.getSampleVariance() / a.getSampleVariance(), 0.1);
+			assertEquals(b2.getSampleMean(), b.getSampleMean(), 0.01);
+			assertEquals(1.0, b2.getSampleVariance() / b.getSampleVariance(), 0.1);
+		}
+	}
 }
