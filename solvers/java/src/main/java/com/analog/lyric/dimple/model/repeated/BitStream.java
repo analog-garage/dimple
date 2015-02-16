@@ -49,5 +49,22 @@ public class BitStream extends DiscreteStream
 	{
 		return Bit.class;
 	}
-
+	
+	@Override
+	public Bit get(int index)
+	{
+		return (Bit)super.get(index);
+	}
+	
+	@Override
+	public Bit get(int index, boolean createIfDoesntExist)
+	{
+		return (Bit)super.get(index, createIfDoesntExist);
+	}
+	
+	@Override
+	public Bit[] getVariables()
+	{
+		return (Bit[])super.getVariables();
+	}
 }
