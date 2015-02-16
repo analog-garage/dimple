@@ -34,11 +34,7 @@ public class DimpleRandomGenerator
 	
 	public static void setSeed(long seed)
 	{
-		// Work-around for bug in apache-commons.math-2.2
-		// Bug 723: https://issues.apache.org/jira/browse/MATH-723
-		// Can't just set the seed; must replace the object instead
-		// WARNING: setting the seed creates new objects; which will not be used if reference to original object is cached
-		rand = new org.apache.commons.math3.random.MersenneTwister(seed);
+		rand.setSeed(seed);
 		
 		// WARNING: setting the seed creates new objects; which will not be used if reference to original object is cached
 		randEngine = new cern.jet.random.engine.MersenneTwister((int)seed);
