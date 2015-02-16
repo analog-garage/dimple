@@ -222,6 +222,7 @@ public class RealVariableGibbsTest extends DimpleTestBase
 		y.setFixedValue(5);
 		
 		// Configure Gibbs options
+		// TODO: test is sensitive to choice of seed! Perhaps we should increase numSamples or something...
 		fg.setOption(DimpleOptions.randomSeed, 1L);
 		fg.setOption(GibbsOptions.numSamples, 100);
 		fg.setOption(GibbsOptions.burnInScans, 10);
@@ -284,6 +285,8 @@ public class RealVariableGibbsTest extends DimpleTestBase
 		final FactorGraph fg = new FactorGraph();
 		fg.setName("root");
 		
+		final GibbsSolverGraph sfg = requireNonNull(fg.setSolverFactory(new GibbsSolver()));
+
 		final FactorGraph nfg = new FactorGraph();
 		nfg.setName("nested");
 		
@@ -294,7 +297,7 @@ public class RealVariableGibbsTest extends DimpleTestBase
 		}
 
 		final RealStream vars = new RealStream("r");
-		fg.addRepeatedFactor(nfg, vars, vars.getSlice(2));
+		fg.addRepeatedFactor(nfg, vars, vars.getSlice(1));
 
 		FactorFunctionDataSource dataSource = new FactorFunctionDataSource();
 		for (int i = 0; i < numDataPoints; ++i)
@@ -305,8 +308,7 @@ public class RealVariableGibbsTest extends DimpleTestBase
 		
 		// Configure Gibbs
 		DimpleEnvironment env = DimpleEnvironment.active();
-		final GibbsSolverGraph sfg = requireNonNull(fg.setSolverFactory(new GibbsSolver()));
-		env.setOption(DimpleOptions.randomSeed, 42L);
+		env.setOption(DimpleOptions.randomSeed, 2L);
 		env.setOption(GibbsOptions.numSamples,  1000);
 		env.setOption(GibbsOptions.burnInScans, 10);
 		
