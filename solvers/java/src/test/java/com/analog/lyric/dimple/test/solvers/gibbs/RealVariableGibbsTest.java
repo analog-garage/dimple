@@ -349,10 +349,26 @@ public class RealVariableGibbsTest extends DimpleTestBase
 			GibbsReal a2 = sfg2.getReal(r[i]);
 			GibbsReal b2 = sfg2.getReal(r[i+1]);
 
-			assertEquals(a2.getSampleMean(), a.getSampleMean(), 0.01);
-			assertEquals(1.0, a2.getSampleVariance() / a.getSampleVariance(), 0.1);
-			assertEquals(b2.getSampleMean(), b.getSampleMean(), 0.01);
-			assertEquals(1.0, b2.getSampleVariance() / b.getSampleVariance(), 0.1);
+			double a2mean = a2.getSampleMean();
+			double amean = a.getSampleMean();
+			double b2mean = b2.getSampleMean();
+			double bmean = b.getSampleMean();
+			
+			double a2variance = a2.getSampleVariance();
+			double avariance = a.getSampleVariance();
+			double b2variance = b2.getSampleVariance();
+			double bvariance = b.getSampleVariance();
+			
+//			System.out.format("%d: a2 %f/%f\n", i, a2mean, a2variance);
+//			System.out.format("%d:  a %f/%f\n", i, amean, avariance);
+//
+//			System.out.format("%d: b2 %f/%f\n", i, b2mean, b2variance);
+//			System.out.format("%d:  b %f/%f\n", i, bmean, bvariance);
+			
+			assertEquals(a2mean, amean, 0.01);
+			assertEquals(1.0, a2variance / avariance, 0.1);
+			assertEquals(b2mean, bmean, 0.01);
+			assertEquals(1.0, b2variance / bvariance, 0.1);
 		}
 	}
 }
