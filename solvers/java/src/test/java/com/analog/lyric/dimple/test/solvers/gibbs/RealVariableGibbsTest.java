@@ -279,7 +279,7 @@ public class RealVariableGibbsTest extends DimpleTestBase
 
 		// Construct model
 		final int numDataPoints = 10;
-		final double dataPrecision = 1000;
+		final double dataPrecision = 1e4;
 		final double transitionPrecision = 10;
 
 		final FactorGraph fg = new FactorGraph();
@@ -308,11 +308,10 @@ public class RealVariableGibbsTest extends DimpleTestBase
 		
 		// Configure Gibbs
 		DimpleEnvironment env = DimpleEnvironment.active();
-		env.setOption(DimpleOptions.randomSeed, 2L);
+		env.setOption(DimpleOptions.randomSeed, 1L);
 		env.setOption(GibbsOptions.numSamples,  1000);
 		env.setOption(GibbsOptions.burnInScans, 10);
 		
-		fg.setSolverFactory(new GibbsSolver());
 		fg.initialize();
 		
 		// Construct second model
@@ -328,21 +327,19 @@ public class RealVariableGibbsTest extends DimpleTestBase
 			}
 		}
 		
-		for (Real var : r)
-		{
-			var.setInput(new Normal(1, dataPrecision));
-		}
-
 		// Configure Gibbs
 		final GibbsSolverGraph sfg2 = requireNonNull(fg2.setSolverFactory(new GibbsSolver()));
 		// Options inherited from environment
 		
 		// Run
-		fg2.solve();
 		fg.setNumSteps(0);
 		for (int i = 0; fg.hasNext(); fg.advance(), ++i)
 		{
+			r[i].setInput(new Normal(1, dataPrecision));
+			r[i+1].setInput(new Normal(1, dataPrecision));
+
 			fg.solveOneStep();
+			fg2.solve();
 			
 			GibbsReal a = sfg.getReal(vars.get(0));
 			GibbsReal b = sfg.getReal(vars.get(1));
@@ -365,10 +362,10 @@ public class RealVariableGibbsTest extends DimpleTestBase
 //			System.out.format("%d: b2 %f/%f\n", i, b2mean, b2variance);
 //			System.out.format("%d:  b %f/%f\n", i, bmean, bvariance);
 			
-			assertEquals(a2mean, amean, 0.01);
-			assertEquals(1.0, a2variance / avariance, 0.1);
-			assertEquals(b2mean, bmean, 0.01);
-			assertEquals(1.0, b2variance / bvariance, 0.1);
+			assertEquals(0.0, a2mean - amean, 0.01);
+			assertEquals(0.0, 1.0 - a2variance / avariance, 0.1);
+			assertEquals(0.0, b2mean - bmean, 0.01);
+			assertEquals(0.0, 1.0 - b2variance / bvariance, 0.1);
 		}
 	}
 }
