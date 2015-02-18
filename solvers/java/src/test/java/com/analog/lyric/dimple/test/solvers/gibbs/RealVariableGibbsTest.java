@@ -24,10 +24,12 @@ import org.apache.commons.math3.stat.StatUtils;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
+import com.analog.lyric.dimple.factorfunctions.AdditiveNoise;
 import com.analog.lyric.dimple.factorfunctions.MixedNormal;
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.repeated.FactorFunctionDataSource;
+import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
 import com.analog.lyric.dimple.model.repeated.RealStream;
 import com.analog.lyric.dimple.model.sugar.ModelSyntacticSugar.CurrentModel;
 import com.analog.lyric.dimple.model.variables.Discrete;
@@ -38,6 +40,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
+import com.analog.lyric.dimple.solvers.gibbs.ISolverFactorGibbs;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
 public class RealVariableGibbsTest extends DimpleTestBase
@@ -273,6 +276,123 @@ public class RealVariableGibbsTest extends DimpleTestBase
 	}
 	
 	@Test
+	public void testRealRolledUp()
+	{
+		// Java version of MATLAB testRealRolledUp.m
+		
+		// Graph parameters
+		final boolean useSeed = true;
+		final long seed = 1L;
+		final int hmmLength = 20;
+		final int bufferSize = 10;
+		
+		// Gibbs parameters
+		DimpleEnvironment env = DimpleEnvironment.active();
+		env.setOption(GibbsOptions.numSamples, 10000);
+		env.setOption(GibbsOptions.burnInScans, 100);
+		env.setOption(GibbsOptions.numRandomRestarts, 0);
+		
+		if (useSeed)
+		{
+			testRand.setSeed(seed);
+			env.setOption(DimpleOptions.randomSeed, seed);
+		}
+		
+		// Model parameters
+		final double initialMean = 0.0;
+		final double initialSigma = 20.0;
+		final double transitionMean = 0.0;
+		final double transitionSigma = 0.1;
+		final double obsMean = 0.0;
+		final double obsSigma = 1.0;
+		
+		// Sample from system to be estimated
+		final double[] x = new double[hmmLength];
+		x[0] = testRand.nextGaussian() * initialSigma + initialMean;
+		for (int i = 1; i < hmmLength; ++i)
+		{
+			x[i] = x[i-1] + testRand.nextGaussian() * transitionSigma + transitionMean;
+		}
+		
+		final double[] obsNoise = new double[hmmLength];
+		final double[] o = x.clone();
+		for (int i = 0; i < hmmLength; ++i)
+		{
+			o[i] += obsNoise[i] = testRand.nextGaussian() * obsSigma + obsMean;
+		}
+		
+		// Solve using Gibbs
+		
+		final FactorGraph sg = new FactorGraph();
+		Real Xo, Xi, Ob;
+		try (CurrentModel cur = using(sg))
+		{
+			Xo = boundary(real("Xo"));
+			Xi = boundary(real("Xi"));
+			Ob = boundary(real("Ob"));
+			addFactor(new AdditiveNoise(transitionSigma), Xo, Xi);
+			addFactor(new AdditiveNoise(obsSigma), Ob, Xi);
+		}
+		
+		FactorGraph fg = name("fg", new FactorGraph());
+		RealStream X = new RealStream("X"), O = new RealStream("O");
+		FactorGraphStream f = fg.addRepeatedFactor(sg, X, X.getSlice(1), O);
+		f.setBufferSize(bufferSize);
+		
+		// Solve
+		final GibbsSolverGraph sfg = requireNonNull(fg.setSolverFactory(new GibbsSolver()));
+		int inputIndex = 0, outputIndex = 0;
+		final double[] output = new double[hmmLength];
+		
+		for (int j = 0, end = O.size(); j < end; ++j)
+		{
+			O.get(j).setFixedValue(o[inputIndex++]);
+		}
+		
+		fg.initialize();
+		fg.setNumSteps(0);
+		
+		final GibbsReal X0 = sfg.getReal(X.get(0));
+		final ISolverFactorGibbs X0first = X0.getSibling(0);
+		final ISolverFactorGibbs X0third = X0.getSibling(2);
+		final GibbsReal Olast = sfg.getReal(O.get(O.size()-1));
+
+		final int ln = hmmLength - bufferSize;
+		for (int i = 0; i < ln; ++i)
+		{
+			fg.solveOneStep();
+			output[outputIndex++] = X0.getBestSample();
+			
+			if (!fg.hasNext())
+			{
+				break;
+			}
+			
+			final double tmp = X0first.getPotential();
+			fg.advance();
+			assertEquals(tmp, X0third.getPotential(), 0.0);
+			Olast.setAndHoldSampleValue(o[inputIndex++]);
+		}
+		
+		final double[] actualdiff = new double[hmmLength];
+		final double[] obsdiff = new double[hmmLength];
+		double actualnorm = 0.0, obsnorm = 0.0;
+		for (int i = 0; i < hmmLength; ++i)
+		{
+			double diff = actualdiff[i] = x[i] - output[i];
+			actualnorm += diff * diff;
+			diff = obsdiff[i] = x[i] - o[i];
+			obsnorm += diff * diff;
+		}
+		
+		actualnorm = Math.sqrt(actualnorm);
+		obsnorm = Math.sqrt(obsnorm);
+		
+		assertTrue(actualnorm < 1.0);
+		assertTrue(obsnorm > 3.0);
+	}
+	
+	@Test
 	public void testRolledUpBeliefMoments()
 	{
 		// Java version of MATLAB testBeliefMoments/test3
@@ -309,7 +429,7 @@ public class RealVariableGibbsTest extends DimpleTestBase
 		// Configure Gibbs
 		DimpleEnvironment env = DimpleEnvironment.active();
 		env.setOption(DimpleOptions.randomSeed, 1L);
-		env.setOption(GibbsOptions.numSamples,  1000);
+		env.setOption(GibbsOptions.numSamples,  3000);
 		env.setOption(GibbsOptions.burnInScans, 10);
 		
 		fg.initialize();
