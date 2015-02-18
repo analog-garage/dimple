@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.test;
 import org.junit.Before;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
+import com.analog.lyric.math.DimpleRandom;
 
 /**
  * Provides shared standard setup for Dimple tests
@@ -30,6 +31,8 @@ import com.analog.lyric.dimple.environment.DimpleEnvironment;
  */
 public class DimpleTestBase
 {
+	protected final DimpleRandom testRand = new DimpleRandom();
+	
 	@Before
 	public void setup()
 	{
