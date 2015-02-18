@@ -16,6 +16,8 @@
 
 function testRealRolledUp()
 
+    % FIXME - this test is highly dependent on the selection of seed value!
+    
     % Graph parameters
     hmmLength = 20;                    % Length of the HMM
     repeatable = true;                  % Make this run repeat all the same random values
@@ -57,7 +59,6 @@ function testRealRolledUp()
     end
     obsNoise = randn(1,hmmLength)*obsSigma + obsMean;
     o = x + obsNoise;
-
 
     %**************************************************************************
     % Solve using Gibbs sampling solver
@@ -139,7 +140,6 @@ function testRealRolledUp()
 
     actualdiff = x(1:ln)-output(1:ln)';
     obsdiff = x(1:ln)-o(1:ln);
-
 
     assertTrue(norm(actualdiff) < 1);
     assertTrue(norm(obsdiff) > 3);
