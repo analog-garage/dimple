@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 
-import java.util.Objects;
+import static java.util.Objects.*;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -86,7 +86,7 @@ public class MHSampler extends AbstractGenericSampler implements IMCMCSampler
 	@Override
 	public boolean nextSample(Value sampleValue, ISamplerClient samplerClient)
 	{
-		final Proposal proposal = Objects.requireNonNull(_proposalKernel).next(sampleValue, samplerClient.getDomain());
+		final Proposal proposal = requireNonNull(_proposalKernel).next(sampleValue, samplerClient.getDomain());
 		final Value proposalValue = proposal.value;
 
 		// Get the potential for the current sample value

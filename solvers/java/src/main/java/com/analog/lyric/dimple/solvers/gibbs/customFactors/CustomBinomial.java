@@ -22,25 +22,26 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.factorfunctions.Binomial;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsBetaEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
-import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockInitializer;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.math.DimpleRandomGenerator;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFactor
 {
-	private @Nullable Object[] _outputMsgs;
 	private @Nullable GibbsDiscrete _outputVariable;
 	private @Nullable GibbsDiscrete _NParameterVariable;
 	private int _probabilityParameterEdge;
@@ -61,6 +62,17 @@ public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFac
 	}
 
 	@Override
+	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	{
+		if (edge.getFactorToVariableIndex() == _probabilityParameterEdge)
+		{
+			return new GibbsBetaEdge();
+		}
+
+		return super.createEdge(edge);
+	}
+	
+	@Override
 	public void updateEdgeMessage(int portNum)
 	{
 		if (portNum == _probabilityParameterEdge)
@@ -69,7 +81,7 @@ public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFac
 			// Determine sample alpha and beta parameters
 
 			@SuppressWarnings("null")
-			BetaParameters outputMsg = (BetaParameters)_outputMsgs[portNum];
+			BetaParameters outputMsg = (BetaParameters)getEdge(portNum).factorToVarMsg;
 
 			// Get the current values of N and the output count
 			@SuppressWarnings("null")
@@ -186,26 +198,7 @@ public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFac
 	{
 		super.createMessages();
 		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
-		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
-		if (_probabilityParameterEdge != NO_PORT)
-			outputMsgs[_probabilityParameterEdge] = new BetaParameters();
 	}
-	
-	@SuppressWarnings("null")
-	@Override
-	public Object getOutputMsg(int portIndex)
-	{
-		return _outputMsgs[portIndex];
-	}
-	
-	@SuppressWarnings("null")
-	@Override
-	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-		super.moveMessages(other, thisPortNum, otherPortNum);
-		_outputMsgs[thisPortNum] = ((CustomBinomial)other)._outputMsgs[otherPortNum];
-	}
-	
 	
 	public class BlockInitializer implements IBlockInitializer
 	{

@@ -84,4 +84,16 @@ public class BlastFromThePastFactor extends Factor
 	{
 		return false;
 	}
+	
+	@Internal
+	public final Port getPortForOtherVariable()
+	{
+		return _portForOtherVariable;
+	}
+	
+	@Internal
+	public final Variable getVariableConnectedToBlast()
+	{
+		return _variableConnectedToBlast;
+	}
 }

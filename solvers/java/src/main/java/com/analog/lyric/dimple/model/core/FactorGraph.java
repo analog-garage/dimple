@@ -385,8 +385,10 @@ public class FactorGraph extends FactorBase
 		@Override
 		public String toString()
 		{
-			return String.format("[BoundaryEdgeState %d/%d: %d (%s) - %d (%s)]",
-				factorEdgeIndex(), variableEdgeIndex(), factorIndex(), _factor, variableIndex(), getVariable());
+			return String.format("[BoundaryEdge %d/%d: %d (%s) - %d (%s)]",
+				factorEdgeIndex(), variableEdgeIndex(),
+				factorIndex(), _factor.getQualifiedName(),
+				variableIndex(), getVariable().getQualifiedName());
 		}
 		
 		static BoundaryEdge create(Factor factor, int factorEdgeIndex, int boundaryIndex, int variableEdgeIndex)
@@ -980,6 +982,10 @@ public class FactorGraph extends FactorBase
 		f = new BlastFromThePastFactor(var,factorPort);
 
 		addFactor(f,var);
+		
+		// Give factor a descriptive name to ease debugging.
+		f.setName(String.format("$BFP_%s_to_%s_%s",
+			factorPort.getSibling().getName(), var.getName(), f.getSiblingPortIndex(0)));
 
 		if (setVarSolver)
 		{
@@ -3180,22 +3186,17 @@ public class FactorGraph extends FactorBase
 
 	void setChildNameInternal(Node child, @Nullable String newName)
 	{
-		Node childFound = getNodeByGlobalId(child.getGlobalId());
+		assert(child == getNodeByLocalId(child.getLocalId()));
 
-		//If it's not our child, bad
-		if(childFound == null)
-		{
-			throw new DimpleException("ERROR child UUID not found");
-		}
 		//If new name already here, bad
-		else if (getObjectByName(newName) != null)
+		if (newName != null && getObjectByName(newName) != null)
 		{
-			throw new DimpleException("ERROR name already present in parent");
+			throw new DimpleException("ERROR name '%s' already present in parent", newName);
 		}
 
 		//remove old name, if there was one
-		String oldExplicitName = childFound.getExplicitName();
-		if(oldExplicitName != null)
+		String oldExplicitName = child.getExplicitName();
+		if (oldExplicitName != null)
 		{
 			_name2object.remove(oldExplicitName);
 		}
@@ -3203,7 +3204,7 @@ public class FactorGraph extends FactorBase
 		//add new name, if there is one
 		if(newName != null)
 		{
-			_name2object.put(newName, childFound);
+			_name2object.put(newName, child);
 		}
 	}
 
@@ -3820,7 +3821,7 @@ public class FactorGraph extends FactorBase
 	@Deprecated
 	public void setChildName(Node child, @Nullable String newName)
 	{
-		setChildNameInternal(child, newName);
+		child.setName(newName);
 	}
 	
 	/**

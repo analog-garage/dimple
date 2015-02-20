@@ -20,27 +20,28 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.DiscreteTransitionEnergyParameters;
 import com.analog.lyric.dimple.factorfunctions.DiscreteTransitionUnnormalizedParameters;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsGammaEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends GibbsRealFactor implements IRealConjugateFactor
 {
-	private @Nullable Object[] _outputMsgs;
 	private @Nullable GibbsDiscrete _yVariable;
 	private @Nullable GibbsDiscrete _xVariable;
 	private boolean _hasConstantY;
@@ -67,6 +68,17 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends Gibb
 		super(factor);
 	}
 
+	@Override
+	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	{
+		if (edge.getFactorToVariableIndex() >= _startingParameterEdge)
+		{
+			return new GibbsGammaEdge();
+		}
+		
+		return super.createEdge(edge);
+	}
+	
 	@SuppressWarnings("null")
 	@Override
 	public void updateEdgeMessage(int portNum)
@@ -78,7 +90,7 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends Gibb
 			// NOTE: This class works for either DiscreteTransitionIndepenentParameters or DiscreteTransitionEnergyParameters factor functions
 			// since the actual parameter value doesn't come into play in determining the message in this direction
 
-			GammaParameters outputMsg = (GammaParameters)_outputMsgs[portNum];
+			GammaParameters outputMsg = (GammaParameters)getEdge(portNum).factorToVarMsg;
 			
 			// Get the parameter coordinates
 			int parameterEdgeOffset = portNum - _startingParameterEdge;
@@ -245,23 +257,5 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends Gibb
 	{
 		super.createMessages();
 		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
-		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
-		for (int port = _startingParameterEdge; port < _numPorts; port++)	// Only parameter edges
-			outputMsgs[port] = new GammaParameters();
-	}
-	
-	@SuppressWarnings("null")
-	@Override
-	public Object getOutputMsg(int portIndex)
-	{
-		return _outputMsgs[portIndex];
-	}
-	
-	@SuppressWarnings("null")
-	@Override
-	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-		super.moveMessages(other, thisPortNum, otherPortNum);
-		_outputMsgs[thisPortNum] = ((CustomDiscreteTransitionUnnormalizedOrEnergyParameters)other)._outputMsgs[otherPortNum];
 	}
 }

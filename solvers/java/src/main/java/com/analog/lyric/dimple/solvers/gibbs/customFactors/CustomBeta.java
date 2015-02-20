@@ -20,23 +20,24 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.factorfunctions.Beta;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
-import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsBetaEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class CustomBeta extends GibbsRealFactor implements IRealConjugateFactor
 {
-	private @Nullable Object[] _outputMsgs;
 	private @Nullable GibbsReal _alphaVariable;
 	private @Nullable GibbsReal _betaVariable;
 	private boolean _hasConstantAlpha;
@@ -56,6 +57,17 @@ public class CustomBeta extends GibbsRealFactor implements IRealConjugateFactor
 		super(factor);
 	}
 
+	@Override
+	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	{
+		if (edge.getFactorToVariableIndex() >= _numParameterEdges)
+		{
+			return new GibbsBetaEdge();
+		}
+		
+		return super.createEdge(edge);
+	}
+	
 	@SuppressWarnings("null")
 	@Override
 	public void updateEdgeMessage(int portNum)
@@ -63,7 +75,7 @@ public class CustomBeta extends GibbsRealFactor implements IRealConjugateFactor
 		if (portNum >= _numParameterEdges)
 		{
 			// Port is directed output
-			BetaParameters outputMsg = (BetaParameters)_outputMsgs[portNum];
+			BetaParameters outputMsg = (BetaParameters)getEdge(portNum).factorToVarMsg;
 			outputMsg.setAlphaMinusOne(_hasConstantAlpha ? _constantAlphaMinusOneValue : _alphaVariable.getCurrentSample() - 1);
 			outputMsg.setBetaMinusOne(_hasConstantBeta ? _constantBetaMinusOneValue : _betaVariable.getCurrentSample() - 1);
 		}
@@ -156,23 +168,6 @@ public class CustomBeta extends GibbsRealFactor implements IRealConjugateFactor
 	{
 		super.createMessages();
 		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
-		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
-		for (int port = _numParameterEdges; port < _numPorts; port++)	// Only output edges
-			outputMsgs[port] = new BetaParameters();
 	}
 	
-	@SuppressWarnings("null")
-	@Override
-	public Object getOutputMsg(int portIndex)
-	{
-		return _outputMsgs[portIndex];
-	}
-	
-	@SuppressWarnings("null")
-	@Override
-	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-		super.moveMessages(other, thisPortNum, otherPortNum);
-		_outputMsgs[thisPortNum] = ((CustomBeta)other)._outputMsgs[otherPortNum];
-	}
 }

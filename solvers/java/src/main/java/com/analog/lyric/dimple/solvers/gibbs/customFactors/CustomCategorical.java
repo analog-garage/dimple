@@ -22,25 +22,26 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.factorfunctions.Categorical;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsDirichletEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class CustomCategorical extends GibbsRealFactor implements IRealJointConjugateFactor
 {
-	private @Nullable Object[] _outputMsgs;
 	private @Nullable GibbsDiscrete[] _outputVariables;
 	private int _parameterDimension;
 	private int _numParameterEdges;
@@ -54,6 +55,17 @@ public class CustomCategorical extends GibbsRealFactor implements IRealJointConj
 		super(factor);
 	}
 
+	@Override
+	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	{
+		if (edge.getFactorToVariableIndex() < _numParameterEdges)
+		{
+			return new GibbsDirichletEdge(_parameterDimension);
+		}
+		
+		return super.createEdge(edge);
+	}
+	
 	@SuppressWarnings("null")
 	@Override
 	public void updateEdgeMessage(int portNum)
@@ -64,7 +76,7 @@ public class CustomCategorical extends GibbsRealFactor implements IRealJointConj
 			// Determine sample alpha vector of the conjugate Dirichlet distribution
 			// Note: This case works for the Categorical factor function (which has joint parameters)
 			
-			DirichletParameters outputMsg = (DirichletParameters)_outputMsgs[portNum];
+			DirichletParameters outputMsg = (DirichletParameters)getEdge(portNum).factorToVarMsg;
 			
 			// Clear the output counts
 			outputMsg.setNull();
@@ -166,11 +178,12 @@ public class CustomCategorical extends GibbsRealFactor implements IRealJointConj
 	
 		// Save output variables and add to the statistics any output variables that have fixed values
 		int numVariableOutputs = 0;		// First, determine how many output variables are not fixed
-		for (int edge = _numParameterEdges; edge < _numPorts; edge++)
+		final int nEdges = getSiblingCount();
+		for (int edge = _numParameterEdges; edge < nEdges; edge++)
 			if (!(siblings.get(edge).hasFixedValue()))
 				numVariableOutputs++;
 		final GibbsDiscrete[] outputVariables = _outputVariables = new GibbsDiscrete[numVariableOutputs];
-		for (int edge = _numParameterEdges, index = 0; edge < _numPorts; edge++)
+		for (int edge = _numParameterEdges, index = 0; edge < nEdges; edge++)
 		{
 			Discrete outputVariable = (Discrete)siblings.get(edge);
 			if (outputVariable.hasFixedValue())
@@ -193,23 +206,6 @@ public class CustomCategorical extends GibbsRealFactor implements IRealJointConj
 	{
 		super.createMessages();
 		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
-		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
-		for (int port = 0; port < _numParameterEdges; port++)	// Only parameter edges
-			outputMsgs[port] = new DirichletParameters(_parameterDimension);
 	}
 	
-	@SuppressWarnings("null")
-	@Override
-	public Object getOutputMsg(int portIndex)
-	{
-		return _outputMsgs[portIndex];
-	}
-	
-	@SuppressWarnings("null")
-	@Override
-	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-		super.moveMessages(other, thisPortNum, otherPortNum);
-		_outputMsgs[thisPortNum] = ((CustomCategorical)other)._outputMsgs[otherPortNum];
-	}
 }

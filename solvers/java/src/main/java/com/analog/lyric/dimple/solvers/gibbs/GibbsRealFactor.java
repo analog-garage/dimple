@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.core.INode;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
@@ -33,7 +33,6 @@ import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 /**
  * Real solver factor under Gibbs solver.
@@ -44,14 +43,12 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 @SuppressWarnings("deprecation") // TODO: remove when SRealFactor removed
 public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 {
-	protected Factor _realFactor;
-	protected @Nullable Value [] _inputMsgs;
+	protected Value [] _currentSamples = new Value[0];
 	//	private Object[] _scratchValues;
-	protected int _numPorts;
 	protected boolean _isDeterministicDirected;
 	private int _topologicalOrder = 0;
 	/**
-	 * True if output samples in {@link #_inputMsgs} have been computed.
+	 * True if output samples in {@link #_currentSamples} have been computed.
 	 */
 	private boolean _outputsValid = false;
 	
@@ -60,11 +57,41 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 	public GibbsRealFactor(Factor factor)
 	{
 		super(factor);
-		_realFactor = factor;
 		_isDeterministicDirected = _model.getFactorFunction().isDeterministicDirected();
 	}
 	
+	@Override
+	public void initialize()
+	{
+		super.initialize();
+		
+		_outputsValid = false;
+    	final int size = getSiblingCount();
+    	
+    	if (_currentSamples.length != size)
+    	{
+    		_currentSamples = new Value[size];
+    	}
+    	
+	    for (int port = 0; port < size; port++)
+	    {
+	    	_currentSamples[port] = ((ISolverVariableGibbs)getSibling(port)).getCurrentSampleValue();
+	    }
+	}
+	
+	@Override
+	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	{
+		Variable var = edge.getVariable(_model.requireParentGraph());
+		
+		if (var instanceof Discrete)
+		{
+			return new GibbsDiscreteEdge((Discrete)var);
+		}
 
+		return GibbsNullEdge.INSTANCE;
+	}
+	
 	@Override
 	public void doUpdateEdge(int outPortNum)
 	{
@@ -82,30 +109,28 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 	@Override
 	public void updateEdgeMessage(int outPortNum)
 	{
-		INode node = requireNonNull(_model.getSibling(outPortNum));
+		Variable var = requireNonNull(_model.getSibling(outPortNum));
 
-		if (node instanceof Discrete)
+		if (var instanceof Discrete)
 		{
-			final Discrete var = (Discrete)node;
+			final Discrete discrete = (Discrete)var;
 			
 			// This edge connects to a discrete variable, so send an output message
 			// This method only considers the current conditional values, and does propagate
 			// to any other variables (unlike get ConditionalPotential)
 			// This should only be called if this factor is not a deterministic directed factor
-			DiscreteDomain outputVariableDomain = var.getDiscreteDomain();
-			FactorFunction factorFunction = _realFactor.getFactorFunction();
-			int numPorts = _model.getSiblingCount();
+			final DiscreteDomain outputVariableDomain = discrete.getDiscreteDomain();
+			final FactorFunction factorFunction = _model.getFactorFunction();
+			final int numPorts = getSiblingCount();
 			
-			Object[] values = new Object[numPorts];
+			final Object[] values = new Object[numPorts];
 			
-			final Value[] inputMsgs = Objects.requireNonNull(_inputMsgs);
+			final Value[] inputMsgs = Objects.requireNonNull(_currentSamples);
 			for (int port = 0; port < numPorts; port++)
 				values[port] = inputMsgs[port].getObject();
 
-			//TODO: these could be cached instead.
-			ISolverVariable svar = var.getSolver();
-			@SuppressWarnings("null")
-			double[] outputMsgs = (double[])svar.getInputMsg(_model.getSiblingPortIndex(outPortNum));
+			final GibbsDiscreteEdge edge = requireNonNull((GibbsDiscreteEdge)getEdge(outPortNum));
+			double[] outputMsgs = edge.factorToVarMsg.representation();
 			
 			@SuppressWarnings("null")
 			int outputMsgLength = outputMsgs.length;
@@ -123,10 +148,10 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 		if (_isDeterministicDirected)
 			return 0;
 
-		final Value[] inputMsgs = _inputMsgs;
-		if (inputMsgs != null)
+		final Value[] inputMsgs = _currentSamples;
+		if (inputMsgs.length > 0)
 		{
-			final double energy = _realFactor.getFactorFunction().evalEnergy(inputMsgs);
+			final double energy = _model.getFactorFunction().evalEnergy(inputMsgs);
 			if (energy != energy)	// Faster isNaN
 				return Double.POSITIVE_INFINITY;
 			return energy;
@@ -138,7 +163,7 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 	@Override
 	public double getPotential(Object[] inputs)
 	{
-	    return _realFactor.getFactorFunction().evalEnergy(inputs);
+	    return _model.getFactorFunction().evalEnergy(inputs);
 	}
 
 	@Override
@@ -168,12 +193,12 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 		final FactorFunction function = factor.getFactorFunction();
 		int[] directedTo = factor.getDirectedTo();
 
-		final Value[] inputMsgs = requireNonNull(_inputMsgs);
+		final Value[] inputMsgs = requireNonNull(_currentSamples);
 		
 		if (oldValues != null && _outputsValid)
 		{
 			AtomicReference<int[]> changedOutputsHolder = new AtomicReference<int[]>();
-			function.updateDeterministic(inputMsgs, oldValues, changedOutputsHolder);
+			Value[] values = function.updateDeterministicToCopy(inputMsgs, oldValues, changedOutputsHolder);
 			int[] changedOutputs = changedOutputsHolder.get();
 			if (changedOutputs != null)
 			{
@@ -186,14 +211,14 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 				for (int outputIndex : directedTo)
 				{
 					Variable variable = requireNonNull(factor.getSibling(outputIndex));
-					Value newValue = inputMsgs[outputIndex];
+					Value newValue = values[outputIndex];
 					((ISolverVariableGibbs)variable.requireSolver("updateNeighborVariableValuesNow")).setCurrentSample(newValue);
 				}
 			}
 		}
 		else
 		{
-			function.evalDeterministic(inputMsgs);
+			Value[] values = function.evalDeterministicToCopy(inputMsgs);
 			_outputsValid = true;
 
 			// Update the directed-to variables with the computed values
@@ -203,29 +228,10 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 				for (int outputIndex : directedTo)
 				{
 					Variable variable = requireNonNull(factor.getSibling(outputIndex));
-					Value newValue = inputMsgs[outputIndex];
-					// FIXME: is sample already set? Just need to handle side-effects?
+					Value newValue = values[outputIndex];
 					((ISolverVariableGibbs)variable.requireSolver("updateNeighborVariableValuesNow")).setCurrentSample(newValue);
 				}
 			}
-		}
-	}
-
-
-
-	@SuppressWarnings("null")
-	@Override
-	public void createMessages()
-	{
-		final Factor factor = _model;
-		_numPorts = factor.getSiblingCount();
-		final Value[] inputMsgs = _inputMsgs = new Value[_numPorts];
-		_outputsValid = false;
-//		_scratchValues = new Object[_numPorts];
-		for (int i = 0; i < _numPorts; i++)
-		{
-			Object [] messages = factor.getSibling(i).getSolver().createMessages(this);
-			inputMsgs[i] = (Value)messages[1];
 		}
 	}
 
@@ -238,17 +244,16 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 
 
 	@Override
-	public @Nullable Value getInputMsg(int portIndex)
+	public Value getInputMsg(int portIndex)
 	{
-		final Value[] inputMsgs = _inputMsgs;
-		return inputMsgs != null ? inputMsgs[portIndex] : null;
+		return _currentSamples[portIndex];
 	}
 
 
 	@Override
 	public @Nullable Object getOutputMsg(int portIndex)
 	{
-		return null;	// No output message by default (except for custom factors)
+		return getEdge(portIndex).factorToVarMsg;
 	}
 
 
@@ -257,7 +262,8 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
 	{
 		_outputsValid = false;
-		_inputMsgs[thisPortNum] = ((GibbsRealFactor)other)._inputMsgs[otherPortNum];
+//		_currentSamples[thisPortNum] = ((GibbsRealFactor)other)._currentSamples[otherPortNum];
+//		_currentSamples[thisPortNum].setFrom(((GibbsRealFactor)other)._currentSamples[otherPortNum]);
 	}
 
 	@Override
@@ -268,4 +274,10 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 		return changed;
 	}
 
+	@SuppressWarnings("null")
+	@Override
+	protected GibbsSolverEdge<?> getEdge(int siblingIndex)
+	{
+		return (GibbsSolverEdge<?>)super.getEdge(siblingIndex);
+	}
 }

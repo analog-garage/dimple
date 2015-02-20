@@ -34,6 +34,14 @@ public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable,
 	public void saveCurrentSample();
     public void saveBestSample();
     public Value getCurrentSampleValue();
+    
+    /**
+     * For internal use in rolled up graphs. Do not use for other purposes.
+     * @since 0.08
+     */
+    @Internal
+    public Value getPrevSampleValue();
+    
     public void setCurrentSample(Object value);
     public void setCurrentSample(Value value);
 	public void setBeta(double beta);

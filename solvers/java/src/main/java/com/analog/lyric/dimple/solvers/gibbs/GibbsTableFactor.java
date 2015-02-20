@@ -22,19 +22,19 @@ import java.util.Collection;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Internal;
 
 /**
@@ -48,8 +48,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	 * State
 	 */
 	
-    protected DiscreteValue[] _inPortMsgs = new DiscreteValue[0];
-    protected double[][] _outPortMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+    protected DiscreteValue[] _currentSamples = new DiscreteValue[0];
     protected boolean _isDeterministicDirected;
     private boolean _visited = false;
 	private int _topologicalOrder = 0;
@@ -84,6 +83,12 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	/*----------------------------
 	 * ISolverFactorGibbs methods
 	 */
+	
+	@Override
+	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	{
+		return new GibbsDiscreteEdge((Discrete)edge.getVariable(_model.requireParentGraph()));
+	}
 
 	@Override
 	public void updateEdgeMessage(int outPortNum)
@@ -93,16 +98,16 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 
 		if (_isDeterministicDirected) throw new DimpleException("Invalid call to updateEdge");
 		
-		double[] outMessage = _outPortMsgs[outPortNum];
+		double[] outMessage = getEdge(outPortNum).factorToVarMsg.representation();
 
-		final int numPorts = _inPortMsgs.length;
+		final int numPorts = _currentSamples.length;
 
 		final IFactorTable factorTable = getFactorTableIfComputed();
 		if (factorTable != null)
 		{
 			int[] inPortMsgs = new int[numPorts];
 			for (int port = 0; port < numPorts; port++)
-				inPortMsgs[port] = _inPortMsgs[port].getIndex();
+				inPortMsgs[port] = _currentSamples[port].getIndex();
 
 			inPortMsgs[outPortNum] = 0;
 			
@@ -110,15 +115,15 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 		}
 		else
 		{
-			final Value changedValue = _inPortMsgs[outPortNum];
+			final Value changedValue = _currentSamples[outPortNum];
 			final FactorFunction function = _model.getFactorFunction();
 			final int savedIndex = changedValue.getIndex();
 			final int sliceLength = outMessage.length;
 
 			changedValue.setIndex(0);
-			outMessage[0] = function.evalEnergy(_inPortMsgs);
+			outMessage[0] = function.evalEnergy(_currentSamples);
 
-			if (function.useUpdateEnergy(_inPortMsgs, 1))
+			if (function.useUpdateEnergy(_currentSamples, 1))
 			{
 				final Value prevValue = changedValue.clone();
 				final IndexedValue[] changedValues = new IndexedValue[] { new IndexedValue(outPortNum, prevValue) };
@@ -128,7 +133,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 				{
 					changedValue.setIndex(i);
 					prevValue.setIndex(i - 1);
-					outMessage[i] = energy = function.updateEnergy(_inPortMsgs, changedValues, energy);
+					outMessage[i] = energy = function.updateEnergy(_currentSamples, changedValues, energy);
 				}
 			}
 			else
@@ -136,7 +141,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 				for (int i = 1; i < sliceLength; ++i)
 				{
 					changedValue.setIndex(i);
-					outMessage[i] = function.evalEnergy(_inPortMsgs);
+					outMessage[i] = function.evalEnergy(_currentSamples);
 				}
 			}
 			
@@ -150,20 +155,26 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 		if (_isDeterministicDirected)
 			return 0;
 
+		final int size = _currentSamples.length;
+		if (size == 0)
+		{
+			// Probably because initalize() not yet called.
+			return Double.POSITIVE_INFINITY;
+		}
+
 		if (getFactorTableIfComputed() == null)
 		{
 			// Avoid creating table because it may be very large.
 			// FIXME - think more about this. Should this be conditional on something?
-			final double energy = getFactor().getFactorFunction().evalEnergy(_inPortMsgs);
+			final double energy = getFactor().getFactorFunction().evalEnergy(_currentSamples);
 			if (energy != energy)	// Faster isNaN
 				return Double.POSITIVE_INFINITY;
 			return energy;
 		}
 		
-		final int size = _inPortMsgs.length;
 		int[] inPortMsgs = new int[size];
 		for (int port = 0; port < size; port++)
-			inPortMsgs[port] = _inPortMsgs[port].getIndex();
+			inPortMsgs[port] = _currentSamples[port].getIndex();
 
 		return getPotential(inPortMsgs);
 	}
@@ -198,7 +209,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	{
 		// Compute the output values of the deterministic factor function from the input values
 		final Factor factor = _model;
-		factor.getFactorFunction().evalDeterministic(_inPortMsgs);
+		Value[] values = factor.getFactorFunction().evalDeterministicToCopy(_currentSamples);
 		
 		// Update the directed-to variables with the computed values
 		int[] directedTo = factor.getDirectedTo();
@@ -210,7 +221,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 				// FIXME: is sample value already set? Just need to handle side effects?
 				ISolverVariableGibbs svar =
 					(ISolverVariableGibbs)variable.requireSolver("updateNeighborVariableValuesNow");
-				svar.setCurrentSample(_inPortMsgs[outputIndex]);
+				svar.setCurrentSample(values[outputIndex]);
 			}
 		}
 	}
@@ -220,19 +231,6 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	@Override
 	public void createMessages()
 	{
-		final Factor factor = _model;
-    	int size = factor.getSiblingCount();
-    	
-	    _inPortMsgs = new DiscreteValue[size];
-	    _outPortMsgs = new double[size][];
-	    
-	    for (int port = 0; port < size; port++)
-	    {
-	    	ISolverVariable svar = requireNonNull(factor.getSibling(port).getSolver());
-	    	Object [] messages = requireNonNull(svar.createMessages(this));
-	    	_inPortMsgs[port] = (DiscreteValue)messages[1];
-	    	_outPortMsgs[port] = (double[])messages[0];
-	    }
 	}
 
 
@@ -241,6 +239,18 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	{
 		super.initialize();
 		_isDeterministicDirected = _model.getFactorFunction().isDeterministicDirected();
+		
+    	final int size = getSiblingCount();
+    	
+    	if (_currentSamples.length != size)
+    	{
+    		_currentSamples = new DiscreteValue[size];
+    	}
+    	
+	    for (int port = 0; port < size; port++)
+	    {
+	    	_currentSamples[port] = (DiscreteValue)((ISolverVariableGibbs)getSibling(port)).getCurrentSampleValue();
+	    }
 	}
 	
 	@Override
@@ -251,25 +261,23 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 
 
 	@Override
-	public Object getInputMsg(int portIndex)
+	public DiscreteValue getInputMsg(int portIndex)
 	{
-		return _inPortMsgs[portIndex];
+		return _currentSamples[portIndex];
 	}
 
 
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
-		return _outPortMsgs[portIndex];
+		// FIXME - return DiscreteMessage
+		return getEdge(portIndex).factorToVarMsg.representation();
 	}
 
 
 	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
 	{
-		GibbsTableFactor tf = (GibbsTableFactor)other;
-		this._inPortMsgs[thisPortNum] = tf._inPortMsgs[otherPortNum];
-		this._outPortMsgs[thisPortNum] = tf._outPortMsgs[otherPortNum];
 	}
 
 	/*--------------------------
@@ -295,5 +303,12 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 		boolean changed = _visited ^ visited;
 		_visited = visited;
 		return changed;
+	}
+
+	@SuppressWarnings("null")
+	@Override
+	protected GibbsDiscreteEdge getEdge(int siblingIndex)
+	{
+		return (GibbsDiscreteEdge)super.getEdge(siblingIndex);
 	}
 }

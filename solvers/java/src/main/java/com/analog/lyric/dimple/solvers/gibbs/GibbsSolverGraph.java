@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -54,6 +54,7 @@ import com.analog.lyric.dimple.factorfunctions.Poisson;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.DirectedNodeSorter;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.core.FactorGraphIterables;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -94,7 +95,6 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockInitializer;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockMCMCSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -107,7 +107,7 @@ import com.analog.lyric.math.DimpleRandomGenerator;
  *  <p>
  * @since 0.07
  */
-public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolverVariableGibbs, ISolverEdge>
+public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolverVariableGibbs, GibbsSolverEdge<?>>
 {
 	/*
 	 * Constants
@@ -163,6 +163,22 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 		_model.setSolverSpecificDefaultScheduler(new GibbsDefaultScheduler());	// Override the common default scheduler
 	}
 
+	@Override
+	public boolean hasEdgeState()
+	{
+		return true;
+	}
+	
+	@Override
+	public GibbsSolverEdge<?> createEdgeState(FactorGraphEdgeState edge)
+	{
+		ISolverFactorGibbs sfactor = getSolverFactor(edge.getFactor(_model), true);
+		
+		GibbsSolverEdge<?> sedge = requireNonNull(sfactor).createEdge(edge);
+		
+		return sedge;
+	}
+	
 	@SuppressWarnings("deprecation")
 	@Override
 	public ISolverVariableGibbs createVariable(Variable var)
@@ -267,11 +283,25 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	}
 	
 	/**
+	 * Get {@link GibbsDiscrete} solver variable for given model variable.
+	 * @param variable is a variable contained in corresponding model graph.
+	 * @throws NullPointerException if there is no such solver variable.
+	 * @since 0.08
+	 * @see #getSolverVariable(Variable)
+	 * @see #getReal(Real)
+	 */
+	public GibbsDiscrete getDiscrete(Discrete variable)
+	{
+		return requireNonNull((GibbsDiscrete)super.getSolverVariable(variable));
+	}
+	
+	/**
 	 * Get {@link GibbsReal} solver variable for given model variable.
 	 * @param variable is a variable contained in corresponding model graph.
 	 * @throws NullPointerException if there is no such solver variable.
 	 * @since 0.08
 	 * @see #getSolverVariable(Variable)
+	 * @see #getDiscrete(Discrete)
 	 */
 	public GibbsReal getReal(Real variable)
 	{
@@ -318,9 +348,9 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 		if (!fg.hasParentGraph())
 			for (int i = 0, end = fg.getBoundaryVariableCount(); i <end; ++i)
 				fg.getBoundaryVariable(i).requireSolver("initialize").initialize();
-		processDeferredDeterministicUpdates();
 		for (Factor f : fg.getNonGraphFactorsTop())
 			f.requireSolver("initialize").initialize();
+		processDeferredDeterministicUpdates(); // FIXME - is it ok to do after factor initialization?
 		for (FactorGraph g : fg.getOwnedGraphs())
 			g.requireSolver("initialize").initialize();
 		deferDeterministicUpdates();
@@ -355,7 +385,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 		_scoreArray = scoreArray;
 		
 	}
-
+		
 	/**
 	 * Does one round of Gibbs sampling.
 	 * <p>

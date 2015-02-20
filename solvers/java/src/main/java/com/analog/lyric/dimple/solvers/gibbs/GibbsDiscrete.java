@@ -22,6 +22,7 @@ import static java.util.Objects.*;
 import java.util.Arrays;
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import cern.colt.list.IntArrayList;
@@ -36,6 +37,9 @@ import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergyMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.CDFSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IDiscreteDirectSampler;
@@ -44,6 +48,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IGenericSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IMCMCSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.Internal;
 import com.google.common.primitives.Doubles;
 
 
@@ -73,17 +78,145 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	 * State
 	 */
 	
+	private final class CurrentSample extends DiscreteValue
+	{
+		private static final long serialVersionUID = 1L;
+
+		private final DiscreteValue _value;
+		
+		CurrentSample(DiscreteDomain domain)
+		{
+			_value = Value.create(domain);
+		}
+		
+		CurrentSample(CurrentSample other)
+		{
+			_value = other._value.clone();
+		}
+
+		@Override
+		public DiscreteValue clone()
+		{
+			return new CurrentSample(this);
+		}
+
+		@Override
+		public DiscreteDomain getDomain()
+		{
+			return _value.getDomain();
+		}
+
+		@Override
+		public int getIndex()
+		{
+			return _value.getIndex();
+		}
+
+		@Override
+		public @NonNull Object getObject()
+		{
+			return _value.getObject();
+		}
+
+		@Override
+		public final void setFrom(Value value)
+		{
+			if (fixed() || _value.valueEquals(value))
+			{
+				return;
+			}
+
+			final GibbsNeighbors neighbors = _neighbors;
+			boolean hasDeterministicDependents = neighbors != null && neighbors.hasDeterministicDependents();
+
+			DiscreteValue oldValue = null;
+			if (hasDeterministicDependents)
+			{
+				oldValue = _value.clone();
+			}
+			
+			_value.setFrom(value);
+					
+			// If this variable has deterministic dependents, then set their values
+			if (hasDeterministicDependents)
+			{
+				requireNonNull(neighbors).update(requireNonNull(oldValue));
+			}
+		}
+		
+		@Override
+		public void setIndex(int index)
+		{
+			if (!fixed() && index != _value.getIndex())
+			{
+				setIndexForce(index);
+			}
+		}
+
+		@Override
+		public void setObject(@Nullable Object obj)
+		{
+			if (fixed())
+			{
+				return;
+			}
+
+			final GibbsNeighbors neighbors = _neighbors;
+			boolean hasDeterministicDependents = neighbors != null && neighbors.hasDeterministicDependents();
+
+			DiscreteValue oldValue = null;
+			if (hasDeterministicDependents)
+			{
+				oldValue = _value.clone();
+			}
+
+			_value.setObject(obj);
+			
+			// If this variable has deterministic dependents, then set their values
+			if (hasDeterministicDependents && !_value.valueEquals(requireNonNull(oldValue)))
+			{
+				Objects.requireNonNull(neighbors).update(oldValue);
+			}
+		}
+		
+		private void setIndexForce(int index)
+		{
+			final GibbsNeighbors neighbors = _neighbors;
+			boolean hasDeterministicDependents = neighbors != null && neighbors.hasDeterministicDependents();
+
+			DiscreteValue oldValue = null;
+			if (hasDeterministicDependents)
+			{
+				oldValue = _value.clone();
+			}
+			
+			_value.setIndex(index);
+					
+			// If this variable has deterministic dependents, then set their values
+			if (hasDeterministicDependents)
+			{
+				Objects.requireNonNull(neighbors).update(Objects.requireNonNull(oldValue));
+			}
+		}
+
+		private final boolean fixed()
+		{
+			return _holdSampleValue || _model.hasFixedValue();
+		}
+		
+	} // CurrentSample
+	
 	private boolean _visited = false;
 
-	private double[][] _inPortMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
-	private DiscreteValue _outputMsg;
+	private final CurrentSample _currentSample;
+	private DiscreteValue _prevSample;
+	private boolean _repeatedVariable;
 	private @Nullable long[] _beliefHistogram;
-	private double[] _input;
+	private DiscreteEnergyMessage _input;
 	private @Nullable IntArrayList _sampleIndexArray;
 	private int _bestSampleIndex;
 	private @Nullable DiscreteValue _initialSampleValue = null;
 	private double _beta = 1;
-	private final Discrete _varDiscrete;
 	private boolean _holdSampleValue = false;
 	private @Nullable IGenericSampler _sampler;
 	private boolean _samplerSpecificallySpecified = false;
@@ -104,7 +237,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	public GibbsDiscrete(Discrete var)
 	{
 		super(var);
-		_varDiscrete = var;
+		_prevSample = _currentSample = new CurrentSample(_model.getDomain());
 		_input = createDefaultMessage();
 	}
 
@@ -141,11 +274,11 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 			oldSampleScore = getCurrentSampleScore();
 			//$FALL-THROUGH$
 		case UPDATE_EVENT_SIMPLE:
-			oldValue = _outputMsg.clone();
+			oldValue = _currentSample.clone();
 			break;
 		}
 
-		final int messageLength = _input.length;
+		final int messageLength = _input.size();
 		final int numPorts = _model.getSiblingCount();
 		double minEnergy = Double.POSITIVE_INFINITY;
 		
@@ -167,10 +300,10 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 			for (int index = 0; index < messageLength; index++)
 			{
 
-				double out = _input[index];						// Sum of the input prior...
+				double out = _input.getEnergy(index);						// Sum of the input prior...
 				for (int port = 0; port < numPorts; port++)
 				{
-					double tmp = _inPortMsgs[port][index];
+					double tmp = getDiscreteEdge(port).factorToVarMsg.getEnergy(index);
 					out += tmp;			// Plus each input message value
 				}
 				out *= _beta;									// Apply tempering
@@ -186,7 +319,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 			for (int index = 0; index < messageLength; index++)
 			{
 				setCurrentSampleIndex(index);
-				double out = _input[index];						// Sum of the input prior...
+				double out = _input.getEnergy(index);						// Sum of the input prior...
 				ReleasableIterator<ISolverNodeGibbs> scoreNodes = getSampleScoreNodes();
 				while (scoreNodes.hasNext())
 				{
@@ -210,12 +343,12 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		{
 			if (_sampler instanceof IDiscreteDirectSampler)
 			{
-				((IDiscreteDirectSampler)Objects.requireNonNull(_sampler)).nextSample(_outputMsg.clone(),
+				((IDiscreteDirectSampler)Objects.requireNonNull(_sampler)).nextSample(_currentSample.clone(),
 					conditional, minEnergy, this);
 			}
 			else if (_sampler instanceof IMCMCSampler)
 			{
-				rejected = !((IMCMCSampler)Objects.requireNonNull(_sampler)).nextSample(_outputMsg.clone(), this);
+				rejected = !((IMCMCSampler)Objects.requireNonNull(_sampler)).nextSample(_currentSample.clone(), this);
 			}
 		}
 		else
@@ -232,11 +365,11 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		case UPDATE_EVENT_SCORED:
 			// TODO: non-conjugate samplers already compute sample scores, so we shouldn't have to do here.
 			raiseEvent(new GibbsScoredVariableUpdateEvent(this, Objects.requireNonNull(oldValue), oldSampleScore,
-				_outputMsg.clone(), getCurrentSampleScore(), rejected ? 1 : 0));
+				_currentSample.clone(), getCurrentSampleScore(), rejected ? 1 : 0));
 			break;
 		case UPDATE_EVENT_SIMPLE:
 			raiseEvent(new GibbsVariableUpdateEvent(this, Objects.requireNonNull(oldValue),
-				_outputMsg.clone(), rejected ? 1 : 0));
+				_currentSample.clone(), rejected ? 1 : 0));
 			break;
 		}
 	}
@@ -274,7 +407,14 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	@Override
 	public DiscreteValue getCurrentSampleValue()
 	{
-		return _outputMsg;
+		return _currentSample;
+	}
+	
+	@Internal
+	@Override
+	public DiscreteValue getPrevSampleValue()
+	{
+		return _prevSample;
 	}
 	
 	@Override
@@ -292,7 +432,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		// If the variable has a fixed value, then set the current sample to that value and return
 		if (_model.hasFixedValue())
 		{
-			setCurrentSampleIndex(_varDiscrete.getFixedValueIndex());
+			setCurrentSampleIndex(_model.getFixedValueIndex());
 			return;
 		}
 		
@@ -304,19 +444,15 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		}
 
 		// Convert the prior back to probabilities to sample from the prior
-		int messageLength = _input.length;
-		double minEnergy = Double.POSITIVE_INFINITY;
-		for (int i = 0; i < messageLength; i++)
-			if (_input[i] < minEnergy)
-				minEnergy = _input[i];
+		double minEnergy = _input.minEnergy();
 		
 		if (_sampler instanceof CDFSampler)
-			((CDFSampler)Objects.requireNonNull(_sampler)).nextSample(_outputMsg, _input, minEnergy, this);
+			((CDFSampler)Objects.requireNonNull(_sampler)).nextSample(_currentSample, _input.representation(), minEnergy, this);
 		else	// If the actual sampler isn't a CDF sampler, make a CDF sampler to use for random restart
 		{
 			IDiscreteDirectSampler sampler = new CDFSampler();
 			sampler.initializeFromVariable(this);
-			sampler.nextSample(_outputMsg, _input, minEnergy, this);
+			sampler.nextSample(_currentSample, _input.representation(), minEnergy, this);
 	}
 	}
 
@@ -343,7 +479,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		
 		computeScore:
 		{
-			double potential = _input[_outputMsg.getIndex()];
+			double potential = _input.getEnergy(_currentSample.getIndex());
 
 			ReleasableIterator<ISolverNodeGibbs> scoreNodes = getSampleScoreNodes();
 			while (scoreNodes.hasNext())
@@ -371,7 +507,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	@Override
 	public final void setNextSampleIndex(int sampleIndex)
 	{
-		if (sampleIndex != _outputMsg.getIndex())
+		if (sampleIndex != _currentSample.getIndex())
 			setCurrentSampleIndex(sampleIndex);
 	}
 	
@@ -379,20 +515,20 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	@Override
 	public void updateBelief()
 	{
-		_beliefHistogram[_outputMsg.getIndex()]++;
+		_beliefHistogram[_currentSample.getIndex()]++;
 	}
 
 	@SuppressWarnings("null")
 	@Override
 	public double[] getBelief()
 	{
-		int domainLength = _input.length;
+		int domainLength = _input.size();
 		double[] outBelief = new double[domainLength];
 
 		if (_model.hasFixedValue())	// If there's a fixed value set, use that to generate the belief
 		{
 			Arrays.fill(outBelief, 0);
-			outBelief[_varDiscrete.getFixedValueIndex()] = 1;
+			outBelief[_model.getFixedValueIndex()] = 1;
 			return outBelief;
 		}
 		
@@ -409,8 +545,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		}
 		else
 		{
-			for (int i = 0; i < domainLength; i++)
-				outBelief[i] = _input[i];		// Disconnected variable that has never been updated
+			System.arraycopy(_input.representation(), 0, outBelief, 0, domainLength);
 		}
 		
 		return outBelief;
@@ -427,19 +562,20 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		else
 		{
 			double[] vals = (double[])input;
-			if (vals.length != _varDiscrete.getDiscreteDomain().size())
+			if (vals.length != _model.getDiscreteDomain().size())
 				throw new DimpleException("Prior size must match domain length");
 			
 			// Convert to energy values
-			_input = new double[vals.length];
 			for (int i = 0; i < vals.length; i++)
-				_input[i] = -Math.log(vals[i]);
+			{
+				_input.setWeight(i,  vals[i]);
+			}
 		}
 		
 		if (fixedValue != null)
 		{
 			// FIXME: is this correct? Why does it ignore fixedValue argument?
-			setCurrentSampleIndexForce(requireNonNull((Integer)_model.getFixedValueObject()));
+			setCurrentSampleIndexForce(requireNonNull(_model.getFixedValueObject()));
 		}
 	}
 	
@@ -477,14 +613,14 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
     	final IntArrayList sampleIndexArray = _sampleIndexArray;
     	if (sampleIndexArray != null)
     	{
-    		sampleIndexArray.add(_outputMsg.getIndex());
+    		sampleIndexArray.add(_currentSample.getIndex());
     	}
     }
     
     @Override
 	public final void saveBestSample()
     {
-    	_bestSampleIndex = _outputMsg.getIndex();
+    	_bestSampleIndex = _currentSample.getIndex();
     }
     
     // TODO: move to ISolverNodeGibbs
@@ -492,7 +628,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	public final double getPotential()
 	{
 		if (!_model.hasFixedValue())
-			return _input[_outputMsg.getIndex()];
+			return _input.getEnergy(_currentSample.getIndex());
 		else
 			return 0;
 	}
@@ -508,7 +644,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	public final double getScore()
 	{
 		if (!_model.hasFixedValue())
-			return _input[getGuessIndex()];
+			return _input.getEnergy(getGuessIndex());
 		else
 			return 0;	// If the value is fixed, ignore the guess
 	}
@@ -516,47 +652,13 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	@Override
 	public final void setCurrentSample(Object value)
 	{
-		// If the sample value is being held, don't modify the value
-		if (_holdSampleValue) return;
-		
-		// Also return if the variable is set to a fixed value
-		if (_model.hasFixedValue()) return;
-		
-
-		DiscreteDomain domain = (DiscreteDomain)_model.getDomain();
-		int valueIndex = domain.getIndex(value);
-		if (valueIndex < 0)
-			throw new DimpleException("Value is not in the domain of this variable");
-		
-		setCurrentSampleIndexForce(valueIndex);
+		_currentSample.setObject(value);
 	}
 	
 	@Override
 	public final void setCurrentSample(Value value)
 	{
-		// If the sample value is being held, don't modify the value
-		if (_holdSampleValue) return;
-		
-		// Also return if the variable is set to a fixed value
-		if (_model.hasFixedValue()) return;
-		
-		final GibbsNeighbors neighbors = _neighbors;
-		boolean hasDeterministicDependents = neighbors != null && neighbors.hasDeterministicDependents();
-
-		DiscreteValue oldValue = null;
-		if (hasDeterministicDependents)
-		{
-			oldValue = _outputMsg.clone();
-		}
-		
-		// Send the sample value to all output ports
-		_outputMsg.setFrom(value);
-				
-		// If this variable has deterministic dependents, then set their values
-		if (hasDeterministicDependents)
-		{
-			requireNonNull(neighbors).update(requireNonNull(oldValue));
-		}
+		_currentSample.setFrom(value);
 	}
 	
 	/*---------------
@@ -565,49 +667,27 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	
 	public final void setCurrentSampleIndex(int index)
     {
-		// If the sample value is being held, don't modify the value
-		if (_holdSampleValue) return;
-		
-		// Also return if the variable is set to a fixed value
-		if (_model.hasFixedValue()) return;
-		
-		setCurrentSampleIndexForce(index);
+		_currentSample.setIndex(index);
     }
 	
 	// Sets the sample regardless of whether the value is fixed or held
 	private final void setCurrentSampleIndexForce(int index)
 	{
-		final GibbsNeighbors neighbors = _neighbors;
-		boolean hasDeterministicDependents = neighbors != null && neighbors.hasDeterministicDependents();
-
-		DiscreteValue oldValue = null;
-		if (hasDeterministicDependents)
-		{
-			oldValue = _outputMsg.clone();
-		}
-		
-		// Send the sample value to all output ports
-		_outputMsg.setIndex(index);
-				
-		// If this variable has deterministic dependents, then set their values
-		if (hasDeterministicDependents)
-		{
-			Objects.requireNonNull(neighbors).update(Objects.requireNonNull(oldValue));
-		}
+		_currentSample.setIndexForce(index);
 	}
     
     public final Object getCurrentSample()
     {
-    	return _outputMsg.getObject();
+    	return _currentSample.getObject();
     }
     public final int getCurrentSampleIndex()
     {
-    	return _outputMsg.getIndex();
+    	return _currentSample.getIndex();
     }
     
     public final Object getBestSample()
     {
-    	return _varDiscrete.getDiscreteDomain().getElement(_bestSampleIndex);
+    	return _model.getDiscreteDomain().getElement(_bestSampleIndex);
     }
     public final int getBestSampleIndex()
     {
@@ -624,7 +704,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 			return ArrayUtil.EMPTY_OBJECT_ARRAY;
 		}
 		int length = sampleIndexArray.size();
-    	DiscreteDomain domain = _varDiscrete.getDiscreteDomain();
+    	DiscreteDomain domain = _model.getDiscreteDomain();
     	Object[] retval = new Object[length];
     	for (int i = 0; i < length; i++)
     		retval[i] = domain.getElement(sampleIndexArray.get(i));
@@ -701,11 +781,11 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	
 	public final void setInitialSampleValue(Object initialSampleValue)
 	{
-		_initialSampleValue = Value.create(_varDiscrete.getDomain(), initialSampleValue);
+		_initialSampleValue = Value.create(_model.getDomain(), initialSampleValue);
 	}
 	public final void setInitialSampleIndex(int initialSampleIndex)
 	{
-		DiscreteValue val = _initialSampleValue = Value.create(_varDiscrete.getDomain());
+		DiscreteValue val = _initialSampleValue = Value.create(_model.getDomain());
 		val.setIndex(initialSampleIndex);
 	}
 
@@ -808,14 +888,12 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	@Override
 	public void createNonEdgeSpecificState()
 	{
-		DiscreteDomain domain = _varDiscrete.getDomain();
-		_outputMsg = Value.create(domain);
-		_outputMsg = (DiscreteValue)resetOutputMessage(_outputMsg);
+		resetOutputMessage(_currentSample);
 
 		if (_sampleIndexArray != null)
 			saveAllSamples();
 
-		_beliefHistogram = new long[domain.size()];
+		_beliefHistogram = new long[_model.getDomain().size()];
 		_bestSampleIndex = -1;
 	}
 	
@@ -823,20 +901,12 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	@Override
 	public Object[] createMessages(ISolverFactor factor)
 	{
-		int portNum = _model.getPortNum(Objects.requireNonNull(factor.getModelObject()));
-		int length = _inPortMsgs.length;
-		length = Math.max(portNum+1, length);
-    	
-	    _inPortMsgs = Arrays.copyOf(_inPortMsgs, length);
-    	_inPortMsgs[portNum] = createDefaultMessage();
-    	
-		return new Object []{_inPortMsgs[portNum],_outputMsg};
+		return new Object []{ null ,_currentSample};
 	}
 
-	public double [] createDefaultMessage()
+	public DiscreteEnergyMessage createDefaultMessage()
 	{
-		double[] retVal = new double[((Discrete)_model).getDiscreteDomain().size()];
-		return (double[])resetInputMessage(retVal);
+		return new DiscreteEnergyMessage(_model.getDiscreteDomain().size());
 	}
 
 	// TODO move to ISolverVariable
@@ -853,7 +923,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	public Object resetOutputMessage(Object message)
 	{
 		DiscreteValue ds = (DiscreteValue)message;
-		ds.setIndex(_model.hasFixedValue() ? _varDiscrete.getFixedValueIndex() : 0);	// Normally zero, but use fixed value if one has been set
+		ds.setIndex(_model.hasFixedValue() ? _model.getFixedValueIndex() : 0);	// Normally zero, but use fixed value if one has been set
 		return ds;
 	}
 
@@ -861,38 +931,56 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	@Override
 	public void resetEdgeMessages(int portNum)
 	{
-		_inPortMsgs[portNum] = (double[])resetInputMessage(_inPortMsgs[portNum]);
+		getEdge(portNum).reset();
 		if (!_holdSampleValue)
-			_outputMsg = (DiscreteValue)resetOutputMessage(_outputMsg);
+		{
+			resetOutputMessage(_currentSample);
+		}
 	}
 
 	// TODO move to ISolverNode
 	@Override
 	public double[] getInputMsg(int portIndex)
 	{
-		return _inPortMsgs[portIndex];
+		// FIXM - return DiscreteMessage
+		return getDiscreteEdge(portIndex).factorToVarMsg.representation();
 	}
 
 	// TODO move to ISolverNode
 	@Override
 	public DiscreteValue getOutputMsg(int portIndex)
 	{
-		return _outputMsg;
+		return _currentSample;
 	}
 
 	// TODO move to ISolverNode
 	@Override
 	public void setInputMsg(int portIndex, Object obj)
 	{
-		_inPortMsgs[portIndex] = (double[])obj;
+		final IParameterizedMessage message = getEdge(portIndex).factorToVarMsg;
+		
+		if (obj instanceof IParameterizedMessage)
+		{
+			message.setFrom((IParameterizedMessage)obj);
+		}
+		else if (obj instanceof double[])
+		{
+			double[] target  = ((DiscreteMessage)message).representation();
+			System.arraycopy(obj, 0, target, 0, target.length);
+		}
 	}
 
 	// TODO move to ISolverNode
 	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
 	{
-		GibbsDiscrete ovar = ((GibbsDiscrete)other);
-		_inPortMsgs[thisPortNum] = ovar._inPortMsgs[otherPortNum];
+		final GibbsDiscrete sother = (GibbsDiscrete) other;
+
+		final GibbsSolverEdge<?> thisEdge = getEdge(thisPortNum);
+		final GibbsSolverEdge<?> otherEdge = sother.getEdge(otherPortNum);
+		
+		thisEdge.factorToVarMsg.setFrom(otherEdge.factorToVarMsg);
+		otherEdge.reset();
 	}
 	
 	// TODO move to ISolverVariable
@@ -900,10 +988,24 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
     public void moveNonEdgeSpecificState(ISolverNode other)
     {
 		GibbsDiscrete ovar = ((GibbsDiscrete)other);
-		_outputMsg = ovar._outputMsg;
+		ovar._prevSample = _currentSample;
+		ovar._repeatedVariable = true;
+		if (!_repeatedVariable)
+		{
+			if (_prevSample == _currentSample)
+			{
+				// If not already pointing at a different value object, then this must be the
+				// the first variable in the stream, so make a copy of its state.
+				_prevSample = _currentSample.clone();
+			}
+			else
+			{
+				_prevSample.setFrom(_currentSample);
+			}
+		}
+		_currentSample.setFrom(ovar._currentSample);
 		_sampleIndexArray = ovar._sampleIndexArray;
 		_beliefHistogram = ovar._beliefHistogram;
-		_outputMsg = ovar._outputMsg;
 		_bestSampleIndex = ovar._bestSampleIndex;
 		_initialSampleValue = ovar._initialSampleValue;
 		_beta = ovar._beta;
@@ -943,9 +1045,9 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		Arrays.fill(_beliefHistogram, 0);
 		
 		if (_model.hasFixedValue())
-			setCurrentSampleIndexForce(requireNonNull((Integer)_model.getFixedValueObject()));
+			setCurrentSampleIndexForce(requireNonNull(_model.getFixedValueObject()));
 		else
-			setCurrentSampleIndexForce(_outputMsg.getIndex());
+			setCurrentSampleIndexForce(_currentSample.getIndex());
 		
 		IGenericSampler sampler = _sampler;
 		if (sampler == null || !_samplerSpecificallySpecified)
@@ -956,5 +1058,18 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		sampler.initializeFromVariable(this);
 
 		resetRejectionRateStats();
+	}
+	
+	@SuppressWarnings("null")
+	@Override
+	protected GibbsSolverEdge<?> getEdge(int siblingIndex)
+	{
+		return (GibbsSolverEdge<?>)super.getEdge(siblingIndex);
+	}
+	
+	@SuppressWarnings("null")
+	GibbsDiscreteEdge getDiscreteEdge(int siblingIndex)
+	{
+		return (GibbsDiscreteEdge)super.getEdge(siblingIndex);
 	}
 }

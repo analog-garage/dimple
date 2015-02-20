@@ -128,15 +128,21 @@ public abstract class FactorFunction implements IFactorFunction
 		return eval(new Value[] { value });
 	}
 	
-	// Evaluate the factor and return a weight value using unwrapped object arguments
+	/**
+	 *  Evaluate the factor and return a weight value using unwrapped object arguments
+	 * @since 0.08
+	 */
 	@Matlab
 	public double eval(Object... arguments)
 	{
 		return Math.exp(-evalEnergy(arguments));
 	}
 	
-	// For deterministic-directed factor functions, set the value of the output variables given the input variables
-	// The default implementation does nothing; any deterministic-directed factor function must override this method
+	/**
+	 * For deterministic-directed factor functions, set the value of the output variables given the input variables,
+	 *<p>
+	 * The default implementation does nothing; any deterministic-directed factor function must override this method.
+	 */
 	@Override
 	public void evalDeterministic(Value[] arguments)
 	{
@@ -154,32 +160,19 @@ public abstract class FactorFunction implements IFactorFunction
 		return fullArgumentList[0].getObject();
 	}
     
-    // Run evalDeterministic without overwriting the arguments; instead copying the arguments and returning the result as an output
+    /**
+     * Run {@link #evalDeterministic} without modifying the arguments.
+     * @param arguments will be copied to return
+     * @return freshly allocated array of {@link Value}s holding references the original {@code Value}
+     * for each input argument, and new clones for output arguments.
+     */
     public Value[] evalDeterministicToCopy(Value[] arguments)
     {
-    	final int argumentsLength = arguments.length;
-    	final int[] outputIndices = requireNonNull(getDirectedToIndices(argumentsLength));
-    	final int outputIndicesLength = outputIndices.length;
-    	final Value[] copy = new Value[argumentsLength];
-    	
-    	// Clone the Values for output indices only
-    	for (int i = 0; i < outputIndicesLength; i++)
-    	{
-    		final int index = outputIndices[i];
-    		copy[index] = arguments[i].clone();	// Assumes a deep clone
-    	}
-    	
-    	// Copy the Values for other indices
-    	for (int i = 0; i < argumentsLength; i++)
-    		if (copy[i] == null)
-    			copy[i] = arguments[i];
-    	
+    	final Value[] copy = cloneOutputArguments(arguments);
     	evalDeterministic(copy);
     	return copy;
     }
 
-
-	
 	/**
 	 * @since 0.05
 	 */
@@ -389,6 +382,20 @@ public abstract class FactorFunction implements IFactorFunction
 		return false;
     }
     
+    /**
+     * Run {@link #updateDeterministic} without modifying the output arguments.
+     * @param arguments will be copied to return
+     * @return freshly allocated array of {@link Value}s holding references the original {@code Value}
+     * for each input argument, and new clones for output arguments.
+     */
+    public Value[] updateDeterministicToCopy(Value[] arguments, Collection<IndexedValue> oldValues,
+    	AtomicReference<int[]> changedOutputsHolder)
+    {
+    	final Value[] copy = cloneOutputArguments(arguments);
+    	updateDeterministic(copy, oldValues, changedOutputsHolder);
+    	return copy;
+    }
+
     /**
      * Indicates whether to use {@link #updateEnergy}
      * <p>
@@ -678,4 +685,26 @@ public abstract class FactorFunction implements IFactorFunction
 
 		throw new IllegalArgumentException(String.format("Expected parameter named '%s'", keys[0]));
 	}
- }
+	
+	/*-----------------
+	 * Private methods
+	 */
+	
+    /**
+     * Returns a copy of arguments with output arguments replaced with clones.
+     * @since 0.08
+     */
+    private Value[] cloneOutputArguments(Value[] arguments)
+    {
+    	final Value[] copy = arguments.clone();
+    	
+    	// Clone the Values for output indices only
+    	for (int i : requireNonNull(getDirectedToIndices(arguments.length)))
+    	{
+    		copy[i] = copy[i].clone(); // Assumes a deep clone
+    	}
+    	
+    	return copy;
+    }
+	
+}

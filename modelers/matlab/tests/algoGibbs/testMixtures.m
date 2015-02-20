@@ -226,9 +226,9 @@ sortedSelectorHistEst = sort(sum(bsxfun(@eq, Selector.Value', 0:numComponents-1)
 assertEqual(sortedSelectorHistData, sortedSelectorHistEst);
 
 % Get the actual and estimated normals and means and sort; ensure they approximately match
-sortedNormalData = sort(sampledNormals);
-sortedNormalEst = sort(cell2mat(Normals.invokeSolverMethodWithReturnValue('getBestSample')));
-assertElementsAlmostEqual(abs(sortedNormalEst), abs(sortedNormalData), 'absolute', 0.5);
+sortedNormalData = sort(abs(sampledNormals));
+sortedNormalEst = sort(abs(cell2mat(Normals.invokeSolverMethodWithReturnValue('getBestSample'))));
+assertElementsAlmostEqual(sortedNormalEst, sortedNormalData, 'absolute', 0.5);
 
 sortedMeansData = sort(dataMean);
 sortedMeansEst = sort(cell2mat(DataMean.invokeSolverMethodWithReturnValue('getBestSample')));

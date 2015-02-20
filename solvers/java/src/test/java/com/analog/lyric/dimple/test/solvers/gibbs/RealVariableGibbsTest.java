@@ -355,8 +355,8 @@ public class RealVariableGibbsTest extends DimpleTestBase
 		fg.setNumSteps(0);
 		
 		final GibbsReal X0 = sfg.getReal(X.get(0));
-		final ISolverFactorGibbs X0first = (ISolverFactorGibbs)X0.getSibling(0);
-		final ISolverFactorGibbs X0third = (ISolverFactorGibbs)X0.getSibling(1);
+		final ISolverFactorGibbs X0first = X0.getSibling(0);
+		final ISolverFactorGibbs X0next = X0.getSibling(1);
 		final GibbsReal Olast = sfg.getReal(O.get(O.size()-1));
 
 		final int ln = hmmLength - bufferSize;
@@ -372,7 +372,7 @@ public class RealVariableGibbsTest extends DimpleTestBase
 			
 			final double tmp = X0first.getPotential();
 			fg.advance();
-			assertEquals(tmp, X0third.getPotential(), 0.0);
+			assertEquals(tmp, X0next.getPotential(), 0.0);
 			Olast.setAndHoldSampleValue(o[inputIndex++]);
 		}
 		
@@ -430,7 +430,7 @@ public class RealVariableGibbsTest extends DimpleTestBase
 		
 		// Configure Gibbs
 		DimpleEnvironment env = DimpleEnvironment.active();
-		env.setOption(DimpleOptions.randomSeed, 1L);
+		env.setOption(DimpleOptions.randomSeed, 2L);
 		env.setOption(GibbsOptions.numSamples,  3000);
 		env.setOption(GibbsOptions.burnInScans, 10);
 		

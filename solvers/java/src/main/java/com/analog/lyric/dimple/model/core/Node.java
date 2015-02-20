@@ -510,6 +510,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	@Override
 	public void setName(@Nullable String name)
 	{
+		// TODO restrict name to valid Java identifier
 		if(name != null && name.contains("."))
 		{
 			throw new DimpleException("ERROR '.' is not a valid character in names");

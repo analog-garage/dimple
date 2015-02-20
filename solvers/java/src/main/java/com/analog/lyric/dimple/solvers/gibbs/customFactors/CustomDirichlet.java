@@ -22,25 +22,26 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.factorfunctions.Dirichlet;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
-import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsDirichletEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealJoint;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockInitializer;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.math.DimpleRandomGenerator;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjugateFactor
 {
-	private @Nullable Object[] _outputMsgs;
 	private @Nullable double[] _constantAlphaMinusOne;
 	private @Nullable GibbsRealJoint _alphaVariable;
 	private int _dimension;
@@ -53,6 +54,17 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 		super(factor);
 	}
 
+	@Override
+	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	{
+		if (edge.getFactorToVariableIndex() >= _numParameterEdges)
+		{
+			return new GibbsDirichletEdge(_dimension);
+		}
+		
+		return super.createEdge(edge);
+	}
+	
 	@SuppressWarnings("null")
 	@Override
 	public void updateEdgeMessage(int portNum)
@@ -61,7 +73,7 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 		{
 			// Output port must be an output variable
 
-			DirichletParameters outputMsg = (DirichletParameters)_outputMsgs[portNum];
+			DirichletParameters outputMsg = (DirichletParameters)getEdge(portNum).factorToVarMsg;
 			
 			if (_hasConstantParameters)
 				outputMsg.setAlphaMinusOne(_constantAlphaMinusOne);
@@ -151,26 +163,7 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 	{
 		super.createMessages();
 		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
-		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
-		for (int port = _numParameterEdges; port < _numPorts; port++)	// Only output edges
-			outputMsgs[port] = new DirichletParameters(_dimension);
 	}
-	
-	@SuppressWarnings("null")
-	@Override
-	public Object getOutputMsg(int portIndex)
-	{
-		return _outputMsgs[portIndex];
-	}
-	
-	@SuppressWarnings("null")
-	@Override
-	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-		super.moveMessages(other, thisPortNum, otherPortNum);
-		_outputMsgs[thisPortNum] = ((CustomDirichlet)other)._outputMsgs[otherPortNum];
-	}
-	
 	
 	private double[] minusOne(double[] in)
 	{
@@ -187,12 +180,13 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 		@Override
 		public void initialize()
 		{
-			int numOutputEdges = _numPorts - _numParameterEdges;
+			final int nEdges = getSiblingCount();
+			int numOutputEdges = nEdges - _numParameterEdges;
 			if (numOutputEdges > 0)
 			{
 				List<? extends Variable> siblings = _model.getSiblings();
 				double[] value = new double[_dimension];
-				for (int edge = _numParameterEdges; edge < _numPorts; edge++)
+				for (int edge = _numParameterEdges; edge < nEdges; edge++)
 				{
 					// Sample uniformly from the simplex
 					double sum = 0;

@@ -20,26 +20,28 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
-import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsGammaEdge;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsNormalEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NormalSampler;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class CustomNormal extends GibbsRealFactor implements IRealConjugateFactor
 {
-	private @Nullable Object[] _outputMsgs;
 	private @Nullable GibbsReal[] _outputVariables;
 	private @Nullable GibbsReal _meanVariable;
 	private @Nullable GibbsReal _precisionVariable;
@@ -64,6 +66,21 @@ public class CustomNormal extends GibbsRealFactor implements IRealConjugateFacto
 		super(factor);
 	}
 
+	@Override
+	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	{
+		final int portNum = edge.getFactorToVariableIndex();
+		
+		if (portNum == _precisionParameterPort)
+		{
+			return new GibbsGammaEdge();
+		}
+		else
+		{
+			return new GibbsNormalEdge();
+		}
+	}
+	
 	@SuppressWarnings("null")
 	@Override
 	public void updateEdgeMessage(int portNum)
@@ -73,7 +90,7 @@ public class CustomNormal extends GibbsRealFactor implements IRealConjugateFacto
 			// Port is the mean-parameter input
 			// Determine sample mean and precision
 
-			NormalParameters outputMsg = (NormalParameters)_outputMsgs[portNum];
+			NormalParameters outputMsg = (NormalParameters)getEdge(portNum).factorToVarMsg;
 
 			// Start with the ports to variable outputs
 			double sum = 0;
@@ -99,7 +116,7 @@ public class CustomNormal extends GibbsRealFactor implements IRealConjugateFacto
 			// Port is precision-parameter input
 			// Determine sample alpha and beta
 
-			GammaParameters outputMsg = (GammaParameters)_outputMsgs[portNum];
+			GammaParameters outputMsg = (GammaParameters)getEdge(portNum).factorToVarMsg;
 
 			// Get the current mean
 			double mean = _hasConstantMean ? _constantMeanValue : _meanVariable.getCurrentSample();
@@ -128,7 +145,7 @@ public class CustomNormal extends GibbsRealFactor implements IRealConjugateFacto
 		else
 		{
 			// Port is directed output
-			NormalParameters outputMsg = (NormalParameters)_outputMsgs[portNum];
+			NormalParameters outputMsg = (NormalParameters)getEdge(portNum).factorToVarMsg;
 
 			outputMsg.setMean(_hasConstantMean ? _constantMeanValue : _meanVariable.getCurrentSample());
 			outputMsg.setPrecision(_hasConstantPrecision ? _constantPrecisionValue : _precisionVariable.getCurrentSample());
@@ -162,7 +179,7 @@ public class CustomNormal extends GibbsRealFactor implements IRealConjugateFacto
 		
 		// Determine what parameters are constants or edges, and save the state
 		determineConstantsAndEdges();
-				}
+	}
 	
 	
 	private void determineConstantsAndEdges()
@@ -241,11 +258,12 @@ public class CustomNormal extends GibbsRealFactor implements IRealConjugateFacto
 	
 		// Save output variables and add to the statistics any output variables that have fixed values
 		int numVariableOutputs = 0;		// First, determine how many output variables are not fixed
-		for (int edge = _numParameterEdges; edge < _numPorts; edge++)
+		final int nEdges = getSiblingCount();
+		for (int edge = _numParameterEdges; edge < nEdges; edge++)
 			if (!(siblings.get(edge).hasFixedValue()))
 				numVariableOutputs++;
 		final GibbsReal[] outputVariables = _outputVariables = new GibbsReal[numVariableOutputs];
-		for (int edge = _numParameterEdges, index = 0; edge < _numPorts; edge++)
+		for (int edge = _numParameterEdges, index = 0; edge < nEdges; edge++)
 		{
 			Real outputVariable = (Real)siblings.get(edge);
 			if (outputVariable.hasFixedValue())
@@ -267,26 +285,6 @@ public class CustomNormal extends GibbsRealFactor implements IRealConjugateFacto
 	{
 		super.createMessages();
 		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
-		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
-		for (int port = 0; port < _numPorts; port++)
-			if (port == _precisionParameterPort)
-				outputMsgs[port] = new GammaParameters();
-			else
-				outputMsgs[port] = new NormalParameters();
 	}
 	
-	@SuppressWarnings("null")
-	@Override
-	public Object getOutputMsg(int portIndex)
-	{
-		return _outputMsgs[portIndex];
-	}
-	
-	@SuppressWarnings("null")
-	@Override
-	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-		super.moveMessages(other, thisPortNum, otherPortNum);
-		_outputMsgs[thisPortNum] = ((CustomNormal)other)._outputMsgs[otherPortNum];
-	}
 }

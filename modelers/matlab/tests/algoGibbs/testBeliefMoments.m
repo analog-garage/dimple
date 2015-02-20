@@ -178,7 +178,7 @@ vars.DataSource = dataSource;
 if (repeatable)
     fg.Solver.setSeed(1);
 end
-fg.Solver.setNumSamples(1000);
+fg.Solver.setNumSamples(4000);
 fg.Solver.setBurnInScans(10);
 fg.initialize();
 
@@ -187,7 +187,7 @@ fg2.Solver = 'Gibbs';
 if (repeatable)
     fg2.Solver.setSeed(1);
 end
-fg2.Solver.setNumSamples(1000);
+fg2.Solver.setNumSamples(4000);
 fg2.Solver.setBurnInScans(10);
 r = Real(numDataPoints,1);
 for i = 1:(numDataPoints-1)

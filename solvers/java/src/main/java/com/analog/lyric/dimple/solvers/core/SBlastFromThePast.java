@@ -37,14 +37,26 @@ import com.analog.lyric.util.misc.Internal;
 public class SBlastFromThePast extends SolverEventSource implements ISolverBlastFromThePastFactor
 {
 	private BlastFromThePastFactor _factor;
-	// TODO - make final and set when constructed
-	protected @Nullable Port _portForOtherVar;
-	protected @Nullable Port _portForBlastVar;
+	protected final Port _portForOtherVar;
+	protected final Port _portForBlastVar;
 	protected @Nullable ISolverFactorGraph _parent = null;
 	
 	public SBlastFromThePast(BlastFromThePastFactor f)
 	{
 		_factor = f;
+		_portForOtherVar = f.getPortForOtherVariable();
+		Variable varConnectedToBlast = f.getVariableConnectedToBlast();
+	    _portForBlastVar = new Port(varConnectedToBlast,varConnectedToBlast.getPortNum(getModelObject()));
+	}
+	
+	/*----------------
+	 * Object methods
+	 */
+	
+	@Override
+	public String toString()
+	{
+		return String.format("[%s %s]", getClass().getSimpleName(), _factor.getQualifiedName());
 	}
 	
 	/*----------------------
@@ -112,8 +124,8 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 	    	is.createMessages(this);
 	    }
 	    
-	    _portForOtherVar = portForOtherVar;
-	    _portForBlastVar = new Port(varConnectedToBlast,varConnectedToBlast.getPortNum(getModelObject()));
+	    assert(_portForOtherVar == portForOtherVar);
+	    assert(_portForBlastVar.node == varConnectedToBlast);
 	}
 
 	@Override

@@ -16,8 +16,9 @@
 
 package com.analog.lyric.dimple.solvers.interfaces;
 
-import com.analog.lyric.dimple.model.factors.Factor;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.model.factors.Factor;
 
 
 public interface ISolverFactor extends ISolverNode
@@ -36,6 +37,7 @@ public interface ISolverFactor extends ISolverNode
 	
 	//This method is called on a solver factor when it is first created.
 	//This method should create messages to and from variables.
+	@Deprecated
 	public abstract void createMessages();
 	
 	//In order to support repeated graphs, this method must be implemented.

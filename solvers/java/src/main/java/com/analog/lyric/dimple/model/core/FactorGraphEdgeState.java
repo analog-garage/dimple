@@ -126,6 +126,19 @@ public abstract class FactorGraphEdgeState
 	abstract public FactorGraph getFactorParent(FactorGraph graph);
 	
 	/**
+	 * Returns index of this edge in the factor endpoint's sibling list.
+	 * <p>
+	 * @param graph is the parent graph of either the variable or factor ends of the edge.
+	 * @return index that could be used to lookup this edge using {@link Node#getSiblingEdgeState(int)}
+	 * on the factor, or else -1 if edge is not connected.
+	 * @since 0.08
+	 */
+	public int getFactorToVariableIndex(FactorGraph graph)
+	{
+		return getFactor(graph).indexOfSiblingEdgeState(this);
+	}
+
+	/**
 	 * Return instance of {@link Variable} end of edge, given parent graph.
 	 * <p>
 	 * @param graph is the parent graph of either the variable or factor ends of the edge.
@@ -154,6 +167,19 @@ public abstract class FactorGraphEdgeState
 	abstract public FactorGraph getVariableParent(FactorGraph graph);
 	
 	/**
+	 * Returns index of this edge in the variable endpoint's sibling list.
+	 * 
+	 * @param graph is the parent graph of either the variable or fator ends of the edge.
+	 * @return index that could be used to lookup this edge using {@link Node#getSiblingEdgeState(int)}
+	 * on the variable, or else -1 if edge is not connected.
+	 * @since 0.08
+	 */
+	public int getVariableToFactorIndex(FactorGraph graph)
+	{
+		return getVariable(graph).indexOfSiblingEdgeState(this);
+	}
+	
+	/**
 	 * Given one endpoint of edge, return the other one.
 	 * <p>
 	 * That is given the {@link Variable} end of the edge, this returns the {@link Factor}, and
@@ -166,6 +192,19 @@ public abstract class FactorGraphEdgeState
 		final FactorGraph graph = requireNonNull(node.getContainingGraph());
 		
 		return node.isVariable() ? getFactor(graph) : getVariable(graph);
+	}
+	
+	/**
+	 * Given one endpoint of edge, find the sibling index from that endpoint to the other.
+	 * <p>
+	 * @param node is either the {@link Variable} or {@link Factor} at one end of the edge.
+	 * @return index that could be used to lookup this edge using {@link Node#getSiblingEdgeState(int)}
+	 * on the given {@code node}.
+	 * @since 0.08
+	 */
+	public final int getSiblingIndex(Node node)
+	{
+		return node.indexOfSiblingEdgeState(this);
 	}
 	
 	/**

@@ -20,23 +20,24 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsDirichletEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class CustomDiscreteTransition extends GibbsRealFactor implements IRealJointConjugateFactor
 {
-	private @Nullable Object[] _outputMsgs;
 	private @Nullable GibbsDiscrete _yVariable;
 	private @Nullable GibbsDiscrete _xVariable;
 	private @Nullable FactorFunction _factorFunction;
@@ -58,6 +59,17 @@ public class CustomDiscreteTransition extends GibbsRealFactor implements IRealJo
 		super(factor);
 	}
 
+	@Override
+	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	{
+		if (edge.getFactorToVariableIndex() >= _startingParameterEdge)
+		{
+			return new GibbsDirichletEdge(_yDimension);
+		}
+		
+		return super.createEdge(edge);
+	}
+	
 	@SuppressWarnings("null")
 	@Override
 	public void updateEdgeMessage(int portNum)
@@ -67,7 +79,7 @@ public class CustomDiscreteTransition extends GibbsRealFactor implements IRealJo
 			// Port is a parameter input
 			// Determine sample alpha parameter vector for the current input x
 
-			DirichletParameters outputMsg = (DirichletParameters)_outputMsgs[portNum];
+			DirichletParameters outputMsg = (DirichletParameters)getEdge(portNum).factorToVarMsg;
 			
 			// Clear the output counts
 			outputMsg.setNull();
@@ -167,23 +179,5 @@ public class CustomDiscreteTransition extends GibbsRealFactor implements IRealJo
 	{
 		super.createMessages();
 		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
-		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
-		for (int port = _startingParameterEdge; port < _numPorts; port++)	// Only parameter edges
-			outputMsgs[port] = new DirichletParameters(_yDimension);
-	}
-	
-	@SuppressWarnings("null")
-	@Override
-	public Object getOutputMsg(int portIndex)
-	{
-		return _outputMsgs[portIndex];
-	}
-	
-	@SuppressWarnings("null")
-	@Override
-	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-		super.moveMessages(other, thisPortNum, otherPortNum);
-		_outputMsgs[thisPortNum] = ((CustomDiscreteTransition)other)._outputMsgs[otherPortNum];
 	}
 }

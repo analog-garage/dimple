@@ -20,12 +20,20 @@ import java.util.Collection;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.util.misc.Internal;
 
 public interface ISolverFactorGibbs extends ISolverFactor, ISolverNodeGibbs
 {
+	@Internal
+	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge);
+	
+	@Override
+	public Value getInputMsg(int portIndex);
+
 	@Override
 	public double getPotential();
 	

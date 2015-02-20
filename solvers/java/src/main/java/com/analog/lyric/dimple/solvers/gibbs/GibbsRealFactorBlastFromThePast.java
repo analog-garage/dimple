@@ -23,14 +23,17 @@ import java.util.Collection;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SBlastFromThePast;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+
+// TODO - push common code w/ GibbsTableFactorBlastFromThePast into superclass
 
 /**
  * Real "blast from the past" factor for Gibbs solver.
@@ -39,8 +42,6 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
  */
 public class GibbsRealFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs
 {
-	private Value [] _inputMsgs;
-	private Object[] _outputMsgs;
 	private boolean _visited;
 	private int _topologicalOrder = 0;
 	
@@ -51,48 +52,33 @@ public class GibbsRealFactorBlastFromThePast extends SBlastFromThePast implement
 	}
 	
 	@Override
-	public void createMessages(Variable var, Port port)
+	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
 	{
-		super.createMessages(var,port);
-		getMessages();
-	}
-	
-	private void getMessages()
-	{
-		@SuppressWarnings("null")
-		Variable vb = (Variable)_portForOtherVar.node;
-		@SuppressWarnings("null")
-		int index = _portForOtherVar.index;
-		Factor f = vb.getSibling(index);
-		ISolverFactor sf = requireNonNull(f.getSolver());
-		int numEdges = f.getSiblingCount();
-		_inputMsgs = new Value[numEdges];
-		_outputMsgs = new Object[numEdges];
-		for (int i = 0; i < numEdges; i++)
+		Variable var = edge.getVariable(getFactor().requireParentGraph());
+		
+		if (var instanceof Discrete)
 		{
-			_inputMsgs[i] = (Value)sf.getInputMsg(i);
-			_outputMsgs[i] = sf.getOutputMsg(i);
+			return new GibbsDiscreteEdge((Discrete)var);
 		}
+
+		return new GibbsGenericEdge();
 	}
 	
-	@Override
-	public void advance()
-	{
-		super.advance();
-		getMessages();
-	}
-
 	@Override
 	public double getPotential()
 	{
-	    int numPorts = _inputMsgs.length;
-	    Object[] inPortMsgs = new Object[numPorts];
-	    for (int port = 0; port < numPorts; port++)
-	    	inPortMsgs[port] = _inputMsgs[port].getObject();
-	    
-	    return getPotential(inPortMsgs);
+		ISolverFactorGibbs otherFactor = getOtherFactor();
+		final int size = otherFactor.getSiblingCount();
+		Value[] currentSamples = new Value[size];
+		for (int i = 0; i < size; ++i)
+		{
+			ISolverVariableGibbs var = (ISolverVariableGibbs)otherFactor.getSibling(i);
+			currentSamples[i] = var.getPrevSampleValue();
+		}
+	    return getFactor().getFactorFunction().evalEnergy(currentSamples);
 	}
 	
+	@Deprecated
 	public double getPotential(Object[] inputs)
 	{
 		return getFactor().getFactorFunction().evalEnergy(inputs);
@@ -129,9 +115,19 @@ public class GibbsRealFactorBlastFromThePast extends SBlastFromThePast implement
 	}
 	
 	@Override
+	public Value getInputMsg(int portIndex)
+	{
+		return ((ISolverVariableGibbs)getOtherFactor().getSibling(portIndex)).getPrevSampleValue();
+	}
+	
+	@Override
 	public Object getOutputMsg(int portIndex)
 	{
-		return _outputMsgs[portIndex];
+		final Port port = requireNonNull(_portForOtherVar);
+		final Factor otherFactor = (Factor)port.node.getSibling(port.index);
+		// FIXME - look up through solver graph instead of through model object
+		GibbsSolverGraph sgraph = (GibbsSolverGraph)otherFactor.requireParentGraph().requireSolver("getOutputMsg");
+		return requireNonNull(sgraph.getSolverEdge(otherFactor.getSiblingEdgeState(portIndex))).factorToVarMsg;
 	}
 
 	@Override
@@ -140,5 +136,13 @@ public class GibbsRealFactorBlastFromThePast extends SBlastFromThePast implement
 		boolean changed = _visited ^ visited;
 		_visited = visited;
 		return changed;
+	}
+	
+	protected ISolverFactorGibbs getOtherFactor()
+	{
+		final Port port = requireNonNull(_portForOtherVar);
+		final Factor otherFactor = (Factor)port.node.getSibling(port.index);
+		// FIXME - look up through solver graph instead of through model object
+		return (ISolverFactorGibbs) otherFactor.requireSolver("getOtherFactor");
 	}
 }

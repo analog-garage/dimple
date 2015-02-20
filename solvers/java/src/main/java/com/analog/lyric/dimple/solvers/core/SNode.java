@@ -74,6 +74,16 @@ public abstract class SNode<MNode extends Node> extends SolverEventSource implem
 		_model = n;
 	}
 	
+	/*----------------
+	 * Object methods
+	 */
+	
+	@Override
+	public String toString()
+	{
+		return String.format("[%s %s]", getClass().getSimpleName(), _model.getQualifiedName());
+	}
+	
 	/*-----------------------
 	 * IOptionHolder methods
 	 */

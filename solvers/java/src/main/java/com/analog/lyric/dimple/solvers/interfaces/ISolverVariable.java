@@ -89,6 +89,7 @@ public interface ISolverVariable extends ISolverNode
      * <p>
      * NOTE: this method is going to be factored out in the near future!
      */
+    @Deprecated
     public @Nullable Object [] createMessages(ISolverFactor factor);
     
     //Method to reset an input message's values

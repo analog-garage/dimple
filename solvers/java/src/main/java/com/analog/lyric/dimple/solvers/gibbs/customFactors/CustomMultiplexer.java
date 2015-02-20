@@ -23,32 +23,36 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.factorfunctions.Multiplexer;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
-import com.analog.lyric.dimple.solvers.gibbs.ISolverRealVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscreteEdge;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsGenericEdge;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealJoint;
-import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
+import com.analog.lyric.dimple.solvers.gibbs.ISolverRealVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugateFactor, IRealJointConjugateFactor
 {
 	private @Nullable ISampler[] _conjugateSampler;
-	private @Nullable Object[] _outputMsgs;
 	private @Nullable GibbsDiscrete _selectorVariable;
 	private @Nullable ISolverRealVariableGibbs _outputVariable;
 	private int _outputPortNumber;
@@ -70,6 +74,19 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 		super(factor);
 	}
 
+	@Override
+	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	{
+		Variable var = edge.getVariable(_model.requireParentGraph());
+		
+		if (var instanceof Discrete)
+		{
+			return new GibbsDiscreteEdge((Discrete)var);
+		}
+
+		return new GibbsGenericEdge();
+	}
+	
 	@SuppressWarnings("null")
 	@Override
 	public void updateEdgeMessage(int portNum)
@@ -82,12 +99,13 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 			{
 				// Port is the currently selected input port
 				// Get the aggregated message from the variable connected to the output port
-				_outputVariable.getAggregateMessages((IParameterizedMessage)_outputMsgs[portNum], _outputVariableSiblingPortIndex, _conjugateSampler[portNum]);
+				_outputVariable.getAggregateMessages(getEdge(portNum).factorToVarMsg,
+					_outputVariableSiblingPortIndex, _conjugateSampler[portNum]);
 			}
 			else
 			{
 				// Port is not the currently selected input port
-				((IParameterizedMessage)_outputMsgs[portNum]).setNull();
+				getEdge(portNum).factorToVarMsg.setNull();
 			}
 		}
 		else
@@ -152,8 +170,9 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 		super.initialize();
 		
 		// Determine if any ports can use a conjugate sampler
-		final ISampler[] conjugateSampler = _conjugateSampler = new ISampler[_numPorts];
-		for (int port = 0; port < _numPorts; port++)
+		final int nEdges = getSiblingCount();
+		final ISampler[] conjugateSampler = _conjugateSampler = new ISampler[nEdges];
+		for (int port = 0; port < nEdges; port++)
 		{
 			INode var = _model.getSibling(port);
 			int varPortNum = _model.getSiblingPortIndex(port);
@@ -165,8 +184,10 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 				if (conjugateSampler[port] != null)
 				{
 					// Create message and tell the variable to use it
-					_outputMsgs[port] = ((IRealConjugateSampler)conjugateSampler[port]).createParameterMessage();
-					svar.setInputMsg(varPortNum, _outputMsgs[port]);
+					IParameterizedMessage msg =
+						((IRealConjugateSampler)conjugateSampler[port]).createParameterMessage();
+					getEdge(port).factorToVarMsg = msg;
+					svar.setInputMsg(varPortNum, msg);
 				}
 			}
 			else if (var instanceof RealJoint)
@@ -177,8 +198,10 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 				if (conjugateSampler[port] != null)
 				{
 					// Create message and tell the variable to use it
-					_outputMsgs[port] = ((IRealJointConjugateSampler)conjugateSampler[port]).createParameterMessage();
-					svar.setInputMsg(varPortNum, _outputMsgs[port]);
+					IParameterizedMessage msg =
+						((IRealJointConjugateSampler)conjugateSampler[port]).createParameterMessage();
+					getEdge(port).factorToVarMsg = msg;
+					svar.setInputMsg(varPortNum, msg);
 				}
 			}
 			else
@@ -191,14 +214,14 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 		
 		
 		// Set up _inputPortMap, which maps the selector value to port index
-		int numInputEdges = _numPorts - _firstInputPortNumber;
+		int numInputEdges = nEdges - _firstInputPortNumber;
 		final int[] inputPortMap = _inputPortMap = new int[numInputEdges];
 		if (_hasFactorFunctionConstants)
 		{
 			FactorFunction factorFunction = _model.getFactorFunction();
 			int numConstants = factorFunction.getConstantIndices().length;
 			
-			int numIndices = _numPorts + numConstants;
+			int numIndices = nEdges + numConstants;
 			for (int index = 0, port = 0, selectorIndex = 0; index < numIndices; index++)
 			{
 				if (factorFunction.isConstantIndex(index))
@@ -265,25 +288,8 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 	}
 	
 	@Override
-	public void createMessages()
+	protected GibbsGenericEdge getEdge(int siblingIndex)
 	{
-		super.createMessages();
-		_outputMsgs = new Object[_numPorts];
+		return (GibbsGenericEdge)super.getEdge(siblingIndex);
 	}
-	
-	@SuppressWarnings("null")
-	@Override
-	public Object getOutputMsg(int portIndex)
-	{
-		return _outputMsgs[portIndex];
-	}
-	
-	@SuppressWarnings("null")
-	@Override
-	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-		super.moveMessages(other, thisPortNum, otherPortNum);
-		_outputMsgs[thisPortNum] = ((CustomMultiplexer)other)._outputMsgs[otherPortNum];
-	}
-
 }

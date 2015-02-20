@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -16,16 +16,20 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import static java.util.Objects.*;
+
 import java.util.Collection;
 
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SBlastFromThePast;
 
@@ -34,9 +38,6 @@ import com.analog.lyric.dimple.solvers.core.SBlastFromThePast;
  */
 public class GibbsTableFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs
 {
-    protected int _numPorts;
-	private @Nullable double [] _outputMsg;
-	private @Nullable DiscreteValue _inputMsg;
 	private boolean _visited = false;
 	private int _topologicalOrder = 0;
 	
@@ -46,36 +47,34 @@ public class GibbsTableFactorBlastFromThePast extends SBlastFromThePast implemen
 	}
 
 	@Override
-	public void createMessages(Variable var, Port port)
+	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
 	{
-		super.createMessages(var,port);
-		getMessages();
-	}
-	
-	@SuppressWarnings("null")
-	private void getMessages()
-	{
-		final Port otherVarPort = _portForOtherVar;
-		final GibbsDiscrete svar = (GibbsDiscrete)otherVarPort.node.getSolver();
-		final int index = otherVarPort.index;
-		_outputMsg = svar.getInputMsg(index);
-		_inputMsg = svar.getOutputMsg(index);
+		return new GibbsDiscreteEdge((Discrete)edge.getVariable(getFactor().requireParentGraph()));
 	}
 	
 	@Override
-	public void advance()
+	public void createMessages(Variable var, Port port)
 	{
-		super.advance();
-		getMessages();
+		super.createMessages(var,port);
 	}
-
+	
+	@Override
+	public Value getInputMsg(int portIndex)
+	{
+		final GibbsSolverGraph sgraph = (GibbsSolverGraph)requireNonNull(getParentGraph());
+		final GibbsDiscrete svar = sgraph.getDiscrete((Discrete)_portForOtherVar.node);
+		return svar.getPrevSampleValue();
+	}
+	
 	@SuppressWarnings("null")
 	@Override
 	public double getPotential()
 	{
-		final DiscreteValue inputMsg = _inputMsg;
-		final double[] outputMsg = _outputMsg;
-		return inputMsg != null & outputMsg != null ? outputMsg[inputMsg.getIndex()] : Double.POSITIVE_INFINITY;
+		final GibbsSolverGraph sgraph = (GibbsSolverGraph)getParentGraph();
+		final GibbsDiscrete svar = (GibbsDiscrete)sgraph.getSolverVariable((Variable)_portForOtherVar.node);
+		final DiscreteValue inputMsg = svar.getPrevSampleValue();
+		final GibbsDiscreteEdge sedge = svar.getDiscreteEdge(_portForOtherVar.index);
+		return sedge.factorToVarMsg.getEnergy(inputMsg.getIndex());
 	}
 	
 	@Override
@@ -115,5 +114,4 @@ public class GibbsTableFactorBlastFromThePast extends SBlastFromThePast implemen
 		_visited = visited;
 		return changed;
 	}
-
 }

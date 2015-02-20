@@ -22,11 +22,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.MultinomialEnergyParameters;
 import com.analog.lyric.dimple.factorfunctions.MultinomialUnnormalizedParameters;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
@@ -36,20 +39,18 @@ import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
-import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
-import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsGammaEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFactor implements IRealConjugateFactor, MultinomialBlockProposal.ICustomMultinomial
 {
-	private @Nullable Object[] _outputMsgs;
 	private @Nullable GibbsDiscrete[] _outputVariables;
 	private @Nullable GibbsDiscrete _NVariable;
 	private @Nullable GibbsReal[] _alphaVariables;
@@ -76,6 +77,19 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 		super(factor);
 	}
 
+	@Override
+	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	{
+		final int portNum = edge.getFactorToVariableIndex();
+		
+		if (portNum >= _alphaParameterMinEdge && portNum <= _alphaParameterMaxEdge)
+		{
+			return new GibbsGammaEdge();
+		}
+		
+		return super.createEdge(edge);
+	}
+	
 	@SuppressWarnings("null")
 	@Override
 	public void updateEdgeMessage(int portNum)
@@ -87,7 +101,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 			// NOTE: This case works for either MultinomialUnnormalizedParameters or MultinomialEnergyParameters factor functions
 			// since the actual parameter value doesn't come into play in determining the message in this direction
 
-			GammaParameters outputMsg = (GammaParameters)_outputMsgs[portNum];
+			GammaParameters outputMsg = (GammaParameters)getEdge(portNum).factorToVarMsg;
 
 			// The parameter being updated corresponds to this value
 			int parameterOffset = _factorFunction.getIndexByEdge(portNum) - _alphaParameterMinIndex;
@@ -287,7 +301,8 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 
 		
 		// Save the output constant or variables as well
-		int numOutputEdges = _numPorts - factorFunction.getEdgeByIndex(outputMinIndex);
+		final int nEdges = getSiblingCount();
+		int numOutputEdges = nEdges - factorFunction.getEdgeByIndex(outputMinIndex);
 		_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(outputMinIndex);
 		final GibbsDiscrete[] outputVariables = _outputVariables = new GibbsDiscrete[numOutputEdges];
 		_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(outputMinIndex);
@@ -325,24 +340,5 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 	{
 		super.createMessages();
 		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
-		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
-		if (_alphaParameterMinEdge >= 0)
-			for (int port = _alphaParameterMinEdge; port <= _alphaParameterMaxEdge; port++)	// Only parameter edges
-				outputMsgs[port] = new GammaParameters();
-	}
-	
-	@SuppressWarnings("null")
-	@Override
-	public Object getOutputMsg(int portIndex)
-	{
-		return _outputMsgs[portIndex];
-	}
-	
-	@SuppressWarnings("null")
-	@Override
-	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-		super.moveMessages(other, thisPortNum, otherPortNum);
-		_outputMsgs[thisPortNum] = ((CustomMultinomialUnnormalizedOrEnergyParameters)other)._outputMsgs[otherPortNum];
 	}
 }

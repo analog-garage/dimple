@@ -23,9 +23,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.factorfunctions.Multinomial;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
@@ -34,20 +37,18 @@ import com.analog.lyric.dimple.schedulers.IScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsDirichletEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
-import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealJoint;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class CustomMultinomial extends GibbsRealFactor implements IRealJointConjugateFactor, MultinomialBlockProposal.ICustomMultinomial
 {
-	private @Nullable Object[] _outputMsgs;
 	private @Nullable GibbsDiscrete[] _outputVariables;
 	private @Nullable GibbsDiscrete _NVariable;
 	private @Nullable GibbsRealJoint _alphaVariable;
@@ -72,6 +73,17 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 		super(factor);
 	}
 
+	@Override
+	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	{
+		if (edge.getFactorToVariableIndex() == _alphaParameterEdge)
+		{
+			return new GibbsDirichletEdge(_dimension);
+		}
+		
+		return super.createEdge(edge);
+	}
+	
 	@SuppressWarnings("null")
 	@Override
 	public void updateEdgeMessage(int portNum)
@@ -81,7 +93,7 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 			// Output port is the joint alpha parameter input
 			// Determine sample alpha vector of the conjugate Dirichlet distribution
 			
-			DirichletParameters outputMsg = (DirichletParameters)_outputMsgs[portNum];
+			DirichletParameters outputMsg = (DirichletParameters)getEdge(portNum).factorToVarMsg;
 
 			// Clear the output counts
 			outputMsg.setNull(_dimension);
@@ -230,7 +242,8 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 		}
 		
 		// Save the output constant or variables as well
-		int numOutputEdges = _numPorts - factorFunction.getEdgeByIndex(outputMinIndex);
+		final int nEdges = getSiblingCount();
+		int numOutputEdges = nEdges - factorFunction.getEdgeByIndex(outputMinIndex);
 		final GibbsDiscrete[] outputVariables = _outputVariables = new GibbsDiscrete[numOutputEdges];
 		_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(outputMinIndex);
 		_constantOutputCounts = null;
@@ -275,28 +288,6 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 	{
 		super.createMessages();
 		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
-		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
-		if (_alphaParameterEdge != NO_PORT)
-			outputMsgs[_alphaParameterEdge] = new DirichletParameters();
 	}
-	
-	@SuppressWarnings("null")
-	@Override
-	public Object getOutputMsg(int portIndex)
-	{
-		return _outputMsgs[portIndex];
-	}
-	
-	@SuppressWarnings("null")
-	@Override
-	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-		super.moveMessages(other, thisPortNum, otherPortNum);
-		_outputMsgs[thisPortNum] = ((CustomMultinomial)other)._outputMsgs[otherPortNum];
-	}
-	
-	
-	
-
 	
 }

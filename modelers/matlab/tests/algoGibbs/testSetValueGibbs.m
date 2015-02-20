@@ -24,6 +24,7 @@ function testSetValueGibbs()
     fg.addFactor(@(a) sum(a), d);
     value = randi(3,3,1);
     d.FixedValue = value;
+    fg.initialize();
     assert(all(reshape(d.hasFixedValue,numel(value),1) == true(numel(value),1)));
     assertEqual(d.FixedValue,value);
     assertEqual(d.Value,value);
@@ -39,6 +40,7 @@ function testSetValueGibbs()
     fg.addFactor(@(a) sum(a(:)), d);
     value = randi(3,3,2);
     d.FixedValue = value;
+    fg.initialize();
     assert(all(reshape(d.hasFixedValue,numel(value),1) == true(numel(value),1)));
     assertEqual(d.FixedValue,value);
     assertEqual(d.Value,value);
@@ -77,6 +79,7 @@ function testSetValueGibbs()
     assertEqual(a.FixedValue,value);
     assert(~b.hasFixedValue);
     b.FixedValue = value;
+    fg.initialize();
     assert(b.hasFixedValue);
     assertEqual(b.FixedValue,value);
     assertEqual(fg.Solver.getTotalPotential(), 0);

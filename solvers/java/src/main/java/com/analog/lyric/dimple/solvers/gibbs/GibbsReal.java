@@ -95,16 +95,72 @@ public class GibbsReal extends SRealVariableBase
 	 * State
 	 */
 	
+	private class CurrentSample extends RealValue
+	{
+		private static final long serialVersionUID = 1L;
+
+		CurrentSample(RealDomain domain)
+		{
+			super(0.0);
+			reset();
+		}
+		
+		@Override
+		public void setDouble(double value)
+		{
+			// If the sample value is being held, don't modify the value
+			if (_holdSampleValue)
+			{
+				return;
+			}
+			
+			// Also return if the variable is set to a fixed value
+			if (_model.hasFixedValue())
+			{
+				return;
+			}
+			
+			if (value != _value)
+			{
+				setDoubleForce(value);
+			}
+		}
+		
+		void setDoubleForce(double value)
+		{
+			final GibbsNeighbors neighbors = _neighbors;
+			final boolean hasDeterministicDependents = neighbors != null && neighbors.hasDeterministicDependents();
+			
+			RealValue oldValue = null;
+			if (hasDeterministicDependents)
+			{
+				oldValue = RealValue.create(_value);
+			}
+			
+			_value = value;
+			
+			// If this variable has deterministic dependents, then set their values
+			if (hasDeterministicDependents)
+			{
+				requireNonNull(neighbors).update(requireNonNull(oldValue));
+			}
+		}
+		
+		void reset()
+		{
+			_value = _model.hasFixedValue() ? _model.getFixedValue() : _initialSampleValue;
+		}
+	}
+	
 	public static final String DEFAULT_REAL_SAMPLER_NAME = "SliceSampler";
 	
-	private Real _varReal;
-	private RealValue _outputMsg;
-	private @Nullable Object[] _inputMsg = null;
-	private double _sampleValue = 0;
+	private final CurrentSample _currentSample;
+	private RealValue _prevSample; // Used only by BlastFromThePast factors
+	private boolean _repeatedVariable;
 	private double _initialSampleValue = 0;
 	private boolean _initialSampleValueSet = false;
 	private @Nullable FactorFunction _input;
-	private RealDomain _domain;
+	private final RealDomain _domain;
 	private @Nullable IMCMCSampler _sampler = null;
 	private @Nullable IRealConjugateSampler _conjugateSampler = null;
 	private boolean _samplerSpecificallySpecified = false;
@@ -134,27 +190,29 @@ public class GibbsReal extends SRealVariableBase
 	{
 		super(var);
 
-		if (!(var.getDomain() instanceof RealDomain))
-			throw new DimpleException("expected real domain");
-
-		_varReal = _model;
 		_domain = var.getDomain();
-		_outputMsg = createDefaultMessage();
+		_prevSample = _currentSample = new CurrentSample(_domain);
 	}
 
+	// FIXME - who uses this?
 	// Alternative constructor for creating from a joint domain
 	public GibbsReal(Real var, Real realVar, RealDomain domain)
 	{
 		super(var);
 
-		_varReal = realVar;
 		_domain = domain;
-		_outputMsg = createDefaultMessage();
+		_prevSample = _currentSample = new CurrentSample(_domain);
 	}
 
 	/*---------------------
 	 * ISolverNode methods
 	 */
+	
+	@Override
+	public ISolverFactorGibbs getSibling(int edge)
+	{
+		return (ISolverFactorGibbs)super.getSibling(edge);
+	}
 	
 	@Override
 	protected void doUpdateEdge(int outPortNum)
@@ -185,7 +243,7 @@ public class GibbsReal extends SRealVariableBase
 			oldSampleScore = getCurrentSampleScore();
 			//$FALL-THROUGH$
 		case UPDATE_EVENT_SIMPLE:
-			oldValue = RealValue.create(_sampleValue);
+			oldValue = _currentSample.clone();
 			break;
 		}
 
@@ -196,7 +254,7 @@ public class GibbsReal extends SRealVariableBase
 		if (conjugateSampler == null)
 		{
 			// Use MCMC sampler
-			RealValue nextSample = RealValue.create(_sampleValue);
+			RealValue nextSample = RealValue.create(_currentSample.getDouble());
 			rejected = !Objects.requireNonNull(_sampler).nextSample(nextSample, this);
 			if (rejected) _rejectCount++;
 		}
@@ -217,7 +275,7 @@ public class GibbsReal extends SRealVariableBase
 				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
 			}
 			double nextSampleValue = conjugateSampler.nextSample(ports, _input);
-			if (nextSampleValue != _sampleValue)	// Would be exactly equal if not changed since last value tested
+			if (nextSampleValue != _currentSample.getDouble())	// Would be exactly equal if not changed since last value tested
 				setCurrentSample(nextSampleValue);
 		}
 		
@@ -226,11 +284,11 @@ public class GibbsReal extends SRealVariableBase
 		case UPDATE_EVENT_SCORED:
 			// TODO: non-conjugate samplers already compute sample scores, so we shouldn't have to do here.
 			raiseEvent(new GibbsScoredVariableUpdateEvent(this, Objects.requireNonNull(oldValue), oldSampleScore,
-				RealValue.create(_sampleValue), getCurrentSampleScore(), rejected ? 1 : 0));
+				_currentSample, getCurrentSampleScore(), rejected ? 1 : 0));
 			break;
 		case UPDATE_EVENT_SIMPLE:
 			raiseEvent(new GibbsVariableUpdateEvent(this, Objects.requireNonNull(oldValue),
-				RealValue.create(_sampleValue), rejected ? 1 : 0));
+				_currentSample, rejected ? 1 : 0));
 			break;
 		}
 	}
@@ -275,7 +333,7 @@ public class GibbsReal extends SRealVariableBase
 		
 		computeScore:
 		{
-			if (!_domain.inDomain(_sampleValue))
+			if (!_domain.inDomain(_currentSample.getDouble()))
 				break computeScore; // outside the domain
 
 			double potential = 0;
@@ -284,7 +342,7 @@ public class GibbsReal extends SRealVariableBase
 			final FactorFunction input = _input;
 			if (input != null)
 			{
-				potential = input.evalEnergy(new Object[]{_sampleValue});
+				potential = input.evalEnergy(_currentSample);
 				if (!Doubles.isFinite(potential))
 				{
 					break computeScore;
@@ -317,7 +375,7 @@ public class GibbsReal extends SRealVariableBase
 	@Override
 	public final void setNextSampleValue(double sampleValue)
 	{
-		if (sampleValue != _sampleValue)
+		if (sampleValue != _currentSample.getDouble())
 			setCurrentSample(sampleValue);
 	}
 
@@ -371,7 +429,14 @@ public class GibbsReal extends SRealVariableBase
 	@Override
 	public RealValue getCurrentSampleValue()
 	{
-		return _outputMsg;
+		return _currentSample;
+	}
+	
+	@Internal
+	@Override
+	public final RealValue getPrevSampleValue()
+	{
+		return _prevSample;
 	}
 	
 	@Override
@@ -392,7 +457,7 @@ public class GibbsReal extends SRealVariableBase
 		// If the variable has a fixed value, then set the current sample to that value and return
 		if (_model.hasFixedValue())
 		{
-			setCurrentSample(_varReal.getFixedValue());
+			setCurrentSample(_model.getFixedValue());
 			return;
 		}
 		if (_initialSampleValueSet && restartCount == 0)
@@ -426,11 +491,21 @@ public class GibbsReal extends SRealVariableBase
 		{
 			// No input or no available sampler, so if bounded, sample uniformly from the bounds
 			if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
+			{
 				setCurrentSample(DimpleRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
-			else if (hi < _sampleValue)
-				setCurrentSample(hi);
-			else if (lo > _sampleValue)
-				setCurrentSample(lo);
+			}
+			else
+			{
+				double sampleValue = _currentSample.getDouble();
+				if (hi < sampleValue)
+				{
+					setCurrentSample(hi);
+				}
+				else if (lo > sampleValue)
+				{
+					setCurrentSample(lo);
+				}
+			}
 		}
 	}
 
@@ -438,7 +513,7 @@ public class GibbsReal extends SRealVariableBase
 	public final void updateBelief()
 	{
 		// Update the sums for computing moments
-		final double currentSampleValue = _sampleValue;
+		final double currentSampleValue = _currentSample.getDouble();
 		_sampleSum += currentSampleValue;
 		_sampleSumSquare += currentSampleValue * currentSampleValue;
 		_sampleCount++;
@@ -490,7 +565,7 @@ public class GibbsReal extends SRealVariableBase
 		else if (_guessWasSet)
 			return input.evalEnergy(_guessValue);
 		else
-			return input.evalEnergy(_sampleValue);
+			return input.evalEnergy(_currentSample);
 	}
 	
 	@Override
@@ -499,9 +574,9 @@ public class GibbsReal extends SRealVariableBase
 		if (_guessWasSet)
 			return Double.valueOf(_guessValue);
 		else if (_model.hasFixedValue())
-			return Double.valueOf(_varReal.getFixedValue());
+			return Double.valueOf(_model.getFixedValue());
 		else
-			return Double.valueOf(_sampleValue);
+			return _currentSample.getObject();
 	}
 
 	/**
@@ -531,13 +606,13 @@ public class GibbsReal extends SRealVariableBase
 	{
 		final DoubleArrayList sampleArray = _sampleArray;
 		if (sampleArray != null)
-			sampleArray.add(_sampleValue);
+			sampleArray.add(_currentSample.getDouble());
 	}
 
 	@Override
 	public final void saveBestSample()
 	{
-		_bestSampleValue = _sampleValue;
+		_bestSampleValue = _currentSample.getDouble();
 	}
 	
 	// TODO move to ISolverNodeGibbs
@@ -547,14 +622,14 @@ public class GibbsReal extends SRealVariableBase
 		if (_model.hasFixedValue())
 			return 0;
 		
-		if (!_domain.inDomain(_sampleValue))
+		if (!_domain.inDomain(_currentSample.getDouble()))
 			return Double.POSITIVE_INFINITY;
 		
 		final FactorFunction input = _input;
 		if (input == null)
 			return 0;
 		else
-			return input.evalEnergy(new Object[]{_sampleValue});
+			return input.evalEnergy(_currentSample);
 	}
 	
 	@Override
@@ -566,13 +641,13 @@ public class GibbsReal extends SRealVariableBase
     @Override
 	public final void setCurrentSample(Object value)
 	{
-		setCurrentSample(FactorFunctionUtilities.toDouble(value));
+		_currentSample.setDouble(FactorFunctionUtilities.toDouble(value));
 	}
     
     @Override
     public final void setCurrentSample(Value value)
     {
-    	setCurrentSample(value.getDouble());
+    	_currentSample.setFrom(value);
     }
     
     /*---------------
@@ -581,40 +656,18 @@ public class GibbsReal extends SRealVariableBase
     
 	public final void setCurrentSample(double value)
 	{
-		// If the sample value is being held, don't modify the value
-		if (_holdSampleValue) return;
-		
-		// Also return if the variable is set to a fixed value
-		if (_model.hasFixedValue()) return;
-		
-		setCurrentSampleForce(value);
+		_currentSample.setDouble(value);
 	}
 	
 	// Sets the sample regardless of whether the value is fixed or held
 	private final void setCurrentSampleForce(double value)
 	{
-		final GibbsNeighbors neighbors = _neighbors;
-		final boolean hasDeterministicDependents = neighbors != null && neighbors.hasDeterministicDependents();
-		
-		RealValue oldValue = null;
-		if (hasDeterministicDependents)
-		{
-			oldValue = _outputMsg.clone();
-		}
-		
-		_sampleValue = value;
-		_outputMsg.setDouble(_sampleValue);
-		
-		// If this variable has deterministic dependents, then set their values
-		if (hasDeterministicDependents)
-		{
-			requireNonNull(neighbors).update(requireNonNull(oldValue));
-		}
+		_currentSample.setDoubleForce(value);
 	}
 
 	public final double getCurrentSample()
 	{
-		return _sampleValue;
+		return _currentSample.getDouble();
 	}
 
 	public final double getBestSample()
@@ -871,18 +924,11 @@ public class GibbsReal extends SRealVariableBase
 		_beta = beta;
 	}
 
-
-
-	public RealValue createDefaultMessage()
-	{
-		return Value.create(_domain, _model.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue);
-	}
-
 	// TODO Move to ISolverVariable
 	@Override
 	public Object resetInputMessage(Object message)
 	{
-		((RealValue)message).setObject(_model.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue);
+		((RealValue)message).setObject(_model.hasFixedValue() ? _model.getFixedValue() : _initialSampleValue);
 		return message;
 	}
 
@@ -896,31 +942,33 @@ public class GibbsReal extends SRealVariableBase
 	@Override
 	public @Nullable Object getInputMsg(int portIndex)
 	{
-		return _inputMsg;
+		return getEdge(portIndex).factorToVarMsg;
 	}
 
 	// TODO move to ISolverNode
 	@Override
 	public @Nullable Object getOutputMsg(int portIndex)
 	{
-		return _outputMsg;
+		return _currentSample;
 	}
 
 	// TODO move to ISolverNode
 	@Override
 	public void setInputMsg(int portIndex, Object obj)
 	{
-		Object[] inputMsg = _inputMsg;
-		if (inputMsg == null)
-			inputMsg = _inputMsg = new Object[_model.getSiblingCount()];
-		inputMsg[portIndex] = obj;
+		// FIXME - does this need to be implemented?
 	}
 
-	// TODO move to ISolverNode
 	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
 	{
-		
+		final GibbsReal sother = (GibbsReal) other;
+
+		final GibbsSolverEdge<?> thisEdge = getEdge(thisPortNum);
+		final GibbsSolverEdge<?> otherEdge = sother.getEdge(otherPortNum);
+
+		thisEdge.factorToVarMsg.setFrom(otherEdge.factorToVarMsg);
+		otherEdge.reset();
 	}
 	
 	// TODO move to ISolverNode
@@ -938,13 +986,13 @@ public class GibbsReal extends SRealVariableBase
 		// Unless this is a dependent of a deterministic factor, then set the starting sample value
 		if (!getModelObject().isDeterministicOutput())
 		{
-			double initialSampleValue = _model.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue;
+			double initialSampleValue = _model.hasFixedValue() ? _model.getFixedValue() : _initialSampleValue;
 			if (!_holdSampleValue)
 				setCurrentSampleForce(initialSampleValue);
 		}
 		
 		// Clear out sample state
-		_bestSampleValue = _sampleValue;
+		_bestSampleValue = _currentSample.getDouble();
 		DoubleArrayList sampleArray = null;
 		if (saveAllSamples)
 		{
@@ -1015,16 +1063,15 @@ public class GibbsReal extends SRealVariableBase
 	@Override
 	public Object[] createMessages(ISolverFactor factor)
 	{
-		return new Object[] {null,_outputMsg};
+		return new Object[] {null,_currentSample};
 	}
 	
 	// TODO move to ISolverVariable
 	@Override
 	public void createNonEdgeSpecificState()
 	{
-		_outputMsg = createDefaultMessage();
-		_sampleValue = _outputMsg.getDouble();
-	    _bestSampleValue = _sampleValue;
+		_currentSample.reset();
+	    _bestSampleValue = _currentSample.getDouble();
 	    if (_sampleArray != null)
 			saveAllSamples();
 	}
@@ -1034,8 +1081,22 @@ public class GibbsReal extends SRealVariableBase
     public void moveNonEdgeSpecificState(ISolverNode other)
     {
 		GibbsReal ovar = ((GibbsReal)other);
-		_outputMsg = ovar._outputMsg;
-		_sampleValue = ovar._sampleValue;
+		ovar._prevSample = _currentSample;
+		ovar._repeatedVariable = true;
+		if (!_repeatedVariable)
+		{
+			if (_prevSample == _currentSample)
+			{
+				// If not already pointing at a different value object, then this must be the
+				// the first variable in the stream, so make a copy of its state.
+				_prevSample = _currentSample.clone();
+			}
+			else
+			{
+				_prevSample.setFrom(_currentSample);
+			}
+		}
+		_currentSample.setFrom(ovar._currentSample);
 		_initialSampleValue = ovar._initialSampleValue;
 		_initialSampleValueSet = ovar._initialSampleValueSet;
 		_sampleArray = ovar._sampleArray;
@@ -1109,4 +1170,10 @@ public class GibbsReal extends SRealVariableBase
 		return commonSamplers;
 	}
 
+	@SuppressWarnings("null")
+	@Override
+	protected GibbsSolverEdge<?> getEdge(int siblingIndex)
+	{
+		return (GibbsSolverEdge<?>)super.getEdge(siblingIndex);
+	}
 }

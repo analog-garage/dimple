@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2013 Analog Devices, Inc.
+*   Copyright 2013-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -22,22 +22,23 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.factorfunctions.ExchangeableDirichlet;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
-import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsDirichletEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 
 public class CustomExchangeableDirichlet extends GibbsRealFactor implements IRealJointConjugateFactor
 {
-	private @Nullable Object[] _outputMsgs;
 	private double _constantAlphaMinusOne;
 	private @Nullable GibbsReal _alphaVariable;
 	private int _dimension;
@@ -50,6 +51,17 @@ public class CustomExchangeableDirichlet extends GibbsRealFactor implements IRea
 		super(factor);
 	}
 
+	@Override
+	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	{
+		if (edge.getFactorToVariableIndex() >= _numParameterEdges)
+		{
+			return new GibbsDirichletEdge(_dimension);
+		}
+		
+		return super.createEdge(edge);
+	}
+	
 	@SuppressWarnings("null")
 	@Override
 	public void updateEdgeMessage(int portNum)
@@ -58,7 +70,7 @@ public class CustomExchangeableDirichlet extends GibbsRealFactor implements IRea
 		{
 			// Output port must be an output variable
 
-			DirichletParameters outputMsg = (DirichletParameters)_outputMsgs[portNum];
+			DirichletParameters outputMsg = (DirichletParameters)getEdge(portNum).factorToVarMsg;
 			
 			if (_hasConstantParameters)
 				outputMsg.fillAlphaMinusOne(_constantAlphaMinusOne);
@@ -138,23 +150,5 @@ public class CustomExchangeableDirichlet extends GibbsRealFactor implements IRea
 	{
 		super.createMessages();
 		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
-		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
-		for (int port = _numParameterEdges; port < _numPorts; port++)	// Only output edges
-			outputMsgs[port] = new DirichletParameters(_dimension);
-	}
-	
-	@SuppressWarnings("null")
-	@Override
-	public Object getOutputMsg(int portIndex)
-	{
-		return _outputMsgs[portIndex];
-	}
-	
-	@SuppressWarnings("null")
-	@Override
-	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-		super.moveMessages(other, thisPortNum, otherPortNum);
-		_outputMsgs[thisPortNum] = ((CustomExchangeableDirichlet)other)._outputMsgs[otherPortNum];
 	}
 }
