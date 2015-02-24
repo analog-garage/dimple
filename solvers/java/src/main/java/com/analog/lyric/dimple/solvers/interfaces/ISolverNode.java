@@ -56,7 +56,7 @@ public interface ISolverNode extends IOptionHolder, ISolverEventSource
 	/**
 	 * Gets the highest level solver graph to which this node belongs.
 	 */
-	public @Nullable ISolverFactorGraph getRootGraph();
+	public @Nullable ISolverFactorGraph getRootSolverGraph();
 
 	/**
 	 * Returns solver node attached to this node through edge with given index.

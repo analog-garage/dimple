@@ -42,6 +42,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import cern.colt.list.IntArrayList;
 
+import com.analog.lyric.collect.ExtendedArrayList;
 import com.analog.lyric.collect.IndexedArrayList;
 import com.analog.lyric.collect.Tuple2;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
@@ -144,16 +145,56 @@ public class FactorGraph extends FactorBase
 	
 	private static class RootState
 	{
-		private final FactorGraph _root;
+		/**
+		 * Counter that is modified whenever a structural change is made anywhere in the graph hierarchy.
+		 */
 		private long _globalStructureVersion = 0;
+		
+		/**
+		 * List of all graphs in the graph hierarchy that shares a common root, which will the first element.
+		 * Each graph is indexed by its root index.
+		 */
+		private final ExtendedArrayList<FactorGraph> _graphs;
+		
+		private int _nGraphs = 0;
 		
 		private RootState(FactorGraph root)
 		{
-			_root = root;
+			_graphs = new ExtendedArrayList<FactorGraph>(1);
+			addGraph(root);
+		}
+		
+		private RootState addGraph(FactorGraph graph)
+		{
+			graph._rootIndex = _graphs.size();
+			_graphs.add(graph);
+			++_nGraphs;
+			return this;
+		}
+		
+		private void removeGraph(FactorGraph graph)
+		{
+			int index = graph._rootIndex;
+			assert(graph == _graphs.get(index));
+			if (index == _graphs.size() - 1)
+			{
+				// If at end of list, we can reclaim that slot immediately without affecting other indexes.
+				_graphs.remove(index);
+			}
+			else
+			{
+				_graphs.set(index, null);
+			}
+			--_nGraphs;
 		}
 	}
 
 	private RootState _rootState;
+	
+	/**
+	 * Index of this graph within {@code _rootState._graphs}.
+	 */
+	private int _rootIndex = -1;
 	
 	// TODO : some state only needs to be in root graph. Put it in common object.
 	
@@ -601,7 +642,7 @@ public class FactorGraph extends FactorBase
 		_env = DimpleEnvironment.active();
 		_graphId = _env.factorGraphs().registerIdForFactorGraph(this);
 		_eventAndOptionParent = _env;
-		_rootState = rootState != null ? rootState : new RootState(this);
+		_rootState = rootState != null ? rootState.addGraph(this) : new RootState(this);
 		
 		_edges = new ArrayList<>();
 		
@@ -2406,6 +2447,7 @@ public class FactorGraph extends FactorBase
 		removeNode(subgraph);
 		_ownedSubGraphs.removeNode(subgraph);
 		subgraph.setParentGraph(null);
+		_rootState.removeGraph(subgraph);
 		subgraph._rootState = new RootState(subgraph);
 		
 		for (Variable v : boundary)
@@ -3316,6 +3358,40 @@ public class FactorGraph extends FactorBase
 		}
 	}
 	
+	/**
+	 * The index of this graph within the tree of graphs sharing a common {@linkplain #getRootGraph() root graph}.
+	 * <p>
+	 * @since 0.08
+	 * @see #getGraphByRootIndex(int)
+	 */
+	public final int getRootIndex()
+	{
+		return _rootIndex;
+	}
+	
+	/**
+	 * Returns graph in hierarchy with given root index.
+	 * @param index is the {@link #getRootIndex() root index} of the graph within the hierarchy of graphs sharing
+	 * the same {@link #getRootGraph() root graph}.
+	 * @return graph with given index or else null.
+	 * @since 0.08
+	 */
+	public @Nullable FactorGraph getGraphByRootIndex(int index)
+	{
+		return _rootState._graphs.getOrNull(index);
+	}
+	
+	/**
+	 * The number of graphs in the hierarchy of graphs below (and including) the {@linkplain #getRootGraph() root graph}.
+	 * <p>
+	 * @return a positive count of graphs. Equal to one if there are no subgraphs.
+	 * @since 0.08
+	 */
+	public int getGraphHierarchySize()
+	{
+		return _rootState._nGraphs;
+	}
+	
 	public @Nullable Variable 	getVariableByName(String name)
 	{
 		Variable v = null;
@@ -3411,7 +3487,7 @@ public class FactorGraph extends FactorBase
 	@Override
 	public FactorGraph getRootGraph()
 	{
-		return _rootState._root;
+		return _rootState._graphs.get(0);
 	}
 
 	public @Nullable IFactorGraphFactory<?> getFactorGraphFactory()

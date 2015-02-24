@@ -169,10 +169,10 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 	}
 
 	@Override
-	public @Nullable ISolverFactorGraph getRootGraph()
+	public @Nullable ISolverFactorGraph getRootSolverGraph()
 	{
 		final ISolverFactorGraph parent = _parent;
-		return parent != null ? parent.getRootGraph() : null;
+		return parent != null ? parent.getRootSolverGraph() : null;
 	}
 
 	@Override

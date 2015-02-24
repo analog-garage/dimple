@@ -58,7 +58,7 @@ public class LPSolverTestCase extends DimpleTestBase
 		assertInitialState();
 		
 		assertNull(solver.getParentGraph());
-		assertSame(solver, solver.getRootGraph());
+		assertSame(solver, solver.getRootSolverGraph());
 		
 		assertEquals("dimpleLPSolve", solver.getMatlabSolveWrapper());
 		solver.setLPSolverName("Matlab");

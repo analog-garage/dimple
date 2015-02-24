@@ -55,7 +55,7 @@ public class JunctionTreeSolverVariable<MVariable extends Variable>
 	 */
 	
 	@Override
-	public JunctionTreeSolverGraphBase<?> getRootGraph()
+	public JunctionTreeSolverGraphBase<?> getRootSolverGraph()
 	{
 		return _root;
 	}

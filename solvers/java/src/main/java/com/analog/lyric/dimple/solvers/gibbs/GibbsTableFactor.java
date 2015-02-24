@@ -201,7 +201,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	@Override
 	public void updateNeighborVariableValue(int variableIndex, Value oldValue)
 	{
-		((GibbsSolverGraph)requireNonNull(getRootGraph())).scheduleDeterministicDirectedUpdate(this, variableIndex, oldValue);
+		((GibbsSolverGraph)requireNonNull(getRootSolverGraph())).scheduleDeterministicDirectedUpdate(this, variableIndex, oldValue);
 	}
 	
 	@Override

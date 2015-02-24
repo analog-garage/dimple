@@ -148,7 +148,7 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 				}
 			}
 			
-			return new GibbsNeighbors(neighbors, adjacentDependentFactors, (GibbsSolverGraph)requireNonNull(svar.getRootGraph()));
+			return new GibbsNeighbors(neighbors, adjacentDependentFactors, (GibbsSolverGraph)requireNonNull(svar.getRootSolverGraph()));
 		}
 		else
 		{

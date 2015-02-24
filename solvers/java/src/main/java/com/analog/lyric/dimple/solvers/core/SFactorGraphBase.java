@@ -20,11 +20,9 @@ package com.analog.lyric.dimple.solvers.core;
 import static java.util.Objects.*;
 
 import java.util.AbstractCollection;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.Iterator;
 import java.util.Objects;
 
@@ -56,6 +54,8 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.dimple.solvers.interfaces.SolverFactorGraphHierarchy;
+import com.analog.lyric.util.misc.Internal;
 import com.google.common.collect.UnmodifiableIterator;
 
 public abstract class SFactorGraphBase
@@ -90,7 +90,8 @@ public abstract class SFactorGraphBase
 	
 	private final @Nullable ExtendedArrayList<SEdge> _edges;
 	
-
+	private SolverFactorGraphHierarchy _solverHierarchy;
+	
 	/*--------------
 	 * Construction
 	 */
@@ -102,6 +103,7 @@ public abstract class SFactorGraphBase
 		_variables = new ExtendedArrayList<>(graph.getVariableCount(0));
 		_subgraphs = new ExtendedArrayList<>(graph.getOwnedGraphs().size());
 		_edges = hasEdgeState() ? new ExtendedArrayList<SEdge>(graph.getGraphEdgeCount()) : null;
+		_solverHierarchy = new StandardSolverFactorGraphHierarchy(this);
 	}
 
 	/*----------------------------
@@ -121,6 +123,27 @@ public abstract class SFactorGraphBase
 	public FactorGraph getModel()
 	{
 		return _model;
+	}
+	
+	@Internal
+	@Override
+	public void setParent(ISolverFactorGraph parent)
+	{
+		super.setParent(parent);
+		_solverHierarchy = parent.getHierarchy();
+		_solverHierarchy.addSolverGraph(this);
+	}
+	
+	@Override
+	public ISolverFactorGraph getRootSolverGraph()
+	{
+		return _solverHierarchy.getRootSolverGraph();
+	}
+	
+	@Override
+	public final SolverFactorGraphHierarchy getHierarchy()
+	{
+		return _solverHierarchy;
 	}
 	
 	/*----------------------------
@@ -188,7 +211,7 @@ public abstract class SFactorGraphBase
 	@Override
 	public @Nullable ISolverFactorGraph getSolverSubgraph(FactorGraph subgraph)
 	{
-		return getSolverSubgraphRecursive(subgraph, true);
+		return getSolverSubgraph(subgraph, true);
 	}
 	
 	/**
@@ -1040,59 +1063,17 @@ public abstract class SFactorGraphBase
 		return new RecursiveSVariables();
 	}
 	
-	public @Nullable ISolverFactor getSolverFactorRecursive(Factor factor, boolean create)
+	public @Nullable ISolverFactorGraph getSolverSubgraph(FactorGraph subgraph, boolean create)
 	{
-		final FactorGraph factorParent = factor.requireParentGraph();
+		assertSameGraph(subgraph);
 		
-		if (factorParent == getModelGraph())
-		{
-			return getSolverFactor(factor, create);
-		}
-		
-		ISolverFactorGraph ssubgraph = getSolverSubgraphRecursive(factorParent, true);
-		return ssubgraph != null ? ssubgraph.getSolverFactor(factor, create) : null;
-	}
-	
-	public @Nullable ISolverFactorGraph getSolverSubgraphRecursive(FactorGraph subgraph, boolean create)
-	{
-		final FactorGraph graph = getModelGraph();
-		FactorGraph parent = subgraph.getParentGraph();
-		
-		if (parent == graph)
+		if (create)
 		{
 			return instantiateSubgraph(subgraph);
 		}
-		
-		Deque<FactorGraph> subgraphs = new ArrayDeque<>();
-		
-		final FactorGraph originalSubgraph = subgraph;
-		
-		while (true)
+		else
 		{
-			if (parent == null)
-			{
-				throw new IllegalArgumentException(
-					String.format("Cannot get solver graph for %s because it is not in %s", originalSubgraph, graph));
-			}
-
-			subgraphs.push(subgraph);
-			subgraph = parent;
-			parent = subgraph.getParentGraph();
-
-			if (parent == graph)
-			{
-				ISolverFactorGraph sgraph = instantiateSubgraph(subgraph);
-				while (!subgraphs.isEmpty())
-				{
-					subgraph = subgraphs.pop();
-					sgraph = sgraph.getSolverSubgraph(subgraph);
-					if (sgraph == null)
-					{
-						break;
-					}
-				}
-				return sgraph;
-			}
+			return _subgraphs.getOrNull(NodeId.indexFromLocalId(subgraph.getLocalId()));
 		}
 	}
 	
@@ -1106,19 +1087,6 @@ public abstract class SFactorGraphBase
 	public Collection<ISolverFactorGraph> getSolverSubgraphsRecursive()
 	{
 		return new RecursiveSubgraphs();
-	}
-	
-	public @Nullable ISolverVariable getSolverVariableRecursive(Variable variable, boolean create)
-	{
-		final FactorGraph factorParent = variable.requireParentGraph();
-		
-		if (factorParent == getModelGraph())
-		{
-			return getSolverVariable(variable, create);
-		}
-		
-		ISolverFactorGraph ssubgraph = getSolverSubgraphRecursive(factorParent, true);
-		return ssubgraph != null ? ssubgraph.getSolverVariable(variable, create) : null;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -1140,10 +1108,8 @@ public abstract class SFactorGraphBase
 				FactorGraph factorParent = edge.getFactorParent(_model);
 				if (factorParent != _model)
 				{
-					// If the factor is from a different graph, it must be a subgraph.
-					// Get the edge from there.
-					ISolverFactorGraph sgraph = requireNonNull(getSolverSubgraphRecursive(factorParent, true));
-					result = (SEdge) sgraph.getSolverEdge(edge);
+					// If the factor is from a different graph, get the edge from there.
+					result = (SEdge) _solverHierarchy.getSolverGraph(factorParent).getSolverEdge(edge);
 				}
 				else
 				{

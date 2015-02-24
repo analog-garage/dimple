@@ -41,7 +41,7 @@ public class JunctionTreeSolverGraph extends JunctionTreeSolverGraphBase<SumProd
 	{
 		super(sourceModel, solverFactory);
 		_jtparent = parent;
-		_root = parent != null ? parent.getRootGraph() : this;
+		_root = parent != null ? parent.getRootSolverGraph() : this;
 	}
 
 	JunctionTreeSolverGraph(FactorGraph sourceModel, IFactorGraphFactory<?> solverFactory)
@@ -60,7 +60,7 @@ public class JunctionTreeSolverGraph extends JunctionTreeSolverGraphBase<SumProd
 	}
 	
 	@Override
-	public JunctionTreeSolverGraph getRootGraph()
+	public JunctionTreeSolverGraph getRootSolverGraph()
 	{
 		return _root;
 	}

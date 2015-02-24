@@ -164,7 +164,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	}
 	
 	@Override
-	public abstract JunctionTreeSolverGraphBase<Delegate> getRootGraph();
+	public abstract JunctionTreeSolverGraphBase<Delegate> getRootSolverGraph();
 
 	/*-------------------------
 	 * ProxySolverNode methods
@@ -204,11 +204,11 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	{
 		if (var instanceof Discrete)
 		{
-			return new JunctionTreeDiscreteSolverVariable((Discrete)var, getRootGraph());
+			return new JunctionTreeDiscreteSolverVariable((Discrete)var, getRootSolverGraph());
 		}
 		else
 		{
-			return new JunctionTreeSolverVariable<Variable>(var, getRootGraph());
+			return new JunctionTreeSolverVariable<Variable>(var, getRootSolverGraph());
 		}
 	}
 

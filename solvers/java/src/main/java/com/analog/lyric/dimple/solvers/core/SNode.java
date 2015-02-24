@@ -105,13 +105,13 @@ public abstract class SNode<MNode extends Node> extends SolverEventSource implem
 	}
 	
 	@Override
-	public @Nullable ISolverFactorGraph getRootGraph()
+	public @Nullable ISolverFactorGraph getRootSolverGraph()
 	{
 		ISolverFactorGraph root = getContainingSolverGraph();
 		
-		for (ISolverFactorGraph parent = root; parent != null; parent = parent.getParentGraph())
+		if (root != null)
 		{
-			root = parent;
+			root = root.getHierarchy().getRootSolverGraph();
 		}
 		
 		return root;

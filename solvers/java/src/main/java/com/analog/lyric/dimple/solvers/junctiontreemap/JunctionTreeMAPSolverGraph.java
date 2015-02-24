@@ -43,7 +43,7 @@ public class JunctionTreeMAPSolverGraph extends JunctionTreeSolverGraphBase<MinS
 	{
 		super(sourceModel, solverFactory);
 		_jtparent = parent;
-		_root = parent != null ? parent.getRootGraph() : this;
+		_root = parent != null ? parent.getRootSolverGraph() : this;
 	}
 
 	JunctionTreeMAPSolverGraph(FactorGraph sourceModel, IFactorGraphFactory<?> solverFactory)
@@ -62,7 +62,7 @@ public class JunctionTreeMAPSolverGraph extends JunctionTreeSolverGraphBase<MinS
 	}
 	
 	@Override
-	public JunctionTreeMAPSolverGraph getRootGraph()
+	public JunctionTreeMAPSolverGraph getRootSolverGraph()
 	{
 		return _root;
 	}

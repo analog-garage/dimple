@@ -28,5 +28,5 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 public interface IJunctionTreeSolverVariable<Delegate extends ISolverVariable>
 	extends IProxySolverVariable<Delegate>
 {
-	public abstract JunctionTreeSolverGraphBase<?> getRootGraph();
+	public abstract JunctionTreeSolverGraphBase<?> getRootSolverGraph();
 }

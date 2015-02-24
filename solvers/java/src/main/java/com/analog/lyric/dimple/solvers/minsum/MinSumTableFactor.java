@@ -104,10 +104,10 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 	@Internal
 	@Nullable FactorTableUpdateSettings getFactorTableUpdateSettings()
 	{
-		ISolverFactorGraph rootGraph = getRootGraph();
+		ISolverFactorGraph rootGraph = getRootSolverGraph();
 		if (rootGraph instanceof MinSumSolverGraph)
 		{
-			final MinSumSolverGraph sfg = (MinSumSolverGraph) getRootGraph();
+			final MinSumSolverGraph sfg = (MinSumSolverGraph) getRootSolverGraph();
 			if (sfg != null)
 			{
 				return sfg.getFactorTableUpdateSettings(getFactor());

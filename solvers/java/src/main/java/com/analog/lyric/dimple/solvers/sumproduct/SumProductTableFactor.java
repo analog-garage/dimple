@@ -117,10 +117,10 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	@Internal
 	@Nullable FactorTableUpdateSettings getFactorTableUpdateSettings()
 	{
-		ISolverFactorGraph rootGraph = getRootGraph();
+		ISolverFactorGraph rootGraph = getRootSolverGraph();
 		if (rootGraph instanceof SumProductSolverGraph)
 		{
-			final SumProductSolverGraph sfg = (SumProductSolverGraph) getRootGraph();
+			final SumProductSolverGraph sfg = (SumProductSolverGraph) getRootSolverGraph();
 			if (sfg != null)
 			{
 				return sfg.getFactorTableUpdateSettings(getFactor());
@@ -491,7 +491,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	@SuppressWarnings("null")
 	public double calculateDerivativeOfInternalEnergyWithRespectToWeight(int weightIndex)
 	{
-		SumProductSolverGraph sfg = (SumProductSolverGraph)getRootGraph();
+		SumProductSolverGraph sfg = (SumProductSolverGraph)getRootSolverGraph();
 		
 		boolean isFactorOfInterest = sfg.getCurrentFactorTable() == getFactor().getFactorTable();
 		
@@ -728,7 +728,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	
 	public void updateDerivative(int outPortNum)
 	{
-		SumProductSolverGraph sfg = (SumProductSolverGraph)getRootGraph();
+		SumProductSolverGraph sfg = (SumProductSolverGraph)getRootSolverGraph();
 		@SuppressWarnings("null")
 		IFactorTable ft = sfg.getCurrentFactorTable();
 		@SuppressWarnings("null")
@@ -744,7 +744,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	{
 		
 		@SuppressWarnings("null")
-		boolean isFactorOfInterest = ((SumProductSolverGraph)getRootGraph()).getCurrentFactorTable() == getFactor().getFactorTable();
+		boolean isFactorOfInterest = ((SumProductSolverGraph)getRootSolverGraph()).getCurrentFactorTable() == getFactor().getFactorTable();
 				
 		//Belief'(weightIndex)*(-log(Belief(weightIndex))) + Belief(weightIndex)*(-log(Belief(weightIndex)))'
 		double [] beliefs = getBelief();

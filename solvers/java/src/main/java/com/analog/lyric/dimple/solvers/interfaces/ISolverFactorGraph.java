@@ -43,7 +43,13 @@ public interface ISolverFactorGraph	extends ISolverNode
 	 * Create a new solver-specific solver graph representing given subgraph.
 	 */
 	public @Nullable ISolverFactorGraph createSubGraph(FactorGraph subgraph, @Nullable IFactorGraphFactory<?> factory);
-	
+
+	/**
+	 * Return object representing hierarchy of solver objects below {@linkplain #getRootSolverGraph() root solver}.
+	 * @since 0.08
+	 */
+	public SolverFactorGraphHierarchy getHierarchy();
+
 	public @Nullable ISolverEdge getSolverEdge(FactorGraphEdgeState edge);
 	
 	public @Nullable ISolverEdge getSolverEdge(int edgeIndex);

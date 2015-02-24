@@ -81,7 +81,7 @@ public class BlockMHSampler implements IBlockMCMCSampler, IBlockInitializer
 			sVariables[i] = (ISolverVariableGibbs)variable.getSolver();
 			domains[i] = variable.getDomain();
 		}
-		_sRootGraph = (GibbsSolverGraph)sVariables[0].getRootGraph();
+		_sRootGraph = (GibbsSolverGraph)sVariables[0].getRootSolverGraph();
 		
 		// Pre-determine neighbors that will need to be scored
 		final Set<ISolverNodeGibbs> neighborSet = _neighbors = new HashSet<ISolverNodeGibbs>();

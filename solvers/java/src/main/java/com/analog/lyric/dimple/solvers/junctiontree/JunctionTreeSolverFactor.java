@@ -102,7 +102,7 @@ public class JunctionTreeSolverFactor extends SFactorBase
 	}
 
 	@Override
-	public JunctionTreeSolverGraphBase<?> getRootGraph()
+	public JunctionTreeSolverGraphBase<?> getRootSolverGraph()
 	{
 		return _root;
 	}

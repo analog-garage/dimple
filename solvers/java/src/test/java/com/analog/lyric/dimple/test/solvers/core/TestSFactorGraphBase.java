@@ -35,6 +35,7 @@ import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.dimple.solvers.interfaces.SolverFactorGraphHierarchy;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.dimple.test.dummySolver.DummyFactorGraph;
 import com.analog.lyric.dimple.test.dummySolver.DummySolver;
@@ -65,10 +66,11 @@ public class TestSFactorGraphBase extends DimpleTestBase
 	{
 		final FactorGraph root = state.getModelObject();
 		assertSame(root, state.getModelGraph());
+		SolverFactorGraphHierarchy hierarchy = state.getHierarchy();
 		
 		for (Variable variable :FactorGraphIterables.variables(root))
 		{
-			ISolverVariable svariable = state.getSolverVariableRecursive(variable, false);
+			ISolverVariable svariable = hierarchy.getSolverVariableOrNull(variable);
 			if (svariable != null)
 			{
 				assertSame(variable, svariable.getModelObject());
@@ -77,7 +79,7 @@ public class TestSFactorGraphBase extends DimpleTestBase
 		
 		for (Factor factor : FactorGraphIterables.factors(root))
 		{
-			ISolverFactor sfactor = state.getSolverFactorRecursive(factor, false);
+			ISolverFactor sfactor = hierarchy.getSolverFactorOrNull(factor);
 			if (sfactor != null)
 			{
 				assertSame(factor, sfactor.getModelObject());
@@ -100,7 +102,7 @@ public class TestSFactorGraphBase extends DimpleTestBase
 			
 			if (graph != root)
 			{
-				assertSame(sgraph, state.getSolverSubgraphRecursive(graph, false));
+				assertSame(sgraph, hierarchy.getSolverGraphOrNull(graph));
 				
 				if (sgraph instanceof SFactorGraphBase)
 				{
@@ -110,7 +112,7 @@ public class TestSFactorGraphBase extends DimpleTestBase
 			
 			for (Variable var : graph.getOwnedVariables())
 			{
-				ISolverVariable svar = requireNonNull(state.getSolverVariableRecursive(var, false));
+				ISolverVariable svar = requireNonNull(hierarchy.getSolverVariableOrNull(var));
 				assertSame(var, svar.getModelObject());
 				if (graph == root)
 				{
@@ -128,7 +130,7 @@ public class TestSFactorGraphBase extends DimpleTestBase
 			
 			for (Factor factor : graph.getOwnedFactors())
 			{
-				ISolverFactor sfactor = requireNonNull(state.getSolverFactorRecursive(factor, false));
+				ISolverFactor sfactor = requireNonNull(hierarchy.getSolverFactorOrNull(factor));
 				assertSame(factor, sfactor.getModelObject());
 				if (graph == root)
 				{
@@ -166,15 +168,11 @@ public class TestSFactorGraphBase extends DimpleTestBase
 		
 		expectThrow(IllegalArgumentException.class, "The variable 'looseVar' does not belong to graph.",
 			state, "getSolverVariable", looseVar, true);
-		expectThrow(IllegalStateException.class, "Node 'looseVar' does not belong to a graph.",
-			state, "getSolverVariableRecursive", looseVar, true);
 		
 		FactorGraph otherGraph = new FactorGraph();
 		otherGraph.setName("otherGraph");
 		Discrete a = new Bit();	a.setName("a");
 		otherGraph.addVariables(a);
 		
-		expectThrow(IllegalArgumentException.class, "Cannot get solver graph for .*otherGraph.*",
-			state, "getSolverVariableRecursive", a, true);
 	}
 }

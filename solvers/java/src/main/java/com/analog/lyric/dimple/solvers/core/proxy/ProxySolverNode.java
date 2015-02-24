@@ -85,7 +85,7 @@ public abstract class ProxySolverNode<Delegate extends ISolverNode>
 	}
 
 	@Override
-	public @Nullable ISolverFactorGraph getRootGraph()
+	public @Nullable ISolverFactorGraph getRootSolverGraph()
 	{
 		ISolverFactorGraph root = getContainingSolverGraph();
 		

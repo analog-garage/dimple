@@ -182,7 +182,7 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 	@Override
 	public void updateNeighborVariableValue(int variableIndex, Value oldValue)
 	{
-		((GibbsSolverGraph)getRootGraph()).scheduleDeterministicDirectedUpdate(this, variableIndex, oldValue);
+		((GibbsSolverGraph)getRootSolverGraph()).scheduleDeterministicDirectedUpdate(this, variableIndex, oldValue);
 	}
 	
 	@Override
