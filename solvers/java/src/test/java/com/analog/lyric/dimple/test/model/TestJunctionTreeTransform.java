@@ -142,6 +142,11 @@ public class TestJunctionTreeTransform extends DimpleTestBase
 	@SuppressWarnings("null")
 	private void assertModelsEquivalent(JunctionTreeTransformMap transformMap)
 	{
+		if (transformMap.isIdentity())
+		{
+			return;
+		}
+		
 		final FactorGraph source = transformMap.source();
 		final FactorGraph target = transformMap.target();
 		

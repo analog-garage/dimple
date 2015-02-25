@@ -54,7 +54,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import com.analog.lyric.dimple.solvers.interfaces.SolverFactorGraphHierarchy;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.util.misc.Internal;
 import com.google.common.collect.UnmodifiableIterator;
 
@@ -90,7 +90,7 @@ public abstract class SFactorGraphBase
 	
 	private final @Nullable ExtendedArrayList<SEdge> _edges;
 	
-	private SolverFactorGraphHierarchy _solverHierarchy;
+	private SolverNodeMapping _solverNodeMapping;
 	
 	/*--------------
 	 * Construction
@@ -103,7 +103,7 @@ public abstract class SFactorGraphBase
 		_variables = new ExtendedArrayList<>(graph.getVariableCount(0));
 		_subgraphs = new ExtendedArrayList<>(graph.getOwnedGraphs().size());
 		_edges = hasEdgeState() ? new ExtendedArrayList<SEdge>(graph.getGraphEdgeCount()) : null;
-		_solverHierarchy = new StandardSolverFactorGraphHierarchy(this);
+		_solverNodeMapping = new StandardSolverNodeMapping(this);
 	}
 
 	/*----------------------------
@@ -130,20 +130,20 @@ public abstract class SFactorGraphBase
 	public void setParent(ISolverFactorGraph parent)
 	{
 		super.setParent(parent);
-		_solverHierarchy = parent.getHierarchy();
-		_solverHierarchy.addSolverGraph(this);
+		_solverNodeMapping = parent.getSolverMapping();
+		_solverNodeMapping.addSolverGraph(this);
 	}
 	
 	@Override
 	public ISolverFactorGraph getRootSolverGraph()
 	{
-		return _solverHierarchy.getRootSolverGraph();
+		return _solverNodeMapping.getRootSolverGraph();
 	}
 	
 	@Override
-	public final SolverFactorGraphHierarchy getHierarchy()
+	public final SolverNodeMapping getSolverMapping()
 	{
-		return _solverHierarchy;
+		return _solverNodeMapping;
 	}
 	
 	/*----------------------------
@@ -196,22 +196,15 @@ public abstract class SFactorGraphBase
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public @Nullable ISolverFactor getSolverFactor(Factor factor)
+	public ISolverFactor getSolverFactor(Factor factor)
 	{
-		ISolverFactor sfactor = factor.getSolver();
-		// FIXME!
-//		ISolverFactor sfactor2 = _state.getSolverFactorRecursive(factor, false);
-//		if (sfactor != sfactor2)
-//		{
-//			System.err.println(sfactor + ", " + sfactor2);
-//		}
-		return sfactor;
+		return _solverNodeMapping.getSolverFactor(factor);
 	}
 
 	@Override
-	public @Nullable ISolverFactorGraph getSolverSubgraph(FactorGraph subgraph)
+	public ISolverFactorGraph getSolverSubgraph(FactorGraph subgraph)
 	{
-		return getSolverSubgraph(subgraph, true);
+		return _solverNodeMapping.getSolverGraph(subgraph);
 	}
 	
 	/**
@@ -224,16 +217,9 @@ public abstract class SFactorGraphBase
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public @Nullable ISolverVariable getSolverVariable(Variable variable)
+	public ISolverVariable getSolverVariable(Variable variable)
 	{
-		ISolverVariable svar = variable.getSolver();
-		// FIXME!
-//		ISolverVariable svar2 = _state.getSolverVariableRecursive(variable, false);
-//		if (svar != svar2)
-//		{
-//			System.err.println(svar + ", " + svar2);
-//		}
-		return svar;
+		return _solverNodeMapping.getSolverVariable(variable);
 	}
 	
 	/**
@@ -669,19 +655,23 @@ public abstract class SFactorGraphBase
 		FactorGraph fg = _model;
 		for (Variable variable : fg.getOwnedVariables())
 		{
-			variable.requireSolver("initialize").initialize();
+			requireNonNull(getSolverVariable(variable, true)).initialize();
 		}
 		if (!fg.hasParentGraph())
 		{
 			for (int i = 0, end = fg.getBoundaryVariableCount(); i <end; ++i)
+			{
+				getSolverVariable(fg.getBoundaryVariable(i)).initialize();
+			}
+		}
+		for (Factor f : fg.getOwnedFactors())
 		{
-				fg.getBoundaryVariable(i).requireSolver("initialize").initialize();
+			requireNonNull(getSolverFactor(f, true)).initialize();
 		}
-		}
-		for (Factor f : fg.getNonGraphFactorsTop())
-			f.requireSolver("initialize").initialize();
 		for (FactorGraph g : fg.getOwnedGraphs())
-			g.requireSolver("initialize").initialize();
+		{
+			requireNonNull(getSolverSubgraph(g, true)).initialize();
+		}
 	}
 	
 	/***********************************************
@@ -1063,6 +1053,7 @@ public abstract class SFactorGraphBase
 		return new RecursiveSVariables();
 	}
 	
+	@Override
 	public @Nullable ISolverFactorGraph getSolverSubgraph(FactorGraph subgraph, boolean create)
 	{
 		assertSameGraph(subgraph);
@@ -1109,7 +1100,7 @@ public abstract class SFactorGraphBase
 				if (factorParent != _model)
 				{
 					// If the factor is from a different graph, get the edge from there.
-					result = (SEdge) _solverHierarchy.getSolverGraph(factorParent).getSolverEdge(edge);
+					result = (SEdge) _solverNodeMapping.getSolverGraph(factorParent).getSolverEdge(edge);
 				}
 				else
 				{
@@ -1173,8 +1164,13 @@ public abstract class SFactorGraphBase
 				{
 					sfactor = this.createFactor(factor);
 					sfactor.setParent(this);
+					sfactor.createMessages();
 				}
-//				sfactor.createMessages();
+				if (this == factor.requireParentGraph().getSolver())
+				{
+					// If parent is default solver for it's graph, make this the default solver for the factor.
+					factor.setSolver(sfactor);
+				}
 			}
 			else
 			{
@@ -1219,7 +1215,7 @@ public abstract class SFactorGraphBase
 			sgraph = this.createSubgraph(subgraph);
 			sgraph.setParent(this);
 			graphs.set(index, sgraph);
-			if (this == getModelGraph().getSolver())
+			if (this == _model.getSolver())
 			{
 				// If parent is default solver for it's graph, make this the default solver for the subgraph.
 				subgraph.setSolver(sgraph);
@@ -1246,8 +1242,13 @@ public abstract class SFactorGraphBase
 			{
 				svar = this.createVariable(variable);
 				svar.setParent(this);
-//				svar.createNonEdgeSpecificState();
-//				svar.setInputOrFixedValue(variable.getInputObject(), variable.getFixedValueObject());
+				if (this == variable.requireParentGraph().getSolver())
+				{
+					// If parent is default solver for it's graph, make this the default solver for the subgraph.
+					variable.setSolver(svar);
+				}
+				svar.createNonEdgeSpecificState();
+				svar.setInputOrFixedValue(variable.getInputObject(), variable.getFixedValueObject());
 			}
 			else
 			{

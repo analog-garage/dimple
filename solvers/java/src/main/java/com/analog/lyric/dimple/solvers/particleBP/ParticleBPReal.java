@@ -40,6 +40,7 @@ import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.Proposal;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.OptionDoubleList;
 import com.analog.lyric.options.OptionValidationException;
@@ -352,13 +353,15 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 
 
 			// Update the incoming messages for the new particle value
+			SolverNodeMapping solvers = requireSolverMapping();
 			for (int d = 0; d < numPorts; d++)
 			{
 				final FactorGraphEdgeState edge = _model.getSiblingEdgeState(d);
 				Factor factorNode = edge.getFactor(fg);
 				int factorPortNumber = edge.getFactorToVariableIndex();
-				ParticleBPRealFactor factor = (ParticleBPRealFactor)(factorNode.requireSolver("resample"));
-				getEdge(d).factorToVarMsg.setWeight(m, Math.exp(factor.getMarginalPotential(sampleValue.getDouble(), factorPortNumber)));
+				ParticleBPRealFactor factor = (ParticleBPRealFactor)(solvers.getSolverFactor(factorNode));
+				getEdge(d).factorToVarMsg.setWeight(m,
+					Math.exp(factor.getMarginalPotential(sampleValue.getDouble(), factorPortNumber)));
 			}
 
 

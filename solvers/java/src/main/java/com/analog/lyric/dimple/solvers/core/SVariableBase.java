@@ -16,14 +16,13 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
-import java.util.Objects;
-
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.events.SolverEvent;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -58,8 +57,8 @@ public abstract class SVariableBase<MVariable extends Variable> extends SNode<MV
 	@Override
 	public ISolverFactor getSibling(int edge)
 	{
-		// FIXME don't go through the model object
-		return Objects.requireNonNull(getModelObject().getSibling(edge).getSolver());
+		final Factor sibling = _model.getSibling(edge);
+		return requireSolverMapping().getSolverFactor(sibling);
 	}
 	
 	@Override

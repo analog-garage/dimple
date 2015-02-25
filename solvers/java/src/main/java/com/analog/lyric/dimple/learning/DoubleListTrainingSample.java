@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.learning;
 
 import java.util.Iterator;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.DoubleArrayIterable;
 import com.analog.lyric.collect.PrimitiveIterable;
 import com.analog.lyric.collect.PrimitiveIterator;
@@ -27,7 +29,6 @@ import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * A training sample represented as an ordered sequence of double values in the
@@ -111,8 +112,7 @@ public class DoubleListTrainingSample implements IVariableListTrainingSample
 	@Override
 	public @Nullable ITrainingAssignment getAssignmentForSolverVariable(ISolverVariable variable)
 	{
-		final Variable modelVar = variable.getModelObject();
-		return modelVar != null ? getAssignmentForVariable(modelVar) : null;
+		return getAssignmentForVariable(variable.getModelObject());
 	}
 
 	/*-------------------------------------

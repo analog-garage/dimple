@@ -190,18 +190,29 @@ public class Factor extends FactorBase implements Cloneable
     	return "Factor";
     }
 	
+	/**
+	 * @category internal
+	 */
 	@Internal
 	public void createSolverObject(@Nullable ISolverFactorGraph factorGraph)
 	{
 		if (factorGraph != null)
 		{
-			ISolverFactor factor = _solverFactor = factorGraph.getSolverFactor(this, true);
-			requireNonNull(factor).createMessages();
+			factorGraph.getSolverFactor(this, true);
 		}
 		else
 		{
 			_solverFactor = null;
 		}
+	}
+	
+	/**
+	 * @category internal
+	 */
+	@Internal
+	public void setSolver(@Nullable ISolverFactor sfactor)
+	{
+		_solverFactor = sfactor;
 	}
 	
 	/**

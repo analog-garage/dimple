@@ -20,10 +20,10 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.util.misc.Internal;
 
 /**
@@ -72,8 +72,7 @@ public abstract class SolverEventSource extends DimpleOptionHolder implements IS
     @Override
 	public @Nullable FactorGraph getContainingGraph()
 	{
-    	final INode node = getModelObject();
-    	return node != null ? node.getContainingGraph() : null;
+    	return getModelObject().getContainingGraph();
 	}
 
     @Override
@@ -189,6 +188,26 @@ public abstract class SolverEventSource extends DimpleOptionHolder implements IS
 		}
 	}
 	
+	/**
+	 * @category internal
+	 */
+	@Internal
+	protected SolverNodeMapping requireSolverMapping()
+	{
+		return requireParentGraph().getSolverMapping();
+	}
+	
+	@Internal
+	protected ISolverFactorGraph requireParentGraph()
+	{
+		final ISolverFactorGraph parent = getParentGraph();
+		if (parent == null)
+		{
+			throw new IllegalStateException(String.format("'%s' does not belong to any solver graph.", this));
+		}
+		return parent;
+	}
+
 	/**
 	 * Sets all of the bits in {@code mask} in the flags.
 	 */

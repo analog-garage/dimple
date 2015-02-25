@@ -16,11 +16,12 @@
 
 package com.analog.lyric.dimple.learning;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * A basic implementation of {@link ITrainingSample}.
@@ -105,8 +106,7 @@ public class BasicTrainingSample implements ITrainingSample
 	@Override
 	public @Nullable ITrainingAssignment getAssignmentForSolverVariable(ISolverVariable variable)
 	{
-		final Variable modelVar = variable.getModelObject();
-		return modelVar != null ? getAssignmentForVariable(modelVar) : null;
+		return getAssignmentForVariable(variable.getModelObject());
 	}
 
 	/*

@@ -41,7 +41,7 @@ public interface ISolverVariable extends ISolverNode
 	public Domain getDomain();
 	
 	@Override
-	public @Nullable Variable getModelObject();
+	public Variable getModelObject();
 	
 	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue);
 	public @Nullable Object getBelief();

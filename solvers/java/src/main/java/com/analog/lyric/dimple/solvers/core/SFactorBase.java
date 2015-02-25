@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.events.SolverEvent;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -66,8 +67,8 @@ public abstract class SFactorBase extends SNode<Factor> implements ISolverFactor
 	@Override
 	public ISolverVariable getSibling(int edge)
 	{
-		// FIXME don't go through the model object
-		return Objects.requireNonNull(getModelObject().getSibling(edge).getSolver());
+		final Variable sibling = _model.getSibling(edge);
+		return requireSolverMapping().getSolverVariable(sibling);
 	}
 	
 	public Factor getFactor()
@@ -117,7 +118,7 @@ public abstract class SFactorBase extends SNode<Factor> implements ISolverFactor
 	public void moveMessages(ISolverNode other)
 	{
 		Factor factor = getModelObject();
-		INode otherFactor = requireNonNull(other.getModelObject());
+		INode otherFactor = other.getModelObject();
 		
 		int nSiblings = factor.getSiblingCount();
 		

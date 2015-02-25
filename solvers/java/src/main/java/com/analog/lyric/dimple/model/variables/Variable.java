@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.model.variables;
 
-import static java.util.Objects.*;
-
 import java.util.Comparator;
 import java.util.List;
 
@@ -347,19 +345,29 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		requireSolver("moveInputs").setInputOrFixedValue(_input,_fixedValue);
 	}
 
+	/**
+	 * @category internal
+	 */
 	@Internal
 	public void createSolverObject(@Nullable ISolverFactorGraph factorGraph)
 	{
 		if (factorGraph != null)
 		{
-			final ISolverVariable svar = _solverVariable = requireNonNull(factorGraph.getSolverVariable(this, true));
-			svar.createNonEdgeSpecificState();
-			svar.setInputOrFixedValue(_input,_fixedValue);
+			factorGraph.getSolverVariable(this, true);
 		}
 		else
 		{
 			_solverVariable = null;
 		}
+	}
+	
+	/**
+	 * @category internal
+	 */
+	@Internal
+	public void setSolver(@Nullable ISolverVariable svar)
+	{
+		_solverVariable = svar;
 	}
 	
 	/**

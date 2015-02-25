@@ -33,6 +33,7 @@ import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 
 /**
  * Real solver factor under Gibbs solver.
@@ -75,7 +76,7 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
     	
 	    for (int port = 0; port < size; port++)
 	    {
-	    	_currentSamples[port] = ((ISolverVariableGibbs)getSibling(port)).getCurrentSampleValue();
+	    	_currentSamples[port] = getSibling(port).getCurrentSampleValue();
 	    }
 	}
 	
@@ -105,6 +106,11 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 		// This is ignored and doesn't throw an error so that a custom schedule that updates factors won't cause a problem
 	}
 	
+	@Override
+	public ISolverVariableGibbs getSibling(int edge)
+	{
+		return (ISolverVariableGibbs)super.getSibling(edge);
+	}
 
 	@Override
 	public void updateEdgeMessage(int outPortNum)
@@ -195,6 +201,8 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 
 		final Value[] inputMsgs = requireNonNull(_currentSamples);
 		
+		final SolverNodeMapping solvers = requireNonNull(getParentGraph()).getSolverMapping();
+		
 		if (oldValues != null && _outputsValid)
 		{
 			AtomicReference<int[]> changedOutputsHolder = new AtomicReference<int[]>();
@@ -212,7 +220,7 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 				{
 					Variable variable = requireNonNull(factor.getSibling(outputIndex));
 					Value newValue = values[outputIndex];
-					((ISolverVariableGibbs)variable.requireSolver("updateNeighborVariableValuesNow")).setCurrentSample(newValue);
+					((ISolverVariableGibbs)solvers.getSolverVariable(variable)).setCurrentSample(newValue);
 				}
 			}
 		}
@@ -229,7 +237,7 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 				{
 					Variable variable = requireNonNull(factor.getSibling(outputIndex));
 					Value newValue = values[outputIndex];
-					((ISolverVariableGibbs)variable.requireSolver("updateNeighborVariableValuesNow")).setCurrentSample(newValue);
+					((ISolverVariableGibbs)solvers.getSolverVariable(variable)).setCurrentSample(newValue);
 				}
 			}
 		}

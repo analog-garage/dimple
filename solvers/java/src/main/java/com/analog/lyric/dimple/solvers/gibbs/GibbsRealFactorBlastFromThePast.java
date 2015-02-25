@@ -65,6 +65,12 @@ public class GibbsRealFactorBlastFromThePast extends SBlastFromThePast implement
 	}
 	
 	@Override
+	public ISolverVariableGibbs getSibling(int edge)
+	{
+		return (ISolverVariableGibbs)super.getSibling(edge);
+	}
+	
+	@Override
 	public double getPotential()
 	{
 		ISolverFactorGibbs otherFactor = getOtherFactor();
@@ -72,7 +78,7 @@ public class GibbsRealFactorBlastFromThePast extends SBlastFromThePast implement
 		Value[] currentSamples = new Value[size];
 		for (int i = 0; i < size; ++i)
 		{
-			ISolverVariableGibbs var = (ISolverVariableGibbs)otherFactor.getSibling(i);
+			ISolverVariableGibbs var = otherFactor.getSibling(i);
 			currentSamples[i] = var.getPrevSampleValue();
 		}
 	    return getFactor().getFactorFunction().evalEnergy(currentSamples);
@@ -117,7 +123,7 @@ public class GibbsRealFactorBlastFromThePast extends SBlastFromThePast implement
 	@Override
 	public Value getInputMsg(int portIndex)
 	{
-		return ((ISolverVariableGibbs)getOtherFactor().getSibling(portIndex)).getPrevSampleValue();
+		return getOtherFactor().getSibling(portIndex).getPrevSampleValue();
 	}
 	
 	@Override
@@ -125,8 +131,7 @@ public class GibbsRealFactorBlastFromThePast extends SBlastFromThePast implement
 	{
 		final Port port = requireNonNull(_portForOtherVar);
 		final Factor otherFactor = (Factor)port.node.getSibling(port.index);
-		// FIXME - look up through solver graph instead of through model object
-		GibbsSolverGraph sgraph = (GibbsSolverGraph)otherFactor.requireParentGraph().requireSolver("getOutputMsg");
+		GibbsSolverGraph sgraph = (GibbsSolverGraph) requireSolverMapping().getSolverGraph(otherFactor.requireParentGraph());
 		return requireNonNull(sgraph.getSolverEdge(otherFactor.getSiblingEdgeState(portIndex))).factorToVarMsg;
 	}
 
@@ -142,7 +147,6 @@ public class GibbsRealFactorBlastFromThePast extends SBlastFromThePast implement
 	{
 		final Port port = requireNonNull(_portForOtherVar);
 		final Factor otherFactor = (Factor)port.node.getSibling(port.index);
-		// FIXME - look up through solver graph instead of through model object
-		return (ISolverFactorGibbs) otherFactor.requireSolver("getOtherFactor");
+		return (ISolverFactorGibbs)requireSolverMapping().getSolverFactor(otherFactor);
 	}
 }

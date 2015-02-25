@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.interfaces;
 
-import org.eclipse.jdt.annotation.Nullable;
-
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Discrete;
 
@@ -32,7 +30,7 @@ public interface IDiscreteSolverVariable extends ISolverVariable
 	public DiscreteDomain getDomain();
 	
 	@Override
-	public @Nullable Discrete getModelObject();
+	public Discrete getModelObject();
 	
 	/**
 	 * Returns index of guess within its domain.

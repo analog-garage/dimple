@@ -111,7 +111,7 @@ public abstract class SNode<MNode extends Node> extends SolverEventSource implem
 		
 		if (root != null)
 		{
-			root = root.getHierarchy().getRootSolverGraph();
+			root = root.getSolverMapping().getRootSolverGraph();
 		}
 		
 		return root;
@@ -120,8 +120,8 @@ public abstract class SNode<MNode extends Node> extends SolverEventSource implem
 	@Override
 	public ISolverNode getSibling(int edge)
 	{
-		// FIXME don't go through the model object
-		return Objects.requireNonNull(getModelObject().getSibling(edge).getSolver());
+		final Node sibling = getModelObject().getSibling(edge);
+		return requireSolverMapping().getSolverNode(sibling);
 	}
 	
 	@Override

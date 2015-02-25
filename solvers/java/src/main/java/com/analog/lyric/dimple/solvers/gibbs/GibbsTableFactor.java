@@ -35,6 +35,7 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.util.misc.Internal;
 
 /**
@@ -78,6 +79,12 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	{
 		// The Gibbs solver doesn't directly update factors, but the equivalent is instead done calls from variables
 		// This is ignored and doesn't throw an error so that a custom schedule that updates factors won't cause a problem
+	}
+	
+	@Override
+	public GibbsDiscrete getSibling(int edge)
+	{
+		return (GibbsDiscrete)super.getSibling(edge);
 	}
 	
 	/*----------------------------
@@ -212,6 +219,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 		Value[] values = factor.getFactorFunction().evalDeterministicToCopy(_currentSamples);
 		
 		// Update the directed-to variables with the computed values
+		SolverNodeMapping solvers = requireSolverMapping();
 		int[] directedTo = factor.getDirectedTo();
 		if (directedTo != null)
 		{
@@ -219,8 +227,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 			{
 				Variable variable = factor.getSibling(outputIndex);
 				// FIXME: is sample value already set? Just need to handle side effects?
-				ISolverVariableGibbs svar =
-					(ISolverVariableGibbs)variable.requireSolver("updateNeighborVariableValuesNow");
+				ISolverVariableGibbs svar = (ISolverVariableGibbs) solvers.getSolverVariable(variable);
 				svar.setCurrentSample(values[outputIndex]);
 			}
 		}

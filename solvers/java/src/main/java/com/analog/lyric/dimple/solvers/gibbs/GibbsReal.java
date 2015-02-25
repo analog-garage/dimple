@@ -60,6 +60,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IRealSamplerClient
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.MHSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.util.misc.Internal;
@@ -265,14 +266,15 @@ public class GibbsReal extends SRealVariableBase
 			int numPorts = _model.getSiblingCount();
 			Port[] ports = new Port[numPorts];
 			final FactorGraph fg = _model.requireParentGraph();
+			SolverNodeMapping solvers = requireSolverMapping();
 			for (int portIndex = 0; portIndex < numPorts; portIndex++)
 			{
 				final FactorGraphEdgeState edge = _model.getSiblingEdgeState(portIndex);
 				Factor factorNode = edge.getFactor(fg);
-				ISolverFactor factor = requireNonNull(factorNode.getSolver());
+				ISolverFactorGibbs factor = (ISolverFactorGibbs) solvers.getSolverFactor(factorNode);
 				int factorPortNumber = edge.getFactorToVariableIndex();
 				ports[portIndex] = factorNode.getPort(factorPortNumber);
-				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
+				factor.updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
 			}
 			double nextSampleValue = conjugateSampler.nextSample(ports, _input);
 			if (nextSampleValue != _currentSample.getDouble())	// Would be exactly equal if not changed since last value tested

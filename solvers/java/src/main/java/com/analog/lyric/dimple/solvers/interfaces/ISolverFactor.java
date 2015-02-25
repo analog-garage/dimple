@@ -16,15 +16,13 @@
 
 package com.analog.lyric.dimple.solvers.interfaces;
 
-import org.eclipse.jdt.annotation.Nullable;
-
 import com.analog.lyric.dimple.model.factors.Factor;
 
 
 public interface ISolverFactor extends ISolverNode
 {
 	@Override
-	public @Nullable Factor getModelObject();
+	public Factor getModelObject();
 	
 	public Object getBelief() ;
 	@Override

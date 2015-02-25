@@ -45,6 +45,10 @@ public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable,
     public void setCurrentSample(Object value);
     public void setCurrentSample(Value value);
 	public void setBeta(double beta);
+	
+	@Override
+	public ISolverFactorGibbs getSibling(int edge);
+	
 	@Override
 	public double getPotential();
 

@@ -252,6 +252,12 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	}
 	
 	@Override
+	public ISolverFactorGibbs getSibling(int edge)
+	{
+		return (ISolverFactorGibbs)super.getSibling(edge);
+	}
+
+	@Override
 	public final void update()
 	{
 		// Don't bother to re-sample deterministic dependent variables (those that are the output of a directional deterministic factor)
@@ -288,12 +294,14 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		// Compute the conditional probability
 		if (!_model.isDeterministicInput())
 		{
+			
+			
 			// Update all the neighboring factors
 			// If there are no deterministic dependents, then it should be faster to have
 			// each neighboring factor update its entire message to this variable than the alternative, below
 			for (int port = 0; port < numPorts; port++)
 			{
-				((ISolverFactorGibbs)_model.getSibling(port).requireSolver("update")).updateEdgeMessage(_model.getSiblingPortIndex(port));
+				getSibling(port).updateEdgeMessage(_model.getSiblingPortIndex(port));
 			}
 			
 			// Sum up the messages to get the conditional distribution
@@ -1072,4 +1080,5 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	{
 		return (GibbsDiscreteEdge)super.getEdge(siblingIndex);
 	}
+	
 }

@@ -26,10 +26,10 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.collect.ExtendedArrayList;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.interfaces.SolverFactorGraphHierarchy;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 
 /**
- * Standard implementation of {@link SolverFactorGraphHierarchy}.
+ * Standard implementation of {@link SolverNodeMapping}.
  * <p>
  * This is the implementation used by
  * {@linkplain com.analog.lyric.dimple.solvers.core.SFactorGraphBase SFactorGraphBase}.
@@ -37,7 +37,7 @@ import com.analog.lyric.dimple.solvers.interfaces.SolverFactorGraphHierarchy;
  * @since 0.08
  * @author Christopher Barber
  */
-public class StandardSolverFactorGraphHierarchy extends SolverFactorGraphHierarchy
+public class StandardSolverNodeMapping extends SolverNodeMapping
 {
 	/*-------
 	 * State
@@ -49,7 +49,7 @@ public class StandardSolverFactorGraphHierarchy extends SolverFactorGraphHierarc
 	 * Construction
 	 */
 	
-	StandardSolverFactorGraphHierarchy(ISolverFactorGraph sgraph)
+	StandardSolverNodeMapping(ISolverFactorGraph sgraph)
 	{
 		_sgraphs = new ExtendedArrayList<>(1);
 		if (sgraph.getModelObject().getRootIndex() == 0)
@@ -95,7 +95,7 @@ public class StandardSolverFactorGraphHierarchy extends SolverFactorGraphHierarc
 
 			while (!stack.isEmpty())
 			{
-				sgraph = requireNonNull(sgraph).getSolverSubgraph(stack.pop());
+				sgraph = requireNonNull(sgraph).getSolverSubgraph(stack.pop(), true);
 			}
 		}
 		

@@ -45,10 +45,10 @@ public interface ISolverFactorGraph	extends ISolverNode
 	public @Nullable ISolverFactorGraph createSubGraph(FactorGraph subgraph, @Nullable IFactorGraphFactory<?> factory);
 
 	/**
-	 * Return object representing hierarchy of solver objects below {@linkplain #getRootSolverGraph() root solver}.
+	 * Return object mapping all model objects below {@linkplain #getRootSolverGraph() root solver} to solver objects.
 	 * @since 0.08
 	 */
-	public SolverFactorGraphHierarchy getHierarchy();
+	public SolverNodeMapping getSolverMapping();
 
 	public @Nullable ISolverEdge getSolverEdge(FactorGraphEdgeState edge);
 	
@@ -72,7 +72,9 @@ public interface ISolverFactorGraph	extends ISolverNode
 	
 	public Collection<? extends ISolverFactor> getSolverFactorsRecursive();
 	
-	public @Nullable ISolverFactorGraph getSolverSubgraph(FactorGraph subgraph);
+	public ISolverFactorGraph getSolverSubgraph(FactorGraph subgraph);
+	
+	public @Nullable ISolverFactorGraph getSolverSubgraph(FactorGraph subgraph, boolean create);
 	
 	public Collection<? extends ISolverFactorGraph> getSolverSubgraphs();
 	
@@ -81,7 +83,7 @@ public interface ISolverFactorGraph	extends ISolverNode
 	/**
 	 * @return solver-specific variable representing the given model variable or else null.
 	 */
-	public @Nullable ISolverVariable getSolverVariable(Variable var);
+	public ISolverVariable getSolverVariable(Variable var);
 	
 	/**
 	 * Get solver variable for given variable.

@@ -61,6 +61,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IRealSamplerClient
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.MHSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.util.misc.Internal;
@@ -224,6 +225,12 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	}
 
 	@Override
+	public ISolverFactorGibbs getSibling(int edge)
+	{
+		return (ISolverFactorGibbs)super.getSibling(edge);
+	}
+
+	@Override
 	public final void update()
 	{
 		// Don't bother to re-sample deterministic dependent variables (those that are the output of a directional deterministic factor)
@@ -277,11 +284,12 @@ public class GibbsRealJoint extends SRealJointVariableBase
 			int numPorts = _model.getSiblingCount();
 			Port[] ports = new Port[numPorts];
 			final FactorGraph fg = _model.requireParentGraph();
+			final SolverNodeMapping solvers = requireSolverMapping();
 			for (int portIndex = 0; portIndex < numPorts; portIndex++)
 			{
 				final FactorGraphEdgeState edge = _model.getSiblingEdgeState(portIndex);
 				Factor factorNode = edge.getFactor(fg);
-				ISolverFactor factor = factorNode.requireSolver("update");
+				ISolverFactor factor = solvers.getSolverFactor(factorNode);
 				int factorPortNumber = edge.getFactorToVariableIndex();
 				ports[portIndex] = factorNode.getPort(factorPortNumber);
 				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor

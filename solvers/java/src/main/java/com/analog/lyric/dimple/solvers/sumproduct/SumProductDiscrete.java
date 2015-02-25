@@ -420,7 +420,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		double sum = 0;
 		for (int i = 0, n = getSiblingCount(); i < n; i++)
 		{
-			SumProductTableFactor sft = (SumProductTableFactor)getVariable().getConnectedNodesFlat().getByIndex(i).getSolver();
+			SumProductTableFactor sft = (SumProductTableFactor)getSibling(i);
 			double inputMsg = getEdge(i).factorToVarMsg.getWeight(domain);
 			double tmp = f / inputMsg;
 			@SuppressWarnings("null")
@@ -564,7 +564,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 			if (i != outPortNum)
 			{
 				double thisMsg = getEdge(i).factorToVarMsg.getWeight(d);
-				SumProductTableFactor stf = (SumProductTableFactor)getVariable().getConnectedNodesFlat().getByIndex(i).getSolver();
+				SumProductTableFactor stf = (SumProductTableFactor)getSibling(i);
 				@SuppressWarnings("null")
 				double [] dfactor = stf.getMessageDerivative(wn,getVariable());
 				

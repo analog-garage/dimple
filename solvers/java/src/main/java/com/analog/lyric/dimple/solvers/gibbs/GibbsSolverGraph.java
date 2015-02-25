@@ -271,13 +271,13 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	}
 	
 	@Override
-	public @Nullable ISolverFactorGibbs getSolverFactor(Factor factor)
+	public ISolverFactorGibbs getSolverFactor(Factor factor)
 	{
 		return (ISolverFactorGibbs)super.getSolverFactor(factor);
 	}
 	
 	@Override
-	public @Nullable ISolverVariableGibbs getSolverVariable(Variable variable)
+	public ISolverVariableGibbs getSolverVariable(Variable variable)
 	{
 		return (ISolverVariableGibbs)super.getSolverVariable(variable);
 	}
@@ -333,7 +333,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 		Map<Node,Integer> nodeOrder = DirectedNodeSorter.orderDirectedNodes(fg);
 		for (Factor factor : fg.getFactors())
 		{
-			ISolverFactorGibbs sfactor = requireNonNull(getSolverFactor(factor));
+			ISolverFactorGibbs sfactor = getSolverFactor(factor);
 			Integer order = nodeOrder.get(factor);
 			sfactor.setTopologicalOrder(order != null ? order : 0);
 		}
@@ -343,21 +343,33 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 		deferDeterministicUpdates();
 		for (Variable variable : fg.getOwnedVariables())
 		{
-			variable.requireSolver("initialize").initialize();
+			getSolverVariable(variable).initialize();
 		}
 		if (!fg.hasParentGraph())
+		{
 			for (int i = 0, end = fg.getBoundaryVariableCount(); i <end; ++i)
-				fg.getBoundaryVariable(i).requireSolver("initialize").initialize();
+			{
+				getSolverVariable(fg.getBoundaryVariable(i)).initialize();
+			}
+		}
 		for (Factor f : fg.getNonGraphFactorsTop())
-			f.requireSolver("initialize").initialize();
+		{
+			getSolverFactor(f).initialize();
+		}
 		processDeferredDeterministicUpdates(); // FIXME - is it ok to do after factor initialization?
 		for (FactorGraph g : fg.getOwnedGraphs())
-			g.requireSolver("initialize").initialize();
+		{
+			getSolverSubgraph(g).initialize();
+		}
 		deferDeterministicUpdates();
 		final ArrayList<IBlockInitializer> blockInitializers = _blockInitializers;
 		if (blockInitializers != null)
+		{
 			for (IBlockInitializer b : blockInitializers)	// After initializing all variables and factors, invoke any block initializers
+			{
 				b.initialize();
+			}
+		}
 		processDeferredDeterministicUpdates();
 
 		_scheduleIterator = schedule.iterator();
@@ -1171,7 +1183,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 		}
 		else
 		{
-			final Factor factor = requireNonNull(sfactor.getModelObject());
+			final Factor factor = sfactor.getModelObject();
 			final int nEdges = factor.getSiblingCount();
 			IndexedValue.SingleList oldValues = null;
 			if (factor.getFactorFunction().updateDeterministicLimit(nEdges) > 0)

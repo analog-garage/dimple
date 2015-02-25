@@ -21,6 +21,7 @@ import static java.util.Objects.*;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
@@ -32,9 +33,9 @@ import com.analog.lyric.util.misc.Internal;
  * <p>
  * @since 0.08
  * @author Christopher Barber
- * @see ISolverFactorGraph#getHierarchy()
+ * @see ISolverFactorGraph#getSolverMapping()
  */
-public abstract class SolverFactorGraphHierarchy
+public abstract class SolverNodeMapping
 {
 	/*-------------------
 	 * Abstract methods
@@ -50,7 +51,7 @@ public abstract class SolverFactorGraphHierarchy
 	public abstract ISolverFactorGraph getRootSolverGraph();
 	
 	/**
-	 * Add a new subgraph to the hierarchy.
+	 * Add a new subgraph to the mapping..
 	 * <p>
 	 * This is called by the {@link ISolverFactorGraph} implementation when a subgraph is added, and should
 	 * not be invoked in other situations. Solvers that inherit from the standard
@@ -80,7 +81,7 @@ public abstract class SolverFactorGraphHierarchy
 	public abstract @Nullable ISolverFactorGraph getSolverGraph(FactorGraph graph, boolean create);
 	
 	/**
-	 * Remove a subgraph from the hierarchy.
+	 * Remove a subgraph from the mapping.
 	 * <p>
 	 * This is called by the {@link ISolverFactorGraph} implementation when a subgraph is removed, and should
 	 * not be invoked in other situations. Solvers that inherit from the standard
@@ -176,6 +177,26 @@ public abstract class SolverFactorGraphHierarchy
 	public ISolverFactor getSolverFactor(Factor factor)
 	{
 		return requireNonNull(getSolverFactor(factor, true));
+	}
+	
+	public ISolverNode getSolverNode(INode node)
+	{
+		ISolverNode snode = null;
+		
+		switch (node.getNodeType())
+		{
+		case FACTOR:
+			snode = getSolverFactor((Factor)node);
+			break;
+		case GRAPH:
+			snode = getSolverGraph((FactorGraph)node);
+			break;
+		case VARIABLE:
+			snode = getSolverVariable((Variable)node);
+			break;
+		}
+
+		return requireNonNull(snode);
 	}
 	
 	/**

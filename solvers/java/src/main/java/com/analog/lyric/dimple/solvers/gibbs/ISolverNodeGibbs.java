@@ -24,6 +24,9 @@ import com.analog.lyric.util.misc.Internal;
  */
 public interface ISolverNodeGibbs extends ISolverNode
 {
+	@Override
+	public ISolverNodeGibbs getSibling(int edge);
+	
 	public double getPotential();
 	
 	/**

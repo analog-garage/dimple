@@ -22,6 +22,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.events.SolverEventSource;
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.Internal;
@@ -101,7 +102,8 @@ public abstract class ProxySolverNode<Delegate extends ISolverNode>
 	@Override
 	public ISolverNode getSibling(int edge)
 	{
-		return getModelObject().getSibling(edge).getSolver();
+		final INode sibling = getModelObject().getSibling(edge);
+		return requireSolverMapping().getSolverNode(sibling);
 	}
 	
 	@SuppressWarnings("null")

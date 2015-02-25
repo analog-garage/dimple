@@ -59,6 +59,12 @@ public class GibbsTableFactorBlastFromThePast extends SBlastFromThePast implemen
 	}
 	
 	@Override
+	public GibbsDiscrete getSibling(int edge)
+	{
+		return (GibbsDiscrete)super.getSibling(edge);
+	}
+	
+	@Override
 	public Value getInputMsg(int portIndex)
 	{
 		final GibbsSolverGraph sgraph = (GibbsSolverGraph)requireNonNull(getParentGraph());

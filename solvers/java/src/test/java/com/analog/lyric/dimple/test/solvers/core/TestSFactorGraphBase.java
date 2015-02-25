@@ -35,7 +35,7 @@ import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import com.analog.lyric.dimple.solvers.interfaces.SolverFactorGraphHierarchy;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.dimple.test.dummySolver.DummyFactorGraph;
 import com.analog.lyric.dimple.test.dummySolver.DummySolver;
@@ -66,11 +66,11 @@ public class TestSFactorGraphBase extends DimpleTestBase
 	{
 		final FactorGraph root = state.getModelObject();
 		assertSame(root, state.getModelGraph());
-		SolverFactorGraphHierarchy hierarchy = state.getHierarchy();
+		SolverNodeMapping solvers = state.getSolverMapping();
 		
 		for (Variable variable :FactorGraphIterables.variables(root))
 		{
-			ISolverVariable svariable = hierarchy.getSolverVariableOrNull(variable);
+			ISolverVariable svariable = solvers.getSolverVariableOrNull(variable);
 			if (svariable != null)
 			{
 				assertSame(variable, svariable.getModelObject());
@@ -79,7 +79,7 @@ public class TestSFactorGraphBase extends DimpleTestBase
 		
 		for (Factor factor : FactorGraphIterables.factors(root))
 		{
-			ISolverFactor sfactor = hierarchy.getSolverFactorOrNull(factor);
+			ISolverFactor sfactor = solvers.getSolverFactorOrNull(factor);
 			if (sfactor != null)
 			{
 				assertSame(factor, sfactor.getModelObject());
@@ -97,12 +97,12 @@ public class TestSFactorGraphBase extends DimpleTestBase
 		
 		for (ISolverFactorGraph sgraph : sgraphs)
 		{
-			FactorGraph graph = requireNonNull(sgraph.getModelObject());
+			FactorGraph graph = sgraph.getModelObject();
 			assert(graphs.contains(graph));
 			
 			if (graph != root)
 			{
-				assertSame(sgraph, hierarchy.getSolverGraphOrNull(graph));
+				assertSame(sgraph, solvers.getSolverGraphOrNull(graph));
 				
 				if (sgraph instanceof SFactorGraphBase)
 				{
@@ -112,7 +112,7 @@ public class TestSFactorGraphBase extends DimpleTestBase
 			
 			for (Variable var : graph.getOwnedVariables())
 			{
-				ISolverVariable svar = requireNonNull(hierarchy.getSolverVariableOrNull(var));
+				ISolverVariable svar = requireNonNull(solvers.getSolverVariableOrNull(var));
 				assertSame(var, svar.getModelObject());
 				if (graph == root)
 				{
@@ -130,7 +130,7 @@ public class TestSFactorGraphBase extends DimpleTestBase
 			
 			for (Factor factor : graph.getOwnedFactors())
 			{
-				ISolverFactor sfactor = requireNonNull(hierarchy.getSolverFactorOrNull(factor));
+				ISolverFactor sfactor = requireNonNull(solvers.getSolverFactorOrNull(factor));
 				assertSame(factor, sfactor.getModelObject());
 				if (graph == root)
 				{

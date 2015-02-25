@@ -21,7 +21,6 @@ import static java.util.Objects.*;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
-import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -36,7 +35,7 @@ import com.analog.lyric.collect.ReleasableIterable;
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.collect.UnmodifiableReleasableIterator;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.core.Node;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Variable;
@@ -86,7 +85,7 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 	 */
 	public static @Nullable GibbsNeighbors create(ISolverVariableGibbs svar)
 	{
-		final Variable var = requireNonNull(svar.getModelObject());
+		final Variable var = svar.getModelObject();
 		final int nSiblings = var.getSiblingCount();
 
 		// Neighbors at front of list, other visited nodes at end. The counter indicates
@@ -188,7 +187,7 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 		protected @Nullable Queue<Work> handle(Deque<ISolverNodeGibbs> visited, int[] counterHolder,
 			@Nullable Queue<Work> queue)
 		{
-			final Variable variable = requireNonNull(_varNode.getModelObject());
+			final Variable variable = _varNode.getModelObject();
 			final int nSiblings = variable.getSiblingCount();
 			
 			int counter = counterHolder[0];
@@ -197,12 +196,13 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 				if (edge == _incomingEdge)
 					continue;
 				
-				final Factor factor = variable.getSibling(edge);
-				final ISolverFactorGibbs sfactor = (ISolverFactorGibbs)Objects.requireNonNull(factor.getSolver());
+				final FactorGraphEdgeState edgeState = variable.getSiblingEdgeState(edge);
+				final ISolverFactorGibbs sfactor = _varNode.getSibling(edge);
+				final Factor factor = sfactor.getModelObject();
 				
 				int reverseEdge;
 				if (factor.getFactorFunction().isDeterministicDirected() &&
-					!factor.isDirectedTo(reverseEdge = variable.getSiblingPortIndex(edge)))
+					!factor.isDirectedTo(reverseEdge = edgeState.getFactorToVariableIndex()))
 				{
 					// Do not mark deterministic directed factors as visited because we may
 					// need to visit them again from a different input variable and may get
@@ -245,7 +245,7 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 		@Override
 		protected Queue<Work> handle(Deque<ISolverNodeGibbs> visited, int[] counterHolder, Queue<Work> queue)
 		{
-			final Factor factor = requireNonNull(_factorNode.getModelObject());
+			final Factor factor = _factorNode.getModelObject();
 			final FactorFunction function = factor.getFactorFunction();
 			int[] outputEdges = function.getDirectedToIndicesForInput(factor, _incomingEdge);
 			if (outputEdges == null)
@@ -269,8 +269,7 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 			{
 				for (int edge : outputEdges)
 				{
-					Variable variable = factor.getSibling(edge);
-					ISolverVariableGibbs svariable = requireNonNull((ISolverVariableGibbs)variable.getSolver());
+					ISolverVariableGibbs svariable = _factorNode.getSibling(edge);
 					if (svariable.setVisited(true))
 					{
 						if (svariable.hasPotential())
@@ -307,7 +306,7 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 	 */
 	static ReleasableIterator<ISolverNodeGibbs> iteratorFor(@Nullable GibbsNeighbors list, ISolverVariableGibbs var)
 	{
-		return list != null ? list.iterator() : SimpleIterator.create(var.getModelObject());
+		return list != null ? list.iterator() : SimpleIterator.create(var);
 	}
 	
 	/*---------------
@@ -352,20 +351,20 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 	@NotThreadSafe
 	private static class SimpleIterator extends UnmodifiableReleasableIterator<ISolverNodeGibbs>
 	{
-		private @Nullable Node _modelNode;
+		private @Nullable ISolverNodeGibbs _snode;
 		private int _size;
 		private int _index;
 
 		private static final AtomicReference<SimpleIterator> _reusableInstance = new AtomicReference<SimpleIterator>();
 		
-		static SimpleIterator create(@Nullable Node node)
+		static SimpleIterator create(@Nullable ISolverNodeGibbs svar)
 		{
 			SimpleIterator iter = _reusableInstance.getAndSet(null);
 			if (iter == null)
 			{
 				iter = new SimpleIterator();
 			}
-			iter.reset(node);
+			iter.reset(svar);
 			return iter;
 		}
 		
@@ -378,20 +377,21 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 		@Override
 		public @Nullable ISolverNodeGibbs next()
 		{
-			return (ISolverNodeGibbs)Objects.requireNonNull(_modelNode).getSibling(_index++).getSolver();
+			ISolverNodeGibbs snode = _snode;
+			return snode != null ? snode.getSibling(_index++) : null ;
 		}
 
 		@Override
 		public void release()
 		{
-			_modelNode = null;
+			_snode = null;
 			_reusableInstance.lazySet(this);
 		}
 		
-		void reset(@Nullable Node node)
+		void reset(@Nullable ISolverNodeGibbs svar)
 		{
-			_modelNode = node;
-			_size = node != null ? node.getSiblingCount() : 0;
+			_snode = svar;
+			_size = svar != null ? svar.getSiblingCount() : 0;
 			_index = 0;
 		}
 	}

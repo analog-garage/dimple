@@ -64,6 +64,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.dimple.solvers.optimizedupdate.CostEstimationTableWrapper;
 import com.analog.lyric.dimple.solvers.optimizedupdate.CostType;
 import com.analog.lyric.dimple.solvers.optimizedupdate.Costs;
@@ -661,13 +662,15 @@ public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolve
 		
 		_currentFactorTable = ft;
 		
-				
+		final SolverNodeMapping solvers = getSolverMapping();
 		for (Factor f : _model.getFactors())
 		{
-			((SumProductTableFactor)f.getSolver()).initializeDerivativeMessages(ft.sparseSize());
+			((SumProductTableFactor)solvers.getSolverFactor(f)).initializeDerivativeMessages(ft.sparseSize());
 		}
 		for (Variable vb : _model.getVariablesFlat())
-			((SumProductDiscrete)vb.getSolver()).initializeDerivativeMessages(ft.sparseSize());
+		{
+			((SumProductDiscrete)solvers.getSolverVariable(vb)).initializeDerivativeMessages(ft.sparseSize());
+		}
 		
 		setCalculateDerivative(true);
 		
@@ -677,14 +680,14 @@ public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolve
 			_model.solve();
 			for (Factor f : _model.getFactors())
 			{
-				SumProductTableFactor stf = (SumProductTableFactor)f.getSolver();
+				SumProductTableFactor stf = (SumProductTableFactor)solvers.getSolverFactor(f);
 				result += stf.calculateDerivativeOfInternalEnergyWithRespectToWeight(weightIndex);
 				result -= stf.calculateDerivativeOfBetheEntropyWithRespectToWeight(weightIndex);
 						
 			}
 			for (Variable v : _model.getVariablesFlat())
 			{
-				SumProductDiscrete sv = (SumProductDiscrete)v.getSolver();
+				SumProductDiscrete sv = (SumProductDiscrete)solvers.getSolverVariable(v);
 				result += sv.calculateDerivativeOfInternalEnergyWithRespectToWeight(weightIndex);
 				result += sv.calculateDerivativeOfBetheEntropyWithRespectToWeight(weightIndex);
 			}

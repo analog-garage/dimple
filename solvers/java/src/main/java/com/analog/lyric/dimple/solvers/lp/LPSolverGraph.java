@@ -663,7 +663,7 @@ public class LPSolverGraph extends SFactorGraphBase<LPTableFactor, LPDiscrete, N
 	 * associated with input model factor or else null.
 	 */
 	@Override
-	public @Nullable LPTableFactor getSolverFactor(Factor factor)
+	public LPTableFactor getSolverFactor(Factor factor)
 	{
 		return _factorMap.get(factor);
 	}
@@ -673,7 +673,7 @@ public class LPSolverGraph extends SFactorGraphBase<LPTableFactor, LPDiscrete, N
 	 * associated with input model variable or else null.
 	 */
 	@Override
-	public @Nullable LPDiscrete getSolverVariable(Variable var)
+	public LPDiscrete getSolverVariable(Variable var)
 	{
 		return _varMap.get(var);
 	}
