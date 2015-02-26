@@ -29,9 +29,9 @@ public class ParticleBPDiscrete extends SumProductDiscrete implements IParticleB
 {
 	private final RealValue[] _particleValues;
 	
-	public ParticleBPDiscrete(Discrete var)
+	public ParticleBPDiscrete(Discrete var, ParticleBPSolverGraph parent)
 	{
-		super(var);
+		super(var, parent);
 		_particleValues = RealValue.createFromDiscreteDomain(var.getDomain());
 	}
 

@@ -34,6 +34,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsDirichletEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 
@@ -46,9 +47,9 @@ public class CustomExchangeableDirichlet extends GibbsRealFactor implements IRea
 	private boolean _hasConstantParameters;
 	private static final int PARAMETER_INDEX = 0;
 	
-	public CustomExchangeableDirichlet(Factor factor)
+	public CustomExchangeableDirichlet(Factor factor, GibbsSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 
 	@Override

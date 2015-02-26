@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 /**
@@ -41,9 +42,9 @@ public abstract class ProxySolverFactor<Delegate extends ISolverFactor>
 	/**
 	 * @param modelFactor
 	 */
-	protected ProxySolverFactor(Factor modelFactor)
+	protected ProxySolverFactor(Factor modelFactor, ISolverFactorGraph parent)
 	{
-		super(modelFactor);
+		super(modelFactor, parent);
 		_modelFactor = modelFactor;
 	}
 

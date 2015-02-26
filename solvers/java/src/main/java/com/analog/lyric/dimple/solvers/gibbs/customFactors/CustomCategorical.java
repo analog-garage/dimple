@@ -37,6 +37,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsDirichletEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 
@@ -50,9 +51,9 @@ public class CustomCategorical extends GibbsRealFactor implements IRealJointConj
 	private static final int NUM_PARAMETERS = 1;
 	private static final int PARAMETER_INDEX = 0;
 	
-	public CustomCategorical(Factor factor)
+	public CustomCategorical(Factor factor, GibbsSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 
 	@Override

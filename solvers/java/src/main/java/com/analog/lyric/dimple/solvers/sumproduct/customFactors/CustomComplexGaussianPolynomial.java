@@ -24,6 +24,7 @@ import Jama.Matrix;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 
 public class CustomComplexGaussianPolynomial extends MultivariateGaussianFactorBase
 {
@@ -38,9 +39,9 @@ public class CustomComplexGaussianPolynomial extends MultivariateGaussianFactorB
 	 * modify newton raphson to deal with complex coefficients
 	 * modify the code that calculates means and covariance
 	 */
-	public CustomComplexGaussianPolynomial(Factor factor)
+	public CustomComplexGaussianPolynomial(Factor factor, SumProductSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 
 		if (factor.getSiblingCount() != 2)
 			throw new DimpleException("expected two complex numbers");

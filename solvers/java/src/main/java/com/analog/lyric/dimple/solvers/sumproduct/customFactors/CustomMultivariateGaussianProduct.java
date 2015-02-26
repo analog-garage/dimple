@@ -22,14 +22,15 @@ import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 
 public class CustomMultivariateGaussianProduct extends MultivariateGaussianFactorBase
 {
 	private double [][] _constant;
 	
-	public CustomMultivariateGaussianProduct(Factor factor)
+	public CustomMultivariateGaussianProduct(Factor factor, SumProductSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 		
 		// Make sure this is of the form a = b*c where either b or c is a constant.
 		if (factor.getSiblingCount() != 2)

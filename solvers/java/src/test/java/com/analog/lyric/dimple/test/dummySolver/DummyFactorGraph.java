@@ -20,6 +20,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
@@ -37,24 +38,24 @@ public class DummyFactorGraph extends SFactorGraphBase<ISolverFactor,ISolverVari
 		super(factorGraph);
 	}
 
-	public ISolverFactor createCustomFactor(com.analog.lyric.dimple.model.factors.Factor factor)
+	public ISolverFactor createCustomFactor(Factor factor)
 	{
 		String funcName = factor.getModelerFunctionName();
 		if (funcName.equals("dummyCustomFactor"))
 		{
-			return new DummyCustomFactor(factor);
+			return new DummyCustomFactor(factor, this);
 		}
 		else
 			throw new DimpleException("Not implemented");
 	}
 
 	@Override
-	public ISolverFactor createFactor(com.analog.lyric.dimple.model.factors.Factor factor)
+	public ISolverFactor createFactor(Factor factor)
 	{
 		if (customFactorExists(factor.getFactorFunction().getName()))
 			return createCustomFactor(factor);
 		else
-			return new DummyTableFactor(factor);
+			return new DummyTableFactor(factor, this);
 	}
 
 	@Override
@@ -68,11 +69,11 @@ public class DummyFactorGraph extends SFactorGraphBase<ISolverFactor,ISolverVari
 	{
 		if (var instanceof Discrete)
 		{
-			return new DummyDiscreteVariable((Discrete)var);
+			return new DummyDiscreteVariable((Discrete)var, this);
 		}
 		else if (var instanceof Real)
 		{
-			return new DummyRealVariable((Real)var);
+			return new DummyRealVariable((Real)var, this);
 		}
 		
 		throw DimpleException.unsupported("DummyFactorGraph.createVariable with variable not Real or Discrete");

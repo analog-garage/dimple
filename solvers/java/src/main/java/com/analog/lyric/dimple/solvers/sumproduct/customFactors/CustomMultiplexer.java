@@ -28,6 +28,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscreteEdge;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 
 /*
  * The Multiplexer factor is a directed factor
@@ -52,9 +53,9 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 	private int [][] _zIndices2yIndex;
 
 	@SuppressWarnings("unchecked")
-	public CustomMultiplexer(Factor factor)
+	public CustomMultiplexer(Factor factor, SumProductSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 		
 		final int nVars = factor.getSiblingCount();
 		if (nVars < 2)

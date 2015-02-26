@@ -201,9 +201,9 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	 * Construction
 	 */
 
-	public GibbsRealJoint(RealJoint var)
+	public GibbsRealJoint(RealJoint var, GibbsSolverGraph parent)
 	{
-		super(var);
+		super(var, parent);
 
 		_domain = var.getDomain();
 		
@@ -284,7 +284,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 			int numPorts = _model.getSiblingCount();
 			Port[] ports = new Port[numPorts];
 			final FactorGraph fg = _model.requireParentGraph();
-			final SolverNodeMapping solvers = requireSolverMapping();
+			final SolverNodeMapping solvers = getSolverMapping();
 			for (int portIndex = 0; portIndex < numPorts; portIndex++)
 			{
 				final FactorGraphEdgeState edge = _model.getSiblingEdgeState(portIndex);

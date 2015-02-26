@@ -24,8 +24,8 @@ import com.analog.lyric.dimple.model.variables.Real;
 @Deprecated
 public class SRealVariable extends ParticleBPReal
 {
-	public SRealVariable(Real var)
+	public SRealVariable(Real var, ParticleBPSolverGraph parent)
 	{
-		super(var);
+		super(var, parent);
 	}
 }

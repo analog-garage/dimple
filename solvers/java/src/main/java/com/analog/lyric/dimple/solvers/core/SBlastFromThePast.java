@@ -32,21 +32,22 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import com.analog.lyric.util.misc.Internal;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 
 public class SBlastFromThePast extends SolverEventSource implements ISolverBlastFromThePastFactor
 {
 	private BlastFromThePastFactor _factor;
 	protected final Port _portForOtherVar;
 	protected final Port _portForBlastVar;
-	protected @Nullable ISolverFactorGraph _parent = null;
+	protected final ISolverFactorGraph _parent;
 	
-	public SBlastFromThePast(BlastFromThePastFactor f)
+	public SBlastFromThePast(BlastFromThePastFactor f, ISolverFactorGraph parent)
 	{
 		_factor = f;
 		_portForOtherVar = f.getPortForOtherVariable();
 		Variable varConnectedToBlast = f.getVariableConnectedToBlast();
 	    _portForBlastVar = new Port(varConnectedToBlast,varConnectedToBlast.getPortNum(getModelObject()));
+	    _parent = parent;
 	}
 	
 	/*----------------
@@ -62,6 +63,12 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 	/*----------------------
 	 * ISolverNode methods
 	 */
+
+	@Override
+	public ISolverFactorGraph getContainingSolverGraph()
+	{
+		return _parent;
+	}
 	
 	@Override
 	public ISolverVariable getSibling(int edge)
@@ -74,6 +81,12 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 	public int getSiblingCount()
 	{
 		return getModelObject().getSiblingCount();
+	}
+	
+	@Override
+	public SolverNodeMapping getSolverMapping()
+	{
+		return _parent.getSolverMapping();
 	}
 	
 	/*---------------------------
@@ -163,16 +176,15 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 	}
 
 	@Override
-	public @Nullable ISolverFactorGraph getParentGraph()
+	public ISolverFactorGraph getParentGraph()
 	{
 		return _parent;
 	}
 
 	@Override
-	public @Nullable ISolverFactorGraph getRootSolverGraph()
+	public ISolverFactorGraph getRootSolverGraph()
 	{
-		final ISolverFactorGraph parent = _parent;
-		return parent != null ? parent.getRootSolverGraph() : null;
+		return _parent.getRootSolverGraph();
 	}
 
 	@Override
@@ -226,13 +238,6 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 		throw new DimpleException("Not implemented");
 	}
 
-	@Internal
-	@Override
-	public void setParent(ISolverFactorGraph parent)
-	{
-		_parent = parent;
-	}
-	
 	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum,
 			int otherPortNum)

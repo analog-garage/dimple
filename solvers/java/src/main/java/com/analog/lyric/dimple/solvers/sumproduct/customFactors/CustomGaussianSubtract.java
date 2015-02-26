@@ -19,14 +19,15 @@ package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 
 
 // Same as CustomGaussianSum, except the second edge is treated as the output instead of the first
 public class CustomGaussianSubtract extends CustomGaussianSum
 {
-	public CustomGaussianSubtract(Factor factor)
+	public CustomGaussianSubtract(Factor factor, SumProductSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 		_sumIndex = 1;	// Port that is the sum of all the others
 	}
 	

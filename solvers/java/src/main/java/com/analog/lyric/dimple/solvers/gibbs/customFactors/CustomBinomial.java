@@ -56,9 +56,9 @@ public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFac
 	private static final int P_PARAMETER_INDEX = 1;				// If N is not in constructor then P is second index (1)
 	private static final int OUTPUT_INDEX = 2;					// If N is not in constructor then output is third index (2)
 
-	public CustomBinomial(Factor factor)
+	public CustomBinomial(Factor factor, GibbsSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 
 	@Override

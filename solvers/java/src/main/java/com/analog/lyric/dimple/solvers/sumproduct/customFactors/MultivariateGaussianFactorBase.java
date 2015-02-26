@@ -22,14 +22,15 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.core.SMultivariateNormalEdge;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public abstract class MultivariateGaussianFactorBase extends SFactorBase
 {
 	@SuppressWarnings("null")
-	public MultivariateGaussianFactorBase(Factor factor)
+	public MultivariateGaussianFactorBase(Factor factor, ISolverFactorGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 
 

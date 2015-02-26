@@ -24,8 +24,8 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 @Deprecated
 public class SVariable extends MinSumDiscrete
 {
-	SVariable(Discrete var)
+	SVariable(Discrete var, MinSumSolverGraph parent)
 	{
-		super(var);
+		super(var, parent);
 	}
 }

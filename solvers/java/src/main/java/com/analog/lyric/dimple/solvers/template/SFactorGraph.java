@@ -75,7 +75,7 @@ public class SFactorGraph  extends SFactorGraphBase<ISolverFactor,ISolverVariabl
 	{
 		if (var instanceof Discrete)
 		{
-			return new SVariable((Discrete)var);
+			return new SVariable((Discrete)var, this);
 		}
 		
 		throw unsupportedVariableType(var);
@@ -87,7 +87,7 @@ public class SFactorGraph  extends SFactorGraphBase<ISolverFactor,ISolverVariabl
 	@Override
 	public ISolverFactor createFactor(Factor factor)
 	{
-		return new STableFactor(factor);
+		return new STableFactor(factor, this);
 	}
 
 	@Override

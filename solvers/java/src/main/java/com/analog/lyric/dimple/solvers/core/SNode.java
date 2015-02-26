@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
-import static java.util.Objects.*;
-
 import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -31,7 +29,6 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterized
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.util.misc.Internal;
 
 public abstract class SNode<MNode extends Node> extends SolverEventSource implements ISolverNode
 {
@@ -61,10 +58,6 @@ public abstract class SNode<MNode extends Node> extends SolverEventSource implem
 
 	protected final MNode _model;
 
-	// TODO - it might be nice to move this down into a SChild subclass and make it non-null and final
-	//        so that SVariables and SFactors could always be assumed to have a parent
-	protected @Nullable ISolverFactorGraph _parent = null;
-	
 	/*--------------
 	 * Construction
 	 */
@@ -99,29 +92,16 @@ public abstract class SNode<MNode extends Node> extends SolverEventSource implem
     }
 	
 	@Override
-	public @Nullable ISolverFactorGraph getParentGraph()
+	public ISolverFactorGraph getRootSolverGraph()
 	{
-		return _parent;
-	}
-	
-	@Override
-	public @Nullable ISolverFactorGraph getRootSolverGraph()
-	{
-		ISolverFactorGraph root = getContainingSolverGraph();
-		
-		if (root != null)
-		{
-			root = root.getSolverMapping().getRootSolverGraph();
-		}
-		
-		return root;
+		return getContainingSolverGraph().getRootSolverGraph();
 	}
 	
 	@Override
 	public ISolverNode getSibling(int edge)
 	{
 		final Node sibling = getModelObject().getSibling(edge);
-		return requireSolverMapping().getSolverNode(sibling);
+		return getSolverMapping().getSolverNode(sibling);
 	}
 	
 	@Override
@@ -159,13 +139,6 @@ public abstract class SNode<MNode extends Node> extends SolverEventSource implem
 	@Override
 	public void setOutputMsgValues(int portIndex, Object obj) {
 		throw new DimpleException("Not supported by " + this);
-	}
-	
-	@Internal
-	@Override
-	public void setParent(ISolverFactorGraph parent)
-	{
-		_parent = parent;
 	}
 	
 	@Override
@@ -305,7 +278,7 @@ public abstract class SNode<MNode extends Node> extends SolverEventSource implem
 	
 	protected @Nullable ISolverEdge getEdge(int siblingIndex)
 	{
-		return requireNonNull(_parent).getSolverEdge(_model.getSiblingEdgeIndex(siblingIndex));
+		return requireParentGraph().getSolverEdge(_model.getSiblingEdgeIndex(siblingIndex));
 	}
 	
 	/**

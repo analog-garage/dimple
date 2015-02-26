@@ -187,21 +187,11 @@ public class GibbsReal extends SRealVariableBase
 	 */
 	
 	// Primary constructor
-	public GibbsReal(Real var)
+	public GibbsReal(Real var, GibbsSolverGraph parent)
 	{
-		super(var);
+		super(var, parent);
 
 		_domain = var.getDomain();
-		_prevSample = _currentSample = new CurrentSample(_domain);
-	}
-
-	// FIXME - who uses this?
-	// Alternative constructor for creating from a joint domain
-	public GibbsReal(Real var, Real realVar, RealDomain domain)
-	{
-		super(var);
-
-		_domain = domain;
 		_prevSample = _currentSample = new CurrentSample(_domain);
 	}
 
@@ -266,7 +256,7 @@ public class GibbsReal extends SRealVariableBase
 			int numPorts = _model.getSiblingCount();
 			Port[] ports = new Port[numPorts];
 			final FactorGraph fg = _model.requireParentGraph();
-			SolverNodeMapping solvers = requireSolverMapping();
+			SolverNodeMapping solvers = getSolverMapping();
 			for (int portIndex = 0; portIndex < numPorts; portIndex++)
 			{
 				final FactorGraphEdgeState edge = _model.getSiblingEdgeState(portIndex);

@@ -21,6 +21,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.variables.Real;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 public abstract class SRealVariableBase extends SVariableBase<Real>
 {
@@ -45,9 +46,9 @@ public abstract class SRealVariableBase extends SVariableBase<Real>
      * Construction
      */
     
-	public SRealVariableBase(Real var)
+	protected SRealVariableBase(Real var, ISolverFactorGraph parent)
 	{
-		super(var);
+		super(var, parent);
 	}
 
 	@Override

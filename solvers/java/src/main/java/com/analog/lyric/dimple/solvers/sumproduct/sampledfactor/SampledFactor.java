@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.solvers.core.SEdgeWithMessages;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 /**
@@ -66,9 +67,9 @@ public class SampledFactor extends SFactorBase
 	public final static int DEFAULT_BURN_IN_SCANS_PER_UPDATE = 10;
 	public final static int DEFAULT_SCANS_PER_SAMPLE = 1;
 	
-	public SampledFactor(Factor factor)
+	public SampledFactor(Factor factor, ISolverFactorGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 				
 		int numSiblings = factor.getSiblingCount();
 		_messageTranslator = new MessageTranslatorBase[numSiblings];

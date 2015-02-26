@@ -41,9 +41,9 @@ public class GibbsTableFactorBlastFromThePast extends SBlastFromThePast implemen
 	private boolean _visited = false;
 	private int _topologicalOrder = 0;
 	
-	public GibbsTableFactorBlastFromThePast(BlastFromThePastFactor f)
+	public GibbsTableFactorBlastFromThePast(BlastFromThePastFactor f, GibbsSolverGraph parent)
 	{
-		super(f);
+		super(f, parent);
 	}
 
 	@Override

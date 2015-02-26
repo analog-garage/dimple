@@ -49,9 +49,9 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 	private boolean _hasConstantParameters;
 	private static final int PARAMETER_INDEX = 0;
 	
-	public CustomDirichlet(Factor factor)
+	public CustomDirichlet(Factor factor, GibbsSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 
 	@Override

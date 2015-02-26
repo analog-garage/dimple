@@ -69,6 +69,8 @@ public abstract class SFactorGraphBase
 	@SuppressWarnings("hiding")
 	protected static final int RESERVED_FLAGS = 0xFFFF0000;
 	
+	private @Nullable ISolverFactorGraph _parent = null;
+	
 	protected int _numIterations = 1;		// Default number of iterations unless otherwise specified
 	private @Nullable MultiThreadingManager _multithreader; // = new MultiThreadingManager();
 	protected boolean _useMultithreading = false;
@@ -125,11 +127,17 @@ public abstract class SFactorGraphBase
 		return _model;
 	}
 	
-	@Internal
 	@Override
+	public @Nullable ISolverFactorGraph getParentGraph()
+	{
+		return _parent;
+	}
+	
+	@Override
+	@Internal
 	public void setParent(ISolverFactorGraph parent)
 	{
-		super.setParent(parent);
+		_parent = parent;
 		_solverNodeMapping = parent.getSolverMapping();
 		_solverNodeMapping.addSolverGraph(this);
 	}
@@ -452,7 +460,7 @@ public abstract class SFactorGraphBase
 	@Override
 	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor f)
 	{
-		return new SBlastFromThePast(f);
+		return new SBlastFromThePast(f, this);
 	}
 	
 	@Override
@@ -1158,12 +1166,10 @@ public abstract class SFactorGraphBase
 				{
 					// FIXME - hacky
 					sfactor = (SFactor)this.createBlastFromThePast((BlastFromThePastFactor)factor);
-					sfactor.setParent(this);
 				}
 				else
 				{
 					sfactor = this.createFactor(factor);
-					sfactor.setParent(this);
 					sfactor.createMessages();
 				}
 				if (this == factor.requireParentGraph().getSolver())
@@ -1241,7 +1247,6 @@ public abstract class SFactorGraphBase
 			if (create)
 			{
 				svar = this.createVariable(variable);
-				svar.setParent(this);
 				if (this == variable.requireParentGraph().getSolver())
 				{
 					// If parent is default solver for it's graph, make this the default solver for the subgraph.

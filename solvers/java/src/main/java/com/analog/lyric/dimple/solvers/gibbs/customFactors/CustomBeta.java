@@ -33,6 +33,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsBetaEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 
@@ -52,9 +53,9 @@ public class CustomBeta extends GibbsRealFactor implements IRealConjugateFactor
 	private static final int BETA_PARAMETER_INDEX = 1;
 	private static final int NO_PORT = -1;
 
-	public CustomBeta(Factor factor)
+	public CustomBeta(Factor factor, GibbsSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 
 	@Override

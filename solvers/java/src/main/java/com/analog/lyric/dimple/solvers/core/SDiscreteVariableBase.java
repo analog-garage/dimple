@@ -22,6 +22,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.interfaces.IDiscreteSolverVariable;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 public abstract class SDiscreteVariableBase extends SVariableBase<Discrete> implements IDiscreteSolverVariable
 {
@@ -29,9 +30,9 @@ public abstract class SDiscreteVariableBase extends SVariableBase<Discrete> impl
 	protected boolean _guessWasSet = false;
 
     
-	public SDiscreteVariableBase(Discrete var)
+	protected SDiscreteVariableBase(Discrete var, ISolverFactorGraph parent)
 	{
-		super(var);
+		super(var, parent);
 	}
 
 	@Override

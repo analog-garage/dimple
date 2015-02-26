@@ -24,8 +24,8 @@ import com.analog.lyric.dimple.model.variables.Real;
 @Deprecated
 public class SRealVariable extends GibbsReal
 {
-	SRealVariable(Real var)
+	SRealVariable(Real var, GibbsSolverGraph parent)
 	{
-		super(var);
+		super(var, parent);
 	}
 }

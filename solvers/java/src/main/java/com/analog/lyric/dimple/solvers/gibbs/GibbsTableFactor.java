@@ -58,9 +58,9 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
      * Construction
      */
     
-	public GibbsTableFactor(Factor factor)
+	public GibbsTableFactor(Factor factor, GibbsSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 		_isDeterministicDirected = _model.getFactorFunction().isDeterministicDirected();
 	}
 	
@@ -219,7 +219,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 		Value[] values = factor.getFactorFunction().evalDeterministicToCopy(_currentSamples);
 		
 		// Update the directed-to variables with the computed values
-		SolverNodeMapping solvers = requireSolverMapping();
+		SolverNodeMapping solvers = getSolverMapping();
 		int[] directedTo = factor.getDirectedTo();
 		if (directedTo != null)
 		{

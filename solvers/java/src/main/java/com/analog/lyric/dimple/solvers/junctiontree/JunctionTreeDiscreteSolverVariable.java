@@ -46,10 +46,10 @@ public class JunctionTreeDiscreteSolverVariable
 	/**
 	 * @param modelVariable
 	 */
-	protected JunctionTreeDiscreteSolverVariable(Discrete modelVariable, JunctionTreeSolverGraphBase<?> root)
+	protected JunctionTreeDiscreteSolverVariable(Discrete modelVariable, JunctionTreeSolverGraphBase<?> parent)
 	{
-		super(modelVariable);
-		_root = root;
+		super(modelVariable, parent);
+		_root = parent.getRootSolverGraph();
 	}
 
 	/*---------------------

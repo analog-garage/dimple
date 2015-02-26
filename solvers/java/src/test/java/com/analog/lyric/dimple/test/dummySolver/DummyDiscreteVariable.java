@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 
@@ -33,9 +34,9 @@ public class DummyDiscreteVariable extends SDiscreteVariableBase
 	private @Nullable double [] _input = new double[1];
 	protected Discrete _varDiscrete;
 
-	public DummyDiscreteVariable(Discrete var)
+	public DummyDiscreteVariable(Discrete var, ISolverFactorGraph parent)
 	{
-		super(var);
+		super(var, parent);
 		_varDiscrete = var;
 		initializeInputs();
 	}

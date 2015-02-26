@@ -22,6 +22,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.minsum.MinSumDiscreteEdge;
+import com.analog.lyric.dimple.solvers.minsum.MinSumSolverGraph;
 
 @SuppressWarnings("deprecation") // TODO remove when STableFactor removed
 public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFactor
@@ -30,9 +31,9 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 	private int _numPorts;
 
 
-	public CustomXor(Factor factor)
+	public CustomXor(Factor factor, MinSumSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 
 	

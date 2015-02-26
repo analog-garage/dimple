@@ -65,9 +65,9 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 	 * Construction
 	 */
 
-	public MinSumTableFactor(Factor factor)
+	public MinSumTableFactor(Factor factor, ISolverFactorGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 
 		if (factor.getFactorFunction().factorTableExists(getFactor()))
 			_kbestFactorEngine = new KBestFactorTableEngine(this);
@@ -107,11 +107,8 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 		ISolverFactorGraph rootGraph = getRootSolverGraph();
 		if (rootGraph instanceof MinSumSolverGraph)
 		{
-			final MinSumSolverGraph sfg = (MinSumSolverGraph) getRootSolverGraph();
-			if (sfg != null)
-			{
-				return sfg.getFactorTableUpdateSettings(getFactor());
-			}
+			final MinSumSolverGraph sfg = (MinSumSolverGraph) rootGraph;
+			return sfg.getFactorTableUpdateSettings(getFactor());
 		}
 		return null;
 	}

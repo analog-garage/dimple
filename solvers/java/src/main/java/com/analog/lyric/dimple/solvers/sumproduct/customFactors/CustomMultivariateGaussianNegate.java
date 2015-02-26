@@ -20,12 +20,13 @@ import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 
 public class CustomMultivariateGaussianNegate extends MultivariateGaussianFactorBase
 {
-	public CustomMultivariateGaussianNegate(Factor factor)
+	public CustomMultivariateGaussianNegate(Factor factor, SumProductSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 
 	@Override

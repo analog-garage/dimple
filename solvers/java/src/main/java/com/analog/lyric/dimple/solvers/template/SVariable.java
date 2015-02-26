@@ -22,6 +22,7 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 /**
  * Solvers are responsible for managing memory required for messages.
@@ -35,9 +36,9 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeight
  */
 public class SVariable extends SDiscreteVariableDoubleArray
 {
-	public SVariable(Discrete var)
+	public SVariable(Discrete var, ISolverFactorGraph parent)
 	{
-		super(var);
+		super(var, parent);
 	}
 
 	/**

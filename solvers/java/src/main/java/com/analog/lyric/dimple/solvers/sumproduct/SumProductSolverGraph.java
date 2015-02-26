@@ -156,14 +156,14 @@ public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolve
 	public ISolverVariable createVariable(Variable var)
 	{
 		if (var instanceof FiniteFieldVariable)
-			return new SFiniteFieldVariable((FiniteFieldVariable)var);
+			return new SFiniteFieldVariable((FiniteFieldVariable)var, this);
 		else if (var instanceof RealJoint)
-			return new SRealJointVariable((RealJoint)var);
+			return new SRealJointVariable((RealJoint)var, this);
 		else if (var instanceof Real)
-			return new SRealVariable((Real)var);
+			return new SRealVariable((Real)var, this);
 		else if (var instanceof Discrete)
 		{
-			return new SDiscreteVariable((Discrete)var);
+			return new SDiscreteVariable((Discrete)var, this);
 		}
 		
 		throw unsupportedVariableType(var);
@@ -184,77 +184,77 @@ public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolve
 		{
 			// First see if any custom factor should be created
 			if (((factorFunction instanceof FiniteFieldAdd) || (noFF && factorName.equals("finiteFieldAdd"))) && !hasConstants)		// "finiteFieldAdd" for backward compatibility
-				return new CustomFiniteFieldAdd(factor);
+				return new CustomFiniteFieldAdd(factor, this);
 			else if ((factorFunction instanceof FiniteFieldMult) || (noFF && factorName.equals("finiteFieldMult")))					// "finiteFieldMult" for backward compatibility
 			{
 				if (hasConstants)
-					return new CustomFiniteFieldConstantMult(factor);
+					return new CustomFiniteFieldConstantMult(factor, this);
 				else
-					return new CustomFiniteFieldMult(factor);
+					return new CustomFiniteFieldMult(factor, this);
 			}
 			else if ((factorFunction instanceof FiniteFieldProjection) || (noFF && factorName.equals("finiteFieldProjection")))		// "finiteFieldProjection" for backward compatibility
-				return new CustomFiniteFieldProjection(factor);
+				return new CustomFiniteFieldProjection(factor, this);
 			else if ((factorFunction instanceof Multiplexer) || (noFF && factorName.equals("multiplexerCPD")))	// "multiplexerCPD" for backward compatibility
-				return new CustomMultiplexer(factor);															// Currently only supports discrete variables
+				return new CustomMultiplexer(factor, this);															// Currently only supports discrete variables
 			else	// No custom factor exists, so create a generic one
 			{
 				// For discrete case, create a table factor
-				return new STableFactor(factor);
+				return new STableFactor(factor, this);
 			}
 		}
 		else	// Factor includes at least one continuous variable
 		{
 			// First see if any custom factor should be created
 			if ((factorFunction instanceof Sum) && CustomGaussianSum.isFactorCompatible(factor))
-				return new CustomGaussianSum(factor);
+				return new CustomGaussianSum(factor, this);
 			else if ((factorFunction instanceof Subtract) && CustomGaussianSubtract.isFactorCompatible(factor))
-				return new CustomGaussianSubtract(factor);
+				return new CustomGaussianSubtract(factor, this);
 			else if ((factorFunction instanceof Negate) && CustomGaussianNegate.isFactorCompatible(factor))
-				return new CustomGaussianNegate(factor);
+				return new CustomGaussianNegate(factor, this);
 			else if ((factorFunction instanceof Product) && CustomGaussianProduct.isFactorCompatible(factor))
-				return new CustomGaussianProduct(factor);
+				return new CustomGaussianProduct(factor, this);
 			else if ((factorFunction instanceof ComplexSum) && CustomMultivariateGaussianSum.isFactorCompatible(factor))
-				return new CustomMultivariateGaussianSum(factor);
+				return new CustomMultivariateGaussianSum(factor, this);
 			else if ((factorFunction instanceof ComplexSubtract) && CustomMultivariateGaussianSubtract.isFactorCompatible(factor))
-				return new CustomMultivariateGaussianSubtract(factor);
+				return new CustomMultivariateGaussianSubtract(factor, this);
 			else if ((factorFunction instanceof ComplexNegate) && CustomMultivariateGaussianNegate.isFactorCompatible(factor))
-				return new CustomMultivariateGaussianNegate(factor);
+				return new CustomMultivariateGaussianNegate(factor, this);
 			else if ((factorFunction instanceof RealJointSum) && CustomMultivariateGaussianSum.isFactorCompatible(factor))
-				return new CustomMultivariateGaussianSum(factor);
+				return new CustomMultivariateGaussianSum(factor, this);
 			else if ((factorFunction instanceof RealJointSubtract) && CustomMultivariateGaussianSubtract.isFactorCompatible(factor))
-				return new CustomMultivariateGaussianSubtract(factor);
+				return new CustomMultivariateGaussianSubtract(factor, this);
 			else if ((factorFunction instanceof RealJointNegate) && CustomMultivariateGaussianNegate.isFactorCompatible(factor))
-				return new CustomMultivariateGaussianNegate(factor);
+				return new CustomMultivariateGaussianNegate(factor, this);
 			else if ((factorFunction instanceof MatrixRealJointVectorProduct) && CustomMultivariateGaussianProduct.isFactorCompatible(factor))
-				return new CustomMultivariateGaussianProduct(factor);
+				return new CustomMultivariateGaussianProduct(factor, this);
 			else if ((factorFunction instanceof Normal) && CustomNormalConstantParameters.isFactorCompatible(factor))
-				return new CustomNormalConstantParameters(factor);
+				return new CustomNormalConstantParameters(factor, this);
 			else if ((factorFunction instanceof MultivariateNormal) && CustomMultivariateNormalConstantParameters.isFactorCompatible(factor))
-				return new CustomMultivariateNormalConstantParameters(factor);
+				return new CustomMultivariateNormalConstantParameters(factor, this);
 			else if ((factorFunction instanceof LinearEquation) && CustomGaussianLinearEquation.isFactorCompatible(factor))
-				return new CustomGaussianLinearEquation(factor);
+				return new CustomGaussianLinearEquation(factor, this);
 			else if (noFF && factorName.equals("add"))								// For backward compatibility
 			{
 				if (isMultivariate(factor))
-					return new CustomMultivariateGaussianSum(factor);
+					return new CustomMultivariateGaussianSum(factor, this);
 				else
-					return new CustomGaussianSum(factor);
+					return new CustomGaussianSum(factor, this);
 			}
 			else if (noFF && factorName.equals("constmult"))						// For backward compatibility
 			{
 				if (isMultivariate(factor))
-					return new CustomMultivariateGaussianProduct(factor);
+					return new CustomMultivariateGaussianProduct(factor, this);
 				else
-					return new CustomGaussianProduct(factor);
+					return new CustomGaussianProduct(factor, this);
 			}
 			else if (noFF && factorName.equals("linear"))							// For backward compatibility
-				return new CustomGaussianLinear(factor);
+				return new CustomGaussianLinear(factor, this);
 			else if (noFF && factorName.equals("polynomial"))						// For backward compatibility
-				return new CustomComplexGaussianPolynomial(factor);
+				return new CustomComplexGaussianPolynomial(factor, this);
 			else	// No custom factor exists, so create a generic one
 			{
 				// For non-discrete factor that doesn't have a custom factor, create a sampled factor
-				return new SampledFactor(factor);
+				return new SampledFactor(factor, this);
 			}
 		}
 	}

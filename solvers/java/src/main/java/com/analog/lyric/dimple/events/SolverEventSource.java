@@ -23,7 +23,6 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.util.misc.Internal;
 
 /**
@@ -107,12 +106,6 @@ public abstract class SolverEventSource extends DimpleOptionHolder implements IS
 	 */
 	
     @Override
-	public @Nullable ISolverFactorGraph getContainingSolverGraph()
-	{
-    	return getParentGraph();
-	}
-    
-    @Override
     public void notifyListenerChanged()
     {
     	clearFlags(getEventMask());
@@ -186,15 +179,6 @@ public abstract class SolverEventSource extends DimpleOptionHolder implements IS
 				notifyListenerChanged();
 			}
 		}
-	}
-	
-	/**
-	 * @category internal
-	 */
-	@Internal
-	protected SolverNodeMapping requireSolverMapping()
-	{
-		return requireParentGraph().getSolverMapping();
 	}
 	
 	@Internal

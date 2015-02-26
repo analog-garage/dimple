@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.model.domains.DomainList;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.options.SolverOptions;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 public abstract class STableFactorBase extends SFactorBase
 {
@@ -39,9 +40,9 @@ public abstract class STableFactorBase extends SFactorBase
 	 * Construction
 	 */
 	
-	public STableFactorBase(Factor factor)
+	protected STableFactorBase(Factor factor, ISolverFactorGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 		
 		if (!factor.isDiscrete())
 			throw new DimpleException("only discrete factors supported");

@@ -204,11 +204,11 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	{
 		if (var instanceof Discrete)
 		{
-			return new JunctionTreeDiscreteSolverVariable((Discrete)var, getRootSolverGraph());
+			return new JunctionTreeDiscreteSolverVariable((Discrete)var, this);
 		}
 		else
 		{
-			return new JunctionTreeSolverVariable<Variable>(var, getRootSolverGraph());
+			return new JunctionTreeSolverVariable<Variable>(var, this);
 		}
 	}
 

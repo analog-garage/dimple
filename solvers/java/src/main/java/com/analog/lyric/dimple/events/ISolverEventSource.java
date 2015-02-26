@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.events;
 
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * 
@@ -26,5 +25,5 @@ import org.eclipse.jdt.annotation.Nullable;
  */
 public interface ISolverEventSource extends IDimpleEventSource
 {
-	public @Nullable ISolverFactorGraph getContainingSolverGraph();
+	public ISolverFactorGraph getContainingSolverGraph();
 }

@@ -20,14 +20,15 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class DummyRealVariable extends SRealVariableBase
 {
 
-	public DummyRealVariable(Real var)
+	public DummyRealVariable(Real var, ISolverFactorGraph parent)
 	{
-		super(var);
+		super(var, parent);
 	}
 
 	@Override

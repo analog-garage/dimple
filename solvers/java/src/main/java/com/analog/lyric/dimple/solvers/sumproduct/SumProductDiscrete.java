@@ -28,6 +28,7 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 /**
@@ -46,9 +47,9 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	protected boolean _dampingInUse = false;
     @Nullable private double [][][] _outMessageDerivative;
 
-	public SumProductDiscrete(Discrete var)
+	public SumProductDiscrete(Discrete var, ISolverFactorGraph parent)
     {
-		super(var);
+		super(var, parent);
 	}
 		
 	@Override

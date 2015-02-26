@@ -22,6 +22,7 @@ import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.variables.RealJoint;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 /**
  * @since 0.05
@@ -32,9 +33,9 @@ public abstract class SRealJointVariableBase extends SVariableBase<RealJoint>
 	protected boolean _guessWasSet = false;
 
     
-	public SRealJointVariableBase(RealJoint var)
+	protected SRealJointVariableBase(RealJoint var, ISolverFactorGraph parent)
 	{
-		super(var);
+		super(var, parent);
 	}
 
 	@Override

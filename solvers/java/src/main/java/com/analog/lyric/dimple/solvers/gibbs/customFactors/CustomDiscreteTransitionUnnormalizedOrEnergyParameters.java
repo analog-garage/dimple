@@ -36,6 +36,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsGammaEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
@@ -63,9 +64,9 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends Gibb
 	private static final int X_INDEX = 1;
 	private static final int NO_PORT = -1;
 
-	public CustomDiscreteTransitionUnnormalizedOrEnergyParameters(Factor factor)
+	public CustomDiscreteTransitionUnnormalizedOrEnergyParameters(Factor factor, GibbsSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 
 	@Override

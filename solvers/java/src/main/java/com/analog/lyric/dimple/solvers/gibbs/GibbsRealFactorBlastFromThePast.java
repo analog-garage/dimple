@@ -46,9 +46,9 @@ public class GibbsRealFactorBlastFromThePast extends SBlastFromThePast implement
 	private int _topologicalOrder = 0;
 	
 	@SuppressWarnings("null")
-	public GibbsRealFactorBlastFromThePast(BlastFromThePastFactor f)
+	public GibbsRealFactorBlastFromThePast(BlastFromThePastFactor f, GibbsSolverGraph parent)
 	{
-		super(f);
+		super(f, parent);
 	}
 	
 	@Override
@@ -131,7 +131,7 @@ public class GibbsRealFactorBlastFromThePast extends SBlastFromThePast implement
 	{
 		final Port port = requireNonNull(_portForOtherVar);
 		final Factor otherFactor = (Factor)port.node.getSibling(port.index);
-		GibbsSolverGraph sgraph = (GibbsSolverGraph) requireSolverMapping().getSolverGraph(otherFactor.requireParentGraph());
+		GibbsSolverGraph sgraph = (GibbsSolverGraph) getSolverMapping().getSolverGraph(otherFactor.requireParentGraph());
 		return requireNonNull(sgraph.getSolverEdge(otherFactor.getSiblingEdgeState(portIndex))).factorToVarMsg;
 	}
 
@@ -147,6 +147,6 @@ public class GibbsRealFactorBlastFromThePast extends SBlastFromThePast implement
 	{
 		final Port port = requireNonNull(_portForOtherVar);
 		final Factor otherFactor = (Factor)port.node.getSibling(port.index);
-		return (ISolverFactorGibbs)requireSolverMapping().getSolverFactor(otherFactor);
+		return (ISolverFactorGibbs)getSolverMapping().getSolverFactor(otherFactor);
 	}
 }

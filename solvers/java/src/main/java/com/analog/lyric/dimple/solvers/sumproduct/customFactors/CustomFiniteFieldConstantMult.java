@@ -23,6 +23,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductFiniteFieldVariable;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 
 
 
@@ -37,9 +38,9 @@ public class CustomFiniteFieldConstantMult extends SFiniteFieldFactor
 	//private Port _varInputPort;
 	//private Port _varOutputPort;
 	
-	public CustomFiniteFieldConstantMult(Factor factor)
+	public CustomFiniteFieldConstantMult(Factor factor, SumProductSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 		
 		FactorFunction ff = _model.getFactorFunction();
 		int [] constIndices = ff.getConstantIndices();

@@ -46,9 +46,9 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 	 * Construction
 	 */
 	
-	MinSumDiscrete(Discrete var)
+	MinSumDiscrete(Discrete var, MinSumSolverGraph parent)
 	{
-		super(var);
+		super(var, parent);
 	}
 	
 	/*---------------------

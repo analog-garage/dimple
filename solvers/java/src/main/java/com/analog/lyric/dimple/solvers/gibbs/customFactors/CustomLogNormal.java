@@ -36,6 +36,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsNormalEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NormalSampler;
@@ -61,9 +62,9 @@ public class CustomLogNormal extends GibbsRealFactor implements IRealConjugateFa
 	private static final int PRECISION_PARAMETER_INDEX = 1;
 	private static final int NO_PORT = -1;
 
-	public CustomLogNormal(Factor factor)
+	public CustomLogNormal(Factor factor, GibbsSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 	
 	@Override

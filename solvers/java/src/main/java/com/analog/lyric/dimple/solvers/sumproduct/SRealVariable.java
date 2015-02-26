@@ -25,8 +25,8 @@ import com.analog.lyric.dimple.model.variables.Real;
 @Deprecated
 public class SRealVariable extends SumProductReal
 {
-	public SRealVariable(Real var)
+	public SRealVariable(Real var, SumProductSolverGraph parent)
 	{
-		super(var);
+		super(var, parent);
 	}
 }

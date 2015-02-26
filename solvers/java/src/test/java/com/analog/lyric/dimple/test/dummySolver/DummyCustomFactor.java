@@ -19,15 +19,18 @@ package com.analog.lyric.dimple.test.dummySolver;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.core.Port;
+import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class DummyCustomFactor extends SFactorBase
 {
 	
-	public DummyCustomFactor(com.analog.lyric.dimple.model.factors.Factor factor)
+	public DummyCustomFactor(Factor factor, ISolverFactorGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 
 	@Override
@@ -39,7 +42,7 @@ public class DummyCustomFactor extends SFactorBase
 	@SuppressWarnings("null")
 	public @Nullable Object getDefaultMessage(Port port)
 	{
-		com.analog.lyric.dimple.model.variables.Discrete var = (com.analog.lyric.dimple.model.variables.Discrete)port.getConnectedNode();
+		Discrete var = (Discrete)port.getConnectedNode();
 		DummyDiscreteVariable v = (DummyDiscreteVariable)var.getSolver();
 		return v.getDefaultMessage(port);
 	}

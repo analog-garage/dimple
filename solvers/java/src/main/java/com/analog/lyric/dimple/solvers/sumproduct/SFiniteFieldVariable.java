@@ -24,8 +24,8 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 @Deprecated
 public class SFiniteFieldVariable extends SumProductFiniteFieldVariable
 {
-	public SFiniteFieldVariable(Discrete var)
+	public SFiniteFieldVariable(Discrete var, SumProductSolverGraph parent)
 	{
-		super(var);
+		super(var, parent);
 	}
 }

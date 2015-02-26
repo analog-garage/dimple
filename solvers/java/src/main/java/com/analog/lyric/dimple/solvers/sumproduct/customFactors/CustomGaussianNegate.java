@@ -21,13 +21,14 @@ import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 
 
 public class CustomGaussianNegate extends GaussianFactorBase
 {
-	public CustomGaussianNegate(Factor factor)
+	public CustomGaussianNegate(Factor factor, SumProductSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 		
 		if (factor.getSiblingCount() != 2)
 			throw new DimpleException("Factor must have exactly two connected varaibles");

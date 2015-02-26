@@ -4,6 +4,7 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 /*******************************************************************************
 *   Copyright 2013 Analog Devices, Inc.
@@ -29,9 +30,9 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 public abstract class SumProductFiniteFieldFactor extends SFactorBase
 {
 
-	public SumProductFiniteFieldFactor(Factor factor)
+	public SumProductFiniteFieldFactor(Factor factor, ISolverFactorGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 
 	@SuppressWarnings("null")

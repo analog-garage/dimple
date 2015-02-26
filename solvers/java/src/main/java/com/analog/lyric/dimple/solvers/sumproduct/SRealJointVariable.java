@@ -25,8 +25,8 @@ import com.analog.lyric.dimple.model.variables.RealJoint;
 @Deprecated
 public class SRealJointVariable extends SumProductRealJoint
 {
-	public SRealJointVariable(RealJoint var)
+	public SRealJointVariable(RealJoint var, SumProductSolverGraph parent)
 	{
-		super(var);
+		super(var, parent);
 	}
 }

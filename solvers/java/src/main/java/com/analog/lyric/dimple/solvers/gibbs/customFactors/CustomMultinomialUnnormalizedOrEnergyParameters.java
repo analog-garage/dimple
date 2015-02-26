@@ -72,9 +72,9 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 	private static final int N_PARAMETER_INDEX = 0;					// If N is not in constructor then N is the first index (0)
 	private static final int ALPHA_PARAMETER_MIN_INDEX = 1;			// If N is not in constructor then alpha is second index (1)
 
-	public CustomMultinomialUnnormalizedOrEnergyParameters(Factor factor)
+	public CustomMultinomialUnnormalizedOrEnergyParameters(Factor factor, GibbsSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 
 	@Override

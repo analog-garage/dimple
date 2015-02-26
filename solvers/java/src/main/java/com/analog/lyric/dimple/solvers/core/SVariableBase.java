@@ -26,8 +26,10 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 
 public abstract class SVariableBase<MVariable extends Variable> extends SNode<MVariable> implements ISolverVariable
 {
@@ -41,13 +43,16 @@ public abstract class SVariableBase<MVariable extends Variable> extends SNode<MV
 	@SuppressWarnings("hiding")
 	protected static final int RESERVED_FLAGS = 0xFFF00000;
 	
+	private final ISolverFactorGraph _parent;
+	
 	/*--------------
 	 * Construction
 	 */
 	
-	public SVariableBase(MVariable var)
+	public SVariableBase(MVariable var, ISolverFactorGraph parent)
 	{
 		super(var);
+		_parent = parent;
 	}
 	
 	/*---------------------
@@ -55,10 +60,28 @@ public abstract class SVariableBase<MVariable extends Variable> extends SNode<MV
 	 */
 
 	@Override
+	public ISolverFactorGraph getContainingSolverGraph()
+	{
+		return _parent;
+	}
+	
+	@Override
+	public ISolverFactorGraph getParentGraph()
+	{
+		return _parent;
+	}
+	
+	@Override
 	public ISolverFactor getSibling(int edge)
 	{
 		final Factor sibling = _model.getSibling(edge);
-		return requireSolverMapping().getSolverFactor(sibling);
+		return getSolverMapping().getSolverFactor(sibling);
+	}
+	
+	@Override
+	public SolverNodeMapping getSolverMapping()
+	{
+		return _parent.getSolverMapping();
 	}
 	
 	@Override

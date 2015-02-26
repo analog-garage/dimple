@@ -76,9 +76,9 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 	 * Construction
 	 */
 
-	public ParticleBPReal(Real var)
+	public ParticleBPReal(Real var, ParticleBPSolverGraph parent)
 	{
-		super(var);
+		super(var, parent);
 
 		// Since numParticles is used to configure the message sizes, we set this at construction
 		// time to make it less likely that the messages will have to be recreated at initialize time.
@@ -353,7 +353,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 
 
 			// Update the incoming messages for the new particle value
-			SolverNodeMapping solvers = requireSolverMapping();
+			SolverNodeMapping solvers = getSolverMapping();
 			for (int d = 0; d < numPorts; d++)
 			{
 				final FactorGraphEdgeState edge = _model.getSiblingEdgeState(d);

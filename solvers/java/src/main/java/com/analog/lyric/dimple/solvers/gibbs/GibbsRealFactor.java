@@ -55,9 +55,9 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 	
 	private boolean _visited = false;
 	
-	public GibbsRealFactor(Factor factor)
+	public GibbsRealFactor(Factor factor, GibbsSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 		_isDeterministicDirected = _model.getFactorFunction().isDeterministicDirected();
 	}
 	

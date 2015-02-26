@@ -43,9 +43,9 @@ public class SumProductReal extends SRealVariableBase
 	 */
 	private @Nullable NormalParameters _input;
     
-	public SumProductReal(Real var)
+	public SumProductReal(Real var, SumProductSolverGraph parent)
     {
-		super(var);
+		super(var, parent);
 	}
 
 

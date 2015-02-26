@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.solvers.gibbs;
 
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 /**
  * @deprecated Use {@link GibbsRealFactor} instead.
@@ -25,9 +26,9 @@ import com.analog.lyric.dimple.solvers.core.SFactorBase;
 @Deprecated
 public abstract class SRealFactor extends SFactorBase
 {
-	SRealFactor(Factor factor)
+	SRealFactor(Factor factor, ISolverFactorGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 
 	public abstract double getPotential(Object[] inputs);

@@ -25,8 +25,8 @@ import com.analog.lyric.dimple.model.variables.RealJoint;
 @Deprecated
 public class SRealJointVariable extends GibbsRealJoint
 {
-	SRealJointVariable(RealJoint var)
+	SRealJointVariable(RealJoint var, GibbsSolverGraph parent)
 	{
-		super(var);
+		super(var, parent);
 	}
 }

@@ -101,7 +101,7 @@ public class MinSumSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVar
 	{
 		if (var instanceof Discrete)
 		{
-			return new SVariable((Discrete)var);
+			return new SVariable((Discrete)var, this);
 		}
 		
 		throw unsupportedVariableType(var);
@@ -120,16 +120,16 @@ public class MinSumSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVar
 		// First see if any custom factor should be created
 		if (factorFunction instanceof Xor)
 		{
-			return new CustomXor(factor);
+			return new CustomXor(factor, this);
 		}
 		else if (noFF && (factorName.equals("CustomXor") || factorName.equals("customXor")))
 		{
 			// For backward compatibility
-			return new CustomXor(factor);
+			return new CustomXor(factor, this);
 		}
 		else // No custom factor exists, so create a generic one
 		{
-			return new STableFactor(factor);
+			return new STableFactor(factor, this);
 		}
 	}
 	

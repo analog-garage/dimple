@@ -23,6 +23,7 @@ import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 
 
 public class CustomGaussianSum extends GaussianFactorBase
@@ -31,9 +32,9 @@ public class CustomGaussianSum extends GaussianFactorBase
 	private int _sumPort;
 	private double _constantSum;
 	
-	public CustomGaussianSum(Factor factor)
+	public CustomGaussianSum(Factor factor, SumProductSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 		_sumIndex = 0;		// Index that is the sum of all the others
 		
 		for (int i = 0, endi = factor.getSiblingCount(); i < endi; i++)

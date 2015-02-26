@@ -41,9 +41,9 @@ public class SumProductRealJoint extends SRealJointVariableBase
 	private int _numVars;
 	private @Nullable MultivariateNormalParameters _input;
 
-	public SumProductRealJoint(RealJoint var)
+	public SumProductRealJoint(RealJoint var, SumProductSolverGraph parent)
 	{
-		super(var);
+		super(var, parent);
 		
 		_numVars = _model.getDomain().getNumVars();
 	}

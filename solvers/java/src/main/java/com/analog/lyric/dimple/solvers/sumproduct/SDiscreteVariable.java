@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.sumproduct;
 
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 /**
  * @deprecated Use {@link SumProductDiscrete} instead.
@@ -24,8 +25,8 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 @Deprecated
 public class SDiscreteVariable extends SumProductDiscrete
 {
-	public SDiscreteVariable(Discrete var)
+	public SDiscreteVariable(Discrete var, ISolverFactorGraph parent)
 	{
-		super(var);
+		super(var, parent);
 	}
 }

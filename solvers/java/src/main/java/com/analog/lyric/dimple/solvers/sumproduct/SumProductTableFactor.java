@@ -71,9 +71,9 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	 * Construction
 	 */
 	
-	public SumProductTableFactor(Factor factor)
+	public SumProductTableFactor(Factor factor, ISolverFactorGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 
 		//TODO: should I recheck for factor table every once in a while?
 		if (factor.getFactorFunction().factorTableExists(getFactor()))
@@ -120,11 +120,8 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 		ISolverFactorGraph rootGraph = getRootSolverGraph();
 		if (rootGraph instanceof SumProductSolverGraph)
 		{
-			final SumProductSolverGraph sfg = (SumProductSolverGraph) getRootSolverGraph();
-			if (sfg != null)
-			{
-				return sfg.getFactorTableUpdateSettings(getFactor());
-			}
+			final SumProductSolverGraph sfg = (SumProductSolverGraph) rootGraph;
+			return sfg.getFactorTableUpdateSettings(getFactor());
 		}
 		return null;
 	}

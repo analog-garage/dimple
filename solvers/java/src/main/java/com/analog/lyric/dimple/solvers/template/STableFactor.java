@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 /**
  * The Solver Factor object is responsible for performing the message passing
@@ -47,9 +48,9 @@ public class STableFactor extends STableFactorDoubleArray
 	 * 
 	 * @param factor
 	 */
-	public STableFactor(Factor factor)
+	public STableFactor(Factor factor, ISolverFactorGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 		
 		int firstLen = -1;
 		

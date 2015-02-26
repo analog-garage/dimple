@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductFiniteFieldVariable;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 
 @SuppressWarnings("deprecation") // TODO remove when SFiniteFieldFactor removed
 public class CustomFiniteFieldProjection extends SFiniteFieldFactor
@@ -33,9 +34,9 @@ public class CustomFiniteFieldProjection extends SFiniteFieldFactor
 	private int [] _portIndex2bitIndex;
 	private int [] _bit2port;
 	
-	public CustomFiniteFieldProjection(Factor factor)
+	public CustomFiniteFieldProjection(Factor factor, SumProductSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 
 		final int nVars = factor.getSiblingCount();
 		if (nVars <= 1)

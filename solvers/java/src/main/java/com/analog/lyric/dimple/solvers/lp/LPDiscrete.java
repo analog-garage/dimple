@@ -82,7 +82,7 @@ public class LPDiscrete extends SDiscreteVariableBase
 
 	LPDiscrete(LPSolverGraph solverGraph, Discrete var)
 	{
-		super(var);
+		super(var, solverGraph);
 		_solverGraph = solverGraph;
 	}
 	

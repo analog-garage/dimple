@@ -22,6 +22,7 @@ import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 
 
 
@@ -32,9 +33,9 @@ public class CustomGaussianProduct extends GaussianFactorBase
 	private final static int PRODUCT_INDEX = 0;
 	private final static int MULTIPLICAND_INDEX = 1;
 	
-	public CustomGaussianProduct(Factor factor)
+	public CustomGaussianProduct(Factor factor, SumProductSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 		
 		// Make sure this is of the form a = b*c where either b or c is a non-zero constant.
 		if (factor.getSiblingCount() != 2)

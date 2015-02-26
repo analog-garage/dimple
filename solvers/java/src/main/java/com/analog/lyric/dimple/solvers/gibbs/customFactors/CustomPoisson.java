@@ -34,6 +34,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsGammaEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 
@@ -48,9 +49,9 @@ public class CustomPoisson extends GibbsRealFactor implements IRealConjugateFact
 	private static final int LAMBDA_PARAMETER_INDEX = 0;		// If lambda is not in constructor then lambda is first index (0)
 	private static final int OUTPUT_INDEX = 1;					// If lambda is not in constructor then output is second index (1)
 
-	public CustomPoisson(Factor factor)
+	public CustomPoisson(Factor factor, GibbsSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 
 	@Override

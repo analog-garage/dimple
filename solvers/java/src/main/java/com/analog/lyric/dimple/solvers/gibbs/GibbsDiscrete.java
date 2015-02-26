@@ -234,9 +234,9 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	 */
 	
 	@SuppressWarnings("null")
-	public GibbsDiscrete(Discrete var)
+	public GibbsDiscrete(Discrete var, GibbsSolverGraph parent)
 	{
-		super(var);
+		super(var, parent);
 		_prevSample = _currentSample = new CurrentSample(_model.getDomain());
 		_input = createDefaultMessage();
 	}

@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldVariable;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductFiniteFieldVariable;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductFiniteFieldVariable.LookupTables;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 
 //import edu.emory.mathcs.jtransforms.fft.DoubleFFT_1D;
 import edu.emory.mathcs.jtransforms.fft.DoubleFFT_1D;
@@ -40,9 +41,9 @@ public class CustomFiniteFieldMult extends SFiniteFieldFactor
 	
 	
 	@SuppressWarnings("null")
-	public CustomFiniteFieldMult(Factor factor)
+	public CustomFiniteFieldMult(Factor factor, SumProductSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 		if (factor.getSiblingCount() != 3)
 			throw new DimpleException("Only supports 3 arguments");
 		

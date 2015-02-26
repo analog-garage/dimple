@@ -24,8 +24,8 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 @Deprecated
 public class SDiscreteVariable extends GibbsDiscrete
 {
-	SDiscreteVariable(Discrete var)
+	SDiscreteVariable(Discrete var, GibbsSolverGraph parent)
 	{
-		super(var);
+		super(var, parent);
 	}
 }

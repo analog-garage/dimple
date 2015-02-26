@@ -21,6 +21,7 @@ import java.util.HashMap;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.FiniteFieldDomain;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 
 /**
@@ -47,9 +48,9 @@ public class SumProductFiniteFieldVariable extends SDiscreteVariable
 	private final LookupTables _tables;
 	private final int _numBits;
 
-	public SumProductFiniteFieldVariable(Discrete var)
+	public SumProductFiniteFieldVariable(Discrete var, ISolverFactorGraph parent)
 	{
-		super(var);
+		super(var, parent);
 		
 		final FiniteFieldDomain domain = (FiniteFieldDomain)var.getDomain();
 		int key = domain.getPrimitivePolynomial();

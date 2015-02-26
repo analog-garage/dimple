@@ -29,8 +29,10 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 
 // TODO - add MFactor parameter
 
@@ -46,13 +48,16 @@ public abstract class SFactorBase extends SNode<Factor> implements ISolverFactor
 	@SuppressWarnings("hiding")
 	protected static final int RESERVED_FLAGS = 0xFFF00000;
 	
+	private final ISolverFactorGraph _parent;
+	
 	/*--------------
 	 * Construction
 	 */
 	
-	public SFactorBase(Factor factor)
+	public SFactorBase(Factor factor, ISolverFactorGraph parent)
 	{
 		super(factor);
+		_parent = parent;
 	}
 		
 	/*---------------------
@@ -65,10 +70,22 @@ public abstract class SFactorBase extends SNode<Factor> implements ISolverFactor
 	}
 	
 	@Override
+	public ISolverFactorGraph getContainingSolverGraph()
+	{
+		return _parent;
+	}
+
+	@Override
 	public ISolverVariable getSibling(int edge)
 	{
 		final Variable sibling = _model.getSibling(edge);
-		return requireSolverMapping().getSolverVariable(sibling);
+		return getSolverMapping().getSolverVariable(sibling);
+	}
+	
+	@Override
+	public SolverNodeMapping getSolverMapping()
+	{
+		return _parent.getSolverMapping();
 	}
 	
 	public Factor getFactor()
@@ -82,6 +99,12 @@ public abstract class SFactorBase extends SNode<Factor> implements ISolverFactor
 		throw new DimpleException("not supported");
 	}
 
+	@Override
+	public ISolverFactorGraph getParentGraph()
+	{
+		return _parent;
+	}
+	
 	@Override
     public double getScore()
     {

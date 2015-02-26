@@ -24,8 +24,8 @@ import com.analog.lyric.dimple.model.factors.Factor;
 @Deprecated
 public class STableFactor extends MinSumTableFactor
 {
-	public STableFactor(Factor factor)
+	public STableFactor(Factor factor, MinSumSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 }

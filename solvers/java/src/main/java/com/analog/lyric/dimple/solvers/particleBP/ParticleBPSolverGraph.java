@@ -94,9 +94,9 @@ public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, IPart
 	public ISolverFactor createFactor(Factor factor)
 	{
 		if (factor.isDiscrete())
-			return new STableFactor(factor);
+			return new STableFactor(factor, this);
 		else
-			return new SRealFactor(factor);
+			return new SRealFactor(factor, this);
 	}
 	
 	@Override
@@ -111,12 +111,12 @@ public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, IPart
 	{
 		if (var instanceof Real)
 		{
-			ParticleBPReal v = new SRealVariable((Real)var);
+			ParticleBPReal v = new SRealVariable((Real)var, this);
 			return v;
 		}
 		else if (var instanceof Discrete)
 		{
-			return new ParticleBPDiscrete((Discrete)var);
+			return new ParticleBPDiscrete((Discrete)var, this);
 		}
 		
 		// TODO support RealJoint variables

@@ -157,4 +157,11 @@ public interface ISolverFactorGraph	extends ISolverNode
 	// For solver to indicate whether or not schedules must include all edges in the graph
 	// TODO: This could be replaced by function that actually does the checking, which could be solver specific
 	public boolean checkAllEdgesAreIncludedInSchedule();
+	
+	/**
+	 * @category internal
+	 * @param parent
+	 */
+	@Internal
+	public void setParent(ISolverFactorGraph parent);
 }

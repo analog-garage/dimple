@@ -17,16 +17,18 @@
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscreteEdge;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 
 @SuppressWarnings("deprecation") // TODO remove when SFiniteFieldFactor removed
 public class CustomFiniteFieldAdd extends SFiniteFieldFactor
 {
 	
-	public CustomFiniteFieldAdd(com.analog.lyric.dimple.model.factors.Factor factor)
+	public CustomFiniteFieldAdd(Factor factor, SumProductSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 		
 		if (factor.getPorts().size() != 3)
 			throw new DimpleException("Only supports 3 arguments");

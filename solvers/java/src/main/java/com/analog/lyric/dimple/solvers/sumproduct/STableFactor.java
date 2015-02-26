@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.sumproduct;
 
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 /**
  * @deprecated Use {@link SumProductTableFactor} instead.
@@ -24,8 +25,8 @@ import com.analog.lyric.dimple.model.factors.Factor;
 @Deprecated
 public class STableFactor extends SumProductTableFactor
 {
-	public STableFactor(Factor factor)
+	public STableFactor(Factor factor, ISolverFactorGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 }

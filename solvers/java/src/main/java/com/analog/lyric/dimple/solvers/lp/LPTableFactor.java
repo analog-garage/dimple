@@ -85,7 +85,7 @@ public class LPTableFactor extends STableFactorBase
 	
 	LPTableFactor(LPSolverGraph solverGraph, DiscreteFactor factor)
 	{
-		super(factor);
+		super(factor, solverGraph);
 		_solverGraph = solverGraph;
 	}
 	

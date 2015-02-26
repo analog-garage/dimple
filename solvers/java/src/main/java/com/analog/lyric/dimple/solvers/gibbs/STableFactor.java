@@ -24,8 +24,8 @@ import com.analog.lyric.dimple.model.factors.Factor;
 @Deprecated
 public class STableFactor extends GibbsTableFactor
 {
-	STableFactor(Factor factor)
+	STableFactor(Factor factor, GibbsSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 }

@@ -25,9 +25,9 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class DummyTableFactor extends STableFactorBase
 {
-	public DummyTableFactor(Factor factor)
+	public DummyTableFactor(Factor factor, DummyFactorGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 
 	@Override

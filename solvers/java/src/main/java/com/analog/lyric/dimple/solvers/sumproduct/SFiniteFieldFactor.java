@@ -24,8 +24,8 @@ import com.analog.lyric.dimple.model.factors.Factor;
 @Deprecated
 public abstract class SFiniteFieldFactor extends SumProductFiniteFieldFactor
 {
-	public SFiniteFieldFactor(Factor factor)
+	public SFiniteFieldFactor(Factor factor, SumProductSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 }

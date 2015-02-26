@@ -184,11 +184,11 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	public ISolverVariableGibbs createVariable(Variable var)
 	{
 		if (var instanceof RealJoint)
-			return new SRealJointVariable((RealJoint)var);
+			return new SRealJointVariable((RealJoint)var, this);
 		if (var instanceof Real)
-			return new SRealVariable((Real)var);
+			return new SRealVariable((Real)var, this);
 		else if (var instanceof Discrete)
-			return new SDiscreteVariable((Discrete)var);
+			return new SDiscreteVariable((Discrete)var, this);
 		
 		throw unsupportedVariableType(var);
 	}
@@ -211,49 +211,49 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 		
 		// First see if any custom factor should be created
 		if (factorFunction instanceof Normal)
-			return new CustomNormal(factor);
+			return new CustomNormal(factor, this);
 		else if (factorFunction instanceof Gamma)
-			return new CustomGamma(factor);
+			return new CustomGamma(factor, this);
 		else if (factorFunction instanceof NegativeExpGamma)
-			return new CustomNegativeExpGamma(factor);
+			return new CustomNegativeExpGamma(factor, this);
 		else if (factorFunction instanceof LogNormal)
-			return new CustomLogNormal(factor);
+			return new CustomLogNormal(factor, this);
 		else if (factorFunction instanceof DiscreteTransition)
-			return new CustomDiscreteTransition(factor);
+			return new CustomDiscreteTransition(factor, this);
 		else if (factorFunction instanceof DiscreteTransitionUnnormalizedParameters)
-			return new CustomDiscreteTransitionUnnormalizedOrEnergyParameters(factor);
+			return new CustomDiscreteTransitionUnnormalizedOrEnergyParameters(factor, this);
 		else if (factorFunction instanceof DiscreteTransitionEnergyParameters)
-			return new CustomDiscreteTransitionUnnormalizedOrEnergyParameters(factor);
+			return new CustomDiscreteTransitionUnnormalizedOrEnergyParameters(factor, this);
 		else if (factorFunction instanceof Categorical)
-			return new CustomCategorical(factor);
+			return new CustomCategorical(factor, this);
 		else if (factorFunction instanceof CategoricalUnnormalizedParameters)
-			return new CustomCategoricalUnnormalizedOrEnergyParameters(factor);
+			return new CustomCategoricalUnnormalizedOrEnergyParameters(factor, this);
 		else if (factorFunction instanceof CategoricalEnergyParameters)
-			return new CustomCategoricalUnnormalizedOrEnergyParameters(factor);
+			return new CustomCategoricalUnnormalizedOrEnergyParameters(factor, this);
 		else if (factorFunction instanceof Dirichlet)
-			return new CustomDirichlet(factor);
+			return new CustomDirichlet(factor, this);
 		else if (factorFunction instanceof ExchangeableDirichlet)
-			return new CustomExchangeableDirichlet(factor);
+			return new CustomExchangeableDirichlet(factor, this);
 		else if (factorFunction instanceof Beta)
-			return new CustomBeta(factor);
+			return new CustomBeta(factor, this);
 		else if (factorFunction instanceof Bernoulli)
-			return new CustomBernoulli(factor);
+			return new CustomBernoulli(factor, this);
 		else if (factorFunction instanceof Binomial)
-			return new CustomBinomial(factor);
+			return new CustomBinomial(factor, this);
 		else if (factorFunction instanceof Multinomial)
-			return new CustomMultinomial(factor);
+			return new CustomMultinomial(factor, this);
 		else if (factorFunction instanceof MultinomialUnnormalizedParameters)
-			return new CustomMultinomialUnnormalizedOrEnergyParameters(factor);
+			return new CustomMultinomialUnnormalizedOrEnergyParameters(factor, this);
 		else if (factorFunction instanceof MultinomialEnergyParameters)
-			return new CustomMultinomialUnnormalizedOrEnergyParameters(factor);
+			return new CustomMultinomialUnnormalizedOrEnergyParameters(factor, this);
 		else if (factorFunction instanceof Poisson)
-			return new CustomPoisson(factor);
+			return new CustomPoisson(factor, this);
 		else if (factorFunction instanceof Multiplexer)
-			return new CustomMultiplexer(factor);
+			return new CustomMultiplexer(factor, this);
 		else if (factor.isDiscrete())			// No custom factor exists, so create a generic one
-			return new STableFactor(factor);	// Generic discrete factor
+			return new STableFactor(factor, this);	// Generic discrete factor
 		else
-			return new GibbsRealFactor(factor);		// Generic real factor
+			return new GibbsRealFactor(factor, this);		// Generic real factor
 	}
 	
 
@@ -265,9 +265,9 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 			throw new DimpleException("not yet supported");
 		
 		if (factor.isDiscrete())
-			return new GibbsTableFactorBlastFromThePast(factor);
+			return new GibbsTableFactorBlastFromThePast(factor, this);
 		else
-			return new GibbsRealFactorBlastFromThePast(factor);
+			return new GibbsRealFactorBlastFromThePast(factor, this);
 	}
 	
 	@Override

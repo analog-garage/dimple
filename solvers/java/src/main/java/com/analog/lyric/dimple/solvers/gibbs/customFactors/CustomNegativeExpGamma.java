@@ -34,6 +34,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsGammaEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
@@ -58,9 +59,9 @@ public class CustomNegativeExpGamma extends GibbsRealFactor implements IRealConj
 	private static final int BETA_PARAMETER_INDEX = 1;
 	private static final int NO_PORT = -1;
 
-	public CustomNegativeExpGamma(Factor factor)
+	public CustomNegativeExpGamma(Factor factor, GibbsSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 
 	@Override

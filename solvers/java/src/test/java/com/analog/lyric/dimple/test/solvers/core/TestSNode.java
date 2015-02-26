@@ -50,6 +50,7 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterized
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.ParameterizedMessageBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolver;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
@@ -67,10 +68,12 @@ public class TestSNode extends DimpleTestBase
 		final private Set<Integer> _updatedEdges = new HashSet<Integer>();
 		final private Map<Integer,TestMessage> _messages = new HashMap<Integer, TestMessage>();
 		final private List<DimpleEvent> _createdEvents = new ArrayList<DimpleEvent>();
+		final private ISolverFactorGraph _parent;
 		
-		public TestNode(Node n)
+		public TestNode(Node n, ISolverFactorGraph parent)
 		{
 			super(n);
+			_parent = parent;
 		}
 
 		@Override
@@ -80,6 +83,12 @@ public class TestSNode extends DimpleTestBase
 			_messages.clear();
 		}
 
+		@Override
+		public ISolverFactorGraph getContainingSolverGraph()
+		{
+			return _parent;
+		}
+		
 		@Override
 		public double getScore()
 		{
@@ -108,6 +117,18 @@ public class TestSNode extends DimpleTestBase
 		public IParameterizedMessage getOutputMsg(int edge)
 		{
 			return _messages.get(edge);
+		}
+		
+		@Override
+		public ISolverFactorGraph getParentGraph()
+		{
+			return _parent;
+		}
+		
+		@Override
+		public SolverNodeMapping getSolverMapping()
+		{
+			return _parent.getSolverMapping();
 		}
 
 		@Override
@@ -182,12 +203,6 @@ public class TestSNode extends DimpleTestBase
 		protected boolean supportsMessageEvents()
 		{
 			return _supportsMessageEvents || super.supportsMessageEvents();
-		}
-		
-		@Override
-		public void setParent(ISolverFactorGraph sfg)
-		{
-			_parent = sfg;
 		}
 	}
 	
@@ -284,12 +299,12 @@ public class TestSNode extends DimpleTestBase
 		Discrete d3 = new Discrete(DiscreteDomain.bit());
 		fg.addVariables(d1, d2, d3);
 		
-		TestNode n1 = new TestNode(d1);
+		TestNode n1 = new TestNode(d1, sfg);
 		assertSame(d1, n1.getModelObject());
 		assertEquals(0, n1.getSiblingCount());
 		assertEquals(0, n1.getFlagValue(-1));
-		assertNull(n1.getParentGraph());
-		assertNull(n1.getOptionParent());
+		assertSame(sfg, n1.getParentGraph());
+		assertSame(sfg, n1.getOptionParent());
 		assertFalse(n1.supportsMessageEvents());
 		expectThrow(IndexOutOfBoundsException.class, n1, "getSibling", 0);
 		expectThrow(DimpleException.class, "Not supported.*", n1, "setInputMsg", 42, null);
@@ -297,9 +312,6 @@ public class TestSNode extends DimpleTestBase
 		expectThrow(DimpleException.class, "Not supported.*", n1, "setInputMsgValues", 42, null);
 		expectThrow(DimpleException.class, "Not supported.*", n1, "setOutputMsgValues", 42, null);
 		
-		n1.setParent(sfg);
-		assertSame(sfg, n1.getParentGraph());
-		assertSame(sfg, n1.getOptionParent());
 		
 		Factor f13 = fg.addFactor(new Normal(0.0, 1.0), d1, d3);
 		Factor f12 = fg.addFactor(new Normal(0.0, 1.0), d1, d2);

@@ -44,10 +44,10 @@ public class JunctionTreeSolverVariable<MVariable extends Variable>
 	/**
 	 * @param modelVariable
 	 */
-	protected JunctionTreeSolverVariable(MVariable modelVariable, JunctionTreeSolverGraphBase<?> root)
+	protected JunctionTreeSolverVariable(MVariable modelVariable, JunctionTreeSolverGraphBase<?> parent)
 	{
-		super(modelVariable);
-		_root = root;
+		super(modelVariable, parent);
+		_root = getRootSolverGraph();
 	}
 
 	/*---------------------

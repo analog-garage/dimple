@@ -36,6 +36,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsBetaEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 
@@ -49,9 +50,9 @@ public class CustomBernoulli extends GibbsRealFactor implements IRealConjugateFa
 	private static final int NUM_PARAMETERS = 1;
 	private static final int PARAMETER_INDEX = 0;
 	
-	public CustomBernoulli(Factor factor)
+	public CustomBernoulli(Factor factor, GibbsSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 
 	@Override

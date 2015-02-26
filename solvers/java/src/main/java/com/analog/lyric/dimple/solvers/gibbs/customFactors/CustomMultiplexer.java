@@ -42,6 +42,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealJoint;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverRealVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
@@ -69,9 +70,9 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 	private static final int FIRST_INPUT_PORT_INDEX = 2;
 	private static final int NO_PORT = -1;
 
-	public CustomMultiplexer(Factor factor)
+	public CustomMultiplexer(Factor factor, GibbsSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 
 	@Override

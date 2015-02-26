@@ -36,6 +36,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsGammaEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
@@ -50,9 +51,9 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends GibbsRealFa
 	private boolean _hasConstantOutputs;
 	private boolean _useEnergyParameters;
 
-	public CustomCategoricalUnnormalizedOrEnergyParameters(Factor factor)
+	public CustomCategoricalUnnormalizedOrEnergyParameters(Factor factor, GibbsSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 	
 	@Override

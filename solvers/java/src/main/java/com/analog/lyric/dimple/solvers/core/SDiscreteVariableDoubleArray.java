@@ -22,6 +22,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 /**
@@ -40,9 +41,9 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	 * Construction
 	 */
 	
-	public SDiscreteVariableDoubleArray(Discrete var)
+	public SDiscreteVariableDoubleArray(Discrete var, ISolverFactorGraph parent)
 	{
-		super(var);
+		super(var, parent);
 		_input = createDefaultMessage();
 	}
 

@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.model.values.RealValue;
 import com.analog.lyric.dimple.solvers.core.SDiscreteWeightEdge;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscreteEdge;
 
@@ -36,9 +37,9 @@ public class ParticleBPRealFactor extends SFactorBase
 {
 	protected double _beta = 1;
 	
-	ParticleBPRealFactor(Factor factor)
+	ParticleBPRealFactor(Factor factor, ISolverFactorGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 	
 

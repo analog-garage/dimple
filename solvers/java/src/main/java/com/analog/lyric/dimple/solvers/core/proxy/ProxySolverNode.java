@@ -25,7 +25,6 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.util.misc.Internal;
 
 /**
  * @since 0.05
@@ -86,7 +85,7 @@ public abstract class ProxySolverNode<Delegate extends ISolverNode>
 	}
 
 	@Override
-	public @Nullable ISolverFactorGraph getRootSolverGraph()
+	public ISolverFactorGraph getRootSolverGraph()
 	{
 		ISolverFactorGraph root = getContainingSolverGraph();
 		
@@ -103,7 +102,7 @@ public abstract class ProxySolverNode<Delegate extends ISolverNode>
 	public ISolverNode getSibling(int edge)
 	{
 		final INode sibling = getModelObject().getSibling(edge);
-		return requireSolverMapping().getSolverNode(sibling);
+		return getSolverMapping().getSolverNode(sibling);
 	}
 	
 	@SuppressWarnings("null")
@@ -162,13 +161,6 @@ public abstract class ProxySolverNode<Delegate extends ISolverNode>
 		throw unsupported("setOutputMsgValues");
 	}
 
-	@Internal
-	@Override
-	public void setParent(ISolverFactorGraph parent)
-	{
-		_parent = parent;
-	}
-	
 	@Override
 	public void update()
 	{

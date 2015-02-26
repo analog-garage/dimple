@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 
 /*
  * This class is for backward compatibility only.
@@ -32,9 +33,9 @@ public class CustomGaussianLinear extends GaussianFactorBase
 	private double [] _constants;
 	private double _total;
 
-	public CustomGaussianLinear(Factor factor)
+	public CustomGaussianLinear(Factor factor, SumProductSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 		
 		//Make sure this is of the form a = b*c where either b or c is a constant.
 		

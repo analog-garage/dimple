@@ -68,9 +68,9 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 	private static final int ALPHA_PARAMETER_INDEX = 1;			// If N is not in constructor then alpha is second index (1)
 	private static final int OUTPUT_MIN_INDEX = 2;				// If N is not in constructor then output starts at third index (2)
 	
-	public CustomMultinomial(Factor factor)
+	public CustomMultinomial(Factor factor, GibbsSolverGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 
 	@Override

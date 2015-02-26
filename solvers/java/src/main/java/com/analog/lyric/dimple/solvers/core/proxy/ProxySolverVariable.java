@@ -23,6 +23,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
@@ -40,9 +41,9 @@ public abstract class ProxySolverVariable<MVariable extends Variable, Delegate e
 	/**
 	 * @param modelVariable
 	 */
-	protected ProxySolverVariable(MVariable modelVariable)
+	protected ProxySolverVariable(MVariable modelVariable, ISolverFactorGraph parent)
 	{
-		super(modelVariable);
+		super(modelVariable, parent);
 	}
 
 	/*---------------------

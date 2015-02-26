@@ -18,13 +18,14 @@ package com.analog.lyric.dimple.solvers.core;
 
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public abstract class STableFactorDoubleArray extends STableFactorBase
 {
-	public STableFactorDoubleArray(Factor factor)
+	public STableFactorDoubleArray(Factor factor, ISolverFactorGraph parent)
 	{
-		super(factor);
+		super(factor, parent);
 	}
 
 	@Override

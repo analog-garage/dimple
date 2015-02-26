@@ -65,10 +65,10 @@ public class JunctionTreeSolverFactor extends SFactorBase
 	 * Construction
 	 */
 	
-	JunctionTreeSolverFactor(Factor modelFactor, JunctionTreeSolverGraphBase<?> root)
+	JunctionTreeSolverFactor(Factor modelFactor, JunctionTreeSolverGraphBase<?> parent)
 	{
-		super(modelFactor);
-		_root = root;
+		super(modelFactor, parent);
+		_root = parent;
 	}
 
 	/*---------------------
