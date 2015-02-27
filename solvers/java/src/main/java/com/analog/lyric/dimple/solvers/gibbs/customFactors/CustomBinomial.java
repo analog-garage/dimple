@@ -19,7 +19,6 @@ package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 import static java.util.Objects.*;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -28,7 +27,6 @@ import com.analog.lyric.dimple.factorfunctions.Binomial;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsBetaEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
@@ -137,7 +135,6 @@ public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFac
 
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		List<? extends Variable> siblings = _model.getSiblings();
 		_hasConstantNParameter = false;
 		_hasConstantOutput = false;
 		_constantNParameterValue = -1;
@@ -159,7 +156,7 @@ public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFac
 			else
 			{
 				int outputEdge = factorFunction.getEdgeByIndex(OUTPUT_INDEX_FIXED_N);
-				_outputVariable = (GibbsDiscrete)((siblings.get(outputEdge)).getSolver());
+				_outputVariable = (GibbsDiscrete)getSibling(outputEdge);
 			}
 		}
 		else	// Variable or constant N parameter
@@ -173,7 +170,7 @@ public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFac
 			else
 			{
 				int nParameterEdge = factorFunction.getEdgeByIndex(N_PARAMETER_INDEX);
-				_NParameterVariable = (GibbsDiscrete)((siblings.get(nParameterEdge)).getSolver());
+				_NParameterVariable = (GibbsDiscrete)getSibling(nParameterEdge);
 			}
 			
 			if (!factorFunction.isConstantIndex(P_PARAMETER_INDEX))
@@ -187,7 +184,7 @@ public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFac
 			else
 			{
 				int outputEdge = factorFunction.getEdgeByIndex(OUTPUT_INDEX);
-				_outputVariable = (GibbsDiscrete)((siblings.get(outputEdge)).getSolver());
+				_outputVariable = (GibbsDiscrete)getSibling(outputEdge);
 			}
 		}
 	}

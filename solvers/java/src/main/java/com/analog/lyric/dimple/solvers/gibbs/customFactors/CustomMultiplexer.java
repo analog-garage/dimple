@@ -27,6 +27,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.Multiplexer;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
@@ -120,15 +121,23 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		if (_incompatibleWithConjugateSampling)
 			return availableSamplers;
+		
 		if (isPortInputVariable(portNumber))
 		{
+			final Factor factor = _model;
+			final FactorGraph fg = factor.requireParentGraph();
+			
 			// If an input variable, then check conjugacy for the output variable among all of its neighbors except this factor
 			GibbsReal outputVariable = ((GibbsReal)_outputVariable);
-			List<Factor> outputNeighboringFactors = new ArrayList<Factor>();
-			for (Factor n : outputVariable.getModelObject().getSiblings())
-				if (!n.equals(_model))		// Don't include this factor to test conjugacy
-					outputNeighboringFactors.add(n);
-			availableSamplers.addAll(outputVariable.findConjugateSamplerFactories(outputNeighboringFactors));
+			List<FactorGraphEdgeState> outputNeighboringEdges = new ArrayList<>(outputVariable.getSiblingCount() - 1);
+			for (FactorGraphEdgeState edgeState : outputVariable.getModelObject().getSiblingEdgeState())
+			{
+				if (!factor.equals(edgeState.getFactor(fg)))		// Don't include this factor to test conjugacy
+				{
+					outputNeighboringEdges.add(edgeState);
+				}
+			}
+			availableSamplers.addAll(outputVariable.findConjugateSamplerFactories(outputNeighboringEdges));
 		}
 		return availableSamplers;
 	}
@@ -144,13 +153,19 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 			return availableSamplers;
 		if (isPortInputVariable(portNumber))
 		{
+			final Factor factor = _model;
+			final FactorGraph fg = factor.requireParentGraph();
 			// If an input variable, then check conjugacy for the output variable among all of its neighbors except this factor
 			GibbsRealJoint outputVariable = ((GibbsRealJoint)_outputVariable);
-			List<Factor> outputNeighboringFactors = new ArrayList<Factor>();
-			for (Factor n : outputVariable.getModelObject().getSiblings())
-				if (!n.equals(_model))		// Don't include this factor to test conjugacy
-					outputNeighboringFactors.add(n);
-			availableSamplers.addAll(outputVariable.findConjugateSamplerFactories(outputNeighboringFactors));
+			List<FactorGraphEdgeState> outputNeighboringEdges = new ArrayList<>(outputVariable.getSiblingCount() - 1);
+			for (FactorGraphEdgeState edgeState : outputVariable.getModelObject().getSiblingEdgeState())
+			{
+				if (!factor.equals(edgeState.getFactor(fg)))
+				{
+					outputNeighboringEdges.add(edgeState);
+				}
+			}
+			availableSamplers.addAll(outputVariable.findConjugateSamplerFactories(outputNeighboringEdges));
 		}
 		return availableSamplers;
 	}
@@ -266,7 +281,7 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 		_selectorConstantValue = -1;
 		
 		_outputPortNumber = factorFunction.getEdgeByIndex(OUTPUT_INDEX);	// Must be a variable if not returned already
-		ISolverVariable outputVariable = _model.getSibling(_outputPortNumber).getSolver();
+		ISolverVariable outputVariable = getSibling(_outputPortNumber);
 		if (outputVariable instanceof ISolverRealVariableGibbs)
 			_outputVariable = (ISolverRealVariableGibbs)outputVariable;
 		_outputVariableSiblingPortIndex = _model.getSiblingPortIndex(_outputPortNumber);
@@ -280,7 +295,7 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 		else
 		{
 			_selectorPortNumber = factorFunction.getEdgeByIndex(SELECTOR_INDEX);
-			_selectorVariable = (GibbsDiscrete)(_model.getSibling(_selectorPortNumber).getSolver());
+			_selectorVariable = (GibbsDiscrete)getSibling(_selectorPortNumber);
 			_firstInputPortNumber = FIRST_INPUT_PORT_INDEX;
 		}
 	}

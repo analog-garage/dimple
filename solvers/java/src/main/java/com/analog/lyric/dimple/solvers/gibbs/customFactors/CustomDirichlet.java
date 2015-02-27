@@ -19,7 +19,6 @@ package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 import static java.util.Objects.*;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -28,7 +27,6 @@ import com.analog.lyric.dimple.factorfunctions.Dirichlet;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDirichletEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
@@ -149,9 +147,7 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 			{
 				_numParameterEdges = 1;
 				_constantAlphaMinusOne = null;
-				List<? extends Variable> siblings = _model.getSiblings();
-				_alphaVariable =
-					(GibbsRealJoint)((siblings.get(factorFunction.getEdgeByIndex(PARAMETER_INDEX))).getSolver());
+				_alphaVariable = (GibbsRealJoint)getSibling(factorFunction.getEdgeByIndex(PARAMETER_INDEX));
 				_dimension = requireNonNull(_alphaVariable).getDimension();
 			}
 		}

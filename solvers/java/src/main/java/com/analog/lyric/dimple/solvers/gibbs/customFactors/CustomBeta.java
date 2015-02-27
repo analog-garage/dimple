@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -27,7 +26,6 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsBetaEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
@@ -121,7 +119,6 @@ public class CustomBeta extends GibbsRealFactor implements IRealConjugateFactor
 
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		List<? extends Variable> siblings = _model.getSiblings();
 		_hasConstantAlpha = false;
 		_hasConstantBeta = false;
 		_alphaParameterPort = NO_PORT;
@@ -147,7 +144,7 @@ public class CustomBeta extends GibbsRealFactor implements IRealConjugateFactor
 			else					// Variable mean
 			{
 				_alphaParameterPort = factorFunction.getEdgeByIndex(ALPHA_PARAMETER_INDEX);
-				_alphaVariable = (GibbsReal)((siblings.get(_alphaParameterPort)).getSolver());
+				_alphaVariable = (GibbsReal)getSibling(_alphaParameterPort);
 				_numParameterEdges++;
 			}
 			
@@ -157,7 +154,7 @@ public class CustomBeta extends GibbsRealFactor implements IRealConjugateFactor
 			else 						// Variable precision
 			{
 				_betaParameterPort = factorFunction.getEdgeByIndex(BETA_PARAMETER_INDEX);
-				_betaVariable = (GibbsReal)((siblings.get(_betaParameterPort)).getSolver());
+				_betaVariable = (GibbsReal)getSibling(_betaParameterPort);
 				_numParameterEdges++;
 			}
 		}

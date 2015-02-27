@@ -31,7 +31,6 @@ import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.factors.FactorBase;
 import com.analog.lyric.dimple.model.values.RealValue;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
@@ -442,9 +441,8 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 
 			for (int d = 0; d < D; d++)
 			{
-				FactorBase factorNode = _model.getSibling(d);
-				int factorPortNumber = _model.getSiblingEdgeIndex(d);
-				ParticleBPRealFactor factor = requireNonNull((ParticleBPRealFactor)(factorNode.getSolver()));
+				int factorPortNumber = _model.getSiblingPortIndex(d);
+				ParticleBPRealFactor factor = (ParticleBPRealFactor)getSibling(d);
 				out -= factor.getMarginalPotential(value, factorPortNumber);	// Potential is -log(p)
 			}
 

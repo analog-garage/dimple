@@ -38,6 +38,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 
 public class CustomNegativeExpGamma extends GibbsRealFactor implements IRealConjugateFactor
 {
@@ -186,7 +187,7 @@ public class CustomNegativeExpGamma extends GibbsRealFactor implements IRealConj
 			else					// Variable mean
 			{
 				_alphaParameterPort = factorFunction.getEdgeByIndex(ALPHA_PARAMETER_INDEX);
-				_alphaVariable = (GibbsReal)((siblings.get(_alphaParameterPort)).getSolver());
+				_alphaVariable = (GibbsReal)getSibling(_alphaParameterPort);
 				_numParameterEdges++;
 			}
 			
@@ -196,7 +197,7 @@ public class CustomNegativeExpGamma extends GibbsRealFactor implements IRealConj
 			else 						// Variable precision
 			{
 				_betaParameterPort = factorFunction.getEdgeByIndex(BETA_PARAMETER_INDEX);
-				_betaVariable = (GibbsReal)((siblings.get(_betaParameterPort)).getSolver());
+				_betaVariable = (GibbsReal)getSibling(_betaParameterPort);
 				_numParameterEdges++;
 			}
 		}
@@ -221,6 +222,7 @@ public class CustomNegativeExpGamma extends GibbsRealFactor implements IRealConj
 			_hasConstantOutputs = true;
 		}
 		
+		final SolverNodeMapping solvers = getSolverMapping();
 
 		// Save output variables and add to the statistics any output variables that have fixed values
 		int numVariableOutputs = 0;		// First, determine how many output variables are not fixed
@@ -238,7 +240,7 @@ public class CustomNegativeExpGamma extends GibbsRealFactor implements IRealConj
 				_hasConstantOutputs = true;
 			}
 			else
-				outputVariables[index++] = (GibbsReal)outputVariable.getSolver();
+				outputVariables[index++] = (GibbsReal)solvers.getSolverVariable(outputVariable);
 		}
 	}
 	

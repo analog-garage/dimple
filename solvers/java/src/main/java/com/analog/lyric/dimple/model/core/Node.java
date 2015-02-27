@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.model.core;
 
 import static java.util.Objects.*;
 
+import java.util.AbstractCollection;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,6 +46,7 @@ import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.MapList;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.UnmodifiableIterator;
 
 public abstract class Node extends DimpleOptionHolder implements INode
 {
@@ -97,6 +99,39 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	 */
 	private @Nullable HashMap<INode,Integer> _siblingToIndex = null;
 
+	private class SiblingEdgeStateIterator extends UnmodifiableIterator<FactorGraphEdgeState>
+	{
+		private final int _size = getSiblingCount();
+		private int _index;
+		
+		@Override
+		public boolean hasNext()
+		{
+			return _index < _size;
+		}
+		
+		@Override
+		public FactorGraphEdgeState next()
+		{
+			return getSiblingEdgeState(_index++);
+		}
+	}
+	
+	private class SiblingEdgeStateIterable extends AbstractCollection<FactorGraphEdgeState>
+	{
+		@Override
+		public Iterator<FactorGraphEdgeState> iterator()
+		{
+			return new SiblingEdgeStateIterator();
+		}
+
+		@Override
+		public int size()
+		{
+			return getSiblingCount();
+		}
+	}
+	
 	/*--------------
 	 * Construction
 	 */
@@ -681,10 +716,20 @@ public abstract class Node extends DimpleOptionHolder implements INode
      * @since 0.08
      * @throws IndexOutOfBoundsException if {@code i} is not in range.
      */
+	@SuppressWarnings("null")
 	@Override
 	public FactorGraphEdgeState getSiblingEdgeState(int i)
 	{
-		return requireNonNull(requireParentGraph().getGraphEdgeState(_siblingEdges.get(i)));
+		return requireParentGraph().getGraphEdgeState(_siblingEdges.get(i));
+	}
+	
+	/**
+	 * A view of the sibling edge state objects connected to this node.
+	 * @since 0.08
+	 */
+	public Collection<FactorGraphEdgeState> getSiblingEdgeState()
+	{
+		return new SiblingEdgeStateIterable();
 	}
 	
 	/**

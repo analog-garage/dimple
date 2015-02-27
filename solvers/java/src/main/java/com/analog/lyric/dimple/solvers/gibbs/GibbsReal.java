@@ -19,10 +19,10 @@ package com.analog.lyric.dimple.solvers.gibbs;
 import static com.analog.lyric.dimple.solvers.gibbs.GibbsSolverVariableEvent.*;
 import static java.util.Objects.*;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
 
@@ -38,7 +38,6 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -386,15 +385,18 @@ public class GibbsReal extends SRealVariableBase
 	@Override
 	public final void getAggregateMessages(IParameterizedMessage outputMessage, int outPortNum, ISampler conjugateSampler)
 	{
-		int numPorts = _model.getSiblingCount();
-		Port[] ports = new Port[numPorts - 1];
+		final FactorGraph fg = _model.requireParentGraph();
+		final SolverNodeMapping solvers = getSolverMapping();
+		final int numPorts = _model.getSiblingCount();
+		final Port[] ports = new Port[numPorts - 1];
 		for (int port = 0, i = 0; port < numPorts; port++)
 		{
 			if (port != outPortNum)
 			{
-				Factor factorNode = requireNonNull(_model.getSibling(port));
-				ISolverFactor factor = requireNonNull(factorNode.getSolver());
-				int factorPortNumber = _model.getSiblingPortIndex(port);
+				final FactorGraphEdgeState edgeState = _model.getSiblingEdgeState(port);
+				Factor factorNode = edgeState.getFactor(fg);
+				ISolverFactor factor = solvers.getSolverFactor(factorNode);
+				int factorPortNumber = edgeState.getFactorToVariableIndex();
 				ports[i++] = factorNode.getPort(factorPortNumber);
 				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
 			}
@@ -1120,44 +1122,49 @@ public class GibbsReal extends SRealVariableBase
 	// Find the set of all available conjugate samplers, but don't create it yet
 	public Set<IRealConjugateSamplerFactory> findConjugateSamplerFactories()
 	{
-		return findConjugateSamplerFactories(_model.getSiblings());
+		return findConjugateSamplerFactories(_model.getSiblingEdgeState());
 	}
 	
 	// Find the set of available conjugate samplers consistent with a specific set of neighboring factors (as well as the Input)
-	public Set<IRealConjugateSamplerFactory> findConjugateSamplerFactories(List<? extends Factor> factors)
+	public Set<IRealConjugateSamplerFactory> findConjugateSamplerFactories(Collection<FactorGraphEdgeState> edges)
 	{
-		Set<IRealConjugateSamplerFactory> commonSamplers = new HashSet<IRealConjugateSamplerFactory>();
+		final Set<IRealConjugateSamplerFactory> commonSamplers = new HashSet<IRealConjugateSamplerFactory>();
+		final FactorGraph fg = _model.requireParentGraph();
+		final SolverNodeMapping solvers = getSolverMapping();
 
 		// Check all the adjacent factors to see if they all support a common conjugate factor
-		int numFactors = factors.size();
-		for (int i = 0; i < numFactors; i++)
+		for (FactorGraphEdgeState edgeState : edges)
 		{
-			INode factorNode = factors.get(i);
-			ISolverNode factor = factorNode.getSolver();
+			ISolverNode factor = solvers.getSolverFactor(edgeState.getFactor(fg));
 			if (!(factor instanceof IRealConjugateFactor))
 			{
 				commonSamplers.clear();	// At least one connected factor does not support conjugate sampling
 				return commonSamplers;
 			}
-			int factorPortNumber = factorNode.getPortNum(_model);
-			Set<IRealConjugateSamplerFactory> availableSamplers = ((IRealConjugateFactor)factor).getAvailableRealConjugateSamplers(factorPortNumber);
-			if (i == 0)  // First time through
+			int factorPortNumber = edgeState.getFactorToVariableIndex();
+			Set<IRealConjugateSamplerFactory> availableSamplers =
+				((IRealConjugateFactor)factor).getAvailableRealConjugateSamplers(factorPortNumber);
+			
+			if (commonSamplers.isEmpty())
+			{
 				commonSamplers.addAll(availableSamplers);
+			}
 			else
 			{
-				// Remove any samplers not supported by this factor
-				ArrayList<IRealConjugateSamplerFactory> unavailableSamplers = new ArrayList<IRealConjugateSamplerFactory>();
-				for (IRealConjugateSamplerFactory sampler : commonSamplers)
-					if (!availableSamplers.contains(sampler))
-						unavailableSamplers.add(sampler);
-				commonSamplers.removeAll(unavailableSamplers);
+				commonSamplers.retainAll(availableSamplers);
 			}
 		}
 		
 		// Next, check conjugate samplers are also compatible with the input and the domain of this variable
-		for (IRealConjugateSamplerFactory sampler : commonSamplers)
+		Iterator<IRealConjugateSamplerFactory> iter = commonSamplers.iterator();
+		while (iter.hasNext())
+		{
+			IRealConjugateSamplerFactory sampler = iter.next();
 			if (!sampler.isCompatible(_input) || !sampler.isCompatible(_domain))
-				commonSamplers.remove(sampler);	// Remove samplers not supported so remove it
+			{
+				iter.remove();
+			}
+		}
 		
 		return commonSamplers;
 	}

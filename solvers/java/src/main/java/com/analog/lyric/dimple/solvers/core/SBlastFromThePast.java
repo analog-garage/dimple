@@ -18,8 +18,6 @@ package com.analog.lyric.dimple.solvers.core;
 
 import static java.util.Objects.*;
 
-import java.util.Objects;
-
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.events.SolverEventSource;
@@ -73,8 +71,8 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 	@Override
 	public ISolverVariable getSibling(int edge)
 	{
-		// FIXME - lookup directly in solver graph
-		return Objects.requireNonNull(getModelObject().getSibling(edge).getSolver());
+		final Variable sibling = getModelObject().getSibling(edge);
+		return getSolverMapping().getSolverVariable(sibling);
 	}
 	
 	@Override

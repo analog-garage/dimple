@@ -54,7 +54,7 @@ public class CustomFiniteFieldMult extends SFiniteFieldFactor
 		int poly = ((SumProductFiniteFieldVariable)v0.getSolver()).getTables().getPoly();
 		for (int i = 1; i < 3; i++)
 		{
-			if (((SumProductFiniteFieldVariable)factor.getSibling(i).getSolver()).getTables().getPoly() != poly)
+			if (((SumProductFiniteFieldVariable)getSibling(i)).getTables().getPoly() != poly)
 			{
 				//TODO: better error message
 				throw new DimpleException("polys don't match");

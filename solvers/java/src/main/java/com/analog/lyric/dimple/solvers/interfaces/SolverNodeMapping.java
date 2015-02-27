@@ -174,9 +174,10 @@ public abstract class SolverNodeMapping
 	 * Simply invokes {@link #getSolverFactor(Factor, boolean)} with {@code create} set to {@code true}.
 	 * @since 0.08
 	 */
+	@SuppressWarnings("null")
 	public ISolverFactor getSolverFactor(Factor factor)
 	{
-		return requireNonNull(getSolverFactor(factor, true));
+		return getSolverGraph(factor.getParentGraph()).getSolverFactor(factor, true);
 	}
 	
 	public ISolverNode getSolverNode(INode node)
@@ -241,9 +242,10 @@ public abstract class SolverNodeMapping
 	 * Simply invokes {@link #getSolverVariable(Variable, boolean)} with {@code create} set to {@code true}.
 	 * @since 0.08
 	 */
+	@SuppressWarnings("null")
 	public ISolverVariable getSolverVariable(Variable variable)
 	{
-		return requireNonNull(getSolverVariable(variable, true));
+		return getSolverGraph(variable.getParentGraph()).getSolverVariable(variable, true);
 	}
 
 	/**

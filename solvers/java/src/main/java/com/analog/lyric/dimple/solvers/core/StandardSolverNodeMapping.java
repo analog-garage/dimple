@@ -103,6 +103,41 @@ public class StandardSolverNodeMapping extends SolverNodeMapping
 	}
 	
 	@Override
+	public @Nullable ISolverFactorGraph getSolverGraphOrNull(FactorGraph graph)
+	{
+		assertInHierarchy(graph);
+		return _sgraphs.getOrNull(graph.getRootIndex());
+	}
+	
+	@SuppressWarnings("null")
+	@Override
+	public ISolverFactorGraph getSolverGraph(FactorGraph graph)
+	{
+		assertInHierarchy(graph);
+		
+		ISolverFactorGraph sgraph = _sgraphs.getOrNull(graph.getRootIndex());
+
+		if (sgraph == null)
+		{
+			final Deque<FactorGraph> stack = new ArrayDeque<>();
+
+			do
+			{
+				stack.push(graph);
+				graph = graph.requireParentGraph();
+				sgraph = _sgraphs.getOrNull(graph.getRootIndex());
+			} while (sgraph == null);
+
+			while (!stack.isEmpty())
+			{
+				sgraph = requireNonNull(sgraph).getSolverSubgraph(stack.pop(), true);
+			}
+		}
+		
+		return sgraph;
+	}
+	
+	@Override
 	public void removeSolverGraph(ISolverFactorGraph sgraph)
 	{
 		int index = sgraph.getModelObject().getRootIndex();

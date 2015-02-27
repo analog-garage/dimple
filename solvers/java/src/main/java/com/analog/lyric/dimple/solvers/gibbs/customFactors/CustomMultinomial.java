@@ -46,6 +46,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 
 public class CustomMultinomial extends GibbsRealFactor implements IRealJointConjugateFactor, MultinomialBlockProposal.ICustomMultinomial
 {
@@ -220,7 +221,7 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 			if (_hasConstantN)
 				_constantN = requireNonNull((Integer)factorFunction.getConstantByIndex(N_PARAMETER_INDEX));
 			else
-				_NVariable = (GibbsDiscrete)((siblings.get(factorFunction.getEdgeByIndex(N_PARAMETER_INDEX))).getSolver());
+				_NVariable = (GibbsDiscrete)getSibling(factorFunction.getEdgeByIndex(N_PARAMETER_INDEX));
 			alphaParameterIndex = ALPHA_PARAMETER_INDEX;
 			outputMinIndex = OUTPUT_MIN_INDEX;
 		}
@@ -238,8 +239,10 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 		else
 		{
 			_alphaParameterEdge = factorFunction.getEdgeByIndex(alphaParameterIndex);
-			_alphaVariable = (GibbsRealJoint)((siblings.get(_alphaParameterEdge)).getSolver());
+			_alphaVariable = (GibbsRealJoint)getSibling(_alphaParameterEdge);
 		}
+		
+		final SolverNodeMapping solvers = getSolverMapping();
 		
 		// Save the output constant or variables as well
 		final int nEdges = getSiblingCount();
@@ -266,7 +269,7 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 				{
 					hasConstantOutput[i] = false;
 					int outputEdge = factorFunction.getEdgeByIndex(index);
-					outputVariables[i] = (GibbsDiscrete)((siblings.get(outputEdge)).getSolver());
+					outputVariables[i] = (GibbsDiscrete)solvers.getSolverVariable(siblings.get(outputEdge));
 				}
 			}
 		}
@@ -276,7 +279,7 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 			for (int i = 0, index = outputMinIndex; i < _dimension; i++, index++)
 			{
 				int outputEdge = factorFunction.getEdgeByIndex(index);
-				outputVariables[i] = (GibbsDiscrete)((siblings.get(outputEdge)).getSolver());
+				outputVariables[i] = (GibbsDiscrete)solvers.getSolverVariable(siblings.get(outputEdge));
 			}
 		}
 

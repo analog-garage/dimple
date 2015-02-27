@@ -19,7 +19,6 @@ package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 import static java.util.Objects.*;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -28,7 +27,6 @@ import com.analog.lyric.dimple.factorfunctions.Poisson;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsGammaEdge;
@@ -122,7 +120,6 @@ public class CustomPoisson extends GibbsRealFactor implements IRealConjugateFact
 
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		List<? extends Variable> siblings = _model.getSiblings();
 		_lambdaParameterEdge = NO_PORT;
 		_hasConstantOutput = false;
 		_constantOutputValue = -1;
@@ -138,7 +135,7 @@ public class CustomPoisson extends GibbsRealFactor implements IRealConjugateFact
 			else
 			{
 				int outputEdge = factorFunction.getEdgeByIndex(OUTPUT_INDEX_FIXED_LAMBDA);
-				_outputVariable = (GibbsDiscrete)((siblings.get(outputEdge)).getSolver());
+				_outputVariable = (GibbsDiscrete)getSibling(outputEdge);
 			}
 		}
 		else	// Variable or constant lambda parameter
@@ -154,7 +151,7 @@ public class CustomPoisson extends GibbsRealFactor implements IRealConjugateFact
 			else
 			{
 				int outputEdge = factorFunction.getEdgeByIndex(OUTPUT_INDEX);
-				_outputVariable = (GibbsDiscrete)((siblings.get(outputEdge)).getSolver());
+				_outputVariable = (GibbsDiscrete)getSibling(outputEdge);
 			}
 		}
 	}

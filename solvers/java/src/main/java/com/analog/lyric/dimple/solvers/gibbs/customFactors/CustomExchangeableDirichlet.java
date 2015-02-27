@@ -19,7 +19,6 @@ package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 import static java.util.Objects.*;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -28,7 +27,6 @@ import com.analog.lyric.dimple.factorfunctions.ExchangeableDirichlet;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDirichletEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
@@ -139,8 +137,7 @@ public class CustomExchangeableDirichlet extends GibbsRealFactor implements IRea
 			{
 				_numParameterEdges = 1;
 				_constantAlphaMinusOne = 0;
-				List<? extends Variable> siblings = _model.getSiblings();
-				_alphaVariable = (GibbsReal)((siblings.get(PARAMETER_INDEX)).getSolver());
+				_alphaVariable = (GibbsReal)getSibling(PARAMETER_INDEX);
 			}
 		}
 	}

@@ -40,6 +40,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NormalSampler;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 
 public class CustomLogNormal extends GibbsRealFactor implements IRealConjugateFactor
 {
@@ -220,7 +221,7 @@ public class CustomLogNormal extends GibbsRealFactor implements IRealConjugateFa
 			else					// Variable mean
 			{
 				_meanParameterPort = factorFunction.getEdgeByIndex(MEAN_PARAMETER_INDEX);
-				_meanVariable = (GibbsReal)((siblings.get(_meanParameterPort)).getSolver());
+				_meanVariable = (GibbsReal)getSibling(_meanParameterPort);
 				_numParameterEdges++;
 			}
 			
@@ -230,7 +231,7 @@ public class CustomLogNormal extends GibbsRealFactor implements IRealConjugateFa
 			else 						// Variable precision
 			{
 				_precisionParameterPort = factorFunction.getEdgeByIndex(PRECISION_PARAMETER_INDEX);
-				_precisionVariable = (GibbsReal)((siblings.get(_precisionParameterPort)).getSolver());
+				_precisionVariable = (GibbsReal)getSibling(_precisionParameterPort);
 				_numParameterEdges++;
 			}
 		}
@@ -252,11 +253,12 @@ public class CustomLogNormal extends GibbsRealFactor implements IRealConjugateFa
 					_constantOutputSum += outputValue;
 					_constantOutputSumOfSquares += outputValue*outputValue;
 					_constantOutputCount++;
-	}
+				}
 			}
 			_hasConstantOutputs = true;
 		}
 	
+		final SolverNodeMapping solvers = getSolverMapping();
 		
 		// Save output variables and add to the statistics any output variables that have fixed values
 		int numVariableOutputs = 0;		// First, determine how many output variables are not fixed
@@ -277,7 +279,7 @@ public class CustomLogNormal extends GibbsRealFactor implements IRealConjugateFa
 				_hasConstantOutputs = true;
 			}
 			else
-				outputVariables[index++] = (GibbsReal)outputVariable.getSolver();
+				outputVariables[index++] = (GibbsReal)solvers.getSolverVariable(outputVariable);
 		}
 	}
 	
