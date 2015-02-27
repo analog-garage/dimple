@@ -65,9 +65,10 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	 * Construction
 	 */
 
-	protected JunctionTreeSolverGraphBase(FactorGraph sourceModel, @Nullable IFactorGraphFactory<?> solverFactory)
+	protected JunctionTreeSolverGraphBase(FactorGraph sourceModel,
+		@Nullable JunctionTreeSolverGraphBase<Delegate> parent, @Nullable IFactorGraphFactory<?> solverFactory)
 	{
-		super(sourceModel);
+		super(sourceModel, parent);
 		_transformer = new JunctionTreeTransform();
 		_solverFactory = solverFactory;
 	}
@@ -195,10 +196,6 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 		throw unsupported("createBlastFromThePast");
 	}
 	
-	@Override
-	public abstract JunctionTreeSolverGraphBase<Delegate> createSubGraph(FactorGraph subgraph,
-		@Nullable IFactorGraphFactory<?> factory);
-
 	@Override
 	public IJunctionTreeSolverVariable<?> createVariable(Variable var)
 	{

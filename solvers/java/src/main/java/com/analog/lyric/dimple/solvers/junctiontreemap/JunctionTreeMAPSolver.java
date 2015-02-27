@@ -17,8 +17,10 @@
 package com.analog.lyric.dimple.solvers.junctiontreemap;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolverBase;
 import com.analog.lyric.dimple.solvers.minsum.MinSumSolver;
 import com.analog.lyric.dimple.solvers.minsum.MinSumSolverGraph;
@@ -51,8 +53,8 @@ public class JunctionTreeMAPSolver extends JunctionTreeSolverBase<MinSumSolverGr
 	 */
 	
 	@Override
-	public final JunctionTreeMAPSolverGraph createFactorGraph(FactorGraph graph)
+	public final JunctionTreeMAPSolverGraph createFactorGraph(FactorGraph graph, @Nullable ISolverFactorGraph parent)
 	{
-		return new JunctionTreeMAPSolverGraph(graph, new MinSumSolver());
+		return new JunctionTreeMAPSolverGraph(graph, new MinSumSolver(), (JunctionTreeMAPSolverGraph)parent);
 	}
 }

@@ -23,11 +23,7 @@ import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.MultivariateNormal;
-import com.analog.lyric.dimple.model.core.Port;
-import com.analog.lyric.dimple.model.variables.RealJoint;
-import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealJoint;
@@ -38,14 +34,13 @@ public class MultivariateNormalMessageTranslator extends MessageTranslatorBase
 	private @Nullable MultivariateNormalParameters _inputMessage;
 	private @Nullable MultivariateNormalParameters _outputMessage;
 	private @Nullable MultivariateNormal _variableInput;
-	private @Nullable GibbsRealJoint _solverVariable;
+	private final GibbsRealJoint _solverVariable;
 
-	public MultivariateNormalMessageTranslator(Port port, Variable variable)
+	public MultivariateNormalMessageTranslator(SampledFactor sfactor, int edgeIndex, GibbsRealJoint svariable)
 	{
-		super(port, variable);
+		super(sfactor, edgeIndex, svariable.getModelObject());
 		
-		if (!(_port.getConnectedNode() instanceof RealJoint))
-			throw new DimpleException("Expected Real variable.");
+		_solverVariable = svariable;
 	}
 
 
@@ -140,10 +135,9 @@ public class MultivariateNormalMessageTranslator extends MessageTranslatorBase
 	@Override
 	public final void initialize()
 	{
-		SumProductRealJoint var = (SumProductRealJoint)_port.node.getSibling(_port.index).getSolver();
+		SumProductRealJoint var = (SumProductRealJoint)_sfactor.getSibling(_edgeIndex);
 		_outputMessage = (MultivariateNormalParameters)var.resetInputMessage(_outputMessage);
 		_inputMessage = (MultivariateNormalParameters)var.resetInputMessage(_inputMessage);
-		_solverVariable = (GibbsRealJoint)_variable.getSolver();
 	}
 	
 	@Override

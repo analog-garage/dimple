@@ -20,7 +20,7 @@ import java.util.Map;
 
 import com.analog.lyric.collect.Tuple2;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
-import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.util.misc.Internal;
 
@@ -71,7 +71,13 @@ public interface ISFactorGraphToOptimizedUpdateAdapter
 
 	double[] getSparseValues(IFactorTable factorTable);
 
-	int getWorkers(FactorGraph factorGraph);
+	/**
+	 * Solver factor graph associated with this adapter.
+	 * @since 0.08
+	 */
+	ISolverFactorGraph getSolverGraph();
+	
+	int getWorkers(ISolverFactorGraph sfactorGraph);
 
 	void putFactorTableUpdateSettings(Map<IFactorTable, FactorTableUpdateSettings> optionsValueByFactorTable);
 

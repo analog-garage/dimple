@@ -41,16 +41,11 @@ public class JunctionTreeMAPSolverGraph extends JunctionTreeSolverGraphBase<MinS
 	JunctionTreeMAPSolverGraph(FactorGraph sourceModel, @Nullable IFactorGraphFactory<?> solverFactory,
 		@Nullable JunctionTreeMAPSolverGraph parent)
 	{
-		super(sourceModel, solverFactory);
+		super(sourceModel, parent, solverFactory);
 		_jtparent = parent;
 		_root = parent != null ? parent.getRootSolverGraph() : this;
 	}
 
-	JunctionTreeMAPSolverGraph(FactorGraph sourceModel, IFactorGraphFactory<?> solverFactory)
-	{
-		this(sourceModel, solverFactory,  null);
-	}
-	
 	/*---------------------
 	 * ISolverNode methods
 	 */
@@ -75,12 +70,6 @@ public class JunctionTreeMAPSolverGraph extends JunctionTreeSolverGraphBase<MinS
 	public ISolverFactorGraph createSubgraph(FactorGraph subgraph)
 	{
 		return new JunctionTreeMAPSolverGraph(subgraph, getDelegateSolverFactory(), this);
-	}
-	
-	@Override
-	public JunctionTreeMAPSolverGraph createSubGraph(FactorGraph subgraph, @Nullable IFactorGraphFactory<?> factory)
-	{
-		return new JunctionTreeMAPSolverGraph(subgraph, factory, this);
 	}
 	
 	/*--------------------------

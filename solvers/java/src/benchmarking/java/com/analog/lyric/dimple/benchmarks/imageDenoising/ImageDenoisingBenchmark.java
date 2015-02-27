@@ -30,6 +30,8 @@ import com.analog.lyric.benchmarking.utils.functional.Threshold;
 import com.analog.lyric.benchmarking.utils.functional.TransformFunction;
 import com.analog.lyric.dimple.benchmarks.utils.Image;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.options.BPOptions;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 
 @SuppressWarnings({"null", "deprecation"})
 public class ImageDenoisingBenchmark
@@ -40,10 +42,8 @@ public class ImageDenoisingBenchmark
 	public boolean imageDenoisingGibbs() throws IOException
 	{
 		FactorGraph fg = new FactorGraph();
-		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.gibbs.Solver());
-		com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph solver = (com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph) fg
-				.getSolver();
-		solver.setNumSamples(1600);
+		fg.setSolverFactory(new GibbsSolver());
+		fg.setOption(BPOptions.iterations, 1600);
 
 		int imageDimension = 100;
 		int xImageOffset = 800;
@@ -61,7 +61,7 @@ public class ImageDenoisingBenchmark
 	{
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
-		fg.getSolver().setNumIterations(1);
+		fg.setOption(BPOptions.iterations, 1);
 
 		int imageDimension = 100;
 		int xImageOffset = 800;
@@ -79,7 +79,7 @@ public class ImageDenoisingBenchmark
 	{
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.minsum.Solver());
-		fg.getSolver().setNumIterations(2);
+		fg.setOption(BPOptions.iterations, 2);
 
 		int imageDimension = 100;
 		int xImageOffset = 800;

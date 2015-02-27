@@ -16,16 +16,18 @@
 
 package com.analog.lyric.dimple.test.dummySolver;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.core.SolverBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 public class DummySolver extends SolverBase<DummyFactorGraph>
 {
-
 	@Override
-	public DummyFactorGraph createFactorGraph(FactorGraph factorGraph)
+	public DummyFactorGraph createFactorGraph(FactorGraph factorGraph, @Nullable ISolverFactorGraph parent)
 	{
-		return new DummyFactorGraph(factorGraph);
+		return new DummyFactorGraph(factorGraph, parent);
 	}
 	
 }

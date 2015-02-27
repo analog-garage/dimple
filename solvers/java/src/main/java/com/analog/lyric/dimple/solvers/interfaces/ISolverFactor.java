@@ -33,6 +33,9 @@ public interface ISolverFactor extends ISolverNode
 	@Override
 	public ISolverVariable getSibling(int edge);
 	
+	@Override
+	public ISolverFactorGraph getParentGraph();
+	
 	//This method is called on a solver factor when it is first created.
 	//This method should create messages to and from variables.
 	@Deprecated

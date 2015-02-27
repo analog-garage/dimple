@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.template;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -43,9 +45,9 @@ public class SFactorGraph  extends SFactorGraphBase<ISolverFactor,ISolverVariabl
 	 * 
 	 * @param fg
 	 */
-	public SFactorGraph(FactorGraph fg)
+	public SFactorGraph(FactorGraph fg, @Nullable ISolverFactorGraph parent)
 	{
-		super(fg);
+		super(fg, parent);
 	}
 
 	@Override
@@ -93,7 +95,7 @@ public class SFactorGraph  extends SFactorGraphBase<ISolverFactor,ISolverVariabl
 	@Override
 	public ISolverFactorGraph createSubgraph(FactorGraph subgraph)
 	{
-		return new SFactorGraph(subgraph);
+		return new SFactorGraph(subgraph, this);
 	}
 	
 	/*

@@ -23,6 +23,8 @@ import com.analog.lyric.benchmarking.utils.doublespace.DoubleSpace;
 import com.analog.lyric.benchmarking.utils.functional.Functions;
 import com.analog.lyric.dimple.benchmarks.utils.Image;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.options.BPOptions;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 
 @SuppressWarnings({"null", "deprecation"})
 public class StereoVisionBenchmark
@@ -34,8 +36,7 @@ public class StereoVisionBenchmark
 	{
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.gibbs.Solver());
-		com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph solver = (com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph)fg.getSolver();
-		solver.setNumSamples(400);
+		fg.setOption(GibbsOptions.numSamples, 100);
 		depthInference(fg, "art_scaled", 75, "gibbs");
 		return false;
 	}
@@ -45,7 +46,7 @@ public class StereoVisionBenchmark
 	{
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
-		fg.getSolver().setNumIterations(10);
+		fg.setOption(BPOptions.iterations, 10);
 		depthInference(fg, "art_scaled", 75, "sumproduct");
 		return false;
 	}
@@ -55,7 +56,7 @@ public class StereoVisionBenchmark
 	{
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.minsum.Solver());
-		fg.getSolver().setNumIterations(10);
+		fg.setOption(BPOptions.iterations, 10);
 		depthInference(fg, "art_scaled", 75, "minsum");
 		return false;
 	}

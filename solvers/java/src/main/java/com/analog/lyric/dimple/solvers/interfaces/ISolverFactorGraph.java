@@ -40,14 +40,10 @@ public interface ISolverFactorGraph	extends ISolverNode
 	public FactorGraph getModelObject();
 	
 	/**
-	 * Create a new solver-specific solver graph representing given subgraph.
-	 */
-	public @Nullable ISolverFactorGraph createSubGraph(FactorGraph subgraph, @Nullable IFactorGraphFactory<?> factory);
-
-	/**
 	 * Return object mapping all model objects below {@linkplain #getRootSolverGraph() root solver} to solver objects.
 	 * @since 0.08
 	 */
+	@Override
 	public SolverNodeMapping getSolverMapping();
 
 	public @Nullable ISolverEdge getSolverEdge(FactorGraphEdgeState edge);
@@ -100,6 +96,36 @@ public interface ISolverFactorGraph	extends ISolverNode
 	
 	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor factor);
 
+	/**
+	 * Removes solver factor from its parent graph.
+	 * <p>
+	 * @param factor must have this object as its {@linkplain ISolverNode#getParentGraph() parent}.
+	 * @since 0.08
+	 * @category internal
+	 */
+	@Internal
+	public void removeSolverFactor(ISolverFactor factor);
+	
+	/**
+	 * Removes solver graph from its parent graph.
+	 * <p>
+	 * @param subgraph must have this object as its {@linkplain ISolverNode#getParentGraph() parent}.
+	 * @since 0.08
+	 * @category internal
+	 */
+	@Internal
+	public void removeSolverGraph(ISolverFactorGraph subgraph);
+	
+	/**
+	 * Removes solver variable from its parent graph.
+	 * <p>
+	 * @param variable must have this object as its {@linkplain ISolverNode#getParentGraph() parent}.
+	 * @since 0.08
+	 * @category internal
+	 */
+	@Internal
+	public void removeSolverVariable(ISolverVariable variable);
+	
 	/**
 	 * Indicates whether or not the specified factor is available only as a custom factor.
 	 * @param factorName

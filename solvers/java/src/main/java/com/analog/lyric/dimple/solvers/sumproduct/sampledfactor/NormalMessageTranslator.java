@@ -24,11 +24,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import cern.colt.list.DoubleArrayList;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Normal;
-import com.analog.lyric.dimple.model.core.Port;
-import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
@@ -38,16 +34,13 @@ public class NormalMessageTranslator extends MessageTranslatorBase
 {
 	private @Nullable NormalParameters _inputMessage;
 	private @Nullable NormalParameters _outputMessage;
-	private Normal _variableInput;
-	private @Nullable GibbsReal _solverVariable;
+	private final Normal _variableInput;
+	private final GibbsReal _solverVariable;
 
-	public NormalMessageTranslator(Port port, Variable variable)
+	public NormalMessageTranslator(SampledFactor sfactor, int edgeIndex, GibbsReal svariable)
 	{
-		super(port, variable);
-		
-		if (!(_port.getConnectedNode() instanceof Real))
-			throw new DimpleException("Expected Real variable.");
-		
+		super(sfactor, edgeIndex, svariable.getModelObject());
+		_solverVariable = svariable;
 		_variableInput = new Normal(0,1);	// Create a Normal factor function with fixed parameters to be used later as the variable input
 	}
 
@@ -122,10 +115,9 @@ public class NormalMessageTranslator extends MessageTranslatorBase
 	@Override
 	public final void initialize()
 	{
-		SumProductReal var = (SumProductReal)_port.node.getSibling(_port.index).getSolver();
+		SumProductReal var = (SumProductReal)_sfactor.getSibling(_edgeIndex);
 		_outputMessage = (NormalParameters)var.resetInputMessage(_outputMessage);
 		_inputMessage = (NormalParameters)var.resetInputMessage(_inputMessage);
-		_solverVariable = (GibbsReal)_variable.getSolver();
 	}
 	
 	@Override

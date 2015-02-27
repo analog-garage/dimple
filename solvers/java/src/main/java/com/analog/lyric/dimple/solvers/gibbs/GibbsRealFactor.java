@@ -113,6 +113,12 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 	}
 
 	@Override
+	public GibbsSolverGraph getParentGraph()
+	{
+		return (GibbsSolverGraph)_parent;
+	}
+	
+	@Override
 	public void updateEdgeMessage(int outPortNum)
 	{
 		Variable var = requireNonNull(_model.getSibling(outPortNum));

@@ -933,10 +933,12 @@ public class FactorGraph extends FactorBase
 		
 		_solverFactory = factory;
 
-		SG solverGraph = factory != null ? factory.createFactorGraph(this) : null;
+		final FactorGraph parent = getParentGraph();
+		final ISolverFactorGraph sparent = parent != null ? parent.getSolver() : null;
+		
+		SG solverGraph = factory != null ? factory.createFactorGraph(this, sparent) : null;
 		_solverFactorGraph = solverGraph;
 
-		final FactorGraph parent = getParentGraph();
 		if (parent != null)
 		{
 			final ISolverFactorGraph parentSolverGraph = parent._solverFactorGraph;
@@ -1333,6 +1335,13 @@ public class FactorGraph extends FactorBase
 		v.createSolverObject(null);
 		v.setParentGraph(null);
 		removeNode(v);
+		
+		ISolverVariable svar = v.getSolver();
+		if (svar != null)
+		{
+			svar.getParentGraph().removeSolverVariable(svar);
+			v.setSolver(null);
+		}
 		
 		if ((_flags & VARIABLE_REMOVE_EVENT) != 0)
 		{
@@ -2494,6 +2503,13 @@ public class FactorGraph extends FactorBase
 		_ownedFactors.removeNode(factor);
 		removeNode(factor);
 		factor.setParentGraph(null);
+		
+		ISolverFactor sfactor = factor.getSolver();
+		if (sfactor != null)
+		{
+			sfactor.getParentGraph().removeSolverFactor(sfactor);
+			factor.setSolver(null);
+		}
 		
 		if ((_flags & FACTOR_REMOVE_EVENT) != 0)
 		{

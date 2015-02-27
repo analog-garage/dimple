@@ -112,9 +112,9 @@ public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolve
 	private static Random _rand = new Random();
 
 
-	public SumProductSolverGraph(FactorGraph factorGraph)
+	public SumProductSolverGraph(FactorGraph factorGraph, @Nullable ISolverFactorGraph parent)
 	{
-		super(factorGraph);
+		super(factorGraph, parent);
 		setMultithreadingManager(new MultiThreadingManager(getModelObject()));
 		
 		// Set default Gibbs options for sampled factors.
@@ -263,7 +263,7 @@ public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolve
 	@Override
 	public ISolverFactorGraph createSubgraph(FactorGraph subgraph)
 	{
-		return new SFactorGraph(subgraph);
+		return new SFactorGraph(subgraph, this);
 	}
 	
 	// This should return true only for custom factors that do not have a corresponding FactorFunction of the same name
@@ -421,10 +421,16 @@ public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolve
 		}
 
 		@Override
-		public int getWorkers(FactorGraph factorGraph)
+		public ISolverFactorGraph getSolverGraph()
 		{
-			SumProductSolverGraph sfg = (SumProductSolverGraph) factorGraph.getSolver();
-			if (sfg != null && sfg.useMultithreading())
+			return _sumProductSolverGraph;
+		}
+		
+		@Override
+		public int getWorkers(ISolverFactorGraph sfactorGraph)
+		{
+			SumProductSolverGraph sfg = (SumProductSolverGraph) sfactorGraph;
+			if (sfg.useMultithreading())
 			{
 				return sfg.getMultithreadingManager().getNumWorkers();
 			}
@@ -703,14 +709,14 @@ public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolve
 	@SuppressWarnings("null")
 	public void setCalculateDerivative(boolean val)
 	{
-		for (Factor f : _model.getFactors())
+		for (ISolverFactor sfactor : getSolverFactorsRecursive())
 		{
-			SumProductTableFactor stf = (SumProductTableFactor)f.getSolver();
+			SumProductTableFactor stf = (SumProductTableFactor)sfactor;
 			stf.setUpdateDerivative(val);
 		}
-		for (Variable vb : _model.getVariablesFlat())
+		for (ISolverVariable svar : getSolverVariablesRecursive())
 		{
-			SumProductDiscrete sv = (SumProductDiscrete)vb.getSolver();
+			SumProductDiscrete sv = (SumProductDiscrete)svar;
 			sv.setCalculateDerivative(val);
 		}
 	}
@@ -728,10 +734,11 @@ public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolve
 	{
 		super.initialize();
 		UpdateCostOptimizer optimizer = new UpdateCostOptimizer(_optimizedUpdateAdapter);
-		optimizer.optimize(_model);
+		optimizer.optimize(this);
+		final SolverNodeMapping solvers = getSolverMapping();
 		for (Factor f : getModelObject().getFactors())
 		{
-			ISolverFactor sf = f.getSolver();
+			ISolverFactor sf = solvers.getSolverFactor(f);
 			if (sf instanceof SumProductTableFactor)
 			{
 				SumProductTableFactor tf = (SumProductTableFactor)sf;

@@ -17,8 +17,11 @@
 package com.analog.lyric.dimple.solvers.sumproduct;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.core.SolverBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 /**
  * 
@@ -50,8 +53,8 @@ public class SumProductSolver extends SolverBase<SumProductSolverGraph>
 	
 	@SuppressWarnings("deprecation")
 	@Override
-	public final SFactorGraph createFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph)
+	public final SFactorGraph createFactorGraph(FactorGraph factorGraph, @Nullable ISolverFactorGraph parent)
 	{
-		return new SFactorGraph(factorGraph);
+		return new SFactorGraph(factorGraph, parent);
 	}
 }

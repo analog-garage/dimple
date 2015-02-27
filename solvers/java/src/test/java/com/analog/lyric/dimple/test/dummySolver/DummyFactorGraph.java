@@ -33,9 +33,14 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public class DummyFactorGraph extends SFactorGraphBase<ISolverFactor,ISolverVariable,ISolverEdge>
 {
-	public DummyFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph)
+	public DummyFactorGraph(FactorGraph factorGraph)
 	{
-		super(factorGraph);
+		this(factorGraph, null);
+	}
+	
+	public DummyFactorGraph(FactorGraph factorGraph, @Nullable ISolverFactorGraph parent)
+	{
+		super(factorGraph, parent);
 	}
 
 	public ISolverFactor createCustomFactor(Factor factor)
@@ -61,7 +66,7 @@ public class DummyFactorGraph extends SFactorGraphBase<ISolverFactor,ISolverVari
 	@Override
 	public ISolverFactorGraph createSubgraph(FactorGraph subgraph)
 	{
-		return new DummyFactorGraph(subgraph);
+		return new DummyFactorGraph(subgraph, this);
 	}
 	
 	@Override

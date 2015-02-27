@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -46,7 +45,6 @@ import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.options.SolverOptions;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
-import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.interfaces.IParameterizedSolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
@@ -69,7 +67,7 @@ public abstract class SFactorGraphBase
 	@SuppressWarnings("hiding")
 	protected static final int RESERVED_FLAGS = 0xFFFF0000;
 	
-	private @Nullable ISolverFactorGraph _parent = null;
+	private @Nullable ISolverFactorGraph _parent;
 	
 	protected int _numIterations = 1;		// Default number of iterations unless otherwise specified
 	private @Nullable MultiThreadingManager _multithreader; // = new MultiThreadingManager();
@@ -98,7 +96,7 @@ public abstract class SFactorGraphBase
 	 * Construction
 	 */
 	
-	public SFactorGraphBase(FactorGraph graph)
+	protected SFactorGraphBase(FactorGraph graph, @Nullable ISolverFactorGraph parent)
 	{
 		super(graph);
 		_factors = new ExtendedArrayList<>(graph.getFactorCount(0));
@@ -106,6 +104,7 @@ public abstract class SFactorGraphBase
 		_subgraphs = new ExtendedArrayList<>(graph.getOwnedGraphs().size());
 		_edges = hasEdgeState() ? new ExtendedArrayList<SEdge>(graph.getGraphEdgeCount()) : null;
 		_solverNodeMapping = new StandardSolverNodeMapping(this);
+		_parent = parent;
 	}
 
 	/*----------------------------
@@ -171,17 +170,6 @@ public abstract class SFactorGraphBase
 	@Override
 	public abstract SVariable createVariable(Variable variable);
 	
-	/**
-	 * {@inheritDoc}
-	 * <p>
-	 * Default implementation simply uses {@code factory} to generate a new solver graph.
-	 */
-	@Override
-	public @Nullable ISolverFactorGraph createSubGraph(FactorGraph subgraph, @Nullable IFactorGraphFactory<?> factory)
-	{
-		return factory != null ? factory.createFactorGraph(subgraph) : null;
-	}
-
 	@Override
 	public @Nullable SEdge getSolverEdge(FactorGraphEdgeState edge)
 	{
@@ -248,13 +236,15 @@ public abstract class SFactorGraphBase
 		FactorList otherFactors = sother._model.getFactors();
 		FactorList myFactors = _model.getFactors();
 		
+		final SolverNodeMapping solvers = getSolverMapping();
+		
 		if (otherFactors.size() != myFactors.size())
 			throw new DimpleException("Graphs dont' match");
 		
 		for (int i = 0; i < myFactors.size(); i++)
 		{
-			ISolverFactor sf = requireNonNull(myFactors.getByIndex(i).getSolver());
-			sf.moveMessages(Objects.requireNonNull(otherFactors.getByIndex(i).getSolver()));
+			ISolverFactor sf = solvers.getSolverFactor(myFactors.getByIndex(i));
+			sf.moveMessages(solvers.getSolverFactor(otherFactors.getByIndex(i)));
 		}
 		
 		VariableList myVars = _model.getVariablesFlat();
@@ -262,12 +252,40 @@ public abstract class SFactorGraphBase
 		
 		for (int i = 0; i < myVars.size(); i++)
 		{
-			ISolverVariable sv = requireNonNull(myVars.getByIndex(i).getSolver());
-			sv.moveNonEdgeSpecificState(Objects.requireNonNull(otherVars.getByIndex(i).getSolver()));
+			ISolverVariable sv = solvers.getSolverVariable(myVars.getByIndex(i));
+			sv.moveNonEdgeSpecificState(solvers.getSolverVariable((otherVars.getByIndex(i))));
 		}
 		
 	}
 
+	@Override
+	public void removeSolverFactor(ISolverFactor sfactor)
+	{
+		removeSolverNode(sfactor, _factors);
+	}
+	
+	@Override
+	public void removeSolverGraph(ISolverFactorGraph subgraph)
+	{
+		removeSolverNode(subgraph, _subgraphs);
+	}
+	
+	@Override
+	public void removeSolverVariable(ISolverVariable svariable)
+	{
+		// FIXME - what if boundary variable?
+		removeSolverNode(svariable, _variables);
+	}
+	
+	private void removeSolverNode(ISolverNode snode, ExtendedArrayList<?> list)
+	{
+		if (snode.getParentGraph() != this)
+		{
+			throw new IllegalArgumentException(String.format("'%s' does not belong to '%s'", snode, this));
+		}
+		
+		list.set(NodeId.indexFromLocalId(snode.getModelObject().getLocalId()), null);
+	}
 
 	@Override
 	public boolean customFactorExists(String funcName)

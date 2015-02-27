@@ -16,7 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.junctiontree;
 
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.core.SolverBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
@@ -28,7 +27,4 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 public abstract class JunctionTreeSolverBase<SG extends ISolverFactorGraph, JTSG extends JunctionTreeSolverGraphBase<SG>>
 	extends SolverBase<JTSG>
 {
-	@Override
-	public abstract JTSG createFactorGraph(FactorGraph graph);
-
 }

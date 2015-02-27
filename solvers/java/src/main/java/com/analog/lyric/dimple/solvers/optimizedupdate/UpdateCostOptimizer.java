@@ -18,7 +18,6 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.schedulers.IScheduledActivity;
@@ -26,6 +25,7 @@ import com.analog.lyric.dimple.schedulers.ScheduleVisitor;
 import com.analog.lyric.dimple.schedulers.ScheduleVisitorFactorFilter;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.util.misc.Internal;
 
@@ -83,7 +83,9 @@ public final class UpdateCostOptimizer
 			if (factor != null && factor.hasFactorTable())
 			{
 				final IFactorTable factorTable = factor.getFactorTable();
-				final STableFactorBase sTableFactor = (STableFactorBase) factor.getSolver();
+				final STableFactorBase sTableFactor =
+					(STableFactorBase) _sFactorGraphAdapter.getSolverGraph().getSolverFactor(factor);
+				
 				if (sTableFactor != null)
 				{
 					// This class fetches options from sTableFactor, and keeps track of the
@@ -181,12 +183,12 @@ public final class UpdateCostOptimizer
 		}
 	}
 
-	public void optimize(final FactorGraph factorGraph)
+	public void optimize(final ISolverFactorGraph sfactorGraph)
 	{
-		final int workers = _sFactorGraphAdapter.getWorkers(factorGraph);
+		final int workers = _sFactorGraphAdapter.getWorkers(sfactorGraph);
 		final Map<IFactorTable, FactorTableUpdateSettings> settingsByFactorTable = new IdentityHashMap<>();
 		_sFactorGraphAdapter.putFactorTableUpdateSettings(settingsByFactorTable);
-		final ISchedule schedule = factorGraph.getSchedule();
+		final ISchedule schedule = sfactorGraph.getModelObject().getSchedule();
 		final IScheduledActivity updatesCollector = new UpdateCollector(settingsByFactorTable);
 		ScheduleVisitor.visit(schedule, ScheduleVisitorFactorFilter.create(updatesCollector));
 		for (Entry<IFactorTable, FactorTableUpdateSettings> entry : settingsByFactorTable.entrySet())

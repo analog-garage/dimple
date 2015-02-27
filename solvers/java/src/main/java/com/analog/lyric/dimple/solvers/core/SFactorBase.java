@@ -16,15 +16,10 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
-import static java.util.Objects.*;
-
-import java.util.Objects;
-
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.events.SolverEvent;
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
@@ -48,7 +43,7 @@ public abstract class SFactorBase extends SNode<Factor> implements ISolverFactor
 	@SuppressWarnings("hiding")
 	protected static final int RESERVED_FLAGS = 0xFFF00000;
 	
-	private final ISolverFactorGraph _parent;
+	protected final ISolverFactorGraph _parent;
 	
 	/*--------------
 	 * Construction
@@ -141,23 +136,25 @@ public abstract class SFactorBase extends SNode<Factor> implements ISolverFactor
 	public void moveMessages(ISolverNode other)
 	{
 		Factor factor = getModelObject();
-		INode otherFactor = other.getModelObject();
+		Factor otherFactor = (Factor)other.getModelObject();
 		
 		int nSiblings = factor.getSiblingCount();
 		
 		if (nSiblings != otherFactor.getSiblingCount())
 			throw new DimpleException("cannot move messages on nodes with different numbers of ports");
 		
+		final SolverNodeMapping solvers = getSolverMapping();
+		
 		for (int i = 0; i < nSiblings; i++)
 		{
 			moveMessages(other, i,i);
 			
-			INode thisVariable = factor.getSibling(i);
-			INode otherVariable = otherFactor.getSibling(i);
+			Variable thisVariable = factor.getSibling(i);
+			Variable otherVariable = otherFactor.getSibling(i);
 			int thisIndex = factor.getSiblingPortIndex(i);
 			int otherIndex = otherFactor.getSiblingPortIndex(i);
-			ISolverNode thisSolver = requireNonNull(thisVariable.getSolver());
-			thisSolver.moveMessages(Objects.requireNonNull(otherVariable.getSolver()), thisIndex,otherIndex);
+			ISolverNode thisSolver = solvers.getSolverVariable(thisVariable);
+			thisSolver.moveMessages(solvers.getSolverVariable(otherVariable), thisIndex,otherIndex);
 		}
 	}
 

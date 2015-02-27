@@ -16,9 +16,9 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.sampledfactor;
 
-import com.analog.lyric.dimple.model.core.Port;
-import com.analog.lyric.dimple.model.variables.Variable;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.model.variables.Variable;
 
 
 /**
@@ -34,13 +34,16 @@ import org.eclipse.jdt.annotation.Nullable;
  */
 public abstract class MessageTranslatorBase
 {
-	protected Port _port;
-	protected Variable _variable;
+	protected final SampledFactor _sfactor;
+	protected final int _edgeIndex;
+	protected final Variable _variable;
+	
 	public static enum MessageDirection {INPUT, OUTPUT}
 	
-	public MessageTranslatorBase(Port port, Variable variable)
+	public MessageTranslatorBase(SampledFactor sfactor, int edgeIndex, Variable variable)
 	{
-		_port = port;
+		_sfactor = sfactor;
+		_edgeIndex = edgeIndex;
 		_variable = variable;
 	}
 

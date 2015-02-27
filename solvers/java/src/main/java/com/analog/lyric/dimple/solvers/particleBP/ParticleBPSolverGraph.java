@@ -33,6 +33,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.dimple.solvers.sumproduct.STableFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscreteEdge;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductTableFactor;
@@ -55,9 +56,9 @@ public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, IPart
 	protected double _temperature;
 	protected final double LOG2 = Math.log(2);
 	
-	protected ParticleBPSolverGraph(FactorGraph factorGraph)
+	protected ParticleBPSolverGraph(FactorGraph factorGraph, @Nullable ISolverFactorGraph parent)
 	{
-		super(factorGraph);
+		super(factorGraph, parent);
 	}
 
 	@Override
@@ -102,7 +103,7 @@ public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, IPart
 	@Override
 	public ISolverFactorGraph createSubgraph(FactorGraph subgraph)
 	{
-		return new SFactorGraph(subgraph);
+		return new SFactorGraph(subgraph, this);
 	}
 	
 	@SuppressWarnings("deprecation") // TODO remove when S*Variable classes removed.
@@ -136,9 +137,8 @@ public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, IPart
 
 		if (_temper) setTemperature(_initialTemperature);
 		
-		for (Factor f : getModelObject().getFactors())
+		for (ISolverFactor sf : getSolverFactorsRecursive())
 		{
-			ISolverFactor sf = f.getSolver();
 			if (sf instanceof SumProductTableFactor)
 			{
 				SumProductTableFactor tf = (SumProductTableFactor)sf;
@@ -151,7 +151,8 @@ public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, IPart
 	@Override
 	public void iterate(int numIters)
 	{
-		VariableList vars = _model.getVariables();
+		final VariableList vars = _model.getVariables();
+		final SolverNodeMapping solvers = getSolverMapping();
 		
 		int iterationsBeforeResampling = 1;
 		for (int iterNum = 0; iterNum < numIters; iterNum++)
@@ -160,9 +161,11 @@ public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, IPart
 			{
 				for (Variable v : vars)
 				{
-					ISolverVariable vs = v.getSolver();
+					ISolverVariable vs = solvers.getSolverVariable(v);
 					if (vs instanceof ParticleBPReal)
+					{
 						((ParticleBPReal)vs).resample();
+					}
 				}
 				iterationsBeforeResampling = _numIterationsBetweenResampling;
 			}
@@ -195,16 +198,17 @@ public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, IPart
 		double beta = 1/T;
 
 		// All real factors have temperatures
+		SolverNodeMapping solvers = getSolverMapping();
 		for (Factor f : _model.getNonGraphFactors())
 		{
-			ISolverFactor fs = f.getSolver();
+			ISolverFactor fs = solvers.getSolverFactor(f);
 			if (fs instanceof ParticleBPRealFactor)
 				((ParticleBPRealFactor)fs).setBeta(beta);
 		}
 		
 		for (Variable v : _model.getVariables())
 		{
-			ISolverVariable vs = v.getSolver();
+			ISolverVariable vs = solvers.getSolverVariable(v);
 			if (vs instanceof ParticleBPReal)
 				((ParticleBPReal)vs).setBeta(beta);
 		}

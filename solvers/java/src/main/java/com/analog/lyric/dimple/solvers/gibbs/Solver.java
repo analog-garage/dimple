@@ -21,6 +21,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.core.SolverBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 
 public class Solver extends SolverBase<GibbsSolverGraph>
@@ -81,9 +82,9 @@ public class Solver extends SolverBase<GibbsSolverGraph>
 	
 	@SuppressWarnings("deprecation")
 	@Override
-	public final SFactorGraph createFactorGraph(FactorGraph graph)
+	public final SFactorGraph createFactorGraph(FactorGraph graph, @Nullable ISolverFactorGraph parent)
 	{
-		return new SFactorGraph(graph, _factorGraphConfig);
+		return new SFactorGraph(graph, parent, _factorGraphConfig);
 	}
 
 }

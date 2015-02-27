@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.sampledfactor;
 
+import static java.util.Objects.*;
+
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -24,10 +26,15 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SEdgeWithMessages;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsRealJoint;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 /**
  * @author jeff
@@ -72,33 +79,45 @@ public class SampledFactor extends SFactorBase
 		super(factor, parent);
 				
 		int numSiblings = factor.getSiblingCount();
-		_messageTranslator = new MessageTranslatorBase[numSiblings];
+		
 		_privateVariables = new Variable[numSiblings];
-
 		for (int edge = 0; edge < numSiblings; edge++)
 		{
 			// Create a private copy of each sibling variable to use in the message graph
-			Variable var = factor.getSibling(edge);
-			_privateVariables[edge] = var.clone();
-
-			// Create a message translator based on the variable type
-			// TODO: Allow alternative message representations for continuous variables
-			if (var.getDomain().isDiscrete())
-				_messageTranslator[edge] = new DiscreteMessageTranslator(factor.getPort(edge), _privateVariables[edge]);
-			else if (var.getDomain().isReal())
-				_messageTranslator[edge] = new NormalMessageTranslator(factor.getPort(edge), _privateVariables[edge]);
-			else // Complex or RealJoint
-				_messageTranslator[edge] = new MultivariateNormalMessageTranslator(factor.getPort(edge), _privateVariables[edge]);
-			
-			// Start with uniform input
-			_messageTranslator[edge].setVariableInputUniform();
+			_privateVariables[edge] = factor.getSibling(edge).clone();
 		}
 		
 		// Create a private message graph on which the Gibbs sampler will be run
 		_messageGraph = new FactorGraph();
-		_messageGraph.setSolverFactory(new GibbsSolver());
+		GibbsSolverGraph sgraph = requireNonNull(_messageGraph.setSolverFactory(new GibbsSolver()));
 		_messageGraph.setEventAndOptionParent(this); // inherit options from this solver graph
 		_messageGraph.addFactor(factor.getFactorFunction(), _privateVariables);
+
+		_messageTranslator = new MessageTranslatorBase[numSiblings];
+		for (int edge = 0; edge < numSiblings; edge++)
+		{
+			final ISolverVariable svar = sgraph.getSolverVariable(_privateVariables[edge]);
+			
+			// Create a message translator based on the variable type
+			// TODO: Allow alternative message representations for continuous variables
+			if (svar instanceof GibbsDiscrete)
+			{
+				_messageTranslator[edge] = new DiscreteMessageTranslator(this, edge, (GibbsDiscrete)svar);
+			}
+			else if (svar instanceof GibbsReal)
+			{
+				_messageTranslator[edge] = new NormalMessageTranslator(this, edge, (GibbsReal)svar);
+			}
+			else if (svar instanceof GibbsRealJoint)
+			{
+				// Complex or RealJoint
+				_messageTranslator[edge] =
+					new MultivariateNormalMessageTranslator(this, edge, (GibbsRealJoint)svar);
+			}
+			
+			// Start with uniform input
+			_messageTranslator[edge].setVariableInputUniform();
+		}
 	}
 	
 	@Override

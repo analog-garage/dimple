@@ -115,6 +115,9 @@ public interface INode  extends INameable, IModelEventSource
 	public void updateEdge(int outPortNum);
 	public void updateEdge(INode other);
 	
+	/**
+	 * Get the solver object currently associated with this model node, if any.
+	 */
 	public @Nullable ISolverNode getSolver();
 	
 	public @Nullable FactorGraph getParentGraph();

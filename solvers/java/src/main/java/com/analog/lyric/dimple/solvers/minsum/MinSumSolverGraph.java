@@ -65,9 +65,9 @@ public class MinSumSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVar
 {
 	protected double _damping = 0;
 
-	public MinSumSolverGraph(FactorGraph factorGraph)
+	public MinSumSolverGraph(FactorGraph factorGraph, @Nullable ISolverFactorGraph parent)
 	{
-		super(factorGraph);
+		super(factorGraph, parent);
 		setMultithreadingManager(new MultiThreadingManager(getModelObject()));
 	}
 	
@@ -83,10 +83,9 @@ public class MinSumSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVar
 		_damping = getOptionOrDefault(BPOptions.damping);
 		super.initialize();
 		UpdateCostOptimizer optimizer = new UpdateCostOptimizer(_optimizedUpdateAdapter);
-		optimizer.optimize(_model);
-		for (Factor f : getModelObject().getFactors())
+		optimizer.optimize(this);
+		for (ISolverFactor sf : getSolverFactorsRecursive())
 		{
-			ISolverFactor sf = f.getSolver();
 			if (sf instanceof MinSumTableFactor)
 			{
 				MinSumTableFactor tf = (MinSumTableFactor)sf;
@@ -150,7 +149,7 @@ public class MinSumSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVar
 	@Override
 	public ISolverFactorGraph createSubgraph(FactorGraph subgraph)
 	{
-		return new SFactorGraph(subgraph);
+		return new SFactorGraph(subgraph, this);
 	}
 	
 	// For backward compatibility only; preferable to use "Xor" factor function, which can
@@ -282,12 +281,18 @@ public class MinSumSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVar
 			result.put(CostType.EXECUTION_TIME, executionTime);
 			return result;
 		}
+		
+		@Override
+		public ISolverFactorGraph getSolverGraph()
+		{
+			return _minSumSolverGraph;
+		}
 
 		@Override
-		public int getWorkers(FactorGraph factorGraph)
+		public int getWorkers(ISolverFactorGraph sfactorGraph)
 		{
-			MinSumSolverGraph sfg = (MinSumSolverGraph) factorGraph.getSolver();
-			if (sfg != null && sfg.useMultithreading())
+			MinSumSolverGraph sfg = (MinSumSolverGraph) sfactorGraph;
+			if (sfg.useMultithreading())
 			{
 				return sfg.getMultithreadingManager().getNumWorkers();
 			}

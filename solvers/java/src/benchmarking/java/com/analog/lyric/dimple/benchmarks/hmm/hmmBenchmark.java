@@ -24,6 +24,11 @@ import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.options.BPOptions;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
+import com.analog.lyric.dimple.solvers.minsum.MinSumSolver;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolver;
 
 @SuppressWarnings({"null", "deprecation"})
 public class hmmBenchmark
@@ -34,10 +39,8 @@ public class hmmBenchmark
 	public boolean hmmGibbs100x4x4()
 	{
 		FactorGraph fg = new FactorGraph();
-		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.gibbs.Solver());
-		com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph solver = (com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph) fg
-				.getSolver();
-		solver.setNumSamples(600000); // Aiming for ~1s execution time
+		fg.setSolverFactory(new GibbsSolver());
+		fg.setOption(GibbsOptions.numSamples, 600000); // Aiming for ~1s execution time
 
 		int stages = 100;
 		int stateDomainOrder = 4;
@@ -50,10 +53,8 @@ public class hmmBenchmark
 	public boolean hmmGibbs100000x4x4()
 	{
 		FactorGraph fg = new FactorGraph();
-		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.gibbs.Solver());
-		com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph solver = (com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph) fg
-				.getSolver();
-		solver.setNumSamples(300); // Aiming for ~1s execution time
+		fg.setSolverFactory(new GibbsSolver());
+		fg.setOption(GibbsOptions.numSamples, 300); // Aiming for ~1s execution time
 
 		int stages = 100000;
 		int stateDomainOrder = 4;
@@ -66,10 +67,8 @@ public class hmmBenchmark
 	public boolean hmmGibbs1000x1000x1000()
 	{
 		FactorGraph fg = new FactorGraph();
-		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.gibbs.Solver());
-		com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph solver = (com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph) fg
-				.getSolver();
-		solver.setNumSamples(1500); // Aiming for ~1s execution time
+		fg.setSolverFactory(new GibbsSolver());
+		fg.setOption(GibbsOptions.numSamples, 1500); // Aiming for ~1s execution time
 
 		int stages = 1000;
 		int stateDomainOrder = 1000;
@@ -82,8 +81,8 @@ public class hmmBenchmark
 	public boolean hmmSumProduct100x4x4()
 	{
 		FactorGraph fg = new FactorGraph();
-		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
-		fg.getSolver().setNumIterations(1200); // Aiming for ~1s execution time
+		fg.setSolverFactory(new SumProductSolver());
+		fg.setOption(BPOptions.iterations, 1200); // Aiming for ~1s execution time
 
 		int stages = 100;
 		int stateDomainOrder = 4;
@@ -96,8 +95,8 @@ public class hmmBenchmark
 	public boolean hmmSumProduct100000x4x4()
 	{
 		FactorGraph fg = new FactorGraph();
-		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
-		fg.getSolver().setNumIterations(240); // Aiming for ~1s execution time
+		fg.setSolverFactory(new SumProductSolver());
+		fg.setOption(BPOptions.iterations, 240); // Aiming for ~1s execution time
 
 		int stages = 100000;
 		int stateDomainOrder = 4;
@@ -110,8 +109,8 @@ public class hmmBenchmark
 	public boolean hmmSumProduct1000x1000x1000()
 	{
 		FactorGraph fg = new FactorGraph();
-		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
-		fg.getSolver().setNumIterations(3); // Aiming for ~1s execution time
+		fg.setSolverFactory(new SumProductSolver());
+		fg.setOption(BPOptions.iterations, 3); // Aiming for ~1s execution time
 
 		int stages = 1000;
 		int stateDomainOrder = 1000;
@@ -124,8 +123,8 @@ public class hmmBenchmark
 	public boolean hmmMinSum100x4x4()
 	{
 		FactorGraph fg = new FactorGraph();
-		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.minsum.Solver());
-		fg.getSolver().setNumIterations(6000); // Aiming for ~1s execution time
+		fg.setSolverFactory(new MinSumSolver());
+		fg.setOption(BPOptions.iterations, 6000); // Aiming for ~1s execution time
 
 		int stages = 100;
 		int stateDomainOrder = 4;
@@ -138,8 +137,8 @@ public class hmmBenchmark
 	public boolean hmmMinSum100000x4x4()
 	{
 		FactorGraph fg = new FactorGraph();
-		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.minsum.Solver());
-		fg.getSolver().setNumIterations(360); // Aiming for ~1s execution time
+		fg.setSolverFactory(new MinSumSolver());
+		fg.setOption(BPOptions.iterations, 360); // Aiming for ~1s execution time
 
 		int stages = 100000;
 		int stateDomainOrder = 4;
@@ -152,8 +151,8 @@ public class hmmBenchmark
 	public boolean hmmMinSum1000x1000x1000()
 	{
 		FactorGraph fg = new FactorGraph();
-		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.minsum.Solver());
-		fg.getSolver().setNumIterations(3); // Aiming for ~1s execution time
+		fg.setSolverFactory(new MinSumSolver());
+		fg.setOption(BPOptions.iterations, 3); // Aiming for ~1s execution time
 
 		int stages = 1000;
 		int stateDomainOrder = 1000;

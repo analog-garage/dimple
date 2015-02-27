@@ -28,11 +28,8 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.factorfunctions.Multiplexer;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
@@ -175,11 +172,11 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 		final ISampler[] conjugateSampler = _conjugateSampler = new ISampler[nEdges];
 		for (int port = 0; port < nEdges; port++)
 		{
-			INode var = _model.getSibling(port);
+			ISolverVariable var = getSibling(port);
 			int varPortNum = _model.getSiblingPortIndex(port);
-			if (var instanceof Real)
+			if (var instanceof GibbsReal)
 			{
-				GibbsReal svar = (GibbsReal)var.getSolver();
+				GibbsReal svar = (GibbsReal)var;
 				conjugateSampler[port] = svar.getConjugateSampler();
 				
 				if (conjugateSampler[port] != null)
@@ -191,9 +188,9 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 					svar.setInputMsg(varPortNum, msg);
 				}
 			}
-			else if (var instanceof RealJoint)
+			else if (var instanceof GibbsRealJoint)
 			{
-				GibbsRealJoint svar = (GibbsRealJoint)var.getSolver();
+				GibbsRealJoint svar = (GibbsRealJoint)var;
 				conjugateSampler[port] = svar.getConjugateSampler();
 
 				if (conjugateSampler[port] != null)

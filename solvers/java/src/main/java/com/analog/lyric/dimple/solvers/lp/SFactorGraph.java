@@ -16,7 +16,10 @@
 
 package com.analog.lyric.dimple.solvers.lp;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 /**
  * @deprecated Will be removed in future release. Use {@link LPSolverGraph} instead.
@@ -24,8 +27,8 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 @Deprecated
 public class SFactorGraph extends LPSolverGraph
 {
-	SFactorGraph(FactorGraph model)
+	SFactorGraph(FactorGraph model, @Nullable ISolverFactorGraph parent)
 	{
-		super(model);
+		super(model, parent);
 	}
 }

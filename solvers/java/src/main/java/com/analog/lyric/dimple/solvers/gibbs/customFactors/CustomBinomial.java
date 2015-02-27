@@ -125,7 +125,7 @@ public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFac
 		determineConstantsAndEdges();
 		
 		// Create a block initializer to initialize the neighboring variables
-		((GibbsSolverGraph)_model.getRootGraph().getSolver()).addBlockInitializer(new CustomBinomial.BlockInitializer());
+		((GibbsSolverGraph)getRootSolverGraph()).addBlockInitializer(new CustomBinomial.BlockInitializer());
 	}
 	
 	

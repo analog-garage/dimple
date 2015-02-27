@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.core;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
@@ -51,6 +52,13 @@ public abstract class SolverBase<SolverGraph extends ISolverFactorGraph>
 		return superclass != null ? superclass.hashCode() : super.hashCode();
 	}
 	
+	@Override
+	public SolverGraph createFactorGraph(FactorGraph graph)
+	{
+		return createFactorGraph(graph, null);
+	}
+	
+
 	/**
 	 * Subclasses can override this to return a class to be used for equality checks.
 	 * <p>

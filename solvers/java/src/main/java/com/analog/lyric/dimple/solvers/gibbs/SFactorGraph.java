@@ -21,6 +21,7 @@ import static java.util.Objects.*;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.options.IOptionHolder;
 
 /**
@@ -45,9 +46,10 @@ public class SFactorGraph extends GibbsSolverGraph
 		public double temperingHalfLifeInSamples = Double.NaN;
 	}
 
-	protected SFactorGraph(FactorGraph factorGraph, @Nullable SFactorGraph.Arguments arguments)
+	protected SFactorGraph(FactorGraph factorGraph, @Nullable ISolverFactorGraph parent,
+		@Nullable SFactorGraph.Arguments arguments)
 	{
-		super(factorGraph);
+		super(factorGraph, parent);
 		if (arguments != null)
 		{
 			if (arguments.numSamples > 0)

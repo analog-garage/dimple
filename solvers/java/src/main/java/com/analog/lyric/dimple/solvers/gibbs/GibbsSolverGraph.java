@@ -98,6 +98,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.math.DimpleRandomGenerator;
 
 /**
@@ -157,9 +158,9 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	 */
 	private int _deferDeterministicFactorUpdatesCounter = 0;
 
-	protected GibbsSolverGraph(FactorGraph factorGraph)
+	protected GibbsSolverGraph(FactorGraph factorGraph, @Nullable ISolverFactorGraph parent)
 	{
-		super(factorGraph);
+		super(factorGraph, parent);
 		_model.setSolverSpecificDefaultScheduler(new GibbsDefaultScheduler());	// Override the common default scheduler
 	}
 
@@ -197,7 +198,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	@Override
 	public ISolverFactorGraph createSubgraph(FactorGraph subgraph)
 	{
-		return new SFactorGraph(subgraph, null);
+		return new SFactorGraph(subgraph, this, null);
 	}
 	
 	// Note, customFactorExists is intentionally not overridden and therefore returns false
@@ -1031,11 +1032,13 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 			return ArrayUtil.EMPTY_DOUBLE_ARRAY;
 		}
 		
-		int numVariables = variableList.size();
-		double[] result = new double[numVariables];
+		final SolverNodeMapping solvers = getSolverMapping();
+		
+		final int numVariables = variableList.size();
+		final double[] result = new double[numVariables];
 		for (int i = 0; i < numVariables; i++)
 		{
-			ISolverVariable var = variableList.get(i).getSolver();
+			ISolverVariable var = solvers.getSolverVariable(variableList.get(i));
 			if (var instanceof GibbsDiscrete)
 				result[i] = (Double)((GibbsDiscrete)var).getCurrentSample();
 			else if (var instanceof GibbsReal)
@@ -1052,10 +1055,16 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 		if (variableList != null)
 		{
 			int numVariables = variableList.size();
-			if (numVariables != values.length) throw new DimpleException("Number of values must match the number of variables");
+			if (numVariables != values.length)
+			{
+				throw new DimpleException("Number of values must match the number of variables");
+			}
+			
+			final SolverNodeMapping solvers = getSolverMapping();
+			
 			for (int i = 0; i < numVariables; i++)
 			{
-				ISolverVariable var = variableList.get(i).getSolver();
+				ISolverVariable var = solvers.getSolverVariable(variableList.get(i));
 				if (var instanceof GibbsDiscrete)
 					((GibbsDiscrete)var).setAndHoldSampleValue(values[i]);
 				else if (var instanceof GibbsReal)
@@ -1070,10 +1079,11 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 		ArrayList<Variable> variableList = _model.getVariableGroup(variableGroupID);
 		if (variableList != null)
 		{
+			final SolverNodeMapping solvers = getSolverMapping();
 			int numVariables = variableList.size();
 			for (int i = 0; i < numVariables; i++)
 			{
-				ISolverVariable var = variableList.get(i).getSolver();
+				ISolverVariable var = solvers.getSolverVariable(variableList.get(i));
 				if (var instanceof GibbsDiscrete)
 					((GibbsDiscrete)var).holdSampleValue();
 				else if (var instanceof GibbsReal)
@@ -1088,14 +1098,15 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 		ArrayList<Variable> variableList = _model.getVariableGroup(variableGroupID);
 		if (variableList != null)
 		{
+			final SolverNodeMapping solvers = getSolverMapping();
 			int numVariables = variableList.size();
 			for (int i = 0; i < numVariables; i++)
 			{
-				ISolverVariable var = variableList.get(i).getSolver();
-				if (var instanceof GibbsDiscrete)
-					((GibbsDiscrete)var).releaseSampleValue();
-				else if (var instanceof GibbsReal)
-					((GibbsReal)var).releaseSampleValue();
+				ISolverVariable svar = solvers.getSolverVariable(variableList.get(i));
+				if (svar instanceof GibbsDiscrete)
+					((GibbsDiscrete)svar).releaseSampleValue();
+				else if (svar instanceof GibbsReal)
+					((GibbsReal)svar).releaseSampleValue();
 				else
 					throw new DimpleException("Invalid variable class");
 			}

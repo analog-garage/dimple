@@ -17,9 +17,11 @@
 package com.analog.lyric.dimple.solvers.minsum;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.core.SolverBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 public class MinSumSolver extends SolverBase<MinSumSolverGraph>
 {
@@ -46,8 +48,8 @@ public class MinSumSolver extends SolverBase<MinSumSolverGraph>
 	
 	@SuppressWarnings("deprecation")
 	@Override
-	public final SFactorGraph createFactorGraph(FactorGraph factorGraph)
+	public final SFactorGraph createFactorGraph(FactorGraph factorGraph, @Nullable ISolverFactorGraph parent)
 	{
-		return new SFactorGraph(factorGraph);
+		return new SFactorGraph(factorGraph, parent);
 	}
 }

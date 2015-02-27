@@ -21,7 +21,8 @@ function testPolynomial()
 
     fg = FactorGraph();
     fg.Solver = 'Gaussian';
-
+    fg.setOption('BPOptions.updateApproach', 'OPTIMIZED');
+    
     y = Complex();
     x = Complex();
 

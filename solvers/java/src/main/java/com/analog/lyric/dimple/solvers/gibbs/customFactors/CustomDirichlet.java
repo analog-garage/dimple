@@ -112,7 +112,7 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 		determineConstantsAndEdges();
 		
 		// Create a block initializer to initialize the neighboring variables
-		((GibbsSolverGraph)_model.getRootGraph().getSolver()).addBlockInitializer(new CustomDirichlet.BlockInitializer());
+		((GibbsSolverGraph)getRootSolverGraph()).addBlockInitializer(new CustomDirichlet.BlockInitializer());
 	}
 	
 	
@@ -184,7 +184,6 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 			int numOutputEdges = nEdges - _numParameterEdges;
 			if (numOutputEdges > 0)
 			{
-				List<? extends Variable> siblings = _model.getSiblings();
 				double[] value = new double[_dimension];
 				for (int edge = _numParameterEdges; edge < nEdges; edge++)
 				{
@@ -200,8 +199,8 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 						value[i] /= sum;												// Normalize
 
 					// Set the output variable value
-					GibbsRealJoint svar = ((GibbsRealJoint)((siblings.get(edge)).getSolver()));
-					requireNonNull(svar).setCurrentSample(value);
+					GibbsRealJoint svar = (GibbsRealJoint)getSibling(edge);
+					svar.setCurrentSample(value);
 				}
 			}
 		}

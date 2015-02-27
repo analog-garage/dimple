@@ -113,9 +113,9 @@ public class LPSolverGraph extends SFactorGraphBase<LPTableFactor, LPDiscrete, N
 	 * Construction
 	 */
 
-	LPSolverGraph(FactorGraph model)
+	LPSolverGraph(FactorGraph model, @Nullable ISolverFactorGraph parent)
 	{
-		super(model);
+		super(model, parent);
 		_varMap = new LinkedHashMap<Variable, LPDiscrete>(model.getVariableCount());
 		_factorMap = new LinkedHashMap<Factor, LPTableFactor>(model.getFactorCount());
 	}
@@ -290,7 +290,7 @@ public class LPSolverGraph extends SFactorGraphBase<LPTableFactor, LPDiscrete, N
 	@Override
 	public ISolverFactorGraph createSubgraph(FactorGraph subgraph)
 	{
-		return new LPSolverGraph(subgraph);
+		return new LPSolverGraph(subgraph, this);
 	}
 
 	/**

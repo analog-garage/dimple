@@ -49,7 +49,8 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
 
-public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFactor implements IRealConjugateFactor, MultinomialBlockProposal.ICustomMultinomial
+public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFactor
+	implements IRealConjugateFactor, MultinomialBlockProposal.ICustomMultinomial
 {
 	private @Nullable GibbsDiscrete[] _outputVariables;
 	private @Nullable GibbsDiscrete _NVariable;
@@ -209,7 +210,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 		}
 			
 		// Use the block sampler to initialize the neighboring variables
-		((GibbsSolverGraph)rootGraph.getSolver()).addBlockInitializer(blockSampler);
+		((GibbsSolverGraph)getRootSolverGraph()).addBlockInitializer(blockSampler);
 	}
 	
 	

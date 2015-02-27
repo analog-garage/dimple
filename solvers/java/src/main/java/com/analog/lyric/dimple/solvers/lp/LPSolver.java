@@ -17,9 +17,11 @@
 package com.analog.lyric.dimple.solvers.lp;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.core.SolverBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.util.misc.Matlab;
 
 /**
@@ -61,9 +63,9 @@ public class LPSolver extends SolverBase<LPSolverGraph>
 	
 	@SuppressWarnings("deprecation")
 	@Override
-	public final SFactorGraph createFactorGraph(FactorGraph factorGraph)
+	public final SFactorGraph createFactorGraph(FactorGraph factorGraph, @Nullable ISolverFactorGraph parent)
 	{
-		return new SFactorGraph(factorGraph);
+		return new SFactorGraph(factorGraph, parent);
 	}
 	
 	/*-------------------

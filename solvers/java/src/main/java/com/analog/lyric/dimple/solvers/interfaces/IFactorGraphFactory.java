@@ -16,9 +16,28 @@
 
 package com.analog.lyric.dimple.solvers.interfaces;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 
 public interface IFactorGraphFactory<SolverGraph extends ISolverFactorGraph>
 {
-	public SolverGraph createFactorGraph(FactorGraph graph) ;
+	/**
+	 * Creates new root solver graph for {@code graph}
+	 * <p>
+	 * This simply calls {@link #createFactorGraph(FactorGraph, ISolverFactorGraph)} with null parent.
+	 * <p>
+	 * @param graph
+	 * @since 0.08
+	 */
+	public SolverGraph createFactorGraph(FactorGraph graph);
+	
+	/**
+	 * Creates new solver graph for {@code graph}
+	 * <p>
+	 * @param graph
+	 * @param parent is the parent of the new solver graph. This should be a solver for {@code graph}.
+	 * @since 0.08
+	 */
+	public SolverGraph createFactorGraph(FactorGraph graph, @Nullable ISolverFactorGraph parent);
 }

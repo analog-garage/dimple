@@ -79,6 +79,9 @@ public interface ISolverVariable extends ISolverNode
     @Override
     public ISolverFactor getSibling(int edge);
     
+    @Override
+    public ISolverFactorGraph getParentGraph();
+    
     public void createNonEdgeSpecificState();
     
     /**

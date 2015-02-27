@@ -45,9 +45,9 @@ public abstract class ProxySolverFactorGraph<SFactor extends ISolverFactor, SVar
 	/**
 	 * @param modelFactorGraph
 	 */
-	protected ProxySolverFactorGraph(FactorGraph modelFactorGraph)
+	protected ProxySolverFactorGraph(FactorGraph modelFactorGraph, @Nullable ISolverFactorGraph parent)
 	{
-		super(modelFactorGraph);
+		super(modelFactorGraph, parent);
 	}
 
 	/*---------------------

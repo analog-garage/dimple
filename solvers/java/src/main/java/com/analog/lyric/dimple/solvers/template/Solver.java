@@ -16,7 +16,11 @@
 
 package com.analog.lyric.dimple.solvers.template;
 
+import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.core.SolverBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 /**
  * The solver is essentially a factory responsible for creating FactorGraph solver objects.
@@ -28,9 +32,9 @@ public class Solver extends SolverBase<SFactorGraph>
 	 * This method creates a Solver FactorGraph object given the corresponding model object.
 	 */
 	@Override
-	public SFactorGraph createFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph)
+	public SFactorGraph createFactorGraph(FactorGraph factorGraph, @Nullable ISolverFactorGraph parent)
 	{
-		return new SFactorGraph(factorGraph);
+		return new SFactorGraph(factorGraph, parent);
 	}
 	
 	
