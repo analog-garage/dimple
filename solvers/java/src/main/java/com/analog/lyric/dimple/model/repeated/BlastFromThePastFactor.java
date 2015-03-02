@@ -56,7 +56,6 @@ public class BlastFromThePastFactor extends Factor
 			final ISolverBlastFromThePastFactor sfactor =
 				requireNonNull((ISolverBlastFromThePastFactor) factorGraph.getSolverFactor(this, true));
 			_solverFactor = sfactor;
-			sfactor.createMessages(_variableConnectedToBlast, _portForOtherVariable);
 		}
 		else
 		{

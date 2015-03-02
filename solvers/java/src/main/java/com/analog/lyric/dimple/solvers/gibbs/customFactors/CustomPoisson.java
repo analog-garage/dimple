@@ -118,6 +118,7 @@ public class CustomPoisson extends GibbsRealFactor implements IRealConjugateFact
 		FactorFunction factorFunction = _model.getFactorFunction();
 		Poisson specificFactorFunction = (Poisson)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 
+		final int prevLambdaParameterEdge = _lambdaParameterEdge;
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
 		_lambdaParameterEdge = NO_PORT;
@@ -154,14 +155,10 @@ public class CustomPoisson extends GibbsRealFactor implements IRealConjugateFact
 				_outputVariable = (GibbsDiscrete)getSibling(outputEdge);
 			}
 		}
+		
+		if (_lambdaParameterEdge != prevLambdaParameterEdge)
+		{
+			removeSiblingEdgeState();
+		}
 	}
-	
-	
-	@Override
-	public void createMessages()
-	{
-		super.createMessages();
-		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
-	}
-	
 }

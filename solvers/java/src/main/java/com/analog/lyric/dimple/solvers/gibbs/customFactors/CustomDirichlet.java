@@ -120,6 +120,7 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 		FactorFunction factorFunction = _model.getFactorFunction();
 		Dirichlet specificFactorFunction = (Dirichlet)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 
+		final int prevNumParameterEdges = _numParameterEdges;
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
 		if (specificFactorFunction.hasConstantParameters())
@@ -151,14 +152,11 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 				_dimension = requireNonNull(_alphaVariable).getDimension();
 			}
 		}
-	}
-	
-	
-	@Override
-	public void createMessages()
-	{
-		super.createMessages();
-		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		
+		if (_numParameterEdges != prevNumParameterEdges)
+		{
+			removeSiblingEdgeState();
+		}
 	}
 	
 	private double[] minusOne(double[] in)

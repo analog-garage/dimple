@@ -148,7 +148,7 @@ public class CustomNegativeExpGamma extends GibbsRealFactor implements IRealConj
 		
 		// Determine what parameters are constants or edges, and save the state
 		determineConstantsAndEdges();
-				}
+	}
 	
 	
 	private void determineConstantsAndEdges()
@@ -159,6 +159,8 @@ public class CustomNegativeExpGamma extends GibbsRealFactor implements IRealConj
 		boolean hasFactorFunctionConstants = factorFunction.hasConstants();
 		boolean hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 
+		final int prevBetaParameterPort = _betaParameterPort;
+		final int prevNumParameterEdges = _numParameterEdges;
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
 		List<? extends Variable> siblings = _model.getSiblings();
@@ -242,14 +244,11 @@ public class CustomNegativeExpGamma extends GibbsRealFactor implements IRealConj
 			else
 				outputVariables[index++] = (GibbsReal)solvers.getSolverVariable(outputVariable);
 		}
+		
+		if (_numParameterEdges != prevNumParameterEdges ||
+			_betaParameterPort != prevBetaParameterPort)
+		{
+			removeSiblingEdgeState();
+		}
 	}
-	
-	
-	@Override
-	public void createMessages()
-	{
-		super.createMessages();
-		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
-	}
-	
 }

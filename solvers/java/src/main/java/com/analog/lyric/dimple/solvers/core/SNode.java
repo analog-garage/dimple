@@ -123,6 +123,37 @@ public abstract class SNode<MNode extends Node> extends SolverEventSource implem
 			resetEdgeMessages(i);
 	}
 	
+	/**
+	 * Remove solver edge state for specified sibling of this node.
+	 * 
+	 * @param edge is a non-negative index less than {@link #getSiblingCount()}.
+	 * @since 0.08
+	 */
+	public void removeSiblingEdgeState(int edge)
+	{
+		Node node = _model;
+		if (edge < node.getSiblingCount())
+		{
+			requireParentGraph().removeSolverEdge(node.getSiblingEdgeState(edge));
+		}
+	}
+	
+	/**
+	 * Remove solver edge state for all siblings of this node.
+	 * 
+	 * @since 0.08
+	 */
+	public void removeSiblingEdgeState()
+	{
+		final Node node = _model;
+		final ISolverFactorGraph parent = requireParentGraph();
+		
+		for (int edge = 0, n = node.getSiblingCount(); edge < n; ++edge)
+		{
+			parent.removeSolverEdge(node.getSiblingEdgeState(edge));
+		}
+	}
+
 	@Override
 	public void setInputMsg(int portIndex, Object obj) {
 		throw new DimpleException("Not supported by " + this);

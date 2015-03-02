@@ -173,7 +173,6 @@ public class LPSolverTestCase extends DimpleTestBase
 			assertSame(solver, sfactor.getParentGraph());
 			
 			// Test do nothing methods
-			sfactor.createMessages();
 			sfactor.updateEdge(0);
 			sfactor.resetEdgeMessages(0);
 			sfactor.moveMessages(sfactor, 0 , 1);

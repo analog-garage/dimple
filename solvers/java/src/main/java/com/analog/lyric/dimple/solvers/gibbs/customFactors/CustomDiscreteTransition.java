@@ -136,6 +136,7 @@ public class CustomDiscreteTransition extends GibbsRealFactor implements IRealJo
 		FactorFunction factorFunction = _model.getFactorFunction();
 		_factorFunction = factorFunction;
 
+		final int prevStartingParameterEdge = _startingParameterEdge;
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
 		_yPort = NO_PORT;
@@ -172,13 +173,9 @@ public class CustomDiscreteTransition extends GibbsRealFactor implements IRealJo
 			_startingParameterEdge++;
 		}
 		
-	}
-	
-	
-	@Override
-	public void createMessages()
-	{
-		super.createMessages();
-		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		if (_startingParameterEdge != prevStartingParameterEdge)
+		{
+			removeSiblingEdgeState();
+		}
 	}
 }

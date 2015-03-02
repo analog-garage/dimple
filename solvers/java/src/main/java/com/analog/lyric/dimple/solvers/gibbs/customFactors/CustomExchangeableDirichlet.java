@@ -115,6 +115,7 @@ public class CustomExchangeableDirichlet extends GibbsRealFactor implements IRea
 		ExchangeableDirichlet specificFactorFunction = (ExchangeableDirichlet)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 		_dimension = specificFactorFunction.getDimension();
 
+		final int prevNumParameterEdges = _numParameterEdges;
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
 		if (specificFactorFunction.hasConstantParameters())
@@ -140,13 +141,10 @@ public class CustomExchangeableDirichlet extends GibbsRealFactor implements IRea
 				_alphaVariable = (GibbsReal)getSibling(PARAMETER_INDEX);
 			}
 		}
-	}
-	
-	
-	@Override
-	public void createMessages()
-	{
-		super.createMessages();
-		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		
+		if (_numParameterEdges != prevNumParameterEdges)
+		{
+			removeSiblingEdgeState();
+		}
 	}
 }

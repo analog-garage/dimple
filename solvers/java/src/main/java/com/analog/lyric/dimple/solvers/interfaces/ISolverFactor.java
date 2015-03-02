@@ -41,11 +41,6 @@ public interface ISolverFactor extends ISolverNode
 	
 	public @Nullable ISolverEdge createEdge(FactorGraphEdgeState edge);
 	
-	//This method is called on a solver factor when it is first created.
-	//This method should create messages to and from variables.
-	@Deprecated
-	public abstract void createMessages();
-	
 	//In order to support repeated graphs, this method must be implemented.
 	//SFactorBase implements this by calling move messages for every port on both
 	//the factor and the connected variable.

@@ -259,6 +259,36 @@ public abstract class SFactorGraphBase
 	}
 
 	@Override
+	public final void removeSolverEdge(int edgeIndex)
+	{
+		final ExtendedArrayList<?> edges = _edges;
+		if (edges != null)
+		{
+			edges.set(edgeIndex, null);
+		}
+	}
+	
+	@Override
+	public void removeSolverEdge(FactorGraphEdgeState edge)
+	{
+		removeSolverEdge(edge.edgeIndexInParent(_model));
+
+		if (!edge.isLocal())
+		{
+			final SolverNodeMapping solvers = getSolverMapping();
+			FactorGraph factorParent = edge.getFactorParent(_model);
+			if (factorParent != _model)
+			{
+				solvers.getSolverGraph(factorParent).removeSolverEdge(edge.factorEdgeIndex());
+			}
+			else
+			{
+				solvers.getSolverGraph(edge.getVariableParent(_model)).removeSolverEdge(edge.variableEdgeIndex());
+			}
+		}
+	}
+	
+	@Override
 	public void removeSolverFactor(ISolverFactor sfactor)
 	{
 		removeSolverNode(sfactor, _factors);
@@ -1189,7 +1219,6 @@ public abstract class SFactorGraphBase
 				{
 					sfactor = this.createFactor(factor);
 					factors.set(index, sfactor);
-					sfactor.createMessages();
 				}
 				if (this == factor.requireParentGraph().getSolver())
 				{

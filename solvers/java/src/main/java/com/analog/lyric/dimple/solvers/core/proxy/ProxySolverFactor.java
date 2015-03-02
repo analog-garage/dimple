@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.core.proxy;
 
-import java.util.Objects;
-
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -145,26 +143,6 @@ public abstract class ProxySolverFactor<Delegate extends ISolverFactor>
 	public Object getBelief()
 	{
 		return requireDelegate("getBelief").getBelief();
-	}
-
-	@Override
-	public void createMessages()
-	{
-		ISolverFactor delegate = getDelegate();
-		if (delegate != null)
-		{
-			delegate.createMessages();
-		}
-	}
-
-	@Override
-	public void moveMessages(ISolverNode other)
-	{
-		if (other instanceof IProxySolverNode)
-		{
-			other = Objects.requireNonNull(((IProxySolverNode<?>)other).getDelegate());
-		}
-		requireDelegate("moveMessages").moveMessages(other);
 	}
 
 	@Override

@@ -62,11 +62,6 @@ public abstract class SFactorBase extends SNode<Factor> implements ISolverFactor
 	 */
 
 	@Override
-	public void createMessages()
-	{
-	}
-	
-	@Override
 	public ISolverFactorGraph getContainingSolverGraph()
 	{
 		return _parent;

@@ -46,7 +46,6 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IDiscreteDirectSam
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IDiscreteSamplerClient;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IGenericSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IMCMCSampler;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.Internal;
 import com.google.common.primitives.Doubles;
@@ -905,13 +904,6 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		_bestSampleIndex = -1;
 	}
 	
-	// TODO move to ISolverVariable
-	@Override
-	public Object[] createMessages(ISolverFactor factor)
-	{
-		return new Object []{ null ,_currentSample};
-	}
-
 	public DiscreteEnergyMessage createDefaultMessage()
 	{
 		return new DiscreteEnergyMessage(_model.getDiscreteDomain().size());

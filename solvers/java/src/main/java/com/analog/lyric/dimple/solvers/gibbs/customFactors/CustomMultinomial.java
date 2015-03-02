@@ -201,6 +201,7 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 		FactorFunction factorFunction = _model.getFactorFunction();
 		Multinomial specificFactorFunction = (Multinomial)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 
+		final int prevAlphaParameterEdge = _alphaParameterEdge;
 		
 		// Pre-determine whether or not the parameters are constant
 		List<? extends Variable> siblings = _model.getSiblings();
@@ -283,14 +284,9 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 			}
 		}
 
+		if (_alphaParameterEdge != prevAlphaParameterEdge)
+		{
+			removeSiblingEdgeState();
+		}
 	}
-	
-	
-	@Override
-	public void createMessages()
-	{
-		super.createMessages();
-		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
-	}
-	
 }

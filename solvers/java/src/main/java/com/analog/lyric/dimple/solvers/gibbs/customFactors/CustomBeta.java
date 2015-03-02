@@ -117,6 +117,7 @@ public class CustomBeta extends GibbsRealFactor implements IRealConjugateFactor
 		Beta specificFactorFunction = (Beta)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 
+		final int prevNumParameterEdges = _numParameterEdges;
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
 		_hasConstantAlpha = false;
@@ -158,14 +159,10 @@ public class CustomBeta extends GibbsRealFactor implements IRealConjugateFactor
 				_numParameterEdges++;
 			}
 		}
+		
+		if (_numParameterEdges != prevNumParameterEdges)
+		{
+			removeSiblingEdgeState();
+		}
 	}
-	
-	
-	@Override
-	public void createMessages()
-	{
-		super.createMessages();
-		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
-	}
-	
 }

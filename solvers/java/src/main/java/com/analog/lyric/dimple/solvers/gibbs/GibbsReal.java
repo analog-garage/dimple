@@ -1055,13 +1055,6 @@ public class GibbsReal extends SRealVariableBase
 
 	// TODO move to ISolverVariable
 	@Override
-	public Object[] createMessages(ISolverFactor factor)
-	{
-		return new Object[] {null,_currentSample};
-	}
-	
-	// TODO move to ISolverVariable
-	@Override
 	public void createNonEdgeSpecificState()
 	{
 		_currentSample.reset();

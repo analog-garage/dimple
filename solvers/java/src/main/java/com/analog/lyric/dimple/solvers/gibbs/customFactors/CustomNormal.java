@@ -192,6 +192,8 @@ public class CustomNormal extends GibbsRealFactor implements IRealConjugateFacto
 		boolean hasFactorFunctionConstants = factorFunction.hasConstants();
 		boolean hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 
+		final int prevNumParameterEdges = _numParameterEdges;
+		final int prevPrecisionParameterPort = _precisionParameterPort;
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
 		List<? extends Variable> siblings = _model.getSiblings();
@@ -280,14 +282,12 @@ public class CustomNormal extends GibbsRealFactor implements IRealConjugateFacto
 			else
 				outputVariables[index++] = (GibbsReal)solvers.getSolverVariable(outputVariable);
 		}
+		
+		if (_precisionParameterPort != prevPrecisionParameterPort ||
+			_numParameterEdges != prevNumParameterEdges)
+		{
+			// If anything changes, blow away the existing edge state.
+			removeSiblingEdgeState();
+		}
 	}
-	
-	
-	@Override
-	public void createMessages()
-	{
-		super.createMessages();
-		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
-	}
-	
 }

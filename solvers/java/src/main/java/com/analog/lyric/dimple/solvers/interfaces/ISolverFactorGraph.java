@@ -97,6 +97,29 @@ public interface ISolverFactorGraph	extends ISolverNode
 	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor factor);
 
 	/**
+	 * Removes solver state object with given edge index from this graph.
+	 * <p>
+	 * This only removes the state entry for this graph; i.e., if this is a boundary edge the corresponding
+	 * entry in the other solver graph will not be removed. This is only intended to be used in implementing
+	 * {@link #removeSolverEdge(FactorGraphEdgeState)}.
+	 * <p>
+	 * @param edgeIndex
+	 * @since 0.08
+	 * @category internal
+	 */
+	@Internal
+	public void removeSolverEdge(int edgeIndex);
+	
+	/**
+	 * Removes solver state object for given edge in its solver graph(s).
+	 * <p>
+	 * @since 0.08
+	 * @category internal
+	 */
+	@Internal
+	public void removeSolverEdge(FactorGraphEdgeState edge);
+	
+	/**
 	 * Removes solver factor from its parent graph.
 	 * <p>
 	 * @param factor must have this object as its {@linkplain ISolverNode#getParentGraph() parent}.

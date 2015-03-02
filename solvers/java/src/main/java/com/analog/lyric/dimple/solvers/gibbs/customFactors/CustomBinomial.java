@@ -133,6 +133,7 @@ public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFac
 		FactorFunction factorFunction = _model.getFactorFunction();
 		Binomial specificFactorFunction = (Binomial)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 
+		final int prevProbabilityParameterEdge = _probabilityParameterEdge;
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
 		_hasConstantNParameter = false;
@@ -187,14 +188,11 @@ public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFac
 				_outputVariable = (GibbsDiscrete)getSibling(outputEdge);
 			}
 		}
-	}
-	
-	
-	@Override
-	public void createMessages()
-	{
-		super.createMessages();
-		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		
+		if (_probabilityParameterEdge != prevProbabilityParameterEdge)
+		{
+			removeSiblingEdgeState();
+		}
 	}
 	
 	public class BlockInitializer implements IBlockInitializer

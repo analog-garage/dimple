@@ -152,6 +152,8 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends Gibb
 	
 	private void determineConstantsAndEdges()
 	{
+		final int prevStartingParameterEdge = _startingParameterEdge;
+		
 		// Get the factor function and related state
 		FactorFunction factorFunction = _model.getFactorFunction();
 		FactorFunction containedFactorFunction = factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
@@ -250,13 +252,10 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends Gibb
 				}
 			}
 		}
-	}
-	
-	
-	@Override
-	public void createMessages()
-	{
-		super.createMessages();
-		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		
+		if (_startingParameterEdge != prevStartingParameterEdge)
+		{
+			removeSiblingEdgeState();
+		}
 	}
 }

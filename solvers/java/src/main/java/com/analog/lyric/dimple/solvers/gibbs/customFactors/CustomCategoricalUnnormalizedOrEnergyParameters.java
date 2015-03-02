@@ -136,6 +136,8 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends GibbsRealFa
 	
 	private void determineConstantsAndEdges()
 	{
+		final int prevNumParameterEdges = _numParameterEdges;
+		
 		// Get the factor function and related state
 		FactorFunction factorFunction = _model.getFactorFunction();
 		FactorFunction containedFactorFunction = factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
@@ -190,7 +192,7 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends GibbsRealFa
 				{
 					int outputValue = FactorFunctionUtilities.toInteger(constantValues[i]);
 					constantOutputCounts[outputValue]++;	// Histogram among constant outputs
-	}
+				}
 			}
 		}
 	
@@ -217,13 +219,10 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends GibbsRealFa
 			else
 				outputVariables[index++] = (GibbsDiscrete)outputVariable.getSolver();
 		}
-	}
-	
-	
-	@Override
-	public void createMessages()
-	{
-		super.createMessages();
-		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		
+		if (_numParameterEdges != prevNumParameterEdges)
+		{
+			removeSiblingEdgeState();
+		}
 	}
 }

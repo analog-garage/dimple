@@ -132,6 +132,7 @@ public class CustomCategorical extends GibbsRealFactor implements IRealJointConj
 		Categorical specificFactorFunction = (Categorical)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 		boolean hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 
+		final int prevNumParameterEdges = _numParameterEdges;
 		
 		// Pre-determine whether or not the parameters are constant
 		List<? extends Variable> siblings = _model.getSiblings();
@@ -199,14 +200,10 @@ public class CustomCategorical extends GibbsRealFactor implements IRealJointConj
 			else
 				outputVariables[index++] = (GibbsDiscrete)outputVariable.getSolver();
 		}
+		
+		if (_numParameterEdges != prevNumParameterEdges)
+		{
+			removeSiblingEdgeState();
+		}
 	}
-	
-	
-	@Override
-	public void createMessages()
-	{
-		super.createMessages();
-		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
-	}
-	
 }

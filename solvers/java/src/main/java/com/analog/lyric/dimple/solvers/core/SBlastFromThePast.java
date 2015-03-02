@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
-import static java.util.Objects.*;
-
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.events.SolverEventSource;
@@ -129,26 +127,6 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 	public double getBetheEntropy()
 	{
 		throw new DimpleException("Not implemented");
-	}
-
-	@Override
-	public void createMessages()
-	{
-		throw new DimpleException("not supported");
-	}
-
-	@Override
-	public void createMessages(Variable varConnectedToBlast, Port portForOtherVar)
-	{
-		final Factor factor = _factor;
-	    for (int index = 0, nVars = factor.getSiblingCount(); index < nVars; index++)
-	    {
-	    	ISolverVariable is = requireNonNull(factor.getSibling(index).getSolver());
-	    	is.createMessages(this);
-	    }
-	    
-	    assert(_portForOtherVar == portForOtherVar);
-	    assert(_portForBlastVar.node == varConnectedToBlast);
 	}
 
 	@Override

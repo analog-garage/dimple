@@ -232,14 +232,6 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 		}
 	}
 
-
-
-	@Override
-	public void createMessages()
-	{
-	}
-
-
 	@Override
 	public void initialize()
 	{

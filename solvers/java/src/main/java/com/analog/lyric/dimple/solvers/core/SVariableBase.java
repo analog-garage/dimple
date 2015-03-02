@@ -18,7 +18,6 @@ package com.analog.lyric.dimple.solvers.core;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.events.SolverEvent;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.Domain;
@@ -144,12 +143,6 @@ public abstract class SVariableBase<MVariable extends Variable> extends SNode<MV
 	/*-------------------------
 	 * ISolverVariable methods
 	 */
-	
-	@Override
-	public @Nullable Object[] createMessages(ISolverFactor factor)
-	{
-		return ArrayUtil.EMPTY_OBJECT_ARRAY;
-	}
 	
 	@Override
 	public Domain getDomain()

@@ -1268,13 +1268,6 @@ public class GibbsRealJoint extends SRealJointVariableBase
 
 	// TODO move to ISolverVariable
 	@Override
-	public Object[] createMessages(ISolverFactor factor)
-	{
-		return new Object[] {null,_currentSample};
-	}
-	
-	// TODO move to ISolverVariable
-	@Override
 	public void createNonEdgeSpecificState()
 	{
 		resetCurrentSample();

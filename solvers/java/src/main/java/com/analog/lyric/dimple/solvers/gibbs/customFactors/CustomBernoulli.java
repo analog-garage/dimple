@@ -139,6 +139,7 @@ public class CustomBernoulli extends GibbsRealFactor implements IRealConjugateFa
 		boolean hasFactorFunctionConstants = factorFunction.hasConstants();
 		boolean hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 
+		final int prevNumParameterEdges = _numParameterEdges;
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
 		List<? extends Variable> siblings = _model.getSiblings();
@@ -174,7 +175,7 @@ public class CustomBernoulli extends GibbsRealFactor implements IRealConjugateFa
 						_constantOutputZeroCount++;
 					else
 						_constantOutputOneCount++;
-	}
+				}
 			}
 		}
 
@@ -201,14 +202,10 @@ public class CustomBernoulli extends GibbsRealFactor implements IRealConjugateFa
 			else
 				outputVariables[index++] = (GibbsDiscrete)outputVariable.getSolver();
 		}
+		
+		if (_numParameterEdges != prevNumParameterEdges)
+		{
+			removeSiblingEdgeState();
+		}
 	}
-	
-	
-	@Override
-	public void createMessages()
-	{
-		super.createMessages();
-		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
-	}
-	
 }

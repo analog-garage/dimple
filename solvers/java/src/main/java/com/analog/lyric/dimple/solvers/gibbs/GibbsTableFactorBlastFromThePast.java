@@ -24,7 +24,6 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
-import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.IndexedValue;
@@ -50,12 +49,6 @@ public class GibbsTableFactorBlastFromThePast extends SBlastFromThePast implemen
 	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
 	{
 		return new GibbsDiscreteEdge((Discrete)edge.getVariable(getFactor().requireParentGraph()));
-	}
-	
-	@Override
-	public void createMessages(Variable var, Port port)
-	{
-		super.createMessages(var,port);
 	}
 	
 	@Override

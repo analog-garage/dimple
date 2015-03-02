@@ -217,6 +217,9 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 	
 	private void determineConstantsAndEdges()
 	{
+		final int prevAlphaParameterMinEdge = _alphaParameterMinEdge;
+		final int prevAlphaParameterMaxEdge = _alphaParameterMaxEdge;
+		
 		FactorFunction factorFunction = _model.getFactorFunction();
 		FactorFunction containedFactorFunction = factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 		_factorFunction = factorFunction;
@@ -336,13 +339,11 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 				outputVariables[i] = (GibbsDiscrete)solvers.getSolverVariable(siblings.get(outputEdge));
 			}
 		}
-	}
-	
-	
-	@Override
-	public void createMessages()
-	{
-		super.createMessages();
-		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		
+		if (_alphaParameterMaxEdge != prevAlphaParameterMaxEdge ||
+			_alphaParameterMinEdge != prevAlphaParameterMinEdge)
+		{
+			removeSiblingEdgeState();
+		}
 	}
 }

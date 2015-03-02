@@ -2290,15 +2290,6 @@ public class FactorGraph extends FactorBase
 				sv.createNonEdgeSpecificState();
 			}
 		}
-
-		for (Factor f : getNonGraphFactorsFlat() )
-		{
-			final ISolverFactor sf = f.getSolver();
-			if (sf != null)
-			{
-				sf.createMessages();
-			}
-		}
 	}
 
 	/**
