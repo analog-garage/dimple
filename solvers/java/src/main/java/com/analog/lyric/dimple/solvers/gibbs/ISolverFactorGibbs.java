@@ -28,8 +28,9 @@ import com.analog.lyric.util.misc.Internal;
 
 public interface ISolverFactorGibbs extends ISolverFactor, ISolverNodeGibbs
 {
+	@Override
 	@Internal
-	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge);
+	public @Nullable GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge);
 	
 	@Override
 	public Value getInputMsg(int portIndex);

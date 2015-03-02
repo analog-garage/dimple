@@ -16,6 +16,9 @@
 
 package com.analog.lyric.dimple.solvers.interfaces;
 
+import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 
 
@@ -35,6 +38,8 @@ public interface ISolverFactor extends ISolverNode
 	
 	@Override
 	public ISolverFactorGraph getParentGraph();
+	
+	public @Nullable ISolverEdge createEdge(FactorGraphEdgeState edge);
 	
 	//This method is called on a solver factor when it is first created.
 	//This method should create messages to and from variables.

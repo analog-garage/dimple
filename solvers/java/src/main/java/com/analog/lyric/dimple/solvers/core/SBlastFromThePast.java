@@ -22,11 +22,13 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.events.SolverEventSource;
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -87,6 +89,16 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 		return _parent.getSolverMapping();
 	}
 	
+	/*-----------------------
+	 * ISolverFactor methods
+	 */
+	
+	@Override
+	public @Nullable ISolverEdge createEdge(FactorGraphEdgeState edge)
+	{
+		return null;
+	}
+
 	/*---------------------------
 	 * SBlastFromThePast methods
 	 */

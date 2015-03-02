@@ -173,9 +173,23 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	@Override
 	public GibbsSolverEdge<?> createEdgeState(FactorGraphEdgeState edge)
 	{
-		ISolverFactorGibbs sfactor = getSolverFactor(edge.getFactor(_model), true);
+		ISolverFactorGibbs sfactor = getSolverFactor(edge.getFactor(_model));
 		
-		GibbsSolverEdge<?> sedge = requireNonNull(sfactor).createEdge(edge);
+		GibbsSolverEdge<?> sedge = sfactor.createEdge(edge);
+		
+		if (sedge == null)
+		{
+			final Variable var = edge.getVariable(_model);
+			
+			if (var instanceof Discrete)
+			{
+				sedge = new GibbsDiscreteEdge((Discrete)var);
+			}
+			else
+			{
+				sedge = GibbsNullEdge.INSTANCE;
+			}
+		}
 		
 		return sedge;
 	}

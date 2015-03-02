@@ -80,7 +80,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 	}
 
 	@Override
-	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	public @Nullable GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
 	{
 		final int portNum = edge.getFactorToVariableIndex();
 		
@@ -89,7 +89,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 			return new GibbsGammaEdge();
 		}
 		
-		return super.createEdge(edge);
+		return null;
 	}
 	
 	@SuppressWarnings("null")

@@ -20,9 +20,11 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.events.SolverEvent;
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -81,6 +83,12 @@ public abstract class SFactorBase extends SNode<Factor> implements ISolverFactor
 	public SolverNodeMapping getSolverMapping()
 	{
 		return _parent.getSolverMapping();
+	}
+	
+	@Override
+	public @Nullable ISolverEdge createEdge(FactorGraphEdgeState edge)
+	{
+		return null;
 	}
 	
 	public Factor getFactor()

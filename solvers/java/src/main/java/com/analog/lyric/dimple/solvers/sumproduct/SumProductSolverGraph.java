@@ -56,8 +56,6 @@ import com.analog.lyric.dimple.options.DimpleOptions;
 import com.analog.lyric.dimple.solvers.core.NoSolverEdge;
 import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
-import com.analog.lyric.dimple.solvers.core.SMultivariateNormalEdge;
-import com.analog.lyric.dimple.solvers.core.SNormalEdge;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
@@ -132,6 +130,15 @@ public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolve
 	@Override
 	public ISolverEdge createEdgeState(FactorGraphEdgeState edge)
 	{
+		final ISolverFactor sfactor = getSolverFactor(edge.getFactor(_model));
+
+		ISolverEdge sedge = sfactor.createEdge(edge);
+		
+		if (sedge != null)
+		{
+			return sedge;
+		}
+		
 		final Variable var = edge.getVariable(_model);
 		
 		if (var instanceof Discrete)
@@ -140,11 +147,11 @@ public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolve
 		}
 		else if (var instanceof Real)
 		{
-			return new SNormalEdge();
+			return new SumProductNormalEdge();
 		}
 		else if (var instanceof RealJoint)
 		{
-			return new SMultivariateNormalEdge((RealJoint)var);
+			return new SumProductMultivariateNormalEdge((RealJoint)var);
 		}
 		
 		return NoSolverEdge.INSTANCE;

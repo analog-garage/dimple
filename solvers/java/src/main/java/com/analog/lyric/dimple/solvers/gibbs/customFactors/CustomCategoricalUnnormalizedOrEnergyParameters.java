@@ -57,7 +57,7 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends GibbsRealFa
 	}
 	
 	@Override
-	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	public @Nullable GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
 	{
 		if (edge.getFactorToVariableIndex() < _numParameterEdges)
 		{

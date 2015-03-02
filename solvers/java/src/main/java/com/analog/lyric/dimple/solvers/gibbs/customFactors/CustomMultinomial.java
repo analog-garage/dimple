@@ -75,14 +75,14 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 	}
 
 	@Override
-	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	public @Nullable GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
 	{
 		if (edge.getFactorToVariableIndex() == _alphaParameterEdge)
 		{
 			return new GibbsDirichletEdge(_dimension);
 		}
 		
-		return super.createEdge(edge);
+		return null;
 	}
 	
 	@SuppressWarnings("null")

@@ -69,7 +69,7 @@ public class CustomLogNormal extends GibbsRealFactor implements IRealConjugateFa
 	}
 	
 	@Override
-	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	public @Nullable GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
 	{
 		final int port = edge.getFactorToVariableIndex();
 		if (port == _meanParameterPort)
@@ -81,7 +81,7 @@ public class CustomLogNormal extends GibbsRealFactor implements IRealConjugateFa
 			return new GibbsGammaEdge();
 		}
 		
-		return super.createEdge(edge);
+		return null;
 	}
 
 	@SuppressWarnings("null")

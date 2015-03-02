@@ -31,7 +31,6 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -92,9 +91,9 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	 */
 	
 	@Override
-	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	public @Nullable GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
 	{
-		return new GibbsDiscreteEdge((Discrete)edge.getVariable(_model.requireParentGraph()));
+		return null;
 	}
 
 	@Override

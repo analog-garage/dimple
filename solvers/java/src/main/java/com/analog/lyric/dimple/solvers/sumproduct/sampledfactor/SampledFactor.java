@@ -22,6 +22,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SEdgeWithMessages;
@@ -32,6 +33,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealJoint;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -66,8 +68,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
  */
 public class SampledFactor extends SFactorBase
 {
-	private final MessageTranslatorBase[] _messageTranslator;
-	private final Variable[] _privateVariables;
+	private final ISumProductSampledEdge<?>[] _edges;
 	private final FactorGraph _messageGraph;
 	
 	public final static int DEFAULT_SAMPLES_PER_UPDATE = 1000;
@@ -78,46 +79,51 @@ public class SampledFactor extends SFactorBase
 	{
 		super(factor, parent);
 				
-		int numSiblings = factor.getSiblingCount();
+		final int numSiblings = factor.getSiblingCount();
 		
-		_privateVariables = new Variable[numSiblings];
+		// TODO should we defer this work until initialize
+		
+		_edges = new ISumProductSampledEdge[numSiblings];
+		final Variable[] privateVariables = new Variable[numSiblings];
 		for (int edge = 0; edge < numSiblings; edge++)
 		{
 			// Create a private copy of each sibling variable to use in the message graph
-			_privateVariables[edge] = factor.getSibling(edge).clone();
+			privateVariables[edge] = factor.getSibling(edge).clone();
 		}
 		
 		// Create a private message graph on which the Gibbs sampler will be run
 		_messageGraph = new FactorGraph();
 		GibbsSolverGraph sgraph = requireNonNull(_messageGraph.setSolverFactory(new GibbsSolver()));
 		_messageGraph.setEventAndOptionParent(this); // inherit options from this solver graph
-		_messageGraph.addFactor(factor.getFactorFunction(), _privateVariables);
+		_messageGraph.addFactor(factor.getFactorFunction(), privateVariables);
 
-		_messageTranslator = new MessageTranslatorBase[numSiblings];
 		for (int edge = 0; edge < numSiblings; edge++)
 		{
-			final ISolverVariable svar = sgraph.getSolverVariable(_privateVariables[edge]);
+			final ISolverVariable svar = sgraph.getSolverVariable(privateVariables[edge]);
 			
 			// Create a message translator based on the variable type
 			// TODO: Allow alternative message representations for continuous variables
 			if (svar instanceof GibbsDiscrete)
 			{
-				_messageTranslator[edge] = new DiscreteMessageTranslator(this, edge, (GibbsDiscrete)svar);
+				_edges[edge] = new SumProductSampledDiscreteEdge((GibbsDiscrete)svar);
 			}
 			else if (svar instanceof GibbsReal)
 			{
-				_messageTranslator[edge] = new NormalMessageTranslator(this, edge, (GibbsReal)svar);
+				_edges[edge] = new SumProductSampledNormalEdge((GibbsReal)svar);
 			}
 			else if (svar instanceof GibbsRealJoint)
 			{
 				// Complex or RealJoint
-				_messageTranslator[edge] =
-					new MultivariateNormalMessageTranslator(this, edge, (GibbsRealJoint)svar);
+				_edges[edge] = new SumProductSampledMultivariateNormalEdge((GibbsRealJoint)svar);
 			}
-			
-			// Start with uniform input
-			_messageTranslator[edge].setVariableInputUniform();
 		}
+	}
+	
+	@Override
+	public @Nullable ISolverEdge createEdge(FactorGraphEdgeState edge)
+	{
+		// Edge already created at construction time
+		return _edges[edge.getFactorToVariableIndex()];
 	}
 	
 	@Override
@@ -128,16 +134,13 @@ public class SampledFactor extends SFactorBase
 		// Set inputs of the message-graph variables to the incoming message value; all except the output variable
 		for (int edge = 0; edge < numSiblings; edge++)
 		{
-			MessageTranslatorBase messageTranslator = _messageTranslator[edge];
 			if (edge != outPortNum)	// Input edge
 			{
-				messageTranslator.setMessageDirection(MessageTranslatorBase.MessageDirection.INPUT);
-				messageTranslator.setVariableInputFromInputMessage();
+				_edges[edge].setVarToFactorDirection();
 			}
 			else					// Output edge
 			{
-				messageTranslator.setMessageDirection(MessageTranslatorBase.MessageDirection.OUTPUT);
-				messageTranslator.setVariableInputUniform();
+				_edges[edge].setFactorToVarDirection();
 			}
 		}
 
@@ -145,7 +148,7 @@ public class SampledFactor extends SFactorBase
 		_messageGraph.solve();
 	
 		// Set the output message using the belief of the message-graph output variable
-		_messageTranslator[outPortNum].setOutputMessageFromVariableBelief();
+		_edges[outPortNum].setFactorToVarMsgFromSamples();
 
 	}
 	
@@ -214,39 +217,26 @@ public class SampledFactor extends SFactorBase
 	@Override
 	public void resetEdgeMessages(int i)
 	{
-		_messageTranslator[i].initialize();
+		_edges[i].reset();
 	}
 	
-	@Override
-	public void createMessages()
-	{
-		final Factor factor = _model;
-		for (int i = 0, nVars = factor.getSiblingCount(); i < nVars; i++)
-		{
-			final SEdgeWithMessages<?,?> edge = getEdge(i);
-			
-			_messageTranslator[i].createInputMessage(edge.varToFactorMsg);
-			_messageTranslator[i].createOutputMessage(edge.factorToVarMsg);
-		}
-	}
-
 	@Override
 	public void moveMessages(@NonNull ISolverNode other, int portNum, int otherPortNum)
 	{
 		SampledFactor s = (SampledFactor)other;
-		_messageTranslator[portNum].moveMessages(s._messageTranslator[otherPortNum]);
+		_edges[portNum].moveMessages(s._edges[otherPortNum]);
 	}
 
 	@Override
 	public @Nullable Object getInputMsg(int portIndex)
 	{
-		return _messageTranslator[portIndex].getInputMessage();
+		return _edges[portIndex].getVarToFactorMsg();
 	}
 
 	@Override
 	public @Nullable Object getOutputMsg(int portIndex)
 	{
-		return _messageTranslator[portIndex].getOutputMessage();
+		return _edges[portIndex].getFactorToVarMsg();
 	}
 
 	@SuppressWarnings("null")

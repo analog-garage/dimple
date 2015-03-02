@@ -1188,6 +1188,7 @@ public abstract class SFactorGraphBase
 				else
 				{
 					sfactor = this.createFactor(factor);
+					factors.set(index, sfactor);
 					sfactor.createMessages();
 				}
 				if (this == factor.requireParentGraph().getSolver())

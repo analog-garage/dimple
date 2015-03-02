@@ -81,16 +81,9 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 	}
 	
 	@Override
-	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	public @Nullable GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
 	{
-		Variable var = edge.getVariable(_model.requireParentGraph());
-		
-		if (var instanceof Discrete)
-		{
-			return new GibbsDiscreteEdge((Discrete)var);
-		}
-
-		return GibbsNullEdge.INSTANCE;
+		return null;
 	}
 	
 	@Override

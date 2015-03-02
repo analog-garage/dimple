@@ -51,14 +51,14 @@ public class CustomExchangeableDirichlet extends GibbsRealFactor implements IRea
 	}
 
 	@Override
-	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	public @Nullable GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
 	{
 		if (edge.getFactorToVariableIndex() >= _numParameterEdges)
 		{
 			return new GibbsDirichletEdge(_dimension);
 		}
 		
-		return super.createEdge(edge);
+		return null;
 	}
 	
 	@SuppressWarnings("null")
