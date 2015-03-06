@@ -45,6 +45,14 @@ public interface ISolverNode extends IOptionHolder, ISolverEventSource
 	public void initialize() ;
 	
 	/**
+	 * Returns solver edge object, if any.
+	 * 
+	 * @param edgeNumber identifies which edge to return. Must be non-negative and less than {@link #getSiblingCount()}
+	 * @since 0.08
+	 */
+	public @Nullable ISolverEdge getEdge(int edgeNumber);
+	
+	/**
 	 * Returns the solver factor graph to which this node belongs.
 	 */
 	public @Nullable ISolverFactorGraph getParentGraph();

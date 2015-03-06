@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 
 /**
@@ -32,6 +34,18 @@ public enum NoSolverEdge implements ISolverEdge
 	INSTANCE;
 	
 	private NoSolverEdge() {}
+	
+	@Override
+	public @Nullable Object getFactorToVarMsg()
+	{
+		return null;
+	}
+
+	@Override
+	public @Nullable Object getVarToFactorMsg()
+	{
+		return null;
+	}
 	
 	@Override
 	public void reset()

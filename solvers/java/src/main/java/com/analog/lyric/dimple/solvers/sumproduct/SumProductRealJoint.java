@@ -247,7 +247,7 @@ public class SumProductRealJoint extends SRealJointVariableBase
 	
 	@SuppressWarnings("null")
 	@Override
-	protected SMultivariateNormalEdge getEdge(int siblingIndex)
+	public SMultivariateNormalEdge getEdge(int siblingIndex)
 	{
 		return (SMultivariateNormalEdge)super.getEdge(siblingIndex);
 	}

@@ -330,7 +330,7 @@ public class SumProductReal extends SRealVariableBase
 
 	@Override
 	@SuppressWarnings("null")
-	protected SNormalEdge getEdge(int siblingIndex)
+	public SNormalEdge getEdge(int siblingIndex)
 	{
 		return (SNormalEdge)super.getEdge(siblingIndex);
 	}

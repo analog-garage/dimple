@@ -305,7 +305,8 @@ public abstract class SNode<MNode extends Node> extends SolverEventSource implem
 		return null;
 	}
 	
-	protected @Nullable ISolverEdge getEdge(int siblingIndex)
+	@Override
+	public @Nullable ISolverEdge getEdge(int siblingIndex)
 	{
 		return requireParentGraph().getSolverEdge(_model.getSiblingEdgeIndex(siblingIndex));
 	}

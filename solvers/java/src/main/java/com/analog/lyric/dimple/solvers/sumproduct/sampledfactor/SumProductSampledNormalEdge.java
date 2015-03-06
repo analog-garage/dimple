@@ -46,18 +46,6 @@ class SumProductSampledNormalEdge extends SumProductNormalEdge
 	}
 	
 	@Override
-	public NormalParameters getFactorToVarMsg()
-	{
-		return factorToVarMsg;
-	}
-	
-	@Override
-	public NormalParameters getVarToFactorMsg()
-	{
-		return varToFactorMsg;
-	}
-
-	@Override
 	public void moveMessages(ISumProductSampledEdge<?> other)
 	{
 		varToFactorMsg.setFrom(((SumProductSampledNormalEdge)other).varToFactorMsg);

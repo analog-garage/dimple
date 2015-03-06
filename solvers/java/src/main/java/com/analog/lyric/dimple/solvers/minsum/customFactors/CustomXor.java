@@ -186,7 +186,7 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 
     @Override
 	@SuppressWarnings("null")
-	protected MinSumDiscreteEdge getEdge(int siblingIndex)
+	public MinSumDiscreteEdge getEdge(int siblingIndex)
 	{
 		return super.getEdge(siblingIndex);
 	}

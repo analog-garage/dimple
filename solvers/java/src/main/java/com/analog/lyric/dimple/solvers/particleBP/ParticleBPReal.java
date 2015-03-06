@@ -707,7 +707,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 	
 	@SuppressWarnings("null")
 	@Override
-	protected ParticleBPRealEdge getEdge(int siblingIndex)
+	public ParticleBPRealEdge getEdge(int siblingIndex)
 	{
 		return (ParticleBPRealEdge)super.getEdge(siblingIndex);
 	}

@@ -28,8 +28,10 @@ import com.analog.lyric.util.misc.Internal;
 @Internal
 public interface ISumProductSampledEdge<Message> extends ISolverEdge
 {
+	@Override
 	public Message getVarToFactorMsg();
 	
+	@Override
 	public Message getFactorToVarMsg();
 	
 	@Internal

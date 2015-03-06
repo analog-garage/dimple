@@ -660,7 +660,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 
     @Override
 	@SuppressWarnings("null")
-	protected SumProductDiscreteEdge getEdge(int siblingIndex)
+	public SumProductDiscreteEdge getEdge(int siblingIndex)
 	{
 		return (SumProductDiscreteEdge)super.getEdge(siblingIndex);
 	}

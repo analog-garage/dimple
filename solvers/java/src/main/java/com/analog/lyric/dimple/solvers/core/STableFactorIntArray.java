@@ -61,7 +61,7 @@ public abstract class STableFactorIntArray extends STableFactorBase
 
 	@SuppressWarnings({ "null", "unchecked" })
 	@Override
-	protected SEdgeWithIntArrayMessages getEdge(int siblingIndex)
+	public SEdgeWithIntArrayMessages getEdge(int siblingIndex)
 	{
 		return (SEdgeWithIntArrayMessages) super.getEdge(siblingIndex);
 	}

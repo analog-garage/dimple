@@ -71,7 +71,7 @@ public abstract class SumProductFiniteFieldFactor extends SFactorBase
 	
 	@SuppressWarnings("null")
 	@Override
-	protected SumProductDiscreteEdge getEdge(int siblingIndex)
+	public SumProductDiscreteEdge getEdge(int siblingIndex)
 	{
 		return (SumProductDiscreteEdge)super.getEdge(siblingIndex);
 	}

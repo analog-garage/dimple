@@ -252,7 +252,7 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 	
 	@SuppressWarnings("null")
 	@Override
-	protected SumProductDiscreteEdge getEdge(int siblingIndex)
+	public SumProductDiscreteEdge getEdge(int siblingIndex)
 	{
 		return (SumProductDiscreteEdge)super.getEdge(siblingIndex);
 	}

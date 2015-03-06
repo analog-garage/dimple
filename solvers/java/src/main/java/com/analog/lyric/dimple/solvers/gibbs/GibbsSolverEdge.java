@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 
@@ -32,6 +34,18 @@ public abstract class GibbsSolverEdge<Message extends IParameterizedMessage> imp
 	protected GibbsSolverEdge(Message factorToVarMsg)
 	{
 		this.factorToVarMsg = factorToVarMsg;
+	}
+	
+	@Override
+	public Message getFactorToVarMsg()
+	{
+		return factorToVarMsg;
+	}
+	
+	@Override
+	public @Nullable Object getVarToFactorMsg()
+	{
+		return null;
 	}
 	
 	@Override

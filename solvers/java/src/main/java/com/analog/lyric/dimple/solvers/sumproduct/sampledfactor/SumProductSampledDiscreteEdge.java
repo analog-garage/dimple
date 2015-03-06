@@ -42,18 +42,6 @@ class SumProductSampledDiscreteEdge extends SumProductDiscreteEdge
 	}
 	
 	@Override
-	public DiscreteMessage getFactorToVarMsg()
-	{
-		return factorToVarMsg;
-	}
-	
-	@Override
-	public DiscreteMessage getVarToFactorMsg()
-	{
-		return varToFactorMsg;
-	}
-	
-	@Override
 	public void moveMessages(ISumProductSampledEdge<?> other)
 	{
 		varToFactorMsg.setFrom(((SumProductSampledDiscreteEdge)other).varToFactorMsg);

@@ -162,7 +162,7 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 
 	@SuppressWarnings("null")
 	@Override
-	protected SDiscreteEdge<?> getEdge(int siblingIndex)
+	public SDiscreteEdge<?> getEdge(int siblingIndex)
 	{
 		return (SDiscreteEdge<?>) super.getEdge(siblingIndex);
 	}

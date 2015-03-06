@@ -44,4 +44,20 @@ public abstract class SEdgeWithMessages<VarToFactorMsg, FactorToVarMsg> implemen
 		return String.format("[%s var2factor=%s, factor2var=%s]",
 			getClass().getSimpleName(), varToFactorMsg, factorToVarMsg);
 	}
+	
+	/*---------------------
+	 * ISolverEdge methods
+	 */
+	
+	@Override
+	public final FactorToVarMsg getFactorToVarMsg()
+	{
+		return factorToVarMsg;
+	}
+	
+	@Override
+	public final VarToFactorMsg getVarToFactorMsg()
+	{
+		return varToFactorMsg;
+	}
 }

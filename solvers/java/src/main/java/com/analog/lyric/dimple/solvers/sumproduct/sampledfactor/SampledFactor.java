@@ -234,7 +234,7 @@ public class SampledFactor extends SFactorBase
 
 	@SuppressWarnings("null")
 	@Override
-	protected SEdgeWithMessages<?,?> getEdge(int siblingIndex)
+	public SEdgeWithMessages<?,?> getEdge(int siblingIndex)
 	{
 		return (SEdgeWithMessages<?, ?>) super.getEdge(siblingIndex);
 	}

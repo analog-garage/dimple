@@ -301,7 +301,7 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 	}
 	
 	@Override
-	protected GibbsGenericEdge getEdge(int siblingIndex)
+	public GibbsGenericEdge getEdge(int siblingIndex)
 	{
 		return (GibbsGenericEdge)super.getEdge(siblingIndex);
 	}

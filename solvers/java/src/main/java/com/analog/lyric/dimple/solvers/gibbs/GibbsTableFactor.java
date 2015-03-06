@@ -298,7 +298,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 
 	@SuppressWarnings("null")
 	@Override
-	protected GibbsDiscreteEdge getEdge(int siblingIndex)
+	public GibbsDiscreteEdge getEdge(int siblingIndex)
 	{
 		return (GibbsDiscreteEdge)super.getEdge(siblingIndex);
 	}

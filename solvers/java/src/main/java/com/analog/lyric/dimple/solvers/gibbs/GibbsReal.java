@@ -1158,7 +1158,7 @@ public class GibbsReal extends SRealVariableBase
 
 	@SuppressWarnings("null")
 	@Override
-	protected GibbsSolverEdge<?> getEdge(int siblingIndex)
+	public GibbsSolverEdge<?> getEdge(int siblingIndex)
 	{
 		return (GibbsSolverEdge<?>)super.getEdge(siblingIndex);
 	}

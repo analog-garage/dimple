@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.interfaces;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * 
  * @since 0.08
@@ -23,5 +25,9 @@ package com.analog.lyric.dimple.solvers.interfaces;
  */
 public interface ISolverEdge
 {
+	public @Nullable Object getFactorToVarMsg();
+	
+	public @Nullable Object getVarToFactorMsg();
+	
 	public void reset();
 }

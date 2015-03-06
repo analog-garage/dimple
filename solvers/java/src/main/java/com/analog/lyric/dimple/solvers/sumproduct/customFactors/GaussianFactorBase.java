@@ -69,7 +69,7 @@ public abstract class GaussianFactorBase extends SFactorBase
 	
 	@SuppressWarnings("null")
 	@Override
-	protected SNormalEdge getEdge(int siblingIndex)
+	public SNormalEdge getEdge(int siblingIndex)
 	{
 		return (SNormalEdge)super.getEdge(siblingIndex);
 	}

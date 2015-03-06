@@ -69,6 +69,12 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 	}
 	
 	@Override
+	public @Nullable ISolverEdge getEdge(int siblingIndex)
+	{
+		return requireParentGraph().getSolverEdge(_factor.getSiblingEdgeIndex(siblingIndex));
+	}
+	
+	@Override
 	public ISolverVariable getSibling(int edge)
 	{
 		final Variable sibling = getModelObject().getSibling(edge);

@@ -1051,7 +1051,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	
 	@SuppressWarnings("null")
 	@Override
-	protected GibbsSolverEdge<?> getEdge(int siblingIndex)
+	public GibbsSolverEdge<?> getEdge(int siblingIndex)
 	{
 		return (GibbsSolverEdge<?>)super.getEdge(siblingIndex);
 	}

@@ -82,7 +82,7 @@ public abstract class STableFactorDoubleArray extends STableFactorBase
 	
 	@SuppressWarnings({ "null" })
 	@Override
-	protected SDiscreteEdge<?> getEdge(int siblingIndex)
+	public SDiscreteEdge<?> getEdge(int siblingIndex)
 	{
 		return (SDiscreteEdge<?>)super.getEdge(siblingIndex);
 	}

@@ -190,7 +190,7 @@ public class ParticleBPRealFactor extends SFactorBase
 	
 	@SuppressWarnings("null")
 	@Override
-	protected SDiscreteWeightEdge getEdge(int siblingIndex)
+	public SDiscreteWeightEdge getEdge(int siblingIndex)
 	{
 		return (SDiscreteWeightEdge) super.getEdge(siblingIndex);
 	}

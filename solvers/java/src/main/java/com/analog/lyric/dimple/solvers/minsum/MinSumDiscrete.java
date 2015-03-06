@@ -335,7 +335,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 
     @Override
 	@SuppressWarnings("null")
-	protected MinSumDiscreteEdge getEdge(int siblingIndex)
+	public MinSumDiscreteEdge getEdge(int siblingIndex)
 	{
 		return (MinSumDiscreteEdge)super.getEdge(siblingIndex);
 	}
