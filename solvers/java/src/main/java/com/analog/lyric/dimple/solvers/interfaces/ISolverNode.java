@@ -44,9 +44,6 @@ public interface ISolverNode extends IOptionHolder, ISolverEventSource
 	 */
 	public void initialize() ;
 	
-	//This method is called for every edge during initialize.
-	public void resetEdgeMessages(int portNum);
-	
 	/**
 	 * Returns the solver factor graph to which this node belongs.
 	 */

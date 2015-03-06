@@ -213,13 +213,6 @@ public class SampledFactor extends SFactorBase
 		return getOptionOrDefault(GibbsOptions.scansPerSample);
 	}
 
-	
-	@Override
-	public void resetEdgeMessages(int i)
-	{
-		_edges[i].reset();
-	}
-	
 	@Override
 	public void moveMessages(@NonNull ISolverNode other, int portNum, int otherPortNum)
 	{

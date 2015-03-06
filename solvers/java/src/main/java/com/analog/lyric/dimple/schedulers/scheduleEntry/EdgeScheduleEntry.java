@@ -47,6 +47,12 @@ public class EdgeScheduleEntry implements IScheduleEntry
 		_node = node;
 		_portNum = portNum;
 	}
+	
+	/**
+	 * @deprecated this method cannot correctly handle multiple connections between the same
+	 * factor and variable. Instead use {@link #EdgeScheduleEntry(INode, int)} method.
+	 */
+	@Deprecated
 	public EdgeScheduleEntry(INode node, INode other)
 	{
 		_node = node;

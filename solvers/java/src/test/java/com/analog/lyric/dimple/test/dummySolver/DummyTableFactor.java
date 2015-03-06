@@ -47,11 +47,6 @@ public class DummyTableFactor extends STableFactorBase
 	}
 
 	@Override
-	public void resetEdgeMessages(int portNum)
-	{
-	}
-
-	@Override
 	public @Nullable Object getInputMsg(int portIndex)
 	{
 		return null;

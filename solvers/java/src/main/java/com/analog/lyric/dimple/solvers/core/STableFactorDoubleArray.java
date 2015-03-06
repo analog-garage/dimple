@@ -29,12 +29,6 @@ public abstract class STableFactorDoubleArray extends STableFactorBase
 	}
 
 	@Override
-	public void resetEdgeMessages(int i)
-	{
-		
-	}
-
-	@Override
 	public void moveMessages(ISolverNode other, int portNum, int otherPort)
 	{
 	}

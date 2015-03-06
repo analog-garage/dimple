@@ -48,8 +48,6 @@ public abstract class FactorGraphEdgeState
 	 * FactorGraphEdgeState methods
 	 */
 	
-	// TODO decide whether to keep edge indexes...
-	
 	/**
 	 * The index of this edge within the {@link FactorGraph} that owns it's factor.
 	 * <p>
@@ -126,19 +124,6 @@ public abstract class FactorGraphEdgeState
 	abstract public FactorGraph getFactorParent(FactorGraph graph);
 	
 	/**
-	 * Returns index of this edge in the factor endpoint's sibling list.
-	 * <p>
-	 * @param graph is the parent graph of either the variable or factor ends of the edge.
-	 * @return index that could be used to lookup this edge using {@link Node#getSiblingEdgeState(int)}
-	 * on the factor, or else -1 if edge is not connected.
-	 * @since 0.08
-	 */
-	public int getFactorToVariableIndex(FactorGraph graph)
-	{
-		return getFactor(graph).indexOfSiblingEdgeState(this);
-	}
-
-	/**
 	 * Return instance of {@link Variable} end of edge, given parent graph.
 	 * <p>
 	 * @param graph is the parent graph of either the variable or factor ends of the edge.
@@ -165,19 +150,6 @@ public abstract class FactorGraphEdgeState
 	 */
 	@Internal
 	abstract public FactorGraph getVariableParent(FactorGraph graph);
-	
-	/**
-	 * Returns index of this edge in the variable endpoint's sibling list.
-	 * 
-	 * @param graph is the parent graph of either the variable or fator ends of the edge.
-	 * @return index that could be used to lookup this edge using {@link Node#getSiblingEdgeState(int)}
-	 * on the variable, or else -1 if edge is not connected.
-	 * @since 0.08
-	 */
-	public int getVariableToFactorIndex(FactorGraph graph)
-	{
-		return getVariable(graph).indexOfSiblingEdgeState(this);
-	}
 	
 	/**
 	 * Given one endpoint of edge, return the other one.

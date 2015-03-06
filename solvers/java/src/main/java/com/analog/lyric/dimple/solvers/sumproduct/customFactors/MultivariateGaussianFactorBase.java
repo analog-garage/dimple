@@ -33,12 +33,6 @@ public abstract class MultivariateGaussianFactorBase extends SFactorBase
 		super(factor, parent);
 	}
 
-
-	@Override
-	public void resetEdgeMessages(int i)
-	{
-	}
-
 	@Override
 	public void moveMessages(@NonNull ISolverNode other, int portNum, int otherPort)
 	{

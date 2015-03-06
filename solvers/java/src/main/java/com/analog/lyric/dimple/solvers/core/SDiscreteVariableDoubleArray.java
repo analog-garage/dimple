@@ -80,16 +80,6 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 		return getEdge(edge).varToFactorMsg.clone();
 	}
 	
-	/**
-	 * This method is called during initialize() to reset the input and output
-	 * messages.
-	 */
-	@Override
-	public void resetEdgeMessages(int portNum)
-	{
-		getEdge(portNum).reset();
-	}
-
 	@Override
 	public abstract @NonNull double[] resetInputMessage(Object message);
 	

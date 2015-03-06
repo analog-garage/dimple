@@ -35,13 +35,6 @@ public abstract class SumProductFiniteFieldFactor extends SFactorBase
 		super(factor, parent);
 	}
 
-	@SuppressWarnings("null")
-	@Override
-	public void resetEdgeMessages(int i)
-	{
-		getEdge(i).reset();
-	}
-
 	@Override
 	public Object getInputMsg(int portIndex)
 	{

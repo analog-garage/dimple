@@ -1125,12 +1125,6 @@ public class GibbsRealJoint extends SRealJointVariableBase
 
 	// TODO move to ISolverNode
 	@Override
-	public void resetEdgeMessages(int portNum)
-	{
-	}
-
-	// TODO move to ISolverNode
-	@Override
 	public @Nullable Object getInputMsg(int portIndex)
 	{
 		return _inputMsg;

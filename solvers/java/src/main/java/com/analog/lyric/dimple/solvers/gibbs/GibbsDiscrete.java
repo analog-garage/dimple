@@ -929,17 +929,6 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 
 	// TODO move to ISolverNode
 	@Override
-	public void resetEdgeMessages(int portNum)
-	{
-		getEdge(portNum).reset();
-		if (!_holdSampleValue)
-		{
-			resetOutputMessage(_currentSample);
-		}
-	}
-
-	// TODO move to ISolverNode
-	@Override
 	public double[] getInputMsg(int portIndex)
 	{
 		// FIXM - return DiscreteMessage

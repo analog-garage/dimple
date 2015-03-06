@@ -158,12 +158,6 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 	}
 
 	@Override
-	public void resetEdgeMessages(int portNum)
-	{
-		throw new DimpleException("Not implemented");
-	}
-
-	@Override
 	public ISolverFactorGraph getParentGraph()
 	{
 		return _parent;

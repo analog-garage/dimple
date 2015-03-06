@@ -34,6 +34,8 @@ import java.util.Set;
 
 import net.jcip.annotations.Immutable;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.BinaryHeap;
 import com.analog.lyric.collect.IHeap;
 import com.analog.lyric.collect.IHeap.IEntry;
@@ -44,7 +46,6 @@ import com.analog.lyric.dimple.model.factors.FactorBase;
 import com.analog.lyric.dimple.model.factors.FactorList;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
 
@@ -62,7 +63,7 @@ import com.google.common.collect.Sets;
  * for recursive conditioning schemes.
  * <p>
  * The problem of finding an optimal ordering is NP-hard, but the heuristic
- * greed approach implemented by this class has been shown to produce good
+ * greedy approach implemented by this class has been shown to produce good
  * results with reasonable time complexity. The algorithm implemented here
  * is as follows:
  * <p>

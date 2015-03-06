@@ -664,6 +664,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 		clearFlags();
 	}
 	
+	@Deprecated
 	@Override
 	public void updateEdge(INode other)
 	{
@@ -685,6 +686,10 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	/**
 	 * Gets representation of i'th edge.
 	 * <p>
+	 * Note that unlike {@link #getSiblingEdgeState(int)}, this returns a temporary object
+	 * that fully describes the edge. To avoid excess allocation do not use this method within
+	 * inner loops.
+	 * <p>
      * @param i should be between 0 (inclusive) and {@link #getSiblingCount()} (exclusive)
      * @since 0.08
      * @throws IndexOutOfBoundsException if {@code i} is not in range.
@@ -700,8 +705,8 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	/**
 	 * Returns the graph index of the i'th edge connected to this node.
 	 * @param i is a number in the range from 0 to {@link #getSiblingCount()} - 1.
-	 * @return non-negative index in parent graph for the sibling edge, which can be used
-	 * {@link FactorGraph#getGraphEdgeState(int)}.
+	 * @return non-negative index in parent graph for the sibling edge, which can be used with
+	 * {@link FactorGraph#getGraphEdgeState(int)} to retrieve the edge state.
 	 * @since 0.08
 	 */
 	public final int getSiblingEdgeIndex(int i)

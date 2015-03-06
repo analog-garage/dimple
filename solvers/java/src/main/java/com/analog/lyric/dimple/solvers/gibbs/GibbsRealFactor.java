@@ -244,13 +244,6 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 
 
 	@Override
-	public void resetEdgeMessages(int portNum)
-	{
-		//_inputMsgs[portNum] = (ObjectSample)_factor.getVariables().getByIndex(portNum).getSolver().resetOutputMessage(_inputMsgs[portNum]);
-	}
-
-
-	@Override
 	public Value getInputMsg(int portIndex)
 	{
 		return _currentSamples[portIndex];

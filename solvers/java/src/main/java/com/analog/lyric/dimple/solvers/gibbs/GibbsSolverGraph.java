@@ -1169,10 +1169,6 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	}
 
 	@Override
-	public void resetEdgeMessages(int portNum) {
-	}
-
-	@Override
 	public @Nullable Object getInputMsg(int portIndex) {
 		return null;
 	}

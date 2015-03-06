@@ -98,12 +98,6 @@ public abstract class ProxySolverFactorGraph<SFactor extends ISolverFactor, SVar
 	}
 
 	@Override
-	public void resetEdgeMessages(int portNum)
-	{
-		throw unsupported("resetEdgeMessages");
-	}
-
-	@Override
 	public void setInputMsg(int portIndex, Object obj)
 	{
 		throw unsupported("setInputMsg");

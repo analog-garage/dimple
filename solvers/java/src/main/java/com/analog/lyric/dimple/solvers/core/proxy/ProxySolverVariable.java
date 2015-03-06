@@ -94,12 +94,6 @@ public abstract class ProxySolverVariable<MVariable extends Variable, Delegate e
 	}
 
 	@Override
-	public void resetEdgeMessages(int portNum)
-	{
-		throw unsupported("resetEdgeMessages");
-	}
-
-	@Override
 	public void setInputMsg(int portIndex, Object obj)
 	{
 		throw unsupported("setInputMsg");

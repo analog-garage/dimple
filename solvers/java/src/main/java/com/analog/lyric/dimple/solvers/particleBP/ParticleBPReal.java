@@ -610,13 +610,6 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 	{
 	}
 	
-	@Override
-	public void resetEdgeMessages(int portNum)
-	{
-		getEdge(portNum).reset();
-	}
-
-	
 	public ParticleBPSolverVariableToFactorMessage getDefaultVariableToFactorMessage()
 	{
 		ParticleBPSolverVariableToFactorMessage message = new ParticleBPSolverVariableToFactorMessage(_numParticles);

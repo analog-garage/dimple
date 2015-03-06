@@ -277,6 +277,7 @@ public class PNodeVector extends POptionHolder
 		return retval;
 	}
 	
+	@Deprecated
 	public int getPortNum(PNodeVector nodeVector)
 	{
 		Node thisNode = PHelpers.convertToNode(this);

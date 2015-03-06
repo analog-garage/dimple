@@ -132,14 +132,6 @@ public class LPDiscrete extends SDiscreteVariableBase
 	 * Does nothing.
 	 */
 	@Override
-	public void resetEdgeMessages(int portNum)
-	{
-	}
-
-	/**
-	 * Does nothing.
-	 */
-	@Override
 	protected void doUpdateEdge(int outPortNum)
 	{
 	}

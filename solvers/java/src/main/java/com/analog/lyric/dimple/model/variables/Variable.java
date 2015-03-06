@@ -198,11 +198,6 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	@Override
 	public void initialize(int portNum)
 	{
-		final ISolverVariable svar = getSolver();
-		if (svar != null)
-		{
-			svar.resetEdgeMessages(portNum);
-		}
 	}
     
 	/**

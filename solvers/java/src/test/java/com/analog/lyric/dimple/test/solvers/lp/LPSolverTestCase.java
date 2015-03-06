@@ -75,7 +75,6 @@ public class LPSolverTestCase extends DimpleTestBase
 		solver.update();
 		solver.updateEdge(0);
 		solver.initialize();
-		solver.resetEdgeMessages(0);
 		
 		// Test unsupported methods
 		try { solver.setInputMsg(0, "foo"); fail("exception expected"); } catch (DimpleException ex) {}
@@ -115,7 +114,6 @@ public class LPSolverTestCase extends DimpleTestBase
 			assertSame(solver, svar.getParentGraph());
 			
 			// Test do-nothing methods
-			svar.resetEdgeMessages(0);
 			svar.updateEdge(0);
 			svar.moveMessages(svar, 0, 1);
 			assertNull(svar.getInputMsg(0));
@@ -174,7 +172,6 @@ public class LPSolverTestCase extends DimpleTestBase
 			
 			// Test do nothing methods
 			sfactor.updateEdge(0);
-			sfactor.resetEdgeMessages(0);
 			sfactor.moveMessages(sfactor, 0 , 1);
 			assertNull(sfactor.getInputMsg(0));
 			assertNull(sfactor.getOutputMsg(0));

@@ -273,14 +273,6 @@ public class SumProductReal extends SRealVariableBase
 		return message;
 	}
 
-	// FIXME - reset edge messages from graph methods, not node
-	@Override
-	public void resetEdgeMessages(int i)
-	{
-		getEdge(i).reset();
-	}
-    
-    
 	@Override
 	public Object getInputMsg(int portIndex)
 	{

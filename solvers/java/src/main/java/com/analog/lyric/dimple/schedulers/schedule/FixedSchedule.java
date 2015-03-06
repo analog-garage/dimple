@@ -202,10 +202,16 @@ public class FixedSchedule extends ScheduleBase implements IGibbsSchedule
 			add(nodes[i]);
 	}
 	
+	/**
+	 * @deprecated this method cannot correctly handle multiple connections between the same
+	 * factor and variable. Instead use {@link #add(INode, int)} method.
+	 */
+	@Deprecated
 	public void add(INode from, INode to)
 	{
 		add(new EdgeScheduleEntry(from,to));
 	}
+	
 	// Add one schedule entry
 	public void add(IScheduleEntry entry)
 	{

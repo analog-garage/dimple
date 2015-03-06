@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
+import static java.util.Objects.*;
+
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -23,6 +25,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
@@ -30,6 +33,7 @@ import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.Internal;
 
 /**
  * Solver variable for Discrete variables under Sum-Product solver.
@@ -60,14 +64,6 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		configureDampingFromOptions();
 	}
 
-	// FIXME - reset edge messages from graph methods, not node
-	@Override
-	public void resetEdgeMessages(int portNum)
-	{
-		final SumProductDiscreteEdge edge = getEdge(portNum);
-		edge.reset();
-	}
-	
 	public Variable getVariable()
 	{
 		return _model;
@@ -421,11 +417,12 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		double sum = 0;
 		for (int i = 0, n = getSiblingCount(); i < n; i++)
 		{
+			final FactorGraphEdgeState edge = _model.getSiblingEdgeState(i);
 			SumProductTableFactor sft = (SumProductTableFactor)getSibling(i);
 			double inputMsg = getEdge(i).factorToVarMsg.getWeight(domain);
 			double tmp = f / inputMsg;
 			@SuppressWarnings("null")
-			double der = sft.getMessageDerivative(weightIndex,getVariable())[domain];
+			double der = sft.getMessageDerivative(weightIndex, edge.getFactorToVariableIndex())[domain];
 			tmp = tmp * der;
 			sum += tmp;
 		}
@@ -550,10 +547,19 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		_outMessageDerivative = new double[weights][getSiblingCount()][_input.length];
 	}
     
+	/**
+	 * @deprecated instead use {@link #getMessageDerivative(int, int)}.
+	 */
+	@Deprecated
     public double [] getMessageDerivative(int wn, Factor f)
     {
-    	int portNum = getVariable().getPortNum(f);
-    	return Objects.requireNonNull(_outMessageDerivative)[wn][portNum];
+    	return getMessageDerivative(wn, _model.getPortNum(f));
+    }
+    
+	@Internal
+    public double[] getMessageDerivative(int wn, int edgeNumber)
+    {
+    	return requireNonNull(_outMessageDerivative)[wn][edgeNumber];
     }
     
     public double calculatedf(int outPortNum, double f, int d, int wn)
@@ -564,10 +570,11 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		{
 			if (i != outPortNum)
 			{
+				final FactorGraphEdgeState edge = _model.getSiblingEdgeState(i);
 				double thisMsg = getEdge(i).factorToVarMsg.getWeight(d);
 				SumProductTableFactor stf = (SumProductTableFactor)getSibling(i);
 				@SuppressWarnings("null")
-				double [] dfactor = stf.getMessageDerivative(wn,getVariable());
+				double [] dfactor = stf.getMessageDerivative(wn, edge.getFactorToVariableIndex());
 				
 				df += f/thisMsg * dfactor[d];
 			}

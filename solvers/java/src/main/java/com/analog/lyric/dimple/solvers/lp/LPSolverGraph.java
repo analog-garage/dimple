@@ -149,14 +149,6 @@ public class LPSolverGraph extends SFactorGraphBase<LPTableFactor, LPDiscrete, N
 	}
 
 	/**
-	 * Does nothing for this solver.
-	 */
-	@Override
-	public void resetEdgeMessages(int portNum)
-	{
-	}
-
-	/**
 	 * Unsupported.
 	 */
 	@Override

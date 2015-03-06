@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.sumproduct;
 
 import static com.analog.lyric.math.Utilities.*;
+import static java.util.Objects.*;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -30,6 +31,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.BPOptions;
@@ -546,11 +548,13 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 		//for each variable
 		for (int i = 0; i < nEdges; i++)
 		{
+			final FactorGraphEdgeState edge = factor.getSiblingEdgeState(i);
 			final SumProductDiscrete var = (SumProductDiscrete)getSibling(i);
 			
 			//divide out contribution
 			final int j = entryIndices[i];
-			sum += prod / getEdge(i).varToFactorMsg.getWeight(j) * var.getMessageDerivative(weightIndex, factor)[j];
+			sum += prod / getEdge(i).varToFactorMsg.getWeight(j) *
+				var.getMessageDerivative(weightIndex, edge.getVariableToFactorIndex())[j];
 		}
 		return sum;
 	}
@@ -590,10 +594,18 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 		}
 	}
 	
+	/**
+	 * @deprecated instead use {@link #getMessageDerivative(int, int)}
+	 */
+	@Deprecated
 	public double [] getMessageDerivative(int wn, Variable var)
 	{
-		int index = getFactor().getPortNum(var);
-		return Objects.requireNonNull(_outPortDerivativeMsgs)[wn][index];
+		return getMessageDerivative(wn, _model.getPortNum(var));
+	}
+	
+	public double[] getMessageDerivative(int wn, int edgeNumber)
+	{
+		return requireNonNull(_outPortDerivativeMsgs)[wn][edgeNumber];
 	}
 	
 	public double calculateMessageForDomainValueAndTableIndex(int domainValue, int outPortNum, int tableIndex)
@@ -635,7 +647,8 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	
 	public double calculatedf(int outPortNum, int domainValue, int wn, boolean factorUsesTable)
 	{
-		IFactorTable ft = getFactor().getFactorTable();
+		final Factor factor = _model;
+		final IFactorTable ft = factor.getFactorTable();
 		double sum = 0;
 		final int [][] indices = ft.getIndicesSparseUnsafe();
 		final double [] weights = ft.getWeightsSparseUnsafe();
@@ -659,9 +672,9 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 					
 					if (i != outPortNum)
 					{
+						FactorGraphEdgeState edge = factor.getSiblingEdgeState(i);
 						SumProductDiscrete sv = (SumProductDiscrete)getSibling(i);
-						@SuppressWarnings("null")
-						double [] dvar = sv.getMessageDerivative(wn,getFactor());
+						double [] dvar = sv.getMessageDerivative(wn, edge.getVariableToFactorIndex());
 								
 						final int j = entryIndices[i];
 						sum += (prod / getEdge(i).varToFactorMsg.getWeight(j)) * dvar[j];

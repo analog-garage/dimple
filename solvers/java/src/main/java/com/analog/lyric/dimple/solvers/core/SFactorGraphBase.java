@@ -744,12 +744,6 @@ public abstract class SFactorGraphBase
 	}
 	
 	@Override
-	public void resetEdgeMessages(int portNum)
-	{
-		throw new DimpleException("Not supported");
-	}
-
-	@Override
 	public @Nullable Object getInputMsg(int portIndex)
 	{
 		return null;

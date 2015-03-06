@@ -167,12 +167,6 @@ public class ParticleBPRealFactor extends SFactorBase
 	}
 
 	@Override
-	public void resetEdgeMessages(int portNum)
-	{
-	}
-
-
-	@Override
 	public Object getInputMsg(int portIndex)
 	{
 		// FIXME - return actual DiscreteMessage object

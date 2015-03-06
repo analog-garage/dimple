@@ -190,12 +190,6 @@ public class SumProductRealJoint extends SRealJointVariableBase
 	}
 
 	@Override
-	public void resetEdgeMessages( int i )
-	{
-		getEdge(i).reset();
-	}
-	
-	@Override
 	public void moveMessages(ISolverNode other, int portNum, int otherPort)
 	{
 		SumProductRealJoint s = (SumProductRealJoint)other;

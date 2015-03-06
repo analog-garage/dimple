@@ -113,6 +113,8 @@ public interface INode  extends INameable, IModelEventSource
     //TODO: should these only be on solver?
     public void update() ;
 	public void updateEdge(int outPortNum);
+	
+	@Deprecated
 	public void updateEdge(INode other);
 	
 	/**

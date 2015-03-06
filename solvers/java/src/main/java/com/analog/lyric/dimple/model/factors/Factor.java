@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Objects;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -46,6 +47,7 @@ import com.analog.lyric.dimple.options.DimpleOptions;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.util.misc.Internal;
+import com.google.common.collect.Sets;
 
 public class Factor extends FactorBase implements Cloneable
 {
@@ -345,9 +347,6 @@ public class Factor extends FactorBase implements Cloneable
 	@Override
 	public void initialize(int portNum)
 	{
-		final ISolverFactor sfactor = getSolver();
-		if (sfactor != null)
-			sfactor.resetEdgeMessages(portNum);
 	}
     
 	/**
@@ -500,22 +499,41 @@ public class Factor extends FactorBase implements Cloneable
 
 	}
 
+	/**
+	 * Sets all edges to specified variables as output edges.
+	 * @param variables
+	 * @since 0.08
+	 */
+	public final void setDirectedTo(Set<Variable> variables)
+	{
+		final IntArrayList directedTo = new IntArrayList(variables.size());
+		
+		for (int i = 0, n = getSiblingCount(); i < n; ++i)
+		{
+			if (variables.contains(getSibling(i)))
+			{
+				directedTo.add(i);
+			}
+		}
+		
+		directedTo.trimToSize();
+		setDirectedTo(directedTo.elements());
+	}
+	
+	/**
+	 * Sets all edges to specified variables as output edges.
+	 */
 	public final void setDirectedTo(VariableList vl)
 	{
-		int [] directedTo = new int[vl.size()];
-		for (int i = 0; i < directedTo.length; i++)
-			directedTo[i] = getPortNum(vl.getByIndex(i));
-		
-		setDirectedTo(directedTo);
-
+		setDirectedTo(Sets.newHashSet(vl));
 	}
 
+	/**
+	 * Sets all edges to specified variables as output edges.
+	 */
 	public final void setDirectedTo(Variable ... variables)
 	{
-		int [] directedTo = new int[variables.length];
-		for (int i = 0; i < directedTo.length; i++)
-			directedTo[i] = getPortNum(variables[i]);
-		setDirectedTo(directedTo);
+		setDirectedTo(Sets.newHashSet(variables));
 	}
 	
 	public void setDirectedTo(int [] directedTo)

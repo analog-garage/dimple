@@ -228,6 +228,7 @@ classdef Node < MatrixObject
             var = obj.getSingleNode();
             
             if isa(portOrNode,'Node')
+                % FIXME deprecated this usage
                 var.updateEdge(portOrNode.VectorObject);
             else
                 obj.VectorObject.updateEdge(portOrNode-1);

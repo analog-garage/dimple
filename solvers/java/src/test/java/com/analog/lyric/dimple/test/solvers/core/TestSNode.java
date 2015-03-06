@@ -77,12 +77,12 @@ public class TestSNode extends DimpleTestBase
 		}
 
 		@Override
-		public void resetEdgeMessages(int edge)
+		public void initialize()
 		{
-			_updatedEdges.remove(edge);
-			_messages.clear();
+			super.initialize();
+			_updatedEdges.clear();
 		}
-
+		
 		@Override
 		public ISolverFactorGraph getContainingSolverGraph()
 		{

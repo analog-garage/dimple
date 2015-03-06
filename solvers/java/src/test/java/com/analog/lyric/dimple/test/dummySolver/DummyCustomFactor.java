@@ -53,11 +53,6 @@ public class DummyCustomFactor extends SFactorBase
 	}
 
 	@Override
-	public void resetEdgeMessages(int portNum)
-	{
-	}
-
-	@Override
 	public @Nullable Object getInputMsg(int portIndex)
 	{
 		return null;

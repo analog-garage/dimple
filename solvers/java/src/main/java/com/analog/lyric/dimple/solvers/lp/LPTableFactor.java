@@ -124,14 +124,6 @@ public class LPTableFactor extends STableFactorBase
 	}
 
 	/**
-	 * Does nothing.
-	 */
-	@Override
-	public void resetEdgeMessages(int portNum)
-	{
-	}
-
-	/**
 	 * Always returns null.
 	 */
 	@Override

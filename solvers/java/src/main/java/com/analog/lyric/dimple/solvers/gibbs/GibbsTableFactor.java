@@ -252,13 +252,6 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	}
 	
 	@Override
-	public void resetEdgeMessages(int portNum)
-	{
-
-	}
-
-
-	@Override
 	public DiscreteValue getInputMsg(int portIndex)
 	{
 		return _currentSamples[portIndex];

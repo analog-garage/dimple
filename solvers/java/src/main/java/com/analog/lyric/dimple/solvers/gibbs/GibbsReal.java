@@ -928,12 +928,6 @@ public class GibbsReal extends SRealVariableBase
 
 	// TODO move to ISolverNode
 	@Override
-	public void resetEdgeMessages(int portNum)
-	{
-	}
-
-	// TODO move to ISolverNode
-	@Override
 	public @Nullable Object getInputMsg(int portIndex)
 	{
 		return getEdge(portIndex).factorToVarMsg;
