@@ -78,7 +78,6 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	protected @Nullable Object _input = null;
 	protected @Nullable Object _fixedValue = null;
 	protected String _modelerClassName;
-	protected @Nullable ISolverVariable _solverVariable = null;
 	private final Domain _domain;
     
     public static Comparator<Variable> orderById = new Comparator<Variable>() {
@@ -173,7 +172,17 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	@Override
 	public @Nullable ISolverVariable getSolver()
 	{
-		return _solverVariable;
+		final FactorGraph fg = getParentGraph();
+		if (fg != null)
+		{
+			final ISolverFactorGraph sfg = fg.getSolver();
+			if (sfg != null)
+			{
+				return sfg.getSolverVariable(this);
+			}
+		}
+		
+		return null;
 	}
 	
 	@Override
@@ -350,19 +359,16 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		{
 			factorGraph.getSolverVariable(this, true);
 		}
-		else
-		{
-			_solverVariable = null;
-		}
 	}
 	
 	/**
 	 * @category internal
 	 */
+	@Deprecated
 	@Internal
 	public void setSolver(@Nullable ISolverVariable svar)
 	{
-		_solverVariable = svar;
+		throw new UnsupportedOperationException("Variable.setSolver no longer supported");
 	}
 	
 	/**

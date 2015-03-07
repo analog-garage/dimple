@@ -1340,7 +1340,6 @@ public class FactorGraph extends FactorBase
 		if (svar != null)
 		{
 			svar.getParentGraph().removeSolverVariable(svar);
-			v.setSolver(null);
 		}
 		
 		if ((_flags & VARIABLE_REMOVE_EVENT) != 0)
@@ -2499,7 +2498,6 @@ public class FactorGraph extends FactorBase
 		if (sfactor != null)
 		{
 			sfactor.getParentGraph().removeSolverFactor(sfactor);
-			factor.setSolver(null);
 		}
 		
 		if ((_flags & FACTOR_REMOVE_EVENT) != 0)

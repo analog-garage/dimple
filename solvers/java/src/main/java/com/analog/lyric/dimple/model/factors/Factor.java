@@ -57,7 +57,6 @@ public class Factor extends FactorBase implements Cloneable
 	private static final int[] NOT_YET_SET = new int[0];
 	
 	private String _modelerFunctionName = "";
-	protected @Nullable ISolverFactor _solverFactor = null;
 	private FactorFunction _factorFunction;
 	protected @Nullable int [] _directedTo = NOT_YET_SET;
 	@Nullable int [] _directedFrom = null;
@@ -183,9 +182,18 @@ public class Factor extends FactorBase implements Cloneable
 	@Override
 	public @Nullable ISolverFactor getSolver()
 	{
-		return _solverFactor;
+		final FactorGraph fg = getParentGraph();
+		if (fg != null)
+		{
+			final ISolverFactorGraph sfg = fg.getSolver();
+			if (sfg != null)
+			{
+				return sfg.getSolverFactor(this, false);
+			}
+		}
+		return null;
 	}
-
+	
 	@Override
 	public String getClassLabel()
     {
@@ -202,19 +210,16 @@ public class Factor extends FactorBase implements Cloneable
 		{
 			factorGraph.getSolverFactor(this, true);
 		}
-		else
-		{
-			_solverFactor = null;
-		}
 	}
 	
 	/**
 	 * @category internal
 	 */
+	@Deprecated
 	@Internal
 	public void setSolver(@Nullable ISolverFactor sfactor)
 	{
-		_solverFactor = sfactor;
+		throw new UnsupportedOperationException("Factor.setSolver no longer supported");
 	}
 	
 	/**
@@ -590,6 +595,7 @@ public class Factor extends FactorBase implements Cloneable
 			}
 		}
 
+		// FIXME - don't force creation
 		ISolverFactor sfactor = getSolver();
 		if (sfactor != null)
 		{

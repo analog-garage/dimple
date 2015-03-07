@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.model.repeated;
 
-import static java.util.Objects.*;
-
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.core.Port;
@@ -53,13 +51,7 @@ public class BlastFromThePastFactor extends Factor
 	{
 		if (factorGraph != null)
 		{
-			final ISolverBlastFromThePastFactor sfactor =
-				requireNonNull((ISolverBlastFromThePastFactor) factorGraph.getSolverFactor(this, true));
-			_solverFactor = sfactor;
-		}
-		else
-		{
-			_solverFactor = null;
+			factorGraph.getSolverFactor(this, true);
 		}
 	}
 	

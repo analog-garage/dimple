@@ -64,8 +64,6 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 		final Variable y = factor.getSibling(0);
 		final Variable a = factor.getSibling(1);
 		
-		factor.setDirectedTo(new int[] { 0 });
-		
 		final DiscreteDomain yDomain = y.asDiscreteVariable().getDiscreteDomain();
 		
 		_yDomainSize = yDomain.size();

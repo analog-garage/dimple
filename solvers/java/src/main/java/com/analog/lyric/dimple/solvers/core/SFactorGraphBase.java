@@ -1214,11 +1214,6 @@ public abstract class SFactorGraphBase
 					sfactor = this.createFactor(factor);
 					factors.set(index, sfactor);
 				}
-				if (this == factor.requireParentGraph().getSolver())
-				{
-					// If parent is default solver for it's graph, make this the default solver for the factor.
-					factor.setSolver(sfactor);
-				}
 			}
 			else
 			{
@@ -1289,11 +1284,6 @@ public abstract class SFactorGraphBase
 			if (create)
 			{
 				svar = this.createVariable(variable);
-				if (this == variable.requireParentGraph().getSolver())
-				{
-					// If parent is default solver for it's graph, make this the default solver for the subgraph.
-					variable.setSolver(svar);
-				}
 				svar.createNonEdgeSpecificState();
 				svar.setInputOrFixedValue(variable.getInputObject(), variable.getFixedValueObject());
 			}
