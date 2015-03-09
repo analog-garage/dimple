@@ -80,12 +80,6 @@ public abstract class ProxySolverFactorGraph<SFactor extends ISolverFactor, SVar
 	}
 
 	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-		throw unsupported("moveMessages");
-	}
-
-	@Override
 	public void update()
 	{
 		requireDelegate("update").update();

@@ -5,7 +5,6 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 /*******************************************************************************
 *   Copyright 2013 Analog Devices, Inc.
 *
@@ -33,12 +32,6 @@ public abstract class SumProductFiniteFieldFactor extends SFactorBase
 	public SumProductFiniteFieldFactor(Factor factor, ISolverFactorGraph parent)
 	{
 		super(factor, parent);
-	}
-
-	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum,
-			int otherPortNum)
-	{
 	}
 
 	/*---------------

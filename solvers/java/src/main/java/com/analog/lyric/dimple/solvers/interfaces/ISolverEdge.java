@@ -63,6 +63,14 @@ public interface ISolverEdge
 	public void reset();
 	
 	/**
+	 * Sets edge state from another edge of the same type.
+	 * <p>
+	 * @param other must have the same type as this object.
+	 * @since 0.08
+	 */
+	public void setFrom(ISolverEdge other);
+	
+	/**
 	 * Sets value of message from factor to variable ends of the corresponding edge.
 	 * <p>
 	 * @param msg the value from which the message will be set. Details will depend on the

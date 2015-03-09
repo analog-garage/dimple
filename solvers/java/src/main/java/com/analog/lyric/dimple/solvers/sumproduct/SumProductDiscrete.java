@@ -32,7 +32,6 @@ import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.Internal;
 
 /**
@@ -609,19 +608,6 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     	
     	Arrays.fill(retval, val);
     	return retval;
-	}
-
-	@Override
-	public void moveMessages(ISolverNode other, int portNum, int otherPort)
-	{
-		super.moveMessages(other, portNum, otherPort);
-
-		SumProductDiscrete sother = (SumProductDiscrete)other;
-		
-		if (_dampingInUse)
-		{
-			getEdge(portNum)._damping = sother.getEdge(otherPort)._damping;
-		}
 	}
 
 	/*---------------

@@ -35,9 +35,6 @@ public interface ISumProductSampledEdge<Message> extends ISolverEdge
 	public Message getFactorToVarMsg();
 	
 	@Internal
-	public void moveMessages(ISumProductSampledEdge<?> other);
-	
-	@Internal
 	public void setFactorToVarDirection();
 	
 	@Internal

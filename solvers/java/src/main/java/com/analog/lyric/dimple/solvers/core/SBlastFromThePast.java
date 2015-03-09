@@ -28,7 +28,6 @@ import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 
@@ -136,12 +135,6 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 	}
 
 	@Override
-	public void moveMessages(ISolverNode other)
-	{
-		throw new DimpleException("Not implemented");
-	}
-
-	@Override
 	public int[][] getPossibleBeliefIndices()
 	{
 		throw new DimpleException("Not implemented");
@@ -231,21 +224,21 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 		throw new DimpleException("Not implemented");
 	}
 
-	@Deprecated
-	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum,
-			int otherPortNum)
-	{
-		throw new DimpleException("Not implemented");
-	}
-
 	@SuppressWarnings("null")
 	@Override
 	public void advance()
 	{
 		// FIXME lookup through solver graph
-		_portForBlastVar.node.getSolver().moveMessages(_portForOtherVar.node.getSolver(),
-				_portForBlastVar.index,_portForOtherVar.index);
+		FactorGraphEdgeState edgeState = _portForBlastVar.toEdgeState();
+		ISolverFactorGraph sfg = _portForBlastVar.node.getParentGraph().getSolver();
+		ISolverEdge sedge = sfg.getSolverEdge(edgeState);
+		
+		FactorGraphEdgeState edgeState2 = _portForOtherVar.toEdgeState();
+		ISolverFactorGraph sfg2 = _portForOtherVar.node.getParentGraph().getSolver();
+		ISolverEdge sedge2 = sfg2.getSolverEdge(edgeState2);
+		
+		sedge.setFrom(sedge2);
+		sedge2.reset();
 	}
 
 	@Override

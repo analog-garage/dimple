@@ -129,7 +129,4 @@ public interface ISolverNode extends IOptionHolder, ISolverEventSource
      */
     @Deprecated
     public void setOutputMsgValues(int portIndex,Object obj);
-    
-    //Move messages from the other node's port to this node's port.
-    public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum);
 }

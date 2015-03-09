@@ -28,7 +28,6 @@ import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.solvers.core.SMultivariateNormalEdge;
 import com.analog.lyric.dimple.solvers.core.SRealJointVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 /**
  * Solver variable for RealJoint variables under Sum-Product solver.
@@ -189,18 +188,6 @@ public class SumProductRealJoint extends SRealJointVariableBase
 		return message;
 	}
 
-	@Override
-	public void moveMessages(ISolverNode other, int portNum, int otherPort)
-	{
-		SumProductRealJoint s = (SumProductRealJoint)other;
-		final SMultivariateNormalEdge thisEdge = getEdge(portNum);
-		final SMultivariateNormalEdge otherEdge = s.getEdge(otherPort);
-
-		thisEdge.factorToVarMsg.set(otherEdge.factorToVarMsg);
-		thisEdge.varToFactorMsg.set(otherEdge.varToFactorMsg);
-		otherEdge.reset();
-	}
-	
 	@Deprecated
 	@Override
 	public void setInputMsgValues(int portIndex, Object obj)

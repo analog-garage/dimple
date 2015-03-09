@@ -38,7 +38,6 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessag
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.Proposal;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.OptionDoubleList;
@@ -698,14 +697,6 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 		}
 	}
 
-	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum,
-			int otherPortNum)
-	{
-		throw new DimpleException("not supported");
-		
-	}
-	
 	@SuppressWarnings("null")
 	@Override
 	public ParticleBPRealEdge getEdge(int siblingIndex)

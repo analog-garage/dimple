@@ -41,11 +41,6 @@ public interface ISolverFactor extends ISolverNode
 	
 	public @Nullable ISolverEdge createEdge(FactorGraphEdgeState edge);
 	
-	//In order to support repeated graphs, this method must be implemented.
-	//SFactorBase implements this by calling move messages for every port on both
-	//the factor and the connected variable.
-	public void moveMessages(ISolverNode other);
-	
 	public int[][] getPossibleBeliefIndices() ;
 	
 	public void setDirectedTo(int [] indices);

@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.core;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 
 /**
  * 
@@ -49,6 +50,14 @@ public abstract class SEdgeWithSymetricParameterizedMessages<Message extends IPa
 	{
 		varToFactorMsg.setUniform();
 		factorToVarMsg.setUniform();
+	}
+	
+	@Override
+	public void setFrom(ISolverEdge other)
+	{
+		SEdgeWithSymetricParameterizedMessages<?> that = (SEdgeWithSymetricParameterizedMessages<?>)other;
+		varToFactorMsg.setFrom(that.varToFactorMsg);
+		factorToVarMsg.setFrom(that.factorToVarMsg);
 	}
 	
 	/**

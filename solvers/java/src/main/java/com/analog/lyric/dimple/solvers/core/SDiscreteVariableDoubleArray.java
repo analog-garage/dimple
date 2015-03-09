@@ -23,7 +23,6 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 /**
  * @since 0.05
@@ -95,22 +94,6 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	public Object getOutputMsg(int portIndex)
 	{
 		return getEdge(portIndex).varToFactorMsg.representation();
-	}
-
-	/**
-	 * This method must be implemented if the solver is to support streaming graphs.
-	 */
-	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-		final SDiscreteVariableDoubleArray sother = (SDiscreteVariableDoubleArray) other;
-
-		final SDiscreteEdge<?> thisEdge = getEdge(thisPortNum);
-		final SDiscreteEdge<?> otherEdge = sother.getEdge(otherPortNum);
-		
-		thisEdge.factorToVarMsg.setFrom(otherEdge.factorToVarMsg);
-		thisEdge.varToFactorMsg.setFrom(otherEdge.varToFactorMsg);
-		otherEdge.reset();
 	}
 
 	public double [] createDefaultMessage()

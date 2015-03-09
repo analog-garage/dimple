@@ -32,7 +32,6 @@ import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 
 /**
@@ -247,15 +246,6 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 	public Value getInputMsg(int portIndex)
 	{
 		return _currentSamples[portIndex];
-	}
-
-	@SuppressWarnings("null")
-	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-		_outputsValid = false;
-//		_currentSamples[thisPortNum] = ((GibbsRealFactor)other)._currentSamples[otherPortNum];
-//		_currentSamples[thisPortNum].setFrom(((GibbsRealFactor)other)._currentSamples[otherPortNum]);
 	}
 
 	@Override

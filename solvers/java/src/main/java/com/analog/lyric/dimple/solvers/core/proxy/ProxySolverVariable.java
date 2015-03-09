@@ -76,12 +76,6 @@ public abstract class ProxySolverVariable<MVariable extends Variable, Delegate e
 	}
 
 	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-		throw unsupported("moveMessages");
-	}
-
-	@Override
 	public void update()
 	{
 		requireDelegate("update").update();

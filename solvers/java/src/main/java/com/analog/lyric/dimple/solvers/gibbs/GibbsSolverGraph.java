@@ -96,7 +96,6 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockInitializer;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockMCMCSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.math.DimpleRandomGenerator;
@@ -1166,12 +1165,6 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	public @Nullable String getMatlabSolveWrapper()
 	{
 		return null;
-	}
-
-	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum,
-			int otherPortNum)
-	{
 	}
 
 	void scheduleDeterministicDirectedUpdate(ISolverFactorGibbs sfactor, int changedVariableIndex, Value oldValue)

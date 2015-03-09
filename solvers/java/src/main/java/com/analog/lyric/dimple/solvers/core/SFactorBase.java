@@ -27,7 +27,6 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterized
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 
@@ -135,32 +134,6 @@ public abstract class SFactorBase extends SNode<Factor> implements ISolverFactor
 		throw new DimpleException("getBetheEntropy not yet supported");
 	}
 	
-	@Override
-	public void moveMessages(ISolverNode other)
-	{
-		Factor factor = getModelObject();
-		Factor otherFactor = (Factor)other.getModelObject();
-		
-		int nSiblings = factor.getSiblingCount();
-		
-		if (nSiblings != otherFactor.getSiblingCount())
-			throw new DimpleException("cannot move messages on nodes with different numbers of ports");
-		
-		final SolverNodeMapping solvers = getSolverMapping();
-		
-		for (int i = 0; i < nSiblings; i++)
-		{
-			moveMessages(other, i,i);
-			
-			Variable thisVariable = factor.getSibling(i);
-			Variable otherVariable = otherFactor.getSibling(i);
-			int thisIndex = factor.getSiblingPortIndex(i);
-			int otherIndex = otherFactor.getSiblingPortIndex(i);
-			ISolverNode thisSolver = solvers.getSolverVariable(thisVariable);
-			thisSolver.moveMessages(solvers.getSolverVariable(otherVariable), thisIndex,otherIndex);
-		}
-	}
-
 	@Override
 	public void setDirectedTo(int [] indices)
 	{

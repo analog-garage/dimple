@@ -935,18 +935,6 @@ public class GibbsReal extends SRealVariableBase
 		return _currentSample;
 	}
 
-	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-		final GibbsReal sother = (GibbsReal) other;
-
-		final GibbsSolverEdge<?> thisEdge = getEdge(thisPortNum);
-		final GibbsSolverEdge<?> otherEdge = sother.getEdge(otherPortNum);
-
-		thisEdge.factorToVarMsg.setFrom(otherEdge.factorToVarMsg);
-		otherEdge.reset();
-	}
-	
 	// TODO move to ISolverNode
 	@Override
 	public void initialize()

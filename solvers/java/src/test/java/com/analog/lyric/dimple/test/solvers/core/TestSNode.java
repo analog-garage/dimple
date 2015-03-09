@@ -49,7 +49,6 @@ import com.analog.lyric.dimple.solvers.core.SNode;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.ParameterizedMessageBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolver;
 import com.analog.lyric.dimple.test.DimpleTestBase;
@@ -129,11 +128,6 @@ public class TestSNode extends DimpleTestBase
 		public SolverNodeMapping getSolverMapping()
 		{
 			return _parent.getSolverMapping();
-		}
-
-		@Override
-		public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
-		{
 		}
 
 		/*---------------

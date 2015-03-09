@@ -127,12 +127,6 @@ public abstract class ProxySolverNode<Delegate extends ISolverNode>
 		requireDelegate("initialize").initialize();
 	}
 
-	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-		throw unsupported("moveMessages");
-	}
-
 	@Deprecated
 	@Override
 	public void setInputMsg(int portIndex, Object obj)

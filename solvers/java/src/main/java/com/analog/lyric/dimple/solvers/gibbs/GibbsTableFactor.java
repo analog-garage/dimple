@@ -33,7 +33,6 @@ import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.util.misc.Internal;
 
@@ -263,12 +262,6 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	public Object getOutputMsg(int portIndex)
 	{
 		return getEdge(portIndex).factorToVarMsg.representation();
-	}
-
-
-	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
-	{
 	}
 
 	/*--------------------------

@@ -18,7 +18,6 @@ package com.analog.lyric.dimple.solvers.core;
 
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public abstract class STableFactorIntArray extends STableFactorBase
 {
@@ -27,11 +26,6 @@ public abstract class STableFactorIntArray extends STableFactorBase
 		super(factor, parent);
 	}
 	
-	@Override
-	public void moveMessages(ISolverNode other, int portNum, int otherPort)
-	{
-	}
-
 	@Override
 	public void setInputMsgValues(int portIndex, Object obj)
 	{

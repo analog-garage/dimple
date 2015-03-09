@@ -3120,6 +3120,11 @@ public class FactorGraph extends FactorBase
 	{
 		return NodeId.nodeTypeFromLocalId(id) == NodeType.FACTOR ? _ownedFactors.getByLocalId(id) : null;
 	}
+	
+	public @Nullable FactorGraph getGraphByLocalId(int id)
+	{
+		return NodeId.nodeTypeFromLocalId(id) == NodeType.GRAPH ? _ownedSubGraphs.getByLocalId(id) : null;
+	}
 
 	@Nullable INode getFirstNode()
 	{

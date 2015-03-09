@@ -23,7 +23,6 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class DummyCustomFactor extends SFactorBase
 {
@@ -51,10 +50,4 @@ public class DummyCustomFactor extends SFactorBase
 	public void initialize()
 	{
 	}
-
-	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-	}
-
 }

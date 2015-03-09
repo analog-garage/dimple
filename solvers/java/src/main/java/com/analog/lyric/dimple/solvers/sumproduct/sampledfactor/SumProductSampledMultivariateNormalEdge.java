@@ -46,13 +46,6 @@ class SumProductSampledMultivariateNormalEdge extends SumProductMultivariateNorm
 	}
 	
 	@Override
-	public void moveMessages(ISumProductSampledEdge<?> other)
-	{
-		varToFactorMsg.setFrom(((SumProductSampledMultivariateNormalEdge)other).varToFactorMsg);
-		factorToVarMsg.setFrom(((SumProductSampledMultivariateNormalEdge)other).factorToVarMsg);
-	}
-	
-	@Override
 	public void setFactorToVarDirection()
 	{
 		_svar.setOption(GibbsOptions.saveAllSamples, true);

@@ -25,7 +25,6 @@ import com.analog.lyric.dimple.solvers.core.SDiscreteWeightEdge;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscreteEdge;
 
 /**
@@ -180,13 +179,6 @@ public class ParticleBPRealFactor extends SFactorBase
 		return getEdge(portIndex).factorToVarMsg.representation();
 	}
 
-
-	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum,
-			int otherPortNum)
-	{
-	}
-	
 	@SuppressWarnings("null")
 	@Override
 	public SDiscreteWeightEdge getEdge(int siblingIndex)

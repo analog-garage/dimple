@@ -16,14 +16,11 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
-import org.eclipse.jdt.annotation.NonNull;
-
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.core.SMultivariateNormalEdge;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public abstract class MultivariateGaussianFactorBase extends SFactorBase
 {
@@ -32,12 +29,6 @@ public abstract class MultivariateGaussianFactorBase extends SFactorBase
 	{
 		super(factor, parent);
 	}
-
-	@Override
-	public void moveMessages(@NonNull ISolverNode other, int portNum, int otherPort)
-	{
-	}
-	
 	/*---------------
 	 * SNode methods
 	 */

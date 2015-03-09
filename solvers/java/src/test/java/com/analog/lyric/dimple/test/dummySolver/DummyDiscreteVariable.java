@@ -26,7 +26,6 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 
 public class DummyDiscreteVariable extends SDiscreteVariableBase
@@ -110,10 +109,4 @@ public class DummyDiscreteVariable extends SDiscreteVariableBase
 	{
 		return null;
 	}
-
-	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-	}
-
 }

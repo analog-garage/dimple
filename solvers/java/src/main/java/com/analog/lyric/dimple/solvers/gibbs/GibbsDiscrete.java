@@ -958,19 +958,6 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		}
 	}
 
-	// TODO move to ISolverNode
-	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-		final GibbsDiscrete sother = (GibbsDiscrete) other;
-
-		final GibbsSolverEdge<?> thisEdge = getEdge(thisPortNum);
-		final GibbsSolverEdge<?> otherEdge = sother.getEdge(otherPortNum);
-		
-		thisEdge.factorToVarMsg.setFrom(otherEdge.factorToVarMsg);
-		otherEdge.reset();
-	}
-	
 	// TODO move to ISolverVariable
 	@Override
     public void moveNonEdgeSpecificState(ISolverNode other)

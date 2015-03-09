@@ -18,7 +18,6 @@ package com.analog.lyric.dimple.solvers.sumproduct.sampledfactor;
 
 import static java.util.Objects.*;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -35,7 +34,6 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 /**
@@ -211,13 +209,6 @@ public class SampledFactor extends SFactorBase
 	public int getScansPerSample()
 	{
 		return getOptionOrDefault(GibbsOptions.scansPerSample);
-	}
-
-	@Override
-	public void moveMessages(@NonNull ISolverNode other, int portNum, int otherPortNum)
-	{
-		SampledFactor s = (SampledFactor)other;
-		_edges[portNum].moveMessages(s._edges[otherPortNum]);
 	}
 
 	@SuppressWarnings("null")

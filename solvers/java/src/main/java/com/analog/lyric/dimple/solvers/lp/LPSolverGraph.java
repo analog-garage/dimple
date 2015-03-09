@@ -148,15 +148,6 @@ public class LPSolverGraph extends SFactorGraphBase<LPTableFactor, LPDiscrete, N
 	{
 	}
 
-	/**
-	 * Unsupported.
-	 */
-	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-		throw unsupported("moveMessages");
-	}
-
 	/*----------------------------
 	 * ISolverFactorGraph methods
 	 */

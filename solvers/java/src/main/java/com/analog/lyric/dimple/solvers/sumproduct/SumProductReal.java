@@ -28,7 +28,6 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.core.SNormalEdge;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 /**
  * Solver variable for Real variables under Sum-Product solver.
@@ -271,18 +270,6 @@ public class SumProductReal extends SRealVariableBase
 	{
 		((NormalParameters)message).setUniform();
 		return message;
-	}
-
-	@Override
-	public void moveMessages(ISolverNode other, int portNum, int otherPort)
-	{
-		final SumProductReal s = (SumProductReal)other;
-		final SNormalEdge thisEdge = getEdge(portNum);
-		final SNormalEdge otherEdge = s.getEdge(otherPort);
-
-		thisEdge.factorToVarMsg.set(otherEdge.factorToVarMsg);
-		thisEdge.varToFactorMsg.set(otherEdge.varToFactorMsg);
-		otherEdge.reset();
 	}
 
 	@Deprecated

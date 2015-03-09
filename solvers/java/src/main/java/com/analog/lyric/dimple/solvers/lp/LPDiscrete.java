@@ -29,7 +29,6 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 /**
  * Solver variable for Discrete variables under LP solver.
@@ -102,14 +101,6 @@ public class LPDiscrete extends SDiscreteVariableBase
 		return _solverGraph;
 	}
 	
-	/**
-	 * Does nothing.
-	 */
-	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-	}
-
 	/**
 	 * Does nothing.
 	 */

@@ -21,7 +21,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class DummyRealVariable extends SRealVariableBase
 {
@@ -52,10 +51,4 @@ public class DummyRealVariable extends SRealVariableBase
 	protected void doUpdateEdge(int outPortNum)
 	{
 	}
-
-	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-	}
-
 }

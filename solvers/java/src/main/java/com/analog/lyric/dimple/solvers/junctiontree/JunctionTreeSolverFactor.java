@@ -42,7 +42,6 @@ import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 /**
  * @since 0.05
@@ -99,12 +98,6 @@ public class JunctionTreeSolverFactor extends SFactorBase
 	public double getScore()
 	{
 		throw unsupported("getScore");
-	}
-
-	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-		throw unsupported("moveMessages");
 	}
 
 	@Override
@@ -166,12 +159,6 @@ public class JunctionTreeSolverFactor extends SFactorBase
 		final IFactorTable convertedTable = FactorTable.convert(beliefTable, reindexer);
 		
 		return convertedTable.getIndicesSparseUnsafe();
-	}
-	
-	@Override
-	public void moveMessages(ISolverNode other)
-	{
-		throw unsupported("moveMessages");
 	}
 	
 	/*-----------------

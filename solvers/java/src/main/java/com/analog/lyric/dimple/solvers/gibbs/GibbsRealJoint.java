@@ -1153,18 +1153,6 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		inputMsg[portIndex] = obj;
 	}
 
-	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-		final GibbsRealJoint sother = (GibbsRealJoint) other;
-
-		final GibbsSolverEdge<?> thisEdge = getEdge(thisPortNum);
-		final GibbsSolverEdge<?> otherEdge = sother.getEdge(otherPortNum);
-		
-		thisEdge.factorToVarMsg.setFrom(otherEdge.factorToVarMsg);
-		otherEdge.reset();
-	}
-	
 	// TODO move to ISolverNode
 	@Override
 	public void initialize()

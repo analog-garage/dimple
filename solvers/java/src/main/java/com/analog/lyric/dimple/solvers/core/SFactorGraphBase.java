@@ -37,10 +37,8 @@ import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.NodeId;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorBase;
-import com.analog.lyric.dimple.model.factors.FactorList;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.variables.Variable;
-import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.options.SolverOptions;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
@@ -233,29 +231,38 @@ public abstract class SFactorGraphBase
 	{
 		@SuppressWarnings("unchecked")
 		SFactorGraphBase<SFactor,SVariable,SEdge> sother = (SFactorGraphBase<SFactor,SVariable,SEdge>)other;
-		FactorList otherFactors = sother._model.getFactors();
-		FactorList myFactors = _model.getFactors();
+		FactorGraph otherGraph = sother.getModelGraph();
 		
-		final SolverNodeMapping solvers = getSolverMapping();
-		
-		if (otherFactors.size() != myFactors.size())
-			throw new DimpleException("Graphs dont' match");
-		
-		for (int i = 0; i < myFactors.size(); i++)
+		final ExtendedArrayList<SEdge> edges = _edges;
+		if (edges != null)
 		{
-			ISolverFactor sf = solvers.getSolverFactor(myFactors.getByIndex(i));
-			sf.moveMessages(solvers.getSolverFactor(otherFactors.getByIndex(i)));
+			for (int i = 0, n = edges.size(); i < n; ++i)
+			{
+				SEdge thisEdge = edges.get(i);
+				if (thisEdge != null)
+				{
+					SEdge thatEdge = requireNonNull(sother.getSolverEdge(i));
+					thisEdge.setFrom(thatEdge);
+					thatEdge.reset();
+				}
+			}
 		}
 		
-		VariableList myVars = _model.getVariablesFlat();
-		VariableList otherVars = sother._model.getVariablesFlat();
-		
-		for (int i = 0; i < myVars.size(); i++)
+		for (SVariable svar : getSolverVariables())
 		{
-			ISolverVariable sv = solvers.getSolverVariable(myVars.getByIndex(i));
-			sv.moveNonEdgeSpecificState(solvers.getSolverVariable((otherVars.getByIndex(i))));
+			final int localId = svar.getModelObject().getLocalId();
+			final Variable thatVar = requireNonNull(otherGraph.getVariableByLocalId(localId));
+			SVariable thatSVar = requireNonNull(sother.getSolverVariable(thatVar, true));
+			svar.moveNonEdgeSpecificState(thatSVar);
 		}
 		
+		for (ISolverFactorGraph ssubgraph : getSolverSubgraphs())
+		{
+			final int localId = ssubgraph.getModelObject().getLocalId();
+			final FactorGraph subgraph2 = requireNonNull(otherGraph.getGraphByLocalId(localId));
+			ISolverFactorGraph ssubgraph2 = requireNonNull(sother.getSolverSubgraph(subgraph2, true));
+			ssubgraph.moveMessages(ssubgraph2);
+		}
 	}
 
 	@Override
@@ -736,13 +743,6 @@ public abstract class SFactorGraphBase
 	 * 
 	 ***********************************************/
 
-	@Override
-	public void moveMessages(ISolverNode other, int portNum, int otherPortNum)
-	{
-		throw new DimpleException("Not supported");
-		
-	}
-	
 	@Deprecated
 	@Override
 	public @Nullable Object getInputMsg(int portIndex)

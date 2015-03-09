@@ -61,6 +61,12 @@ public abstract class GibbsSolverEdge<Message extends IParameterizedMessage> imp
 		factorToVarMsg.setUniform();
 	}
 
+	@Override
+	public void setFrom(ISolverEdge other)
+	{
+		factorToVarMsg.setFrom(((GibbsSolverEdge<?>)other).factorToVarMsg);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * <p>

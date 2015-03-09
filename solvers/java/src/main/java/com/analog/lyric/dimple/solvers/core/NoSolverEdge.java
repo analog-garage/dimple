@@ -53,6 +53,11 @@ public enum NoSolverEdge implements ISolverEdge
 	}
 	
 	@Override
+	public void setFrom(ISolverEdge other)
+	{
+	}
+	
+	@Override
 	public void setFactorToVarMsg(@Nullable Object msg)
 	{
 		throw new UnsupportedOperationException("setFactorToVarMsg");

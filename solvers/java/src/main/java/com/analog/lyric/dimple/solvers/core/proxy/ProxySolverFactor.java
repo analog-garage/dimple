@@ -23,7 +23,6 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 /**
  * @since 0.05
@@ -73,12 +72,6 @@ public abstract class ProxySolverFactor<Delegate extends ISolverFactor>
 	{
 		clearFlags();
 		requireDelegate("initialize").initialize();
-	}
-
-	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-		throw unsupported("moveMessages");
 	}
 
 	@Override

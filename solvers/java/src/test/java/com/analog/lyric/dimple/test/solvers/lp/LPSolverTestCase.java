@@ -77,7 +77,6 @@ public class LPSolverTestCase extends DimpleTestBase
 		solver.initialize();
 		
 		// Test unsupported methods
-		expectThrow(DimpleException.class, solver, "moveMessages", null, 0, 1);
 		expectThrow(DimpleException.class, solver, "estimateParameters", null, 0, 0, 0.0);
 		expectThrow(DimpleException.class, solver, "baumWelch", null, 0, 0);
 	}
@@ -109,7 +108,6 @@ public class LPSolverTestCase extends DimpleTestBase
 			
 			// Test do-nothing methods
 			svar.updateEdge(0);
-			svar.moveMessages(svar, 0, 1);
 			assertNull(svar.resetInputMessage(""));
 			
 			int lpVar = svar.getLPVarIndex();
@@ -164,7 +162,6 @@ public class LPSolverTestCase extends DimpleTestBase
 			
 			// Test do nothing methods
 			sfactor.updateEdge(0);
-			sfactor.moveMessages(sfactor, 0 , 1);
 		}
 		
 		final List<IntegerEquation> constraints = solver.getConstraints();

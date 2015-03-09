@@ -32,7 +32,6 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.google.common.collect.SortedSetMultimap;
 import com.google.common.collect.TreeMultimap;
 
@@ -123,14 +122,6 @@ public class LPTableFactor extends STableFactorBase
 	{
 	}
 
-	/**
-	 * Does nothing.
-	 */
-	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
-	{
-	}
-	
 	/*--------------------------
 	 * STableFactorBase methods
 	 */
