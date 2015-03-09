@@ -187,24 +187,28 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 		return _factor;
 	}
 
+	@Deprecated
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
 		throw new DimpleException("Not implemented");
 	}
 
+	@Deprecated
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
 		throw new DimpleException("Not implemented");
 	}
 
+	@Deprecated
 	@Override
 	public void setInputMsg(int portIndex, Object obj)
 	{
 		throw new DimpleException("Not implemented");
 	}
 
+	@Deprecated
 	@Override
 	public void setOutputMsg(int portIndex, Object obj)
 	{
@@ -214,6 +218,7 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 		var.requireSolver("setOutputMsg").setInputMsg(index,obj);
 	}
 
+	@Deprecated
 	@Override
 	public void setInputMsgValues(int portIndex, Object obj)
 	{
@@ -226,6 +231,7 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 		throw new DimpleException("Not implemented");
 	}
 
+	@Deprecated
 	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum,
 			int otherPortNum)

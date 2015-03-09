@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -173,5 +174,25 @@ public abstract class SVariableBase<MVariable extends Variable> extends SNode<MV
 	protected Class<? extends SolverEvent> messageEventType()
 	{
 		return VariableToFactorMessageEvent.class;
+	}
+	
+	/*--------------------
+	 * Deprecated methods
+	 */
+
+	@Deprecated
+	@Override
+	public @Nullable Object getInputMsg(int portIndex)
+	{
+		ISolverEdge sedge = getEdge(portIndex);
+		return sedge != null ? sedge.getFactorToVarMsg() : null;
+	}
+
+	@Deprecated
+	@Override
+	public @Nullable Object getOutputMsg(int portIndex)
+	{
+		ISolverEdge sedge = getEdge(portIndex);
+		return sedge != null ? sedge.getVarToFactorMsg() : null;
 	}
 }

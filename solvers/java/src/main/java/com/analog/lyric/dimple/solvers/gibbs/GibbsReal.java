@@ -38,7 +38,6 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
-import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.RealValue;
@@ -57,7 +56,8 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IGenericSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IMCMCSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IRealSamplerClient;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.MHSampler;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.math.DimpleRandomGenerator;
@@ -252,20 +252,21 @@ public class GibbsReal extends SRealVariableBase
 		{
 			// Use conjugate sampler, first update the messages from all factors
 			// Factor messages represent the current distribution parameters from each factor
-			int numPorts = _model.getSiblingCount();
-			Port[] ports = new Port[numPorts];
+			final int numEdges = _model.getSiblingCount();
+			ISolverEdge[] sedges = new ISolverEdge[numEdges];
 			final FactorGraph fg = _model.requireParentGraph();
-			SolverNodeMapping solvers = getSolverMapping();
-			for (int portIndex = 0; portIndex < numPorts; portIndex++)
+			final SolverNodeMapping solvers = getSolverMapping();
+			final ISolverFactorGraph sfg = solvers.getSolverGraph(fg);
+			for (int portIndex = 0; portIndex < numEdges; portIndex++)
 			{
 				final FactorGraphEdgeState edge = _model.getSiblingEdgeState(portIndex);
 				Factor factorNode = edge.getFactor(fg);
 				ISolverFactorGibbs factor = (ISolverFactorGibbs) solvers.getSolverFactor(factorNode);
 				int factorPortNumber = edge.getFactorToVariableIndex();
-				ports[portIndex] = factorNode.getPort(factorPortNumber);
+				sedges[portIndex] = sfg.getSolverEdge(edge);
 				factor.updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
 			}
-			double nextSampleValue = conjugateSampler.nextSample(ports, _input);
+			double nextSampleValue = conjugateSampler.nextSample(sedges, _input);
 			if (nextSampleValue != _currentSample.getDouble())	// Would be exactly equal if not changed since last value tested
 				setCurrentSample(nextSampleValue);
 		}
@@ -387,21 +388,22 @@ public class GibbsReal extends SRealVariableBase
 	{
 		final FactorGraph fg = _model.requireParentGraph();
 		final SolverNodeMapping solvers = getSolverMapping();
-		final int numPorts = _model.getSiblingCount();
-		final Port[] ports = new Port[numPorts - 1];
-		for (int port = 0, i = 0; port < numPorts; port++)
+		final ISolverFactorGraph sfg = solvers.getSolverGraph(fg);
+		final int numEdges = _model.getSiblingCount();
+		final ISolverEdge[] sedges = new ISolverEdge[numEdges - 1];
+		for (int port = 0, i = 0; port < numEdges; port++)
 		{
 			if (port != outPortNum)
 			{
 				final FactorGraphEdgeState edgeState = _model.getSiblingEdgeState(port);
 				Factor factorNode = edgeState.getFactor(fg);
-				ISolverFactor factor = solvers.getSolverFactor(factorNode);
+				ISolverFactorGibbs factor = (ISolverFactorGibbs)solvers.getSolverFactor(factorNode);
+				sedges[i++] = sfg.getSolverEdge(edgeState);
 				int factorPortNumber = edgeState.getFactorToVariableIndex();
-				ports[i++] = factorNode.getPort(factorPortNumber);
-				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
+				factor.updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
 			}
 		}
-		((IRealConjugateSampler)conjugateSampler).aggregateParameters(outputMessage, ports, _input);
+		((IRealConjugateSampler)conjugateSampler).aggregateParameters(outputMessage, sedges, _input);
 	}
 	
 	/*--------------------------
@@ -474,7 +476,7 @@ public class GibbsReal extends SRealVariableBase
 		if (inputConjugateSampler != null)
 		{
 			// Sample from the input if there's an available sampler
-			double sampleValue = inputConjugateSampler.nextSample(new Port[0], input);
+			double sampleValue = inputConjugateSampler.nextSample(new ISolverEdge[0], input);
 			
 			// If there are also bounds, clip at the bounds
 			if (sampleValue > hi) sampleValue = hi;
@@ -926,25 +928,11 @@ public class GibbsReal extends SRealVariableBase
 		return message;
 	}
 
-	// TODO move to ISolverNode
-	@Override
-	public @Nullable Object getInputMsg(int portIndex)
-	{
-		return getEdge(portIndex).factorToVarMsg;
-	}
-
-	// TODO move to ISolverNode
+	@Deprecated
 	@Override
 	public @Nullable Object getOutputMsg(int portIndex)
 	{
 		return _currentSample;
-	}
-
-	// TODO move to ISolverNode
-	@Override
-	public void setInputMsg(int portIndex, Object obj)
-	{
-		// FIXME - does this need to be implemented?
 	}
 
 	@Override

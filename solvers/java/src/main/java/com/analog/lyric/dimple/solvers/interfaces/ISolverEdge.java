@@ -18,16 +18,67 @@ package com.analog.lyric.dimple.solvers.interfaces;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+
 /**
- * 
+ * Solver edge state.
+ * <p>
+ * This interface defines the common interface for solver-specific edge state. Each solver edge should
+ * correspond to a {@link FactorGraphEdgeState} in the corresponding model. Unlike {@link ISolverNode},
+ * solver edges do not necessarily refer directly to the corresponding model edge object.
+ * <p>
  * @since 0.08
  * @author Christopher Barber
+ * @see FactorGraphEdgeState
  */
 public interface ISolverEdge
 {
+	/**
+	 * Returns message from factor to variable ends of the corresponding edge, if one exists.
+	 * <p>
+	 * The meaning of this message will depend on the solver. For message passing solvers, such
+	 * as sum product, it will represent some form of probability distribution of the
+	 * edge's variable values conditioned on the graph on the factor's side of the edge.
+	 * <p>
+	 * @since 0.08
+	 */
 	public @Nullable Object getFactorToVarMsg();
 	
+	/**
+	 * Returns message from variable to factor ends of the corresponding edge, if one exists.
+	 * <p>
+	 * The meaning of this message will depend on the solver. For message passing solvers, such
+	 * as sum product, it will represent some form of probability distribution of the
+	 * edge's variable values conditioned on the graph on the variable's side of the edge..
+	 * <p>
+	 * @since 0.08
+	 */
 	public @Nullable Object getVarToFactorMsg();
 	
+	/**
+	 * Resets edge state to an initial state appropriate for the solver.
+	 * <p>
+	 * @since 0.08
+	 */
 	public void reset();
+	
+	/**
+	 * Sets value of message from factor to variable ends of the corresponding edge.
+	 * <p>
+	 * @param msg the value from which the message will be set. Details will depend on the
+	 * specific solver implementation.
+	 * @since 0.08
+	 * @throws UnsupportedOperationException if edge does not support this operation.
+	 */
+	public void setFactorToVarMsg(@Nullable Object msg);
+
+	/**
+	 * Sets value of message from variable to factor ends of the corresponding edge.
+	 * <p>
+	 * @param msg the value from which the message will be set. Details will depend on the
+	 * specific solver implementation.
+	 * @since 0.08
+	 * @throws UnsupportedOperationException if edge does not support this operation.
+	 */
+	public void setVarToFactorMsg(@Nullable Object msg);
 }

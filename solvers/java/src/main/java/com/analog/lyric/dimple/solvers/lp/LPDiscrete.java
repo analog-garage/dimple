@@ -91,24 +91,6 @@ public class LPDiscrete extends SDiscreteVariableBase
 	 */
 	
 	/**
-	 * Returns null.
-	 */
-	@Override
-	public @Nullable Object getInputMsg(int portIndex)
-	{
-		return null;
-	}
-
-	/**
-	 * Returns null.
-	 */
-	@Override
-	public @Nullable Object getOutputMsg(int portIndex)
-	{
-		return null;
-	}
-
-	/**
 	 * Returns the LP solver graph object to which this variable instance belongs.
 	 * Note that unlike the default implementation provided by {@link SVariableBase#getParentGraph()},
 	 * this method returns the graph that was used to construct this instance even

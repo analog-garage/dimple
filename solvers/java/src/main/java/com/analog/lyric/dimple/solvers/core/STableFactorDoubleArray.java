@@ -33,17 +33,17 @@ public abstract class STableFactorDoubleArray extends STableFactorBase
 	{
 	}
 
+	@Deprecated
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
-		// FIXME return DiscreteMessage
 		return getEdge(portIndex).varToFactorMsg.representation();
 	}
 
+	@Deprecated
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
-		// FIXME return DiscreteMessage
 		return getEdge(portIndex).factorToVarMsg.representation();
 	}
 

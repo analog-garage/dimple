@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.solvers.core;
 
 import java.util.Arrays;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * 
  * @since 0.08
@@ -41,4 +43,29 @@ public class SEdgeWithIntArrayMessages extends SEdgeWithSymetricMessages<int[]>
 		Arrays.fill(varToFactorMsg, 0);
 		Arrays.fill(factorToVarMsg, 0);
 	}
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * @param msg must be a {@code int[]}.
+	 */
+	@Override
+	public void setFactorToVarMsg(@Nullable Object msg)
+	{
+		final int[] array = (int[])msg;
+		System.arraycopy(array, 0, factorToVarMsg, 0, factorToVarMsg.length);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * @param msg must be a {@code int[]}.
+	 */
+	@Override
+	public void setVarToFactorMsg(@Nullable Object msg)
+	{
+		final int[] array = (int[])msg;
+		System.arraycopy(array, 0, varToFactorMsg, 0, varToFactorMsg.length);
+	}
+
 }

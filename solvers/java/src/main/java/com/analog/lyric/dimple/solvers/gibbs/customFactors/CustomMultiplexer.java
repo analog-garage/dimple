@@ -185,40 +185,37 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 		// Determine if any ports can use a conjugate sampler
 		final int nEdges = getSiblingCount();
 		final ISampler[] conjugateSampler = _conjugateSampler = new ISampler[nEdges];
-		for (int port = 0; port < nEdges; port++)
+		for (int edgeNumber = 0; edgeNumber < nEdges; edgeNumber++)
 		{
-			ISolverVariable var = getSibling(port);
-			int varPortNum = _model.getSiblingPortIndex(port);
+			ISolverVariable var = getSibling(edgeNumber);
 			if (var instanceof GibbsReal)
 			{
 				GibbsReal svar = (GibbsReal)var;
-				conjugateSampler[port] = svar.getConjugateSampler();
+				conjugateSampler[edgeNumber] = svar.getConjugateSampler();
 				
-				if (conjugateSampler[port] != null)
+				if (conjugateSampler[edgeNumber] != null)
 				{
 					// Create message and tell the variable to use it
 					IParameterizedMessage msg =
-						((IRealConjugateSampler)conjugateSampler[port]).createParameterMessage();
-					getEdge(port).factorToVarMsg = msg;
-					svar.setInputMsg(varPortNum, msg);
+						((IRealConjugateSampler)conjugateSampler[edgeNumber]).createParameterMessage();
+					getEdge(edgeNumber).factorToVarMsg = msg;
 				}
 			}
 			else if (var instanceof GibbsRealJoint)
 			{
 				GibbsRealJoint svar = (GibbsRealJoint)var;
-				conjugateSampler[port] = svar.getConjugateSampler();
+				conjugateSampler[edgeNumber] = svar.getConjugateSampler();
 
-				if (conjugateSampler[port] != null)
+				if (conjugateSampler[edgeNumber] != null)
 				{
 					// Create message and tell the variable to use it
 					IParameterizedMessage msg =
-						((IRealJointConjugateSampler)conjugateSampler[port]).createParameterMessage();
-					getEdge(port).factorToVarMsg = msg;
-					svar.setInputMsg(varPortNum, msg);
+						((IRealJointConjugateSampler)conjugateSampler[edgeNumber]).createParameterMessage();
+					getEdge(edgeNumber).factorToVarMsg = msg;
 				}
 			}
 			else
-				conjugateSampler[port] = null;
+				conjugateSampler[edgeNumber] = null;
 		}
 		
 		

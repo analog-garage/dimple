@@ -152,60 +152,6 @@ public class LPSolverGraph extends SFactorGraphBase<LPTableFactor, LPDiscrete, N
 	 * Unsupported.
 	 */
 	@Override
-	public Object getInputMsg(int portIndex)
-	{
-		throw unsupported("getInputMsg");
-	}
-
-	/**
-	 * Unsupported.
-	 */
-	@Override
-	public Object getOutputMsg(int portIndex)
-	{
-		throw unsupported("getOutputMsg");
-	}
-
-	/**
-	 * Unsupported.
-	 */
-	@Override
-	public void setInputMsg(int portIndex, Object obj)
-	{
-		throw unsupported("setInputMsg");
-	}
-
-	/**
-	 * Unsupported.
-	 */
-	@Override
-	public void setOutputMsg(int portIndex, Object obj)
-	{
-		throw unsupported("setOutputMsg");
-	}
-
-	/**
-	 * Unsupported.
-	 */
-	@Override
-	public void setInputMsgValues(int portIndex, Object obj)
-	{
-		throw unsupported("setInputMsgValues");
-	}
-
-	/**
-	 * Unsupported.
-	 */
-	@Override
-	public void setOutputMsgValues(int portIndex, Object obj)
-	{
-		throw unsupported("setOutputMsgValues");
-	}
-
-	/**
-	 * Unsupported.
-	 */
-	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
 	{
 		throw unsupported("moveMessages");

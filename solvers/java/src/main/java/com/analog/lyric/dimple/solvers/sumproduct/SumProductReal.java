@@ -274,19 +274,6 @@ public class SumProductReal extends SRealVariableBase
 	}
 
 	@Override
-	public Object getInputMsg(int portIndex)
-	{
-		return getEdge(portIndex).factorToVarMsg;
-	}
-
-	@Override
-	public Object getOutputMsg(int portIndex)
-	{
-		return getEdge(portIndex).varToFactorMsg;
-	}
-
-
-	@Override
 	public void moveMessages(ISolverNode other, int portNum, int otherPort)
 	{
 		final SumProductReal s = (SumProductReal)other;
@@ -298,8 +285,9 @@ public class SumProductReal extends SRealVariableBase
 		otherEdge.reset();
 	}
 
+	@Deprecated
 	@Override
-	public void setInputMsg(int portIndex, Object obj)
+	public void setInputMsgValues(int portIndex, Object obj)
 	{
 		getEdge(portIndex).factorToVarMsg.set((NormalParameters)obj);
 	}

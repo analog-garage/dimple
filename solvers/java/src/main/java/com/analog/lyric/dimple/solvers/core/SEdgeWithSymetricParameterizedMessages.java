@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 
 /**
@@ -47,5 +49,41 @@ public abstract class SEdgeWithSymetricParameterizedMessages<Message extends IPa
 	{
 		varToFactorMsg.setUniform();
 		factorToVarMsg.setUniform();
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * @param msg must be a {@link IParameterizedMessage}.
+	 */
+	@Override
+	public void setFactorToVarMsg(@Nullable Object msg)
+	{
+		if (msg != null)
+		{
+			factorToVarMsg.setFrom((IParameterizedMessage)msg);
+		}
+		else
+		{
+			factorToVarMsg.setNull();
+		}
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * @param msg must be a {@link IParameterizedMessage}.
+	 */
+	@Override
+	public void setVarToFactorMsg(@Nullable Object msg)
+	{
+		if (msg != null)
+		{
+			varToFactorMsg.setFrom((IParameterizedMessage)msg);
+		}
+		else
+		{
+			varToFactorMsg.setNull();
+		}
 	}
 }

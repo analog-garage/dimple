@@ -38,18 +38,6 @@ public abstract class MultivariateGaussianFactorBase extends SFactorBase
 	{
 	}
 	
-	@Override
-	public Object getInputMsg(int portIndex)
-	{
-		return getEdge(portIndex).varToFactorMsg;
-	}
-
-	@Override
-	public Object getOutputMsg(int portIndex)
-	{
-		return getEdge(portIndex).factorToVarMsg;
-	}
-	
 	/*---------------
 	 * SNode methods
 	 */

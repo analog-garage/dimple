@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -190,7 +189,7 @@ public class FactorGraphStream
 		private Variable _otherVar;
 		private Variable _myVar;
 		private FactorGraph _fg;
-		private BlastFromThePastFactor _mainFlastFromThePast;
+		private BlastFromThePastFactor _mainBlastFromThePast;
 		private ArrayList<BlastFromThePastFactor> _allBlastFromThePasts = new ArrayList<BlastFromThePastFactor>();
 		
 		public ParameterBlastFromThePastHandler(Variable var,FactorGraph fg,
@@ -200,7 +199,7 @@ public class FactorGraphStream
 			_myVar = _otherVar.clone();
 			_myVar.setInputObject(null);
 			_fg = fg;
-			_mainFlastFromThePast = originalPlastFromPast;
+			_mainBlastFromThePast = originalPlastFromPast;
 			Port factorPort = originalPlastFromPast.getPort(0);
 			//   create a data structure to represent it
 			//   Add a blast from the past for this variable
@@ -216,14 +215,14 @@ public class FactorGraphStream
 		
 		public void advance()
 		{
-			final ISolverFactor sfactor = requireNonNull(_mainFlastFromThePast.getSolver());
+			final ISolverFactor sfactor = requireNonNull(_mainBlastFromThePast.getSolver());
 			
 			for (BlastFromThePastFactor f : _allBlastFromThePasts)
+			{
 				f.advance();
+			}
 			
-			Object belief = _myVar.getBeliefObject();
-			sfactor.setOutputMsg(0, Objects.requireNonNull(belief));
-			
+			requireNonNull(sfactor.getEdge(0)).setFactorToVarMsg(_myVar.getBeliefObject());
 		}
 	}
 

@@ -51,4 +51,16 @@ public enum NoSolverEdge implements ISolverEdge
 	public void reset()
 	{
 	}
+	
+	@Override
+	public void setFactorToVarMsg(@Nullable Object msg)
+	{
+		throw new UnsupportedOperationException("setFactorToVarMsg");
+	}
+
+	@Override
+	public void setVarToFactorMsg(@Nullable Object msg)
+	{
+		throw new UnsupportedOperationException("setVarToFactorMsg");
+	}
 }

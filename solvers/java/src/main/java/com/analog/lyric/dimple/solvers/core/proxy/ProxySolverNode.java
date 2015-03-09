@@ -66,12 +66,14 @@ public abstract class ProxySolverNode<Delegate extends ISolverNode>
 		return requireDelegate("getInternalEnergy").getInternalEnergy();
 	}
 
+	@Deprecated
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
 		throw unsupported("getInputMsg");
 	}
 
+	@Deprecated
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
@@ -131,24 +133,28 @@ public abstract class ProxySolverNode<Delegate extends ISolverNode>
 		throw unsupported("moveMessages");
 	}
 
+	@Deprecated
 	@Override
 	public void setInputMsg(int portIndex, Object obj)
 	{
 		throw unsupported("setInputMsg");
 	}
 
+	@Deprecated
 	@Override
 	public void setOutputMsg(int portIndex, Object obj)
 	{
 		throw unsupported("setOutputMsg");
 	}
 
+	@Deprecated
 	@Override
 	public void setInputMsgValues(int portIndex, Object obj)
 	{
 		throw unsupported("setInputMsgValues");
 	}
 
+	@Deprecated
 	@Override
 	public void setOutputMsgValues(int portIndex, Object obj)
 	{

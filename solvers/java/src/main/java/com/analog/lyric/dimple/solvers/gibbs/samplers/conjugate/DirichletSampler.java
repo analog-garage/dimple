@@ -24,11 +24,11 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Dirichlet;
 import com.analog.lyric.dimple.factorfunctions.ExchangeableDirichlet;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 import com.analog.lyric.math.DimpleRandomGenerator;
 
 
@@ -38,18 +38,18 @@ public class DirichletSampler implements IRealJointConjugateSampler
 	private int _dimension = -1;
 	
 	@Override
-	public final double[] nextSample(Port[] ports, @Nullable FactorFunction input)
+	public final double[] nextSample(ISolverEdge[] edges, @Nullable FactorFunction input)
 	{
-		aggregateParameters(_parameters, ports, input);
+		aggregateParameters(_parameters, edges, input);
 		return nextSample(_parameters);
 	}
 	
 	@Override
-	public final void aggregateParameters(IParameterizedMessage aggregateParameters, Port[] ports,
+	public final void aggregateParameters(IParameterizedMessage aggregateParameters, ISolverEdge[] edges,
 		@Nullable FactorFunction input)
 	{
 		if (_dimension < 0)	// Just do this once
-			setDimension(ports, input);
+			setDimension(edges, input);
 		int dimension = _dimension;
 
 		DirichletParameters parameters = (DirichletParameters)aggregateParameters;
@@ -69,11 +69,11 @@ public class DirichletSampler implements IRealJointConjugateSampler
 			parameters.add(inputParameters);
 		}
 		
-		int numPorts = ports.length;
-		for (int port = 0; port < numPorts; port++)
+		final int numEdges = edges.length;
+		for (int i = 0; i < numEdges; i++)
 		{
 			// The message from each neighboring factor is an array with elements (alpha, beta)
-			DirichletParameters message = requireNonNull((DirichletParameters)(ports[port].getOutputMsg()));
+			DirichletParameters message = requireNonNull((DirichletParameters)edges[i].getFactorToVarMsg());
 			int messageSize = message.getSize();
 			if (messageSize == 0)	// Uninitialized message, which implies uninformative
 			{
@@ -141,12 +141,12 @@ public class DirichletSampler implements IRealJointConjugateSampler
 	}
 	
 	@SuppressWarnings("null")
-	private void setDimension(Port[] ports, @Nullable FactorFunction input)
+	private void setDimension(ISolverEdge[] sedges, @Nullable FactorFunction input)
 	{
-		int numPorts = ports.length;
+		int numEdges = sedges.length;
 		int dimension = 0;
-		if (numPorts > 0)
-			dimension = ((DirichletParameters)(ports[0].getOutputMsg())).getSize();
+		if (numEdges > 0)
+			dimension = ((DirichletParameters)sedges[0].getFactorToVarMsg()).getSize();
 		else if (input != null)
 			if (input instanceof Dirichlet)
 				dimension = ((Dirichlet)input).getDimension();

@@ -88,22 +88,46 @@ public interface ISolverNode extends IOptionHolder, ISolverEventSource
      */
     public INode getModelObject();
     
-    //Returns the input messages for a specified port
+    /**
+     * @deprecated Instead use {@link #getEdge(int)} and {@link ISolverEdge#getFactorToVarMsg()} or
+     * {@link ISolverEdge#getVarToFactorMsg()}.
+     */
+    @Deprecated
     public @Nullable Object getInputMsg(int portIndex);
     
-    //Returns the output message for a specified port.
+    /**
+     * @deprecated Instead use {@link #getEdge(int)} and {@link ISolverEdge#getFactorToVarMsg()} or
+     * {@link ISolverEdge#getVarToFactorMsg()}.
+     */
+    @Deprecated
     public @Nullable Object getOutputMsg(int portIndex);
     
-    //Replace the input message with the specified object
+    /**
+     * @deprecated Instead use {@link #getEdge(int)} and {@link ISolverEdge#getFactorToVarMsg()} or
+     * {@link ISolverEdge#getVarToFactorMsg()}.
+     */
+    @Deprecated
     public void setInputMsg(int portIndex,Object obj);
     
-    //Replace the output message with the specified object
+    /**
+     * @deprecated Instead use {@link #getEdge(int)} and {@link ISolverEdge#getFactorToVarMsg()} or
+     * {@link ISolverEdge#getVarToFactorMsg()}.
+     */
+    @Deprecated
     public void setOutputMsg(int portIndex,Object obj);
     
-    //Set the input message values to be the same as the specified obj
+    /**
+     * @deprecated Instead use {@link #getEdge(int)} and {@link ISolverEdge#getFactorToVarMsg()} or
+     * {@link ISolverEdge#getVarToFactorMsg()}.
+     */
+    @Deprecated
     public void setInputMsgValues(int portIndex,Object obj);
     
-    //Set the output message values to be the same as the specified obj
+    /**
+     * @deprecated Instead use {@link #getEdge(int)} and {@link ISolverEdge#getFactorToVarMsg()} or
+     * {@link ISolverEdge#getVarToFactorMsg()}.
+     */
+    @Deprecated
     public void setOutputMsgValues(int portIndex,Object obj);
     
     //Move messages from the other node's port to this node's port.

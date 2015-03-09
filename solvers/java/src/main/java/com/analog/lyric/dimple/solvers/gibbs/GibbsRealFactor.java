@@ -242,20 +242,12 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 		}
 	}
 
-
+	@Deprecated
 	@Override
 	public Value getInputMsg(int portIndex)
 	{
 		return _currentSamples[portIndex];
 	}
-
-
-	@Override
-	public @Nullable Object getOutputMsg(int portIndex)
-	{
-		return getEdge(portIndex).factorToVarMsg;
-	}
-
 
 	@SuppressWarnings("null")
 	@Override

@@ -152,21 +152,31 @@ public abstract class SNode<MNode extends Node> extends SolverEventSource implem
 		}
 	}
 
+	@Deprecated
 	@Override
-	public void setInputMsg(int portIndex, Object obj) {
-		throw new DimpleException("Not supported by " + this);
+	public void setInputMsg(int portIndex, Object obj)
+	{
+		setInputMsgValues(portIndex, obj);
 	}
+	
+	@Deprecated
 	@Override
-	public void setOutputMsg(int portIndex, Object obj) {
-		throw new DimpleException("Not supported by " + this);
+	public void setOutputMsg(int portIndex, Object obj)
+	{
+		setOutputMsgValues(portIndex, obj);
 	}
 
+	@Deprecated
 	@Override
-	public void setInputMsgValues(int portIndex, Object obj) {
+	public void setInputMsgValues(int portIndex, Object obj)
+	{
 		throw new DimpleException("Not supported by " + this);
 	}
+	
+	@Deprecated
 	@Override
-	public void setOutputMsgValues(int portIndex, Object obj) {
+	public void setOutputMsgValues(int portIndex, Object obj)
+	{
 		throw new DimpleException("Not supported by " + this);
 	}
 	

@@ -124,24 +124,6 @@ public class LPTableFactor extends STableFactorBase
 	}
 
 	/**
-	 * Always returns null.
-	 */
-	@Override
-	public @Nullable Object getInputMsg(int portIndex)
-	{
-		return null;
-	}
-
-	/**
-	 * Always returns null.
-	 */
-	@Override
-	public @Nullable Object getOutputMsg(int portIndex)
-	{
-		return null;
-	}
-
-	/**
 	 * Does nothing.
 	 */
 	@Override

@@ -20,6 +20,7 @@ import static java.util.Objects.*;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class Port
@@ -75,26 +76,52 @@ public class Port
 		return node.getSibling(index);
 	}
 
+	/**
+	 * @deprecated instead use {@link #toEdgeState()} to get {@link FactorGraphEdgeState}, use
+	 * that to look up corresponding {@link ISolverEdge} in solver graph, which will contain the
+	 * messages.
+	 */
+	@Deprecated
 	public void setInputMsgValues(Object obj)
 	{
 		requireNonNull(node.getSolver()).setInputMsgValues(index, obj);
 	}
 
+	/**
+	 * @deprecated instead use {@link #toEdgeState()} to get {@link FactorGraphEdgeState}, use
+	 * that to look up corresponding {@link ISolverEdge} in solver graph, which will contain the
+	 * messages.
+	 */
+	@Deprecated
 	public void setOutputMsgValues(Object obj)
 	{
 		requireNonNull(node.getSolver()).setOutputMsgValues(index,obj);
 	}
 	
+	/**
+	 * @deprecated instead use {@link #toEdgeState()} to get {@link FactorGraphEdgeState}, use
+	 * that to look up corresponding {@link ISolverEdge} in solver graph, which will contain the
+	 * messages.
+	 */
+	@Deprecated
 	public @Nullable Object getInputMsg()
 	{
 		final ISolverNode snode = node.getSolver();
 		return snode != null ? snode.getInputMsg(index) : null;
 	}
+
+	/**
+	 * @deprecated instead use {@link #toEdgeState()} to get {@link FactorGraphEdgeState}, use
+	 * that to look up corresponding {@link ISolverEdge} in solver graph, which will contain the
+	 * messages.
+	 */
+	@Deprecated
 	public @Nullable Object getOutputMsg()
 	{
 		final ISolverNode snode = node.getSolver();
 		return snode != null ? snode.getOutputMsg(index) : null;
 	}
+	
 	public INode getSibling()
 	{
 		return node.getSibling(index);
@@ -104,6 +131,10 @@ public class Port
 		return new Port(getSibling(),node.getSiblingPortIndex(index));
 	}
 	
+	/**
+	 * Return the corresponding edge object for this port.
+	 * @since 0.08
+	 */
 	public FactorGraphEdgeState toEdgeState()
 	{
 		return node.getSiblingEdgeState(index);

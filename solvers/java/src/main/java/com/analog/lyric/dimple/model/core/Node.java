@@ -191,6 +191,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	 * INode methods
 	 */
 	
+    // FIXME - give this a better name! e.g. getReverseSiblingEdgeNumber
 	@Override
 	public int getSiblingPortIndex(int index)
 	{

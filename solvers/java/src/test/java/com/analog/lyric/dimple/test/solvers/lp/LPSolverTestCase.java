@@ -77,12 +77,6 @@ public class LPSolverTestCase extends DimpleTestBase
 		solver.initialize();
 		
 		// Test unsupported methods
-		try { solver.setInputMsg(0, "foo"); fail("exception expected"); } catch (DimpleException ex) {}
-		try { solver.setInputMsgValues(0, "foo"); fail("exception expected"); } catch (DimpleException ex) {}
-		try { solver.getInputMsg(0); fail("exception expected"); } catch (DimpleException ex) {}
-		try { solver.setOutputMsg(0, "foo"); fail("exception expected"); } catch (DimpleException ex) {}
-		try { solver.setOutputMsgValues(0, "foo"); fail("exception expected"); } catch (DimpleException ex) {}
-		try { solver.getOutputMsg(0); fail("exception expected"); } catch (DimpleException ex) {}
 		expectThrow(DimpleException.class, solver, "moveMessages", null, 0, 1);
 		expectThrow(DimpleException.class, solver, "estimateParameters", null, 0, 0, 0.0);
 		expectThrow(DimpleException.class, solver, "baumWelch", null, 0, 0);
@@ -116,8 +110,6 @@ public class LPSolverTestCase extends DimpleTestBase
 			// Test do-nothing methods
 			svar.updateEdge(0);
 			svar.moveMessages(svar, 0, 1);
-			assertNull(svar.getInputMsg(0));
-			assertNull(svar.getOutputMsg(0));
 			assertNull(svar.resetInputMessage(""));
 			
 			int lpVar = svar.getLPVarIndex();
@@ -173,8 +165,6 @@ public class LPSolverTestCase extends DimpleTestBase
 			// Test do nothing methods
 			sfactor.updateEdge(0);
 			sfactor.moveMessages(sfactor, 0 , 1);
-			assertNull(sfactor.getInputMsg(0));
-			assertNull(sfactor.getOutputMsg(0));
 		}
 		
 		final List<IntegerEquation> constraints = solver.getConstraints();

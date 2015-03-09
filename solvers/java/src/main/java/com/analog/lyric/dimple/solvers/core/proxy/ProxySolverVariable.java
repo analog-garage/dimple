@@ -63,18 +63,6 @@ public abstract class ProxySolverVariable<MVariable extends Variable, Delegate e
 	}
 
 	@Override
-	public Object getInputMsg(int portIndex)
-	{
-		throw unsupported("getInputMsg");
-	}
-
-	@Override
-	public Object getOutputMsg(int portIndex)
-	{
-		throw unsupported("getOutputMsg");
-	}
-
-	@Override
 	public double getScore()
 	{
 		return requireDelegate("getScore").getScore();
@@ -91,30 +79,6 @@ public abstract class ProxySolverVariable<MVariable extends Variable, Delegate e
 	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
 	{
 		throw unsupported("moveMessages");
-	}
-
-	@Override
-	public void setInputMsg(int portIndex, Object obj)
-	{
-		throw unsupported("setInputMsg");
-	}
-
-	@Override
-	public void setOutputMsg(int portIndex, Object obj)
-	{
-		throw unsupported("setOutputMsg");
-	}
-
-	@Override
-	public void setInputMsgValues(int portIndex, Object obj)
-	{
-		throw unsupported("setInputMsgValues");
-	}
-
-	@Override
-	public void setOutputMsgValues(int portIndex, Object obj)
-	{
-		throw unsupported("setOutputMsgValues");
 	}
 
 	@Override

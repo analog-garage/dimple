@@ -190,4 +190,24 @@ public abstract class SFactorBase extends SNode<Factor> implements ISolverFactor
 	{
 		return FactorToVariableMessageEvent.class;
 	}
+	
+	/*--------------------
+	 * Deprecated methods
+	 */
+	
+	@Deprecated
+	@Override
+	public @Nullable Object getInputMsg(int portIndex)
+	{
+		final ISolverEdge sedge = getEdge(portIndex);
+		return sedge != null ? sedge.getVarToFactorMsg() : null;
+	}
+	
+	@Deprecated
+	@Override
+	public @Nullable Object getOutputMsg(int portIndex)
+	{
+		final ISolverEdge sedge = getEdge(portIndex);
+		return sedge != null ? sedge.getFactorToVarMsg() : null;
+	}
 }

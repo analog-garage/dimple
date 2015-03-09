@@ -22,10 +22,10 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
 import com.analog.lyric.math.DimpleRandomGenerator;
 
 public class NormalSampler implements IRealConjugateSampler
@@ -34,14 +34,14 @@ public class NormalSampler implements IRealConjugateSampler
 	private final NormalParameters _parameters = new NormalParameters();
 	
 	@Override
-	public final double nextSample(Port[] ports, @Nullable FactorFunction input)
+	public final double nextSample(ISolverEdge[] edges, @Nullable FactorFunction input)
 	{
-		aggregateParameters(_parameters, ports, input);
+		aggregateParameters(_parameters, edges, input);
 		return nextSample(_parameters);
 	}
 	
 	@Override
-	public final void aggregateParameters(IParameterizedMessage aggregateParameters, Port[] ports,
+	public final void aggregateParameters(IParameterizedMessage aggregateParameters, ISolverEdge[] edges,
 		@Nullable FactorFunction input)
 	{
 		double totalPrecision = 0;
@@ -56,11 +56,11 @@ public class NormalSampler implements IRealConjugateSampler
 			totalPrecision += precision;
 		}
 		
-		int numPorts = ports.length;
-		for (int port = 0; port < numPorts; port++)
+		final int numEdges = edges.length;
+		for (int i = 0; i < numEdges; i++)
 		{
 			// The message from each neighboring factor is an array with elements (mean, precision)
-			NormalParameters message = requireNonNull((NormalParameters)(ports[port].getOutputMsg()));
+			NormalParameters message = requireNonNull((NormalParameters)edges[i].getFactorToVarMsg());
 			double mean = message.getMean();
 			double precision = message.getPrecision();
 			

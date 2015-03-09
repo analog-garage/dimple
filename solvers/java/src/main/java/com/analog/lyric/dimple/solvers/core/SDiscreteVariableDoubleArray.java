@@ -83,17 +83,17 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	@Override
 	public abstract @NonNull double[] resetInputMessage(Object message);
 	
+	@Deprecated
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
-		// FIXME return actual message object
 		return getEdge(portIndex).factorToVarMsg.representation();
 	}
 
+	@Deprecated
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
-		// FIXME return actual message object
 		return getEdge(portIndex).varToFactorMsg.representation();
 	}
 
@@ -120,13 +120,8 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
     	double[] retVal = new double[domainLength];
     	return resetInputMessage(retVal);
     }
-	
-	@Override
-	public void setInputMsg(int portIndex, Object obj)
-	{
-		setInputMsgValues(portIndex, obj);
-	}
 
+	@Deprecated
 	@Override
 	public void setInputMsgValues(int portIndex, Object obj)
 	{
@@ -143,6 +138,7 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 		}
 	}
 	
+	@Deprecated
 	@Override
 	public void setOutputMsgValues(int portIndex, Object obj)
 	{

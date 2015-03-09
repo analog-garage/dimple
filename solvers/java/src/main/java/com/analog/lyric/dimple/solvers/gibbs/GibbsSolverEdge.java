@@ -42,6 +42,13 @@ public abstract class GibbsSolverEdge<Message extends IParameterizedMessage> imp
 		return factorToVarMsg;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * <b>Variable to factor messages not supported in Gibbs solver.</b>
+	 * <p>
+	 * @return null.
+	 */
 	@Override
 	public @Nullable Object getVarToFactorMsg()
 	{
@@ -52,5 +59,36 @@ public abstract class GibbsSolverEdge<Message extends IParameterizedMessage> imp
 	public void reset()
 	{
 		factorToVarMsg.setUniform();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * @param msg must be a {@link IParameterizedMessage}.
+	 */
+	@Override
+	public void setFactorToVarMsg(@Nullable Object msg)
+	{
+		if (msg != null)
+		{
+			factorToVarMsg.setFrom((IParameterizedMessage)msg);
+		}
+		else
+		{
+			factorToVarMsg.setNull();
+		}
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * <b>Variable to factor messages not supported in Gibbs solver.</b>
+	 * <p>
+	 * @throws UnsupportedOperationException
+	 */
+	@Override
+	public void setVarToFactorMsg(@Nullable Object msg)
+	{
+		throw new UnsupportedOperationException("setVarToFactorMsg");
 	}
 }

@@ -16,7 +16,10 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 
 /**
  * 
@@ -37,4 +40,37 @@ public abstract class SDiscreteEdge<Message extends DiscreteMessage>
 		super(varToFactorMsg, factorToVarMsg);
 	}
 
+	@Override
+	public void setFactorToVarMsg(@Nullable Object msg)
+	{
+		if (msg == null)
+		{
+			factorToVarMsg.setNull();
+		}
+		else if (msg instanceof double[])
+		{
+			factorToVarMsg.setWeights((double[])msg);
+		}
+		else
+		{
+			factorToVarMsg.setFrom((IParameterizedMessage)msg);
+		}
+	}
+
+	@Override
+	public void setVarToFactorMsg(@Nullable Object msg)
+	{
+		if (msg == null)
+		{
+			varToFactorMsg.setNull();
+		}
+		else if (msg instanceof double[])
+		{
+			varToFactorMsg.setWeights((double[])msg);
+		}
+		else
+		{
+			varToFactorMsg.setFrom((IParameterizedMessage)msg);
+		}
+	}
 }

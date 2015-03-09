@@ -927,24 +927,23 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		return ds;
 	}
 
-	// TODO move to ISolverNode
+	@Deprecated
 	@Override
 	public double[] getInputMsg(int portIndex)
 	{
-		// FIXM - return DiscreteMessage
 		return getDiscreteEdge(portIndex).factorToVarMsg.representation();
 	}
 
-	// TODO move to ISolverNode
+	@Deprecated
 	@Override
 	public DiscreteValue getOutputMsg(int portIndex)
 	{
 		return _currentSample;
 	}
 
-	// TODO move to ISolverNode
+	@Deprecated
 	@Override
-	public void setInputMsg(int portIndex, Object obj)
+	public void setInputMsgValues(int portIndex, Object obj)
 	{
 		final IParameterizedMessage message = getEdge(portIndex).factorToVarMsg;
 		

@@ -743,21 +743,18 @@ public abstract class SFactorGraphBase
 		
 	}
 	
+	@Deprecated
 	@Override
 	public @Nullable Object getInputMsg(int portIndex)
 	{
 		return null;
 	}
 
+	@Deprecated
 	@Override
 	public @Nullable Object getOutputMsg(int portIndex)
 	{
 		return null;
-	}
-	
-	@Override
-	public void setInputMsg(int portIndex, Object obj) {
-		throw new DimpleException("Not supported by " + this);
 	}
 	
 	@Override

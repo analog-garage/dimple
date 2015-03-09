@@ -220,18 +220,6 @@ public class SampledFactor extends SFactorBase
 		_edges[portNum].moveMessages(s._edges[otherPortNum]);
 	}
 
-	@Override
-	public @Nullable Object getInputMsg(int portIndex)
-	{
-		return _edges[portIndex].getVarToFactorMsg();
-	}
-
-	@Override
-	public @Nullable Object getOutputMsg(int portIndex)
-	{
-		return _edges[portIndex].getFactorToVarMsg();
-	}
-
 	@SuppressWarnings("null")
 	@Override
 	public SEdgeWithMessages<?,?> getEdge(int siblingIndex)

@@ -250,18 +250,18 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	    	_currentSamples[port] = (DiscreteValue)((ISolverVariableGibbs)getSibling(port)).getCurrentSampleValue();
 	    }
 	}
-	
+
+	@Deprecated
 	@Override
 	public DiscreteValue getInputMsg(int portIndex)
 	{
 		return _currentSamples[portIndex];
 	}
 
-
+	@Deprecated
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
-		// FIXME - return DiscreteMessage
 		return getEdge(portIndex).factorToVarMsg.representation();
 	}
 

@@ -166,18 +166,17 @@ public class ParticleBPRealFactor extends SFactorBase
 
 	}
 
+    @Deprecated
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
-		// FIXME - return actual DiscreteMessage object
 		return getEdge(portIndex).varToFactorMsg.representation();
 	}
 
-
+    @Deprecated
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
-		// FIXME - return actual DiscreteMessage object
 		return getEdge(portIndex).factorToVarMsg.representation();
 	}
 

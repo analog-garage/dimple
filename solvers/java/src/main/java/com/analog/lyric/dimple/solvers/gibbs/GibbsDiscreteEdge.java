@@ -16,8 +16,11 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergyMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 
 /**
  * 
@@ -29,5 +32,22 @@ public class GibbsDiscreteEdge extends GibbsSolverEdge<DiscreteEnergyMessage>
 	public GibbsDiscreteEdge(Discrete var)
 	{
 		super(new DiscreteEnergyMessage(var.getDomain().size()));
+	}
+	
+	@Override
+	public void setFactorToVarMsg(@Nullable Object msg)
+	{
+		if (msg == null)
+		{
+			factorToVarMsg.setNull();
+		}
+		else if (msg instanceof double[])
+		{
+			factorToVarMsg.setWeights((double[])msg);
+		}
+		else
+		{
+			factorToVarMsg.setFrom((IParameterizedMessage)msg);
+		}
 	}
 }

@@ -667,22 +667,23 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 	}
 
 	
+	@Deprecated
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
-		// FIXME - return actual DiscreteMessage object
 		return getEdge(portIndex).factorToVarMsg.representation();
 	}
 
+	@Deprecated
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
-		// FIXME - return actual DiscreteMessage object
 		return getEdge(portIndex).varToFactorMsg.representation();
 	}
 
+	@Deprecated
 	@Override
-	public void setInputMsg(int portIndex, Object obj)
+	public void setInputMsgValues(int portIndex, Object obj)
 	{
 		final DiscreteMessage message = getEdge(portIndex).factorToVarMsg;
 		
