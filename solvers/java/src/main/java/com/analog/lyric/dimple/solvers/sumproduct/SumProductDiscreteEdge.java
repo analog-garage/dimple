@@ -28,6 +28,8 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeight
  */
 public class SumProductDiscreteEdge extends SDiscreteWeightEdge
 {
+	double _damping = 0.0;
+	
 	public SumProductDiscreteEdge(Discrete discrete)
 	{
 		super(discrete);

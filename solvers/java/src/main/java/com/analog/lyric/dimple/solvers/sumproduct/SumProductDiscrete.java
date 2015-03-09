@@ -42,11 +42,6 @@ import com.analog.lyric.util.misc.Internal;
  */
 public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 {
-	/*
-	 * We cache all of the double arrays we use during the update.  This saves
-	 * time when performing the update.
-	 */
-    double [] _dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
     private boolean _calculateDerivative = false;
 	protected boolean _dampingInUse = false;
     @Nullable private double [][][] _outMessageDerivative;
@@ -105,10 +100,12 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	
 	public double getDamping(int portIndex)
 	{
-		if (portIndex >= _dampingParams.length)
-			return 0;
-		else
-			return _dampingParams[portIndex];
+		if (_dampingInUse)
+		{
+			return getEdge(portIndex)._damping;
+		}
+		
+		return 0.0;
 	}
 
     @Override
@@ -130,7 +127,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         if (_dampingInUse)
         {
         	savedOutMsgArray = DimpleEnvironment.doubleArrayCache.allocate(M);
-        	double damping = _dampingParams[outPortNum];
+        	double damping = edge._damping;
         	if (damping != 0)
         	{
         		for (int m = 0; m < outMsgs.length; m++)
@@ -171,7 +168,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 
         if (_dampingInUse)
         {
-        	double damping = _dampingParams[outPortNum];
+        	double damping = edge._damping;
         	if (damping != 0)
         	{
         		for (int m = 0; m < M; m++)
@@ -220,12 +217,13 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         	_dampingInUse ? DimpleEnvironment.doubleArrayCache.allocate(M) : ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	    for (int out_d = 0, dm = 0; out_d < D; out_d++, dm += M )
 	    {
-            final double[] outMsgs = getEdge(out_d).varToFactorMsg.representation();
+	    	final SumProductDiscreteEdge edge = getEdge(out_d);
+            final double[] outMsgs = edge.varToFactorMsg.representation();
             
 
             if (_dampingInUse)
             {
-            	double damping = _dampingParams[out_d];
+            	double damping = edge._damping;
             	if (damping != 0)
             	{
             		for (int m = 0; m < M; m++)
@@ -263,7 +261,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
             
             if (_dampingInUse)
             {
-            	double damping = _dampingParams[out_d];
+            	double damping = edge._damping;
             	if (damping != 0)
             	{
             		for (int m = 0; m < M; m++)
@@ -622,7 +620,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		
 		if (_dampingInUse)
 		{
-			_dampingParams[portNum] = sother._dampingParams[otherPort];
+			getEdge(portNum)._damping = sother.getEdge(otherPort)._damping;
 		}
 	}
 
@@ -644,18 +642,25 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     {
      	final int size = getSiblingCount();
     	
-    	_dampingParams =
-    		getReplicatedNonZeroListFromOptions(BPOptions.nodeSpecificDamping, BPOptions.damping,
-    			size, _dampingParams);
+    	double[] dampingParams =
+    		getReplicatedNonZeroListFromOptions(BPOptions.nodeSpecificDamping, BPOptions.damping, size, null);
  
-    	if (_dampingParams.length > 0 && _dampingParams.length != size)
+    	if (dampingParams.length > 0 && dampingParams.length != size)
     	{
 			DimpleEnvironment.logWarning("%s has wrong number of parameters for %s\n",
 				BPOptions.nodeSpecificDamping, this);
-    		_dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+    		dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
     	}
     	
-    	_dampingInUse = _dampingParams.length > 0;
+    	_dampingInUse = dampingParams.length > 0;
+    	
+    	if (_dampingInUse)
+    	{
+    		for (int i = 0; i < size; ++i)
+    		{
+    			getEdge(i)._damping = dampingParams[i];
+    		}
+    	}
     }
 
     @Override

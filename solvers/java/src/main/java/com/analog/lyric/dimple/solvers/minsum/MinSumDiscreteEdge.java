@@ -26,6 +26,8 @@ import com.analog.lyric.dimple.solvers.core.SDiscreteEnergyEdge;
  */
 public class MinSumDiscreteEdge extends SDiscreteEnergyEdge
 {
+	double _damping = 0.0;
+	
 	MinSumDiscreteEdge(Discrete discrete)
 	{
 		super(discrete);

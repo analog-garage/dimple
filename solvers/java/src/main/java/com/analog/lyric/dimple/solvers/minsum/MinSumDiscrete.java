@@ -39,7 +39,6 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 	 * State
 	 */
 	
-	protected double[] _dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	protected boolean _dampingInUse = false;
 
 	/*--------------
@@ -88,7 +87,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		if (_dampingInUse)
 		{
         	savedOutMsgArray = DimpleEnvironment.doubleArrayCache.allocate(numValue);
-			double damping = _dampingParams[outPortNum];
+			double damping = edge._damping;
 			if (damping != 0)
 			{
 				for (int i = 0; i < outMsgs.length; i++)
@@ -110,7 +109,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		// Damping
 		if (_dampingInUse)
 		{
-			double damping = _dampingParams[outPortNum];
+			double damping = edge._damping;
 			if (damping != 0)
 			{
 				for (int m = 0; m < numValue; m++)
@@ -160,7 +159,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 			// Save previous output for damping
 			if (_dampingInUse)
 			{
-				double damping = _dampingParams[port];
+				double damping = edge._damping;
 				if (damping != 0)
 				{
 					for (int i = 0; i < outMsgs.length; i++)
@@ -180,7 +179,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 			// Damping
 			if (_dampingInUse)
 			{
-				double damping = _dampingParams[port];
+				double damping = edge._damping;
 				if (damping != 0)
 				{
 					for (int m = 0; m < numValue; m++)
@@ -273,12 +272,13 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 
 	public double getDamping(int portIndex)
 	{
-		if (portIndex >= _dampingParams.length)
-			return 0;
-		else
-			return _dampingParams[portIndex];
+		if (_dampingInUse)
+		{
+			return getEdge(portIndex)._damping;
+		}
+		
+		return 0.0;
 	}
-
 
 	@Override
 	public @NonNull double[] resetInputMessage(Object message)
@@ -297,7 +297,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		
 		if (_dampingInUse)
 		{
-			_dampingParams[portNum] = sother._dampingParams[otherPort];
+			getEdge(portNum)._damping = sother.getEdge(otherPort)._damping;
 		}
 	}
 
@@ -319,18 +319,25 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
     {
      	final int size = getSiblingCount();
     	
-    	_dampingParams =
-    		getReplicatedNonZeroListFromOptions(BPOptions.nodeSpecificDamping, BPOptions.damping,
-    			size, _dampingParams);
+    	double[] dampingParams =
+    		getReplicatedNonZeroListFromOptions(BPOptions.nodeSpecificDamping, BPOptions.damping, size, null);
  
-    	if (_dampingParams.length > 0 && _dampingParams.length != size)
+    	if (dampingParams.length > 0 && dampingParams.length != size)
     	{
 			DimpleEnvironment.logWarning("%s has wrong number of parameters for %s\n",
 				BPOptions.nodeSpecificDamping, this);
-    		_dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+    		dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
     	}
     	
-    	_dampingInUse = _dampingParams.length > 0;
+    	_dampingInUse = dampingParams.length > 0;
+    	
+    	if (_dampingInUse)
+    	{
+    		for (int i = 0; i < size; ++i)
+    		{
+    			getEdge(i)._damping = dampingParams[i];
+    		}
+    	}
     }
 
     @Override
