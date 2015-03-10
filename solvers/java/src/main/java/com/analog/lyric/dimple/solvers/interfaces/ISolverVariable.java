@@ -26,6 +26,23 @@ import com.analog.lyric.dimple.model.variables.Variable;
  */
 public interface ISolverVariable extends ISolverNode
 {
+	/*---------------------
+	 * ISolverNode methods
+	 */
+	
+	@Override
+	public Variable getModelObject();
+	
+    @Override
+    public ISolverFactorGraph getParentGraph();
+    
+    @Override
+    public ISolverFactor getSibling(int edge);
+    
+    /*-------------------------
+     * ISolverVariable methods
+     */
+    
 	/**
 	 * The domain of the variable.
 	 * <p>
@@ -39,9 +56,6 @@ public interface ISolverVariable extends ISolverNode
 	 * @since 0.07
 	 */
 	public Domain getDomain();
-	
-	@Override
-	public Variable getModelObject();
 	
 	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue);
 	public @Nullable Object getBelief();
@@ -75,12 +89,6 @@ public interface ISolverVariable extends ISolverNode
      * @since 0.07
      */
     public boolean guessWasSet();
-    
-    @Override
-    public ISolverFactor getSibling(int edge);
-    
-    @Override
-    public ISolverFactorGraph getParentGraph();
     
     public void createNonEdgeSpecificState();
     

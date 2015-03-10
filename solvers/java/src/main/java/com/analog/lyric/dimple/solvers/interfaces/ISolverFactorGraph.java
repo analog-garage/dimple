@@ -33,19 +33,20 @@ public interface ISolverFactorGraph	extends ISolverNode
 {
 	// FIXME review new names!
 	
+	/*---------------------
+	 * ISolverNode methods
+	 */
+	
 	/**
 	 * Returns the factor graph represented by this solver graph.
 	 */
 	@Override
 	public FactorGraph getModelObject();
-	
-	/**
-	 * Return object mapping all model objects below {@linkplain #getRootSolverGraph() root solver} to solver objects.
-	 * @since 0.08
-	 */
-	@Override
-	public SolverNodeMapping getSolverMapping();
 
+	/*----------------------------
+	 * ISolverFactorGraph methods
+	 */
+	
 	public @Nullable ISolverEdgeState getSolverEdge(FactorGraphEdgeState edge);
 	
 	public @Nullable ISolverEdgeState getSolverEdge(int edgeIndex);
@@ -168,13 +169,7 @@ public interface ISolverFactorGraph	extends ISolverNode
 	public void startSolver();
 	public void setNumIterations(int numIterations);
 	public int getNumIterations();
-	@Override
-	public double getScore();
 	public double getBetheFreeEnergy();
-	@Override
-	public double getInternalEnergy();
-	@Override
-	public double getBetheEntropy();
 	public void estimateParameters(IFactorTable [] tables,int numRestarts,int numSteps, double stepScaleFactor);
 	public void baumWelch(IFactorTable[] tables,int numRestarts,int numSteps);
 	public void moveMessages(ISolverNode other);

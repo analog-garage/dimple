@@ -21,24 +21,41 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 
-
+/**
+ * Base interface for solver factors.
+ */
 public interface ISolverFactor extends ISolverNode
 {
+	/*---------------------
+	 * ISolverNode methods
+	 */
+	
 	@Override
 	public Factor getModelObject();
-	
-	public Object getBelief() ;
-	@Override
-	public double getInternalEnergy();
-	@Override
-	public double getBetheEntropy();
-	
-	@Override
-	public ISolverVariable getSibling(int edge);
 	
 	@Override
 	public ISolverFactorGraph getParentGraph();
 	
+	@Override
+	public ISolverVariable getSibling(int edge);
+
+	/*-----------------------
+	 * ISolverFactor methods
+	 */
+	
+	public Object getBelief() ;
+
+	/**
+	 * Create solver edge state object appropriate to the specified factor edge.
+	 * <p>
+	 * This method allows the factor to customize the edge state and is typically
+	 * used by custom factor implementations.
+	 * <p>
+	 * @param edge is the corresponding model edge.
+	 * @return a newly created edge state object or null if the edge creation is to
+	 * be delegated back to the caller.
+	 * @since 0.08
+	 */
 	public @Nullable ISolverEdgeState createEdge(FactorGraphEdgeState edge);
 	
 	public int[][] getPossibleBeliefIndices() ;
