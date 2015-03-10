@@ -1294,21 +1294,6 @@ public abstract class SFactorGraphBase
 		return svar;
 	}
 	
-//	public void instantiateAll()
-//	{
-//		// Instantiate and get solver subgraphs
-//		ArrayList<ISolverFactorGraph> sgraphs = new ArrayList<>(getSolverSubgraphsRecursive());
-//
-//		// Instantiate all solver variables
-//		Iterators.size(getSolverVariablesRecursive().iterator());
-//
-//		// Instantiate solver factors from bottom up (see bug 404)
-//		for (int i = sgraphs.size(); --i>=0;)
-//		{
-//			Iterators.size(sgraphs.get(i).getSolverFactors().iterator());
-//		}
-//	}
-	
 	public void setSubgraphSolver(FactorGraph subgraph, @Nullable ISolverFactorGraph sgraph)
 	{
 		assertSameGraph(subgraph);

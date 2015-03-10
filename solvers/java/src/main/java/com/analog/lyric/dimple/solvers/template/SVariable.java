@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.template;
 
-import java.util.Arrays;
-
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
@@ -84,16 +82,4 @@ public class SVariable extends SDiscreteVariableDoubleArray
 		return output.representation();
 	}
 	
-	/**
-	 * This method is called to initialize the input.
-	 */
-	@Override
-	public double[] resetInputMessage(Object message)
-	{
-		final double[] result = (double[])message;
-		Arrays.fill(result, 0);
-		return result;
-	}
-
-
 }

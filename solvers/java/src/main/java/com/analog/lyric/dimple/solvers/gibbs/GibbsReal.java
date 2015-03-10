@@ -742,7 +742,6 @@ public class GibbsReal extends SRealVariableBase
 
 
 
-	// FIXME: REMOVE
 	/**
 	 * @deprecated Will be removed in future release. Instead set corresponding option
 	 * for desired proposal kernel (e.g. {@link NormalProposalKernel#standardDeviation}.
@@ -781,7 +780,6 @@ public class GibbsReal extends SRealVariableBase
 			((MHSampler)_sampler).getProposalKernel().setParameters(parameters);
 	}
 	
-	// FIXME: REMOVE
 	/**
 	 * @deprecated Will be removed in future release. Instead set corresponding option
 	 * for sampler (e.g. {@link MHSampler#realProposalKernel}).
@@ -918,14 +916,6 @@ public class GibbsReal extends SRealVariableBase
 	public final void setBeta(double beta)	// beta = 1/temperature
 	{
 		_beta = beta;
-	}
-
-	// TODO Move to ISolverVariable
-	@Override
-	public Object resetInputMessage(Object message)
-	{
-		((RealValue)message).setObject(_model.hasFixedValue() ? _model.getFixedValue() : _initialSampleValue);
-		return message;
 	}
 
 	@Deprecated

@@ -104,9 +104,4 @@ public class DummyDiscreteVariable extends SDiscreteVariableBase
 		return requireNonNull(_input);
 	}
 
-	@Override
-	public @Nullable Object resetInputMessage(Object message)
-	{
-		return null;
-	}
 }

@@ -370,7 +370,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 		{
 			getSolverFactor(f).initialize();
 		}
-		processDeferredDeterministicUpdates(); // FIXME - is it ok to do after factor initialization?
+		processDeferredDeterministicUpdates();
 		for (FactorGraph g : fg.getOwnedGraphs())
 		{
 			getSolverSubgraph(g).initialize();

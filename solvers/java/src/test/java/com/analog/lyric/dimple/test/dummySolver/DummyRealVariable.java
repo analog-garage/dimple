@@ -42,12 +42,6 @@ public class DummyRealVariable extends SRealVariableBase
 	}
 
 	@Override
-	public @Nullable Object resetInputMessage(Object message)
-	{
-		return null;
-	}
-
-	@Override
 	protected void doUpdateEdge(int outPortNum)
 	{
 	}

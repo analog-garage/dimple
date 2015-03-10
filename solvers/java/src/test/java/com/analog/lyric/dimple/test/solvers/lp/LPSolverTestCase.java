@@ -108,7 +108,6 @@ public class LPSolverTestCase extends DimpleTestBase
 			
 			// Test do-nothing methods
 			svar.updateEdge(0);
-			assertNull(svar.resetInputMessage(""));
 			
 			int lpVar = svar.getLPVarIndex();
 			int nValidAssignments = svar.getNumberOfValidAssignments();

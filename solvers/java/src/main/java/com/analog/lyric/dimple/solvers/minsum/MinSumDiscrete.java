@@ -16,9 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.minsum;
 
-import java.util.Arrays;
-
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
@@ -237,8 +234,6 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 			_input = MessageConverter.fromProb((double[])input);
 	}
 	
-	
-	// FIXME move under ISolverNode
 	@Override
 	public double getScore()
 	{
@@ -279,14 +274,6 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		return 0.0;
 	}
 
-	@Override
-	public @NonNull double[] resetInputMessage(Object message)
-	{
-		final double[] result = (double[])message;
-		Arrays.fill(result, 0);
-		return result;
-	}
-	
 	/*---------------
 	 * SNode methods
 	 */

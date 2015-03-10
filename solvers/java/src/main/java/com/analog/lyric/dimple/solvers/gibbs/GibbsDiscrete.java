@@ -890,12 +890,11 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		return sampler.getClass().getSimpleName();
 	}
 
-	
-	// TODO move to ISolverVariable
 	@Override
 	public void createNonEdgeSpecificState()
 	{
-		resetOutputMessage(_currentSample);
+		// Normally zero, but use fixed value if one has been set
+		_currentSample.setIndex(_model.hasFixedValue() ? _model.getFixedValueIndex() : 0);
 
 		if (_sampleIndexArray != null)
 			saveAllSamples();
@@ -907,24 +906,6 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	public DiscreteEnergyMessage createDefaultMessage()
 	{
 		return new DiscreteEnergyMessage(_model.getDiscreteDomain().size());
-	}
-
-	// TODO move to ISolverVariable
-	@Override
-	public Object resetInputMessage(Object message)
-	{
-		double [] retval = (double[])message;
-		Arrays.fill(retval, 0);
-		return retval;
-	}
-	
-	// TODO move to ISolverVariable
-	@Override
-	public Object resetOutputMessage(Object message)
-	{
-		DiscreteValue ds = (DiscreteValue)message;
-		ds.setIndex(_model.hasFixedValue() ? _model.getFixedValueIndex() : 0);	// Normally zero, but use fixed value if one has been set
-		return ds;
 	}
 
 	@Deprecated

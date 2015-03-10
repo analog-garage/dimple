@@ -958,30 +958,15 @@ public class FactorGraph extends FactorBase
 			{
 				var.createSolverObject(sgraph);
 			}
+			
+			for (Factor factor : graph._ownedFactors)
+			{
+				factor.createSolverObject(sgraph);
+			}
 		}
 		
-		createSolverFactors(solverGraph);
-	
 		return solverGraph;
 	}
-
-	private void createSolverFactors(@Nullable ISolverFactorGraph solverGraph)
-	{
-		// FIXME bug 404
-		// It is currently necessary to create solver factors from bottom up
-		// because of a dependency in message creation for Gibbs "BlastFromThePast" solver factors
-		
-		for (FactorGraph subgraph : _ownedSubGraphs)
-		{
-			subgraph.createSolverFactors(subgraph.getSolver());
-		}
-		
-		for (Factor factor : _ownedFactors)
-		{
-			factor.createSolverObject(solverGraph);
-		}
-	}
-
 
 	//========================
 	//

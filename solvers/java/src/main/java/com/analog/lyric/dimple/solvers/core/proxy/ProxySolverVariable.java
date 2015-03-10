@@ -148,18 +148,6 @@ public abstract class ProxySolverVariable<MVariable extends Variable, Delegate e
 		requireDelegate("moveNonEdgeSpecificState").moveNonEdgeSpecificState(other);
 	}
 
-	@Override
-	public Object resetInputMessage(Object message)
-	{
-		throw unsupported("resetInputMessage");
-	}
-
-	@Override
-	public Object resetOutputMessage(Object message)
-	{
-		throw unsupported("resetOutputMessage");
-	}
-
 	/*-------------------------
 	 * ISolverVariable methods
 	 */

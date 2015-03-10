@@ -261,15 +261,7 @@ public class SumProductReal extends SRealVariableBase
 	
 	public NormalParameters createDefaultMessage()
 	{
-		NormalParameters message = new NormalParameters();
-		return (NormalParameters)resetInputMessage(message);
-	}
-
-	@Override
-	public Object resetInputMessage(Object message)
-	{
-		((NormalParameters)message).setUniform();
-		return message;
+		return new NormalParameters();
 	}
 
 	@Deprecated

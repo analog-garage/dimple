@@ -27,7 +27,6 @@ public interface PrimitiveIterable<T> extends Iterable<T>
 	
 	public static interface OfDouble extends PrimitiveIterable<Double>
 	{
-		// FIXME: I don't think this @NotNull should be necessary? JDT bug?
 		@Override
 		public PrimitiveIterator.OfDouble iterator();
 	}

@@ -168,24 +168,7 @@ public class SumProductRealJoint extends SRealJointVariableBase
 
 	public MultivariateNormalParameters createDefaultMessage()
 	{
-		MultivariateNormalParameters mm = new MultivariateNormalParameters();
-		return (MultivariateNormalParameters)resetInputMessage(mm);
-	}
-
-	@Override
-	public Object resetInputMessage(Object message)
-	{
-		double[] mean = new double[_numVars];
-		double[][] covariance = new double[_numVars][];
-		
-		
-		for (int i = 0; i < covariance.length; i++)
-		{
-			covariance[i] = new double[_numVars];
-			covariance[i][i] = Double.POSITIVE_INFINITY;
-		}
-		((MultivariateNormalParameters)message).setMeanAndCovariance(mean, covariance);
-		return message;
+		return new MultivariateNormalParameters(_numVars);
 	}
 
 	@Deprecated

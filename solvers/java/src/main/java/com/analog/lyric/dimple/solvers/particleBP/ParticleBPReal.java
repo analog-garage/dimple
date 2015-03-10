@@ -609,62 +609,9 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 	{
 	}
 	
-	public ParticleBPSolverVariableToFactorMessage getDefaultVariableToFactorMessage()
-	{
-		ParticleBPSolverVariableToFactorMessage message = new ParticleBPSolverVariableToFactorMessage(_numParticles);
-		return (ParticleBPSolverVariableToFactorMessage)resetOutputMessage(message);
-	}
-
-	public double [] getDefaultFactorToVariableMessage()
-	{
-		double[] retVal = new double[_numParticles];
-		retVal = (double[])resetInputMessage(retVal);
-		return retVal;
-	}
-
-	@Override
-	public Object resetInputMessage(Object message)
-	{
-		double[] tmp = (double[])message;
-		double val = 1.0/tmp.length;
-		for (int i = 0; i < tmp.length; i++)
-			tmp[i] = val;
-
-		return tmp;
-	}
-
-	@Override
-	public Object resetOutputMessage(Object message)
-	{
-		
-		double particleMin = 0;
-		double particleMax = 0;
-		
-		RealDomain domain = _initialParticleDomain;
-
-		if (domain.isBounded())
-		{
-			particleMin = domain.getLowerBound();
-			particleMax = domain.getUpperBound();
-		}
-
-		int length = _particleValues.length;
-    	double particleIncrement = (length > 1) ? (particleMax - particleMin) / (length - 1) : 0;
-    	double particleValue = particleMin;
-    	
-    	for (int i = 0; i < length; i++)
-    	{
-    		_particleValues[i].setDouble(particleValue);
-    		particleValue += particleIncrement;
-    	}
-
-		ParticleBPSolverVariableToFactorMessage m = (ParticleBPSolverVariableToFactorMessage)message;
-		
-		m.particleValues = _particleValues;
-		
-		return m;
-	}
-
+	/*--------------------
+	 * Deprecated methods
+	 */
 	
 	@Deprecated
 	@Override

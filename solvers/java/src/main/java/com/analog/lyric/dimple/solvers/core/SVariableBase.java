@@ -124,12 +124,6 @@ public abstract class SVariableBase<MVariable extends Variable> extends SNode<MV
 	}
 	
 	@Override
-	public @Nullable Object resetOutputMessage(Object message)
-	{
-		return resetInputMessage(message);
-	}
-	
-	@Override
     public void moveNonEdgeSpecificState(ISolverNode other)
     {
     	

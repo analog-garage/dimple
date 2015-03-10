@@ -600,13 +600,10 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     }
 
 	@Override
-	public double[] resetInputMessage(Object message)
+	protected double[] createDefaultMessage()
 	{
-    	double [] retval = (double[])message;
-    	int domainLength = retval.length;
-    	double val = 1.0/domainLength;
-    	
-    	Arrays.fill(retval, val);
+    	final double [] retval = super.createDefaultMessage();
+    	Arrays.fill(retval, 1.0 / retval.length);
     	return retval;
 	}
 

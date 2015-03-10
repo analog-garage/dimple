@@ -168,15 +168,6 @@ public class LPDiscrete extends SDiscreteVariableBase
 		return beliefs;
 	}
 
-	/**
-	 * Does nothing. Returns null.
-	 */
-	@Override
-	public @Nullable Object resetInputMessage(Object message)
-	{
-		return null;
-	}
-
 	/*----------------------
 	 * LP SVariable methods
 	 */

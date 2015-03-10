@@ -391,8 +391,6 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		return _fixedValue;
 	}
 	
-	// FIXME: we do not allow null values in any currently supported domain, so we should make
-	// setting this to null the same as removing the fixed value
 	public void setFixedValueObject(@Nullable Object value)
 	{
 		setInputOrFixedValue(value, null);

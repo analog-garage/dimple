@@ -946,9 +946,6 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	}
 
 
-
-
-	// FIXME: REMOVE
 	/**
 	 * @deprecated Will be removed in future release. Instead set corresponding option
 	 * for desired proposal kernel (e.g. {@link NormalProposalKernel#standardDeviation}.
@@ -987,7 +984,6 @@ public class GibbsRealJoint extends SRealJointVariableBase
 			((MHSampler)_sampler).getProposalKernel().setParameters(parameters);
 	}
 	
-	// FIXME: REMOVE
 	// There should be a way to call these directly via the samplers
 	// If so, they should be removed from here since this makes this sampler-specific
 	@SuppressWarnings("null")
@@ -1119,14 +1115,6 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	public void resetCurrentSample()
 	{
 		_currentSample.setValue(_model.hasFixedValue() ? _model.getFixedValue().clone() : _initialSampleValue.clone());
-	}
-
-	// TODO Move to ISolverVariable
-	@Override
-	public Object resetInputMessage(Object message)
-	{
-		((RealJointValue)message).setValue(_model.hasFixedValue() ? _model.getFixedValue().clone() : _initialSampleValue.clone());
-		return message;
 	}
 
 	@Deprecated

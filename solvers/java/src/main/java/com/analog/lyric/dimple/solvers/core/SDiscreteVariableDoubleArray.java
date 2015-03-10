@@ -16,7 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -79,9 +78,6 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 		return getSiblingEdgeState(edge).varToFactorMsg.clone();
 	}
 	
-	@Override
-	public abstract @NonNull double[] resetInputMessage(Object message);
-	
 	@Deprecated
 	@Override
 	public Object getInputMsg(int portIndex)
@@ -96,13 +92,14 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 		return getSiblingEdgeState(portIndex).varToFactorMsg.representation();
 	}
 
-	public double [] createDefaultMessage()
+	/**
+	 * Default implementation returns an array of zeros with length matching domain size.
+	 * @since 0.08
+	 */
+	protected double [] createDefaultMessage()
 	{
-		//TODO: both variable and factor do this.  Why doesn't factor just ask variable?
-		int domainLength = _model.asDiscreteVariable().getDiscreteDomain().size();
-    	double[] retVal = new double[domainLength];
-    	return resetInputMessage(retVal);
-    }
+		return new double[getDomain().size()];
+	}
 
 	@Deprecated
 	@Override
