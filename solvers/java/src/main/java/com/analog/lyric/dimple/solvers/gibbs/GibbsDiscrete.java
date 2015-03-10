@@ -945,7 +945,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	@Override
 	public void setInputMsgValues(int portIndex, Object obj)
 	{
-		final IParameterizedMessage message = getEdge(portIndex).factorToVarMsg;
+		final IParameterizedMessage message = getSiblingEdgeState(portIndex).factorToVarMsg;
 		
 		if (obj instanceof IParameterizedMessage)
 		{
@@ -1037,15 +1037,15 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	
 	@SuppressWarnings("null")
 	@Override
-	public GibbsSolverEdge<?> getEdge(int siblingIndex)
+	public GibbsSolverEdge<?> getSiblingEdgeState(int siblingIndex)
 	{
-		return (GibbsSolverEdge<?>)super.getEdge(siblingIndex);
+		return (GibbsSolverEdge<?>)super.getSiblingEdgeState(siblingIndex);
 	}
 	
 	@SuppressWarnings("null")
 	GibbsDiscreteEdge getDiscreteEdge(int siblingIndex)
 	{
-		return (GibbsDiscreteEdge)super.getEdge(siblingIndex);
+		return (GibbsDiscreteEdge)super.getSiblingEdgeState(siblingIndex);
 	}
 	
 }

@@ -58,7 +58,7 @@ import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -103,7 +103,7 @@ import com.analog.lyric.options.IOptionKey;
  * 
  * @since 0.07
  */
-public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVariable,ISolverEdge>
+public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVariable,ISolverEdgeState>
 {
 	private double _damping = 0;
 	private @Nullable IFactorTable _currentFactorTable = null;
@@ -128,11 +128,11 @@ public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolve
 	}
 
 	@Override
-	public ISolverEdge createEdgeState(FactorGraphEdgeState edge)
+	public ISolverEdgeState createEdgeState(FactorGraphEdgeState edge)
 	{
 		final ISolverFactor sfactor = getSolverFactor(edge.getFactor(_model));
 
-		ISolverEdge sedge = sfactor.createEdge(edge);
+		ISolverEdgeState sedge = sfactor.createEdge(edge);
 		
 		if (sedge != null)
 		{

@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.math.DimpleRandomGenerator;
 
 public class NormalSampler implements IRealConjugateSampler
@@ -34,14 +34,14 @@ public class NormalSampler implements IRealConjugateSampler
 	private final NormalParameters _parameters = new NormalParameters();
 	
 	@Override
-	public final double nextSample(ISolverEdge[] edges, @Nullable FactorFunction input)
+	public final double nextSample(ISolverEdgeState[] edges, @Nullable FactorFunction input)
 	{
 		aggregateParameters(_parameters, edges, input);
 		return nextSample(_parameters);
 	}
 	
 	@Override
-	public final void aggregateParameters(IParameterizedMessage aggregateParameters, ISolverEdge[] edges,
+	public final void aggregateParameters(IParameterizedMessage aggregateParameters, ISolverEdgeState[] edges,
 		@Nullable FactorFunction input)
 	{
 		double totalPrecision = 0;

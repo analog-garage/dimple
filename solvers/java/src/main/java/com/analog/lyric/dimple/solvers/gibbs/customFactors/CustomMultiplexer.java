@@ -98,13 +98,13 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 			{
 				// Port is the currently selected input port
 				// Get the aggregated message from the variable connected to the output port
-				_outputVariable.getAggregateMessages(getEdge(portNum).factorToVarMsg,
+				_outputVariable.getAggregateMessages(getSiblingEdgeState(portNum).factorToVarMsg,
 					_outputVariableSiblingPortIndex, _conjugateSampler[portNum]);
 			}
 			else
 			{
 				// Port is not the currently selected input port
-				getEdge(portNum).factorToVarMsg.setNull();
+				getSiblingEdgeState(portNum).factorToVarMsg.setNull();
 			}
 		}
 		else
@@ -198,7 +198,7 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 					// Create message and tell the variable to use it
 					IParameterizedMessage msg =
 						((IRealConjugateSampler)conjugateSampler[edgeNumber]).createParameterMessage();
-					getEdge(edgeNumber).factorToVarMsg = msg;
+					getSiblingEdgeState(edgeNumber).factorToVarMsg = msg;
 				}
 			}
 			else if (var instanceof GibbsRealJoint)
@@ -211,7 +211,7 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 					// Create message and tell the variable to use it
 					IParameterizedMessage msg =
 						((IRealJointConjugateSampler)conjugateSampler[edgeNumber]).createParameterMessage();
-					getEdge(edgeNumber).factorToVarMsg = msg;
+					getSiblingEdgeState(edgeNumber).factorToVarMsg = msg;
 				}
 			}
 			else
@@ -298,8 +298,8 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 	}
 	
 	@Override
-	public GibbsGenericEdge getEdge(int siblingIndex)
+	public GibbsGenericEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (GibbsGenericEdge)super.getEdge(siblingIndex);
+		return (GibbsGenericEdge)super.getSiblingEdgeState(siblingIndex);
 	}
 }

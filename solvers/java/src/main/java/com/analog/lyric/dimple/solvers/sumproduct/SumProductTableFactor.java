@@ -206,7 +206,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	@Override
 	public DiscreteMessage cloneMessage(int edge)
 	{
-		return getEdge(edge).factorToVarMsg.clone();
+		return getSiblingEdgeState(edge).factorToVarMsg.clone();
 	}
 	
 	
@@ -381,7 +381,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 			final int[] indices = table[i];
 			for (int j = 0; j < indices.length; j++)
 			{
-				retval[i] *= getEdge(j).varToFactorMsg.getWeight(indices[j]);
+				retval[i] *= getSiblingEdgeState(j).varToFactorMsg.getWeight(indices[j]);
 			}
 		}
 		
@@ -532,7 +532,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 		double prod = weight;
 		for (int i = 0; i < nEdges; i++)
 		{
-			prod *= getEdge(i).varToFactorMsg.getWeight(entryIndices[i]);
+			prod *= getSiblingEdgeState(i).varToFactorMsg.getWeight(entryIndices[i]);
 		}
 
 		double sum = 0;
@@ -553,7 +553,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 			
 			//divide out contribution
 			final int j = entryIndices[i];
-			sum += prod / getEdge(i).varToFactorMsg.getWeight(j) *
+			sum += prod / getSiblingEdgeState(i).varToFactorMsg.getWeight(j) *
 				var.getMessageDerivative(weightIndex, edge.getVariableToFactorIndex())[j];
 		}
 		return sum;
@@ -621,7 +621,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 			{
 				if (outPortNum != j)
 				{
-					prod *= getEdge(j).varToFactorMsg.getWeight(entryIndices[j]);
+					prod *= getSiblingEdgeState(j).varToFactorMsg.getWeight(entryIndices[j]);
 				}
 			}
 			
@@ -677,7 +677,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 						double [] dvar = sv.getMessageDerivative(wn, edge.getVariableToFactorIndex());
 								
 						final int j = entryIndices[i];
-						sum += (prod / getEdge(i).varToFactorMsg.getWeight(j)) * dvar[j];
+						sum += (prod / getSiblingEdgeState(i).varToFactorMsg.getWeight(j)) * dvar[j];
 					}
 				}
 								
@@ -776,7 +776,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 		final double[][] messages = new double[nSiblings][];
 		for (int i = 0; i < nSiblings; ++i)
 		{
-			messages[i] = getEdge(i).varToFactorMsg.representation();
+			messages[i] = getSiblingEdgeState(i).varToFactorMsg.representation();
 		}
 		return messages;
 	}
@@ -789,7 +789,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 		final double[][] messages = new double[nSiblings][];
 		for (int i = 0; i < nSiblings; ++i)
 		{
-			messages[i] = getEdge(i).factorToVarMsg.representation();
+			messages[i] = getSiblingEdgeState(i).factorToVarMsg.representation();
 		}
 		return messages;
 	}
@@ -824,8 +824,8 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 
 	@SuppressWarnings("null")
 	@Override
-	public SumProductDiscreteEdge getEdge(int siblingIndex)
+	public SumProductDiscreteEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (SumProductDiscreteEdge)super.getEdge(siblingIndex);
+		return (SumProductDiscreteEdge)super.getSiblingEdgeState(siblingIndex);
 	}
 }

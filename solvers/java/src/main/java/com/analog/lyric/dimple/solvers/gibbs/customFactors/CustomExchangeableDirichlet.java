@@ -69,7 +69,7 @@ public class CustomExchangeableDirichlet extends GibbsRealFactor implements IRea
 		{
 			// Output port must be an output variable
 
-			DirichletParameters outputMsg = (DirichletParameters)getEdge(portNum).factorToVarMsg;
+			DirichletParameters outputMsg = (DirichletParameters)getSiblingEdgeState(portNum).factorToVarMsg;
 			
 			if (_hasConstantParameters)
 				outputMsg.fillAlphaMinusOne(_constantAlphaMinusOne);

@@ -29,7 +29,7 @@ import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.core.NoSolverEdge;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -47,7 +47,7 @@ import com.analog.lyric.math.DimpleRandomGenerator;
  * @since 0.07
  */
 @SuppressWarnings("deprecation") // TODO remove when SDiscreteVariable removed
-public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, IParticleBPVariable, ISolverEdge>
+public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, IParticleBPVariable, ISolverEdgeState>
 {
 	protected int _numIterationsBetweenResampling = 1;
 	protected boolean _temper = false;
@@ -74,7 +74,7 @@ public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, IPart
 	}
 
 	@Override
-	public ISolverEdge createEdgeState(FactorGraphEdgeState edge)
+	public ISolverEdgeState createEdgeState(FactorGraphEdgeState edge)
 	{
 		Variable var = edge.getVariable(_model);
 		

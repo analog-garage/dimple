@@ -31,20 +31,20 @@ public abstract class STableFactorDoubleArray extends STableFactorBase
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
-		return getEdge(portIndex).varToFactorMsg.representation();
+		return getSiblingEdgeState(portIndex).varToFactorMsg.representation();
 	}
 
 	@Deprecated
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
-		return getEdge(portIndex).factorToVarMsg.representation();
+		return getSiblingEdgeState(portIndex).factorToVarMsg.representation();
 	}
 
 	@Override
 	public void setInputMsgValues(int portIndex, Object obj)
 	{
-		final DiscreteMessage message = getEdge(portIndex).varToFactorMsg;
+		final DiscreteMessage message = getSiblingEdgeState(portIndex).varToFactorMsg;
 		
 		if (obj instanceof DiscreteMessage)
 		{
@@ -60,7 +60,7 @@ public abstract class STableFactorDoubleArray extends STableFactorBase
 	@Override
 	public void setOutputMsgValues(int portIndex, Object obj)
 	{
-		final DiscreteMessage message = getEdge(portIndex).factorToVarMsg;
+		final DiscreteMessage message = getSiblingEdgeState(portIndex).factorToVarMsg;
 		
 		if (obj instanceof DiscreteMessage)
 		{
@@ -76,8 +76,8 @@ public abstract class STableFactorDoubleArray extends STableFactorBase
 	
 	@SuppressWarnings({ "null" })
 	@Override
-	public SDiscreteEdge<?> getEdge(int siblingIndex)
+	public SDiscreteEdge<?> getSiblingEdgeState(int siblingIndex)
 	{
-		return (SDiscreteEdge<?>)super.getEdge(siblingIndex);
+		return (SDiscreteEdge<?>)super.getSiblingEdgeState(siblingIndex);
 	}
 }

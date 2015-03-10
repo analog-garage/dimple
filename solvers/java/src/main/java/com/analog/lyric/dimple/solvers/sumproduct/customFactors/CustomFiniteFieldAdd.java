@@ -46,7 +46,7 @@ public class CustomFiniteFieldAdd extends SFiniteFieldFactor
 
 		for (int i = 0; i < 3; i++)
 		{
-			final SumProductDiscreteEdge edge = getEdge(i);
+			final SumProductDiscreteEdge edge = getSiblingEdgeState(i);
 			if (outPortNum == i)
 			{
 				outputs = edge.factorToVarMsg.representation();

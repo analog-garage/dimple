@@ -71,7 +71,7 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 		{
 			// Output port must be an output variable
 
-			DirichletParameters outputMsg = (DirichletParameters)getEdge(portNum).factorToVarMsg;
+			DirichletParameters outputMsg = (DirichletParameters)getSiblingEdgeState(portNum).factorToVarMsg;
 			
 			if (_hasConstantParameters)
 				outputMsg.setAlphaMinusOne(_constantAlphaMinusOne);

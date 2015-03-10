@@ -77,7 +77,7 @@ public class CustomCategorical extends GibbsRealFactor implements IRealJointConj
 			// Determine sample alpha vector of the conjugate Dirichlet distribution
 			// Note: This case works for the Categorical factor function (which has joint parameters)
 			
-			DirichletParameters outputMsg = (DirichletParameters)getEdge(portNum).factorToVarMsg;
+			DirichletParameters outputMsg = (DirichletParameters)getSiblingEdgeState(portNum).factorToVarMsg;
 			
 			// Clear the output counts
 			outputMsg.setNull();

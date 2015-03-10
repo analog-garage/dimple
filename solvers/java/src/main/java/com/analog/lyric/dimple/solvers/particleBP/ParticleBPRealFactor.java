@@ -55,7 +55,7 @@ public class ParticleBPRealFactor extends SFactorBase
         final double[][] inputWeightsPerEdge = new double[nEdges][];
     	for (int i = 0; i < nEdges; ++i)
     	{
-    		inputWeightsPerEdge[i] = getEdge(i).varToFactorMsg.representation();
+    		inputWeightsPerEdge[i] = getSiblingEdgeState(i).varToFactorMsg.representation();
     	}
     	
         while (iter.hasNext())
@@ -86,7 +86,7 @@ public class ParticleBPRealFactor extends SFactorBase
 		final int nEdges = getSiblingCount();
 		FactorFunction factorFunction = _model.getFactorFunction();
 
-		final DiscreteMessage outputMsg = getEdge(outPortNum).factorToVarMsg;
+		final DiscreteMessage outputMsg = getSiblingEdgeState(outPortNum).factorToVarMsg;
 		outputMsg.setWeightsToZero();
         final double[] outputWeights = outputMsg.representation();
         
@@ -103,7 +103,7 @@ public class ParticleBPRealFactor extends SFactorBase
         	{
         		if (inPortNum != outPortNum)
         		{
-        			prob *= getEdge(inPortNum).varToFactorMsg.getWeight(variableIndices[inPortNum]);
+        			prob *= getSiblingEdgeState(inPortNum).varToFactorMsg.getWeight(variableIndices[inPortNum]);
         		}
         	}
 
@@ -124,7 +124,7 @@ public class ParticleBPRealFactor extends SFactorBase
         
 		for (int outPortNum = 0, n = getSiblingCount(); outPortNum < n; outPortNum++)
 		{
-			final DiscreteMessage outputMsg = getEdge(outPortNum).factorToVarMsg;
+			final DiscreteMessage outputMsg = getSiblingEdgeState(outPortNum).factorToVarMsg;
 			outputMsg.setWeightsToZero();
 			
 			final double[] outputWeights = outputMsg.representation();
@@ -139,11 +139,11 @@ public class ParticleBPRealFactor extends SFactorBase
 
 				for (int inPortNum = 0; inPortNum < outPortNum; inPortNum++)
 				{
-					prob *= getEdge(inPortNum).varToFactorMsg.getWeight(variableIndices[inPortNum]);
+					prob *= getSiblingEdgeState(inPortNum).varToFactorMsg.getWeight(variableIndices[inPortNum]);
 				}
 				for (int inPortNum = outPortNum + 1; inPortNum < n; inPortNum++)
 				{
-					prob *= getEdge(inPortNum).varToFactorMsg.getWeight(variableIndices[inPortNum]);
+					prob *= getSiblingEdgeState(inPortNum).varToFactorMsg.getWeight(variableIndices[inPortNum]);
 				}
 
 				outputWeights[variableIndices[outPortNum]] += prob;
@@ -169,33 +169,33 @@ public class ParticleBPRealFactor extends SFactorBase
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
-		return getEdge(portIndex).varToFactorMsg.representation();
+		return getSiblingEdgeState(portIndex).varToFactorMsg.representation();
 	}
 
     @Deprecated
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
-		return getEdge(portIndex).factorToVarMsg.representation();
+		return getSiblingEdgeState(portIndex).factorToVarMsg.representation();
 	}
 
 	@SuppressWarnings("null")
 	@Override
-	public SDiscreteWeightEdge getEdge(int siblingIndex)
+	public SDiscreteWeightEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (SDiscreteWeightEdge) super.getEdge(siblingIndex);
+		return (SDiscreteWeightEdge) super.getSiblingEdgeState(siblingIndex);
 	}
 
 	@SuppressWarnings("null")
 	protected SumProductDiscreteEdge getDiscreteEdge(int siblingIndex)
 	{
-		return (SumProductDiscreteEdge)getEdge(siblingIndex);
+		return (SumProductDiscreteEdge)getSiblingEdgeState(siblingIndex);
 	}
 
 	@SuppressWarnings("null")
 	protected ParticleBPRealEdge getRealEdge(int siblingIndex)
 	{
-		return (ParticleBPRealEdge)getEdge(siblingIndex);
+		return (ParticleBPRealEdge)getSiblingEdgeState(siblingIndex);
 	}
 
 	@Override

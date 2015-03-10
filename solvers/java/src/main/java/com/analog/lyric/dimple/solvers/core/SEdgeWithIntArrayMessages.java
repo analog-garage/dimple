@@ -20,7 +20,7 @@ import java.util.Arrays;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 
 /**
  * 
@@ -47,7 +47,7 @@ public class SEdgeWithIntArrayMessages extends SEdgeWithSymetricMessages<int[]>
 	}
 	
 	@Override
-	public void setFrom(ISolverEdge other)
+	public void setFrom(ISolverEdgeState other)
 	{
 		setFactorToVarMsg(other.getFactorToVarMsg());
 		setVarToFactorMsg(other.getVarToFactorMsg());

@@ -77,18 +77,18 @@ public class CustomFiniteFieldMult extends SFiniteFieldFactor
 	public void updateToX()
 	{
 
-		double [] xOutput = getEdge(0).factorToVarMsg.representation();
-		double [] yInput = getEdge(1).varToFactorMsg.representation();
-		double [] zInput = getEdge(2).varToFactorMsg.representation();
+		double [] xOutput = getSiblingEdgeState(0).factorToVarMsg.representation();
+		double [] yInput = getSiblingEdgeState(1).varToFactorMsg.representation();
+		double [] zInput = getSiblingEdgeState(2).varToFactorMsg.representation();
 		
 		updateBackward(yInput,zInput,xOutput);
 	}
 	
 	public void updateToY()
 	{
-		double [] yOutput = getEdge(1).factorToVarMsg.representation();
-		double [] xInput = getEdge(0).varToFactorMsg.representation();
-		double [] zInput = getEdge(2).varToFactorMsg.representation();
+		double [] yOutput = getSiblingEdgeState(1).factorToVarMsg.representation();
+		double [] xInput = getSiblingEdgeState(0).varToFactorMsg.representation();
+		double [] zInput = getSiblingEdgeState(2).varToFactorMsg.representation();
 		
 		updateBackward(xInput,zInput,yOutput);
 		
@@ -161,9 +161,9 @@ public class CustomFiniteFieldMult extends SFiniteFieldFactor
 		//       = SUM (over i) p(dlog(x) == i) * p(dlog(y) == dlog(a) - i)
 
 		
-		double [] xInput = getEdge(0).varToFactorMsg.representation();
-		double [] yInput = getEdge(1).varToFactorMsg.representation();
-		double [] zOutput = getEdge(2).factorToVarMsg.representation();
+		double [] xInput = getSiblingEdgeState(0).varToFactorMsg.representation();
+		double [] yInput = getSiblingEdgeState(1).varToFactorMsg.representation();
+		double [] zOutput = getSiblingEdgeState(2).factorToVarMsg.representation();
 
 		
 		@SuppressWarnings("null")

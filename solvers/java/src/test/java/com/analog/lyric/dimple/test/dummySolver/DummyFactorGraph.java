@@ -26,12 +26,12 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
-public class DummyFactorGraph extends SFactorGraphBase<ISolverFactor,ISolverVariable,ISolverEdge>
+public class DummyFactorGraph extends SFactorGraphBase<ISolverFactor,ISolverVariable,ISolverEdgeState>
 {
 	public DummyFactorGraph(FactorGraph factorGraph)
 	{

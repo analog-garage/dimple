@@ -87,7 +87,7 @@ public class SumProductReal extends SRealVariableBase
 	protected void doUpdateEdge(int outPortNum)
     {
     	final NormalParameters input = _input;
-    	final NormalParameters outMsg = getEdge(outPortNum).varToFactorMsg;
+    	final NormalParameters outMsg = getSiblingEdgeState(outPortNum).varToFactorMsg;
    	
     	// If fixed value, just return the input, which has been set to a zero-variance message
     	if (_model.hasFixedValue())
@@ -122,7 +122,7 @@ public class SumProductReal extends SRealVariableBase
     	{
     		if (i != outPortNum)
     		{
-    			final NormalParameters msg = getEdge(i).factorToVarMsg;
+    			final NormalParameters msg = getSiblingEdgeState(i).factorToVarMsg;
     			double tmpTau = msg.getPrecision();
     			
     			if (tmpTau == Double.POSITIVE_INFINITY)
@@ -198,7 +198,7 @@ public class SumProductReal extends SRealVariableBase
     	
     	for (int i = 0, n = getSiblingCount(); i < n; i++)
     	{
-    		final NormalParameters msg = getEdge(i).factorToVarMsg;
+    		final NormalParameters msg = getSiblingEdgeState(i).factorToVarMsg;
 			double tmpTau = msg.getPrecision();
 			
 			
@@ -276,7 +276,7 @@ public class SumProductReal extends SRealVariableBase
 	@Override
 	public void setInputMsgValues(int portIndex, Object obj)
 	{
-		getEdge(portIndex).factorToVarMsg.set((NormalParameters)obj);
+		getSiblingEdgeState(portIndex).factorToVarMsg.set((NormalParameters)obj);
 	}
 	
 	public NormalParameters createFixedValueMessage(double fixedValue)
@@ -294,7 +294,7 @@ public class SumProductReal extends SRealVariableBase
 	@Override
 	protected NormalParameters cloneMessage(int edge)
 	{
-		return getEdge(edge).varToFactorMsg.clone();
+		return getSiblingEdgeState(edge).varToFactorMsg.clone();
 	}
 	
 	@Override
@@ -305,8 +305,8 @@ public class SumProductReal extends SRealVariableBase
 
 	@Override
 	@SuppressWarnings("null")
-	public SNormalEdge getEdge(int siblingIndex)
+	public SNormalEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (SNormalEdge)super.getEdge(siblingIndex);
+		return (SNormalEdge)super.getSiblingEdgeState(siblingIndex);
 	}
 }

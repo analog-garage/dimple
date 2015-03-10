@@ -267,7 +267,7 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 		final double[][] messages = new double[nSiblings][];
 		for (int i = 0; i < nSiblings; ++i)
 		{
-			MinSumDiscreteEdge edge = getEdge(i);
+			MinSumDiscreteEdge edge = getSiblingEdgeState(i);
 			messages[i] = edge.varToFactorMsg.representation();
 		}
 		return messages;
@@ -281,7 +281,7 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 		final double[][] messages = new double[nSiblings][];
 		for (int i = 0; i < nSiblings; ++i)
 		{
-			MinSumDiscreteEdge edge = getEdge(i);
+			MinSumDiscreteEdge edge = getSiblingEdgeState(i);
 			messages[i] = edge.factorToVarMsg.representation();
 		}
 		return messages;
@@ -294,7 +294,7 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 	@Override
 	protected DiscreteEnergyMessage cloneMessage(int edge)
 	{
-		return getEdge(edge).factorToVarMsg.clone();
+		return getSiblingEdgeState(edge).factorToVarMsg.clone();
 	}
 	
 	@Override
@@ -394,9 +394,9 @@ public class MinSumTableFactor extends STableFactorDoubleArray
     
     @Override
 	@SuppressWarnings("null")
-	public MinSumDiscreteEdge getEdge(int siblingIndex)
+	public MinSumDiscreteEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (MinSumDiscreteEdge)super.getEdge(siblingIndex);
+		return (MinSumDiscreteEdge)super.getSiblingEdgeState(siblingIndex);
 	}
 }
 

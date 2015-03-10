@@ -26,7 +26,7 @@ import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.NoSolverEdge;
 import com.analog.lyric.dimple.solvers.core.SDiscreteZeroedWeightEdge;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -37,7 +37,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
  * @author shershey
  *
  */
-public class SFactorGraph  extends SFactorGraphBase<ISolverFactor,ISolverVariable,ISolverEdge>
+public class SFactorGraph  extends SFactorGraphBase<ISolverFactor,ISolverVariable,ISolverEdgeState>
 {
 
 	/**
@@ -57,7 +57,7 @@ public class SFactorGraph  extends SFactorGraphBase<ISolverFactor,ISolverVariabl
 	}
 	
 	@Override
-	public ISolverEdge createEdgeState(FactorGraphEdgeState edge)
+	public ISolverEdgeState createEdgeState(FactorGraphEdgeState edge)
 	{
 		Variable var = edge.getVariable(_model);
 		

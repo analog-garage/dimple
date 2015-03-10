@@ -21,7 +21,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.util.misc.Internal;
 
 @Internal
@@ -31,7 +31,7 @@ public interface IRealConjugateSampler extends ISampler
 	 * Note: previous version of this method had Ports instead of edges.
 	 * @since 0.08
 	 */
-	public double nextSample(ISolverEdge[] edges, @Nullable FactorFunction input);
+	public double nextSample(ISolverEdgeState[] edges, @Nullable FactorFunction input);
 	
 	public IParameterizedMessage createParameterMessage();
 	
@@ -40,6 +40,6 @@ public interface IRealConjugateSampler extends ISampler
 	 * @since 0.08
 	 */
 	@Internal
-	public void aggregateParameters(IParameterizedMessage aggregateParameters, ISolverEdge[] edges,
+	public void aggregateParameters(IParameterizedMessage aggregateParameters, ISolverEdgeState[] edges,
 		@Nullable FactorFunction input);
 }

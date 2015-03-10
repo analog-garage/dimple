@@ -222,7 +222,7 @@ public class FactorGraphStream
 				f.advance();
 			}
 			
-			requireNonNull(sfactor.getEdge(0)).setFactorToVarMsg(_myVar.getBeliefObject());
+			requireNonNull(sfactor.getSiblingEdgeState(0)).setFactorToVarMsg(_myVar.getBeliefObject());
 		}
 	}
 

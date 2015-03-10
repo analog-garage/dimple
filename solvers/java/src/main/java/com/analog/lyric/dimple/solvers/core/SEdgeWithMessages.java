@@ -16,14 +16,14 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 
 /**
  * 
  * @since 0.08
  * @author Christopher Barber
  */
-public abstract class SEdgeWithMessages<VarToFactorMsg, FactorToVarMsg> implements ISolverEdge
+public abstract class SEdgeWithMessages<VarToFactorMsg, FactorToVarMsg> implements ISolverEdgeState
 {
 	public VarToFactorMsg varToFactorMsg;
 	public FactorToVarMsg factorToVarMsg;

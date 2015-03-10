@@ -36,7 +36,7 @@ public abstract class MultivariateGaussianFactorBase extends SFactorBase
 	@Override
 	protected MultivariateNormalParameters cloneMessage(int edge)
 	{
-		return getEdge(edge).factorToVarMsg.clone();
+		return getSiblingEdgeState(edge).factorToVarMsg.clone();
 	}
 	
 	@Override
@@ -47,8 +47,8 @@ public abstract class MultivariateGaussianFactorBase extends SFactorBase
 	
 	@SuppressWarnings("null")
 	@Override
-	public SMultivariateNormalEdge getEdge(int siblingIndex)
+	public SMultivariateNormalEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (SMultivariateNormalEdge)super.getEdge(siblingIndex);
+		return (SMultivariateNormalEdge)super.getSiblingEdgeState(siblingIndex);
 	}
 }

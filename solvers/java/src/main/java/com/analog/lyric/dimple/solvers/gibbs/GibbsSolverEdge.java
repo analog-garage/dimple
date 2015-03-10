@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.solvers.gibbs;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 
 /**
  * Base class for solver edge state for Gibbs.
@@ -27,7 +27,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
  * @since 0.08
  * @author Christopher Barber
  */
-public abstract class GibbsSolverEdge<Message extends IParameterizedMessage> implements ISolverEdge
+public abstract class GibbsSolverEdge<Message extends IParameterizedMessage> implements ISolverEdgeState
 {
 	public Message factorToVarMsg;
 
@@ -62,7 +62,7 @@ public abstract class GibbsSolverEdge<Message extends IParameterizedMessage> imp
 	}
 
 	@Override
-	public void setFrom(ISolverEdge other)
+	public void setFrom(ISolverEdgeState other)
 	{
 		factorToVarMsg.setFrom(((GibbsSolverEdge<?>)other).factorToVarMsg);
 	}

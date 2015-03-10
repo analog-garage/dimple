@@ -40,7 +40,7 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 	@Override
 	public void doUpdateEdge(int outPortNum)
 	{
-		final MinSumDiscreteEdge outEdge = getEdge(outPortNum);
+		final MinSumDiscreteEdge outEdge = getSiblingEdgeState(outPortNum);
 		final double[] outMsg = outEdge.factorToVarMsg.representation();
 		final double savedLLR = outMsg[1];		// LLR value is only in the 1 entry
 		
@@ -50,7 +50,7 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 		{
 			if (inPortIndex != outPortNum)
 			{
-				double[] inMsg = getEdge(inPortIndex).varToFactorMsg.representation();
+				double[] inMsg = getSiblingEdgeState(inPortIndex).varToFactorMsg.representation();
 				double in = inMsg[1] - inMsg[0];			// Get the input LLR value
 				if (in < 0)
 				{
@@ -96,7 +96,7 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 	    	{
 	    		if (_dampingParams[port] != 0)
 	    		{
-	    			savedLLR[port] = getEdge(port).factorToVarMsg.getEnergy(1);		// LLR value is only in the 1 entry
+	    			savedLLR[port] = getSiblingEdgeState(port).factorToVarMsg.getEnergy(1);		// LLR value is only in the 1 entry
 	    		}
 	    	}
 	    }
@@ -107,7 +107,7 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 		int minIndex = -1;
 		for (int inPortIndex = 0; inPortIndex < _numPorts; inPortIndex++)
 		{
-			double[] inMsg = getEdge(inPortIndex).varToFactorMsg.representation();
+			double[] inMsg = getSiblingEdgeState(inPortIndex).varToFactorMsg.representation();
 			double in = inMsg[1] - inMsg[0];			// Get the input LLR value
 			if (in < 0)
 			{
@@ -126,7 +126,7 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 		
 		for (int outPortIndex = 0; outPortIndex < _numPorts; outPortIndex++)
 		{
-			final MinSumDiscreteEdge edge = getEdge(outPortIndex);
+			final MinSumDiscreteEdge edge = getSiblingEdgeState(outPortIndex);
 			double[] outMsg = edge.factorToVarMsg.representation();
 			double[] inMsg = edge.varToFactorMsg.representation();
 			double in = inMsg[1] - inMsg[0];				// Get the input LLR value
@@ -148,7 +148,7 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 				double damping = _dampingParams[port];
 				if (damping != 0)
 				{
-					double[] outputMsgs = getEdge(port).factorToVarMsg.representation();
+					double[] outputMsgs = getSiblingEdgeState(port).factorToVarMsg.representation();
 					outputMsgs[1] = (1-damping)*outputMsgs[1] + damping*savedLLR[port];
 				}
 			}
@@ -186,8 +186,8 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 
     @Override
 	@SuppressWarnings("null")
-	public MinSumDiscreteEdge getEdge(int siblingIndex)
+	public MinSumDiscreteEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return super.getEdge(siblingIndex);
+		return super.getSiblingEdgeState(siblingIndex);
 	}
 }

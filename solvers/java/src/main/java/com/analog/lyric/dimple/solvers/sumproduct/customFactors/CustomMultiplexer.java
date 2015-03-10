@@ -148,12 +148,12 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 		
 		double total = 0;
 	
-		final double[] yWeights = getEdge(0).varToFactorMsg.representation();
-		final double[] aWeights = getEdge(1).factorToVarMsg.representation();
+		final double[] yWeights = getSiblingEdgeState(0).varToFactorMsg.representation();
+		final double[] aWeights = getSiblingEdgeState(1).factorToVarMsg.representation();
 			
 		for (int i = 0; i < _aDomainSize; i++)
 		{
-			final double[] zWeights = getEdge(i+2).varToFactorMsg.representation();
+			final double[] zWeights = getSiblingEdgeState(i+2).varToFactorMsg.representation();
 			double sm = 0;
 			
 			for (int j = 0; j < _zIndices2yIndex[i].length; j++)
@@ -176,8 +176,8 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 	{
 		//P(Y=y) = sum_{a} p(a)p(za=y)
 		
-		double [] outMsg = getEdge(0).factorToVarMsg.representation();
-		double [] aInputMsg = getEdge(1).varToFactorMsg.representation();
+		double [] outMsg = getSiblingEdgeState(0).factorToVarMsg.representation();
+		double [] aInputMsg = getSiblingEdgeState(1).varToFactorMsg.representation();
 		
 		double total = 0;
 		
@@ -190,7 +190,7 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 			{
 				int a = tmp[0];
 				int z = tmp[1];
-				sm += aInputMsg[a] * getEdge(a+2).varToFactorMsg.getWeight(z);
+				sm += aInputMsg[a] * getSiblingEdgeState(a+2).varToFactorMsg.getWeight(z);
 			}
 			
 			outMsg[i] = sm;
@@ -210,9 +210,9 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 		
 		//P(Zi=x) = p(a=i)p(y=x) + sum_{j not i} sum_{z in za} p(aj)p(y=z)p(za=z)
 		
-		double [] zBelief = getEdge(index+2).factorToVarMsg.representation();
-		double [] yWeights = getEdge(0).varToFactorMsg.representation();
-		double [] aWeights = getEdge(1).varToFactorMsg.representation();
+		double [] zBelief = getSiblingEdgeState(index+2).factorToVarMsg.representation();
+		double [] yWeights = getSiblingEdgeState(0).varToFactorMsg.representation();
+		double [] aWeights = getSiblingEdgeState(1).varToFactorMsg.representation();
 		
 		double offset = 0;
 		
@@ -222,7 +222,7 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 			{
 				final double a = aWeights[j];
 				final int[] zIndices2yIndex = _zIndices2yIndex[j];
-				final double[] zWeights = getEdge(j+2).varToFactorMsg.representation();
+				final double[] zWeights = getSiblingEdgeState(j+2).varToFactorMsg.representation();
 				
 				for (int k = 0, nk = zIndices2yIndex.length; k < nk; k++)
 				{
@@ -250,8 +250,8 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 	
 	@SuppressWarnings("null")
 	@Override
-	public SumProductDiscreteEdge getEdge(int siblingIndex)
+	public SumProductDiscreteEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (SumProductDiscreteEdge)super.getEdge(siblingIndex);
+		return (SumProductDiscreteEdge)super.getSiblingEdgeState(siblingIndex);
 	}
 }

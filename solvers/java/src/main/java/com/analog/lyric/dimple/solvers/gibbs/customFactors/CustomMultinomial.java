@@ -94,7 +94,7 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 			// Output port is the joint alpha parameter input
 			// Determine sample alpha vector of the conjugate Dirichlet distribution
 			
-			DirichletParameters outputMsg = (DirichletParameters)getEdge(portNum).factorToVarMsg;
+			DirichletParameters outputMsg = (DirichletParameters)getSiblingEdgeState(portNum).factorToVarMsg;
 
 			// Clear the output counts
 			outputMsg.setNull(_dimension);

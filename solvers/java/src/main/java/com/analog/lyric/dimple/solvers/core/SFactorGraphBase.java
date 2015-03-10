@@ -45,7 +45,7 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.interfaces.IParameterizedSolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -55,7 +55,7 @@ import com.analog.lyric.util.misc.Internal;
 import com.google.common.collect.UnmodifiableIterator;
 
 public abstract class SFactorGraphBase
-	<SFactor extends ISolverFactor, SVariable extends ISolverVariable, SEdge extends ISolverEdge>
+	<SFactor extends ISolverFactor, SVariable extends ISolverVariable, SEdge extends ISolverEdgeState>
 	extends SNode<FactorGraph>
 	implements IParameterizedSolverFactorGraph<SFactor, SVariable, SEdge>
 {

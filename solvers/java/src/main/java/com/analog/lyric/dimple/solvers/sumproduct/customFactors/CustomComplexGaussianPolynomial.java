@@ -115,8 +115,8 @@ public class CustomComplexGaussianPolynomial extends MultivariateGaussianFactorB
 	{
 		
 		//get mu and sigma for complex numbers
-		MultivariateNormalParameters y = getEdge(0).varToFactorMsg;
-		MultivariateNormalParameters x = getEdge(1).factorToVarMsg;
+		MultivariateNormalParameters y = getSiblingEdgeState(0).varToFactorMsg;
+		MultivariateNormalParameters x = getSiblingEdgeState(1).factorToVarMsg;
 
 		Complex means = new Complex(y.getMean()[0],y.getMean()[1]);
 	
@@ -141,8 +141,8 @@ public class CustomComplexGaussianPolynomial extends MultivariateGaussianFactorB
 	public void updateToY()
 	{
 		//get mu and sigma for complex numbers
-		MultivariateNormalParameters y = getEdge(0).factorToVarMsg;
-		MultivariateNormalParameters x = getEdge(1).varToFactorMsg;
+		MultivariateNormalParameters y = getSiblingEdgeState(0).factorToVarMsg;
+		MultivariateNormalParameters x = getSiblingEdgeState(1).varToFactorMsg;
 		
 		double [] xmeans = x.getMean();
 		double [][] xcovar = x.getCovariance();

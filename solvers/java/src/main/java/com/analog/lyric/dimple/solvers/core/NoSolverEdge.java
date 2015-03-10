@@ -18,18 +18,18 @@ package com.analog.lyric.dimple.solvers.core;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 
 /**
  * A dummy solver edge type.
  * <p>
- * You can use this in place of {@link ISolverEdge} to document that there is no edge state as in
+ * You can use this in place of {@link ISolverEdgeState} to document that there is no edge state as in
  * {@linkplain com.analog.lyric.dimple.solvers.lp.LPSolverGraph LPSolverGraph}.
  * <p>
  * @since 0.08
  * @author Christopher Barber
  */
-public enum NoSolverEdge implements ISolverEdge
+public enum NoSolverEdge implements ISolverEdgeState
 {
 	INSTANCE;
 	
@@ -53,7 +53,7 @@ public enum NoSolverEdge implements ISolverEdge
 	}
 	
 	@Override
-	public void setFrom(ISolverEdge other)
+	public void setFrom(ISolverEdgeState other)
 	{
 	}
 	

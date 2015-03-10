@@ -80,7 +80,7 @@ public class STableFactor extends STableFactorDoubleArray
 	@Override
 	public void doUpdateEdge(int outPortNum)
 	{
-		DiscreteMessage out = getEdge(outPortNum).factorToVarMsg;
+		DiscreteMessage out = getSiblingEdgeState(outPortNum).factorToVarMsg;
 		
 		out.setWeightsToZero();
 		
@@ -88,7 +88,7 @@ public class STableFactor extends STableFactorDoubleArray
 		{
 			if (outPortNum != i)
 			{
-				out.addWeightsFrom(getEdge(i).varToFactorMsg);
+				out.addWeightsFrom(getSiblingEdgeState(i).varToFactorMsg);
 			}
 		}
 	}

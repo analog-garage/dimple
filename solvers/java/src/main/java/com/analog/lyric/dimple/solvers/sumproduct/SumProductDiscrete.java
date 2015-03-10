@@ -101,7 +101,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	{
 		if (_dampingInUse)
 		{
-			return getEdge(portIndex)._damping;
+			return getSiblingEdgeState(portIndex)._damping;
 		}
 		
 		return 0.0;
@@ -117,7 +117,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         int D = _model.getSiblingCount();
         double maxLog = Double.NEGATIVE_INFINITY;
 
-		final SumProductDiscreteEdge edge = getEdge(outPortNum);
+		final SumProductDiscreteEdge edge = getSiblingEdgeState(outPortNum);
 
 		final double[] outMsgs = edge.varToFactorMsg.representation();
 
@@ -144,7 +144,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	        {
 	        	if (d != outPortNum)		// For all ports except the output port
 	        	{
-	        		double tmp = getEdge(d).factorToVarMsg.getWeight(m);
+	        		double tmp = getSiblingEdgeState(d).factorToVarMsg.getWeight(m);
 	        		out += (tmp == 0) ? minLog : Math.log(tmp);
 	        	}
 	        }
@@ -202,7 +202,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 
         	for (int d = 0, i = m; d < D; d++, i += M)
 	        {
-	        	double tmp = getEdge(d).factorToVarMsg.getWeight(m);
+	        	double tmp = getSiblingEdgeState(d).factorToVarMsg.getWeight(m);
         		double logtmp = (tmp == 0) ? minLog : Math.log(tmp);
         		logInPortMsgs[i] = logtmp;
         		alpha += logtmp;
@@ -216,7 +216,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         	_dampingInUse ? DimpleEnvironment.doubleArrayCache.allocate(M) : ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	    for (int out_d = 0, dm = 0; out_d < D; out_d++, dm += M )
 	    {
-	    	final SumProductDiscreteEdge edge = getEdge(out_d);
+	    	final SumProductDiscreteEdge edge = getSiblingEdgeState(out_d);
             final double[] outMsgs = edge.varToFactorMsg.representation();
             
 
@@ -306,7 +306,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         	
 	        for (int d = 0; d < D; d++)
 	        {
-	        	double tmp = getEdge(d).factorToVarMsg.getWeight(m);
+	        	double tmp = getSiblingEdgeState(d).factorToVarMsg.getWeight(m);
 	        	out += (tmp == 0) ? minLog : Math.log(tmp);
 	        }
         	if (out > maxLog) maxLog = out;
@@ -355,7 +355,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		
 		for (int i = 0, n = getSiblingCount(); i < n; i++)
 		{
-			final double[] inMsg = getEdge(i).factorToVarMsg.representation();
+			final double[] inMsg = getSiblingEdgeState(i).factorToVarMsg.representation();
 			for (int j=  0; j < retval.length; j++)
 			{
 				retval[j] *= inMsg[j];
@@ -416,7 +416,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		{
 			final FactorGraphEdgeState edge = _model.getSiblingEdgeState(i);
 			SumProductTableFactor sft = (SumProductTableFactor)getSibling(i);
-			double inputMsg = getEdge(i).factorToVarMsg.getWeight(domain);
+			double inputMsg = getSiblingEdgeState(i).factorToVarMsg.getWeight(domain);
 			double tmp = f / inputMsg;
 			@SuppressWarnings("null")
 			double der = sft.getMessageDerivative(weightIndex, edge.getFactorToVariableIndex())[domain];
@@ -496,7 +496,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		{
 			if (i != outPortNum)
 			{
-				f *= getEdge(i).factorToVarMsg.getWeight(d);
+				f *= getSiblingEdgeState(i).factorToVarMsg.getWeight(d);
 			}
 		}
 		return f;
@@ -568,7 +568,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 			if (i != outPortNum)
 			{
 				final FactorGraphEdgeState edge = _model.getSiblingEdgeState(i);
-				double thisMsg = getEdge(i).factorToVarMsg.getWeight(d);
+				double thisMsg = getSiblingEdgeState(i).factorToVarMsg.getWeight(d);
 				SumProductTableFactor stf = (SumProductTableFactor)getSibling(i);
 				@SuppressWarnings("null")
 				double [] dfactor = stf.getMessageDerivative(wn, edge.getFactorToVariableIndex());
@@ -644,15 +644,15 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     	{
     		for (int i = 0; i < size; ++i)
     		{
-    			getEdge(i)._damping = dampingParams[i];
+    			getSiblingEdgeState(i)._damping = dampingParams[i];
     		}
     	}
     }
 
     @Override
 	@SuppressWarnings("null")
-	public SumProductDiscreteEdge getEdge(int siblingIndex)
+	public SumProductDiscreteEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (SumProductDiscreteEdge)super.getEdge(siblingIndex);
+		return (SumProductDiscreteEdge)super.getSiblingEdgeState(siblingIndex);
 	}
 }

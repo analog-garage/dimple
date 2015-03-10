@@ -152,7 +152,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 		double maxLog = Double.NEGATIVE_INFINITY;
 
 
-		final double[] outMsgs = getEdge(outPortNum).varToFactorMsg.representation();
+		final double[] outMsgs = getSiblingEdgeState(outPortNum).varToFactorMsg.representation();
 
 		final FactorFunction input = _input;
 		
@@ -170,7 +170,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 			{
 				if (d != outPortNum)		// For all ports except the output port
 				{
-					double tmp = getEdge(d).factorToVarMsg.getWeight(m);
+					double tmp = getSiblingEdgeState(d).factorToVarMsg.getWeight(m);
 					out += (tmp == 0) ? minLog : Math.log(tmp);
 				}
 			}
@@ -218,7 +218,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 
 				for (int d = 0, i = m; d < D; d++, i += M)
 				{
-					double tmp = getEdge(d).factorToVarMsg.getWeight(m);
+					double tmp = getSiblingEdgeState(d).factorToVarMsg.getWeight(m);
 					double logtmp = (tmp == 0) ? minLog : Math.log(tmp);
 					logInPortMsgs[i] = logtmp;
 					alpha += logtmp;
@@ -229,7 +229,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 		//Now compute output messages for each outgoing edge
 		for (int out_d = 0, dm = 0; out_d < D; out_d++, dm += M )
 		{
-			final DiscreteMessage outMsg = getEdge(out_d).varToFactorMsg;
+			final DiscreteMessage outMsg = getSiblingEdgeState(out_d).varToFactorMsg;
 			final double[] outWeights = outMsg.representation();
 
 			double maxLog = Double.NEGATIVE_INFINITY;
@@ -358,7 +358,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 				Factor factorNode = edge.getFactor(fg);
 				int factorPortNumber = edge.getFactorToVariableIndex();
 				ParticleBPRealFactor factor = (ParticleBPRealFactor)(solvers.getSolverFactor(factorNode));
-				getEdge(d).factorToVarMsg.setWeight(m,
+				getSiblingEdgeState(d).factorToVarMsg.setWeight(m,
 					Math.exp(factor.getMarginalPotential(sampleValue.getDouble(), factorPortNumber)));
 			}
 
@@ -392,7 +392,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 
 			for (int d = 0; d < D; d++)
 			{
-				double tmp = getEdge(d).factorToVarMsg.getWeight(m);
+				double tmp = getSiblingEdgeState(d).factorToVarMsg.getWeight(m);
 				out += (tmp == 0) ? minLog : Math.log(tmp);
 			}
 
@@ -500,7 +500,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 			_logWeight = Arrays.copyOf(_logWeight, numParticles);
 			for (int i  = 0, n = getSiblingCount(); i < n; ++i)
 			{
-				getEdge(i).resize(numParticles);
+				getSiblingEdgeState(i).resize(numParticles);
 			}
 		}
 	}
@@ -670,21 +670,21 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
-		return getEdge(portIndex).factorToVarMsg.representation();
+		return getSiblingEdgeState(portIndex).factorToVarMsg.representation();
 	}
 
 	@Deprecated
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
-		return getEdge(portIndex).varToFactorMsg.representation();
+		return getSiblingEdgeState(portIndex).varToFactorMsg.representation();
 	}
 
 	@Deprecated
 	@Override
 	public void setInputMsgValues(int portIndex, Object obj)
 	{
-		final DiscreteMessage message = getEdge(portIndex).factorToVarMsg;
+		final DiscreteMessage message = getSiblingEdgeState(portIndex).factorToVarMsg;
 		
 		if (obj instanceof DiscreteMessage)
 		{
@@ -699,8 +699,8 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 
 	@SuppressWarnings("null")
 	@Override
-	public ParticleBPRealEdge getEdge(int siblingIndex)
+	public ParticleBPRealEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (ParticleBPRealEdge)super.getEdge(siblingIndex);
+		return (ParticleBPRealEdge)super.getSiblingEdgeState(siblingIndex);
 	}
 }

@@ -52,7 +52,7 @@ public class SVariable extends SDiscreteVariableDoubleArray
 	@Override
 	protected void doUpdateEdge(int outPortNum)
 	{
-		final DiscreteMessage output = getEdge(outPortNum).varToFactorMsg;
+		final DiscreteMessage output = getSiblingEdgeState(outPortNum).varToFactorMsg;
 		
 		output.setWeights(_input);
 		
@@ -60,7 +60,7 @@ public class SVariable extends SDiscreteVariableDoubleArray
 		{
 			if (i != outPortNum)
 			{
-				DiscreteMessage input = getEdge(i).factorToVarMsg;
+				DiscreteMessage input = getSiblingEdgeState(i).factorToVarMsg;
 				output.addWeightsFrom(input);
 			}
 		}
@@ -78,7 +78,7 @@ public class SVariable extends SDiscreteVariableDoubleArray
 		
 		for (int i = 0, n = getSiblingCount(); i < n; i++)
 		{
-			output.addWeightsFrom(getEdge(i).factorToVarMsg);
+			output.addWeightsFrom(getSiblingEdgeState(i).factorToVarMsg);
 		}
 		
 		return output.representation();

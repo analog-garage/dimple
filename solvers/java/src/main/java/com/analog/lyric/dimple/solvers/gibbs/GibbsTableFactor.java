@@ -103,7 +103,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 
 		if (_isDeterministicDirected) throw new DimpleException("Invalid call to updateEdge");
 		
-		double[] outMessage = getEdge(outPortNum).factorToVarMsg.representation();
+		double[] outMessage = getSiblingEdgeState(outPortNum).factorToVarMsg.representation();
 
 		final int numPorts = _currentSamples.length;
 
@@ -261,7 +261,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
-		return getEdge(portIndex).factorToVarMsg.representation();
+		return getSiblingEdgeState(portIndex).factorToVarMsg.representation();
 	}
 
 	/*--------------------------
@@ -291,8 +291,8 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 
 	@SuppressWarnings("null")
 	@Override
-	public GibbsDiscreteEdge getEdge(int siblingIndex)
+	public GibbsDiscreteEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (GibbsDiscreteEdge)super.getEdge(siblingIndex);
+		return (GibbsDiscreteEdge)super.getSiblingEdgeState(siblingIndex);
 	}
 }

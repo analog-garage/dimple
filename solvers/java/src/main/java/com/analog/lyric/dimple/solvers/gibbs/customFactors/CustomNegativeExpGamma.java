@@ -84,7 +84,7 @@ public class CustomNegativeExpGamma extends GibbsRealFactor implements IRealConj
 		{
 			// Port is the beta-parameter input
 			// Determine sample alpha and beta parameters
-			GammaParameters outputMsg = (GammaParameters)getEdge(portNum).factorToVarMsg;
+			GammaParameters outputMsg = (GammaParameters)getSiblingEdgeState(portNum).factorToVarMsg;
 
 			// Start with the ports to variable outputs
 			double sum = 0;
@@ -108,7 +108,7 @@ public class CustomNegativeExpGamma extends GibbsRealFactor implements IRealConj
 		else if (portNum >= _numParameterEdges)
 		{
 			// Port is directed output
-			GammaParameters outputMsg = (GammaParameters)getEdge(portNum).factorToVarMsg;
+			GammaParameters outputMsg = (GammaParameters)getSiblingEdgeState(portNum).factorToVarMsg;
 			outputMsg.setAlphaMinusOne(_hasConstantAlpha ? _constantAlphaValueMinusOne : _alphaVariable.getCurrentSample() - 1);
 			outputMsg.setBeta(_hasConstantBeta ? _constantBetaValue : _betaVariable.getCurrentSample());
 		}

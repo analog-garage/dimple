@@ -80,7 +80,7 @@ public class CustomDiscreteTransition extends GibbsRealFactor implements IRealJo
 			// Port is a parameter input
 			// Determine sample alpha parameter vector for the current input x
 
-			DirichletParameters outputMsg = (DirichletParameters)getEdge(portNum).factorToVarMsg;
+			DirichletParameters outputMsg = (DirichletParameters)getSiblingEdgeState(portNum).factorToVarMsg;
 			
 			// Clear the output counts
 			outputMsg.setNull();

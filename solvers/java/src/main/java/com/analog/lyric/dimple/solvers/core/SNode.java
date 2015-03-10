@@ -26,7 +26,7 @@ import com.analog.lyric.dimple.events.SolverEventSource;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
@@ -316,7 +316,7 @@ public abstract class SNode<MNode extends Node> extends SolverEventSource implem
 	}
 	
 	@Override
-	public @Nullable ISolverEdge getEdge(int siblingIndex)
+	public @Nullable ISolverEdgeState getSiblingEdgeState(int siblingIndex)
 	{
 		return requireParentGraph().getSolverEdge(_model.getSiblingEdgeIndex(siblingIndex));
 	}

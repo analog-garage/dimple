@@ -74,7 +74,7 @@ public class CustomBeta extends GibbsRealFactor implements IRealConjugateFactor
 		if (portNum >= _numParameterEdges)
 		{
 			// Port is directed output
-			BetaParameters outputMsg = (BetaParameters)getEdge(portNum).factorToVarMsg;
+			BetaParameters outputMsg = (BetaParameters)getSiblingEdgeState(portNum).factorToVarMsg;
 			outputMsg.setAlphaMinusOne(_hasConstantAlpha ? _constantAlphaMinusOneValue : _alphaVariable.getCurrentSample() - 1);
 			outputMsg.setBetaMinusOne(_hasConstantBeta ? _constantBetaMinusOneValue : _betaVariable.getCurrentSample() - 1);
 		}

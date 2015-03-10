@@ -41,7 +41,7 @@ public abstract class SumProductFiniteFieldFactor extends SFactorBase
 	@Override
 	public DiscreteMessage cloneMessage(int edge)
 	{
-		return getEdge(edge).factorToVarMsg.clone();
+		return getSiblingEdgeState(edge).factorToVarMsg.clone();
 	}
 	
 	@Override
@@ -52,8 +52,8 @@ public abstract class SumProductFiniteFieldFactor extends SFactorBase
 	
 	@SuppressWarnings("null")
 	@Override
-	public SumProductDiscreteEdge getEdge(int siblingIndex)
+	public SumProductDiscreteEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (SumProductDiscreteEdge)super.getEdge(siblingIndex);
+		return (SumProductDiscreteEdge)super.getSiblingEdgeState(siblingIndex);
 	}
 }

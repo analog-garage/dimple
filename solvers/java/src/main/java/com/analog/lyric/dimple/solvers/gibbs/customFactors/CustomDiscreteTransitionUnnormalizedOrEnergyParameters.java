@@ -91,7 +91,7 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends Gibb
 			// NOTE: This class works for either DiscreteTransitionIndepenentParameters or DiscreteTransitionEnergyParameters factor functions
 			// since the actual parameter value doesn't come into play in determining the message in this direction
 
-			GammaParameters outputMsg = (GammaParameters)getEdge(portNum).factorToVarMsg;
+			GammaParameters outputMsg = (GammaParameters)getSiblingEdgeState(portNum).factorToVarMsg;
 			
 			// Get the parameter coordinates
 			int parameterEdgeOffset = portNum - _startingParameterEdge;

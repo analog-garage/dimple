@@ -34,7 +34,7 @@ import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.NoSolverEdge;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -61,7 +61,7 @@ import com.analog.lyric.options.IOptionKey;
  *  <p>
  * @since 0.07
  */
-public class MinSumSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVariable,ISolverEdge>
+public class MinSumSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVariable,ISolverEdgeState>
 {
 	protected double _damping = 0;
 
@@ -133,7 +133,7 @@ public class MinSumSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVar
 	}
 	
 	@Override
-	public ISolverEdge createEdgeState(FactorGraphEdgeState edge)
+	public ISolverEdgeState createEdgeState(FactorGraphEdgeState edge)
 	{
 		final Variable var = edge.getVariable(_model);
 

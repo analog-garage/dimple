@@ -70,7 +70,7 @@ public class CustomNormalConstantParameters extends GaussianFactorBase
 		
 		// Can set the output messages now since it will never change
 		for (int edge = 0, n = getSiblingCount(); edge < n; edge++)
-			getEdge(edge).factorToVarMsg.set(outputMessage);
+			getSiblingEdgeState(edge).factorToVarMsg.set(outputMessage);
 	}
 	
 	

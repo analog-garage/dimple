@@ -37,7 +37,7 @@ public abstract class GaussianFactorBase extends SFactorBase
 	@Override
 	protected NormalParameters cloneMessage(int edge)
 	{
-		return getEdge(edge).factorToVarMsg.clone();
+		return getSiblingEdgeState(edge).factorToVarMsg.clone();
 	}
 	
 	@Override
@@ -48,8 +48,8 @@ public abstract class GaussianFactorBase extends SFactorBase
 	
 	@SuppressWarnings("null")
 	@Override
-	public SNormalEdge getEdge(int siblingIndex)
+	public SNormalEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (SNormalEdge)super.getEdge(siblingIndex);
+		return (SNormalEdge)super.getSiblingEdgeState(siblingIndex);
 	}
 }

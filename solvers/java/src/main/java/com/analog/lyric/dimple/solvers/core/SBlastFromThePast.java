@@ -26,7 +26,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
@@ -68,7 +68,7 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 	}
 	
 	@Override
-	public @Nullable ISolverEdge getEdge(int siblingIndex)
+	public @Nullable ISolverEdgeState getSiblingEdgeState(int siblingIndex)
 	{
 		return requireParentGraph().getSolverEdge(_factor.getSiblingEdgeIndex(siblingIndex));
 	}
@@ -97,7 +97,7 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 	 */
 	
 	@Override
-	public @Nullable ISolverEdge createEdge(FactorGraphEdgeState edge)
+	public @Nullable ISolverEdgeState createEdge(FactorGraphEdgeState edge)
 	{
 		return null;
 	}
@@ -231,11 +231,11 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 		// FIXME lookup through solver graph
 		FactorGraphEdgeState edgeState = _portForBlastVar.toEdgeState();
 		ISolverFactorGraph sfg = _portForBlastVar.node.getParentGraph().getSolver();
-		ISolverEdge sedge = sfg.getSolverEdge(edgeState);
+		ISolverEdgeState sedge = sfg.getSolverEdge(edgeState);
 		
 		FactorGraphEdgeState edgeState2 = _portForOtherVar.toEdgeState();
 		ISolverFactorGraph sfg2 = _portForOtherVar.node.getParentGraph().getSolver();
-		ISolverEdge sedge2 = sfg2.getSolverEdge(edgeState2);
+		ISolverEdgeState sedge2 = sfg2.getSolverEdge(edgeState2);
 		
 		sedge.setFrom(sedge2);
 		sedge2.reset();

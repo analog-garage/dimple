@@ -56,7 +56,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IGenericSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IMCMCSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IRealSamplerClient;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.MHSampler;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
@@ -253,7 +253,7 @@ public class GibbsReal extends SRealVariableBase
 			// Use conjugate sampler, first update the messages from all factors
 			// Factor messages represent the current distribution parameters from each factor
 			final int numEdges = _model.getSiblingCount();
-			ISolverEdge[] sedges = new ISolverEdge[numEdges];
+			ISolverEdgeState[] sedges = new ISolverEdgeState[numEdges];
 			final FactorGraph fg = _model.requireParentGraph();
 			final SolverNodeMapping solvers = getSolverMapping();
 			final ISolverFactorGraph sfg = solvers.getSolverGraph(fg);
@@ -390,7 +390,7 @@ public class GibbsReal extends SRealVariableBase
 		final SolverNodeMapping solvers = getSolverMapping();
 		final ISolverFactorGraph sfg = solvers.getSolverGraph(fg);
 		final int numEdges = _model.getSiblingCount();
-		final ISolverEdge[] sedges = new ISolverEdge[numEdges - 1];
+		final ISolverEdgeState[] sedges = new ISolverEdgeState[numEdges - 1];
 		for (int port = 0, i = 0; port < numEdges; port++)
 		{
 			if (port != outPortNum)
@@ -476,7 +476,7 @@ public class GibbsReal extends SRealVariableBase
 		if (inputConjugateSampler != null)
 		{
 			// Sample from the input if there's an available sampler
-			double sampleValue = inputConjugateSampler.nextSample(new ISolverEdge[0], input);
+			double sampleValue = inputConjugateSampler.nextSample(new ISolverEdgeState[0], input);
 			
 			// If there are also bounds, clip at the bounds
 			if (sampleValue > hi) sampleValue = hi;
@@ -1134,8 +1134,8 @@ public class GibbsReal extends SRealVariableBase
 
 	@SuppressWarnings("null")
 	@Override
-	public GibbsSolverEdge<?> getEdge(int siblingIndex)
+	public GibbsSolverEdge<?> getSiblingEdgeState(int siblingIndex)
 	{
-		return (GibbsSolverEdge<?>)super.getEdge(siblingIndex);
+		return (GibbsSolverEdge<?>)super.getSiblingEdgeState(siblingIndex);
 	}
 }

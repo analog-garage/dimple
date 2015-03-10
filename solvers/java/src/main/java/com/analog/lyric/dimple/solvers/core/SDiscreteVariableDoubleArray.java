@@ -76,7 +76,7 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	@Override
 	protected DiscreteMessage cloneMessage(int edge)
 	{
-		return getEdge(edge).varToFactorMsg.clone();
+		return getSiblingEdgeState(edge).varToFactorMsg.clone();
 	}
 	
 	@Override
@@ -86,14 +86,14 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
-		return getEdge(portIndex).factorToVarMsg.representation();
+		return getSiblingEdgeState(portIndex).factorToVarMsg.representation();
 	}
 
 	@Deprecated
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
-		return getEdge(portIndex).varToFactorMsg.representation();
+		return getSiblingEdgeState(portIndex).varToFactorMsg.representation();
 	}
 
 	public double [] createDefaultMessage()
@@ -108,7 +108,7 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	@Override
 	public void setInputMsgValues(int portIndex, Object obj)
 	{
-		final DiscreteMessage message = getEdge(portIndex).factorToVarMsg;
+		final DiscreteMessage message = getSiblingEdgeState(portIndex).factorToVarMsg;
 		
 		if (obj instanceof DiscreteMessage)
 		{
@@ -125,7 +125,7 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	@Override
 	public void setOutputMsgValues(int portIndex, Object obj)
 	{
-		final DiscreteMessage message = getEdge(portIndex).varToFactorMsg;
+		final DiscreteMessage message = getSiblingEdgeState(portIndex).varToFactorMsg;
 		
 		if (obj instanceof DiscreteMessage)
 		{
@@ -141,8 +141,8 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 
 	@SuppressWarnings("null")
 	@Override
-	public SDiscreteEdge<?> getEdge(int siblingIndex)
+	public SDiscreteEdge<?> getSiblingEdgeState(int siblingIndex)
 	{
-		return (SDiscreteEdge<?>) super.getEdge(siblingIndex);
+		return (SDiscreteEdge<?>) super.getSiblingEdgeState(siblingIndex);
 	}
 }

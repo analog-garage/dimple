@@ -133,7 +133,7 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 			for (int port = 0; port < numPorts; port++)
 				values[port] = inputMsgs[port].getObject();
 
-			final GibbsDiscreteEdge edge = requireNonNull((GibbsDiscreteEdge)getEdge(outPortNum));
+			final GibbsDiscreteEdge edge = requireNonNull((GibbsDiscreteEdge)getSiblingEdgeState(outPortNum));
 			double[] outputMsgs = edge.factorToVarMsg.representation();
 			
 			@SuppressWarnings("null")
@@ -258,8 +258,8 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 
 	@SuppressWarnings("null")
 	@Override
-	public GibbsSolverEdge<?> getEdge(int siblingIndex)
+	public GibbsSolverEdge<?> getSiblingEdgeState(int siblingIndex)
 	{
-		return (GibbsSolverEdge<?>)super.getEdge(siblingIndex);
+		return (GibbsSolverEdge<?>)super.getSiblingEdgeState(siblingIndex);
 	}
 }

@@ -117,7 +117,7 @@ public class SumProductRealJoint extends SRealJointVariableBase
 	@Override
 	protected void doUpdateEdge(int outPortNum)
 	{
-		doUpdate(getEdge(outPortNum).varToFactorMsg, outPortNum);
+		doUpdate(getSiblingEdgeState(outPortNum).varToFactorMsg, outPortNum);
 	}
 
 	private void doUpdate(MultivariateNormalParameters outMsg, int outPortNum)
@@ -148,7 +148,7 @@ public class SumProductRealJoint extends SRealJointVariableBase
 		{
 			if (i != outPortNum)
 			{
-				final MultivariateNormalParameters inMsg = getEdge(i).factorToVarMsg;
+				final MultivariateNormalParameters inMsg = getSiblingEdgeState(i).factorToVarMsg;
 				
 				double [] inMsgVector = inMsg.getInformationVector();
 				
@@ -192,7 +192,7 @@ public class SumProductRealJoint extends SRealJointVariableBase
 	@Override
 	public void setInputMsgValues(int portIndex, Object obj)
 	{
-		getEdge(portIndex).factorToVarMsg.set((MultivariateNormalParameters)obj);
+		getSiblingEdgeState(portIndex).factorToVarMsg.set((MultivariateNormalParameters)obj);
 	}
 
 
@@ -212,7 +212,7 @@ public class SumProductRealJoint extends SRealJointVariableBase
 	@Override
 	protected MultivariateNormalParameters cloneMessage(int edge)
 	{
-		return getEdge(edge).varToFactorMsg.clone();
+		return getSiblingEdgeState(edge).varToFactorMsg.clone();
 	}
 	
 	@Override
@@ -223,8 +223,8 @@ public class SumProductRealJoint extends SRealJointVariableBase
 	
 	@SuppressWarnings("null")
 	@Override
-	public SMultivariateNormalEdge getEdge(int siblingIndex)
+	public SMultivariateNormalEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (SMultivariateNormalEdge)super.getEdge(siblingIndex);
+		return (SMultivariateNormalEdge)super.getSiblingEdgeState(siblingIndex);
 	}
 }

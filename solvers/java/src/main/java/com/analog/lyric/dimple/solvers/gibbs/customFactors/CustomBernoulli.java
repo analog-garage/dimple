@@ -75,7 +75,7 @@ public class CustomBernoulli extends GibbsRealFactor implements IRealConjugateFa
 			// Determine sample alpha and beta parameters
 
 			@SuppressWarnings("null")
-			BetaParameters outputMsg = (BetaParameters)getEdge(portNum).factorToVarMsg;
+			BetaParameters outputMsg = (BetaParameters)getSiblingEdgeState(portNum).factorToVarMsg;
 
 			final GibbsDiscrete[] outputVariables = requireNonNull(_outputVariables);
 			

@@ -78,7 +78,7 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends GibbsRealFa
 			// NOTE: This case works for either CategoricalUnnormalizedParameters or CategoricalEnergyParameters factor functions
 			// since the actual parameter value doesn't come into play in determining the message in this direction
 
-			GammaParameters outputMsg = (GammaParameters)getEdge(portNum).factorToVarMsg;
+			GammaParameters outputMsg = (GammaParameters)getSiblingEdgeState(portNum).factorToVarMsg;
 
 			// The parameter being updated corresponds to this value
 			int parameterIndex = _factorFunction.getIndexByEdge(portNum);

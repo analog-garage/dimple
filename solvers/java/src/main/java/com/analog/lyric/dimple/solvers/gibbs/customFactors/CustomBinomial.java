@@ -79,7 +79,7 @@ public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFac
 			// Determine sample alpha and beta parameters
 
 			@SuppressWarnings("null")
-			BetaParameters outputMsg = (BetaParameters)getEdge(portNum).factorToVarMsg;
+			BetaParameters outputMsg = (BetaParameters)getSiblingEdgeState(portNum).factorToVarMsg;
 
 			// Get the current values of N and the output count
 			@SuppressWarnings("null")

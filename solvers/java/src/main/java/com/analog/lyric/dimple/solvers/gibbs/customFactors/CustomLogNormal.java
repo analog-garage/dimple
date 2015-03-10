@@ -93,7 +93,7 @@ public class CustomLogNormal extends GibbsRealFactor implements IRealConjugateFa
 			// Port is the mean-parameter input
 			// Determine sample mean and precision
 
-			NormalParameters outputMsg = (NormalParameters)getEdge(portNum).factorToVarMsg;
+			NormalParameters outputMsg = (NormalParameters)getSiblingEdgeState(portNum).factorToVarMsg;
 				
 			// Start with the ports to variable outputs
 			double sum = 0;
@@ -119,7 +119,7 @@ public class CustomLogNormal extends GibbsRealFactor implements IRealConjugateFa
 			// Port is precision-parameter input
 			// Determine sample alpha and beta
 			
-			GammaParameters outputMsg = (GammaParameters)getEdge(portNum).factorToVarMsg;
+			GammaParameters outputMsg = (GammaParameters)getSiblingEdgeState(portNum).factorToVarMsg;
 			
 			// Get the current mean
 			double mean = _hasConstantMean ? _constantMeanValue : _meanVariable.getCurrentSample();

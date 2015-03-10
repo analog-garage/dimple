@@ -72,7 +72,7 @@ public class CustomPoisson extends GibbsRealFactor implements IRealConjugateFact
 			// Port is the probability-parameter input
 			// Determine sample alpha and beta parameters
 
-			GammaParameters outputMsg = (GammaParameters)getEdge(portNum).factorToVarMsg;
+			GammaParameters outputMsg = (GammaParameters)getSiblingEdgeState(portNum).factorToVarMsg;
 
 			// Get the current value of the output count
 			int outputValue = _hasConstantOutput ? _constantOutputValue : _outputVariable.getCurrentSampleIndex();

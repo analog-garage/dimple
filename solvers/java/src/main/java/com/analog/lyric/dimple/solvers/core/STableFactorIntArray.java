@@ -29,21 +29,21 @@ public abstract class STableFactorIntArray extends STableFactorBase
 	@Override
 	public void setInputMsgValues(int portIndex, Object obj)
 	{
-		final int[] inputMsg = getEdge(portIndex).varToFactorMsg;
+		final int[] inputMsg = getSiblingEdgeState(portIndex).varToFactorMsg;
 		System.arraycopy(obj,  0, inputMsg, 0, inputMsg.length);
 	}
 	
 	@Override
 	public void setOutputMsgValues(int portIndex, Object obj)
 	{
-		final int[] outputMsg = getEdge(portIndex).factorToVarMsg;
+		final int[] outputMsg = getSiblingEdgeState(portIndex).factorToVarMsg;
 		System.arraycopy(obj,  0, outputMsg, 0, outputMsg.length);
 	}
 
 	@SuppressWarnings({ "null", "unchecked" })
 	@Override
-	public SEdgeWithIntArrayMessages getEdge(int siblingIndex)
+	public SEdgeWithIntArrayMessages getSiblingEdgeState(int siblingIndex)
 	{
-		return (SEdgeWithIntArrayMessages) super.getEdge(siblingIndex);
+		return (SEdgeWithIntArrayMessages) super.getSiblingEdgeState(siblingIndex);
 	}
 }

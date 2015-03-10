@@ -20,7 +20,7 @@ import static java.util.Objects.*;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class Port
@@ -78,7 +78,7 @@ public class Port
 
 	/**
 	 * @deprecated instead use {@link #toEdgeState()} to get {@link FactorGraphEdgeState}, use
-	 * that to look up corresponding {@link ISolverEdge} in solver graph, which will contain the
+	 * that to look up corresponding {@link ISolverEdgeState} in solver graph, which will contain the
 	 * messages.
 	 */
 	@Deprecated
@@ -89,7 +89,7 @@ public class Port
 
 	/**
 	 * @deprecated instead use {@link #toEdgeState()} to get {@link FactorGraphEdgeState}, use
-	 * that to look up corresponding {@link ISolverEdge} in solver graph, which will contain the
+	 * that to look up corresponding {@link ISolverEdgeState} in solver graph, which will contain the
 	 * messages.
 	 */
 	@Deprecated
@@ -100,7 +100,7 @@ public class Port
 	
 	/**
 	 * @deprecated instead use {@link #toEdgeState()} to get {@link FactorGraphEdgeState}, use
-	 * that to look up corresponding {@link ISolverEdge} in solver graph, which will contain the
+	 * that to look up corresponding {@link ISolverEdgeState} in solver graph, which will contain the
 	 * messages.
 	 */
 	@Deprecated
@@ -112,7 +112,7 @@ public class Port
 
 	/**
 	 * @deprecated instead use {@link #toEdgeState()} to get {@link FactorGraphEdgeState}, use
-	 * that to look up corresponding {@link ISolverEdge} in solver graph, which will contain the
+	 * that to look up corresponding {@link ISolverEdgeState} in solver graph, which will contain the
 	 * messages.
 	 */
 	@Deprecated

@@ -26,31 +26,45 @@ import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.options.IOptionHolder;
 
 /**
+ * Base interface for solver nodes.
+ * <p>
  * @author schweitz
- *
  */
 public interface ISolverNode extends IOptionHolder, ISolverEventSource
 {
-	//Update all outgoing messages
+	/**
+	 * Perform update of this node.
+	 * <p>
+	 * For belief propogation (BP) solvers, this will update the outgoing messages for
+	 * all edges attached to this node.
+	 */
 	public void update() ;
 	
-	//Update output messages for the specified port number
-	public void updateEdge(int outPortNum) ;
+	/**
+	 * Perform update of this node with respect to a single edge.
+	 * <p>
+	 * For belief propogation (BP) solvers, this will update the outgoing message for
+	 * the specified edge.
+	 * <p>
+	 * @param edgeNumber specifies which edge to update. Must be a non-negative value less
+	 * than {@link #getSiblingCount()}.
+	 */
+	public void updateEdge(int edgeNumber) ;
 	
 	/**
 	 * Initialize the solver node.
 	 * <p>
-	 * This method is called before solve. It can be used to reset messages.
+	 * This method is called before solve.
 	 */
 	public void initialize() ;
 	
 	/**
-	 * Returns solver edge object, if any.
+	 * Returns solver edge state, if any.
 	 * 
 	 * @param edgeNumber identifies which edge to return. Must be non-negative and less than {@link #getSiblingCount()}
 	 * @since 0.08
 	 */
-	public @Nullable ISolverEdge getEdge(int edgeNumber);
+	public @Nullable ISolverEdgeState getSiblingEdgeState(int edgeNumber);
 	
 	/**
 	 * Returns the solver factor graph to which this node belongs.
@@ -59,24 +73,31 @@ public interface ISolverNode extends IOptionHolder, ISolverEventSource
 	
 	/**
 	 * Gets the highest level solver graph to which this node belongs (could be the node itself).
+	 * @since 0.08
 	 */
 	public ISolverFactorGraph getRootSolverGraph();
 
 	/**
-	 * Returns solver node attached to this node through edge with given index.
-	 * @param edge
+	 * Returns solver node attached to this node through edge with given edge number.
+	 * @param edgeNumber is non-negative value less than {@link #getSiblingCount()}
 	 * @since 0.06
-	 * @see #getSiblingCount()
 	 */
-	public ISolverNode getSibling(int edge);
+	public ISolverNode getSibling(int edgeNumber);
 	
 	/**
 	 * Returns number of solver nodes attached to this one.
+	 * <p>
+	 * This should be the same as the count on the corresponding {@linkplain #getModelObject() model node}.
+	 * <p>
 	 * @since 0.06
 	 * @see #getSibling(int)
 	 */
 	public int getSiblingCount();
 	
+	/**
+	 * Returns mapping of nodes to solvers for entire solver hierarchy.
+	 * @since 0.08
+	 */
 	public SolverNodeMapping getSolverMapping();
 	
 	public double getScore() ;
@@ -87,45 +108,49 @@ public interface ISolverNode extends IOptionHolder, ISolverEventSource
      * Return the model object associated with this solver node.
      */
     public INode getModelObject();
+
+    /*--------------------
+     * Deprecated methods
+     */
     
     /**
-     * @deprecated Instead use {@link #getEdge(int)} and {@link ISolverEdge#getFactorToVarMsg()} or
-     * {@link ISolverEdge#getVarToFactorMsg()}.
+     * @deprecated Instead use {@link #getSiblingEdgeState(int)} and {@link ISolverEdgeState#getFactorToVarMsg()} or
+     * {@link ISolverEdgeState#getVarToFactorMsg()}.
      */
     @Deprecated
     public @Nullable Object getInputMsg(int portIndex);
     
     /**
-     * @deprecated Instead use {@link #getEdge(int)} and {@link ISolverEdge#getFactorToVarMsg()} or
-     * {@link ISolverEdge#getVarToFactorMsg()}.
+     * @deprecated Instead use {@link #getSiblingEdgeState(int)} and {@link ISolverEdgeState#getFactorToVarMsg()} or
+     * {@link ISolverEdgeState#getVarToFactorMsg()}.
      */
     @Deprecated
     public @Nullable Object getOutputMsg(int portIndex);
     
     /**
-     * @deprecated Instead use {@link #getEdge(int)} and {@link ISolverEdge#getFactorToVarMsg()} or
-     * {@link ISolverEdge#getVarToFactorMsg()}.
+     * @deprecated Instead use {@link #getSiblingEdgeState(int)} and {@link ISolverEdgeState#getFactorToVarMsg()} or
+     * {@link ISolverEdgeState#getVarToFactorMsg()}.
      */
     @Deprecated
     public void setInputMsg(int portIndex,Object obj);
     
     /**
-     * @deprecated Instead use {@link #getEdge(int)} and {@link ISolverEdge#getFactorToVarMsg()} or
-     * {@link ISolverEdge#getVarToFactorMsg()}.
+     * @deprecated Instead use {@link #getSiblingEdgeState(int)} and {@link ISolverEdgeState#getFactorToVarMsg()} or
+     * {@link ISolverEdgeState#getVarToFactorMsg()}.
      */
     @Deprecated
     public void setOutputMsg(int portIndex,Object obj);
     
     /**
-     * @deprecated Instead use {@link #getEdge(int)} and {@link ISolverEdge#getFactorToVarMsg()} or
-     * {@link ISolverEdge#getVarToFactorMsg()}.
+     * @deprecated Instead use {@link #getSiblingEdgeState(int)} and {@link ISolverEdgeState#getFactorToVarMsg()} or
+     * {@link ISolverEdgeState#getVarToFactorMsg()}.
      */
     @Deprecated
     public void setInputMsgValues(int portIndex,Object obj);
     
     /**
-     * @deprecated Instead use {@link #getEdge(int)} and {@link ISolverEdge#getFactorToVarMsg()} or
-     * {@link ISolverEdge#getVarToFactorMsg()}.
+     * @deprecated Instead use {@link #getSiblingEdgeState(int)} and {@link ISolverEdgeState#getFactorToVarMsg()} or
+     * {@link ISolverEdgeState#getVarToFactorMsg()}.
      */
     @Deprecated
     public void setOutputMsgValues(int portIndex,Object obj);

@@ -32,7 +32,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealJoint;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
@@ -118,7 +118,7 @@ public class SampledFactor extends SFactorBase
 	}
 	
 	@Override
-	public @Nullable ISolverEdge createEdge(FactorGraphEdgeState edge)
+	public @Nullable ISolverEdgeState createEdge(FactorGraphEdgeState edge)
 	{
 		// Edge already created at construction time
 		return _edges[edge.getFactorToVariableIndex()];
@@ -213,8 +213,8 @@ public class SampledFactor extends SFactorBase
 
 	@SuppressWarnings("null")
 	@Override
-	public SEdgeWithMessages<?,?> getEdge(int siblingIndex)
+	public SEdgeWithMessages<?,?> getSiblingEdgeState(int siblingIndex)
 	{
-		return (SEdgeWithMessages<?, ?>) super.getEdge(siblingIndex);
+		return (SEdgeWithMessages<?, ?>) super.getSiblingEdgeState(siblingIndex);
 	}
 }

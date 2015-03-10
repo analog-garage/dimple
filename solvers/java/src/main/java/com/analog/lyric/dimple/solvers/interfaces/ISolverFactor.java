@@ -39,7 +39,7 @@ public interface ISolverFactor extends ISolverNode
 	@Override
 	public ISolverFactorGraph getParentGraph();
 	
-	public @Nullable ISolverEdge createEdge(FactorGraphEdgeState edge);
+	public @Nullable ISolverEdgeState createEdge(FactorGraphEdgeState edge);
 	
 	public int[][] getPossibleBeliefIndices() ;
 	

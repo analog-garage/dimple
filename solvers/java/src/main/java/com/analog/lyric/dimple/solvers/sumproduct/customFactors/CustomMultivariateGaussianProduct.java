@@ -73,8 +73,8 @@ public class CustomMultivariateGaussianProduct extends MultivariateGaussianFacto
 		else
 			direction = 'R';
 		
-		MultivariateNormalParameters outMsg = getEdge(outPortNum).factorToVarMsg;
-		MultivariateNormalParameters inMsg = getEdge(1-outPortNum).varToFactorMsg;
+		MultivariateNormalParameters outMsg = getSiblingEdgeState(outPortNum).factorToVarMsg;
+		MultivariateNormalParameters inMsg = getSiblingEdgeState(1-outPortNum).varToFactorMsg;
 		
 		matMult.ComputeMsg(inMsg, outMsg, direction);
 	}

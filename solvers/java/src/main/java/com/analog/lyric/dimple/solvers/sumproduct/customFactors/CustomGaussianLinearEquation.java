@@ -61,7 +61,7 @@ public class CustomGaussianLinearEquation extends GaussianFactorBase
 				if (i != outPortNum)
 				{
 					double constantsi = _weightVector[i];
-					NormalParameters msg = getEdge(i).varToFactorMsg;
+					NormalParameters msg = getSiblingEdgeState(i).varToFactorMsg;
 					mean -= msg.getMean() * constantsi;
 					variance += msg.getVariance() * constantsi * constantsi;
 				}
@@ -71,7 +71,7 @@ public class CustomGaussianLinearEquation extends GaussianFactorBase
 			variance /= (constantsout*constantsout);
 		}
 		 
-		NormalParameters msg = getEdge(outPortNum).factorToVarMsg;
+		NormalParameters msg = getSiblingEdgeState(outPortNum).factorToVarMsg;
 		msg.setMean(mean);
 		msg.setVariance(variance);
 	}

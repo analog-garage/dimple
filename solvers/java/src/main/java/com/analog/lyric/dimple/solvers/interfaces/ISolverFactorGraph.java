@@ -46,9 +46,9 @@ public interface ISolverFactorGraph	extends ISolverNode
 	@Override
 	public SolverNodeMapping getSolverMapping();
 
-	public @Nullable ISolverEdge getSolverEdge(FactorGraphEdgeState edge);
+	public @Nullable ISolverEdgeState getSolverEdge(FactorGraphEdgeState edge);
 	
-	public @Nullable ISolverEdge getSolverEdge(int edgeIndex);
+	public @Nullable ISolverEdgeState getSolverEdge(int edgeIndex);
 	
 	/**
 	 * @return solver-specific factor representing the given model factor or else null.

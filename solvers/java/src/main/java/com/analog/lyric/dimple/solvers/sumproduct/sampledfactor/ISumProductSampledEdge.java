@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.sampledfactor;
 
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.util.misc.Internal;
 
 /**
@@ -26,7 +26,7 @@ import com.analog.lyric.util.misc.Internal;
  * @category internal
  */
 @Internal
-public interface ISumProductSampledEdge<Message> extends ISolverEdge
+public interface ISumProductSampledEdge<Message> extends ISolverEdgeState
 {
 	@Override
 	public Message getVarToFactorMsg();

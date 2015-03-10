@@ -31,7 +31,7 @@ import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
  * @author Christopher Barber
  * @see FactorGraphEdgeState
  */
-public interface ISolverEdge
+public interface ISolverEdgeState
 {
 	/**
 	 * Returns message from factor to variable ends of the corresponding edge, if one exists.
@@ -68,7 +68,7 @@ public interface ISolverEdge
 	 * @param other must have the same type as this object.
 	 * @since 0.08
 	 */
-	public void setFrom(ISolverEdge other);
+	public void setFrom(ISolverEdgeState other);
 	
 	/**
 	 * Sets value of message from factor to variable ends of the corresponding edge.

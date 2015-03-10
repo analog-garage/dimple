@@ -24,7 +24,7 @@ import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -80,7 +80,7 @@ public abstract class SFactorBase extends SNode<Factor> implements ISolverFactor
 	}
 	
 	@Override
-	public @Nullable ISolverEdge createEdge(FactorGraphEdgeState edge)
+	public @Nullable ISolverEdgeState createEdge(FactorGraphEdgeState edge)
 	{
 		return null;
 	}
@@ -172,7 +172,7 @@ public abstract class SFactorBase extends SNode<Factor> implements ISolverFactor
 	@Override
 	public @Nullable Object getInputMsg(int portIndex)
 	{
-		final ISolverEdge sedge = getEdge(portIndex);
+		final ISolverEdgeState sedge = getSiblingEdgeState(portIndex);
 		return sedge != null ? sedge.getVarToFactorMsg() : null;
 	}
 	
@@ -180,7 +180,7 @@ public abstract class SFactorBase extends SNode<Factor> implements ISolverFactor
 	@Override
 	public @Nullable Object getOutputMsg(int portIndex)
 	{
-		final ISolverEdge sedge = getEdge(portIndex);
+		final ISolverEdgeState sedge = getSiblingEdgeState(portIndex);
 		return sedge != null ? sedge.getFactorToVarMsg() : null;
 	}
 }

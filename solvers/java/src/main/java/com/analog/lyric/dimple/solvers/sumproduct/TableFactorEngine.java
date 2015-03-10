@@ -46,7 +46,7 @@ public class TableFactorEngine
 	    final int tableLength = table.length;
 	    final int numPorts = _factor.getSiblingCount();
 	    
-        final double[] outputMsgs = tableFactor.getEdge(outPortNum).factorToVarMsg.representation();
+        final double[] outputMsgs = tableFactor.getSiblingEdgeState(outPortNum).factorToVarMsg.representation();
         final double [][] inputMsgs = tableFactor.getInPortMsgs();
         
     	final int outputMsgLength = outputMsgs.length;
@@ -128,7 +128,7 @@ public class TableFactorEngine
 	    
 	    for (int outPortNum = 0, savedOffset = 0; outPortNum < numPorts; outPortNum++)
 	    {
-	    	final double[] outputMsgs = tableFactor.getEdge(outPortNum).factorToVarMsg.representation();
+	    	final double[] outputMsgs = tableFactor.getSiblingEdgeState(outPortNum).factorToVarMsg.representation();
 	    	final int outputMsgLength = outputMsgs.length;
 	    		    	
 	    	if (useDamping)

@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverEdge;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.math.DimpleRandomGenerator;
 
 
@@ -34,14 +34,14 @@ public class GammaSampler implements IRealConjugateSampler
 	private final GammaParameters _parameters = new GammaParameters();
 
 	@Override
-	public final double nextSample(ISolverEdge[] edges, @Nullable FactorFunction input)
+	public final double nextSample(ISolverEdgeState[] edges, @Nullable FactorFunction input)
 	{
 		aggregateParameters(_parameters, edges, input);
 		return nextSample(_parameters);
 	}
 	
 	@Override
-	public final void aggregateParameters(IParameterizedMessage aggregateParameters, ISolverEdge[] edges,
+	public final void aggregateParameters(IParameterizedMessage aggregateParameters, ISolverEdgeState[] edges,
 		@Nullable FactorFunction input)
 	{
 		double alphaMinusOne = 0;
