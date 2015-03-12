@@ -68,13 +68,14 @@ public class TableFactorEngine
     		System.arraycopy(outputMsgs, 0, saved, 0, outputMsgLength);
         }
         
+    	double sum = 0.0;
     	Arrays.fill(outputMsgs, 0);
         
         for (int tableIndex = 0; tableIndex < tableLength; tableIndex++)
         {
         	double prob = values[tableIndex];
         	final int[] tableRow = table[tableIndex];
-    		int outputIndex = tableRow[outPortNum];
+    		final int outputIndex = tableRow[outPortNum];
         	
 			for (int inPortNum = 0; inPortNum < outPortNum; ++inPortNum)
 				prob *= inputMsgs[inPortNum][tableRow[inPortNum]];
@@ -82,10 +83,9 @@ public class TableFactorEngine
 				prob *= inputMsgs[inPortNum][tableRow[inPortNum]];
         	
         	outputMsgs[outputIndex] += prob;
+        	sum += prob;
         }
         
-    	double sum = 0;
-    	for (int i = 0; i < outputMsgLength; i++) sum += outputMsgs[i];
 		if (sum == 0)
 		{
 			throw new DimpleException("UpdateEdge failed in SumProduct Solver.  All probabilities were zero when calculating message for port "
@@ -97,8 +97,11 @@ public class TableFactorEngine
     	
 		if (useDamping)
 		{
+			final double inverseDamping = 1 - damping;
 			for (int i = 0; i < outputMsgLength; i++)
-				outputMsgs[i] = (1-damping)*outputMsgs[i] + damping*saved[i];
+			{
+				outputMsgs[i] = inverseDamping*outputMsgs[i] + damping*saved[i];
+			}
 			
 			DimpleEnvironment.doubleArrayCache.release(saved);
 		}

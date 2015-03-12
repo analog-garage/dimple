@@ -148,13 +148,13 @@ public class TableFactorEngine
     		savedOffset += outputMsgLength;
 	    }
 	    
-	    double [][] inPortMsgs = _tableFactor.getInPortMsgs();
+	    final double [][] inPortMsgs = _tableFactor.getInPortMsgs();
 
 	    
 	    // Run through each row of the function table
 	    for (int tableIndex = 0; tableIndex < tableLength; tableIndex++)
 	    {
-	    	int[] tableRow = tableIndices[tableIndex];
+	    	final int[] tableRow = tableIndices[tableIndex];
 	    	
 	    	// Sum up the function value plus the messages on all ports
 	    	double L = values[tableIndex];
@@ -164,9 +164,9 @@ public class TableFactorEngine
 			// Run through each output port
 	    	for (int outPortNum = 0; outPortNum < numPorts; outPortNum++)
 	    	{
-	    		double[] outputMsgs = outPortMsgs[outPortNum];
-	    		int outputIndex = tableRow[outPortNum];											// Index for the output value
-	    		double LThisPort = L - inPortMsgs[outPortNum][tableRow[outPortNum]];			// Subtract out the message from this output port
+	    		final double[] outputMsgs = outPortMsgs[outPortNum];
+	    		final int outputIndex = tableRow[outPortNum];											// Index for the output value
+	    		final double LThisPort = L - inPortMsgs[outPortNum][outputIndex];			// Subtract out the message from this output port
 	    		if (LThisPort < outputMsgs[outputIndex])
 	    			outputMsgs[outputIndex] = LThisPort;	// Use the minimum value
 	    	}
