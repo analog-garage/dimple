@@ -23,6 +23,7 @@ import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
+import com.google.common.primitives.Doubles;
 
 /**
  * Solver variable for Discrete variables under Min-Sum solver.
@@ -67,14 +68,10 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 	{
 
 		double[] priors = _input;
-		int numPorts = _model.getSiblingCount();
-		int numValue = priors.length;
-
-		// Compute the sum of all messages
-		double minPotential = Double.POSITIVE_INFINITY;
+		final int numPorts = _model.getSiblingCount();
+		final int numValue = priors.length;
 
 		final MinSumDiscreteEdge edge = getSiblingEdgeState(outPortNum);
-		
 		final double[] outMsgs = edge.varToFactorMsg.representation();
 		
         double[] savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY;
@@ -82,24 +79,30 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
         // Save previous output for damping
 		if (_dampingInUse)
 		{
-        	savedOutMsgArray = DimpleEnvironment.doubleArrayCache.allocate(numValue);
+        	savedOutMsgArray = DimpleEnvironment.doubleArrayCache.allocateAtLeast(numValue);
 			double damping = edge._damping;
 			if (damping != 0)
 			{
-				for (int i = 0; i < outMsgs.length; i++)
-					savedOutMsgArray[i] = outMsgs[i];
+				System.arraycopy(outMsgs, 0, savedOutMsgArray, 0, numValue);
 			}
 		}
 
-		for (int i = 0; i < numValue; i++)
+		System.arraycopy(priors, 0, outMsgs, 0, numValue);
+		for (int port = 0; port < outPortNum; ++port)
 		{
-			double out = priors[i];
-			for (int port = 0; port < numPorts; port++)
-				if (port != outPortNum) out += getSiblingEdgeState(port).factorToVarMsg.getEnergy(i);
-			outMsgs[i] = out;
-
-			if (out < minPotential)
-				minPotential = out;
+			final double[] energies = getSiblingEdgeState(port).factorToVarMsg.representation();
+			for (int i = 0; i < numValue; ++i)
+			{
+				outMsgs[i] += energies[i];
+			}
+		}
+		for (int port = outPortNum + 1; port < numPorts; ++port)
+		{
+			final double[] energies = getSiblingEdgeState(port).factorToVarMsg.representation();
+			for (int i = 0; i < numValue; ++i)
+			{
+				outMsgs[i] += energies[i];
+			}
 		}
 
 		// Damping
@@ -116,8 +119,14 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		}
 
 		// Normalize the min
-		for (int i = 0; i < numValue; i++)
-			outMsgs[i] -= minPotential;
+		final double minPotential = Doubles.min(outMsgs);
+		if (minPotential != 0.0)
+		{
+			for (int i = 0; i < numValue; i++)
+			{
+				outMsgs[i] -= minPotential;
+			}
+		}
 	}
 
 
@@ -132,20 +141,21 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		int numValue = priors.length;
 
 		// Compute the sum of all messages
-		double[] beliefs = new double[numValue];
+		double[] beliefs = priors.clone();
 
-		for (int i = 0; i < numValue; i++)
+		for (int port = 0; port < numPorts; port++)
 		{
-			double sum = priors[i];
-			for (int port = 0; port < numPorts; port++)
-				sum += getSiblingEdgeState(port).factorToVarMsg.getEnergy(i);
-			beliefs[i] = sum;
+			final MinSumDiscreteEdge edge = getSiblingEdgeState(port);
+			final double[] outMsgs = edge.factorToVarMsg.representation();
+			for (int i = 0; i < numValue; i++)
+			{
+				beliefs[i] += outMsgs[i];
+			}
 		}
-
-
+		
 		// Now compute output messages for each outgoing edge
         final double[] savedOutMsgArray =
-        	_dampingInUse ? DimpleEnvironment.doubleArrayCache.allocate(numValue) : ArrayUtil.EMPTY_DOUBLE_ARRAY;
+        	_dampingInUse ? DimpleEnvironment.doubleArrayCache.allocateAtLeast(numValue) : ArrayUtil.EMPTY_DOUBLE_ARRAY;
 		for (int port = 0; port < numPorts; port++ )
 		{
 			final MinSumDiscreteEdge edge = getSiblingEdgeState(port);
@@ -317,6 +327,6 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 	@SuppressWarnings("null")
 	public MinSumDiscreteEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (MinSumDiscreteEdge)super.getSiblingEdgeState(siblingIndex);
+		return (MinSumDiscreteEdge)getSiblingEdgeState_(siblingIndex);
 	}
 }

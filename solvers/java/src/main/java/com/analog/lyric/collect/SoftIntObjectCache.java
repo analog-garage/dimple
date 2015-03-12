@@ -20,6 +20,8 @@ import java.lang.ref.SoftReference;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
+import net.jcip.annotations.ThreadSafe;
+
 import org.eclipse.jdt.annotation.Nullable;
 
 /**
@@ -32,6 +34,7 @@ import org.eclipse.jdt.annotation.Nullable;
  * @since 0.08
  * @author Christopher Barber
  */
+@ThreadSafe
 public class SoftIntObjectCache<T>
 {
 
@@ -108,5 +111,4 @@ public class SoftIntObjectCache<T>
 			}
 		}
 	}
-
 }

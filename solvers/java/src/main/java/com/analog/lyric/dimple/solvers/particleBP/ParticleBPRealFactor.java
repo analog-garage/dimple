@@ -183,19 +183,19 @@ public class ParticleBPRealFactor extends SFactorBase
 	@Override
 	public SDiscreteWeightEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (SDiscreteWeightEdge) super.getSiblingEdgeState(siblingIndex);
+		return (SDiscreteWeightEdge)getSiblingEdgeState_(siblingIndex);
 	}
 
 	@SuppressWarnings("null")
 	protected SumProductDiscreteEdge getDiscreteEdge(int siblingIndex)
 	{
-		return (SumProductDiscreteEdge)getSiblingEdgeState(siblingIndex);
+		return (SumProductDiscreteEdge)getSiblingEdgeState_(siblingIndex);
 	}
 
 	@SuppressWarnings("null")
 	protected ParticleBPRealEdge getRealEdge(int siblingIndex)
 	{
-		return (ParticleBPRealEdge)getSiblingEdgeState(siblingIndex);
+		return (ParticleBPRealEdge)getSiblingEdgeState_(siblingIndex);
 	}
 
 	@Override

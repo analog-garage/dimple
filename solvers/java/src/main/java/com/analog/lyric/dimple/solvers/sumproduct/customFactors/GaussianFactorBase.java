@@ -50,6 +50,6 @@ public abstract class GaussianFactorBase extends SFactorBase
 	@Override
 	public SNormalEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (SNormalEdge)super.getSiblingEdgeState(siblingIndex);
+		return (SNormalEdge)getSiblingEdgeState_(siblingIndex);
 	}
 }

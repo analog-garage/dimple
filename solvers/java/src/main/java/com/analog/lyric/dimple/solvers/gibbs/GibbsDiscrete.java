@@ -31,6 +31,8 @@ import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
@@ -46,6 +48,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IDiscreteDirectSam
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IDiscreteSamplerClient;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IGenericSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IMCMCSampler;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.Internal;
 import com.google.common.primitives.Doubles;
@@ -288,19 +291,25 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		double minEnergy = Double.POSITIVE_INFINITY;
 		
 		// Conditional probability in log domain
-		final double[] conditional = DimpleEnvironment.doubleArrayCache.allocate(messageLength);
+		final double[] conditional = DimpleEnvironment.doubleArrayCache.allocateAtLeast(messageLength);
 
 		// Compute the conditional probability
 		if (!_model.isDeterministicInput())
 		{
-			
+			final double[][] inputMsgs = new double[numPorts][];
 			
 			// Update all the neighboring factors
 			// If there are no deterministic dependents, then it should be faster to have
 			// each neighboring factor update its entire message to this variable than the alternative, below
+			final FactorGraph fg = requireNonNull(_model.getParentGraph());
+			final ISolverFactorGraph sfg = _parent;
 			for (int port = 0; port < numPorts; port++)
 			{
-				getSibling(port).updateEdgeMessage(_model.getSiblingPortIndex(port));
+				final int edgeIndex = _model.getSiblingEdgeIndex(port);
+				final FactorGraphEdgeState edgeState = requireNonNull(fg.getGraphEdgeState(edgeIndex));
+				final GibbsDiscreteEdge sedge = requireNonNull((GibbsDiscreteEdge)sfg.getSolverEdge(edgeIndex));
+				inputMsgs[port] = sedge.factorToVarMsg.representation();
+				getSibling(port).updateEdgeMessage(edgeState.getFactorToVariableIndex());
 			}
 			
 			// Sum up the messages to get the conditional distribution
@@ -310,8 +319,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 				double out = _input.getEnergy(index);						// Sum of the input prior...
 				for (int port = 0; port < numPorts; port++)
 				{
-					double tmp = getDiscreteEdge(port).factorToVarMsg.getEnergy(index);
-					out += tmp;			// Plus each input message value
+					out += inputMsgs[port][index]; // Plus each input message value
 				}
 				out *= _beta;									// Apply tempering
 
@@ -1020,7 +1028,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	@Override
 	public GibbsSolverEdge<?> getSiblingEdgeState(int siblingIndex)
 	{
-		return (GibbsSolverEdge<?>)super.getSiblingEdgeState(siblingIndex);
+		return (GibbsSolverEdge<?>)getSiblingEdgeState_(siblingIndex);
 	}
 	
 	@SuppressWarnings("null")

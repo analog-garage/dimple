@@ -210,7 +210,8 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 			final double damping = tableFactor.getDamping(_outPortNum);
 			final boolean useDamping = damping != 0;
 			final double[] saved =
-				useDamping? DimpleEnvironment.doubleArrayCache.allocate(outputMsgLength) : ArrayUtil.EMPTY_DOUBLE_ARRAY;
+				useDamping? DimpleEnvironment.doubleArrayCache.allocateAtLeast(outputMsgLength) :
+					ArrayUtil.EMPTY_DOUBLE_ARRAY;
 			
 			if (useDamping)
 			{
@@ -278,7 +279,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 			final int outputMsgLength = outputMsg.length;
 			final boolean useDamping = damping != 0;
 			final double[] saved = useDamping ?
-				DimpleEnvironment.doubleArrayCache.allocate(outputMsgLength) : ArrayUtil.EMPTY_DOUBLE_ARRAY;
+				DimpleEnvironment.doubleArrayCache.allocateAtLeast(outputMsgLength) : ArrayUtil.EMPTY_DOUBLE_ARRAY;
 				
 			if (useDamping)
 			{

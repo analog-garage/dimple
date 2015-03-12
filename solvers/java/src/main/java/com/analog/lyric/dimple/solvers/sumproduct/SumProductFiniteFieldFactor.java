@@ -54,6 +54,6 @@ public abstract class SumProductFiniteFieldFactor extends SFactorBase
 	@Override
 	public SumProductDiscreteEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (SumProductDiscreteEdge)super.getSiblingEdgeState(siblingIndex);
+		return (SumProductDiscreteEdge)getSiblingEdgeState_(siblingIndex);
 	}
 }

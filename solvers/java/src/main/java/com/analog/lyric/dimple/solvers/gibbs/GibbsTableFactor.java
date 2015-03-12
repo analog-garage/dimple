@@ -293,6 +293,6 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	@Override
 	public GibbsDiscreteEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (GibbsDiscreteEdge)super.getSiblingEdgeState(siblingIndex);
+		return (GibbsDiscreteEdge)getSiblingEdgeState_(siblingIndex);
 	}
 }

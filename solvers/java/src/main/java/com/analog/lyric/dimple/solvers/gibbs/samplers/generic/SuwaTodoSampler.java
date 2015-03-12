@@ -44,7 +44,7 @@ public class SuwaTodoSampler extends AbstractGenericSampler implements IDiscrete
 	public void nextSample(DiscreteValue sampleValue, double[] energy, double minEnergy, IDiscreteSamplerClient samplerClient)
 	{
 		RandomGenerator rand = DimpleRandomGenerator.rand;
-		final int length = energy.length;
+		final int length = sampleValue.getDomain().size(); // energy may be longer than domain size
 		int sampleIndex;
 
 		// Special-case length 2 for speed

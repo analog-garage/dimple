@@ -31,6 +31,7 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.util.misc.Internal;
 
@@ -125,12 +126,11 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         	
         if (_dampingInUse)
         {
-        	savedOutMsgArray = DimpleEnvironment.doubleArrayCache.allocate(M);
+        	savedOutMsgArray = DimpleEnvironment.doubleArrayCache.allocateAtLeast(M);
         	double damping = edge._damping;
         	if (damping != 0)
         	{
-        		for (int m = 0; m < outMsgs.length; m++)
-        			savedOutMsgArray[m] = outMsgs[m];
+        		System.arraycopy(outMsgs,  0, savedOutMsgArray, 0, M);
         	}
         }
 
@@ -191,10 +191,15 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         int M = priors.length;
         int D = _model.getSiblingCount();
         
+        final DiscreteWeightMessage[] factorToVarMsgs = new DiscreteWeightMessage[D];
+    	for (int d = 0; d < D; d++)
+        {
+    		factorToVarMsgs[d] = getSiblingEdgeState(d).factorToVarMsg;
+        }
         
         //Compute alphas
-        final double[] logInPortMsgs = DimpleEnvironment.doubleArrayCache.allocate(M*D);
-        final double[] alphas = DimpleEnvironment.doubleArrayCache.allocate(M);
+        final double[] logInPortMsgs = DimpleEnvironment.doubleArrayCache.allocateAtLeast(M*D);
+        final double[] alphas = DimpleEnvironment.doubleArrayCache.allocateAtLeast(M);
         for (int m = 0; m < M; m++)
         {
         	double prior = priors[m];
@@ -202,7 +207,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 
         	for (int d = 0, i = m; d < D; d++, i += M)
 	        {
-	        	double tmp = getSiblingEdgeState(d).factorToVarMsg.getWeight(m);
+	        	double tmp = factorToVarMsgs[d].getWeight(m);
         		double logtmp = (tmp == 0) ? minLog : Math.log(tmp);
         		logInPortMsgs[i] = logtmp;
         		alpha += logtmp;
@@ -213,7 +218,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         
         //Now compute output messages for each outgoing edge
         final double[] savedOutMsgArray =
-        	_dampingInUse ? DimpleEnvironment.doubleArrayCache.allocate(M) : ArrayUtil.EMPTY_DOUBLE_ARRAY;
+        	_dampingInUse ? DimpleEnvironment.doubleArrayCache.allocateAtLeast(M) : ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	    for (int out_d = 0, dm = 0; out_d < D; out_d++, dm += M )
 	    {
 	    	final SumProductDiscreteEdge edge = getSiblingEdgeState(out_d);
@@ -650,6 +655,6 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	@SuppressWarnings("null")
 	public SumProductDiscreteEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (SumProductDiscreteEdge)super.getSiblingEdgeState(siblingIndex);
+		return (SumProductDiscreteEdge)getSiblingEdgeState_(siblingIndex);
 	}
 }

@@ -44,6 +44,6 @@ public abstract class STableFactorIntArray extends STableFactorBase
 	@Override
 	public SEdgeWithIntArrayMessages getSiblingEdgeState(int siblingIndex)
 	{
-		return (SEdgeWithIntArrayMessages) super.getSiblingEdgeState(siblingIndex);
+		return (SEdgeWithIntArrayMessages) getSiblingEdgeState_(siblingIndex);
 	}
 }

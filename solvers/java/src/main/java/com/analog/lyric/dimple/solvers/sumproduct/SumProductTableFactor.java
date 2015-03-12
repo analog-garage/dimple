@@ -826,6 +826,6 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	@Override
 	public SumProductDiscreteEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (SumProductDiscreteEdge)super.getSiblingEdgeState(siblingIndex);
+		return (SumProductDiscreteEdge)getSiblingEdgeState_(siblingIndex);
 	}
 }

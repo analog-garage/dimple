@@ -78,6 +78,6 @@ public abstract class STableFactorDoubleArray extends STableFactorBase
 	@Override
 	public SDiscreteEdge<?> getSiblingEdgeState(int siblingIndex)
 	{
-		return (SDiscreteEdge<?>)super.getSiblingEdgeState(siblingIndex);
+		return (SDiscreteEdge<?>)getSiblingEdgeState_(siblingIndex);
 	}
 }

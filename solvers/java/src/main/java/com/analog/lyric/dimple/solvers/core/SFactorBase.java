@@ -74,6 +74,26 @@ public abstract class SFactorBase extends SNode<Factor> implements ISolverFactor
 	}
 	
 	@Override
+	public @Nullable ISolverEdgeState getSiblingEdgeState(int siblingIndex)
+	{
+		return _parent.getSolverEdge(_model.getSiblingEdgeIndex(siblingIndex));
+	}
+	
+	/**
+	 * Subclasses can use this to implement {@link #getSiblingEdgeState(int)}.
+	 * <p>
+	 * Subclasses that cast their return types should call this instead of calling super
+	 * to avoid the chain of super calls.
+	 * @since 0.08
+	 */
+	@SuppressWarnings("null")
+	protected final ISolverEdgeState getSiblingEdgeState_(int siblingIndex)
+	{
+		return _parent.getSolverEdge(_model.getSiblingEdgeIndex(siblingIndex));
+	}
+	
+	
+	@Override
 	public SolverNodeMapping getSolverMapping()
 	{
 		return _parent.getSolverMapping();

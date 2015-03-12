@@ -208,6 +208,6 @@ public class SumProductRealJoint extends SRealJointVariableBase
 	@Override
 	public SMultivariateNormalEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (SMultivariateNormalEdge)super.getSiblingEdgeState(siblingIndex);
+		return (SMultivariateNormalEdge)getSiblingEdgeState_(siblingIndex);
 	}
 }

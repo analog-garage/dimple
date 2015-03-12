@@ -87,7 +87,7 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 		final boolean useDamping = _dampingInUse;
 		final int numPorts = _numPorts;
 		double[] savedLLR =
-			useDamping ? DimpleEnvironment.doubleArrayCache.allocate(numPorts) : ArrayUtil.EMPTY_DOUBLE_ARRAY;
+			useDamping ? DimpleEnvironment.doubleArrayCache.allocateAtLeast(numPorts) : ArrayUtil.EMPTY_DOUBLE_ARRAY;
 		
 			
 	    if (useDamping)
@@ -182,12 +182,5 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 				constantSum += FactorFunctionUtilities.toInteger(constantValues[i]);
 			_constantParity = ((constantSum & 1) == 0) ? 1 : -1;
 		}
-	}
-
-    @Override
-	@SuppressWarnings("null")
-	public MinSumDiscreteEdge getSiblingEdgeState(int siblingIndex)
-	{
-		return super.getSiblingEdgeState(siblingIndex);
 	}
 }

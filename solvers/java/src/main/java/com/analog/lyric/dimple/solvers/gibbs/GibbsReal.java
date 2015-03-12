@@ -1126,6 +1126,6 @@ public class GibbsReal extends SRealVariableBase
 	@Override
 	public GibbsSolverEdge<?> getSiblingEdgeState(int siblingIndex)
 	{
-		return (GibbsSolverEdge<?>)super.getSiblingEdgeState(siblingIndex);
+		return (GibbsSolverEdge<?>)getSiblingEdgeState_(siblingIndex);
 	}
 }

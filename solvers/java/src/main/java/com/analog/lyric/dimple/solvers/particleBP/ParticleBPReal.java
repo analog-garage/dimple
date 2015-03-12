@@ -207,8 +207,8 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 		final FactorFunction input = _input;
 		
 		//Compute alphas
-        final double[] logInPortMsgs = DimpleEnvironment.doubleArrayCache.allocate(M*D);
-        final double[] alphas = DimpleEnvironment.doubleArrayCache.allocate(M);
+        final double[] logInPortMsgs = DimpleEnvironment.doubleArrayCache.allocateAtLeast(M*D);
+        final double[] alphas = DimpleEnvironment.doubleArrayCache.allocateAtLeast(M);
 		for (int m = 0; m < M; m++)
 		{
 			double prior = 1;
@@ -648,6 +648,6 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 	@Override
 	public ParticleBPRealEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (ParticleBPRealEdge)super.getSiblingEdgeState(siblingIndex);
+		return (ParticleBPRealEdge)getSiblingEdgeState_(siblingIndex);
 	}
 }

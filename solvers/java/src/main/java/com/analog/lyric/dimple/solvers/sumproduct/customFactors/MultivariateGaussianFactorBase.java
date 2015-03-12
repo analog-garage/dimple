@@ -49,6 +49,6 @@ public abstract class MultivariateGaussianFactorBase extends SFactorBase
 	@Override
 	public SMultivariateNormalEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (SMultivariateNormalEdge)super.getSiblingEdgeState(siblingIndex);
+		return (SMultivariateNormalEdge)getSiblingEdgeState_(siblingIndex);
 	}
 }

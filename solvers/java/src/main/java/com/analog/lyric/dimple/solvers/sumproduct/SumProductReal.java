@@ -299,6 +299,6 @@ public class SumProductReal extends SRealVariableBase
 	@SuppressWarnings("null")
 	public SNormalEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (SNormalEdge)super.getSiblingEdgeState(siblingIndex);
+		return (SNormalEdge)getSiblingEdgeState_(siblingIndex);
 	}
 }

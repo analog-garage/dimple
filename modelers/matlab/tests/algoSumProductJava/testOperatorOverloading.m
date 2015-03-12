@@ -29,6 +29,7 @@ function testOperatorOverloading()
     testCase2();
     testCase3();
     testCase4();
+    testCase5();
 
 end
 
@@ -316,5 +317,17 @@ function testCase4()
     assertElementsAlmostEqual(x.Belief,x2.Belief);
     assertElementsAlmostEqual(y.Belief,y2.Belief);
     assertElementsAlmostEqual(z.Belief,z2.Belief);
+    
+end
+
+function testCase5()
+    % See bug 63
+
+    fg = FactorGraph();
+    
+    a = Discrete(1:10);
+    b = a + a;
+    
+    fg.solve();
     
 end

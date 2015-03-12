@@ -45,23 +45,27 @@ public class CDFSampler extends AbstractGenericSampler implements IDiscreteDirec
 	public void nextSample(DiscreteValue sampleValue, double[] energy, double minEnergy, IDiscreteSamplerClient samplerClient)
 	{
 		final RandomGenerator rand = DimpleRandomGenerator.rand;
-		final int length = energy.length;
+		final int length = sampleValue.getDomain().size(); //energy may be longer than domain size
 		int sampleIndex;
 
 		// Special-case lengths 2, 3, and 4 for speed
-		if (length == 2)
+		switch (length)
+		{
+		case 2:
 		{
 			sampleIndex = (rand.nextDouble() * (1 + Math.exp(energy[1]-energy[0])) > 1) ? 0 : 1;
+			break;
 		}
-		else if (length == 3)
+		case 3:
 		{
 			final double cumulative1 = Math.exp(minEnergy-energy[0]);
 			final double cumulative2 = cumulative1 + Math.exp(minEnergy-energy[1]);
 			final double sum = cumulative2 + Math.exp(minEnergy-energy[2]);
 			final double randomValue = sum * rand.nextDouble();
 			sampleIndex = (randomValue > cumulative2) ? 2 : (randomValue > cumulative1) ? 1 : 0;
+			break;
 		}
-		else if (length == 4)
+		case 4:
 		{
 			final double cumulative1 = Math.exp(minEnergy-energy[0]);
 			final double cumulative2 = cumulative1 + Math.exp(minEnergy-energy[1]);
@@ -69,8 +73,9 @@ public class CDFSampler extends AbstractGenericSampler implements IDiscreteDirec
 			final double sum = cumulative3 + Math.exp(minEnergy-energy[3]);
 			final double randomValue = sum * rand.nextDouble();
 			sampleIndex = (randomValue > cumulative2) ? ((randomValue > cumulative3) ? 3 : 2) : ((randomValue > cumulative1) ? 1 : 0);
+			break;
 		}
-		else	// For all other lengths
+		default:	// For all other lengths
 		{
 			// Calculate cumulative conditional probability (unnormalized)
 			double sum = 0;
@@ -103,6 +108,7 @@ public class CDFSampler extends AbstractGenericSampler implements IDiscreteDirec
 					throw new DimpleException("The energy for all values of this variable is infinite. This may indicate a state inconsistent with the model.");
 				if (rand.nextDouble()*expApprox(logp) <= Math.exp(logp)) break;
 			}
+		}
 		}
 
 		samplerClient.setNextSampleIndex(sampleIndex);

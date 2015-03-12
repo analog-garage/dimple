@@ -28,6 +28,7 @@ test4(debugPrint, repeatable);
 test5(debugPrint, repeatable);
 test6(debugPrint, repeatable);
 test7(debugPrint, repeatable);
+test8(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testOperatorOverloadingGibbs');
 
@@ -1418,7 +1419,43 @@ fg.solve();
 
 end
 
+function test8(debugPrint, repeatable)
 
+% See bug 63
+
+numSamples = 100;
+scansPerSample = 1;
+burnInScans = 0;
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.setScansPerSample(scansPerSample);
+fg.Solver.setBurnInScans(burnInScans);
+
+a = Real;
+b = a * a;
+
+c = Discrete(1:10);
+d = c + c;
+
+assert(all(cell2mat(d.Domain.Elements) == 2:20));
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+fg.Solver.saveAllSamples();
+fg.solve();
+
+as = a.Solver.getAllSamples;
+bs = b.Solver.getAllSamples;
+cs = cell2mat(cell(c.Solver.getAllSamples));
+ds = cell2mat(cell(d.Solver.getAllSamples));
+
+assertElementsAlmostEqual(bs, as.^2);
+assertElementsAlmostEqual(ds, cs.*2);
+
+end
 
 % Helpers
 function c = cmp(variable, expectedTypeName, expectedFactorName, expectedSize)

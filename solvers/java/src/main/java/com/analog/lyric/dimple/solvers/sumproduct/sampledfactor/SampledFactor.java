@@ -215,6 +215,6 @@ public class SampledFactor extends SFactorBase
 	@Override
 	public SEdgeWithMessages<?,?> getSiblingEdgeState(int siblingIndex)
 	{
-		return (SEdgeWithMessages<?, ?>) super.getSiblingEdgeState(siblingIndex);
+		return (SEdgeWithMessages<?, ?>)getSiblingEdgeState_(siblingIndex);
 	}
 }

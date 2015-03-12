@@ -57,7 +57,10 @@ public class Utilities
 	}
 	
 	
-    // Round up to the next power of 2
+    /**
+     *  Round up to the next power of 2
+     * @param x is a non-negative value
+     */
     public static final int nextPow2(int x)
     {
         --x;

@@ -135,11 +135,10 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 		}
 	}
 	
-
 	@SuppressWarnings("null")
 	@Override
 	public SDiscreteEdge<?> getSiblingEdgeState(int siblingIndex)
 	{
-		return (SDiscreteEdge<?>) super.getSiblingEdgeState(siblingIndex);
+		return (SDiscreteEdge<?>)getSiblingEdgeState_(siblingIndex);
 	}
 }

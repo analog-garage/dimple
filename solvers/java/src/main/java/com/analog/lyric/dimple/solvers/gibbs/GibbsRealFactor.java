@@ -260,6 +260,6 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 	@Override
 	public GibbsSolverEdge<?> getSiblingEdgeState(int siblingIndex)
 	{
-		return (GibbsSolverEdge<?>)super.getSiblingEdgeState(siblingIndex);
+		return (GibbsSolverEdge<?>)getSiblingEdgeState_(siblingIndex);
 	}
 }

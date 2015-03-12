@@ -396,7 +396,7 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 	@SuppressWarnings("null")
 	public MinSumDiscreteEdge getSiblingEdgeState(int siblingIndex)
 	{
-		return (MinSumDiscreteEdge)super.getSiblingEdgeState(siblingIndex);
+		return (MinSumDiscreteEdge)getSiblingEdgeState_(siblingIndex);
 	}
 }
 
