@@ -141,7 +141,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		int numValue = priors.length;
 
 		// Compute the sum of all messages
-		double[] beliefs = priors.clone();
+		final double[] beliefs = priors.clone();
 
 		for (int port = 0; port < numPorts; port++)
 		{
@@ -163,14 +163,9 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 			double minPotential = Double.POSITIVE_INFINITY;
 			
 			// Save previous output for damping
-			if (_dampingInUse)
+			if (_dampingInUse && edge._damping != 0)
 			{
-				double damping = edge._damping;
-				if (damping != 0)
-				{
-					for (int i = 0; i < outMsgs.length; i++)
-						savedOutMsgArray[i] = outMsgs[i];
-				}
+				System.arraycopy(outMsgs, 0, savedOutMsgArray, 0, numValue);
 			}
 
 			double[] inPortMsgsThisPort = edge.factorToVarMsg.representation();
@@ -188,14 +183,20 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 				double damping = edge._damping;
 				if (damping != 0)
 				{
+					final double inverseDamping = 1.0 - damping;
 					for (int m = 0; m < numValue; m++)
-						outMsgs[m] = outMsgs[m]*(1-damping) + savedOutMsgArray[m]*damping;
+					{
+						outMsgs[m] = outMsgs[m]*inverseDamping + savedOutMsgArray[m]*damping;
+					}
 				}
 			}
 
 			// Normalize the min
-			for (int i = 0; i < numValue; i++)
-				outMsgs[i] -= minPotential;
+			if (minPotential != 0.0)
+			{
+				for (int i = 0; i < numValue; i++)
+					outMsgs[i] -= minPotential;
+			}
 		}
 
 	    if (savedOutMsgArray.length > 0)
