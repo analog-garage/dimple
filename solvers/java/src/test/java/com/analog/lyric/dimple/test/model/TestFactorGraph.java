@@ -107,7 +107,7 @@ public class TestFactorGraph extends DimpleTestBase
 		assertTrue(id != 0);
 		assertSame(fg, fg.getEnvironment().factorGraphs().getGraphWithId(id));
 		
-		assertSame(fg, fg.getGraphByRootIndex(fg.getRootIndex()));
+		assertSame(fg, fg.getGraphByTreeIndex(fg.getGraphTreeIndex()));
 		
 		VariableList vars = fg.getVariables();
 		assertEquals(vars.size(), fg.getVariableCount());

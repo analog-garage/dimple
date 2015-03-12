@@ -143,7 +143,10 @@ public class FactorGraph extends FactorBase
 	
 	private final OwnedGraphs _ownedSubGraphs = new OwnedGraphs();
 	
-	private static class RootState
+	/**
+	 * Holds state common to entire tree of FactorGraphs.
+	 */
+	private static class GraphTreeState
 	{
 		/**
 		 * Counter that is modified whenever a structural change is made anywhere in the graph hierarchy.
@@ -152,21 +155,21 @@ public class FactorGraph extends FactorBase
 		
 		/**
 		 * List of all graphs in the graph hierarchy that shares a common root, which will the first element.
-		 * Each graph is indexed by its root index.
+		 * Each graph is indexed by its graph tree index.
 		 */
 		private final ExtendedArrayList<FactorGraph> _graphs;
 		
 		private int _nGraphs = 0;
 		
-		private RootState(FactorGraph root)
+		private GraphTreeState(FactorGraph root)
 		{
 			_graphs = new ExtendedArrayList<FactorGraph>(1);
 			addGraph(root);
 		}
 		
-		private RootState addGraph(FactorGraph graph)
+		private GraphTreeState addGraph(FactorGraph graph)
 		{
-			graph._rootIndex = _graphs.size();
+			graph._graphTreeIndex = _graphs.size();
 			_graphs.add(graph);
 			++_nGraphs;
 			return this;
@@ -174,7 +177,7 @@ public class FactorGraph extends FactorBase
 		
 		private void removeGraph(FactorGraph graph)
 		{
-			int index = graph._rootIndex;
+			int index = graph._graphTreeIndex;
 			assert(graph == _graphs.get(index));
 			if (index == _graphs.size() - 1)
 			{
@@ -189,12 +192,12 @@ public class FactorGraph extends FactorBase
 		}
 	}
 
-	private RootState _rootState;
+	private GraphTreeState _graphTreeState;
 	
 	/**
-	 * Index of this graph within {@code _rootState._graphs}.
+	 * Index of this graph within {@code _graphTreeState._graphs}.
 	 */
-	private int _rootIndex = -1;
+	private int _graphTreeIndex = -1;
 	
 	// TODO : some state only needs to be in root graph. Put it in common object.
 	
@@ -632,7 +635,7 @@ public class FactorGraph extends FactorBase
 	}
 	
 	private FactorGraph(
-		@Nullable RootState rootState,
+		@Nullable GraphTreeState rootState,
 		@Nullable Variable[] boundaryVariables,
 		@Nullable String name,
 		@Nullable IFactorGraphFactory<?> solver)
@@ -642,7 +645,7 @@ public class FactorGraph extends FactorBase
 		_env = DimpleEnvironment.active();
 		_graphId = _env.factorGraphs().registerIdForFactorGraph(this);
 		_eventAndOptionParent = _env;
-		_rootState = rootState != null ? rootState.addGraph(this) : new RootState(this);
+		_graphTreeState = rootState != null ? rootState.addGraph(this) : new GraphTreeState(this);
 		
 		_edges = new ArrayList<>();
 		
@@ -1898,7 +1901,7 @@ public class FactorGraph extends FactorBase
 			boolean copyToRoot,
 			Map<Node, Node> old2newObjs)
 	{
-		this(parentGraph != null ? parentGraph._rootState : null, boundaryVariables,
+		this(parentGraph != null ? parentGraph._graphTreeState : null, boundaryVariables,
 			templateGraph.getExplicitName(), null);
 
 		// Copy owned variables
@@ -2431,8 +2434,8 @@ public class FactorGraph extends FactorBase
 		removeNode(subgraph);
 		_ownedSubGraphs.removeNode(subgraph);
 		subgraph.setParentGraph(null);
-		_rootState.removeGraph(subgraph);
-		subgraph._rootState = new RootState(subgraph);
+		_graphTreeState.removeGraph(subgraph);
+		subgraph._graphTreeState = new GraphTreeState(subgraph);
 		
 		for (Variable v : boundary)
 		{
@@ -3169,7 +3172,7 @@ public class FactorGraph extends FactorBase
 	 */
 	public long globalStructureVersion()
 	{
-		return _rootState._globalStructureVersion;
+		return _graphTreeState._globalStructureVersion;
 	}
 	
 	/**
@@ -3187,7 +3190,7 @@ public class FactorGraph extends FactorBase
 	final void structureChanged()
 	{
 		++_structureVersion;
-		++_rootState._globalStructureVersion;
+		++_graphTreeState._globalStructureVersion;
 	}
 
 	public long getScheduleVersionId()
@@ -3357,23 +3360,23 @@ public class FactorGraph extends FactorBase
 	 * The index of this graph within the tree of graphs sharing a common {@linkplain #getRootGraph() root graph}.
 	 * <p>
 	 * @since 0.08
-	 * @see #getGraphByRootIndex(int)
+	 * @see #getGraphByTreeIndex(int)
 	 */
-	public final int getRootIndex()
+	public final int getGraphTreeIndex()
 	{
-		return _rootIndex;
+		return _graphTreeIndex;
 	}
 	
 	/**
-	 * Returns graph in hierarchy with given root index.
-	 * @param index is the {@link #getRootIndex() root index} of the graph within the hierarchy of graphs sharing
-	 * the same {@link #getRootGraph() root graph}.
+	 * Returns graph in hierarchy with given graph tree index.
+	 * @param index is the {@link #getGraphTreeIndex() graph tree index} of the graph within the hierarchy of graphs
+	 * sharing the same {@link #getRootGraph() root graph}.
 	 * @return graph with given index or else null.
 	 * @since 0.08
 	 */
-	public @Nullable FactorGraph getGraphByRootIndex(int index)
+	public @Nullable FactorGraph getGraphByTreeIndex(int index)
 	{
-		return _rootState._graphs.getOrNull(index);
+		return _graphTreeState._graphs.getOrNull(index);
 	}
 	
 	/**
@@ -3384,7 +3387,7 @@ public class FactorGraph extends FactorBase
 	 */
 	public int getGraphHierarchySize()
 	{
-		return _rootState._nGraphs;
+		return _graphTreeState._nGraphs;
 	}
 	
 	public @Nullable Variable 	getVariableByName(String name)
@@ -3482,7 +3485,7 @@ public class FactorGraph extends FactorBase
 	@Override
 	public FactorGraph getRootGraph()
 	{
-		return _rootState._graphs.get(0);
+		return _graphTreeState._graphs.get(0);
 	}
 
 	public @Nullable IFactorGraphFactory<?> getFactorGraphFactory()

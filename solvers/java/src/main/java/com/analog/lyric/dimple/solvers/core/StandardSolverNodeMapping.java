@@ -52,7 +52,7 @@ public class StandardSolverNodeMapping extends SolverNodeMapping
 	StandardSolverNodeMapping(ISolverFactorGraph sgraph)
 	{
 		_sgraphs = new ExtendedArrayList<>(1);
-		if (sgraph.getModelObject().getRootIndex() == 0)
+		if (sgraph.getModelObject().getGraphTreeIndex() == 0)
 		{
 			// Only add if root, because otherwise we expect this root state to get replaced very soon.
 			_sgraphs.add(sgraph);
@@ -66,7 +66,7 @@ public class StandardSolverNodeMapping extends SolverNodeMapping
 	@Override
 	public void addSolverGraph(ISolverFactorGraph sgraph)
 	{
-		_sgraphs.set(sgraph.getModelObject().getRootIndex(), sgraph);
+		_sgraphs.set(sgraph.getModelObject().getGraphTreeIndex(), sgraph);
 	}
 	
 	@Override
@@ -80,7 +80,7 @@ public class StandardSolverNodeMapping extends SolverNodeMapping
 	{
 		assertInHierarchy(graph);
 		
-		ISolverFactorGraph sgraph = _sgraphs.getOrNull(graph.getRootIndex());
+		ISolverFactorGraph sgraph = _sgraphs.getOrNull(graph.getGraphTreeIndex());
 
 		if (sgraph == null && create)
 		{
@@ -90,7 +90,7 @@ public class StandardSolverNodeMapping extends SolverNodeMapping
 			{
 				stack.push(graph);
 				graph = graph.requireParentGraph();
-				sgraph = _sgraphs.getOrNull(graph.getRootIndex());
+				sgraph = _sgraphs.getOrNull(graph.getGraphTreeIndex());
 			} while (sgraph == null);
 
 			while (!stack.isEmpty())
@@ -106,7 +106,7 @@ public class StandardSolverNodeMapping extends SolverNodeMapping
 	public @Nullable ISolverFactorGraph getSolverGraphOrNull(FactorGraph graph)
 	{
 		assertInHierarchy(graph);
-		return _sgraphs.getOrNull(graph.getRootIndex());
+		return _sgraphs.getOrNull(graph.getGraphTreeIndex());
 	}
 	
 	@SuppressWarnings("null")
@@ -115,7 +115,7 @@ public class StandardSolverNodeMapping extends SolverNodeMapping
 	{
 		assertInHierarchy(graph);
 		
-		ISolverFactorGraph sgraph = _sgraphs.getOrNull(graph.getRootIndex());
+		ISolverFactorGraph sgraph = _sgraphs.getOrNull(graph.getGraphTreeIndex());
 
 		if (sgraph == null)
 		{
@@ -125,7 +125,7 @@ public class StandardSolverNodeMapping extends SolverNodeMapping
 			{
 				stack.push(graph);
 				graph = graph.requireParentGraph();
-				sgraph = _sgraphs.getOrNull(graph.getRootIndex());
+				sgraph = _sgraphs.getOrNull(graph.getGraphTreeIndex());
 			} while (sgraph == null);
 
 			while (!stack.isEmpty())
@@ -140,7 +140,7 @@ public class StandardSolverNodeMapping extends SolverNodeMapping
 	@Override
 	public void removeSolverGraph(ISolverFactorGraph sgraph)
 	{
-		int index = sgraph.getModelObject().getRootIndex();
+		int index = sgraph.getModelObject().getGraphTreeIndex();
 		assert(sgraph == _sgraphs.get(index));
 		_sgraphs.set(index, null);
 	}
