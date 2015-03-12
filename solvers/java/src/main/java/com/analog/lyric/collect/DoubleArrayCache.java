@@ -16,8 +16,10 @@
 
 package com.analog.lyric.collect;
 
+import java.util.Arrays;
 import java.util.concurrent.Semaphore;
 
+import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -28,89 +30,160 @@ import org.eclipse.jdt.annotation.Nullable;
  * Use this to manage double arrays to avoid allocating and gc'ing many temporary
  * arrays.
  * <p>
+ * Currently, this cache only supports allocating arrays with a minimum size, not an exact size.
+ * This allows it to simply return the appropriate power-of-two sized array, which it can look
+ * up very quickly.
+ * <p>
  * @since 0.08
  * @author Christopher Barber
+ * @see IntArrayCache
  */
 @ThreadSafe
 public final class DoubleArrayCache
 {
-	private static int N_SLOTS = 31;
-	private static int MAX_INSTANCES = 3;
+	private static final double[] SENTINEL = new double[0];
 	
-	private static class Arrays
+	/**
+	 * The number of power-of-two slots supported by the cache.
+	 */
+	private static int N_SLOTS = 31;
+	
+	/**
+	 * The default maximum number of instances of each array size held in the cache.
+	 */
+	public static int DEFAULT_MAX_INSTANCES = 3;
+	
+	/**
+	 * Holds cached array instances of a single size.
+	 */
+	@ThreadSafe
+	private static class CacheSlot
 	{
-		// Use semaphore with spin locking to avoid overhead of implicit try/finally block
-		// for synchronized.
+		/**
+		 * Lock for synchronization.
+		 * <p>
+		 * We use semaphore with spin locking instead of Java synchronization to avoid overhead of reentrant
+		 * locking and implicit try/finally block.
+		 */
 		private final Semaphore _lock;
-		private final int _arrayLength;
-		private int _size;
-		private int _maxSize;
-		private double[][] _arrays;
 		
-		private Arrays(int arrayLength, int maxSize)
+		/**
+		 * The length of arrays held by this object.
+		 */
+		private final int _arrayLength;
+		
+		/**
+		 * The maximum number of cached arrays that can be held by this object.
+		 */
+		private final int _maxSize;
+
+		/**
+		 * The cached array instances.
+		 */
+		@GuardedBy("_lock")
+		private final double[][] _arrays;
+
+		@GuardedBy("_lock")
+		private int _size;
+		
+		private CacheSlot(int arrayLength, int maxSize)
 		{
 			_lock = new Semaphore(1);
 			_arrayLength = arrayLength;
 			_maxSize = maxSize;
-			_size = 0;
+			// Set initial size to max size but create array instances lazily using empty array as sentinel.
+			_size = maxSize;
 			_arrays = new double[maxSize][];
+			Arrays.fill(_arrays, SENTINEL);
 		}
 		
+		/**
+		 * Grab an array from the cache slot, if one is available.
+		 */
 		private @Nullable double[] pop()
 		{
+			final Semaphore lock = _lock;
+			final double[][] arrays = _arrays;
 			double[] array = null;
 			
-			_lock.acquireUninterruptibly();
-			
-			int size = _size;
-			if (size > 0)
 			{
-				_size = --size;
-				array = _arrays[size];
-				_arrays[size] = null;
+				lock.acquireUninterruptibly();
+
+				int size = _size;
+				if (size > 0)
+				{
+					_size = --size;
+					array = arrays[size];
+					arrays[size] = null;
+				}
+
+				lock.release();
 			}
 			
-			_lock.release();
+			if (array == SENTINEL)
+			{
+				// Lazily create array instance if necessary.
+				array = new double[_arrayLength];
+			}
 			
 			return array;
 		}
 		
+		/**
+		 * Return array to cache slot if there is room and it has the right size.
+		 */
 		private void push(double[] array)
 		{
 			if (array.length == _arrayLength)
 			{
-				_lock.acquireUninterruptibly();
+				final Semaphore lock = _lock;
+				lock.acquireUninterruptibly();
 				
 				int size = _size;
 				if (size < _maxSize)
 				{
 					_arrays[size] = array;
-					++_size;
+					_size = size + 1;
 				}
 				
-				_lock.release();
+				lock.release();
 			}
 		}
 	}
 	
-	private final Arrays[] _arrays;
+	/**
+	 * Holds cached array instances indexed by power-of-two.
+	 */
+	private final CacheSlot[] _arrays;
 	
 	/*--------------
 	 * Construction
 	 */
 	
+	/**
+	 * Construct new cache with specified max number of instances per each size.
+	 * @param maxInstances a positive number specifying the maximum number of arrays of a single
+	 * size that may be held in the cache at the same time.
+	 * @since 0.08
+	 */
 	public DoubleArrayCache(int maxInstances)
 	{
-		_arrays = new Arrays[N_SLOTS];
+		_arrays = new CacheSlot[N_SLOTS];
 		for (int i = 0; i < N_SLOTS; ++i)
 		{
-			_arrays[i] = new Arrays(1<<i, maxInstances);
+			_arrays[i] = new CacheSlot(1<<i, maxInstances);
 		}
 	}
 	
+	/**
+	 * Construct a new cache with default number of instances per size.
+	 * <p>
+	 * Same as {@link #DoubleArrayCache(int)} with {@code maxInstances} set to {@link #DEFAULT_MAX_INSTANCES}.
+	 * @since 0.08
+	 */
 	public DoubleArrayCache()
 	{
-		this(MAX_INSTANCES);
+		this(DEFAULT_MAX_INSTANCES);
 	}
 	
 	/*--------------------------
@@ -144,6 +217,10 @@ public final class DoubleArrayCache
 		final int size = array.length;
 		_arrays[slotForLength(size)].push(array);
 	}
+	
+	/*-----------------
+	 * Private methods
+	 */
 	
 	private int slotForLength(int minLength)
 	{
