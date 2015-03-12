@@ -209,6 +209,15 @@ public final class DoubleArrayCache
 	}
 
 	/**
+	 * The maximum number of instances of arrays of the same size that can be held by the cache.
+	 * @since 0.08
+	 */
+	public int maxInstancesPerSize()
+	{
+		return _arrays[0]._maxSize;
+	}
+	
+	/**
 	 * Returns an array to the cache for reuse.
 	 * @since 0.08
 	 */
@@ -222,7 +231,7 @@ public final class DoubleArrayCache
 	 * Private methods
 	 */
 	
-	private int slotForLength(int minLength)
+	private static int slotForLength(int minLength)
 	{
 		return 32 - Integer.numberOfLeadingZeros(minLength - 1);
 	}
