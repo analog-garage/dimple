@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
@@ -80,7 +80,7 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 	}
 	
 	@Override
-	public @Nullable GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	public @Nullable GibbsSolverEdge<?> createEdge(EdgeState edge)
 	{
 		return null;
 	}

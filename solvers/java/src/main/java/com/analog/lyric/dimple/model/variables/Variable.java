@@ -28,7 +28,7 @@ import com.analog.lyric.dimple.events.IDimpleEventListener;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Equality;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.NodeId;
 import com.analog.lyric.dimple.model.core.NodeType;
@@ -474,7 +474,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
     		//Replace the connection from this variable to the copy in the factor
     		for (int j = 0, endj = factor.getSiblingCount(); j < endj; j++)
     		{
-    			FactorGraphEdgeState edge = factor.getSiblingEdgeState(j);
+    			EdgeState edge = factor.getSiblingEdgeState(j);
     			if (edge.getVariable(fg) == this)
     			{
     				fg.replaceEdge(factor, j, mycopy);

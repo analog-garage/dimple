@@ -25,7 +25,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
@@ -419,7 +419,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		double sum = 0;
 		for (int i = 0, n = getSiblingCount(); i < n; i++)
 		{
-			final FactorGraphEdgeState edge = _model.getSiblingEdgeState(i);
+			final EdgeState edge = _model.getSiblingEdgeState(i);
 			SumProductTableFactor sft = (SumProductTableFactor)getSibling(i);
 			double inputMsg = getSiblingEdgeState(i).factorToVarMsg.getWeight(domain);
 			double tmp = f / inputMsg;
@@ -572,7 +572,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		{
 			if (i != outPortNum)
 			{
-				final FactorGraphEdgeState edge = _model.getSiblingEdgeState(i);
+				final EdgeState edge = _model.getSiblingEdgeState(i);
 				double thisMsg = getSiblingEdgeState(i).factorToVarMsg.getWeight(d);
 				SumProductTableFactor stf = (SumProductTableFactor)getSibling(i);
 				@SuppressWarnings("null")

@@ -32,7 +32,7 @@ import com.analog.lyric.dimple.environment.DimpleThread;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.NodeId;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -157,7 +157,7 @@ public abstract class SFactorGraphBase
 	
 	@SuppressWarnings("null")
 	@Override
-	public SEdge createEdgeState(FactorGraphEdgeState edge)
+	public SEdge createEdgeState(EdgeState edge)
 	{
 		return null;
 	}
@@ -169,7 +169,7 @@ public abstract class SFactorGraphBase
 	public abstract SVariable createVariable(Variable variable);
 	
 	@Override
-	public @Nullable SEdge getSolverEdge(FactorGraphEdgeState edge)
+	public @Nullable SEdge getSolverEdge(EdgeState edge)
 	{
 		return getSolverEdge(edge, true);
 	}
@@ -276,7 +276,7 @@ public abstract class SFactorGraphBase
 	}
 	
 	@Override
-	public void removeSolverEdge(FactorGraphEdgeState edge)
+	public void removeSolverEdge(EdgeState edge)
 	{
 		removeSolverEdge(edge.edgeIndexInParent(_model));
 
@@ -1128,7 +1128,7 @@ public abstract class SFactorGraphBase
 	}
 	
 	@SuppressWarnings("unchecked")
-	public @Nullable SEdge getSolverEdge(FactorGraphEdgeState edge, boolean create)
+	public @Nullable SEdge getSolverEdge(EdgeState edge, boolean create)
 	{
 		final ExtendedArrayList<SEdge> edges = _edges;
 		if (edges == null)
@@ -1174,7 +1174,7 @@ public abstract class SFactorGraphBase
 		{
 			if (create)
 			{
-				final FactorGraphEdgeState modelEdge = _model.getGraphEdgeState(edgeIndex);
+				final EdgeState modelEdge = _model.getGraphEdgeState(edgeIndex);
 				if (modelEdge != null)
 				{
 					return getSolverEdge(modelEdge, true);

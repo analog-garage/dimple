@@ -230,7 +230,7 @@ public class FactorGraph extends FactorBase
 	//new identity related members
 	private final HashMap<String, Node> _name2object = new HashMap<>();
 	
-	private final ArrayList<FactorGraphEdgeState> _edges;
+	private final ArrayList<EdgeState> _edges;
 	
 	/**
 	 * Edges defining the graph's siblings.
@@ -238,7 +238,7 @@ public class FactorGraph extends FactorBase
 	 * This replaces the sibling indexes from Node, which cannot be used for this due to the
 	 * fact the edges may not be a member of this graph's edge list.
 	 */
-	private final ArrayList<FactorGraphEdgeState> _graphSiblings = new ArrayList<>();
+	private final ArrayList<EdgeState> _graphSiblings = new ArrayList<>();
 	
 	/*--------------
 	 * Edge classes
@@ -252,7 +252,7 @@ public class FactorGraph extends FactorBase
 	 * Edge connecting factor and variable owned by same graph.
 	 */
 	@Immutable
-	private static abstract class LocalEdgeState extends FactorGraphEdgeState
+	private static abstract class LocalEdgeState extends EdgeState
 	{
 		static LocalEdgeState create(int edgeIndex, int factorIndex, int variableIndex)
 		{
@@ -417,7 +417,7 @@ public class FactorGraph extends FactorBase
 	/**
 	 * Edge connecting factor owned by this graph to one of its boundary variables.
 	 */
-	static abstract class BoundaryEdge extends FactorGraphEdgeState
+	static abstract class BoundaryEdge extends EdgeState
 	{
 		final Factor _factor;
 		
@@ -2101,7 +2101,7 @@ public class FactorGraph extends FactorBase
 					}
 					for (int i = 0, ni = var.getSiblingCount(); i < ni; ++i)
 					{
-						final FactorGraphEdgeState edge = var.getSiblingEdgeState(i);
+						final EdgeState edge = var.getSiblingEdgeState(i);
 						
 						if (isAncestorOf(edge.getFactor(varGraph)))
 						{
@@ -2115,20 +2115,20 @@ public class FactorGraph extends FactorBase
 	}
 	
 	@Override
-	public FactorGraphEdgeState getSiblingEdgeState(int i)
+	public EdgeState getSiblingEdgeState(int i)
 	{
 		updateSiblings();
 		return _graphSiblings.get(i);
 	}
 
 	@Override
-	public int indexOfSiblingEdgeState(FactorGraphEdgeState edge)
+	public int indexOfSiblingEdgeState(EdgeState edge)
 	{
 		updateSiblings();
 		return _graphSiblings.indexOf(edge);
 	}
 	
-	public @Nullable FactorGraphEdgeState getGraphEdgeState(int i)
+	public @Nullable EdgeState getGraphEdgeState(int i)
 	{
 		return _edges.get(i);
 	}
@@ -3577,7 +3577,7 @@ public class FactorGraph extends FactorBase
 
 		final FactorGraph variableGraph = requireNonNull(variable.getParentGraph());
 		
-		FactorGraphEdgeState edge;
+		EdgeState edge;
 		
 		if (this == variableGraph)
 		{
@@ -3600,14 +3600,14 @@ public class FactorGraph extends FactorBase
 		}
 	}
 	
-	private FactorGraphEdgeState createLocalEdge(int edgeIndex, Factor factor, Variable variable)
+	private EdgeState createLocalEdge(int edgeIndex, Factor factor, Variable variable)
 	{
 		final int factorOffset = NodeId.indexFromLocalId(factor.getLocalId());
 		final int variableOffset = NodeId.indexFromLocalId(variable.getLocalId());
 		return LocalEdgeState.create(edgeIndex, factorOffset, variableOffset);
 	}
 	
-	private FactorGraphEdgeState createBoundaryEdge(int factorEdgeIndex, int variableEdgeIndex, Factor factor,
+	private EdgeState createBoundaryEdge(int factorEdgeIndex, int variableEdgeIndex, Factor factor,
 		Variable variable)
 	{
 		final int boundaryOffset = _boundaryVariables.indexOf(variable);
@@ -3618,7 +3618,7 @@ public class FactorGraph extends FactorBase
 
 	@Override
 	@Internal
-	protected void removeSiblingEdge(FactorGraphEdgeState edge)
+	protected void removeSiblingEdge(EdgeState edge)
 	{
 		final Factor factor = edge.getFactor(this);
 		final Variable variable = edge.getVariable(this);
@@ -3648,7 +3648,7 @@ public class FactorGraph extends FactorBase
 	{
 		final FactorGraph factorGraph = requireNonNull(factor.getParentGraph());
 		
-		final FactorGraphEdgeState oldEdge = factor.getSiblingEdgeState(edgeIndex);
+		final EdgeState oldEdge = factor.getSiblingEdgeState(edgeIndex);
 		final Variable oldVariable = oldEdge.getVariable(factorGraph);
 		final FactorGraph oldVariableGraph = requireNonNull(oldVariable.getParentGraph());
 		final FactorGraph newVariableGraph = requireNonNull(newVariable.getParentGraph());
@@ -3656,7 +3656,7 @@ public class FactorGraph extends FactorBase
 		final int factorEdgeIndex = oldEdge.factorEdgeIndex();
 		final int oldVariableEdgeIndex = oldEdge.variableEdgeIndex();
 		
-		final FactorGraphEdgeState newEdge;
+		final EdgeState newEdge;
 		
 		oldVariable.removeSiblingEdgeState(oldEdge);
 

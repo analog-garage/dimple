@@ -33,17 +33,17 @@ public class Port
 		this.index = index;
 	}
 	
-	public static Port createFactorPort(FactorGraphEdgeState edge, FactorGraph fg)
+	public static Port createFactorPort(EdgeState edge, FactorGraph fg)
 	{
 		return new Port(edge.getFactor(fg), edge._factorToVariableIndex);
 	}
 	
-	public static Port createVariablePort(FactorGraphEdgeState edge, FactorGraph fg)
+	public static Port createVariablePort(EdgeState edge, FactorGraph fg)
 	{
 		return new Port(edge.getVariable(fg), edge._variableToFactorIndex);
 	}
 	
-	public static Port createPortFromNode(FactorGraphEdgeState edge, Node node)
+	public static Port createPortFromNode(EdgeState edge, Node node)
 	{
 		return new Port(node, node.isVariable() ? edge.getVariableToFactorIndex() : edge.getFactorToVariableIndex());
 	}
@@ -77,7 +77,7 @@ public class Port
 	}
 
 	/**
-	 * @deprecated instead use {@link #toEdgeState()} to get {@link FactorGraphEdgeState}, use
+	 * @deprecated instead use {@link #toEdgeState()} to get {@link EdgeState}, use
 	 * that to look up corresponding {@link ISolverEdgeState} in solver graph, which will contain the
 	 * messages.
 	 */
@@ -88,7 +88,7 @@ public class Port
 	}
 
 	/**
-	 * @deprecated instead use {@link #toEdgeState()} to get {@link FactorGraphEdgeState}, use
+	 * @deprecated instead use {@link #toEdgeState()} to get {@link EdgeState}, use
 	 * that to look up corresponding {@link ISolverEdgeState} in solver graph, which will contain the
 	 * messages.
 	 */
@@ -99,7 +99,7 @@ public class Port
 	}
 	
 	/**
-	 * @deprecated instead use {@link #toEdgeState()} to get {@link FactorGraphEdgeState}, use
+	 * @deprecated instead use {@link #toEdgeState()} to get {@link EdgeState}, use
 	 * that to look up corresponding {@link ISolverEdgeState} in solver graph, which will contain the
 	 * messages.
 	 */
@@ -111,7 +111,7 @@ public class Port
 	}
 
 	/**
-	 * @deprecated instead use {@link #toEdgeState()} to get {@link FactorGraphEdgeState}, use
+	 * @deprecated instead use {@link #toEdgeState()} to get {@link EdgeState}, use
 	 * that to look up corresponding {@link ISolverEdgeState} in solver graph, which will contain the
 	 * messages.
 	 */
@@ -135,7 +135,7 @@ public class Port
 	 * Return the corresponding edge object for this port.
 	 * @since 0.08
 	 */
-	public FactorGraphEdgeState toEdgeState()
+	public EdgeState toEdgeState()
 	{
 		return node.getSiblingEdgeState(index);
 	}

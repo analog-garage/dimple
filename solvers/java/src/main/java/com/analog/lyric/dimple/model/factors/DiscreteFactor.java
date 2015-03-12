@@ -27,7 +27,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.variables.Discrete;
@@ -227,7 +227,7 @@ public class DiscreteFactor extends Factor
 		//Remove old edges in descending order (they were added in ascending order above)
 		for (int i = factorVarIndices.length; --i>=0;)
 		{
-			FactorGraphEdgeState edge = getSiblingEdgeState(factorVarIndices[i]);
+			EdgeState edge = getSiblingEdgeState(factorVarIndices[i]);
 			removeSiblingEdge(edge);
 		}
 		

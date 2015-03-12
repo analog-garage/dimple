@@ -25,7 +25,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.Poisson;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
@@ -53,7 +53,7 @@ public class CustomPoisson extends GibbsRealFactor implements IRealConjugateFact
 	}
 
 	@Override
-	public @Nullable GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	public @Nullable GibbsSolverEdge<?> createEdge(EdgeState edge)
 	{
 		if (edge.getFactorToVariableIndex() == _lambdaParameterEdge)
 		{

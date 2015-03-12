@@ -18,18 +18,18 @@ package com.analog.lyric.dimple.solvers.interfaces;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 
 /**
  * Solver edge state.
  * <p>
  * This interface defines the common interface for solver-specific edge state. Each solver edge should
- * correspond to a {@link FactorGraphEdgeState} in the corresponding model. Unlike {@link ISolverNode},
+ * correspond to a {@link EdgeState} in the corresponding model. Unlike {@link ISolverNode},
  * solver edges do not necessarily refer directly to the corresponding model edge object.
  * <p>
  * @since 0.08
  * @author Christopher Barber
- * @see FactorGraphEdgeState
+ * @see EdgeState
  */
 public interface ISolverEdgeState
 {

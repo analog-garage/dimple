@@ -32,7 +32,7 @@ import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
@@ -306,7 +306,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 			for (int port = 0; port < numPorts; port++)
 			{
 				final int edgeIndex = _model.getSiblingEdgeIndex(port);
-				final FactorGraphEdgeState edgeState = requireNonNull(fg.getGraphEdgeState(edgeIndex));
+				final EdgeState edgeState = requireNonNull(fg.getGraphEdgeState(edgeIndex));
 				final GibbsDiscreteEdge sedge = requireNonNull((GibbsDiscreteEdge)sfg.getSolverEdge(edgeIndex));
 				inputMsgs[port] = sedge.factorToVarMsg.representation();
 				getSibling(port).updateEdgeMessage(edgeState.getFactorToVariableIndex());

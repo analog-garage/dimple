@@ -37,7 +37,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -291,7 +291,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 			final ISolverFactorGraph sfg = solvers.getSolverGraph(fg);
 			for (int portIndex = 0; portIndex < numEdges; portIndex++)
 			{
-				final FactorGraphEdgeState edge = _model.getSiblingEdgeState(portIndex);
+				final EdgeState edge = _model.getSiblingEdgeState(portIndex);
 				Factor factorNode = edge.getFactor(fg);
 				ISolverFactor factor = solvers.getSolverFactor(factorNode);
 				int factorPortNumber = edge.getFactorToVariableIndex();
@@ -439,7 +439,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		{
 			if (port != outPortNum)
 			{
-				final FactorGraphEdgeState edgeState = _model.getSiblingEdgeState(port);
+				final EdgeState edgeState = _model.getSiblingEdgeState(port);
 				Factor factorNode = edgeState.getFactor(fg);
 				ISolverFactorGibbs factor = (ISolverFactorGibbs)solvers.getSolverFactor(factorNode);
 				sedges[i++] = sfg.getSolverEdge(edgeState);
@@ -1316,14 +1316,14 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	}
 	
 	// Find the set of available conjugate samplers consistent with a specific set of neighboring factors (as well as the Input)
-	public Set<IRealJointConjugateSamplerFactory> findConjugateSamplerFactories(Collection<FactorGraphEdgeState> edges)
+	public Set<IRealJointConjugateSamplerFactory> findConjugateSamplerFactories(Collection<EdgeState> edges)
 	{
 		final Set<IRealJointConjugateSamplerFactory> commonSamplers = new HashSet<>();
 		final FactorGraph fg = _model.requireParentGraph();
 		final SolverNodeMapping solvers = getSolverMapping();
 		
 		// Check all the adjacent factors to see if they all support a common conjugate factor
-		for (FactorGraphEdgeState edgeState : edges)
+		for (EdgeState edgeState : edges)
 		{
 			ISolverNode factor = solvers.getSolverFactor(edgeState.getFactor(fg));
 			if (!(factor instanceof IRealJointConjugateFactor))

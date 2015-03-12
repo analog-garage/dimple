@@ -25,7 +25,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.factorfunctions.NegativeExpGamma;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
@@ -66,7 +66,7 @@ public class CustomNegativeExpGamma extends GibbsRealFactor implements IRealConj
 	}
 
 	@Override
-	public @Nullable GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	public @Nullable GibbsSolverEdge<?> createEdge(EdgeState edge)
 	{
 		if (edge.getFactorToVariableIndex() != _alphaParameterPort)
 		{

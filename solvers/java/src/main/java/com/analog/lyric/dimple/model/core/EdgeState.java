@@ -35,7 +35,7 @@ import com.analog.lyric.util.misc.Internal;
  * @since 0.08
  * @author Christopher Barber
  */
-public abstract class FactorGraphEdgeState
+public abstract class EdgeState
 {
 	/*-------
 	 * State

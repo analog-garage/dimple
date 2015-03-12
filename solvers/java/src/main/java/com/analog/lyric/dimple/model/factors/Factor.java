@@ -34,7 +34,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.NodeId;
 import com.analog.lyric.dimple.model.core.NodeType;
@@ -248,7 +248,7 @@ public class Factor extends FactorBase implements Cloneable
 		
 		for (int i = nEdges; --i>=0;)
 		{
-			final FactorGraphEdgeState edge = getSiblingEdgeState(i);
+			final EdgeState edge = getSiblingEdgeState(i);
 			final Variable var = edge.getVariable(parent);
 			if (var.hasFixedValue())
 			{

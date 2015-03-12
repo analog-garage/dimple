@@ -429,7 +429,7 @@ public class FactorGraphWalker implements Iterator<INode>
 					{
 						if (i != portIn.index)
 						{
-							final FactorGraphEdgeState edge = node.getSiblingEdgeState(i);
+							final EdgeState edge = node.getSiblingEdgeState(i);
 							queue.add(Port.createPortFromNode(edge, edge.getSibling(node)));
 						}
 					}
@@ -494,7 +494,7 @@ public class FactorGraphWalker implements Iterator<INode>
 					{
 						if (i != portIn.index)
 						{
-							final FactorGraphEdgeState edge = node.getSiblingEdgeState(i);
+							final EdgeState edge = node.getSiblingEdgeState(i);
 							stack.push(Port.createPortFromNode(edge, edge.getSibling(node)));
 						}
 					}

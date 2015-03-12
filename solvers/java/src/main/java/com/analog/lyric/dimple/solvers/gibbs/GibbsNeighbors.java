@@ -35,7 +35,7 @@ import com.analog.lyric.collect.ReleasableIterable;
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.collect.UnmodifiableReleasableIterator;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Variable;
@@ -196,7 +196,7 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 				if (edge == _incomingEdge)
 					continue;
 				
-				final FactorGraphEdgeState edgeState = variable.getSiblingEdgeState(edge);
+				final EdgeState edgeState = variable.getSiblingEdgeState(edge);
 				final ISolverFactorGibbs sfactor = _varNode.getSibling(edge);
 				final Factor factor = sfactor.getModelObject();
 				

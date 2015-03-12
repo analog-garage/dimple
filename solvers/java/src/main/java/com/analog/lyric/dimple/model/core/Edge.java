@@ -25,13 +25,13 @@ import com.analog.lyric.dimple.model.variables.Variable;
 public final class Edge
 {
 	private final FactorGraph _graph;
-	private final FactorGraphEdgeState _edge;
+	private final EdgeState _edge;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	public Edge(FactorGraph graph, FactorGraphEdgeState edgeState)
+	public Edge(FactorGraph graph, EdgeState edgeState)
 	{
 		_graph = graph;
 		_edge = edgeState;
@@ -68,7 +68,7 @@ public final class Edge
 		return _edge.factorEdgeIndex();
 	}
 	
-	public FactorGraphEdgeState edgeState()
+	public EdgeState edgeState()
 	{
 		return _edge;
 	}

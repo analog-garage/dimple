@@ -27,7 +27,7 @@ import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -297,7 +297,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 
 			for (int portIndex = 0; portIndex < numPorts; portIndex++)
 			{
-				FactorGraphEdgeState edge = _model.getSiblingEdgeState(portIndex);
+				EdgeState edge = _model.getSiblingEdgeState(portIndex);
 				int factorPortNumber = edge.getSibling(_model).indexOfSiblingEdgeState(edge);
 				
 				ParticleBPRealFactor factor = (ParticleBPRealFactor)getSibling(portIndex);
@@ -324,7 +324,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 				
 				for (int portIndex = 0; portIndex < numPorts; portIndex++)
 				{
-					FactorGraphEdgeState edge = _model.getSiblingEdgeState(portIndex);
+					EdgeState edge = _model.getSiblingEdgeState(portIndex);
 					int factorPortNumber = edge.getSibling(_model).indexOfSiblingEdgeState(edge);
 					ParticleBPRealFactor factor = (ParticleBPRealFactor)getSibling(portIndex);
 					potentialProposed += factor.getMarginalPotential(proposalValue, factorPortNumber);
@@ -354,7 +354,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 			SolverNodeMapping solvers = getSolverMapping();
 			for (int d = 0; d < numPorts; d++)
 			{
-				final FactorGraphEdgeState edge = _model.getSiblingEdgeState(d);
+				final EdgeState edge = _model.getSiblingEdgeState(d);
 				Factor factorNode = edge.getFactor(fg);
 				int factorPortNumber = edge.getFactorToVariableIndex();
 				ParticleBPRealFactor factor = (ParticleBPRealFactor)(solvers.getSolverFactor(factorNode));

@@ -28,7 +28,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.factorfunctions.Multiplexer;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
@@ -74,7 +74,7 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 	}
 
 	@Override
-	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	public GibbsSolverEdge<?> createEdge(EdgeState edge)
 	{
 		Variable var = edge.getVariable(_model.requireParentGraph());
 		
@@ -129,8 +129,8 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 			
 			// If an input variable, then check conjugacy for the output variable among all of its neighbors except this factor
 			GibbsReal outputVariable = ((GibbsReal)_outputVariable);
-			List<FactorGraphEdgeState> outputNeighboringEdges = new ArrayList<>(outputVariable.getSiblingCount() - 1);
-			for (FactorGraphEdgeState edgeState : outputVariable.getModelObject().getSiblingEdgeState())
+			List<EdgeState> outputNeighboringEdges = new ArrayList<>(outputVariable.getSiblingCount() - 1);
+			for (EdgeState edgeState : outputVariable.getModelObject().getSiblingEdgeState())
 			{
 				if (!factor.equals(edgeState.getFactor(fg)))		// Don't include this factor to test conjugacy
 				{
@@ -157,8 +157,8 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 			final FactorGraph fg = factor.requireParentGraph();
 			// If an input variable, then check conjugacy for the output variable among all of its neighbors except this factor
 			GibbsRealJoint outputVariable = ((GibbsRealJoint)_outputVariable);
-			List<FactorGraphEdgeState> outputNeighboringEdges = new ArrayList<>(outputVariable.getSiblingCount() - 1);
-			for (FactorGraphEdgeState edgeState : outputVariable.getModelObject().getSiblingEdgeState())
+			List<EdgeState> outputNeighboringEdges = new ArrayList<>(outputVariable.getSiblingCount() - 1);
+			for (EdgeState edgeState : outputVariable.getModelObject().getSiblingEdgeState())
 			{
 				if (!factor.equals(edgeState.getFactor(fg)))
 				{

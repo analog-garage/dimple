@@ -22,7 +22,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.variables.Variable;
@@ -47,7 +47,7 @@ public interface ISolverFactorGraph	extends ISolverNode
 	 * ISolverFactorGraph methods
 	 */
 	
-	public @Nullable ISolverEdgeState getSolverEdge(FactorGraphEdgeState edge);
+	public @Nullable ISolverEdgeState getSolverEdge(EdgeState edge);
 	
 	public @Nullable ISolverEdgeState getSolverEdge(int edgeIndex);
 	
@@ -102,7 +102,7 @@ public interface ISolverFactorGraph	extends ISolverNode
 	 * <p>
 	 * This only removes the state entry for this graph; i.e., if this is a boundary edge the corresponding
 	 * entry in the other solver graph will not be removed. This is only intended to be used in implementing
-	 * {@link #removeSolverEdge(FactorGraphEdgeState)}.
+	 * {@link #removeSolverEdge(EdgeState)}.
 	 * <p>
 	 * @param edgeIndex
 	 * @since 0.08
@@ -118,7 +118,7 @@ public interface ISolverFactorGraph	extends ISolverNode
 	 * @category internal
 	 */
 	@Internal
-	public void removeSolverEdge(FactorGraphEdgeState edge);
+	public void removeSolverEdge(EdgeState edge);
 	
 	/**
 	 * Removes solver factor from its parent graph.

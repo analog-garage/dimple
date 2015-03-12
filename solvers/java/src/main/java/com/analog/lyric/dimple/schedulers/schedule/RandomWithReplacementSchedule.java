@@ -23,7 +23,7 @@ import java.util.Objects;
 import org.eclipse.jdt.annotation.NonNull;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorList;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
@@ -90,7 +90,7 @@ public class RandomWithReplacementSchedule extends ScheduleBase
 			final int factorIndex = DimpleRandomGenerator.rand.nextInt(_numFactors);
 			final Factor f = ((ArrayList<Factor>)_factors.values()).get(factorIndex);
 			final FactorGraph fg = f.requireParentGraph();
-			for (FactorGraphEdgeState edge : f.getSiblingEdgeState())
+			for (EdgeState edge : f.getSiblingEdgeState())
 			{
 				updateList.add(new EdgeScheduleEntry(edge.getVariable(fg), edge.getVariableToFactorIndex()));
 			}

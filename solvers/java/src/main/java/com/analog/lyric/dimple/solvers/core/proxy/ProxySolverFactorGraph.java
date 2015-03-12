@@ -21,7 +21,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
@@ -109,7 +109,7 @@ public abstract class ProxySolverFactorGraph<SFactor extends ISolverFactor, SVar
 
 	@SuppressWarnings("null")
 	@Override
-	public SEdge createEdgeState(FactorGraphEdgeState edge)
+	public SEdge createEdgeState(EdgeState edge)
 	{
 		return null;
 	}

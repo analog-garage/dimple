@@ -54,7 +54,7 @@ import com.analog.lyric.dimple.factorfunctions.Poisson;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.DirectedNodeSorter;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.FactorGraphIterables;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -170,7 +170,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	}
 	
 	@Override
-	public GibbsSolverEdge<?> createEdgeState(FactorGraphEdgeState edge)
+	public GibbsSolverEdge<?> createEdgeState(EdgeState edge)
 	{
 		ISolverFactorGibbs sfactor = getSolverFactor(edge.getFactor(_model));
 		

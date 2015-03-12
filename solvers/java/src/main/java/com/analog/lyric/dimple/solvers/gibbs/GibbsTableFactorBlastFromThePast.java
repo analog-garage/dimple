@@ -23,7 +23,7 @@ import java.util.Collection;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.IndexedValue;
@@ -46,7 +46,7 @@ public class GibbsTableFactorBlastFromThePast extends SBlastFromThePast implemen
 	}
 
 	@Override
-	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	public GibbsSolverEdge<?> createEdge(EdgeState edge)
 	{
 		return new GibbsDiscreteEdge((Discrete)edge.getVariable(getFactor().requireParentGraph()));
 	}

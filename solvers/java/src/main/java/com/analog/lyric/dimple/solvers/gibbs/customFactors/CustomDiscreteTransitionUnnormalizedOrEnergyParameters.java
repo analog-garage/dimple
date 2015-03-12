@@ -27,7 +27,7 @@ import com.analog.lyric.dimple.factorfunctions.DiscreteTransitionEnergyParameter
 import com.analog.lyric.dimple.factorfunctions.DiscreteTransitionUnnormalizedParameters;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
@@ -70,7 +70,7 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends Gibb
 	}
 
 	@Override
-	public @Nullable GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	public @Nullable GibbsSolverEdge<?> createEdge(EdgeState edge)
 	{
 		if (edge.getFactorToVariableIndex() >= _startingParameterEdge)
 		{

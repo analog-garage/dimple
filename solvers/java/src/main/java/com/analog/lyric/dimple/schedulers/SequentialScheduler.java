@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.schedulers;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
@@ -60,7 +60,7 @@ public class SequentialScheduler implements IScheduler
 			// For each function, update variable edges connecting to that function
 			for (int i = 0, end = f.getSiblingCount(); i < end; ++i)
 			{
-				final FactorGraphEdgeState edge = f.getSiblingEdgeState(i);
+				final EdgeState edge = f.getSiblingEdgeState(i);
 				schedule.add(new EdgeScheduleEntry(edge.getVariable(g), edge.getVariableToFactorIndex()));
 			}
 
@@ -74,7 +74,7 @@ public class SequentialScheduler implements IScheduler
 			// For each sub-graph, update the variable edges connecting to that sub-graph
 			for (int i = 0, end = sg.getSiblingCount(); i < end; ++i)
 			{
-				final FactorGraphEdgeState edge = sg.getSiblingEdgeState(i);
+				final EdgeState edge = sg.getSiblingEdgeState(i);
 				schedule.add(new EdgeScheduleEntry(edge.getVariable(g), edge.getVariableToFactorIndex()));
 			}
 

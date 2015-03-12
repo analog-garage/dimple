@@ -239,7 +239,7 @@ public interface INode  extends INameable, IModelEventSource
     @Internal
     public  void setVisited();
 
-	public abstract FactorGraphEdgeState getSiblingEdgeState(int i);
+	public abstract EdgeState getSiblingEdgeState(int i);
 
 	public abstract Edge getSiblingEdge(int i);
 }

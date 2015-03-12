@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.interfaces;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 
 /**
@@ -56,7 +56,7 @@ public interface ISolverFactor extends ISolverNode
 	 * be delegated back to the caller.
 	 * @since 0.08
 	 */
-	public @Nullable ISolverEdgeState createEdge(FactorGraphEdgeState edge);
+	public @Nullable ISolverEdgeState createEdge(EdgeState edge);
 	
 	public int[][] getPossibleBeliefIndices() ;
 	

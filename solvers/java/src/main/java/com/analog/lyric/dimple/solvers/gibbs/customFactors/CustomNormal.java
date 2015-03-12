@@ -25,7 +25,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
@@ -69,7 +69,7 @@ public class CustomNormal extends GibbsRealFactor implements IRealConjugateFacto
 	}
 
 	@Override
-	public GibbsSolverEdge<?> createEdge(FactorGraphEdgeState edge)
+	public GibbsSolverEdge<?> createEdge(EdgeState edge)
 	{
 		final int portNum = edge.getFactorToVariableIndex();
 		

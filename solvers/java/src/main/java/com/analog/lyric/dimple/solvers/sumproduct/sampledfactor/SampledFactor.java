@@ -21,7 +21,7 @@ import static java.util.Objects.*;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SEdgeWithMessages;
@@ -118,7 +118,7 @@ public class SampledFactor extends SFactorBase
 	}
 	
 	@Override
-	public @Nullable ISolverEdgeState createEdge(FactorGraphEdgeState edge)
+	public @Nullable ISolverEdgeState createEdge(EdgeState edge)
 	{
 		// Edge already created at construction time
 		return _edges[edge.getFactorToVariableIndex()];

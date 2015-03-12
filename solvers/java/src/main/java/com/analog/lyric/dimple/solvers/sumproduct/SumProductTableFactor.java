@@ -31,7 +31,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
-import com.analog.lyric.dimple.model.core.FactorGraphEdgeState;
+import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.BPOptions;
@@ -548,7 +548,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 		//for each variable
 		for (int i = 0; i < nEdges; i++)
 		{
-			final FactorGraphEdgeState edge = factor.getSiblingEdgeState(i);
+			final EdgeState edge = factor.getSiblingEdgeState(i);
 			final SumProductDiscrete var = (SumProductDiscrete)getSibling(i);
 			
 			//divide out contribution
@@ -672,7 +672,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 					
 					if (i != outPortNum)
 					{
-						FactorGraphEdgeState edge = factor.getSiblingEdgeState(i);
+						EdgeState edge = factor.getSiblingEdgeState(i);
 						SumProductDiscrete sv = (SumProductDiscrete)getSibling(i);
 						double [] dvar = sv.getMessageDerivative(wn, edge.getVariableToFactorIndex());
 								
