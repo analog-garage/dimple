@@ -16,7 +16,11 @@
 
 package com.analog.lyric.collect.tests;
 
+import static org.junit.Assert.*;
+
 import org.junit.Test;
+
+import com.analog.lyric.collect.SoftIntObjectCache;
 
 /**
  * 
@@ -28,27 +32,18 @@ public class TestSoftIntObjectCache
 	@Test
 	public void test()
 	{
-//		DoubleArrayCache doubles = new DoubleArrayCache();
-//
-//		assertNull(doubles.remove(3));
-//		double[] d3 = doubles.allocate(3);
-//		assertNull(doubles.remove(3));
-//
-//		assertEquals(3, d3.length);
-//		assertNotSame(d3, doubles.allocate(3));
-//
-//		assertTrue(doubles.release(d3));
-//		assertSame(d3, doubles.remove(3));
-//
-//		assertTrue(doubles.put(3, d3));
-//		assertFalse(doubles.release(d3));
-//
-//		assertSame(d3, doubles.allocate(3));
-//		doubles.release(d3);
-//
-//		doubles.clear();
-//		assertNotSame(d3, doubles.remove(3));
-//
-//		expectThrow(IllegalArgumentException.class, "Length 4 does not match.*", doubles, "put", 4, d3);
+		SoftIntObjectCache<double[]> doubles = new SoftIntObjectCache<>();
+
+		assertNull(doubles.remove(3));
+		double[] d3 = new double[3];
+
+		assertTrue(doubles.put(3, d3));
+		assertSame(d3, doubles.remove(3));
+
+		assertTrue(doubles.put(3, d3));
+		assertFalse(doubles.put(3, d3));
+
+		doubles.clear();
+		assertNotSame(d3, doubles.remove(3));
 	}
 }
