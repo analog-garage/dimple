@@ -1,15 +1,10 @@
 
-project.description = 'LaTeX user and developer documentation'
+project.description = 'LaTeX documentation'
 
 ext {
 	dimpleVersion = file('../VERSION').text.trim()
 
 	tmpFilePatterns = ['**.aux', '**.log', '**.out', '**.toc', '**.pdf', '**.dvi']
-
-	devDocName = 'DimpleDeveloperDocumentation'
-	devDocDir = file(devDocName)
-	devDocSource = new File(devDocDir, devDocName + '.tex')
-	devDocPdf = makePdfName(devDocName, null)
 
 	userDocName = 'DimpleUserManual'
 	userDocDir = file(userDocName)
@@ -24,7 +19,6 @@ task(clean, type: Delete) {
 	group 'Cleanup'
 	
 	delete fileTree(dir:userDocDir, includes:tmpFilePatterns)
-	delete fileTree(dir:devDocDir, includes:tmpFilePatterns)
 }
 
 task(reallyClean, type: Delete) {
@@ -73,22 +67,7 @@ task(userDocs, dependsOn: ['matlabUserDoc', 'javaUserDoc']) {
 	group 'Documentation'
 }
 
-task(devDocs) {
-	description 'Builds developer documentation'
-	group 'Documentation'
-	inputs.files fileTree(dir:devDocDir, excludes:tmpFilePatterns)
-
-	doLast {
-		generatePDF(devDocSource)
-		copy {
-			from file("${devDocDir}/${devDocName}.pdf")
-			into file('.')
-			rename("${devDocName}.pdf", "${devDocName}_v${dimpleVersion}.pdf")
-		}
-	}
-}
-
-task(allDoc, dependsOn: ['userDocs', 'devDocs']) {
+task(allDoc, dependsOn: ['userDocs']) {
 	description 'Builds all documentation'
 	group 'Documentation'
 }
