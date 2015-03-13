@@ -78,7 +78,7 @@ public class StandardSolverNodeMapping extends SolverNodeMapping
 	@Override
 	public @Nullable ISolverFactorGraph getSolverGraph(FactorGraph graph, boolean create)
 	{
-		assertInHierarchy(graph);
+		assertInGraphTree(graph);
 		
 		ISolverFactorGraph sgraph = _sgraphs.getOrNull(graph.getGraphTreeIndex());
 
@@ -105,7 +105,7 @@ public class StandardSolverNodeMapping extends SolverNodeMapping
 	@Override
 	public @Nullable ISolverFactorGraph getSolverGraphOrNull(FactorGraph graph)
 	{
-		assertInHierarchy(graph);
+		assertInGraphTree(graph);
 		return _sgraphs.getOrNull(graph.getGraphTreeIndex());
 	}
 	
@@ -113,7 +113,7 @@ public class StandardSolverNodeMapping extends SolverNodeMapping
 	@Override
 	public ISolverFactorGraph getSolverGraph(FactorGraph graph)
 	{
-		assertInHierarchy(graph);
+		assertInGraphTree(graph);
 		
 		ISolverFactorGraph sgraph = _sgraphs.getOrNull(graph.getGraphTreeIndex());
 

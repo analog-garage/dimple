@@ -149,12 +149,12 @@ public class FactorGraph extends FactorBase
 	private static class GraphTreeState
 	{
 		/**
-		 * Counter that is modified whenever a structural change is made anywhere in the graph hierarchy.
+		 * Counter that is modified whenever a structural change is made anywhere in the graph tree.
 		 */
 		private long _globalStructureVersion = 0;
 		
 		/**
-		 * List of all graphs in the graph hierarchy that shares a common root, which will the first element.
+		 * List of all graphs in the graph tree that shares a common root, which will the first element.
 		 * Each graph is indexed by its graph tree index.
 		 */
 		private final ExtendedArrayList<FactorGraph> _graphs;
@@ -3368,8 +3368,8 @@ public class FactorGraph extends FactorBase
 	}
 	
 	/**
-	 * Returns graph in hierarchy with given graph tree index.
-	 * @param index is the {@link #getGraphTreeIndex() graph tree index} of the graph within the hierarchy of graphs
+	 * Returns graph in tree with given graph tree index.
+	 * @param index is the {@link #getGraphTreeIndex() graph tree index} of the graph within the tree of graphs
 	 * sharing the same {@link #getRootGraph() root graph}.
 	 * @return graph with given index or else null.
 	 * @since 0.08
@@ -3380,7 +3380,7 @@ public class FactorGraph extends FactorBase
 	}
 	
 	/**
-	 * The number of graphs in the hierarchy of graphs below (and including) the {@linkplain #getRootGraph() root graph}.
+	 * The number of graphs in the tree of graphs below (and including) the {@linkplain #getRootGraph() root graph}.
 	 * <p>
 	 * @return a positive count of graphs. Equal to one if there are no subgraphs.
 	 * @since 0.08

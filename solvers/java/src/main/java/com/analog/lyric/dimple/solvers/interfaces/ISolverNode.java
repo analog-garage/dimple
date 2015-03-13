@@ -95,7 +95,7 @@ public interface ISolverNode extends IOptionHolder, ISolverEventSource
 	public int getSiblingCount();
 	
 	/**
-	 * Returns mapping of nodes to solvers for entire solver hierarchy.
+	 * Returns mapping of nodes to solvers for entire solver graph tree.
 	 * @since 0.08
 	 */
 	public SolverNodeMapping getSolverMapping();

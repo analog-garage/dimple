@@ -28,7 +28,7 @@ import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.util.misc.Internal;
 
 /**
- * Maps model objects to their corresponding solvers in the hierarchy of {@link FactorGraph}s under a common
+ * Maps model objects to their corresponding solvers in the tree of {@link FactorGraph}s under a common
  * {@linkplain com.analog.lyric.dimple.model.core.INode#getRootGraph() root}.
  * <p>
  * @since 0.08
@@ -42,9 +42,9 @@ public abstract class SolverNodeMapping
 	 */
 	
 	/**
-	 * Returns the root solver graph in the hierarchy.
+	 * Returns the root solver graph in the tree.
 	 * <p>
-	 * This will be the solver that is associated with the root graph in the model hierarchy.
+	 * This will be the solver that is associated with the root graph in the model graph tree.
 	 * <p>
 	 * @since 0.08
 	 */
@@ -57,7 +57,7 @@ public abstract class SolverNodeMapping
 	 * not be invoked in other situations. Solvers that inherit from the standard
 	 * {@linkplain com.analog.lyric.dimple.solvers.core.SFactorGraphBase SFactorGraphBase} class do not have
 	 * to call this method explicitly.
-	 * @param sgraph solver graph that has just been added as a subgraph of a graph already in the hierarchy.
+	 * @param sgraph solver graph that has just been added as a subgraph of a graph already in the tree.
 	 * @since 0.08
 	 * @category internal
 	 */
@@ -67,14 +67,14 @@ public abstract class SolverNodeMapping
 	/**
 	 * Get solver graph for given model graph.
 	 * <p>
-	 * @param graph must be in the model hierarchy associated with this solver hierarchy.
+	 * @param graph must be in the model graph tree associated with this solver graph tree.
 	 * @param create indicates whether to create the solver graph on demand. If true, this method should return
 	 * a non-null value or throw an exception.
 	 * @return solver graph whose {@linkplain ISolverFactorGraph#getModelObject() model} is the specified {@code graph}
 	 * or else null if it does not exist and {@code create} is false.
-	 * @throws IllegalArgumentException if {@code graph} does not belong to the same model graph hierarchy
+	 * @throws IllegalArgumentException if {@code graph} does not belong to the same model graph tree
 	 * @since 0.08
-	 * @see #inHierarchy(Node)
+	 * @see #inGraphTree(Node)
 	 * @see #getSolverGraphOrNull(FactorGraph)
 	 * @see #getSolverGraph(FactorGraph)
 	 */
@@ -87,7 +87,7 @@ public abstract class SolverNodeMapping
 	 * not be invoked in other situations. Solvers that inherit from the standard
 	 * {@linkplain com.analog.lyric.dimple.solvers.core.SFactorGraphBase SFactorGraphBase} class do not have
 	 * to call this method explicitly.
-	 * @param sgraph is a subgraph of a graph in the hierarchy that has just been removed.
+	 * @param sgraph is a subgraph of a graph in the tree that has just been removed.
 	 * @since 0.08
 	 * @category internal
 	 */
@@ -99,7 +99,7 @@ public abstract class SolverNodeMapping
 	 */
 	
 	/**
-	 * The root of the {@link FactorGraph} hierarchy associated with this state.
+	 * The root of the {@link FactorGraph} tree associated with this state.
 	 * <p>
 	 * This is simply the {@linkplain ISolverFactorGraph#getModelObject() model graph} of
 	 * the {@linkplain #getRootSolverGraph() root solver graph}.
@@ -135,14 +135,14 @@ public abstract class SolverNodeMapping
 	/**
 	 * Get solver factor for given model factor.
 	 * <p>
-	 * @param factor must be in the model hierarchy associated with this solver hierarchy.
+	 * @param factor must be in the model graph tree associated with this solver graph tree.
 	 * @param create indicates whether to create the solver factor on demand. If true, this method should return
 	 * a non-null value or throw an exception.
 	 * @return solver factor whose {@linkplain ISolverFactor#getModelObject() model} is the specified {@code factor}
 	 * or else null if it does not exist and {@code create} is false.
-	 * @throws IllegalArgumentException if {@code factor} does not belong to the same model graph hierarchy
+	 * @throws IllegalArgumentException if {@code factor} does not belong to the same model graph tree
 	 * @since 0.08
-	 * @see #inHierarchy(Node)
+	 * @see #inGraphTree(Node)
 	 * @see #getSolverFactorOrNull(Factor)
 	 * @see #getSolverFactor(Factor)
 	 */
@@ -203,14 +203,14 @@ public abstract class SolverNodeMapping
 	/**
 	 * Get solver variable for given model variable.
 	 * <p>
-	 * @param variable must be in the model hierarchy associated with this solver hierarchy.
+	 * @param variable must be in the model graph tree associated with this solver graph tree.
 	 * @param create indicates whether to create the solver variable on demand. If true, this method should return
 	 * a non-null value or throw an exception.
 	 * @return solver variable whose {@linkplain ISolverVariable#getModelObject() model} is the specified
 	 * {@code variable} or else null if it does not exist and {@code create} is false.
-	 * @throws IllegalArgumentException if {@code variable} does not belong to the same model graph hierarchy
+	 * @throws IllegalArgumentException if {@code variable} does not belong to the same model graph tree
 	 * @since 0.08
-	 * @see #inHierarchy(Node)
+	 * @see #inGraphTree(Node)
 	 * @see #getSolverVariableOrNull(Variable)
 	 * @see #getSolverVariable(Variable)
 	 */
@@ -249,13 +249,13 @@ public abstract class SolverNodeMapping
 	}
 
 	/**
-	 * Indicate if node is in the model hierarchy associated with this solver hierarchy.
+	 * Indicate if node is in the model graph tree associated with this solver graph tree.
 	 * <p>
 	 * This simply tests whether the node's {@link Node#getRootGraph() root} is the same
-	 * as this hiearchy's {@linkplain #getRootGraph() model root}.
+	 * as this graph tree's {@linkplain #getRootGraph() model root}.
 	 * @since 0.08
 	 */
-	public boolean inHierarchy(Node node)
+	public boolean inGraphTree(Node node)
 	{
 		return node.getRootGraph() == getRootGraph();
 	}
@@ -264,11 +264,11 @@ public abstract class SolverNodeMapping
 	 * Protected methods
 	 */
 	
-	protected void assertInHierarchy(Node node)
+	protected void assertInGraphTree(Node node)
 	{
-		if (!inHierarchy(node))
+		if (!inGraphTree(node))
 		{
-			throw new IllegalArgumentException(String.format("'%s' does not belong to model hierarchy.", node));
+			throw new IllegalArgumentException(String.format("'%s' does not belong to model graph tree.", node));
 		}
 	}
 }

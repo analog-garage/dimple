@@ -71,7 +71,7 @@ public class FactorGraphIterators
 	 * <p>
 	 * @param root is the root graph whose factors will be visited. Only factors contained in this
 	 * graph or its subgraphs will be included.
-	 * @param maxNestingDepth specifies how deep in the subgraph hierarchy to visit. If zero is specified, only
+	 * @param maxNestingDepth specifies how deep in the subgraph tree to visit. If zero is specified, only
 	 * factors contained directly in the root will be included.
 	 * @since 0.08
 	 */
@@ -91,7 +91,7 @@ public class FactorGraphIterators
 	 * <p>
 	 * @param root is the root graph whose factors will be visited. Only nodes contained in this
 	 * graph or its subgraphs will be included.
-	 * @param maxNestingDepth specifies how deep in the subgraph hierarchy to visit. If zero is specified, only
+	 * @param maxNestingDepth specifies how deep in the subgraph tree to visit. If zero is specified, only
 	 * nodes contained directly in the root will be included.
 	 * @since 0.08
 	 */
@@ -186,7 +186,7 @@ public class FactorGraphIterators
 	 * @param root is the root graph whose variables will be visited. Only variables contained in this
 	 * graph or its subgraphs will be included. Note that boundary variables that are not owned by the root
 	 * will not be included.
-	 * @param maxNestingDepth specifies how deep in the subgraph hierarchy to visit. If zero is specified, only
+	 * @param maxNestingDepth specifies how deep in the subgraph tree to visit. If zero is specified, only
 	 * factors contained directly in the root will be included.
 	 * @since 0.08
 	 * @see #variablesAndBoundaryDownto(FactorGraph, int)
@@ -221,7 +221,7 @@ public class FactorGraphIterators
 	 * @param root is the root graph whose variables will be visited. Only variables contained in this
 	 * graph or its subgraphs will be included. Boundary variables that are not owned by the root
 	 * will be included.
-	 * @param maxNestingDepth specifies how deep in the subgraph hierarchy to visit. If zero is specified, only
+	 * @param maxNestingDepth specifies how deep in the subgraph tree to visit. If zero is specified, only
 	 * factors contained directly in the root will be included.
 	 * @since 0.08
 	 * @see #variablesDownto(FactorGraph,int)
