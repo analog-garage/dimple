@@ -59,6 +59,9 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
 	 */
+	protected double[][] _inputMessages = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+	protected double[][] _outputMessages = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+	
 	protected @Nullable double [][][] _outPortDerivativeMsgs;
 	protected double [] _dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	protected @Nullable TableFactorEngine _tableFactorEngine;
@@ -95,6 +98,20 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 		
 		configureDampingFromOptions();
 		updateK(getOptionOrDefault(BPOptions.maxMessageSize));
+
+		final int nSiblings = getSiblingCount();
+		if (nSiblings != _inputMessages.length)
+		{
+			_inputMessages = new double[nSiblings][];
+			_outputMessages = new double[nSiblings][];
+		}
+		
+		for (int i = 0; i < nSiblings; ++i)
+		{
+			final SumProductDiscreteEdge edge = getSiblingEdgeState(i);
+			_inputMessages[i] = edge.varToFactorMsg.representation();
+			_outputMessages[i] = edge.factorToVarMsg.representation();
+		}
 	}
 	
 	@Internal
@@ -768,32 +785,30 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 		return sum;
 	}
 
-	// FIXME eliminate this method
 	@Override
 	public double[][] getInPortMsgs()
 	{
-		final int nSiblings = getSiblingCount();
-		final double[][] messages = new double[nSiblings][];
-		for (int i = 0; i < nSiblings; ++i)
-		{
-			messages[i] = getSiblingEdgeState(i).varToFactorMsg.representation();
-		}
-		return messages;
+		return _inputMessages;
 	}
 
-	// FIXME eliminate this method
+	@Override
+	public double[] getInPortMsg(int edgeNumber)
+	{
+		return _inputMessages[edgeNumber];
+	}
+	
 	@Override
 	public double[][] getOutPortMsgs()
 	{
-		final int nSiblings = getSiblingCount();
-		final double[][] messages = new double[nSiblings][];
-		for (int i = 0; i < nSiblings; ++i)
-		{
-			messages[i] = getSiblingEdgeState(i).factorToVarMsg.representation();
-		}
-		return messages;
+		return _outputMessages;
 	}
 
+	@Override
+	public double[] getOutPortMsg(int edgeNumber)
+	{
+		return _outputMessages[edgeNumber];
+	}
+	
 	@Override
 	public boolean isDampingInUse()
 	{

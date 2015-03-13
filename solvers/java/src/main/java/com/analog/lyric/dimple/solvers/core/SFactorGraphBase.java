@@ -31,8 +31,8 @@ import com.analog.lyric.collect.ExtendedArrayList;
 import com.analog.lyric.dimple.environment.DimpleThread;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.EdgeState;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.NodeId;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -720,7 +720,7 @@ public abstract class SFactorGraphBase
 		{
 			requireNonNull(getSolverVariable(variable, true)).initialize();
 		}
-		if (!fg.hasParentGraph())
+		if (!fg.hasParentGraph()) // FIXME: redundant?
 		{
 			for (int i = 0, end = fg.getBoundaryVariableCount(); i <end; ++i)
 			{
@@ -863,7 +863,7 @@ public abstract class SFactorGraphBase
 		private OwnedSFactorIterator(Collection<Factor> iterable)
 		{
 			super(iterable);
-			_factors.setSize(iterable.size());
+			_factors.growSize(iterable.size());
 		}
 		
 		@Override
@@ -892,7 +892,7 @@ public abstract class SFactorGraphBase
 		private OwnedSVarIterator(Collection<Variable> iterable)
 		{
 			super(iterable);
-			_variables.setSize(iterable.size());
+			_variables.growSize(iterable.size());
 		}
 		
 		@Override
@@ -921,7 +921,7 @@ public abstract class SFactorGraphBase
 		private OwnedSubgraphIterator(Collection<FactorGraph> iterable)
 		{
 			super(iterable);
-			_subgraphs.setSize(iterable.size());
+			_subgraphs.growSize(iterable.size());
 		}
 		
 		@Override

@@ -17,8 +17,12 @@ public interface ISTableFactorSupportingOptimizedUpdate
 	SDiscreteEdge<?> getSiblingEdgeState(int edgeNumber);
 	
 	double[][] getInPortMsgs();
+	
+	double[] getInPortMsg(int edgeNumber);
 
 	double[][] getOutPortMsgs();
+	
+	double[] getOutPortMsg(int edgeNumber);
 
 	double getDamping(int _outPortNum);
 

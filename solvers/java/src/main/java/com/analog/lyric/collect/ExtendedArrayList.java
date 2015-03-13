@@ -63,11 +63,7 @@ public class ExtendedArrayList<T> extends ArrayList<T>
 	@Override
 	public void add(int index, @Nullable T element)
 	{
-		if (index > size())
-		{
-			setSize(index);
-		}
-
+		growSize(index);
 		super.add(index, element);
 	}
 	
@@ -80,11 +76,7 @@ public class ExtendedArrayList<T> extends ArrayList<T>
 	@Override
 	public @Nullable T set(int index, @Nullable T element)
 	{
-		if (index >= size())
-		{
-			setSize(index + 1);
-		}
-
+		growSize(index + 1);
 		return super.set(index, element);
 	}
 
@@ -110,6 +102,20 @@ public class ExtendedArrayList<T> extends ArrayList<T>
 	}
 	
 	/**
+	 * Sets {@link #size} of array to specified value if larger than current size.
+	 * @param newSize is the new size of the array. Is ignored if less than current size.
+	 * @since 0.08
+	 * @see #setSize
+	 */
+	public void growSize(int newSize)
+	{
+		if (newSize > size())
+		{
+			setSize(newSize);
+		}
+	}
+	
+	/**
 	 * Sets {@link #size} of array to specified value.
 	 * <p>
 	 * @param newSize the new size of the array. If less than the current size, elements will be removed
@@ -117,6 +123,7 @@ public class ExtendedArrayList<T> extends ArrayList<T>
 	 * be appended to the end of the list.
 	 * 
 	 * @since 0.08
+	 * @see #growSize
 	 */
 	public void setSize(int newSize)
 	{

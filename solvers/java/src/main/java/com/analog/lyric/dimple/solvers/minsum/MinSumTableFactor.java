@@ -54,6 +54,9 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
 	 */
+	protected double[][] _inputMessages = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+	protected double[][] _outputMessages = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+	
 	protected double[] _dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	protected @Nullable TableFactorEngine _tableFactorEngine;
 	protected KBestFactorEngine _kbestFactorEngine;
@@ -81,6 +84,20 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 		super.initialize();
 		configureDampingFromOptions();
 		updateK(getOptionOrDefault(BPOptions.maxMessageSize));
+
+		final int nSiblings = getSiblingCount();
+		if (nSiblings != _inputMessages.length)
+		{
+			_inputMessages = new double[nSiblings][];
+			_outputMessages = new double[nSiblings][];
+		}
+		
+		for (int i = 0; i < nSiblings; ++i)
+		{
+			final MinSumDiscreteEdge edge = getSiblingEdgeState(i);
+			_inputMessages[i] = edge.varToFactorMsg.representation();
+			_outputMessages[i] = edge.factorToVarMsg.representation();
+		}
 	}
 
 	void setupTableFactorEngine()
@@ -259,32 +276,28 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 		return Selection.findFirstKIndices(msg, k);
 	}
 
-	// FIXME eliminate this method
 	@Override
 	public double[][] getInPortMsgs()
 	{
-		final int nSiblings = getSiblingCount();
-		final double[][] messages = new double[nSiblings][];
-		for (int i = 0; i < nSiblings; ++i)
-		{
-			MinSumDiscreteEdge edge = getSiblingEdgeState(i);
-			messages[i] = edge.varToFactorMsg.representation();
-		}
-		return messages;
+		return _inputMessages;
 	}
 
-	// FIXME eliminate this method
+	@Override
+	public double[] getInPortMsg(int edgeNumber)
+	{
+		return _inputMessages[edgeNumber];
+	}
+	
 	@Override
 	public double[][] getOutPortMsgs()
 	{
-		final int nSiblings = getSiblingCount();
-		final double[][] messages = new double[nSiblings][];
-		for (int i = 0; i < nSiblings; ++i)
-		{
-			MinSumDiscreteEdge edge = getSiblingEdgeState(i);
-			messages[i] = edge.factorToVarMsg.representation();
-		}
-		return messages;
+		return _outputMessages;
+	}
+	
+	@Override
+	public double[] getOutPortMsg(int edgeNumber)
+	{
+		return _outputMessages[edgeNumber];
 	}
 	
 	/*---------------

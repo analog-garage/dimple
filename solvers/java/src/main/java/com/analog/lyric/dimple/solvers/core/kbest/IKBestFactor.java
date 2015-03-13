@@ -28,7 +28,9 @@ public interface IKBestFactor
 {
 	//ArrayList<Port> getPorts();
 	public double [][] getInPortMsgs();
+	public double[] getInPortMsg(int edgeNumber);
 	public double [][] getOutPortMsgs();
+	public double[] getOutPortMsg(int edgeNumber);
 	public Factor getFactor();
 	FactorFunction getFactorFunction();
 	double initAccumulator();
