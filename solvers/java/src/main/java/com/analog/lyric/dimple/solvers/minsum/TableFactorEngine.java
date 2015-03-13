@@ -46,7 +46,7 @@ public class TableFactorEngine
 	    final int numPorts = _factor.getSiblingCount();
 
 
-        double[] outputMsgs = _tableFactor.getOutPortMsgs()[outPortNum];
+        double[] outputMsgs = _tableFactor.getSiblingEdgeState(outPortNum).factorToVarMsg.representation();
         final int outputMsgLength = outputMsgs.length;
 		double[] saved = ArrayUtil.EMPTY_DOUBLE_ARRAY;
         

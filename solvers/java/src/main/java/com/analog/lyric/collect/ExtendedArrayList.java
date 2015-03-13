@@ -101,7 +101,7 @@ public class ExtendedArrayList<T> extends ArrayList<T>
 	 */
 	public @Nullable T getOrNull(int index)
 	{
-		if (index >= 0 && index < size())
+		if (index >= 0 & index < size())
 		{
 			return super.get(index);
 		}

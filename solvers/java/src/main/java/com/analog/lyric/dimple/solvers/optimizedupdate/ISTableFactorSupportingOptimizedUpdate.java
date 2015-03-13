@@ -1,6 +1,7 @@
 package com.analog.lyric.dimple.solvers.optimizedupdate;
 
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.solvers.core.SDiscreteEdge;
 import com.analog.lyric.util.misc.Internal;
 
 /**
@@ -13,6 +14,8 @@ import com.analog.lyric.util.misc.Internal;
 @Internal
 public interface ISTableFactorSupportingOptimizedUpdate
 {
+	SDiscreteEdge<?> getSiblingEdgeState(int edgeNumber);
+	
 	double[][] getInPortMsgs();
 
 	double[][] getOutPortMsgs();

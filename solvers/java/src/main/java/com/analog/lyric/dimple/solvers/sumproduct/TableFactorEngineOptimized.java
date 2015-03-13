@@ -93,7 +93,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		{
 			final double[] f_values = _f.getValues().get();
 			final double[] g_values = _g.getValues().get();
-			final double[] inputMsg = tableFactor.getInPortMsgs()[_inPortNum];
+			final double[] inputMsg = tableFactor.getSiblingEdgeState(_inPortNum).varToFactorMsg.representation();
 			Arrays.fill(g_values, 0.0);
 			int c = 0;
 			int msg_index = 0;
@@ -171,7 +171,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		{
 			final double[] f_values = _f.getValues().get();
 			final double[] g_values = _g.getValues().get();
-			final double[] inputMsg = tableFactor.getInPortMsgs()[_inPortNum];
+			final double[] inputMsg = tableFactor.getSiblingEdgeState(_inPortNum).varToFactorMsg.representation();
 			Arrays.fill(g_values, 0.0);
 			int n = 0;
 			for (final double value : f_values)
@@ -204,7 +204,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		@Override
 		public void apply(ISTableFactorSupportingOptimizedUpdate tableFactor)
 		{
-			final double[] outputMsg = tableFactor.getOutPortMsgs()[_outPortNum];
+			final double[] outputMsg = tableFactor.getSiblingEdgeState(_outPortNum).factorToVarMsg.representation();
 			final int outputMsgLength = outputMsg.length;
 
 			final double damping = tableFactor.getDamping(_outPortNum);
@@ -273,7 +273,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		@Override
 		public void apply(ISTableFactorSupportingOptimizedUpdate tableFactor)
 		{
-			final double[] outputMsg = tableFactor.getOutPortMsgs()[_outPortNum];
+			final double[] outputMsg = tableFactor.getSiblingEdgeState(_outPortNum).factorToVarMsg.representation();
 
 			final double damping = tableFactor.getDamping(_outPortNum);
 			final int outputMsgLength = outputMsg.length;
