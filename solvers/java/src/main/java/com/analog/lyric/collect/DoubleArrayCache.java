@@ -205,7 +205,14 @@ public final class DoubleArrayCache
 		}
 		
 		double[] array = _arrays[slotForLength(minSize)].pop();
-		return array != null ? array : new double[minSize];
+		if (array != null)
+		{
+			return array;
+		}
+		else
+		{
+			return new double[minSize];
+		}
 	}
 
 	/**

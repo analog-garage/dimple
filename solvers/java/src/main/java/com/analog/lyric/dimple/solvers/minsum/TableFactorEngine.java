@@ -73,32 +73,24 @@ public class TableFactorEngine
         	int[] tableRow = table[tableIndex];
         	int outputIndex = tableRow[outPortNum];
 
-        	for (int inPortNum = 0; inPortNum < numPorts; inPortNum++)
-        		if (inPortNum != outPortNum)
-        			L += inPortMsgs[inPortNum][tableRow[inPortNum]];
+        	for (int inPortNum = 0; inPortNum < outPortNum; inPortNum++)
+        		L += inPortMsgs[inPortNum][tableRow[inPortNum]];
+        	for (int inPortNum = outPortNum + 1; inPortNum < numPorts; inPortNum++)
+        		L += inPortMsgs[inPortNum][tableRow[inPortNum]];
         	
         	if (L < outputMsgs[outputIndex])
         		outputMsgs[outputIndex] = L;				// Use the minimum value
         }
 
-	    // Normalize the outputs
-        double minPotential = Double.POSITIVE_INFINITY;
-        
-        for (int i = 0; i < outputMsgLength; i++)
-        {
-        	double msg = outputMsgs[i];
-        	if (msg < minPotential)
-        		minPotential = msg;
-        }
-        
         // Damping
         if (_tableFactor._dampingInUse)
         {
         	double damping = _tableFactor._dampingParams[outPortNum];
         	if (damping != 0)
         	{
+        		final double inverseDamping = 1.0 - damping;
         		for (int i = 0; i < outputMsgLength; i++)
-        			outputMsgs[i] = (1-damping)*outputMsgs[i] + damping*saved[i];
+        			outputMsgs[i] = inverseDamping*outputMsgs[i] + damping*saved[i];
         	}
         }
         
@@ -107,9 +99,19 @@ public class TableFactorEngine
 			DimpleEnvironment.doubleArrayCache.release(saved);
 		}
 
+	    // Normalize the outputs
+        double minPotential = outputMsgs[0];
+        for (int i = 0; i < outputMsgLength; ++i)
+        {
+        	minPotential = Math.min(minPotential, outputMsgs[i]);
+        }
+        
 		// Normalize min value
-        for (int i = 0; i < outputMsgLength; i++)
-        	outputMsgs[i] -= minPotential;
+		if (minPotential != 0.0)
+		{
+			for (int i = 0; i < outputMsgLength; i++)
+				outputMsgs[i] -= minPotential;
+		}
 	}
 	
 	

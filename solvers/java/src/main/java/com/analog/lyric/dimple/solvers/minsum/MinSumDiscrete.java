@@ -23,7 +23,6 @@ import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
-import com.google.common.primitives.Doubles;
 
 /**
  * Solver variable for Discrete variables under Min-Sum solver.
@@ -119,7 +118,11 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		}
 
 		// Normalize the min
-		final double minPotential = Doubles.min(outMsgs);
+		double minPotential = outMsgs[0];
+		for (int i = 1; i < numValue; ++i)
+		{
+			minPotential = Math.min(minPotential, outMsgs[i]);
+		}
 		if (minPotential != 0.0)
 		{
 			for (int i = 0; i < numValue; i++)
