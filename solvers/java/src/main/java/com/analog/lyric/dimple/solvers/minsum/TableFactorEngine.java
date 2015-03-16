@@ -127,27 +127,35 @@ public class TableFactorEngine
 
 	    final boolean useDamping = _tableFactor._dampingInUse;
 	    
-	    final double[] saved =
-	    	useDamping ?
-	    		DimpleEnvironment.doubleArrayCache.allocateAtLeast(indexer.getSumOfDomainSizes()) :
-	    			ArrayUtil.EMPTY_DOUBLE_ARRAY;
+	    double[] saved = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	    	
-	    for (int port = 0, savedOffset = 0; port < numPorts; port++)
+	    if (useDamping)
 	    {
-	    	final double[] outputMsgs = outPortMsgs[port];
-	    	final int outputMsgLength = outputMsgs.length;
-	    	
-	    	if (useDamping)
+	    	saved = DimpleEnvironment.doubleArrayCache.allocateAtLeast(indexer.getSumOfDomainSizes());
+	    	for (int port = 0, savedOffset = 0; port < numPorts; port++)
 	    	{
-	    		double damping = _tableFactor._dampingParams[port];
-	    		if (damping != 0)
-	    		{
-	    			System.arraycopy(outputMsgs, 0, saved, savedOffset, outputMsgLength);
-	    		}
-	    	}
+	    		final double[] outputMsgs = outPortMsgs[port];
+	    		final int outputMsgLength = outputMsgs.length;
 
-	    	Arrays.fill(outputMsgs, Double.POSITIVE_INFINITY);
-    		savedOffset += outputMsgLength;
+	    		if (useDamping)
+	    		{
+	    			double damping = _tableFactor._dampingParams[port];
+	    			if (damping != 0)
+	    			{
+	    				System.arraycopy(outputMsgs, 0, saved, savedOffset, outputMsgLength);
+	    			}
+	    		}
+
+	    		Arrays.fill(outputMsgs, Double.POSITIVE_INFINITY);
+	    		savedOffset += outputMsgLength;
+	    	}
+	    }
+	    else
+	    {
+	    	for (double[] outMsg : outPortMsgs)
+	    	{
+	    		Arrays.fill(outMsg, Double.POSITIVE_INFINITY);
+	    	}
 	    }
 	    
 	    final double [][] inPortMsgs = _tableFactor.getInPortMsgs();
