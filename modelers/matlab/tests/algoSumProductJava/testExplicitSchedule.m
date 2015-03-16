@@ -59,6 +59,7 @@ function testExplicitSchedule()
     b = Bit(3,1);
     f1 = fg.addFactor(@xorDelta,b(1),b(2));
     f2 = fg.addFactor(@xorDelta,b(1),b(3));
+    fg.initialize();
     
     %Let's update just one edge and make sure the other doesn't update.
     b(1).Input = .9;

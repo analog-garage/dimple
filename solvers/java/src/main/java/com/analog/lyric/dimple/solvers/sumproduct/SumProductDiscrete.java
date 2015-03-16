@@ -666,7 +666,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     	{
     		for (int i = 0; i < size; ++i)
     		{
-    			_edges[i]._damping = dampingParams[i];
+    			getSiblingEdgeState(i)._damping = dampingParams[i];
     		}
     	}
     }
