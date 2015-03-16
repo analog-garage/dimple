@@ -71,7 +71,7 @@ public class CustomLogNormal extends GibbsRealFactor implements IRealConjugateFa
 	@Override
 	public @Nullable GibbsSolverEdge<?> createEdge(EdgeState edge)
 	{
-		final int port = edge.getFactorToVariableIndex();
+		final int port = edge.getFactorToVariableEdgeNumber();
 		if (port == _meanParameterPort)
 		{
 			return new GibbsNormalEdge();

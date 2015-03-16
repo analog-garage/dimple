@@ -68,7 +68,7 @@ public class CustomNegativeExpGamma extends GibbsRealFactor implements IRealConj
 	@Override
 	public @Nullable GibbsSolverEdge<?> createEdge(EdgeState edge)
 	{
-		if (edge.getFactorToVariableIndex() != _alphaParameterPort)
+		if (edge.getFactorToVariableEdgeNumber() != _alphaParameterPort)
 		{
 			return new GibbsGammaEdge();
 		}

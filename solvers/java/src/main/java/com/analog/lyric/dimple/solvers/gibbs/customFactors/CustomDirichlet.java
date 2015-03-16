@@ -55,7 +55,7 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 	@Override
 	public @Nullable GibbsSolverEdge<?> createEdge(EdgeState edge)
 	{
-		if (edge.getFactorToVariableIndex() >= _numParameterEdges)
+		if (edge.getFactorToVariableEdgeNumber() >= _numParameterEdges)
 		{
 			return new GibbsDirichletEdge(_dimension);
 		}

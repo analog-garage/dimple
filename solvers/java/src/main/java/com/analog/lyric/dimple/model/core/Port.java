@@ -35,17 +35,17 @@ public class Port
 	
 	public static Port createFactorPort(EdgeState edge, FactorGraph fg)
 	{
-		return new Port(edge.getFactor(fg), edge._factorToVariableIndex);
+		return new Port(edge.getFactor(fg), edge._factorToVariableEdgeNumber);
 	}
 	
 	public static Port createVariablePort(EdgeState edge, FactorGraph fg)
 	{
-		return new Port(edge.getVariable(fg), edge._variableToFactorIndex);
+		return new Port(edge.getVariable(fg), edge._variableToFactorEdgeNumber);
 	}
 	
 	public static Port createPortFromNode(EdgeState edge, Node node)
 	{
-		return new Port(node, node.isVariable() ? edge.getVariableToFactorIndex() : edge.getFactorToVariableIndex());
+		return new Port(node, node.isVariable() ? edge.getVariableToFactorEdgeNumber() : edge.getFactorToVariableEdgeNumber());
 	}
 	
 	@Override
@@ -128,7 +128,7 @@ public class Port
 	}
 	public Port getSiblingPort()
 	{
-		return new Port(getSibling(),node.getSiblingPortIndex(index));
+		return new Port(getSibling(),node.getReverseSiblingNumber(index));
 	}
 	
 	/**

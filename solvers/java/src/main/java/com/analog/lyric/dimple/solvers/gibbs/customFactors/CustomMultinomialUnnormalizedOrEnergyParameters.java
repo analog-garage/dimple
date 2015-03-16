@@ -82,7 +82,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 	@Override
 	public @Nullable GibbsSolverEdge<?> createEdge(EdgeState edge)
 	{
-		final int portNum = edge.getFactorToVariableIndex();
+		final int portNum = edge.getFactorToVariableEdgeNumber();
 		
 		if (portNum >= _alphaParameterMinEdge && portNum <= _alphaParameterMaxEdge)
 		{

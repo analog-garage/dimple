@@ -63,7 +63,7 @@ public class CustomDiscreteTransition extends GibbsRealFactor implements IRealJo
 	@Override
 	public @Nullable GibbsSolverEdge<?> createEdge(EdgeState edge)
 	{
-		if (edge.getFactorToVariableIndex() >= _startingParameterEdge)
+		if (edge.getFactorToVariableEdgeNumber() >= _startingParameterEdge)
 		{
 			return new GibbsDirichletEdge(_yDimension);
 		}

@@ -193,10 +193,10 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	
     // FIXME - give this a better name! e.g. getReverseSiblingEdgeNumber
 	@Override
-	public int getSiblingPortIndex(int index)
+	public int getReverseSiblingNumber(int index)
 	{
 		final EdgeState edge = getSiblingEdgeState(index);
-		return isVariable() ? edge._factorToVariableIndex : edge._variableToFactorIndex;
+		return isVariable() ? edge._factorToVariableEdgeNumber : edge._variableToFactorEdgeNumber;
 	}
 	
 	@Override
@@ -649,6 +649,27 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	}
 	
 	@Override
+	public final int findSibling(INode node)
+	{
+		return findSibling(node, 0);
+	}
+	
+	@Override
+	public final int findSibling(INode node, int start)
+	{
+		for (int i = start, n = getSiblingCount(); i < n; ++i)
+		{
+			if (node == getSibling(i))
+			{
+				return i;
+			}
+		}
+		
+		return -1;
+	}
+	
+	@Override
+	@Deprecated
 	public final int getPortNum(INode node)
 	{
 		int port = getPortNumNoThrow(node);
@@ -669,7 +690,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	@Override
 	public void updateEdge(INode other)
 	{
-		int num = getPortNum(other);
+		int num = findSibling(other);
 		updateEdge(num);
 	}
 
@@ -746,7 +767,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	 */
 	public int indexOfSiblingEdgeState(EdgeState edge)
 	{
-		return isVariable() ? edge._variableToFactorIndex : edge._factorToVariableIndex;
+		return isVariable() ? edge._variableToFactorEdgeNumber : edge._factorToVariableEdgeNumber;
 	}
 	
 	/**
@@ -833,11 +854,11 @@ public abstract class Node extends DimpleOptionHolder implements INode
 		}
 		if (isVariable())
 		{
-			edge._variableToFactorIndex = i;
+			edge._variableToFactorEdgeNumber = i;
 		}
 		else
 		{
-			edge._factorToVariableIndex = i;
+			edge._factorToVariableEdgeNumber = i;
 		}
 		_siblingEdges.add(edge.edgeIndex(this));
 
@@ -852,14 +873,14 @@ public abstract class Node extends DimpleOptionHolder implements INode
 		{
 			for (int j = _siblingEdges.size(); --j >= 0;)
 			{
-				getSiblingEdgeState(j)._variableToFactorIndex = -1;
+				getSiblingEdgeState(j)._variableToFactorEdgeNumber = -1;
 			}
 		}
 		else
 		{
 			for (int j = _siblingEdges.size(); --j >= 0;)
 			{
-				getSiblingEdgeState(j)._factorToVariableIndex = -1;
+				getSiblingEdgeState(j)._factorToVariableEdgeNumber = -1;
 			}
 		}
 		_siblingToIndex = null;
@@ -877,22 +898,22 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	{
 		if (isVariable())
 		{
-			final int i = edge._variableToFactorIndex;
+			final int i = edge._variableToFactorEdgeNumber;
 			_siblingEdges.remove(i);
-			edge._variableToFactorIndex = -1;
+			edge._variableToFactorEdgeNumber = -1;
 			for (int j = _siblingEdges.size(); --j >= i;)
 			{
-				getSiblingEdgeState(j)._variableToFactorIndex = j;
+				getSiblingEdgeState(j)._variableToFactorEdgeNumber = j;
 			}
 		}
 		else
 		{
-			final int i = edge._factorToVariableIndex;
+			final int i = edge._factorToVariableEdgeNumber;
 			_siblingEdges.remove(i);
-			edge._factorToVariableIndex = -1;
+			edge._factorToVariableEdgeNumber = -1;
 			for (int j = _siblingEdges.size(); --j >= i;)
 			{
-				getSiblingEdgeState(j)._factorToVariableIndex = j;
+				getSiblingEdgeState(j)._factorToVariableEdgeNumber = j;
 			}
 		}
 		_siblingToIndex = null;
@@ -903,10 +924,10 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	protected void replaceSiblingEdgeState(EdgeState oldEdge, EdgeState newEdge)
 	{
 		assert(isFactor());
-		final int i = oldEdge._factorToVariableIndex;
-		oldEdge._factorToVariableIndex = -1;
+		final int i = oldEdge._factorToVariableEdgeNumber;
+		oldEdge._factorToVariableEdgeNumber = -1;
 		_siblingEdges.set(i, newEdge.edgeIndex(this));
-		newEdge._factorToVariableIndex = i;
+		newEdge._factorToVariableEdgeNumber = i;
 		final HashMap<INode,Integer> siblingToIndex = _siblingToIndex;
 		if (siblingToIndex != null)
 		{
@@ -1067,4 +1088,14 @@ public abstract class Node extends DimpleOptionHolder implements INode
 		return false;
 	}
 	
+	/*--------------------
+	 * Deprecated methods
+	 */
+	
+	@Deprecated
+	@Override
+	public int getSiblingPortIndex(int siblingNumber)
+	{
+		return getReverseSiblingNumber(siblingNumber);
+	}
 }

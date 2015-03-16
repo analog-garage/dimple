@@ -121,7 +121,7 @@ public class SampledFactor extends SFactorBase
 	public @Nullable ISolverEdgeState createEdge(EdgeState edge)
 	{
 		// Edge already created at construction time
-		return _edges[edge.getFactorToVariableIndex()];
+		return _edges[edge.getFactorToVariableEdgeNumber()];
 	}
 	
 	@Override

@@ -41,8 +41,8 @@ public abstract class EdgeState
 	 * State
 	 */
 	
-	int _factorToVariableIndex = -1;
-	int _variableToFactorIndex = -1;
+	int _factorToVariableEdgeNumber = -1;
+	int _variableToFactorEdgeNumber = -1;
 	
 	/*------------------------------
 	 * FactorGraphEdgeState methods
@@ -104,15 +104,15 @@ public abstract class EdgeState
 	abstract public Factor getFactor(FactorGraph graph);
 	
 	/**
-	 * Returns sibling index from the perspective of {@link Factor} endpoint of the edge.
+	 * Returns sibling edge number from the perspective of {@link Factor} endpoint of the edge.
 	 * <p>
-	 * @return sibling index or else -1 if edge is not currently connected to its endpoints.
+	 * @return sibling edge number or else -1 if edge is not currently connected to its endpoints.
 	 * @since 0.08
-	 * @see #getVariableToFactorIndex()
+	 * @see #getVariableToFactorEdgeNumber()
 	 */
-	public final int getFactorToVariableIndex()
+	public final int getFactorToVariableEdgeNumber()
 	{
-		return _factorToVariableIndex;
+		return _factorToVariableEdgeNumber;
 	}
 	
 	/**
@@ -132,15 +132,15 @@ public abstract class EdgeState
 	abstract public Variable getVariable(FactorGraph graph);
 	
 	/**
-	 * Returns sibling index from the perspective of {@link Variable} endpoint of the edge.
+	 * Returns sibling edge number from the perspective of {@link Variable} endpoint of the edge.
 	 * <p>
-	 * @return sibling index or else -1 if edge is not currently connected to its endpoints.
+	 * @return sibling edge number or else -1 if edge is not currently connected to its endpoints.
 	 * @since 0.08
-	 * @see #getFactorToVariableIndex()
+	 * @see #getFactorToVariableEdgeNumber()
 	 */
-	public final int getVariableToFactorIndex()
+	public final int getVariableToFactorEdgeNumber()
 	{
-		return _variableToFactorIndex;
+		return _variableToFactorEdgeNumber;
 	}
 
 	/**

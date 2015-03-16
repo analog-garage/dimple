@@ -103,7 +103,7 @@ public class RandomWithoutReplacementSchedule extends ScheduleBase
 			for (int i = 0, n = f.getSiblingCount(); i < n; ++i)
 			{
 				final EdgeState edge = f.getSiblingEdgeState(i);
-				updateList.add(new EdgeScheduleEntry(edge.getVariable(fg), edge.getVariableToFactorIndex()));
+				updateList.add(new EdgeScheduleEntry(edge.getVariable(fg), edge.getVariableToFactorEdgeNumber()));
 			}
 			updateList.add(new NodeScheduleEntry(f));
 		}

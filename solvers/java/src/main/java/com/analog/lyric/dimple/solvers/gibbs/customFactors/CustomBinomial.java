@@ -62,7 +62,7 @@ public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFac
 	@Override
 	public @Nullable GibbsSolverEdge<?> createEdge(EdgeState edge)
 	{
-		if (edge.getFactorToVariableIndex() == _probabilityParameterEdge)
+		if (edge.getFactorToVariableEdgeNumber() == _probabilityParameterEdge)
 		{
 			return new GibbsBetaEdge();
 		}

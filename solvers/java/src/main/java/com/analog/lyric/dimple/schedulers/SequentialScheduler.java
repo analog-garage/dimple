@@ -61,7 +61,7 @@ public class SequentialScheduler implements IScheduler
 			for (int i = 0, end = f.getSiblingCount(); i < end; ++i)
 			{
 				final EdgeState edge = f.getSiblingEdgeState(i);
-				schedule.add(new EdgeScheduleEntry(edge.getVariable(g), edge.getVariableToFactorIndex()));
+				schedule.add(new EdgeScheduleEntry(edge.getVariable(g), edge.getVariableToFactorEdgeNumber()));
 			}
 
 			// Then update the function
@@ -75,7 +75,7 @@ public class SequentialScheduler implements IScheduler
 			for (int i = 0, end = sg.getSiblingCount(); i < end; ++i)
 			{
 				final EdgeState edge = sg.getSiblingEdgeState(i);
-				schedule.add(new EdgeScheduleEntry(edge.getVariable(g), edge.getVariableToFactorIndex()));
+				schedule.add(new EdgeScheduleEntry(edge.getVariable(g), edge.getVariableToFactorEdgeNumber()));
 			}
 
 			// Then update the sub-graph

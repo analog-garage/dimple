@@ -46,10 +46,10 @@ public interface ISolverNode extends IOptionHolder, ISolverEventSource
 	 * For belief propogation (BP) solvers, this will update the outgoing message for
 	 * the specified edge.
 	 * <p>
-	 * @param edgeNumber specifies which edge to update. Must be a non-negative value less
+	 * @param siblingNumber specifies which edge to update. Must be a non-negative value less
 	 * than {@link #getSiblingCount()}.
 	 */
-	public void updateEdge(int edgeNumber) ;
+	public void updateEdge(int siblingNumber) ;
 	
 	/**
 	 * Initialize the solver node.
@@ -61,10 +61,10 @@ public interface ISolverNode extends IOptionHolder, ISolverEventSource
 	/**
 	 * Returns solver edge state, if any.
 	 * 
-	 * @param edgeNumber identifies which edge to return. Must be non-negative and less than {@link #getSiblingCount()}
+	 * @param siblingNumber identifies which edge to return. Must be non-negative and less than {@link #getSiblingCount()}
 	 * @since 0.08
 	 */
-	public @Nullable ISolverEdgeState getSiblingEdgeState(int edgeNumber);
+	public @Nullable ISolverEdgeState getSiblingEdgeState(int siblingNumber);
 	
 	/**
 	 * Returns the solver factor graph to which this node belongs.
@@ -79,10 +79,10 @@ public interface ISolverNode extends IOptionHolder, ISolverEventSource
 
 	/**
 	 * Returns solver node attached to this node through edge with given edge number.
-	 * @param edgeNumber is non-negative value less than {@link #getSiblingCount()}
+	 * @param siblingNumber is non-negative value less than {@link #getSiblingCount()}
 	 * @since 0.06
 	 */
-	public ISolverNode getSibling(int edgeNumber);
+	public ISolverNode getSibling(int siblingNumber);
 	
 	/**
 	 * Returns number of solver nodes attached to this one.

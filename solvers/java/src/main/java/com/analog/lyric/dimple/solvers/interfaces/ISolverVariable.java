@@ -37,7 +37,7 @@ public interface ISolverVariable extends ISolverNode
     public ISolverFactorGraph getParentGraph();
     
     @Override
-    public ISolverFactor getSibling(int edge);
+    public ISolverFactor getSibling(int siblingNumber);
     
     /*-------------------------
      * ISolverVariable methods

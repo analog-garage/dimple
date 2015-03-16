@@ -92,7 +92,7 @@ public class RandomWithReplacementSchedule extends ScheduleBase
 			final FactorGraph fg = f.requireParentGraph();
 			for (EdgeState edge : f.getSiblingEdgeState())
 			{
-				updateList.add(new EdgeScheduleEntry(edge.getVariable(fg), edge.getVariableToFactorIndex()));
+				updateList.add(new EdgeScheduleEntry(edge.getVariable(fg), edge.getVariableToFactorEdgeNumber()));
 			}
 			updateList.add(new NodeScheduleEntry(f));
 		}

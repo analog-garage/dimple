@@ -356,7 +356,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 			{
 				final EdgeState edge = _model.getSiblingEdgeState(d);
 				Factor factorNode = edge.getFactor(fg);
-				int factorPortNumber = edge.getFactorToVariableIndex();
+				int factorPortNumber = edge.getFactorToVariableEdgeNumber();
 				ParticleBPRealFactor factor = (ParticleBPRealFactor)(solvers.getSolverFactor(factorNode));
 				getSiblingEdgeState(d).factorToVarMsg.setWeight(m,
 					Math.exp(factor.getMarginalPotential(sampleValue.getDouble(), factorPortNumber)));
@@ -440,7 +440,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 
 			for (int d = 0; d < D; d++)
 			{
-				int factorPortNumber = _model.getSiblingPortIndex(d);
+				int factorPortNumber = _model.getReverseSiblingNumber(d);
 				ParticleBPRealFactor factor = (ParticleBPRealFactor)getSibling(d);
 				out -= factor.getMarginalPotential(value, factorPortNumber);	// Potential is -log(p)
 			}

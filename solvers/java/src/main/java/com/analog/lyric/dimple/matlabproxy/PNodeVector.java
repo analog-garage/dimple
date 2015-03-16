@@ -283,7 +283,7 @@ public class PNodeVector extends POptionHolder
 		Node thisNode = PHelpers.convertToNode(this);
 		Node n = PHelpers.convertToNode(nodeVector);
 		
-		int num = thisNode.getPortNum(n);
+		int num = thisNode.findSibling(n);
 		return num;
 
 	}

@@ -309,7 +309,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 				final EdgeState edgeState = requireNonNull(fg.getGraphEdgeState(edgeIndex));
 				final GibbsDiscreteEdge sedge = requireNonNull((GibbsDiscreteEdge)sfg.getSolverEdge(edgeIndex));
 				inputMsgs[port] = sedge.factorToVarMsg.representation();
-				getSibling(port).updateEdgeMessage(edgeState.getFactorToVariableIndex());
+				getSibling(port).updateEdgeMessage(edgeState.getFactorToVariableEdgeNumber());
 			}
 			
 			// Sum up the messages to get the conditional distribution

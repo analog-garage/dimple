@@ -55,7 +55,7 @@ public class CustomPoisson extends GibbsRealFactor implements IRealConjugateFact
 	@Override
 	public @Nullable GibbsSolverEdge<?> createEdge(EdgeState edge)
 	{
-		if (edge.getFactorToVariableIndex() == _lambdaParameterEdge)
+		if (edge.getFactorToVariableEdgeNumber() == _lambdaParameterEdge)
 		{
 			return new GibbsGammaEdge();
 		}

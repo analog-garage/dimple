@@ -444,7 +444,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 			double inputMsg = getSiblingEdgeState(i).factorToVarMsg.getWeight(domain);
 			double tmp = f / inputMsg;
 			@SuppressWarnings("null")
-			double der = sft.getMessageDerivative(weightIndex, edge.getFactorToVariableIndex())[domain];
+			double der = sft.getMessageDerivative(weightIndex, edge.getFactorToVariableEdgeNumber())[domain];
 			tmp = tmp * der;
 			sum += tmp;
 		}
@@ -575,7 +575,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	@Deprecated
     public double [] getMessageDerivative(int wn, Factor f)
     {
-    	return getMessageDerivative(wn, _model.getPortNum(f));
+    	return getMessageDerivative(wn, _model.findSibling(f));
     }
     
 	@Internal
@@ -596,7 +596,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 				double thisMsg = getSiblingEdgeState(i).factorToVarMsg.getWeight(d);
 				SumProductTableFactor stf = (SumProductTableFactor)getSibling(i);
 				@SuppressWarnings("null")
-				double [] dfactor = stf.getMessageDerivative(wn, edge.getFactorToVariableIndex());
+				double [] dfactor = stf.getMessageDerivative(wn, edge.getFactorToVariableEdgeNumber());
 				
 				df += f/thisMsg * dfactor[d];
 			}

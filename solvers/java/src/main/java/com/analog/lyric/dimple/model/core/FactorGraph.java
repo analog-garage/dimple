@@ -1016,7 +1016,7 @@ public class FactorGraph extends FactorBase
 		
 		// Give factor a descriptive name to ease debugging.
 		f.setName(String.format("$BFP_%s_to_%s_%s",
-			factorPort.getSibling().getName(), var.getName(), f.getSiblingPortIndex(0)));
+			factorPort.getSibling().getName(), var.getName(), f.getReverseSiblingNumber(0)));
 
 		if (setVarSolver)
 		{

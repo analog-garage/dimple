@@ -281,7 +281,7 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 		ISolverVariable outputVariable = getSibling(_outputPortNumber);
 		if (outputVariable instanceof ISolverRealVariableGibbs)
 			_outputVariable = (ISolverRealVariableGibbs)outputVariable;
-		_outputVariableSiblingPortIndex = _model.getSiblingPortIndex(_outputPortNumber);
+		_outputVariableSiblingPortIndex = _model.getReverseSiblingNumber(_outputPortNumber);
 
 		_hasConstantSelector = factorFunction.isConstantIndex(SELECTOR_INDEX);
 		if (_hasConstantSelector)

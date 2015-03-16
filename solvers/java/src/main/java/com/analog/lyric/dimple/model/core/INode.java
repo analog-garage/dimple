@@ -100,19 +100,19 @@ public interface INode  extends INameable, IModelEventSource
      * Returns the ith element of the {@link #getSiblings()} list but without
      * allocating any temporary objects.
      */
-    public INode getSibling(int i);
+    public INode getSibling(int siblingNumber);
 
     public boolean isConnected(INode node);
     public IMapList<INode> getConnectedNodes();
-	public INode getConnectedNodeFlat(int portNum);
-    public INode getConnectedNode(int relativeNestingDepth, int portNum);
+	public INode getConnectedNodeFlat(int siblingNumber);
+    public INode getConnectedNode(int relativeNestingDepth, int siblingNumber);
     public IMapList<INode> getConnectedNodes(int relativeNestingDepth);
     public IMapList<INode> getConnectedNodesFlat();
     public IMapList<INode> getConnectedNodesTop();
 
     //TODO: should these only be on solver?
     public void update() ;
-	public void updateEdge(int outPortNum);
+	public void updateEdge(int siblingNumber);
 	
 	@Deprecated
 	public void updateEdge(INode other);
@@ -125,9 +125,34 @@ public interface INode  extends INameable, IModelEventSource
 	public @Nullable FactorGraph getParentGraph();
 	public @Nullable FactorGraph getRootGraph();
 	public boolean hasParentGraph();
+	
+	/**
+	 * Find lowest sibling number associated with given node.
+	 * @param node is another node.
+	 * @return sibling number of given node if it is a sibling of this node or else -1.
+	 * @since 0.08
+	 * @see #findSibling(INode, int)
+	 */
+	public int findSibling(INode node);
+
+	/**
+	 * Find lowest sibling number associated with given node.
+	 * @param node is another node.
+	 * @param start is the sibling number to start at
+	 * @return sibling number >= {@code start} of given node if it is a sibling of this node or else -1.
+	 * @since 0.08
+	 * @see #findSibling(INode)
+	 */
+	public int findSibling(INode node, int start);
+	
+	/**
+	 * @deprecated use {@link #findSibling(INode)} instead
+	 */
+	@Deprecated
 	public int getPortNum(INode node) ;
-	public ArrayList<INode> getConnectedNodeAndParents(int index);
-	public Port getPort(int i);
+	
+	public ArrayList<INode> getConnectedNodeAndParents(int siblingNumber);
+	public Port getPort(int siblingNumber);
 	public Collection<Port> getPorts();
 	
 	/**
@@ -169,18 +194,21 @@ public interface INode  extends INameable, IModelEventSource
 	public double getInternalEnergy() ;
 	public double getBetheEntropy() ;
 	
-	// REFACTOR: give this a better name to make it clear this is returning the siblings index
-	// back to this node, e.g. getSiblingInversePortIndex. Also, wouldn't it be better to use the
-	// term "edge index" or "sibling index" instead?
 	/**
 	 * Returns reverse sibling edge index from sibling at given index back to this node.
-	 * @param index
+	 * @param siblingNumber
 	 * @since 0.08
 	 */
-	public int getSiblingPortIndex(int index);
+	public int getReverseSiblingNumber(int siblingNumber);
 	
+	/**
+	 * @deprecated use {@link #getReverseSiblingNumber(int)} instead
+	 */
+	@Deprecated
+	public int getSiblingPortIndex(int siblingNumber);
+
 	public void initialize();
-	public void initialize(int portNum);
+	public void initialize(int siblingNumber);
 
 	/*------------------
 	 * Internal methods
@@ -239,7 +267,7 @@ public interface INode  extends INameable, IModelEventSource
     @Internal
     public  void setVisited();
 
-	public abstract EdgeState getSiblingEdgeState(int i);
+	public abstract EdgeState getSiblingEdgeState(int siblingNumber);
 
-	public abstract Edge getSiblingEdge(int i);
+	public abstract Edge getSiblingEdge(int siblingNumber);
 }

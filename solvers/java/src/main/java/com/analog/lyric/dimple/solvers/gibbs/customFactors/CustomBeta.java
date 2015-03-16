@@ -59,7 +59,7 @@ public class CustomBeta extends GibbsRealFactor implements IRealConjugateFactor
 	@Override
 	public @Nullable GibbsSolverEdge<?> createEdge(EdgeState edge)
 	{
-		if (edge.getFactorToVariableIndex() >= _numParameterEdges)
+		if (edge.getFactorToVariableEdgeNumber() >= _numParameterEdges)
 		{
 			return new GibbsBetaEdge();
 		}

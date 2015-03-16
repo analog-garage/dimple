@@ -56,7 +56,7 @@ public class EdgeScheduleEntry implements IScheduleEntry
 	public EdgeScheduleEntry(INode node, INode other)
 	{
 		_node = node;
-		_portNum = node.getPortNum(other);
+		_portNum = node.findSibling(other);
 	}
 
 	@Override

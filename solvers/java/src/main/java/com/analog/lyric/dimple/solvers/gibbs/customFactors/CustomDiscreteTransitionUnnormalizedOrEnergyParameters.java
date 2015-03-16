@@ -72,7 +72,7 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends Gibb
 	@Override
 	public @Nullable GibbsSolverEdge<?> createEdge(EdgeState edge)
 	{
-		if (edge.getFactorToVariableIndex() >= _startingParameterEdge)
+		if (edge.getFactorToVariableEdgeNumber() >= _startingParameterEdge)
 		{
 			return new GibbsGammaEdge();
 		}

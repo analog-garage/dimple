@@ -43,7 +43,7 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 		_factor = f;
 		_portForOtherVar = f.getPortForOtherVariable();
 		Variable varConnectedToBlast = f.getVariableConnectedToBlast();
-	    _portForBlastVar = new Port(varConnectedToBlast,varConnectedToBlast.getPortNum(getModelObject()));
+	    _portForBlastVar = new Port(varConnectedToBlast,varConnectedToBlast.findSibling(getModelObject()));
 	    _parent = parent;
 	}
 	
@@ -206,7 +206,7 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 	public void setOutputMsg(int portIndex, Object obj)
 	{
 		Variable var = _factor.getSibling(portIndex);
-		int index = _factor.getSiblingPortIndex(portIndex);
+		int index = _factor.getReverseSiblingNumber(portIndex);
 		// FIXME - lookup through solver graph
 		var.requireSolver("setOutputMsg").setInputMsg(index,obj);
 	}

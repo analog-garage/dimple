@@ -571,7 +571,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 			//divide out contribution
 			final int j = entryIndices[i];
 			sum += prod / getSiblingEdgeState(i).varToFactorMsg.getWeight(j) *
-				var.getMessageDerivative(weightIndex, edge.getVariableToFactorIndex())[j];
+				var.getMessageDerivative(weightIndex, edge.getVariableToFactorEdgeNumber())[j];
 		}
 		return sum;
 	}
@@ -617,7 +617,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	@Deprecated
 	public double [] getMessageDerivative(int wn, Variable var)
 	{
-		return getMessageDerivative(wn, _model.getPortNum(var));
+		return getMessageDerivative(wn, _model.findSibling(var));
 	}
 	
 	public double[] getMessageDerivative(int wn, int edgeNumber)
@@ -691,7 +691,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 					{
 						EdgeState edge = factor.getSiblingEdgeState(i);
 						SumProductDiscrete sv = (SumProductDiscrete)getSibling(i);
-						double [] dvar = sv.getMessageDerivative(wn, edge.getVariableToFactorIndex());
+						double [] dvar = sv.getMessageDerivative(wn, edge.getVariableToFactorEdgeNumber());
 								
 						final int j = entryIndices[i];
 						sum += (prod / getSiblingEdgeState(i).varToFactorMsg.getWeight(j)) * dvar[j];

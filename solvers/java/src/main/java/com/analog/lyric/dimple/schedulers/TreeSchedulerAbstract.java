@@ -136,7 +136,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 								NodeUpdateState siblingNodeState = updateState.get(sibling.getId());
 								if (siblingNodeState != null)
 								{
-									siblingNodeState.inputUpdated(node.getSiblingPortIndex(index));
+									siblingNodeState.inputUpdated(node.getReverseSiblingNumber(index));
 									if (nextNodeCount++ == 0)
 										nextNode = sibling;			// Do the first one next
 									else
@@ -166,7 +166,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 								NodeUpdateState siblingNodeState = updateState.get(sibling.getId());
 								if (siblingNodeState != null)
 								{
-									siblingNodeState.inputUpdated(node.getSiblingPortIndex(index));
+									siblingNodeState.inputUpdated(node.getReverseSiblingNumber(index));
 									if (nextNodeCount++ == 0)
 										nextNode = sibling;			// Do the first one next
 									else
@@ -191,7 +191,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 					NodeUpdateState siblingNodeState = updateState.get(sibling.getId());
 					if (siblingNodeState != null)
 					{
-						siblingNodeState.inputUpdated(node.getSiblingPortIndex(portId));
+						siblingNodeState.inputUpdated(node.getReverseSiblingNumber(portId));
 						nextNode = sibling;
 					}
 					else	// No node state, must be a boundary variable

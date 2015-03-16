@@ -67,7 +67,7 @@ public class CustomGamma extends GibbsRealFactor implements IRealConjugateFactor
 	@Override
 	public @Nullable GibbsSolverEdge<?> createEdge(EdgeState edge)
 	{
-		if (edge.getFactorToVariableIndex() != _alphaParameterPort)
+		if (edge.getFactorToVariableEdgeNumber() != _alphaParameterPort)
 		{
 			return new GibbsGammaEdge();
 		}

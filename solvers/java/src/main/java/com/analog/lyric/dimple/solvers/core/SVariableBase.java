@@ -72,16 +72,16 @@ public abstract class SVariableBase<MVariable extends Variable> extends SNode<MV
 	}
 	
 	@Override
-	public ISolverFactor getSibling(int edge)
+	public ISolverFactor getSibling(int siblingNumber)
 	{
-		final Factor sibling = _model.getSibling(edge);
+		final Factor sibling = _model.getSibling(siblingNumber);
 		return getSolverMapping().getSolverFactor(sibling);
 	}
 	
 	@Override
-	public @Nullable ISolverEdgeState getSiblingEdgeState(int siblingIndex)
+	public @Nullable ISolverEdgeState getSiblingEdgeState(int siblingNumber)
 	{
-		return _parent.getSolverEdge(_model.getSiblingEdgeIndex(siblingIndex));
+		return _parent.getSolverEdge(_model.getSiblingEdgeIndex(siblingNumber));
 	}
 	
 	/**
@@ -92,9 +92,9 @@ public abstract class SVariableBase<MVariable extends Variable> extends SNode<MV
 	 * @since 0.08
 	 */
 	@SuppressWarnings("null")
-	protected final ISolverEdgeState getSiblingEdgeState_(int siblingIndex)
+	protected final ISolverEdgeState getSiblingEdgeState_(int siblingNumber)
 	{
-		return _parent.getSolverEdge(_model.getSiblingEdgeIndex(siblingIndex));
+		return _parent.getSolverEdge(_model.getSiblingEdgeIndex(siblingNumber));
 	}
 	
 	@Override

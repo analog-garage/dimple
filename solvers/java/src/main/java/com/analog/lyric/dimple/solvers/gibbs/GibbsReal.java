@@ -262,7 +262,7 @@ public class GibbsReal extends SRealVariableBase
 				final EdgeState edge = _model.getSiblingEdgeState(portIndex);
 				Factor factorNode = edge.getFactor(fg);
 				ISolverFactorGibbs factor = (ISolverFactorGibbs) solvers.getSolverFactor(factorNode);
-				int factorPortNumber = edge.getFactorToVariableIndex();
+				int factorPortNumber = edge.getFactorToVariableEdgeNumber();
 				sedges[portIndex] = sfg.getSolverEdge(edge);
 				factor.updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
 			}
@@ -399,7 +399,7 @@ public class GibbsReal extends SRealVariableBase
 				Factor factorNode = edgeState.getFactor(fg);
 				ISolverFactorGibbs factor = (ISolverFactorGibbs)solvers.getSolverFactor(factorNode);
 				sedges[i++] = sfg.getSolverEdge(edgeState);
-				int factorPortNumber = edgeState.getFactorToVariableIndex();
+				int factorPortNumber = edgeState.getFactorToVariableEdgeNumber();
 				factor.updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
 			}
 		}
@@ -1094,7 +1094,7 @@ public class GibbsReal extends SRealVariableBase
 				commonSamplers.clear();	// At least one connected factor does not support conjugate sampling
 				return commonSamplers;
 			}
-			int factorPortNumber = edgeState.getFactorToVariableIndex();
+			int factorPortNumber = edgeState.getFactorToVariableEdgeNumber();
 			Set<IRealConjugateSamplerFactory> availableSamplers =
 				((IRealConjugateFactor)factor).getAvailableRealConjugateSamplers(factorPortNumber);
 			

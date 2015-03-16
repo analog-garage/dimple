@@ -202,7 +202,7 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 				
 				int reverseEdge;
 				if (factor.getFactorFunction().isDeterministicDirected() &&
-					!factor.isDirectedTo(reverseEdge = edgeState.getFactorToVariableIndex()))
+					!factor.isDirectedTo(reverseEdge = edgeState.getFactorToVariableEdgeNumber()))
 				{
 					// Do not mark deterministic directed factors as visited because we may
 					// need to visit them again from a different input variable and may get
@@ -281,7 +281,7 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 						{
 							visited.addLast(svariable);
 						}
-						queue.add(new VarWork(svariable, factor.getSiblingPortIndex(edge)));
+						queue.add(new VarWork(svariable, factor.getReverseSiblingNumber(edge)));
 					}
 			}
 			}

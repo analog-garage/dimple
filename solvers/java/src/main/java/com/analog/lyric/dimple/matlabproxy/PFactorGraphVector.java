@@ -554,7 +554,7 @@ public class PFactorGraphVector extends PFactorBaseVector
 
 					INode node1 = PHelpers.convertToNode(objArray[0]);
 					INode node2 = PHelpers.convertToNode(objArray[1]);
-					int portNum = node1.getPortNum(node2);
+					int portNum = node1.findSibling(node2);
 					alEntries.add(new EdgeScheduleEntry(node1, portNum));
 				}
 			}

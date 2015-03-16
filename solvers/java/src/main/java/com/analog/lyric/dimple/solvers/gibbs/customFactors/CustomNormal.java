@@ -71,7 +71,7 @@ public class CustomNormal extends GibbsRealFactor implements IRealConjugateFacto
 	@Override
 	public GibbsSolverEdge<?> createEdge(EdgeState edge)
 	{
-		final int portNum = edge.getFactorToVariableIndex();
+		final int portNum = edge.getFactorToVariableEdgeNumber();
 		
 		if (portNum == _precisionParameterPort)
 		{
