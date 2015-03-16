@@ -36,6 +36,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 	 */
 	
 	protected boolean _dampingInUse = false;
+	protected MinSumDiscreteEdge[] _edges;
 
 	/*--------------
 	 * Construction
@@ -44,6 +45,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 	MinSumDiscrete(Discrete var, MinSumSolverGraph parent)
 	{
 		super(var, parent);
+		_edges = new MinSumDiscreteEdge[var.getSiblingCount()];
 	}
 	
 	/*---------------------
@@ -55,6 +57,16 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 	{
 		super.initialize();
 
+		final int nEdges = _model.getSiblingCount();
+		if (nEdges != _edges.length)
+		{
+			_edges = new MinSumDiscreteEdge[nEdges];
+		}
+		for (int i = 0; i < nEdges; ++i)
+		{
+			_edges[i] = getSiblingEdgeState(i);
+		}
+		
 		configureDampingFromOptions();
 	}
 
@@ -70,7 +82,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		final int numPorts = _model.getSiblingCount();
 		final int numValue = priors.length;
 
-		final MinSumDiscreteEdge edge = getSiblingEdgeState(outPortNum);
+		final MinSumDiscreteEdge edge = _edges[outPortNum];
 		final double[] outMsgs = edge.varToFactorMsg.representation();
 		
         double[] savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY;
@@ -89,7 +101,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		System.arraycopy(priors, 0, outMsgs, 0, numValue);
 		for (int port = 0; port < outPortNum; ++port)
 		{
-			final double[] energies = getSiblingEdgeState(port).factorToVarMsg.representation();
+			final double[] energies = _edges[port].factorToVarMsg.representation();
 			for (int i = 0; i < numValue; ++i)
 			{
 				outMsgs[i] += energies[i];
@@ -97,7 +109,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		}
 		for (int port = outPortNum + 1; port < numPorts; ++port)
 		{
-			final double[] energies = getSiblingEdgeState(port).factorToVarMsg.representation();
+			final double[] energies = _edges[port].factorToVarMsg.representation();
 			for (int i = 0; i < numValue; ++i)
 			{
 				outMsgs[i] += energies[i];
@@ -110,8 +122,9 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 			double damping = edge._damping;
 			if (damping != 0)
 			{
+				final double inverseDamping = 1.0 - damping;
 				for (int m = 0; m < numValue; m++)
-					outMsgs[m] = outMsgs[m]*(1-damping) + savedOutMsgArray[m]*damping;
+					outMsgs[m] = outMsgs[m]*inverseDamping + savedOutMsgArray[m]*damping;
 			}
 
 			DimpleEnvironment.doubleArrayCache.release(savedOutMsgArray);
@@ -148,11 +161,10 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 
 		for (int port = 0; port < numPorts; port++)
 		{
-			final MinSumDiscreteEdge edge = getSiblingEdgeState(port);
-			final double[] outMsgs = edge.factorToVarMsg.representation();
+			final double[] inMsgs = _edges[port].factorToVarMsg.representation();
 			for (int i = 0; i < numValue; i++)
 			{
-				beliefs[i] += outMsgs[i];
+				beliefs[i] += inMsgs[i];
 			}
 		}
 		
@@ -161,7 +173,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
         	_dampingInUse ? DimpleEnvironment.doubleArrayCache.allocateAtLeast(numValue) : ArrayUtil.EMPTY_DOUBLE_ARRAY;
 		for (int port = 0; port < numPorts; port++ )
 		{
-			final MinSumDiscreteEdge edge = getSiblingEdgeState(port);
+			final MinSumDiscreteEdge edge = _edges[port];
 			double[] outMsgs = edge.varToFactorMsg.representation();
 			double minPotential = Double.POSITIVE_INFINITY;
 			
@@ -322,7 +334,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
     	{
     		for (int i = 0; i < size; ++i)
     		{
-    			getSiblingEdgeState(i)._damping = dampingParams[i];
+    			_edges[i]._damping = dampingParams[i];
     		}
     	}
     }
