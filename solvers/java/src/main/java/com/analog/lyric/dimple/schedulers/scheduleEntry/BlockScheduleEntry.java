@@ -22,6 +22,7 @@ import java.util.Map;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.Port;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 
 
 
@@ -55,6 +56,12 @@ public class BlockScheduleEntry implements IScheduleEntry
 		_blockUpdater.attachNodes(nodes);
 	}
 
+	@Override
+	public void update(SolverNodeMapping solvers)
+	{
+		// FIXME
+		update();
+	}
 	
 	@Override
 	public void update()

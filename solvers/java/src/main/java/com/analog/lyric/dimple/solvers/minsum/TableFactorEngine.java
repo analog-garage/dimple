@@ -60,20 +60,18 @@ public class TableFactorEngine
         	}
         }
 
-        
-        for (int i = 0; i < outputMsgLength; i++)
-        	outputMsgs[i] = Double.POSITIVE_INFINITY;
+        Arrays.fill(outputMsgs, Double.POSITIVE_INFINITY);
 
         double [][] inPortMsgs = _tableFactor.getInPortMsgs();
         
 	    // Run through each row of the function table
-        for (int tableIndex = 0; tableIndex < tableLength; tableIndex++)
+        for (int tableIndex = tableLength; --tableIndex>=0;)
         {
         	double L = values[tableIndex];
         	int[] tableRow = table[tableIndex];
         	int outputIndex = tableRow[outPortNum];
 
-        	for (int inPortNum = 0; inPortNum < outPortNum; inPortNum++)
+        	for (int inPortNum = outPortNum; --inPortNum>=0;)
         		L += inPortMsgs[inPortNum][tableRow[inPortNum]];
         	for (int inPortNum = outPortNum + 1; inPortNum < numPorts; inPortNum++)
         		L += inPortMsgs[inPortNum][tableRow[inPortNum]];
@@ -89,8 +87,10 @@ public class TableFactorEngine
         	if (damping != 0)
         	{
         		final double inverseDamping = 1.0 - damping;
-        		for (int i = 0; i < outputMsgLength; i++)
+        		for (int i = outputMsgLength; --i>=0;)
+        		{
         			outputMsgs[i] = inverseDamping*outputMsgs[i] + damping*saved[i];
+        		}
         	}
         }
         
@@ -101,7 +101,7 @@ public class TableFactorEngine
 
 	    // Normalize the outputs
         double minPotential = outputMsgs[0];
-        for (int i = 0; i < outputMsgLength; ++i)
+        for (int i = outputMsgLength; --i>=0;)
         {
         	minPotential = Math.min(minPotential, outputMsgs[i]);
         }
@@ -109,8 +109,10 @@ public class TableFactorEngine
 		// Normalize min value
 		if (minPotential != 0.0)
 		{
-			for (int i = 0; i < outputMsgLength; i++)
+			for (int i = outputMsgLength; --i>=0;)
+			{
 				outputMsgs[i] -= minPotential;
+			}
 		}
 	}
 	
@@ -162,23 +164,22 @@ public class TableFactorEngine
 
 	    
 	    // Run through each row of the function table
-	    for (int tableIndex = 0; tableIndex < tableLength; tableIndex++)
+	    for (int tableIndex = tableLength; --tableIndex>=0;)
 	    {
 	    	final int[] tableRow = tableIndices[tableIndex];
 	    	
 	    	// Sum up the function value plus the messages on all ports
 	    	double L = values[tableIndex];
-	    	for (int port = 0; port < numPorts; port++)
+	    	for (int port = numPorts; --port>=0;)
 	    		L += inPortMsgs[port][tableRow[port]];
 
 			// Run through each output port
-	    	for (int outPortNum = 0; outPortNum < numPorts; outPortNum++)
+	    	for (int outPortNum = numPorts; --outPortNum>=0;)
 	    	{
 	    		final double[] outputMsgs = outPortMsgs[outPortNum];
 	    		final int outputIndex = tableRow[outPortNum];											// Index for the output value
 	    		final double LThisPort = L - inPortMsgs[outPortNum][outputIndex];			// Subtract out the message from this output port
-	    		if (LThisPort < outputMsgs[outputIndex])
-	    			outputMsgs[outputIndex] = LThisPort;	// Use the minimum value
+	    		outputMsgs[outputIndex] = Math.min(outputMsgs[outputIndex], LThisPort);
 	    	}
 	    }
 	   
@@ -193,8 +194,11 @@ public class TableFactorEngine
 
 	    		if (damping != 0)
 	    		{
-	    			for (int i = 0; i < outputMsgLength; i++)
-	    				outputMsgs[i] = (1-damping)*outputMsgs[i] + damping*saved[i+savedOffset];
+	    			final double inverseDamping = 1.0 - damping;
+	    			for (int i = outputMsgLength; --i>=0;)
+	    			{
+	    				outputMsgs[i] = inverseDamping*outputMsgs[i] + damping*saved[i+savedOffset];
+	    			}
 	    		}
 	    		
 	    		savedOffset += outputMsgLength;
@@ -206,19 +210,20 @@ public class TableFactorEngine
 	    
     	
 	    // Normalize the outputs
-	    for (int port = 0; port < numPorts; port++)
+	    for (int port = numPorts; --port>=0;)
 	    {
     		double[] outputMsgs = outPortMsgs[port];
     		int outputMsgLength = outputMsgs.length;
 	    	double minPotential = Double.POSITIVE_INFINITY;
-	    	for (int i = 0; i < outputMsgLength; i++)
+	    	for (int i = outputMsgLength; --i>=0;)
 	    	{
-	    		double msg = outputMsgs[i];
-	    		if (msg < minPotential)
-	    			minPotential = msg;
+	    		minPotential = Math.min(minPotential, outputMsgs[i]);
 	    	}
-	    	for (int i = 0; i < outputMsgLength; i++)
-	    		outputMsgs[i] -= minPotential;			// Normalize min value
+	    	if (minPotential != 0.0)
+	    	{
+	    		for (int i = outputMsgLength; --i>=0;)
+	    			outputMsgs[i] -= minPotential;			// Normalize min value
+	    	}
 	    }
 	}
 }

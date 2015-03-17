@@ -28,6 +28,7 @@ import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 
 
 
@@ -39,8 +40,8 @@ import com.analog.lyric.dimple.model.variables.Variable;
  */
 public class EdgeScheduleEntry implements IScheduleEntry
 {
-	private INode _node;
-	private int _portNum;
+	private final INode _node;
+	private final int _portNum;
 	
 	public EdgeScheduleEntry(INode node, int portNum)
 	{
@@ -59,6 +60,12 @@ public class EdgeScheduleEntry implements IScheduleEntry
 		_portNum = node.findSibling(other);
 	}
 
+	@Override
+	public void update(SolverNodeMapping solvers)
+	{
+		solvers.getSolverNode(_node).updateEdge(_portNum);
+	}
+	
 	@Override
 	public void update()
 	{

@@ -18,10 +18,11 @@ package com.analog.lyric.dimple.schedulers.schedule;
 
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
-import org.eclipse.jdt.annotation.Nullable;
 
 
 /**
@@ -38,7 +39,9 @@ public interface ISchedule extends Iterable<IScheduleEntry>
 	 * This method is called when setSchedule is called on the FactorGraph.
 	 */
 	public void attach(FactorGraph factorGraph) ;
+	
 	public @Nullable FactorGraph getFactorGraph();
+	
 	public @Nullable ISchedule copy(Map<Node,Node> old2newObjs) ;
 	public @Nullable ISchedule copyToRoot(Map<Node,Node> old2newObjs) ;
 }

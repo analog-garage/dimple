@@ -20,12 +20,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.schedulers.GibbsSequentialScanScheduler;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.math.DimpleRandomGenerator;
-import org.eclipse.jdt.annotation.NonNull;
 
 /**
  * @author jeffb
@@ -84,7 +85,6 @@ public class GibbsRandomScanSchedule extends ScheduleBase implements IGibbsSched
 		// Create a single schedule entry that includes all of the selected variable
 		ArrayList<IScheduleEntry> updateList = new ArrayList<IScheduleEntry>();
 		updateList.add(_scheduleEntryPool.get(entryIndex));
-		
 		return updateList.iterator();
 	}
 

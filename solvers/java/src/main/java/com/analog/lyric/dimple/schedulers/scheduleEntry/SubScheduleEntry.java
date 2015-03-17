@@ -19,13 +19,15 @@ package com.analog.lyric.dimple.schedulers.scheduleEntry;
 import java.util.ArrayList;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
-import org.eclipse.jdt.annotation.Nullable;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 
 
 /**
@@ -42,6 +44,15 @@ public class SubScheduleEntry implements IScheduleEntry
 	public SubScheduleEntry(ISchedule subschedule)
 	{
 		_subschedule = subschedule;
+	}
+	
+	@Override
+	public void update(SolverNodeMapping solvers)
+	{
+		for (IScheduleEntry entry : _subschedule)
+		{
+			entry.update(solvers);
+		}
 	}
 	
 	@Override

@@ -18,7 +18,6 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 
 import java.util.Arrays;
 
-import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
@@ -51,64 +50,82 @@ public class TableFactorEngine
         
     	final int outputMsgLength = outputMsgs.length;
 
-    	double damping = 0;
-    	
-    	if (tableFactor._dampingInUse)
+    	final double damping = tableFactor._dampingInUse ? tableFactor._dampingParams[outPortNum] : 0.0;
+
+    	if (damping != 0.0)
     	{
-    		damping = tableFactor._dampingParams[outPortNum];
-    	}
-    	
-    	final boolean useDamping = damping != 0;
-    	
-    	final double[] saved = useDamping ?
-    		DimpleEnvironment.doubleArrayCache.allocateAtLeast(outputMsgLength) : ArrayUtil.EMPTY_DOUBLE_ARRAY;
-    	
-    	if (useDamping)
-        {
+    		final double[] saved = DimpleEnvironment.doubleArrayCache.allocateAtLeast(outputMsgLength);
     		System.arraycopy(outputMsgs, 0, saved, 0, outputMsgLength);
-        }
         
-    	double sum = 0.0;
-    	Arrays.fill(outputMsgs, 0);
-        
-        for (int tableIndex = 0; tableIndex < tableLength; tableIndex++)
-        {
-        	double prob = values[tableIndex];
-        	final int[] tableRow = table[tableIndex];
-    		final int outputIndex = tableRow[outPortNum];
-        	
-			for (int inPortNum = 0; inPortNum < outPortNum; ++inPortNum)
-				prob *= inputMsgs[inPortNum][tableRow[inPortNum]];
-			for (int inPortNum = outPortNum + 1; inPortNum < numPorts; inPortNum++)
-				prob *= inputMsgs[inPortNum][tableRow[inPortNum]];
-        	
-        	outputMsgs[outputIndex] += prob;
-        	sum += prob;
-        }
-        
-		if (sum == 0)
-		{
-			throw new DimpleException("UpdateEdge failed in SumProduct Solver.  All probabilities were zero when calculating message for port "
-					+ outPortNum + " on factor " + _factor.getLabel());
-		}
+    		double sum = 0.0;
+    		Arrays.fill(outputMsgs, 0);
 
-		for (int i = 0; i < outputMsgLength; i++)
-			outputMsgs[i] /= sum;
-    	
-		if (useDamping)
-		{
-			final double inverseDamping = 1 - damping;
-			for (int i = 0; i < outputMsgLength; i++)
-			{
-				outputMsgs[i] = inverseDamping*outputMsgs[i] + damping*saved[i];
-			}
-			
-			DimpleEnvironment.doubleArrayCache.release(saved);
-		}
-    	
+    		for (int tableIndex = tableLength; --tableIndex>=0;)
+    		{
+    			double prob = values[tableIndex];
+    			final int[] tableRow = table[tableIndex];
+    			final int outputIndex = tableRow[outPortNum];
+
+    			for (int inPortNum = outPortNum; --inPortNum>=0;)
+    				prob *= inputMsgs[inPortNum][tableRow[inPortNum]];
+    			for (int inPortNum = outPortNum + 1; inPortNum < numPorts; inPortNum++)
+    				prob *= inputMsgs[inPortNum][tableRow[inPortNum]];
+
+    			outputMsgs[outputIndex] += prob;
+    			sum += prob;
+    		}
+        
+    		if (sum == 0)
+    		{
+    			throw new DimpleException("UpdateEdge failed in SumProduct Solver.  All probabilities were zero when calculating message for port "
+    				+ outPortNum + " on factor " + _factor.getLabel());
+    		}
+
+    		for (int i = outputMsgLength; --i>=0;)
+    		{
+    			outputMsgs[i] /= sum;
+    		}
+
+    		final double inverseDamping = 1 - damping;
+    		for (int i = outputMsgLength; --i>=0;)
+    		{
+    			outputMsgs[i] = inverseDamping*outputMsgs[i] + damping*saved[i];
+    		}
+
+    		DimpleEnvironment.doubleArrayCache.release(saved);
+    	}
+    	else
+    	{
+    		double sum = 0.0;
+    		Arrays.fill(outputMsgs, 0);
+
+    		for (int tableIndex = tableLength; --tableIndex>=0;)
+    		{
+    			double prob = values[tableIndex];
+    			final int[] tableRow = table[tableIndex];
+    			final int outputIndex = tableRow[outPortNum];
+
+    			for (int inPortNum = outPortNum; --inPortNum>=0;)
+    				prob *= inputMsgs[inPortNum][tableRow[inPortNum]];
+    			for (int inPortNum = outPortNum + 1; inPortNum < numPorts; inPortNum++)
+    				prob *= inputMsgs[inPortNum][tableRow[inPortNum]];
+
+    			outputMsgs[outputIndex] += prob;
+    			sum += prob;
+    		}
+        
+    		if (sum == 0)
+    		{
+    			throw new DimpleException("UpdateEdge failed in SumProduct Solver.  All probabilities were zero when calculating message for port "
+    				+ outPortNum + " on factor " + _factor.getLabel());
+    		}
+
+    		for (int i = outputMsgLength; --i>=0;)
+    		{
+    			outputMsgs[i] /= sum;
+    		}
+    	}
 	}
-	
-
 	
 	
 	public void update()
@@ -120,71 +137,107 @@ public class TableFactorEngine
 	    final int tableLength = tableIndices.length;
 	    final int numPorts = _factor.getSiblingCount();
 	    
-	    
 	    final double [][] inMsgs = tableFactor.getInPortMsgs();
-	    
-	    final boolean useDamping = tableFactor._dampingInUse;
-	    
-	    final double[] saved = useDamping ?
-	    	DimpleEnvironment.doubleArrayCache.allocateAtLeast(table.getDomainIndexer().getSumOfDomainSizes()) :
-	    		ArrayUtil.EMPTY_DOUBLE_ARRAY;
-	    
-	    for (int outPortNum = 0, savedOffset = 0; outPortNum < numPorts; outPortNum++)
+
+	    if (tableFactor._dampingInUse)
 	    {
-	    	final double[] outputMsgs = tableFactor.getOutPortMsg(outPortNum);
-	    	final int outputMsgLength = outputMsgs.length;
-	    		    	
-	    	if (useDamping)
+	    	final double[] saved =
+	    		DimpleEnvironment.doubleArrayCache.allocateAtLeast(table.getDomainIndexer().getSumOfDomainSizes());
+	    
+	    	for (int outPortNum = 0, savedOffset = 0; outPortNum < numPorts; outPortNum++)
 	    	{
+	    		final double[] outputMsgs = tableFactor.getOutPortMsg(outPortNum);
+	    		final int outputMsgLength = outputMsgs.length;
+
 	    		final double damping = tableFactor._dampingParams[outPortNum];
 	    		if (damping != 0)
 	    		{
 	    			System.arraycopy(outputMsgs, 0, saved, savedOffset, outputMsgLength);
 	    		}
-	    	}
-	    	
-	    	Arrays.fill(outputMsgs, 0);
 
-	    	for (int tableIndex = 0; tableIndex < tableLength; tableIndex++)
-	    	{
-	    		double prob = values[tableIndex];
-	    		final int[] tableRow = tableIndices[tableIndex];
-	    		int outputIndex = tableRow[outPortNum];
+	    		Arrays.fill(outputMsgs, 0);
 
-				for (int inPortNum = 0; inPortNum < outPortNum; ++inPortNum)
-					prob *= inMsgs[inPortNum][tableRow[inPortNum]];
-				for (int inPortNum = outPortNum + 1; inPortNum < numPorts; inPortNum++)
-					prob *= inMsgs[inPortNum][tableRow[inPortNum]];
-	    		outputMsgs[outputIndex] += prob;
-	    	}
+	    		for (int tableIndex = tableLength; --tableIndex>=0;)
+	    		{
+	    			double prob = values[tableIndex];
+	    			final int[] tableRow = tableIndices[tableIndex];
+	    			int outputIndex = tableRow[outPortNum];
 
-	    	double sum = 0;
-	    	for (int i = 0; i < outputMsgLength; i++) sum += outputMsgs[i];
-    		if (sum == 0)
-    		{
-    			throw new DimpleException("Update failed in SumProduct Solver.  All probabilities were zero when calculating message for port "
-    					+ outPortNum + " on factor " +_factor.getLabel());
-    		}
+	    			for (int inPortNum = outPortNum; --inPortNum>=0;)
+	    				prob *= inMsgs[inPortNum][tableRow[inPortNum]];
+	    			for (int inPortNum = outPortNum + 1; inPortNum < numPorts; inPortNum++)
+	    				prob *= inMsgs[inPortNum][tableRow[inPortNum]];
+	    			outputMsgs[outputIndex] += prob;
+	    		}
 
-	    	for (int i = 0; i < outputMsgLength; i++)
-	    		outputMsgs[i] /= sum;
-	    	
-	    	if (useDamping)
-	    	{
-	    		final double damping = tableFactor._dampingParams[outPortNum];
+	    		double sum = 0;
+	    		for (int i = outputMsgLength; --i>=0;)
+	    		{
+	    			sum += outputMsgs[i];
+	    		}
+	    		if (sum == 0)
+	    		{
+	    			throw new DimpleException("Update failed in SumProduct Solver.  All probabilities were zero when calculating message for port "
+	    				+ outPortNum + " on factor " +_factor.getLabel());
+	    		}
+
+	    		for (int i = outputMsgLength; --i>=0;)
+	    		{
+	    			outputMsgs[i] /= sum;
+	    		}
+
 	    		if (damping != 0)
 	    		{
-	    			for (int i = 0; i < outputMsgLength; i++)
-	    				outputMsgs[i] = (1-damping)*outputMsgs[i] + damping*saved[i+savedOffset];
+	    			final double inverseDamping = 1.0 - damping;
+	    			for (int i = outputMsgLength; --i>=0;)
+	    			{
+	    				outputMsgs[i] = inverseDamping*outputMsgs[i] + damping*saved[i+savedOffset];
+	    			}
+	    		}
+
+	    		savedOffset += outputMsgLength;
+	    	}
+
+	    	DimpleEnvironment.doubleArrayCache.release(saved);
+	    }
+	    else
+	    {
+	    	for (int outPortNum = numPorts; --outPortNum>=0;)
+	    	{
+	    		final double[] outputMsgs = tableFactor.getOutPortMsg(outPortNum);
+	    		final int outputMsgLength = outputMsgs.length;
+
+	    		Arrays.fill(outputMsgs, 0);
+
+	    		for (int tableIndex = tableLength; --tableIndex>=0;)
+	    		{
+	    			double prob = values[tableIndex];
+	    			final int[] tableRow = tableIndices[tableIndex];
+	    			int outputIndex = tableRow[outPortNum];
+
+	    			for (int inPortNum = outPortNum; --inPortNum>=0;)
+	    				prob *= inMsgs[inPortNum][tableRow[inPortNum]];
+	    			for (int inPortNum = outPortNum + 1; inPortNum < numPorts; inPortNum++)
+	    				prob *= inMsgs[inPortNum][tableRow[inPortNum]];
+	    			outputMsgs[outputIndex] += prob;
+	    		}
+
+	    		double sum = 0;
+	    		for (int i = outputMsgLength; --i>=0;)
+	    		{
+	    			sum += outputMsgs[i];
+	    		}
+	    		if (sum == 0)
+	    		{
+	    			throw new DimpleException("Update failed in SumProduct Solver.  All probabilities were zero when calculating message for port "
+	    				+ outPortNum + " on factor " +_factor.getLabel());
+	    		}
+
+	    		for (int i = outputMsgLength; --i>=0;)
+	    		{
+	    			outputMsgs[i] /= sum;
 	    		}
 	    	}
-	    	
-	    	savedOffset += outputMsgLength;
-	    }
-	    
-	    if (useDamping)
-	    {
-	    	DimpleEnvironment.doubleArrayCache.release(saved);
 	    }
 	}
 }

@@ -18,9 +18,12 @@ package com.analog.lyric.dimple.schedulers.scheduleEntry;
 
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.Port;
-import org.eclipse.jdt.annotation.Nullable;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
+import com.analog.lyric.util.misc.Internal;
 
 
 /**
@@ -36,6 +39,8 @@ public interface IScheduleEntry
 	 */
 	public void update();
 	
+	@Internal
+	public void update(SolverNodeMapping solvers);
 	
 	public @Nullable IScheduleEntry copy(Map<Node,Node> old2newObjs);
 	public @Nullable IScheduleEntry copyToRoot(Map<Node,Node> old2newObjs);

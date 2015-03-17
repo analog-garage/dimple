@@ -28,6 +28,7 @@ import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 
 
 
@@ -39,11 +40,17 @@ import com.analog.lyric.dimple.model.variables.Variable;
  */
 public class NodeScheduleEntry implements IScheduleEntry
 {
-	private INode _node;
+	private final INode _node;
 	
 	public NodeScheduleEntry(INode node)
 	{
 		_node = node;
+	}
+	
+	@Override
+	public void update(SolverNodeMapping solvers)
+	{
+		solvers.getSolverNode(_node).update();
 	}
 	
 	@Override

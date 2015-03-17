@@ -96,10 +96,10 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 			System.arraycopy(outMsgs, 0, savedOutMsgArray, 0, numValue);
 
 			System.arraycopy(priors, 0, outMsgs, 0, numValue);
-			for (int port = 0; port < outPortNum; ++port)
+			for (int port = outPortNum; --port>=0;)
 			{
 				final double[] energies = _inMsgs[port];
-				for (int i = 0; i < numValue; ++i)
+				for (int i = numValue; --i>=0;)
 				{
 					outMsgs[i] += energies[i];
 				}
@@ -107,7 +107,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 			for (int port = outPortNum + 1; port < numPorts; ++port)
 			{
 				final double[] energies = _inMsgs[port];
-				for (int i = 0; i < numValue; ++i)
+				for (int i = numValue; --i>=0;)
 				{
 					outMsgs[i] += energies[i];
 				}
@@ -115,7 +115,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 
 			// Apply damping
 			final double inverseDamping = 1.0 - damping;
-			for (int m = 0; m < numValue; m++)
+			for (int m = numValue; --m>=0;)
 			{
 				outMsgs[m] = outMsgs[m]*inverseDamping + savedOutMsgArray[m]*damping;
 			}
@@ -126,10 +126,10 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		else
 		{
 			System.arraycopy(priors, 0, outMsgs, 0, numValue);
-			for (int port = 0; port < outPortNum; ++port)
+			for (int port = outPortNum; --port >=0;)
 			{
 				final double[] energies = _inMsgs[port];
-				for (int i = 0; i < numValue; ++i)
+				for (int i = numValue; --i>=0;)
 				{
 					outMsgs[i] += energies[i];
 				}
@@ -137,7 +137,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 			for (int port = outPortNum + 1; port < numPorts; ++port)
 			{
 				final double[] energies = _inMsgs[port];
-				for (int i = 0; i < numValue; ++i)
+				for (int i = numValue; --i>=0;)
 				{
 					outMsgs[i] += energies[i];
 				}
@@ -152,7 +152,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		}
 		if (minPotential != 0.0)
 		{
-			for (int i = 0; i < numValue; i++)
+			for (int i = numValue; --i>=0;)
 			{
 				outMsgs[i] -= minPotential;
 			}
@@ -173,10 +173,10 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		// Compute the sum of all messages
 		final double[] beliefs = priors.clone();
 
-		for (int port = 0; port < numPorts; port++)
+		for (int port = numPorts; --port>=0;)
 		{
 			final double[] inMsgs = _inMsgs[port];//_edges[port].factorToVarMsg.representation();
-			for (int i = 0; i < numValue; i++)
+			for (int i = numValue; --i>=0;)
 			{
 				beliefs[i] += inMsgs[i];
 			}
@@ -188,7 +188,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		{
 	        final double[] savedOutMsgArray = DimpleEnvironment.doubleArrayCache.allocateAtLeast(numValue);
 	        
-			for (int port = 0; port < numPorts; port++ )
+			for (int port = numPorts; --port>=0; )
 			{
 				final double[] outMsgs = _outMsgs[port];
 				double minPotential = Double.POSITIVE_INFINITY;
@@ -200,11 +200,10 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 				}
 
 				final double[] inPortMsgsThisPort = _inMsgs[port];
-				for (int i = 0; i < numValue; i++)
+				for (int i = numValue; --i>=0;)
 				{
 					double out = beliefs[i] - inPortMsgsThisPort[i];
-					if (out < minPotential)
-						minPotential = out;
+					minPotential = Math.min(minPotential, out);
 					outMsgs[i] = out;
 				}
 
@@ -212,7 +211,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 				if (damping != 0)
 				{
 					final double inverseDamping = 1.0 - damping;
-					for (int m = 0; m < numValue; m++)
+					for (int m = numValue; --m>=0;)
 					{
 						outMsgs[m] = outMsgs[m]*inverseDamping + savedOutMsgArray[m]*damping;
 					}
@@ -221,7 +220,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 				// Normalize the min
 				if (minPotential != 0.0)
 				{
-					for (int i = 0; i < numValue; i++)
+					for (int i = numValue; --i>=0;)
 						outMsgs[i] -= minPotential;
 				}
 			}
@@ -232,24 +231,23 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		}
 		else
 		{
-			for (int port = 0; port < numPorts; port++ )
+			for (int port = numPorts; --port>=0; )
 			{
 				final double[] outMsgs = _outMsgs[port];
 				double minPotential = Double.POSITIVE_INFINITY;
 				
 				final double[] inPortMsgsThisPort = _inMsgs[port];
-				for (int i = 0; i < numValue; i++)
+				for (int i = numValue; --i>=0;)
 				{
 					double out = beliefs[i] - inPortMsgsThisPort[i];
-					if (out < minPotential)
-						minPotential = out;
+					minPotential = Math.min(minPotential, out);
 					outMsgs[i] = out;
 				}
 
 				// Normalize the min
 				if (minPotential != 0.0)
 				{
-					for (int i = 0; i < numValue; i++)
+					for (int i = numValue; --i>=0;)
 						outMsgs[i] -= minPotential;
 				}
 			}
@@ -309,7 +307,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 	 * @deprecated Use {@link BPOptions#damping} or {@link BPOptions#nodeSpecificDamping} options instead.
 	 */
 	@Deprecated
-	public void setDamping(int portIndex, double dampingVal)
+	public void setDamping(int siblingNumber, double dampingVal)
 	{
 		double[] params  = BPOptions.nodeSpecificDamping.getOrDefault(this).toPrimitiveArray();
 		if (params.length == 0 && dampingVal != 0.0)
@@ -318,7 +316,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		}
 		if (params.length != 0)
 		{
-			params[portIndex] = dampingVal;
+			params[siblingNumber] = dampingVal;
 		}
 		
 		BPOptions.nodeSpecificDamping.set(this, params);
