@@ -76,7 +76,7 @@ abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
 		
 		int index = allocate();
 		requireNonNull(_nodes)[index] = node;
-		node.setId(index|idTypeMask());
+		node.setLocalId(index|idTypeMask());
 		return true;
 	}
 	
@@ -98,7 +98,7 @@ abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
 				_end = index + 1;
 				++_size;
 				array[index] = node;
-				node.setId(index|typeMask);
+				node.setLocalId(index|typeMask);
 			}
 		}
 		

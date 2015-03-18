@@ -73,14 +73,15 @@ public class CustomDiscreteTransition extends GibbsRealFactor implements IRealJo
 	
 	@SuppressWarnings("null")
 	@Override
-	public void updateEdgeMessage(int portNum)
+	public void updateEdgeMessage(EdgeState modelEdge, GibbsSolverEdge<?> solverEdge)
 	{
+		final int portNum = modelEdge.getFactorToVariableEdgeNumber();
 		if (portNum >= _startingParameterEdge)
 		{
 			// Port is a parameter input
 			// Determine sample alpha parameter vector for the current input x
 
-			DirichletParameters outputMsg = (DirichletParameters)getSiblingEdgeState(portNum).factorToVarMsg;
+			DirichletParameters outputMsg = (DirichletParameters)solverEdge.factorToVarMsg;
 			
 			// Clear the output counts
 			outputMsg.setNull();
@@ -99,7 +100,7 @@ public class CustomDiscreteTransition extends GibbsRealFactor implements IRealJo
 			}
 		}
 		else
-			super.updateEdgeMessage(portNum);
+			super.updateEdgeMessage(modelEdge, solverEdge);
 	}
 	
 	

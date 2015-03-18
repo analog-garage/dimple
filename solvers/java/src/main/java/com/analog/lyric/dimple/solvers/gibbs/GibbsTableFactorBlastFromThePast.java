@@ -101,7 +101,7 @@ public class GibbsTableFactorBlastFromThePast extends SBlastFromThePast implemen
 	}
 
 	@Override
-	public void updateEdgeMessage(int portIndex)
+	public void updateEdgeMessage(EdgeState modelEdge, GibbsSolverEdge<?> solverEdge)
 	{
 		//NOP
 	}

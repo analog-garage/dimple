@@ -21,8 +21,8 @@ import java.util.Collection;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.EdgeState;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.variables.Variable;
@@ -67,11 +67,43 @@ public interface ISolverFactorGraph	extends ISolverNode
 	 */
 	public @Nullable ISolverFactor getSolverFactor(Factor factor, boolean create);
 	
+	/**
+	 * Get solver factor with given local index in this solver graph, if it exists.
+	 * <p>
+	 * This method does not force instantiation of the solver factor.
+	 * <p>
+	 * @param index is the local index of the factor within its graph, i.e. the index portion of the factor's
+	 * local id.
+	 * @since 0.08
+	 */
+	public @Nullable ISolverFactor getSolverFactorByIndex(int index);
+	
+	public ISolverFactor getSolverFactorForEdge(EdgeState edge);
+	
 	public Collection<? extends ISolverFactor> getSolverFactorsRecursive();
+	
+	/**
+	 * Returns solver node with given local id in the graph, if it exists.
+	 * <p>
+	 * This method does not force instantiation of solver node.
+	 * @since 0.08
+	 */
+	public @Nullable ISolverNode getSolverNodeByLocalId(int localId);
 	
 	public ISolverFactorGraph getSolverSubgraph(FactorGraph subgraph);
 	
 	public @Nullable ISolverFactorGraph getSolverSubgraph(FactorGraph subgraph, boolean create);
+	
+	/**
+	 * Get solver subgraph with given local index in this solver graph, if it exists.
+	 * <p>
+	 * This method does not force instantiation of the subgraph.
+	 * <p>
+	 * @param index is the local index of the subgraph within its parent graph, i.e. the index portion of the subgraph's
+	 * local id.
+	 * @since 0.08
+	 */
+	public @Nullable ISolverFactorGraph getSolverSubgraphByIndex(int index);
 	
 	public Collection<? extends ISolverFactorGraph> getSolverSubgraphs();
 	
@@ -90,6 +122,17 @@ public interface ISolverFactorGraph	extends ISolverNode
 	 * @since 0.08
 	 */
 	public @Nullable ISolverVariable getSolverVariable(Variable variable, boolean create);
+	
+	/**
+	 * Get solver variable with given local index in this solver graph, if it exists.
+	 * <p>
+	 * This method does not force instantiation of the solver variable.
+	 * <p>
+	 * @param index is the local index of the variable within its graph, i.e. the index portion of the variable's
+	 * local id.
+	 * @since 0.08
+	 */
+	public @Nullable ISolverVariable getSolverVariableByIndex(int index);
 	
 	public Collection<? extends ISolverVariable> getSolverVariables();
 	

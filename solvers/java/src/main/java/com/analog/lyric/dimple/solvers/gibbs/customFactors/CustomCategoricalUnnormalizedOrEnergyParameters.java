@@ -69,8 +69,9 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends GibbsRealFa
 
 	@SuppressWarnings("null")
 	@Override
-	public void updateEdgeMessage(int portNum)
+	public void updateEdgeMessage(EdgeState modelEdge, GibbsSolverEdge<?> solverEdge)
 	{
+		final int portNum = modelEdge.getFactorToVariableEdgeNumber();
 		if (portNum < _numParameterEdges)
 		{
 			// Port is a parameter input
@@ -78,7 +79,7 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends GibbsRealFa
 			// NOTE: This case works for either CategoricalUnnormalizedParameters or CategoricalEnergyParameters factor functions
 			// since the actual parameter value doesn't come into play in determining the message in this direction
 
-			GammaParameters outputMsg = (GammaParameters)getSiblingEdgeState(portNum).factorToVarMsg;
+			GammaParameters outputMsg = (GammaParameters)solverEdge.factorToVarMsg;
 
 			// The parameter being updated corresponds to this value
 			int parameterIndex = _factorFunction.getIndexByEdge(portNum);
@@ -100,7 +101,7 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends GibbsRealFa
 			outputMsg.setBeta(0);					// Sample beta
 		}
 		else
-			super.updateEdgeMessage(portNum);
+			super.updateEdgeMessage(modelEdge, solverEdge);
 	}
 	
 	

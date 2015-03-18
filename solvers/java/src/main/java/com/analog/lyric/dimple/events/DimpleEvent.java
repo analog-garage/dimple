@@ -58,7 +58,7 @@ public abstract class DimpleEvent extends EventObject implements IPrintable
 		super(source);
 		_eventSourceName = source.getEventSourceName();
 		IModelEventSource obj = source.getModelEventSource();
-		_modelId = obj != null ? obj.getId() : -1;
+		_modelId = obj != null ? obj.getGlobalId() : -1;
 	}
 	
 	/*----------------

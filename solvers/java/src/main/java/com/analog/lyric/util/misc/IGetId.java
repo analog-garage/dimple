@@ -18,14 +18,37 @@ package com.analog.lyric.util.misc;
 
 import java.util.UUID;
 
+import com.analog.lyric.dimple.model.core.NodeId;
+
+/**
+ * Interface for objects that provide identifiers.
+ * <p>
+ * @see NodeId
+ */
 public interface IGetId
 {
+	/**
+	 * @deprecated use {@link #getGlobalId()} instead
+	 */
+	@Deprecated
 	public long getId();
 
+	/**
+	 * A local identifier that uniquely identifies the object within its immediate container.
+	 * @since 0.08
+	 */
 	public int getLocalId();
-	
+
+	/**
+	 * A global identifier that uniquely identifies the object within its environment.
+	 * @since 0.08
+	 */
 	public long getGlobalId();
 
+	/**
+	 * A "universal" unique identifier for the object.
+	 * @since 0.08
+	 */
 	public UUID getUUID();
 	
 }

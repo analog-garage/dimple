@@ -19,19 +19,17 @@ package com.analog.lyric.dimple.solvers.gibbs;
 import static java.util.Objects.*;
 
 import java.util.Collection;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.EdgeState;
-import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 
 /**
@@ -111,37 +109,29 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 	}
 	
 	@Override
-	public void updateEdgeMessage(int outPortNum)
+	public void updateEdgeMessage(EdgeState modelEdge, GibbsSolverEdge<?> solverEdge)
 	{
-		Variable var = requireNonNull(_model.getSibling(outPortNum));
-
-		if (var instanceof Discrete)
+		final int outPortNum = modelEdge.getFactorToVariableEdgeNumber();
+		Value outValue = _currentSamples[outPortNum];
+		
+		if (outValue.getDomain().isDiscrete())
 		{
-			final Discrete discrete = (Discrete)var;
-			
 			// This edge connects to a discrete variable, so send an output message
-			// This method only considers the current conditional values, and does propagate
+			// This method only considers the current conditional values, and does not propagate
 			// to any other variables (unlike get ConditionalPotential)
 			// This should only be called if this factor is not a deterministic directed factor
-			final DiscreteDomain outputVariableDomain = discrete.getDiscreteDomain();
 			final FactorFunction factorFunction = _model.getFactorFunction();
-			final int numPorts = getSiblingCount();
 			
-			final Object[] values = new Object[numPorts];
+			final Value[] values = _currentSamples.clone();
+			outValue = outValue.clone();
+			values[outPortNum] = outValue;
 			
-			final Value[] inputMsgs = Objects.requireNonNull(_currentSamples);
-			for (int port = 0; port < numPorts; port++)
-				values[port] = inputMsgs[port].getObject();
-
-			final GibbsDiscreteEdge edge = requireNonNull((GibbsDiscreteEdge)getSiblingEdgeState(outPortNum));
-			double[] outputMsgs = edge.factorToVarMsg.representation();
+			double[] outputMsgs = ((DiscreteMessage)solverEdge.factorToVarMsg).representation();
 			
-			@SuppressWarnings("null")
-			int outputMsgLength = outputMsgs.length;
-			for (int i = 0; i < outputMsgLength; i++)
+			for (int i = outputMsgs.length; --i>=0;)
 			{
-				values[outPortNum] = outputVariableDomain.getElement(i);
-				outputMsgs[i] = factorFunction.evalEnergy(values);		// Messages to discrete variables are energy values
+				outValue.setIndex(i);
+				outputMsgs[i] = factorFunction.evalEnergy(values); // Messages to discrete variables are energy values
 			}
 		}
 	}

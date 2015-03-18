@@ -65,13 +65,14 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 	
 	@SuppressWarnings("null")
 	@Override
-	public void updateEdgeMessage(int portNum)
+	public void updateEdgeMessage(EdgeState modelEdge, GibbsSolverEdge<?> solverEdge)
 	{
+		final int portNum = modelEdge.getFactorToVariableEdgeNumber();
 		if (portNum >= _numParameterEdges)
 		{
 			// Output port must be an output variable
 
-			DirichletParameters outputMsg = (DirichletParameters)getSiblingEdgeState(portNum).factorToVarMsg;
+			DirichletParameters outputMsg = (DirichletParameters)solverEdge.factorToVarMsg;
 			
 			if (_hasConstantParameters)
 				outputMsg.setAlphaMinusOne(_constantAlphaMinusOne);
@@ -79,7 +80,7 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 				outputMsg.setAlphaMinusOne(minusOne(_alphaVariable.getCurrentSample()));
 		}
 		else
-			super.updateEdgeMessage(portNum);
+			super.updateEdgeMessage(modelEdge, solverEdge);
 	}
 	
 	

@@ -115,7 +115,7 @@ public class GibbsRealFactorBlastFromThePast extends SBlastFromThePast implement
 	}
 
 	@Override
-	public void updateEdgeMessage(int portIndex)
+	public void updateEdgeMessage(EdgeState modelEdge, GibbsSolverEdge<?> solverEdge)
 	{
 		// Do nothing
 	}

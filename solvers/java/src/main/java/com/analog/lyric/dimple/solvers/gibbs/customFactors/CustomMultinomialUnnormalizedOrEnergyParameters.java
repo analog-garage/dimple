@@ -28,8 +28,8 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.MultinomialEnergyParameters;
 import com.analog.lyric.dimple.factorfunctions.MultinomialUnnormalizedParameters;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.EdgeState;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
@@ -94,8 +94,9 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 	
 	@SuppressWarnings("null")
 	@Override
-	public void updateEdgeMessage(int portNum)
+	public void updateEdgeMessage(EdgeState modelEdge, GibbsSolverEdge<?> solverEdge)
 	{
+		final int portNum = modelEdge.getFactorToVariableEdgeNumber();
 		if (portNum >= _alphaParameterMinEdge && portNum <= _alphaParameterMaxEdge)
 		{
 			// Output port is a parameter input
@@ -103,7 +104,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 			// NOTE: This case works for either MultinomialUnnormalizedParameters or MultinomialEnergyParameters factor functions
 			// since the actual parameter value doesn't come into play in determining the message in this direction
 
-			GammaParameters outputMsg = (GammaParameters)getSiblingEdgeState(portNum).factorToVarMsg;
+			GammaParameters outputMsg = (GammaParameters)solverEdge.factorToVarMsg;
 
 			// The parameter being updated corresponds to this value
 			int parameterOffset = _factorFunction.getIndexByEdge(portNum) - _alphaParameterMinIndex;
@@ -115,7 +116,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 			outputMsg.setBeta(0);					// Sample beta
 		}
 		else
-			super.updateEdgeMessage(portNum);
+			super.updateEdgeMessage(modelEdge, solverEdge);
 	}
 	
 	

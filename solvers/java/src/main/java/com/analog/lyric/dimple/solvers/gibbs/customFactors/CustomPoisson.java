@@ -65,14 +65,15 @@ public class CustomPoisson extends GibbsRealFactor implements IRealConjugateFact
 	
 	@SuppressWarnings("null")
 	@Override
-	public void updateEdgeMessage(int portNum)
+	public void updateEdgeMessage(EdgeState modelEdge, GibbsSolverEdge<?> solverEdge)
 	{
+		final int portNum = modelEdge.getFactorToVariableEdgeNumber();
 		if (portNum == _lambdaParameterEdge)
 		{
 			// Port is the probability-parameter input
 			// Determine sample alpha and beta parameters
 
-			GammaParameters outputMsg = (GammaParameters)getSiblingEdgeState(portNum).factorToVarMsg;
+			GammaParameters outputMsg = (GammaParameters)solverEdge.factorToVarMsg;
 
 			// Get the current value of the output count
 			int outputValue = _hasConstantOutput ? _constantOutputValue : _outputVariable.getCurrentSampleIndex();
@@ -81,7 +82,7 @@ public class CustomPoisson extends GibbsRealFactor implements IRealConjugateFact
 			outputMsg.setBeta(1);
 		}
 		else
-			super.updateEdgeMessage(portNum);
+			super.updateEdgeMessage(modelEdge, solverEdge);
 	}
 	
 	

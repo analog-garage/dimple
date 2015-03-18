@@ -27,8 +27,8 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.Multinomial;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.EdgeState;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
@@ -87,14 +87,15 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 	
 	@SuppressWarnings("null")
 	@Override
-	public void updateEdgeMessage(int portNum)
+	public void updateEdgeMessage(EdgeState modelEdge, GibbsSolverEdge<?> solverEdge)
 	{
+		final int portNum = modelEdge.getFactorToVariableEdgeNumber();
 		if (portNum == _alphaParameterEdge)
 		{
 			// Output port is the joint alpha parameter input
 			// Determine sample alpha vector of the conjugate Dirichlet distribution
 			
-			DirichletParameters outputMsg = (DirichletParameters)getSiblingEdgeState(portNum).factorToVarMsg;
+			DirichletParameters outputMsg = (DirichletParameters)solverEdge.factorToVarMsg;
 
 			// Clear the output counts
 			outputMsg.setNull(_dimension);
@@ -112,7 +113,7 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 			}
 		}
 		else
-			super.updateEdgeMessage(portNum);
+			super.updateEdgeMessage(modelEdge, solverEdge);
 	}
 	
 	

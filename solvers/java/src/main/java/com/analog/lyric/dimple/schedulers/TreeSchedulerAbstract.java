@@ -89,7 +89,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 						nodeState.inputUpdated(index);
 					else
 						numSiblingsInSubGraph++;
-				updateState.put(node.getId(), nodeState);
+				updateState.put(node.getGlobalId(), nodeState);
 				if (numSiblingsInSubGraph <= 1)
 					startingNodes.add(node);
 			}
@@ -99,7 +99,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 			for (INode node : allIncludedNodes)
 			{
 				int numSiblings = node.getSiblingCount();
-				updateState.put(node.getId(), new NodeUpdateState(numSiblings));
+				updateState.put(node.getGlobalId(), new NodeUpdateState(numSiblings));
 				if (numSiblings <= 1)
 					startingNodes.add(node);
 			}
@@ -115,7 +115,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 			boolean moreInThisPath = true;
 			while (moreInThisPath)
 			{
-				NodeUpdateState nodeState = updateState.get(requireNonNull(node).getId());
+				NodeUpdateState nodeState = updateState.get(requireNonNull(node).getGlobalId());
 				INode nextNode = null;
 				if (!nodeState.doneUpdatingAllOutputs() && nodeState.readyToUpdateAllOutputs())
 				{
@@ -133,7 +133,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 							{
 								nodeState.outputUpdated(index);
 								INode sibling = siblings.get(index);
-								NodeUpdateState siblingNodeState = updateState.get(sibling.getId());
+								NodeUpdateState siblingNodeState = updateState.get(sibling.getGlobalId());
 								if (siblingNodeState != null)
 								{
 									siblingNodeState.inputUpdated(node.getReverseSiblingNumber(index));
@@ -163,7 +163,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 								schedule.add(new EdgeScheduleEntry(node, index));
 								nodeState.outputUpdated(index);
 								INode sibling = siblings.get(index);
-								NodeUpdateState siblingNodeState = updateState.get(sibling.getId());
+								NodeUpdateState siblingNodeState = updateState.get(sibling.getGlobalId());
 								if (siblingNodeState != null)
 								{
 									siblingNodeState.inputUpdated(node.getReverseSiblingNumber(index));
@@ -188,7 +188,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 					schedule.add(new EdgeScheduleEntry(node, portId));
 					nodeState.outputUpdated(portId);
 					INode sibling = node.getSibling(portId);
-					NodeUpdateState siblingNodeState = updateState.get(sibling.getId());
+					NodeUpdateState siblingNodeState = updateState.get(sibling.getGlobalId());
 					if (siblingNodeState != null)
 					{
 						siblingNodeState.inputUpdated(node.getReverseSiblingNumber(portId));

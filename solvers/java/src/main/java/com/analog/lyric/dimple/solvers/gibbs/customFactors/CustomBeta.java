@@ -69,17 +69,18 @@ public class CustomBeta extends GibbsRealFactor implements IRealConjugateFactor
 	
 	@SuppressWarnings("null")
 	@Override
-	public void updateEdgeMessage(int portNum)
+	public void updateEdgeMessage(EdgeState modelEdge, GibbsSolverEdge<?> solverEdge)
 	{
+		final int portNum = modelEdge.getFactorToVariableEdgeNumber();
 		if (portNum >= _numParameterEdges)
 		{
 			// Port is directed output
-			BetaParameters outputMsg = (BetaParameters)getSiblingEdgeState(portNum).factorToVarMsg;
+			BetaParameters outputMsg = (BetaParameters)solverEdge.factorToVarMsg;
 			outputMsg.setAlphaMinusOne(_hasConstantAlpha ? _constantAlphaMinusOneValue : _alphaVariable.getCurrentSample() - 1);
 			outputMsg.setBetaMinusOne(_hasConstantBeta ? _constantBetaMinusOneValue : _betaVariable.getCurrentSample() - 1);
 		}
 		else
-			super.updateEdgeMessage(portNum);
+			super.updateEdgeMessage(modelEdge, solverEdge);
 	}
 	
 	

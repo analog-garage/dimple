@@ -82,8 +82,9 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends Gibb
 	
 	@SuppressWarnings("null")
 	@Override
-	public void updateEdgeMessage(int portNum)
+	public void updateEdgeMessage(EdgeState modelEdge, GibbsSolverEdge<?> solverEdge)
 	{
+		final int portNum = modelEdge.getFactorToVariableEdgeNumber();
 		if (portNum >= _startingParameterEdge)
 		{
 			// Port is a parameter input
@@ -91,7 +92,7 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends Gibb
 			// NOTE: This class works for either DiscreteTransitionIndepenentParameters or DiscreteTransitionEnergyParameters factor functions
 			// since the actual parameter value doesn't come into play in determining the message in this direction
 
-			GammaParameters outputMsg = (GammaParameters)getSiblingEdgeState(portNum).factorToVarMsg;
+			GammaParameters outputMsg = (GammaParameters)solverEdge.factorToVarMsg;
 			
 			// Get the parameter coordinates
 			int parameterEdgeOffset = portNum - _startingParameterEdge;
@@ -116,7 +117,7 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends Gibb
 			}
 		}
 		else
-			super.updateEdgeMessage(portNum);
+			super.updateEdgeMessage(modelEdge, solverEdge);
 	}
 	
 	

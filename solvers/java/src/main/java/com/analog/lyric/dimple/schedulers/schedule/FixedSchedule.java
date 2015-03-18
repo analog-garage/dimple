@@ -238,17 +238,18 @@ public class FixedSchedule extends ScheduleBase implements IGibbsSchedule
 	// Remove node or edge schedule entries containing a specified node
 	public final void remove(INode n)
 	{
+		final long id = n.getGlobalId();
 		for (final Iterator<IScheduleEntry> iterator = _schedule.iterator(); iterator.hasNext(); )	// Use iterator to avoid concurrent modification
 		{
 			IScheduleEntry s = iterator.next();
 			if (s instanceof NodeScheduleEntry)
 			{
-				if (((NodeScheduleEntry)s).getNode().getId() == n.getId())
+				if (((NodeScheduleEntry)s).getNode().getGlobalId() == id)
 					iterator.remove();
 			}
 			else if (s instanceof EdgeScheduleEntry)
 			{
-				if (((EdgeScheduleEntry)s).getNode().getId() == n.getId())
+				if (((EdgeScheduleEntry)s).getNode().getGlobalId() == id)
 					iterator.remove();
 			}
 		}

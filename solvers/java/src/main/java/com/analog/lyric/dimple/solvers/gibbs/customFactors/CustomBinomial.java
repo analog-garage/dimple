@@ -71,15 +71,17 @@ public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFac
 	}
 	
 	@Override
-	public void updateEdgeMessage(int portNum)
+	public void updateEdgeMessage(EdgeState modelEdge, GibbsSolverEdge<?> solverEdge)
 	{
+		final int portNum = modelEdge.getFactorToVariableEdgeNumber();
+		
 		if (portNum == _probabilityParameterEdge)
 		{
 			// Port is the probability-parameter input
 			// Determine sample alpha and beta parameters
 
 			@SuppressWarnings("null")
-			BetaParameters outputMsg = (BetaParameters)getSiblingEdgeState(portNum).factorToVarMsg;
+			BetaParameters outputMsg = (BetaParameters)solverEdge.factorToVarMsg;
 
 			// Get the current values of N and the output count
 			@SuppressWarnings("null")
@@ -92,7 +94,7 @@ public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFac
 			outputMsg.setBetaMinusOne(numZeros);		// Sample beta
 		}
 		else
-			super.updateEdgeMessage(portNum);
+			super.updateEdgeMessage(modelEdge, solverEdge);
 	}
 	
 	

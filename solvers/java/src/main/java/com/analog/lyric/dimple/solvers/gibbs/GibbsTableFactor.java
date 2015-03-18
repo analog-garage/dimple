@@ -33,6 +33,7 @@ import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.util.misc.Internal;
 
@@ -96,14 +97,15 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	}
 
 	@Override
-	public void updateEdgeMessage(int outPortNum)
+	public void updateEdgeMessage(EdgeState modelEdge, GibbsSolverEdge<?> solverEdge)
 	{
 		// Generate message representing conditional distribution of selected edge variable
 		// This should be called only for a table factor that is not a deterministic directed factor
 
 		if (_isDeterministicDirected) throw new DimpleException("Invalid call to updateEdge");
 		
-		double[] outMessage = getSiblingEdgeState(outPortNum).factorToVarMsg.representation();
+		final int outPortNum = modelEdge.getFactorToVariableEdgeNumber();
+		final double[] outMessage = ((DiscreteMessage)solverEdge.factorToVarMsg).representation();
 
 		final int numPorts = _currentSamples.length;
 
@@ -111,7 +113,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 		if (factorTable != null)
 		{
 			int[] inPortMsgs = new int[numPorts];
-			for (int port = 0; port < numPorts; port++)
+			for (int port = numPorts; --port>=0;)
 				inPortMsgs[port] = _currentSamples[port].getIndex();
 
 			inPortMsgs[outPortNum] = 0;

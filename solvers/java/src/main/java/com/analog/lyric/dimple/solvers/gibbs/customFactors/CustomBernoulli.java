@@ -67,15 +67,17 @@ public class CustomBernoulli extends GibbsRealFactor implements IRealConjugateFa
 	}
 	
 	@Override
-	public void updateEdgeMessage(int portNum)
+	public void updateEdgeMessage(EdgeState modelEdge, GibbsSolverEdge<?> solverEdge)
 	{
+		final int portNum = modelEdge.getFactorToVariableEdgeNumber();
+		
 		if (portNum < _numParameterEdges)
 		{
 			// Port is the parameter input
 			// Determine sample alpha and beta parameters
 
 			@SuppressWarnings("null")
-			BetaParameters outputMsg = (BetaParameters)getSiblingEdgeState(portNum).factorToVarMsg;
+			BetaParameters outputMsg = (BetaParameters)solverEdge.factorToVarMsg;
 
 			final GibbsDiscrete[] outputVariables = requireNonNull(_outputVariables);
 			
@@ -100,7 +102,7 @@ public class CustomBernoulli extends GibbsRealFactor implements IRealConjugateFa
 			outputMsg.setBetaMinusOne(numZeros);
 		}
 		else
-			super.updateEdgeMessage(portNum);
+			super.updateEdgeMessage(modelEdge, solverEdge);
 	}
 	
 	

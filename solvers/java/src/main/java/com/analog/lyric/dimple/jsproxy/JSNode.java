@@ -77,7 +77,7 @@ public abstract class JSNode<Delegate extends Node> extends JSOptionHolder<Deleg
 	 */
 	public long getId()
 	{
-		return _delegate.getId();
+		return _delegate.getGlobalId();
 	}
 	
 	/**

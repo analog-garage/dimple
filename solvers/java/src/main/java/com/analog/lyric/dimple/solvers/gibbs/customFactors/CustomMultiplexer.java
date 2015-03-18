@@ -27,8 +27,8 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.Multiplexer;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.EdgeState;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
@@ -88,8 +88,9 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 	
 	@SuppressWarnings("null")
 	@Override
-	public void updateEdgeMessage(int portNum)
+	public void updateEdgeMessage(EdgeState modelEdge, GibbsSolverEdge<?> solverEdge)
 	{
+		final int portNum = modelEdge.getFactorToVariableEdgeNumber();
 		if (portNum >= _firstInputPortNumber)
 		{
 			// Port is an input port
@@ -98,17 +99,17 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 			{
 				// Port is the currently selected input port
 				// Get the aggregated message from the variable connected to the output port
-				_outputVariable.getAggregateMessages(getSiblingEdgeState(portNum).factorToVarMsg,
+				_outputVariable.getAggregateMessages(solverEdge.factorToVarMsg,
 					_outputVariableSiblingPortIndex, _conjugateSampler[portNum]);
 			}
 			else
 			{
 				// Port is not the currently selected input port
-				getSiblingEdgeState(portNum).factorToVarMsg.setNull();
+				solverEdge.factorToVarMsg.setNull();
 			}
 		}
 		else
-			super.updateEdgeMessage(portNum);
+			super.updateEdgeMessage(modelEdge, solverEdge);
 	}
 	
 	

@@ -63,13 +63,14 @@ public class CustomExchangeableDirichlet extends GibbsRealFactor implements IRea
 	
 	@SuppressWarnings("null")
 	@Override
-	public void updateEdgeMessage(int portNum)
+	public void updateEdgeMessage(EdgeState modelEdge, GibbsSolverEdge<?> solverEdge)
 	{
+		final int portNum = modelEdge.getFactorToVariableEdgeNumber();
 		if (portNum >= _numParameterEdges)
 		{
 			// Output port must be an output variable
 
-			DirichletParameters outputMsg = (DirichletParameters)getSiblingEdgeState(portNum).factorToVarMsg;
+			DirichletParameters outputMsg = (DirichletParameters)solverEdge.factorToVarMsg;
 			
 			if (_hasConstantParameters)
 				outputMsg.fillAlphaMinusOne(_constantAlphaMinusOne);
@@ -77,7 +78,7 @@ public class CustomExchangeableDirichlet extends GibbsRealFactor implements IRea
 				outputMsg.fillAlphaMinusOne(_alphaVariable.getCurrentSample() - 1);
 		}
 		else
-			super.updateEdgeMessage(portNum);
+			super.updateEdgeMessage(modelEdge, solverEdge);
 	}
 	
 	

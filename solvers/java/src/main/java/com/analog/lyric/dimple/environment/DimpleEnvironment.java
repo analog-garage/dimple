@@ -39,6 +39,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionRegistry;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.FactorGraphRegistry;
+import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.NodeId;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.options.DimpleOptionRegistry;
@@ -683,5 +684,24 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	public DimpleSolverRegistry solvers()
 	{
 		return _solverRegistry;
+	}
+	
+	/*----------------
+	 * Lookup methods
+	 */
+	
+	/**
+	 * Looks up node within environment with given global id, or null if not found.
+	 * @since 0.08
+	 */
+	public @Nullable Node getNodeByGlobalId(long globalId)
+	{
+		FactorGraph graph = _factorGraphs.getGraphWithId(NodeId.graphIdFromGlobalId(globalId));
+		if (graph != null)
+		{
+			return graph.getNodeByLocalId(NodeId.localIdFromGlobalId(globalId));
+		}
+		
+		return null;
 	}
 }

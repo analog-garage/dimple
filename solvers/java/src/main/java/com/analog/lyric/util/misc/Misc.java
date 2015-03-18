@@ -108,7 +108,7 @@ public class Misc
 		int i = 0;
 		for (Object n : nameables)
 		{
-    		ids[i] = ((INameable)n).getId();
+    		ids[i] = ((INameable)n).getGlobalId();
     		i++;
 			//result.add(((INameable)n).getId());
     	}

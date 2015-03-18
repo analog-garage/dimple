@@ -42,10 +42,11 @@ public class TestMapList
 			_id = id;
 		}
 		
+		@Deprecated
 		@Override
 		public long getId()
 		{
-			return _id;
+			return getGlobalId();
 		}
 		
 		@Override

@@ -77,13 +77,14 @@ public class CustomGamma extends GibbsRealFactor implements IRealConjugateFactor
 	
 	@SuppressWarnings("null")
 	@Override
-	public void updateEdgeMessage(int portNum)
+	public void updateEdgeMessage(EdgeState modelEdge, GibbsSolverEdge<?> solverEdge)
 	{
+		final int portNum = modelEdge.getFactorToVariableEdgeNumber();
 		if (portNum == _betaParameterPort)
 		{
 			// Port is the beta-parameter input
 			// Determine sample alpha and beta parameters
-			GammaParameters outputMsg = (GammaParameters)getSiblingEdgeState(portNum).factorToVarMsg;
+			GammaParameters outputMsg = (GammaParameters)solverEdge.factorToVarMsg;
 			
 			// Start with the ports to variable outputs
 			double sum = 0;
@@ -107,12 +108,12 @@ public class CustomGamma extends GibbsRealFactor implements IRealConjugateFactor
 		else if (portNum >= _numParameterEdges)
 		{
 			// Port is directed output
-			GammaParameters outputMsg = (GammaParameters)getSiblingEdgeState(portNum).factorToVarMsg;
+			GammaParameters outputMsg = (GammaParameters)solverEdge.factorToVarMsg;
 			outputMsg.setAlphaMinusOne(_hasConstantAlpha ? _constantAlphaMinusOneValue : _alphaVariable.getCurrentSample() - 1);
 			outputMsg.setBeta(_hasConstantBeta ? _constantBetaValue : _betaVariable.getCurrentSample());
 		}
 		else
-			super.updateEdgeMessage(portNum);
+			super.updateEdgeMessage(modelEdge, solverEdge);
 	}
 	
 	

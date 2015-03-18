@@ -61,5 +61,6 @@ public interface ISolverFactorGibbs extends ISolverFactor, ISolverNodeGibbs
 	 */
 	public void updateNeighborVariableValue(int variableIndex, Value oldValue);
 	public void updateNeighborVariableValuesNow(@Nullable Collection<IndexedValue> oldValues);
-	public void updateEdgeMessage(int portIndex);
+	
+	public void updateEdgeMessage(EdgeState modelEdge, GibbsSolverEdge<?> solverEdge);
 }

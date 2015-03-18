@@ -31,8 +31,8 @@ import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.EdgeState;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
@@ -262,14 +262,16 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	@Override
 	public final void update()
 	{
+		final Discrete model = _model;
+			
 		// Don't bother to re-sample deterministic dependent variables (those that are the output of a directional deterministic factor)
-		if (_model.isDeterministicOutput()) return;
+		if (model.isDeterministicOutput()) return;
 
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
 		
 		// Also return if the variable is set to a fixed value
-		if (_model.hasFixedValue()) return;
+		if (model.hasFixedValue()) return;
 
 		final int updateEventFlags = GibbsSolverVariableEvent.getVariableUpdateEventFlags(this);
 		Value oldValue = null;
@@ -287,43 +289,47 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		}
 
 		final int messageLength = _input.size();
-		final int numPorts = _model.getSiblingCount();
+		final int numPorts = model.getSiblingCount();
 		double minEnergy = Double.POSITIVE_INFINITY;
 		
 		// Conditional probability in log domain
 		final double[] conditional = DimpleEnvironment.doubleArrayCache.allocateAtLeast(messageLength);
 
+		final double[] inputEnergy = _input.representation();
+		
 		// Compute the conditional probability
-		if (!_model.isDeterministicInput())
+		if (!model.isDeterministicInput())
 		{
 			final double[][] inputMsgs = new double[numPorts][];
 			
 			// Update all the neighboring factors
 			// If there are no deterministic dependents, then it should be faster to have
 			// each neighboring factor update its entire message to this variable than the alternative, below
-			final FactorGraph fg = requireNonNull(_model.getParentGraph());
+			final FactorGraph fg = requireNonNull(model.getParentGraph());
 			final ISolverFactorGraph sfg = _parent;
-			for (int port = 0; port < numPorts; port++)
+			for (int port = numPorts; --port>=0;)
 			{
-				final int edgeIndex = _model.getSiblingEdgeIndex(port);
+				final int edgeIndex = model.getSiblingEdgeIndex(port);
 				final EdgeState edgeState = requireNonNull(fg.getGraphEdgeState(edgeIndex));
 				final GibbsDiscreteEdge sedge = requireNonNull((GibbsDiscreteEdge)sfg.getSolverEdge(edgeIndex));
+				final ISolverFactorGibbs sfactor = (ISolverFactorGibbs)sfg.getSolverFactorForEdge(edgeState);
+				
 				inputMsgs[port] = sedge.factorToVarMsg.representation();
-				getSibling(port).updateEdgeMessage(edgeState.getFactorToVariableEdgeNumber());
+				sfactor.updateEdgeMessage(edgeState, sedge);
 			}
 			
 			// Sum up the messages to get the conditional distribution
-			for (int index = 0; index < messageLength; index++)
+			for (int index = messageLength; --index>=0;)
 			{
 
-				double out = _input.getEnergy(index);						// Sum of the input prior...
-				for (int port = 0; port < numPorts; port++)
+				double out = inputEnergy[index];					// Sum of the input prior...
+				for (int port = numPorts; --port>=0;)
 				{
 					out += inputMsgs[port][index]; // Plus each input message value
 				}
 				out *= _beta;									// Apply tempering
 
-				if (out < minEnergy) minEnergy = out;			// For normalization
+				minEnergy = Math.min(minEnergy, out);		// For normalization
 
 				conditional[index] = out;						// Save in log domain representation
 			}
@@ -334,7 +340,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 			for (int index = 0; index < messageLength; index++)
 			{
 				setCurrentSampleIndex(index);
-				double out = _input.getEnergy(index);						// Sum of the input prior...
+				double out = inputEnergy[index];						// Sum of the input prior...
 				ReleasableIterator<ISolverNodeGibbs> scoreNodes = getSampleScoreNodes();
 				while (scoreNodes.hasNext())
 				{
@@ -344,7 +350,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 				
 				out *= _beta;									// Apply tempering
 
-				if (out < minEnergy) minEnergy = out;			// For normalization
+				minEnergy = Math.min(minEnergy,  out);			// For normalization
 
 				conditional[index] = out;						// Save in log domain representation
 			}

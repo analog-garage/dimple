@@ -48,7 +48,7 @@ public class hmmBenchmark
 		hmmInference(fg, stages, stateDomainOrder, observationDomainOrder);
 		return false;
 	}
-
+	
 	@Benchmark(warmupIterations = 0, iterations = 1)
 	public boolean hmmGibbs100000x4x4()
 	{

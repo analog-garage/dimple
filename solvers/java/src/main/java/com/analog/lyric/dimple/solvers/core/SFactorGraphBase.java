@@ -196,6 +196,23 @@ public abstract class SFactorGraphBase
 	}
 
 	@Override
+	public @Nullable ISolverNode getSolverNodeByLocalId(int localId)
+	{
+		final int index = NodeId.indexFromLocalId(localId);
+		switch (localId >>> NodeId.LOCAL_ID_NODE_TYPE_OFFSET)
+		{
+		case NodeId.FACTOR_TYPE:
+			return getSolverFactorByIndex(index);
+		case NodeId.GRAPH_TYPE:
+			return getSolverSubgraphByIndex(index);
+		case NodeId.VARIABLE_TYPE:
+			return getSolverVariableByIndex(index);
+		default:
+				return null;
+		}
+	}
+	
+	@Override
 	public ISolverFactorGraph getSolverSubgraph(FactorGraph subgraph)
 	{
 		return _solverNodeMapping.getSolverGraph(subgraph);
@@ -1116,6 +1133,12 @@ public abstract class SFactorGraphBase
 	}
 	
 	@Override
+	public @Nullable ISolverFactorGraph getSolverSubgraphByIndex(int index)
+	{
+		return _subgraphs.getOrNull(index);
+	}
+	
+	@Override
 	public Collection<ISolverFactorGraph> getSolverSubgraphs()
 	{
 		return new OwnedSubgraphs();
@@ -1222,6 +1245,23 @@ public abstract class SFactorGraphBase
 		return sfactor;
 	}
 	
+	@Override
+	public @Nullable ISolverFactor getSolverFactorByIndex(int index)
+	{
+		return _factors.getOrNull(index);
+	}
+	
+	@SuppressWarnings("null")
+	@Override
+	public ISolverFactor getSolverFactorForEdge(EdgeState edge)
+	{
+		final FactorGraph fg = _model;
+		final FactorGraph factorParent = edge.getFactorParent(fg);
+		final ISolverFactorGraph sfactorParent =
+			fg == factorParent ? this : _solverNodeMapping.getSolverGraph(factorParent);
+		return sfactorParent.getSolverFactorByIndex(edge.factorIndex());
+	}
+	
 	public void initializeSolverEdges()
 	{
 		ExtendedArrayList<SEdge> edges = _edges;
@@ -1292,6 +1332,12 @@ public abstract class SFactorGraphBase
 		}
 		
 		return svar;
+	}
+
+	@Override
+	public @Nullable ISolverVariable getSolverVariableByIndex(int index)
+	{
+		return _variables.getOrNull(index);
 	}
 	
 	public void setSubgraphSolver(FactorGraph subgraph, @Nullable ISolverFactorGraph sgraph)

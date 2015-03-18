@@ -1600,7 +1600,7 @@ public class VariableEliminator
 		final Random rand = _rand;
 		if (rand == null)
 		{
-			return (double)variable.getId() / (double)Integer.MAX_VALUE;
+			return (double)variable.getGlobalId() / (double)Integer.MAX_VALUE;
 		}
 		else
 		{

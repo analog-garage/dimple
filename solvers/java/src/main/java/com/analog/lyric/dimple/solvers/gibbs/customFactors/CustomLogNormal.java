@@ -86,14 +86,15 @@ public class CustomLogNormal extends GibbsRealFactor implements IRealConjugateFa
 
 	@SuppressWarnings("null")
 	@Override
-	public void updateEdgeMessage(int portNum)
+	public void updateEdgeMessage(EdgeState modelEdge, GibbsSolverEdge<?> solverEdge)
 	{
+		final int portNum = modelEdge.getFactorToVariableEdgeNumber();
 		if (portNum == _meanParameterPort)
 		{
 			// Port is the mean-parameter input
 			// Determine sample mean and precision
 
-			NormalParameters outputMsg = (NormalParameters)getSiblingEdgeState(portNum).factorToVarMsg;
+			NormalParameters outputMsg = (NormalParameters)solverEdge.factorToVarMsg;
 				
 			// Start with the ports to variable outputs
 			double sum = 0;
@@ -119,7 +120,7 @@ public class CustomLogNormal extends GibbsRealFactor implements IRealConjugateFa
 			// Port is precision-parameter input
 			// Determine sample alpha and beta
 			
-			GammaParameters outputMsg = (GammaParameters)getSiblingEdgeState(portNum).factorToVarMsg;
+			GammaParameters outputMsg = (GammaParameters)solverEdge.factorToVarMsg;
 			
 			// Get the current mean
 			double mean = _hasConstantMean ? _constantMeanValue : _meanVariable.getCurrentSample();
@@ -146,7 +147,7 @@ public class CustomLogNormal extends GibbsRealFactor implements IRealConjugateFa
 			outputMsg.setBeta(0.5 * sum);					// Sample beta
 		}
 		else
-			super.updateEdgeMessage(portNum);
+			super.updateEdgeMessage(modelEdge, solverEdge);
 	}
 	
 	

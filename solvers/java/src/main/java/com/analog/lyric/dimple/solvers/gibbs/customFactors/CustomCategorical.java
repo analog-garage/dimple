@@ -69,15 +69,16 @@ public class CustomCategorical extends GibbsRealFactor implements IRealJointConj
 	
 	@SuppressWarnings("null")
 	@Override
-	public void updateEdgeMessage(int portNum)
+	public void updateEdgeMessage(EdgeState modelEdge, GibbsSolverEdge<?> solverEdge)
 	{
+		final int portNum = modelEdge.getFactorToVariableEdgeNumber();
 		if (portNum < _numParameterEdges)
 		{
 			// Output port is a joint parameter input
 			// Determine sample alpha vector of the conjugate Dirichlet distribution
 			// Note: This case works for the Categorical factor function (which has joint parameters)
 			
-			DirichletParameters outputMsg = (DirichletParameters)getSiblingEdgeState(portNum).factorToVarMsg;
+			DirichletParameters outputMsg = (DirichletParameters)solverEdge.factorToVarMsg;
 			
 			// Clear the output counts
 			outputMsg.setNull();
@@ -94,7 +95,7 @@ public class CustomCategorical extends GibbsRealFactor implements IRealJointConj
 				outputMsg.add(_constantOutputCounts);
 		}
 		else
-			super.updateEdgeMessage(portNum);
+			super.updateEdgeMessage(modelEdge, solverEdge);
 	}
 	
 	

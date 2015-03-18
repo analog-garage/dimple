@@ -36,8 +36,8 @@ import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.EdgeState;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -61,7 +61,6 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IMCMCSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IRealSamplerClient;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.MHSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
@@ -236,14 +235,16 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	@Override
 	public final void update()
 	{
-		// Don't bother to re-sample deterministic dependent variables (those that are the output of a directional deterministic factor)
-		if (getModelObject().isDeterministicOutput()) return;
-
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
 		
+		final RealJoint model = _model;
+		
+		// Don't bother to re-sample deterministic dependent variables (those that are the output of a directional deterministic factor)
+		if (model.isDeterministicOutput()) return;
+
 		// Also return if the variable is set to a fixed value
-		if (_model.hasFixedValue()) return;
+		if (model.hasFixedValue()) return;
 
 		final int updateEventFlags = GibbsSolverVariableEvent.getVariableUpdateEventFlags(this);
 		Value oldValue = null;
@@ -284,19 +285,20 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		{
 			// Use conjugate sampler, first update the messages from all factors
 			// Factor messages represent the current distribution parameters from each factor
-			final int numEdges = _model.getSiblingCount();
+			final int numEdges = model.getSiblingCount();
 			final ISolverEdgeState[] sedges = new ISolverEdgeState[numEdges];
-			final FactorGraph fg = _model.requireParentGraph();
+			final FactorGraph fg = model.requireParentGraph();
 			final SolverNodeMapping solvers = getSolverMapping();
 			final ISolverFactorGraph sfg = solvers.getSolverGraph(fg);
 			for (int portIndex = 0; portIndex < numEdges; portIndex++)
 			{
-				final EdgeState edge = _model.getSiblingEdgeState(portIndex);
-				Factor factorNode = edge.getFactor(fg);
-				ISolverFactor factor = solvers.getSolverFactor(factorNode);
-				int factorPortNumber = edge.getFactorToVariableEdgeNumber();
-				sedges[portIndex] = sfg.getSolverEdge(edge);
-				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
+				final int edgeIndex = model.getSiblingEdgeIndex(portIndex);
+				final EdgeState edge = requireNonNull(fg.getGraphEdgeState(edgeIndex));
+				final GibbsSolverEdge<?> sedge = requireNonNull((GibbsSolverEdge<?>)sfg.getSolverEdge(edgeIndex));
+				final ISolverFactorGibbs factor = (ISolverFactorGibbs)sfg.getSolverFactorForEdge(edge);
+				
+				sedges[portIndex] =  sedge;
+				factor.updateEdgeMessage(edge, sedge);	// Run updateEdgeMessage for each neighboring factor
 			}
 			setCurrentSample(conjugateSampler.nextSample(sedges, _inputJoint));
 			_updateCount++;
@@ -430,21 +432,23 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	@Override
 	public final void getAggregateMessages(IParameterizedMessage outputMessage, int outPortNum, ISampler conjugateSampler)
 	{
-		final FactorGraph fg = _model.requireParentGraph();
+		final RealJoint model = _model;
+		final FactorGraph fg = model.requireParentGraph();
 		final SolverNodeMapping solvers = getSolverMapping();
 		final ISolverFactorGraph sfg = solvers.getSolverGraph(fg);
-		final int numEdges = _model.getSiblingCount();
+		final int numEdges = model.getSiblingCount();
 		final ISolverEdgeState[] sedges = new ISolverEdgeState[numEdges - 1];
 		for (int port = 0, i = 0; port < numEdges; port++)
 		{
 			if (port != outPortNum)
 			{
-				final EdgeState edgeState = _model.getSiblingEdgeState(port);
-				Factor factorNode = edgeState.getFactor(fg);
-				ISolverFactorGibbs factor = (ISolverFactorGibbs)solvers.getSolverFactor(factorNode);
-				sedges[i++] = sfg.getSolverEdge(edgeState);
-				int factorPortNumber = edgeState.getFactorToVariableEdgeNumber();
-				factor.updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
+				final int edgeIndex = model.getSiblingEdgeIndex(port);
+				final EdgeState edgeState = requireNonNull(fg.getGraphEdgeState(edgeIndex));
+				final GibbsSolverEdge<?> sedge = requireNonNull((GibbsSolverEdge<?>)sfg.getSolverEdge(edgeIndex));
+				final ISolverFactorGibbs factor = (ISolverFactorGibbs)sfg.getSolverFactorForEdge(edgeState);
+				
+				sedges[i++] = sfg.getSolverEdge(edgeIndex);
+				factor.updateEdgeMessage(edgeState, sedge);	// Run updateEdgeMessage for each neighboring factor
 			}
 		}
 		((IRealJointConjugateSampler)conjugateSampler).aggregateParameters(outputMessage, sedges, _inputJoint);

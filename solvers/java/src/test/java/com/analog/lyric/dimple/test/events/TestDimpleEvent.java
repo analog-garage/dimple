@@ -22,6 +22,7 @@ import static org.junit.Assert.*;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.events.DimpleEvent;
@@ -31,7 +32,6 @@ import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.options.StatelessOptionHolder;
-import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.util.test.SerializationTester;
 
 /**
@@ -53,7 +53,7 @@ public class TestDimpleEvent extends DimpleTestBase
 		assertSame(fg, event.getSource());
 		assertSame(fg, event.getModelObject());
 		assertEquals(fg.getEventSourceName(), event.getSourceName());
-		assertEquals(fg.getId(), event.getModelId());
+		assertEquals(fg.getGlobalId(), event.getModelId());
 		
 		assertFalse(event.consumed());
 		event.consumed(true);

@@ -210,7 +210,7 @@ public class TestJSFactorGraph extends JSTestBase
 	{
 		Node delegate = node.getDelegate();
 		assertEquals(state.applet, node.getApplet());
-		assertEquals(delegate.getId(), node.getId());
+		assertEquals(delegate.getGlobalId(), node.getId());
 		assertEquals(delegate.getName(), node.getName());
 		assertEquals(node.isFactor(), node.getNodeType() == JSNode.Type.FACTOR);
 		assertEquals(node.isGraph(), node.getNodeType() == JSNode.Type.GRAPH);

@@ -27,8 +27,8 @@ import com.analog.lyric.dimple.events.IDataEventSource;
 import com.analog.lyric.dimple.events.IDimpleEventListener;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Equality;
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.EdgeState;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.NodeId;
 import com.analog.lyric.dimple.model.core.NodeType;
@@ -85,7 +85,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		@NonNullByDefault(false)
 		public int compare(Variable var1, Variable var2)
 		{
-			return Longs.compare(var1.getId(), var2.getId());
+			return Longs.compare(var1.getGlobalId(), var2.getGlobalId());
 		}
     };
 

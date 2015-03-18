@@ -47,7 +47,7 @@ public class VariableTest extends DimpleTestBase
 		Object[] domainGot = v.getDiscreteDomain().getElements();
 		assertTrue(Arrays.equals(domain, domainGot));
 		
-		assertTrue(v.getId() > -1);
+		assertTrue(v.getGlobalId() > -1);
 		
 		double[] input = new double[]{.5, .5};
 		v.setInput(input);

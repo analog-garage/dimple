@@ -34,6 +34,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import cern.colt.list.IntArrayList;
 
 import com.analog.lyric.collect.BitSetUtil;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.events.DimpleEvent;
 import com.analog.lyric.dimple.events.IDimpleEventListener;
 import com.analog.lyric.dimple.events.IDimpleEventSource;
@@ -518,24 +519,43 @@ public abstract class Node extends DimpleOptionHolder implements INode
 		return _parentGraph != null;
 	}
 	
-	
+	@Deprecated
 	@Override
 	public long getId()
 	{
 		return getGlobalId();
 	}
 	
-	void setId(int id)
+	void setLocalId(int id)
 	{
 		_id = id;
 	}
 	
+	/**
+	 * A local identifier that uniquely identifies the node within its containing graph.
+	 * <p>
+	 * This id can be used to retrieve the node from its graph using {@link FactorGraph#getNodeByLocalId(int)}.
+	 * <p>
+	 * @since 0.08
+	 * @see #getGlobalId()
+	 * @see NodeId
+	 */
 	@Override
 	public int getLocalId()
 	{
 		return _id;
 	}
 	
+	/**
+	 * A global identifier that uniquely identifies the node within the containing Dimple environment.
+	 * <p>
+	 * This id can be used to retrieve the node from its graph using {@link FactorGraph#getNodeByGlobalId(long)}
+	 * or from the environment using {@link DimpleEnvironment#getNodeByGlobalId}.
+	 * <p>
+	 * @since 0.08
+	 * @see #getLocalId()
+	 * @see NodeId
+	 */
 	@Override
 	public long getGlobalId()
 	{

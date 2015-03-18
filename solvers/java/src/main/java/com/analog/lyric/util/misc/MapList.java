@@ -88,7 +88,7 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	@NonNullByDefault(false)
 	public boolean add(T node)
 	{
-		hashMap().put(node.getId(), node);
+		hashMap().put(node.getGlobalId(), node);
 		arrayList().add(node);
 		return true;
 	}
@@ -188,7 +188,7 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 			final IGetId node = (IGetId)obj;
 			OpenLongObjectHashMap hashMap = hashMap();
 			
-			removed = hashMap.removeKey(node.getId());
+			removed = hashMap.removeKey(node.getGlobalId());
 			if (removed)
 			{
 				final ArrayList<T> arrayList = arrayList();
@@ -280,7 +280,7 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	@Override
 	public boolean contains(IGetId node)
 	{
-		return hashMap().containsKey(node.getId());
+		return hashMap().containsKey(node.getGlobalId());
 	}
 	
 	@Override
@@ -324,7 +324,7 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 		{
 			// If map is smaller than the array, then there can't have been more than
 			// one instance of each element so we can skip the contains test.
-			hashMap.removeKey(elt.getId());
+			hashMap.removeKey(elt.getGlobalId());
 		}
 		return elt;
 	}
@@ -367,7 +367,7 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 			for (T node : iterable)
 			{
 				arrayList.add(node);
-				hashMap.put(node.getId(), node);
+				hashMap.put(node.getGlobalId(), node);
 			}
 			_iterable = null;
 		}
