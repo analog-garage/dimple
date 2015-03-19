@@ -137,6 +137,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         double maxLog = Double.NEGATIVE_INFINITY;
 
 		final double[] outMsgs = _outMsgs[outPortNum];
+		final double[][] inMsgs = _inMsgs;
 		final double[] dampingParams = _dampingParams;
 		final double damping = dampingParams != null ? dampingParams[outPortNum] : 0.0;
 
@@ -155,7 +156,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 				{
 					if (d != outPortNum)		// For all ports except the output port
 					{
-						double tmp = _inMsgs[d][m];
+						double tmp = inMsgs[d][m];
 						out += (tmp == 0) ? minLog : Math.log(tmp);
 					}
 				}
@@ -185,26 +186,28 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		}
 		else
 		{
-			for (int m = 0; m < M; m++)
+			for (int m = M; --m>=0;)
 			{
 				double prior = priors[m];
 				double out = (prior == 0) ? minLog : Math.log(prior);
 
-				for (int d = 0; d < D; d++)
+				for (int d = outPortNum + 1; d < D; d++)
 				{
-					if (d != outPortNum)		// For all ports except the output port
-					{
-						double tmp = _inMsgs[d][m];
-						out += (tmp == 0) ? minLog : Math.log(tmp);
-					}
+					double tmp = inMsgs[d][m];
+					out += (tmp == 0) ? minLog : Math.log(tmp);
 				}
-				if (out > maxLog) maxLog = out;
+				for (int d = outPortNum; --d>=0;)
+				{
+					double tmp = inMsgs[d][m];
+					out += (tmp == 0) ? minLog : Math.log(tmp);
+				}
+				maxLog = Math.max(maxLog, out);
 				outMsgs[m] = out;
 			}
 
 			//create sum
 			double sum = 0;
-			for (int m = 0; m < M; m++)
+			for (int m = M; --m>=0;)
 			{
 				double out = Math.exp(outMsgs[m] - maxLog);
 				outMsgs[m] = out;
@@ -212,7 +215,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 			}
 
 			//calculate message by dividing by sum
-			for (int m = 0; m < M; m++)
+			for (int m = M; --m>=0;)
 				outMsgs[m] /= sum;
 		}
 		
@@ -231,16 +234,17 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         final int D = _model.getSiblingCount();
         
         //Compute alphas
+        final double[][] inMsgs = _inMsgs;
         final double[] logInPortMsgs = DimpleEnvironment.doubleArrayCache.allocateAtLeast(M*D);
         final double[] alphas = DimpleEnvironment.doubleArrayCache.allocateAtLeast(M);
-        for (int m = 0; m < M; m++)
+        for (int m = M; --m>=0;)
         {
         	double prior = priors[m];
         	double alpha = (prior == 0) ? minLog : Math.log(prior);
 
         	for (int d = 0, i = m; d < D; d++, i += M)
 	        {
-	        	double tmp = _inMsgs[d][m];
+	        	double tmp = inMsgs[d][m];
         		double logtmp = (tmp == 0) ? minLog : Math.log(tmp);
         		logInPortMsgs[i] = logtmp;
         		alpha += logtmp;

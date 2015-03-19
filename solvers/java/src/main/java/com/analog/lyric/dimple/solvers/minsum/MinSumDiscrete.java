@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.minsum;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
+import com.analog.lyric.collect.DoubleArrayCache;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.options.BPOptions;
@@ -171,11 +172,13 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		int numValue = priors.length;
 
 		// Compute the sum of all messages
-		final double[] beliefs = priors.clone();
+		final DoubleArrayCache cache = DimpleEnvironment.doubleArrayCache;
+		final double[] beliefs = cache.allocateAtLeast(numValue);
+		System.arraycopy(priors, 0, beliefs, 0, numValue);
 
 		for (int port = numPorts; --port>=0;)
 		{
-			final double[] inMsgs = _inMsgs[port];//_edges[port].factorToVarMsg.representation();
+			final double[] inMsgs = _inMsgs[port];
 			for (int i = numValue; --i>=0;)
 			{
 				beliefs[i] += inMsgs[i];
@@ -186,7 +189,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		
 		if (dampingParams != null)
 		{
-	        final double[] savedOutMsgArray = DimpleEnvironment.doubleArrayCache.allocateAtLeast(numValue);
+	        final double[] savedOutMsgArray = cache.allocateAtLeast(numValue);
 	        
 			for (int port = numPorts; --port>=0; )
 			{
@@ -227,7 +230,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 	        
 	        
 	        // Release temp array
-	    	DimpleEnvironment.doubleArrayCache.release(savedOutMsgArray);
+	    	cache.release(savedOutMsgArray);
 		}
 		else
 		{
@@ -252,6 +255,8 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 				}
 			}
 		}
+		
+		cache.release(beliefs);
 	}
 
 	/*-------------------------
