@@ -91,15 +91,10 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 			_value = Value.create(domain);
 		}
 		
-		CurrentSample(CurrentSample other)
-		{
-			_value = other._value.clone();
-		}
-
 		@Override
 		public DiscreteValue clone()
 		{
-			return new CurrentSample(this);
+			return _value.clone();
 		}
 
 		@Override
@@ -296,12 +291,11 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		final double[] conditional = DimpleEnvironment.doubleArrayCache.allocateAtLeast(messageLength);
 
 		final double[] inputEnergy = _input.representation();
+		System.arraycopy(inputEnergy, 0, conditional, 0, messageLength);
 		
 		// Compute the conditional probability
 		if (!model.isDeterministicInput())
 		{
-			final double[][] inputMsgs = new double[numPorts][];
-			
 			// Update all the neighboring factors
 			// If there are no deterministic dependents, then it should be faster to have
 			// each neighboring factor update its entire message to this variable than the alternative, below
@@ -314,24 +308,31 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 				final GibbsDiscreteEdge sedge = requireNonNull((GibbsDiscreteEdge)sfg.getSolverEdge(edgeIndex));
 				final ISolverFactorGibbs sfactor = (ISolverFactorGibbs)sfg.getSolverFactorForEdge(edgeState);
 				
-				inputMsgs[port] = sedge.factorToVarMsg.representation();
+				final double[] inputMsg = sedge.factorToVarMsg.representation();
 				sfactor.updateEdgeMessage(edgeState, sedge);
+				
+				for (int index = messageLength; --index>=0;)
+				{
+					conditional[index] += inputMsg[index];
+				}
 			}
 			
-			// Sum up the messages to get the conditional distribution
-			for (int index = messageLength; --index>=0;)
+			final double beta = _beta;
+			if (beta != 1.0)
 			{
-
-				double out = inputEnergy[index];					// Sum of the input prior...
-				for (int port = numPorts; --port>=0;)
+				for (int index = messageLength; --index>=0;)
 				{
-					out += inputMsgs[port][index]; // Plus each input message value
+					final double out = conditional[index] * beta;
+					conditional[index] = out;
+					minEnergy = Math.min(minEnergy, out);
 				}
-				out *= _beta;									// Apply tempering
-
-				minEnergy = Math.min(minEnergy, out);		// For normalization
-
-				conditional[index] = out;						// Save in log domain representation
+			}
+			else
+			{
+				for (int index = messageLength; --index>=0;)
+				{
+					minEnergy = Math.min(minEnergy, conditional[index]);
+				}
 			}
 		}
 		else	// There are deterministic dependents, so must account for these
@@ -364,11 +365,12 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		{
 			if (_sampler instanceof IDiscreteDirectSampler)
 			{
-				((IDiscreteDirectSampler)Objects.requireNonNull(_sampler)).nextSample(_currentSample.clone(),
+				((IDiscreteDirectSampler)Objects.requireNonNull(_sampler)).nextSample(_currentSample,
 					conditional, minEnergy, this);
 			}
 			else if (_sampler instanceof IMCMCSampler)
 			{
+				// FIXME: make sampler save current sample value so that clone is not necessary
 				rejected = !((IMCMCSampler)Objects.requireNonNull(_sampler)).nextSample(_currentSample.clone(), this);
 			}
 		}

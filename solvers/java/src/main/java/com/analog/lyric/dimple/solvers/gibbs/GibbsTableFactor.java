@@ -22,6 +22,8 @@ import java.util.Collection;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.collect.IntArrayCache;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
@@ -112,13 +114,17 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 		final IFactorTable factorTable = getFactorTableIfComputed();
 		if (factorTable != null)
 		{
-			int[] inPortMsgs = new int[numPorts];
+			final IntArrayCache cache = DimpleEnvironment.intArrayCache;
+			final int[] inPortMsgs = cache.allocateAtLeast(numPorts);
+			
 			for (int port = numPorts; --port>=0;)
 				inPortMsgs[port] = _currentSamples[port].getIndex();
 
 			inPortMsgs[outPortNum] = 0;
 			
 			factorTable.getEnergySlice(outMessage, outPortNum, inPortMsgs);
+			
+			cache.release(inPortMsgs);
 		}
 		else
 		{
@@ -169,7 +175,9 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 			return Double.POSITIVE_INFINITY;
 		}
 
-		if (getFactorTableIfComputed() == null)
+		IFactorTable factorTable = getFactorTableIfComputed();
+		
+		if (factorTable == null)
 		{
 			// Avoid creating table because it may be very large.
 			// FIXME - think more about this. Should this be conditional on something?
@@ -179,13 +187,10 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 			return energy;
 		}
 		
-		int[] inPortMsgs = new int[size];
-		for (int port = 0; port < size; port++)
-			inPortMsgs[port] = _currentSamples[port].getIndex();
-
-		return getPotential(inPortMsgs);
+		return factorTable.getEnergyForValues(_currentSamples);
 	}
 	
+	@Deprecated
 	@Internal
 	public double getPotential(int[] inputs)
 	{
