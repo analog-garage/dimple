@@ -97,7 +97,8 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 			System.arraycopy(outMsgs, 0, savedOutMsgArray, 0, numValue);
 
 			System.arraycopy(priors, 0, outMsgs, 0, numValue);
-			for (int port = outPortNum; --port>=0;)
+			int port = numPorts;
+			while (--port > outPortNum)
 			{
 				final double[] energies = _inMsgs[port];
 				for (int i = numValue; --i>=0;)
@@ -105,7 +106,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 					outMsgs[i] += energies[i];
 				}
 			}
-			for (int port = outPortNum + 1; port < numPorts; ++port)
+			while(--port >= 0)
 			{
 				final double[] energies = _inMsgs[port];
 				for (int i = numValue; --i>=0;)

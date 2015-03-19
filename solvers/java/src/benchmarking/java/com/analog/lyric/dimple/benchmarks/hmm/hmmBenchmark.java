@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.benchmarks.hmm;
 
 import java.util.Random;
 
+import org.junit.Test;
+
 import com.analog.lyric.benchmarking.Benchmark;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
@@ -159,6 +161,19 @@ public class hmmBenchmark
 		int observationDomainOrder = 1000;
 		hmmInference(fg, stages, stateDomainOrder, observationDomainOrder);
 		return false;
+	}
+	
+	@Test
+	public void testMinSum1000x1000x1000()
+	{
+		FactorGraph fg = new FactorGraph();
+		fg.setSolverFactory(new MinSumSolver());
+		fg.setOption(BPOptions.iterations, 3); // Aiming for ~1s execution time
+
+		int stages = 1000;
+		int stateDomainOrder = 1000;
+		int observationDomainOrder = 1000;
+		hmmInference(fg, stages, stateDomainOrder, observationDomainOrder);
 	}
 
 	@SuppressWarnings("unused")

@@ -29,8 +29,8 @@ import com.analog.lyric.dimple.model.factors.Factor;
  */
 public class TableFactorEngine
 {
-	MinSumTableFactor _tableFactor;
-	Factor _factor;
+	final MinSumTableFactor _tableFactor;
+	final Factor _factor;
 
 	public TableFactorEngine(MinSumTableFactor tableFactor)
 	{
@@ -40,13 +40,13 @@ public class TableFactorEngine
 	
 	public void updateEdge(int outPortNum)
 	{
-	    int[][] table = _tableFactor.getFactorTable().getIndicesSparseUnsafe();
-	    double[] values = _tableFactor.getFactorTable().getEnergiesSparseUnsafe();
-	    int tableLength = table.length;
+	    final int[][] table = _tableFactor.getFactorTable().getIndicesSparseUnsafe();
+	    final double[] values = _tableFactor.getFactorTable().getEnergiesSparseUnsafe();
+	    final int tableLength = table.length;
 	    final int numPorts = _factor.getSiblingCount();
 
 
-        double[] outputMsgs = _tableFactor.getOutPortMsg(outPortNum);
+        final double[] outputMsgs = _tableFactor.getOutPortMsg(outPortNum);
         final int outputMsgLength = outputMsgs.length;
 		double[] saved = ArrayUtil.EMPTY_DOUBLE_ARRAY;
         
@@ -62,18 +62,19 @@ public class TableFactorEngine
 
         Arrays.fill(outputMsgs, Double.POSITIVE_INFINITY);
 
-        double [][] inPortMsgs = _tableFactor.getInPortMsgs();
+        final double [][] inPortMsgs = _tableFactor.getInPortMsgs();
         
 	    // Run through each row of the function table
         for (int tableIndex = tableLength; --tableIndex>=0;)
         {
         	double L = values[tableIndex];
-        	int[] tableRow = table[tableIndex];
-        	int outputIndex = tableRow[outPortNum];
+        	final int[] tableRow = table[tableIndex];
+        	final int outputIndex = tableRow[outPortNum];
 
-        	for (int inPortNum = outPortNum; --inPortNum>=0;)
+        	int inPortNum = numPorts;
+        	while (--inPortNum > outPortNum)
         		L += inPortMsgs[inPortNum][tableRow[inPortNum]];
-        	for (int inPortNum = outPortNum + 1; inPortNum < numPorts; inPortNum++)
+        	while (--inPortNum >= 0)
         		L += inPortMsgs[inPortNum][tableRow[inPortNum]];
         	
         	if (L < outputMsgs[outputIndex])
