@@ -269,7 +269,7 @@ final class StandardDirectedJointDomainIndexer extends StandardJointDomainIndexe
 	@Override
 	public int inputIndexFromIndices(int ... indices)
 	{
-		final int length = indices.length;
+		final int length = size();
 		int joint = 0;
 		for (int i = 0, end = length; i != end; ++i) // != is slightly faster than < comparison
 		{
@@ -281,7 +281,7 @@ final class StandardDirectedJointDomainIndexer extends StandardJointDomainIndexe
 	@Override
 	public int inputIndexFromValues(Value ... values)
 	{
-		final int length = values.length;
+		final int length = size();
 		int joint = 0;
 		for (int i = 0, end = length; i != end; ++i) // != is slightly faster than < comparison
 		{
@@ -330,7 +330,7 @@ final class StandardDirectedJointDomainIndexer extends StandardJointDomainIndexe
 	@Override
 	public int jointIndexFromIndices(int ... indices)
 	{
-		final int length = indices.length;
+		final int length = size();
 		int joint = 0;
 		for (int i = 0, end = length; i != end; ++i) // != is slightly faster than < comparison
 		{
@@ -342,7 +342,7 @@ final class StandardDirectedJointDomainIndexer extends StandardJointDomainIndexe
 	@Override
 	public int jointIndexFromValues(Value ... values)
 	{
-		final int length = values.length;
+		final int length = size();
 		int joint = 0;
 		for (int i = 0, end = length; i != end; ++i) // != is slightly faster than < comparison
 		{
@@ -415,7 +415,7 @@ final class StandardDirectedJointDomainIndexer extends StandardJointDomainIndexe
 	@Override
 	public int outputIndexFromIndices(int ... indices)
 	{
-		final int length = indices.length;
+		final int length = size();
 		int joint = 0;
 		for (int i = 0, end = length; i != end; ++i) // != is slightly faster than < comparison
 		{
@@ -427,7 +427,7 @@ final class StandardDirectedJointDomainIndexer extends StandardJointDomainIndexe
 	@Override
 	public int outputIndexFromValues(Value ... values)
 	{
-		final int length = values.length;
+		final int length = size();
 		int joint = 0;
 		for (int i = 0, end = length; i != end; ++i) // != is slightly faster than < comparison
 		{

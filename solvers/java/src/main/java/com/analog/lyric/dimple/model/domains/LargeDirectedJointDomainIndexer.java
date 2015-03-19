@@ -246,7 +246,7 @@ public final class LargeDirectedJointDomainIndexer extends LargeJointDomainIndex
 	public int outputIndexFromIndices(int ... indices)
 	{
 		final int[] outputProducts = assertSupportsOutputIndexing("outputIndexFromIndices");
-		final int length = indices.length;
+		final int length = size();
 		int joint = 0;
 		for (int i = 0, end = length; i != end; ++i) // != is slightly faster than < comparison
 		{
@@ -259,7 +259,7 @@ public final class LargeDirectedJointDomainIndexer extends LargeJointDomainIndex
 	public int outputIndexFromValues(Value ... values)
 	{
 		final int[] outputProducts = assertSupportsOutputIndexing("outputIndexFromValues");
-		final int length = values.length;
+		final int length = size();
 		int joint = 0;
 		for (int i = 0, end = length; i != end; ++i) // != is slightly faster than < comparison
 		{

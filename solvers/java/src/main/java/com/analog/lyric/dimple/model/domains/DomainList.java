@@ -21,9 +21,10 @@ import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.RandomAccess;
 
-import com.analog.lyric.collect.WeakInterner;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.collect.WeakInterner;
 import com.google.common.collect.Interner;
 
 /**
@@ -133,7 +134,7 @@ public class DomainList<D extends Domain> extends AbstractList<D> implements Ran
 	}
 
 	@Override
-	public int size()
+	public final int size()
 	{
 		return _domains.length;
 	}

@@ -169,7 +169,7 @@ public class StandardJointDomainIndexer extends JointDomainIndexer
 	@Override
 	public final int undirectedJointIndexFromIndices(int ... indices)
 	{
-		final int length = indices.length;
+		final int length = size();
 		int joint = indices[0]; // _products[0] is 1, so we can skip the multiply
 		for (int i = 1, end = length; i != end; ++i) // != is slightly faster than < comparison
 		{
@@ -181,7 +181,7 @@ public class StandardJointDomainIndexer extends JointDomainIndexer
 	@Override
 	public final int undirectedJointIndexFromValues(Value ... values)
 	{
-		final int length = values.length;
+		final int length = size();
 		int joint = values[0].getIndex(); // _products[0] is 1, so we can skip the multiply
 		for (int i = 1, end = length; i != end; ++i) // != is slightly faster than < comparison
 		{

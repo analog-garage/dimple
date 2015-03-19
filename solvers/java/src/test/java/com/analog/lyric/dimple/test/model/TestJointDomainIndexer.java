@@ -45,8 +45,6 @@ import com.analog.lyric.util.test.SerializationTester;
 
 public class TestJointDomainIndexer extends DimpleTestBase
 {
-	private Random rand = new Random(1323);
-	
 	@Test
 	public void test()
 	{
@@ -248,8 +246,9 @@ public class TestJointDomainIndexer extends DimpleTestBase
 		assertSame(elements, indexer.elementsFromIndices(indices, elements));
 		assertSame(indices2, indexer.elementsToIndices(elements, indices2));
 		assertArrayEquals(indices, indices2);
-		assertArrayEquals(indices, indexer.elementsToIndices(elements));
-		assertArrayEquals(elements, indexer.elementsFromIndices(indices));
+		// Try using arrays that are too big - the extra entry should be ignored.
+		assertArrayEquals(indices, indexer.elementsToIndices(Arrays.copyOf(elements,size+1)));
+		assertArrayEquals(elements, indexer.elementsFromIndices(Arrays.copyOf(indices, size+1)));
 		
 		// Count the number of times that the undirected/directed indexes match.
 		int canonicalCount = 0;
@@ -664,7 +663,7 @@ public class TestJointDomainIndexer extends DimpleTestBase
 		double[] fromDenseEnergies = new double[maxFrom];
 		for (int i = 0; i < maxFrom; ++i)
 		{
-			double w = rand.nextDouble();
+			double w = testRand.nextDouble();
 			fromDenseWeights[i] = w;
 			fromDenseEnergies[i] = weightToEnergy(w);
 		}
@@ -763,7 +762,7 @@ public class TestJointDomainIndexer extends DimpleTestBase
 		BitSet sparseSet = new BitSet(maxFrom);
 		for (int i = maxFrom/2; --i>=0;)
 		{
-			sparseSet.set(rand.nextInt(maxFrom));
+			sparseSet.set(testRand.nextInt(maxFrom));
 		}
 		final int[] fromSparseToJoint = new int[sparseSet.cardinality()];
 		for (int i = 0, sparseIndex = -1; i < fromSparseToJoint.length; ++i)
