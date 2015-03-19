@@ -86,7 +86,7 @@ public abstract class SFactorGraphBase
 	 */
 	private final ExtendedArrayList<ISolverFactorGraph> _subgraphs;
 	
-	private final @Nullable ExtendedArrayList<SEdge> _edges;
+	private final ExtendedArrayList<SEdge> _edges;
 	
 	private SolverNodeMapping _solverNodeMapping;
 	
@@ -100,7 +100,7 @@ public abstract class SFactorGraphBase
 		_factors = new ExtendedArrayList<>(graph.getFactorCount(0));
 		_variables = new ExtendedArrayList<>(graph.getVariableCount(0));
 		_subgraphs = new ExtendedArrayList<>(graph.getOwnedGraphs().size());
-		_edges = hasEdgeState() ? new ExtendedArrayList<SEdge>(graph.getGraphEdgeCount()) : null;
+		_edges = new ExtendedArrayList<SEdge>(hasEdgeState() ? graph.getGraphEdgeCount() : 0);
 		_solverNodeMapping = new StandardSolverNodeMapping(this);
 		_parent = parent;
 	}
@@ -251,17 +251,14 @@ public abstract class SFactorGraphBase
 		FactorGraph otherGraph = sother.getModelGraph();
 		
 		final ExtendedArrayList<SEdge> edges = _edges;
-		if (edges != null)
+		for (int i = 0, n = edges.size(); i < n; ++i)
 		{
-			for (int i = 0, n = edges.size(); i < n; ++i)
+			SEdge thisEdge = edges.get(i);
+			if (thisEdge != null)
 			{
-				SEdge thisEdge = edges.get(i);
-				if (thisEdge != null)
-				{
-					SEdge thatEdge = requireNonNull(sother.getSolverEdge(i));
-					thisEdge.setFrom(thatEdge);
-					thatEdge.reset();
-				}
+				SEdge thatEdge = requireNonNull(sother.getSolverEdge(i));
+				thisEdge.setFrom(thatEdge);
+				thatEdge.reset();
 			}
 		}
 		
@@ -285,11 +282,7 @@ public abstract class SFactorGraphBase
 	@Override
 	public final void removeSolverEdge(int edgeIndex)
 	{
-		final ExtendedArrayList<?> edges = _edges;
-		if (edges != null)
-		{
-			edges.set(edgeIndex, null);
-		}
+		_edges.set(edgeIndex, null);
 	}
 	
 	@Override
@@ -1154,10 +1147,6 @@ public abstract class SFactorGraphBase
 	public @Nullable SEdge getSolverEdge(EdgeState edge, boolean create)
 	{
 		final ExtendedArrayList<SEdge> edges = _edges;
-		if (edges == null)
-		{
-			return null;
-		}
 		
 		final int index = edge.edgeIndexInParent(_model);
 		SEdge result = edges.getOrNull(index);
@@ -1186,10 +1175,6 @@ public abstract class SFactorGraphBase
 	public @Nullable SEdge getSolverEdge(int edgeIndex, boolean create)
 	{
 		final ExtendedArrayList<SEdge> edges = _edges;
-		if (edges == null)
-		{
-			return null;
-		}
 		
 		SEdge result = edges.getOrNull(edgeIndex);
 		
@@ -1265,7 +1250,7 @@ public abstract class SFactorGraphBase
 	public void initializeSolverEdges()
 	{
 		ExtendedArrayList<SEdge> edges = _edges;
-		if (edges != null)
+		if (hasEdgeState())
 		{
 			final int n = getModelGraph().getGraphEdgeCount();
 			edges.setSize(n);

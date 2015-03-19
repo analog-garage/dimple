@@ -22,8 +22,6 @@ import java.util.Collection;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.collect.IntArrayCache;
-import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
@@ -109,22 +107,10 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 		final int outPortNum = modelEdge.getFactorToVariableEdgeNumber();
 		final double[] outMessage = ((DiscreteMessage)solverEdge.factorToVarMsg).representation();
 
-		final int numPorts = _currentSamples.length;
-
 		final IFactorTable factorTable = getFactorTableIfComputed();
 		if (factorTable != null)
 		{
-			final IntArrayCache cache = DimpleEnvironment.intArrayCache;
-			final int[] inPortMsgs = cache.allocateAtLeast(numPorts);
-			
-			for (int port = numPorts; --port>=0;)
-				inPortMsgs[port] = _currentSamples[port].getIndex();
-
-			inPortMsgs[outPortNum] = 0;
-			
-			factorTable.getEnergySlice(outMessage, outPortNum, inPortMsgs);
-			
-			cache.release(inPortMsgs);
+			factorTable.getEnergySlice(outMessage, outPortNum, _currentSamples);
 		}
 		else
 		{

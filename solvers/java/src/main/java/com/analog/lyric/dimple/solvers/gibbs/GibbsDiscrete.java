@@ -299,8 +299,8 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 			// Update all the neighboring factors
 			// If there are no deterministic dependents, then it should be faster to have
 			// each neighboring factor update its entire message to this variable than the alternative, below
-			final FactorGraph fg = requireNonNull(model.getParentGraph());
 			final ISolverFactorGraph sfg = _parent;
+			final FactorGraph fg = sfg.getModelObject();
 			for (int port = numPorts; --port>=0;)
 			{
 				final int edgeIndex = model.getSiblingEdgeIndex(port);
