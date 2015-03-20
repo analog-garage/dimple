@@ -32,6 +32,7 @@ import com.analog.lyric.dimple.benchmarks.utils.Image;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
+import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateApproach;
 
 @SuppressWarnings({"null", "deprecation"})
 public class ImageDenoisingBenchmark
@@ -39,7 +40,7 @@ public class ImageDenoisingBenchmark
 	private final boolean saveResult = false;
 
 	@Benchmark(warmupIterations = 0, iterations = 1)
-	public boolean imageDenoisingGibbs() throws IOException
+	public boolean imageDenoisingGibbs()
 	{
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new GibbsSolver());
@@ -57,11 +58,13 @@ public class ImageDenoisingBenchmark
 	}
 
 	@Benchmark(warmupIterations = 0, iterations = 1)
-	public boolean imageDenoisingSumProduct() throws IOException
+	public boolean imageDenoisingSumProduct()
 	{
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
 		fg.setOption(BPOptions.iterations, 1);
+		// This is the automatic setting, but making it explicit ensures that the benchmark will not change
+		fg.setOption(BPOptions.updateApproach, UpdateApproach.OPTIMIZED);
 
 		int imageDimension = 100;
 		int xImageOffset = 800;
@@ -75,11 +78,13 @@ public class ImageDenoisingBenchmark
 	}
 
 	@Benchmark(warmupIterations = 0, iterations = 1)
-	public boolean imageDenoisingMinSum() throws IOException
+	public boolean imageDenoisingMinSum()
 	{
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.minsum.Solver());
 		fg.setOption(BPOptions.iterations, 2);
+		// This is the automatic setting, but making it explicit ensures that the benchmark will not change
+		fg.setOption(BPOptions.updateApproach, UpdateApproach.OPTIMIZED);
 
 		int imageDimension = 100;
 		int xImageOffset = 800;
@@ -91,30 +96,37 @@ public class ImageDenoisingBenchmark
 				yImageSize, noiseSigma);
 		return false;
 	}
-
+	
 	@SuppressWarnings("unused")
 	public void imageDenoisingInference(FactorGraph fg, String imageFileName, String saveLabel, int imageDimension,
-			int xImageOffset, int yImageOffset, int xImageSize, int yImageSize, double noiseSigma) throws IOException
+			int xImageOffset, int yImageOffset, int xImageSize, int yImageSize, double noiseSigma)
 	{
-		final String factorFileName = "imageStats/factorTableValues300dpi.csv";
-		final int xBlockSize = 4;
-		final int yBlockSize = 4;
-		URL urlImage = this.getClass().getResource(imageFileName);
-		DoubleSpace likelihoods = noisyImageInput(urlImage, noiseSigma, xImageOffset, yImageOffset, xImageSize, yImageSize);
-		ImageDenoisingGraph imageDenoisingGraph = new ImageDenoisingGraph(fg, factorFileName, xImageSize, yImageSize, xBlockSize,
-				yBlockSize);
-		imageDenoisingGraph.setInput(likelihoods);
-		fg.solve();
-
-		if (saveResult && saveLabel != null)
+		try
 		{
-			DoubleSpace output = imageDenoisingGraph.getValue();
-			Functions.normalize(output).transform(Image.contrastCurve);
-			String resultPath = String.format("denoise_%s.png", saveLabel);
-			Image.save(resultPath, output);
-		}
+			final String factorFileName = "imageStats/factorTableValues300dpi.csv";
+			final int xBlockSize = 4;
+			final int yBlockSize = 4;
+			URL urlImage = this.getClass().getResource(imageFileName);
+			DoubleSpace likelihoods = noisyImageInput(urlImage, noiseSigma, xImageOffset, yImageOffset, xImageSize, yImageSize);
+			ImageDenoisingGraph imageDenoisingGraph = new ImageDenoisingGraph(fg, factorFileName, xImageSize, yImageSize, xBlockSize,
+				yBlockSize);
+			imageDenoisingGraph.setInput(likelihoods);
+			fg.solve();
 
-		double score = fg.getScore();
+			if (saveResult && saveLabel != null)
+			{
+				DoubleSpace output = imageDenoisingGraph.getValue();
+				Functions.normalize(output).transform(Image.contrastCurve);
+				String resultPath = String.format("denoise_%s.png", saveLabel);
+				Image.save(resultPath, output);
+			}
+
+			double score = fg.getScore();
+		}
+		catch (IOException ex)
+		{
+			throw new RuntimeException(ex);
+		}
 	}
 
 	private DoubleSpace noisyImageInput(URL urlImage, double noiseSigma, int xImageOffset, int yImageOffset, int xImageSize,

@@ -107,7 +107,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 			double input_value = inputMsg[0];
 			for (final double value : f_values)
 			{
-				double v = value + input_value;
+				final double v = value + input_value;
 				if (v < g_values[g_index])
 				{
 					g_values[g_index] = v;
@@ -168,7 +168,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 			else
 			{
 				final JointDomainIndexer g_domainIndexer = g_factorTable.getDomainIndexer();
-				for (int i = 0; i < g_indices.length; i++)
+				for (int i = g_indices.length; --i>=0;)
 				{
 					_g_sparse_indices[i] = g_domainIndexer.jointIndexFromIndices(g_indices[i]);
 				}
@@ -181,18 +181,18 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 			final double[] f_values = _f.getValues().get();
 			final double[] g_values = _g.getValues().get();
 			final double[] inputMsg = tableFactor.getInPortMsg(_inPortNum);
+			final int[] msg_indices = _msg_indices;
+			final int[] g_sparse_indices = _g_sparse_indices;
+			
 			Arrays.fill(g_values, Double.POSITIVE_INFINITY);
-			int n = 0;
-			for (final double value : f_values)
+			for (int n = f_values.length; --n>=0;)
 			{
-				final double input_value = inputMsg[_msg_indices[n]];
-				final double v = value + input_value;
-				final int index = _g_sparse_indices[n];
+				final double v = inputMsg[msg_indices[n]] + f_values[n];
+				final int index = g_sparse_indices[n];
 				if (v < g_values[index])
 				{
 					g_values[index] = v;
 				}
-				n += 1;
 			}
 		}
 
@@ -242,10 +242,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 			{
 				final int f_index = _factorTable.sparseIndexToJointIndex(sparseIndex);
 				outputMsg[f_index] = prob;
-				if (prob < minPotential)
-				{
-					minPotential = prob;
-				}
+				minPotential = Math.min(minPotential, prob);
 				sparseIndex += 1;
 			}
 
@@ -295,15 +292,12 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 			}
 
 			double minPotential = Double.POSITIVE_INFINITY;
-			int f_index = 0;
-			for (final double prob : _f.getValues().get())
+			final double[] f_values = _f.getValues().get();
+			for (int f_index = f_values.length; --f_index>=0;)
 			{
+				final double prob = f_values[f_index];
 				outputMsg[f_index] = prob;
-				if (prob < minPotential)
-				{
-					minPotential = prob;
-				}
-				f_index += 1;
+				minPotential = Math.min(minPotential, prob);
 			}
 
 			final int outputMsgLength = outputMsg.length;
@@ -311,9 +305,10 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 			{
 				if (damping != 0)
 				{
-					for (int i = 0; i < outputMsgLength; i++)
+					final double inverseDamping = 1.0 - damping;
+					for (int i = outputMsgLength; --i>=0;)
 					{
-						outputMsg[i] = (1 - damping) * outputMsg[i] + damping * saved[i];
+						outputMsg[i] = inverseDamping * outputMsg[i] + damping * saved[i];
 					}
 				}
 			}
@@ -323,9 +318,12 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 				DimpleEnvironment.doubleArrayCache.release(saved);
 			}
 
-			for (int i = 0; i < outputMsgLength; i++)
+			if (minPotential != 0.0)
 			{
-				outputMsg[i] -= minPotential;
+				for (int i = outputMsgLength; --i>=0;)
+				{
+					outputMsg[i] -= minPotential;
+				}
 			}
 		}
 	}

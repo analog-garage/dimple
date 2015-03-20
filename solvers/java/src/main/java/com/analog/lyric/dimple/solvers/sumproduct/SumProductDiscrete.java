@@ -147,26 +147,29 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 			final double[] savedOutMsgArray = DimpleEnvironment.doubleArrayCache.allocateAtLeast(M);
 			System.arraycopy(outMsgs,  0, savedOutMsgArray, 0, M);
  
-			for (int m = 0; m < M; m++)
+			for (int m = M; --m>=0;)
 			{
 				double prior = priors[m];
 				double out = (prior == 0) ? minLog : Math.log(prior);
 
-				for (int d = 0; d < D; d++)
+				int d = D;
+				while (--d > outPortNum)
 				{
-					if (d != outPortNum)		// For all ports except the output port
-					{
-						double tmp = inMsgs[d][m];
-						out += (tmp == 0) ? minLog : Math.log(tmp);
-					}
+					double tmp = inMsgs[d][m];
+					out += (tmp == 0) ? minLog : Math.log(tmp);
 				}
-				if (out > maxLog) maxLog = out;
+				while (--d >= 0)
+				{
+					double tmp = inMsgs[d][m];
+					out += (tmp == 0) ? minLog : Math.log(tmp);
+				}
+				maxLog = Math.max(maxLog, out);
 				outMsgs[m] = out;
 			}
 
 			//create sum
 			double sum = 0;
-			for (int m = 0; m < M; m++)
+			for (int m = M; --m>=0;)
 			{
 				double out = Math.exp(outMsgs[m] - maxLog);
 				outMsgs[m] = out;
@@ -174,12 +177,13 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 			}
 
 			//calculate message by dividing by sum
-			for (int m = 0; m < M; m++)
+			for (int m = M; --m>=0;)
 				outMsgs[m] /= sum;
 			
 			// Apply damping
-    		for (int m = 0; m < M; m++)
-    			outMsgs[m] = outMsgs[m]*(1-damping) + savedOutMsgArray[m]*damping;
+			final double inverseDamping = 1.0 - damping;
+    		for (int m = M; --m>=0;)
+    			outMsgs[m] = outMsgs[m]*inverseDamping + savedOutMsgArray[m]*damping;
     		
     		// Release temp array
     		DimpleEnvironment.doubleArrayCache.release(savedOutMsgArray);
@@ -191,12 +195,13 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 				double prior = priors[m];
 				double out = (prior == 0) ? minLog : Math.log(prior);
 
-				for (int d = outPortNum + 1; d < D; d++)
+				int d = D;
+				while (--d > outPortNum)
 				{
 					double tmp = inMsgs[d][m];
 					out += (tmp == 0) ? minLog : Math.log(tmp);
 				}
-				for (int d = outPortNum; --d>=0;)
+				while (--d >= 0)
 				{
 					double tmp = inMsgs[d][m];
 					out += (tmp == 0) ? minLog : Math.log(tmp);

@@ -18,8 +18,6 @@ package com.analog.lyric.dimple.benchmarks.hmm;
 
 import java.util.Random;
 
-import org.junit.Test;
-
 import com.analog.lyric.benchmarking.Benchmark;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
@@ -30,6 +28,7 @@ import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.minsum.MinSumSolver;
+import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateApproach;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolver;
 
 @SuppressWarnings({"null", "deprecation"})
@@ -85,6 +84,22 @@ public class hmmBenchmark
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new SumProductSolver());
 		fg.setOption(BPOptions.iterations, 1200); // Aiming for ~1s execution time
+		fg.setOption(BPOptions.updateApproach, UpdateApproach.NORMAL);
+
+		int stages = 100;
+		int stateDomainOrder = 4;
+		int observationDomainOrder = 4;
+		hmmInference(fg, stages, stateDomainOrder, observationDomainOrder);
+		return false;
+	}
+
+	@Benchmark(warmupIterations = 0, iterations = 1)
+	public boolean hmmSumProduct100x4x4Optimized()
+	{
+		FactorGraph fg = new FactorGraph();
+		fg.setSolverFactory(new SumProductSolver());
+		fg.setOption(BPOptions.iterations, 1200); // Aiming for ~1s execution time
+		fg.setOption(BPOptions.updateApproach, UpdateApproach.OPTIMIZED);
 
 		int stages = 100;
 		int stateDomainOrder = 4;
@@ -99,7 +114,23 @@ public class hmmBenchmark
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new SumProductSolver());
 		fg.setOption(BPOptions.iterations, 240); // Aiming for ~1s execution time
+		fg.setOption(BPOptions.updateApproach, UpdateApproach.NORMAL);
+		
+		int stages = 100000;
+		int stateDomainOrder = 4;
+		int observationDomainOrder = 4;
+		hmmInference(fg, stages, stateDomainOrder, observationDomainOrder);
+		return false;
+	}
 
+	@Benchmark(warmupIterations = 0, iterations = 1)
+	public boolean hmmSumProduct100000x4x4Optimized()
+	{
+		FactorGraph fg = new FactorGraph();
+		fg.setSolverFactory(new SumProductSolver());
+		fg.setOption(BPOptions.iterations, 240); // Aiming for ~1s execution time
+		fg.setOption(BPOptions.updateApproach, UpdateApproach.OPTIMIZED);
+		
 		int stages = 100000;
 		int stateDomainOrder = 4;
 		int observationDomainOrder = 4;
@@ -113,6 +144,22 @@ public class hmmBenchmark
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new SumProductSolver());
 		fg.setOption(BPOptions.iterations, 3); // Aiming for ~1s execution time
+		fg.setOption(BPOptions.updateApproach, UpdateApproach.NORMAL);
+
+		int stages = 1000;
+		int stateDomainOrder = 1000;
+		int observationDomainOrder = 1000;
+		hmmInference(fg, stages, stateDomainOrder, observationDomainOrder);
+		return false;
+	}
+
+	@Benchmark(warmupIterations = 0, iterations = 1)
+	public boolean hmmSumProduct1000x1000x1000Optimized()
+	{
+		FactorGraph fg = new FactorGraph();
+		fg.setSolverFactory(new SumProductSolver());
+		fg.setOption(BPOptions.iterations, 3); // Aiming for ~1s execution time
+		fg.setOption(BPOptions.updateApproach, UpdateApproach.OPTIMIZED);
 
 		int stages = 1000;
 		int stateDomainOrder = 1000;
@@ -127,13 +174,30 @@ public class hmmBenchmark
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new MinSumSolver());
 		fg.setOption(BPOptions.iterations, 6000); // Aiming for ~1s execution time
-
+		fg.setOption(BPOptions.updateApproach, UpdateApproach.NORMAL);
+		
 		int stages = 100;
 		int stateDomainOrder = 4;
 		int observationDomainOrder = 4;
 		hmmInference(fg, stages, stateDomainOrder, observationDomainOrder);
 		return false;
 	}
+
+	@Benchmark(warmupIterations = 0, iterations = 1)
+	public boolean hmmMinSum100x4x4Optimized()
+	{
+		FactorGraph fg = new FactorGraph();
+		fg.setSolverFactory(new MinSumSolver());
+		fg.setOption(BPOptions.iterations, 6000); // Aiming for ~1s execution time
+		fg.setOption(BPOptions.updateApproach, UpdateApproach.OPTIMIZED);
+		
+		int stages = 100;
+		int stateDomainOrder = 4;
+		int observationDomainOrder = 4;
+		hmmInference(fg, stages, stateDomainOrder, observationDomainOrder);
+		return false;
+	}
+
 	
 	@Benchmark(warmupIterations = 0, iterations = 1)
 	public boolean hmmMinSum100000x4x4()
@@ -141,6 +205,22 @@ public class hmmBenchmark
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new MinSumSolver());
 		fg.setOption(BPOptions.iterations, 360); // Aiming for ~1s execution time
+		fg.setOption(BPOptions.updateApproach, UpdateApproach.NORMAL);
+
+		int stages = 100000;
+		int stateDomainOrder = 4;
+		int observationDomainOrder = 4;
+		hmmInference(fg, stages, stateDomainOrder, observationDomainOrder);
+		return false;
+	}
+	
+	@Benchmark(warmupIterations = 0, iterations = 1)
+	public boolean hmmMinSum100000x4x4Optimized()
+	{
+		FactorGraph fg = new FactorGraph();
+		fg.setSolverFactory(new MinSumSolver());
+		fg.setOption(BPOptions.iterations, 360); // Aiming for ~1s execution time
+		fg.setOption(BPOptions.updateApproach, UpdateApproach.OPTIMIZED);
 
 		int stages = 100000;
 		int stateDomainOrder = 4;
@@ -155,6 +235,7 @@ public class hmmBenchmark
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new MinSumSolver());
 		fg.setOption(BPOptions.iterations, 3); // Aiming for ~1s execution time
+		fg.setOption(BPOptions.updateApproach, UpdateApproach.NORMAL);
 
 		int stages = 1000;
 		int stateDomainOrder = 1000;
@@ -163,19 +244,21 @@ public class hmmBenchmark
 		return false;
 	}
 	
-	@Test
-	public void testMinSum1000x1000x1000()
+	@Benchmark(warmupIterations = 0, iterations = 1)
+	public boolean hmmMinSum1000x1000x1000Optimized()
 	{
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new MinSumSolver());
 		fg.setOption(BPOptions.iterations, 3); // Aiming for ~1s execution time
+		fg.setOption(BPOptions.updateApproach, UpdateApproach.OPTIMIZED);
 
 		int stages = 1000;
 		int stateDomainOrder = 1000;
 		int observationDomainOrder = 1000;
 		hmmInference(fg, stages, stateDomainOrder, observationDomainOrder);
+		return false;
 	}
-
+	
 	@SuppressWarnings("unused")
 	private void hmmInference(FactorGraph fg, int stages, int stateDomainOrder,
 			int observationDomainOrder)

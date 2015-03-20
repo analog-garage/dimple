@@ -66,9 +66,10 @@ public class TableFactorEngine
     			final int[] tableRow = table[tableIndex];
     			final int outputIndex = tableRow[outPortNum];
 
-    			for (int inPortNum = outPortNum; --inPortNum>=0;)
+    			int inPortNum = numPorts;
+    			while (--inPortNum > outPortNum)
     				prob *= inputMsgs[inPortNum][tableRow[inPortNum]];
-    			for (int inPortNum = outPortNum + 1; inPortNum < numPorts; inPortNum++)
+    			while (--inPortNum >= 0)
     				prob *= inputMsgs[inPortNum][tableRow[inPortNum]];
 
     			outputMsgs[outputIndex] += prob;
@@ -105,9 +106,10 @@ public class TableFactorEngine
     			final int[] tableRow = table[tableIndex];
     			final int outputIndex = tableRow[outPortNum];
 
-    			for (int inPortNum = outPortNum; --inPortNum>=0;)
+    			int inPortNum = numPorts;
+    			while (--inPortNum > outPortNum)
     				prob *= inputMsgs[inPortNum][tableRow[inPortNum]];
-    			for (int inPortNum = outPortNum + 1; inPortNum < numPorts; inPortNum++)
+    			while (--inPortNum >= 0)
     				prob *= inputMsgs[inPortNum][tableRow[inPortNum]];
 
     			outputMsgs[outputIndex] += prob;
@@ -163,9 +165,10 @@ public class TableFactorEngine
 	    			final int[] tableRow = tableIndices[tableIndex];
 	    			int outputIndex = tableRow[outPortNum];
 
-	    			for (int inPortNum = outPortNum; --inPortNum>=0;)
+	    			int inPortNum = numPorts;
+	    			while (--inPortNum > outPortNum)
 	    				prob *= inMsgs[inPortNum][tableRow[inPortNum]];
-	    			for (int inPortNum = outPortNum + 1; inPortNum < numPorts; inPortNum++)
+	    			while (--inPortNum >= 0)
 	    				prob *= inMsgs[inPortNum][tableRow[inPortNum]];
 	    			outputMsgs[outputIndex] += prob;
 	    		}
@@ -215,9 +218,10 @@ public class TableFactorEngine
 	    			final int[] tableRow = tableIndices[tableIndex];
 	    			int outputIndex = tableRow[outPortNum];
 
-	    			for (int inPortNum = outPortNum; --inPortNum>=0;)
+	    			int inPortNum = numPorts;
+	    			while (--inPortNum > outPortNum)
 	    				prob *= inMsgs[inPortNum][tableRow[inPortNum]];
-	    			for (int inPortNum = outPortNum + 1; inPortNum < numPorts; inPortNum++)
+	    			while (--inPortNum >= 0)
 	    				prob *= inMsgs[inPortNum][tableRow[inPortNum]];
 	    			outputMsgs[outputIndex] += prob;
 	    		}
