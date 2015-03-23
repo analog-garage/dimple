@@ -72,6 +72,20 @@ public interface INode  extends INameable, IModelEventSource
 	 * @see #asVariable()
 	 */
 	public boolean isVariable();
+	
+	/**
+	 * Uniquely identifies node within its graph tree.
+	 * <p>
+	 * Similar to the {@linkplain #getGlobalId() global id} but is only unique within the
+	 * tree of graphs containing this node. Looking up nodes by this id is faster than
+	 * lookup by the global id.
+	 * <p>
+	 * @since 0.08
+	 * @see NodeId#graphTreeIdFromParts(int, int)
+	 * @see NodeId#graphTreeIndexFromGraphTreeId(long)
+	 * @see NodeId#localIdFromGraphTreeId(long)
+	 */
+	public long getGraphTreeId();
 
 	/**
 	 * Indicates whether node is a factor, graph, or variable.

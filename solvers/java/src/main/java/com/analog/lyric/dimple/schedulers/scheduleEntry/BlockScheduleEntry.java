@@ -112,7 +112,7 @@ public class BlockScheduleEntry implements IScheduleEntry
 			// Add each port of this node to the list.
 			for (int index = 0, end = node.getSiblingCount(); index < end; index++)
 			{
-				ports.add(new Port(node,index));
+				ports.add(node.getPort(index));
 			}
 		}
 		return ports;

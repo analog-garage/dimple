@@ -33,8 +33,9 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.EdgeState;
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorPort;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.NodeId;
 import com.analog.lyric.dimple.model.core.NodeType;
@@ -178,6 +179,11 @@ public class Factor extends FactorBase implements Cloneable
 		return name;
 	}
 
+	@Override
+	public FactorPort getPort(int siblingNumber)
+	{
+		return new FactorPort(this, siblingNumber);
+	}
 	
 	@Override
 	public @Nullable ISolverFactor getSolver()

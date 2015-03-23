@@ -528,9 +528,9 @@ public class Helpers
 		{
 			for(Port p : node.getPorts())
 			{
-				for(Port p2 : p.getConnectedNode().getPorts())
+				for(Port p2 : p.getSiblingNode().getPorts())
 				{
-					variables.add((Discrete) p2.getConnectedNode());
+					variables.add((Discrete) p2.getSiblingNode());
 				}
 			}
 		}
@@ -538,7 +538,7 @@ public class Helpers
 		{
 			for(Port p : node.getPorts())
 			{
-				variables.add((Discrete) p.getConnectedNode());
+				variables.add((Discrete) p.getSiblingNode());
 			}
 		}
 		for(Discrete mv : variables)

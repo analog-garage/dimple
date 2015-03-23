@@ -94,7 +94,7 @@ public class FactorGraphStream
 		{
 		
 			//figure out which variable stream this is connected to
-			Variable var = (Variable)p.getSibling();
+			Variable var = (Variable)p.getSiblingNode();
 			VariableStreamBase<?> vsb = getVariableStream(var);
 
 			if (vsb == null)

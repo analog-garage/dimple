@@ -32,6 +32,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.NodeId;
 import com.analog.lyric.dimple.model.core.NodeType;
+import com.analog.lyric.dimple.model.core.VariablePort;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorBase;
@@ -151,6 +152,12 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
     	return "Variable";
     }
     
+	@Override
+	public final VariablePort getPort(int siblingNumber)
+	{
+		return new VariablePort(this, siblingNumber);
+	}
+	
     @Override
     public Factor getSibling(int i)
     {

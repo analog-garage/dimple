@@ -498,12 +498,6 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	}
 	
 	@Override
-	public Port getPort(int i)
-	{
-		return new Port(this, i);
-	}
-	
-	@Override
 	public Collection<Port> getPorts()
 	{
 		final int size = _siblingEdges.size();
@@ -561,6 +555,13 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	{
 		final FactorGraph parent = _parentGraph;
 		return NodeId.globalIdFromParts(parent != null ? parent.getGraphId() : 0, _id);
+	}
+	
+	@Override
+	public long getGraphTreeId()
+	{
+		final FactorGraph parent = _parentGraph;
+		return NodeId.graphTreeIdFromParts(parent != null ? parent.getGraphTreeIndex() : 0, _id);
 	}
 	
 	@Override

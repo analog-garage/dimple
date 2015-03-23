@@ -27,8 +27,6 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.model.variables.Real;
-
 /**
  * An iterator that walks through connected nodes in a {@link FactorGraph}
  * using specified {@link #searchOrder} starting from an optionally provided
@@ -71,16 +69,33 @@ public class FactorGraphWalker implements Iterator<INode>
 	private int _maxSearchDepth = Integer.MAX_VALUE;
 	private int _maxRelativeNestingDepth;
 
+	private static class IncomingPort
+	{
+		private final INode node;
+		private int siblingNumber;
+		
+		@SuppressWarnings("null")
+		private IncomingPort()
+		{
+			this(null, -1);
+		}
+		
+		private IncomingPort(INode node, int siblingNumber)
+		{
+			this.node = node;
+			this.siblingNumber = siblingNumber;
+		}
+	}
+	
 	private Set<INode> _visitedNodes = new LinkedHashSet<INode>();
 	private boolean _visitedNodesWasExposed = true;
-	private Deque<Port> _portDeque = new ArrayDeque<Port>();
+	private Deque<IncomingPort> _portDeque = new ArrayDeque<>();
 	private int _currentDepth;
 	private int _maxDepthSeen;
 	private @Nullable INode _nextNode;
 	private int _cycleCount;
-	private final Port _depthChangeSentinel = new Port(new Real(),-42);
+	private final IncomingPort _depthChangeSentinel = new IncomingPort();
 	
-
 	/*
 	 * Construction/initialization
 	 */
@@ -138,7 +153,7 @@ public class FactorGraphWalker implements Iterator<INode>
 			INode node = this._firstNode != null ? this._firstNode : root.getFirstNode();
 			if (node != null)
 			{
-				this._portDeque.add(new Port(node,-1));
+				this._portDeque.add(new IncomingPort(node,-1));
 			}
 		}
 		
@@ -380,11 +395,11 @@ public class FactorGraphWalker implements Iterator<INode>
 	{
 		INode node = null;
 	
-		Deque<Port> queue = this._portDeque;
+		Deque<IncomingPort> queue = this._portDeque;
 		
 		while (!queue.isEmpty())
 		{
-			Port portIn = queue.removeFirst();
+			IncomingPort portIn = queue.removeFirst();
 			if (portIn == _depthChangeSentinel)
 			{
 				++this._currentDepth;
@@ -427,10 +442,9 @@ public class FactorGraphWalker implements Iterator<INode>
 					}
 					for (int i = 0, size = nSiblings; i < size; ++i)
 					{
-						if (i != portIn.index)
+						if (i != portIn.siblingNumber)
 						{
-							final EdgeState edge = node.getSiblingEdgeState(i);
-							queue.add(Port.createPortFromNode(edge, edge.getSibling(node)));
+							queue.add(new IncomingPort(node.getSibling(i), node.getReverseSiblingNumber(i)));
 						}
 					}
 				}
@@ -448,11 +462,11 @@ public class FactorGraphWalker implements Iterator<INode>
 		
 		// TODO implement using FactorGraphEdgeState instead of Ports
 		
-		Deque<Port> stack = this._portDeque;
+		Deque<IncomingPort> stack = this._portDeque;
 		
 		while (!stack.isEmpty())
 		{
-			Port portIn = stack.pop();
+			IncomingPort portIn = stack.pop();
 			if (portIn == _depthChangeSentinel)
 			{
 				--this._currentDepth;
@@ -492,10 +506,9 @@ public class FactorGraphWalker implements Iterator<INode>
 					this._maxDepthSeen = Math.max(this._maxDepthSeen, this._currentDepth);
 					for (int i = 0, size = nPortsOut; i < size; ++i)
 					{
-						if (i != portIn.index)
+						if (i != portIn.siblingNumber)
 						{
-							final EdgeState edge = node.getSiblingEdgeState(i);
-							stack.push(Port.createPortFromNode(edge, edge.getSibling(node)));
+							stack.push(new IncomingPort(node.getSibling(i), node.getReverseSiblingNumber(i)));
 						}
 					}
 				}

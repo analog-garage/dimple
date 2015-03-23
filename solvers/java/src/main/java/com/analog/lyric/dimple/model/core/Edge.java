@@ -24,14 +24,26 @@ import com.analog.lyric.dimple.model.variables.Variable;
 
 public final class Edge
 {
-	private final FactorGraph _graph;
+	/*--------
+	 * State
+	 */
+	
+	/**
+	 * The underlying edge state.
+	 */
 	private final EdgeState _edge;
+	
+	/**
+	 * One of the graphs containing this edge. This is the parent of the edge's variable or factor
+	 * node (or both if the edge is local).
+	 */
+	private final FactorGraph _graph;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	public Edge(FactorGraph graph, EdgeState edgeState)
+	Edge(FactorGraph graph, EdgeState edgeState)
 	{
 		_graph = graph;
 		_edge = edgeState;
@@ -67,12 +79,24 @@ public final class Edge
 	{
 		return _edge.factorEdgeIndex();
 	}
-	
+
+	/**
+	 * The underlying edge state object.
+	 * <p>
+	 * The edge state object is what is actually held by the graph's
+	 * <p>
+	 * @since 0.08
+	 */
 	public EdgeState edgeState()
 	{
 		return _edge;
 	}
 	
+	/**
+	 * Returns the factor node on this edge.
+	 * @since 0.08
+	 * @see #variable()
+	 */
 	public Factor factor()
 	{
 		return _edge.getFactor(_graph);
@@ -88,11 +112,20 @@ public final class Edge
 		return _graph;
 	}
 	
+	/**
+	 * True if edge connects variable and factor locally within the same graph.
+	 * @since 0.08
+	 */
 	public boolean isLocal()
 	{
 		return _edge.isLocal();
 	}
 	
+	/**
+	 * Returns the variable node on this edge.
+	 * @since 0.08
+	 * @see #factor()
+	 */
 	public Variable variable()
 	{
 		return _edge.getVariable(_graph);

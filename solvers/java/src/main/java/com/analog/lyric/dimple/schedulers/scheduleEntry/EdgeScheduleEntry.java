@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.schedulers.scheduleEntry;
 
 import static java.util.Objects.*;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -126,10 +126,7 @@ public class EdgeScheduleEntry implements IScheduleEntry
 	@Override
 	public Iterable<Port> getPorts()
 	{
-		//This is just an edge, add the port.
-		ArrayList<Port> al = new ArrayList<Port>();
-		al.add(new Port(_node,_portNum));
-		return al;
+		return Collections.singleton(_node.getPort(_portNum));
 	}
 	
 	@Override

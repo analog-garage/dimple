@@ -130,7 +130,7 @@ public class GibbsRealFactorBlastFromThePast extends SBlastFromThePast implement
 	public Object getOutputMsg(int portIndex)
 	{
 		final Port port = requireNonNull(_portForOtherVar);
-		final Factor otherFactor = (Factor)port.node.getSibling(port.index);
+		final Factor otherFactor = (Factor)port.getNode().getSibling(port.getSiblingNumber());
 		GibbsSolverGraph sgraph = (GibbsSolverGraph) getSolverMapping().getSolverGraph(otherFactor.requireParentGraph());
 		return requireNonNull(sgraph.getSolverEdge(otherFactor.getSiblingEdgeState(portIndex))).factorToVarMsg;
 	}
@@ -146,7 +146,7 @@ public class GibbsRealFactorBlastFromThePast extends SBlastFromThePast implement
 	protected ISolverFactorGibbs getOtherFactor()
 	{
 		final Port port = requireNonNull(_portForOtherVar);
-		final Factor otherFactor = (Factor)port.node.getSibling(port.index);
+		final Factor otherFactor = (Factor)port.getNode().getSibling(port.getSiblingNumber());
 		return (ISolverFactorGibbs)getSolverMapping().getSolverFactor(otherFactor);
 	}
 }

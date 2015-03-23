@@ -41,7 +41,7 @@ public class DummyCustomFactor extends SFactorBase
 	@SuppressWarnings("null")
 	public @Nullable Object getDefaultMessage(Port port)
 	{
-		Discrete var = (Discrete)port.getConnectedNode();
+		Discrete var = (Discrete)port.getSiblingNode();
 		DummyDiscreteVariable v = (DummyDiscreteVariable)var.getSolver();
 		return v.getDefaultMessage(port);
 	}

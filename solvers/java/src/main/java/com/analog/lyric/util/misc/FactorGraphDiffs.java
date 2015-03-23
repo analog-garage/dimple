@@ -318,10 +318,10 @@ public class FactorGraphDiffs
 	}
 	static private boolean CompareTwoPorts(Port a, Port b, boolean byName)
 	{
-		INode aParent = a.node;
-		INode aConnected = a.getConnectedNode();
-		INode bParent = b.node;
-		INode bConnected = b.getConnectedNode();
+		INode aParent = a.getNode();
+		INode aConnected = a.getSiblingNode();
+		INode bParent = b.getNode();
+		INode bConnected = b.getSiblingNode();
 		
 		boolean equal = CompareTwoNameables(aParent, bParent, byName) &&
 		CompareTwoNameables(aConnected, bConnected, byName);
@@ -367,8 +367,8 @@ public class FactorGraphDiffs
 					same = CompareTwoPorts(aPorts.get(i), bPorts.get(i), byName);
 					if(!same)
 					{
-						diffs.addANotB(aPorts.get(i).getConnectedNode());
-						diffs.addBNotA(bPorts.get(i).getConnectedNode());
+						diffs.addANotB(aPorts.get(i).getSiblingNode());
+						diffs.addBNotA(bPorts.get(i).getSiblingNode());
 					}
 				}
 				else
@@ -385,7 +385,7 @@ public class FactorGraphDiffs
 					}
 					if(match == -1)
 					{
-						diffs.addANotB(aPorts.get(i).getConnectedNode());
+						diffs.addANotB(aPorts.get(i).getSiblingNode());
 						//Not strictly complete; if there's a mismatch, a
 						//and b have same number of ports, there must also
 						//be a port in B but not in A
@@ -400,7 +400,7 @@ public class FactorGraphDiffs
 			else
 			{
 				same = false;
-				diffs.addANotB(aPorts.get(i).getConnectedNode());
+				diffs.addANotB(aPorts.get(i).getSiblingNode());
 			}
 			exit = quickExit && !same;
 		}
@@ -408,7 +408,7 @@ public class FactorGraphDiffs
 		{
 			for(int i = aPorts.size(); i < bPorts.size() && !exit; ++i)
 			{
-				diffs.addBNotA(bPorts.get(i).getConnectedNode());
+				diffs.addBNotA(bPorts.get(i).getSiblingNode());
 				exit = quickExit;
 			}
 		}

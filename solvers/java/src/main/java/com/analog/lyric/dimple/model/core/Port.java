@@ -17,41 +17,32 @@
 package com.analog.lyric.dimple.model.core;
 
 import static java.util.Objects.*;
+import net.jcip.annotations.Immutable;
 
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
-public class Port
+/**
+ * Represents half an edge in the factor graph.
+ */
+@Immutable
+public abstract class Port
 {
-	public INode node;
-	public int index;
-	public Port(INode node, int index)
-	{
-		this.node = node;
-		this.index = index;
-	}
+	final EdgeState _edgeState;
+	final FactorGraph _graph;
 	
-	public static Port createFactorPort(EdgeState edge, FactorGraph fg)
+	Port(EdgeState edgeState, FactorGraph graph)
 	{
-		return new Port(edge.getFactor(fg), edge._factorToVariableEdgeNumber);
-	}
-	
-	public static Port createVariablePort(EdgeState edge, FactorGraph fg)
-	{
-		return new Port(edge.getVariable(fg), edge._variableToFactorEdgeNumber);
-	}
-	
-	public static Port createPortFromNode(EdgeState edge, Node node)
-	{
-		return new Port(node, node.isVariable() ? edge.getVariableToFactorEdgeNumber() : edge.getFactorToVariableEdgeNumber());
+		_edgeState = edgeState;
+		_graph = graph;
 	}
 	
 	@Override
 	public int hashCode()
 	{
-		return node.hashCode()+index;
+		return getNode().hashCode()+getSiblingNumber();
 	}
 	
 	@Override
@@ -60,7 +51,7 @@ public class Port
 		if (obj instanceof Port)
 		{
 			Port p = (Port)obj;
-			return p.node == this.node && p.index == this.index;
+			return p.getNode() == this.getNode() && p.getSiblingNumber() == this.getSiblingNumber();
 		}
 		return false;
 	}
@@ -68,12 +59,54 @@ public class Port
 	@Override
 	public String toString()
 	{
-		return node.toString() + " index: " + index;
+		return getNode().toString() + " index: " + getSiblingNumber();
 	}
 	
+	/**
+	 * The node belonging to this half edge.
+	 * @since 0.08
+	 * @see #getSiblingNode()
+	 */
+	public abstract INode getNode();
+	
+	/**
+	 * Returns node at other end of edge from {@linkplain #getNode() this port's node}
+	 * @since 0.08
+	 */
+	public INode getSiblingNode()
+	{
+		return getNode().getSibling(getSiblingNumber());
+	}
+	
+	/**
+	 * Returns the sibling number of the half-edge with respect to {@linkplain #getNode() this port's node}.
+	 * @since 0.08
+	 */
+	public abstract int getSiblingNumber();
+
+	public abstract Port getSiblingPort();
+	
+	/**
+	 * Return the corresponding edge object for this port.
+	 * @since 0.08
+	 */
+	public EdgeState toEdgeState()
+	{
+		return _edgeState;
+	}
+
+	/*--------------------
+	 * Deprecated methods
+	 */
+
+	/**
+	 * @deprecated use {@link #getSiblingNode()} instead.
+	 */
+
+	@Deprecated
 	public INode getConnectedNode()
 	{
-		return node.getSibling(index);
+		return getNode().getSibling(getSiblingNumber());
 	}
 
 	/**
@@ -84,7 +117,7 @@ public class Port
 	@Deprecated
 	public void setInputMsgValues(Object obj)
 	{
-		requireNonNull(node.getSolver()).setInputMsgValues(index, obj);
+		requireNonNull(getNode().getSolver()).setInputMsgValues(getSiblingNumber(), obj);
 	}
 
 	/**
@@ -95,7 +128,7 @@ public class Port
 	@Deprecated
 	public void setOutputMsgValues(Object obj)
 	{
-		requireNonNull(node.getSolver()).setOutputMsgValues(index,obj);
+		requireNonNull(getNode().getSolver()).setOutputMsgValues(getSiblingNumber(),obj);
 	}
 	
 	/**
@@ -106,8 +139,8 @@ public class Port
 	@Deprecated
 	public @Nullable Object getInputMsg()
 	{
-		final ISolverNode snode = node.getSolver();
-		return snode != null ? snode.getInputMsg(index) : null;
+		final ISolverNode snode = getNode().getSolver();
+		return snode != null ? snode.getInputMsg(getSiblingNumber()) : null;
 	}
 
 	/**
@@ -118,25 +151,8 @@ public class Port
 	@Deprecated
 	public @Nullable Object getOutputMsg()
 	{
-		final ISolverNode snode = node.getSolver();
-		return snode != null ? snode.getOutputMsg(index) : null;
+		final ISolverNode snode = getNode().getSolver();
+		return snode != null ? snode.getOutputMsg(getSiblingNumber()) : null;
 	}
 	
-	public INode getSibling()
-	{
-		return node.getSibling(index);
-	}
-	public Port getSiblingPort()
-	{
-		return new Port(getSibling(),node.getReverseSiblingNumber(index));
-	}
-	
-	/**
-	 * Return the corresponding edge object for this port.
-	 * @since 0.08
-	 */
-	public EdgeState toEdgeState()
-	{
-		return node.getSiblingEdgeState(index);
-	}
 }

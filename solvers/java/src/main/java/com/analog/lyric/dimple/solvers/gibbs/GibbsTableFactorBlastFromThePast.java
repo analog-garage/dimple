@@ -61,7 +61,7 @@ public class GibbsTableFactorBlastFromThePast extends SBlastFromThePast implemen
 	public Value getInputMsg(int portIndex)
 	{
 		final GibbsSolverGraph sgraph = (GibbsSolverGraph)requireNonNull(getParentGraph());
-		final GibbsDiscrete svar = sgraph.getDiscrete((Discrete)_portForOtherVar.node);
+		final GibbsDiscrete svar = sgraph.getDiscrete((Discrete)_portForOtherVar.getNode());
 		return svar.getPrevSampleValue();
 	}
 	
@@ -70,9 +70,9 @@ public class GibbsTableFactorBlastFromThePast extends SBlastFromThePast implemen
 	public double getPotential()
 	{
 		final GibbsSolverGraph sgraph = (GibbsSolverGraph)getParentGraph();
-		final GibbsDiscrete svar = (GibbsDiscrete)sgraph.getSolverVariable((Variable)_portForOtherVar.node);
+		final GibbsDiscrete svar = (GibbsDiscrete)sgraph.getSolverVariable((Variable)_portForOtherVar.getNode());
 		final DiscreteValue inputMsg = svar.getPrevSampleValue();
-		final GibbsDiscreteEdge sedge = svar.getDiscreteEdge(_portForOtherVar.index);
+		final GibbsDiscreteEdge sedge = svar.getDiscreteEdge(_portForOtherVar.getSiblingNumber());
 		return sedge.factorToVarMsg.getEnergy(inputMsg.getIndex());
 	}
 	

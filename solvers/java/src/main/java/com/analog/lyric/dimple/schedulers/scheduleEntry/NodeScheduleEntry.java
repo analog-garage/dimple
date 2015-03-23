@@ -113,7 +113,7 @@ public class NodeScheduleEntry implements IScheduleEntry
 		//Add each port of this node to the list.
 		for (int index = 0, end = _node.getSiblingCount(); index < end; index++)
 		{
-			ports.add(new Port(_node,index));
+			ports.add(_node.getPort(index));
 		}
 		return ports;
 	}

@@ -167,7 +167,7 @@ public abstract class EdgeState
 	}
 	
 	/**
-	 * Given one endpoint of edge, find the sibling index from that endpoint to the other.
+	 * Given one endpoint of edge, find the sibling number from that endpoint to the other.
 	 * <p>
 	 * @param node is either the {@link Variable} or {@link Factor} at one end of the edge.
 	 * @return index that could be used to lookup this edge using {@link Node#getSiblingEdgeState(int)}

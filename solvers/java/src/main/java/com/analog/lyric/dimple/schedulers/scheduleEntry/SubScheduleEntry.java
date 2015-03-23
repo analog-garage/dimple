@@ -106,7 +106,7 @@ public class SubScheduleEntry implements IScheduleEntry
 			for (int index = 0, end = v.getSiblingCount(); index < end; index++)
 			
 				//whatsLeft.remove(p);
-				ports.add(new Port(v,index));
+				ports.add(v.getPort(index));
 		}
 		
 		//Get all the factors associated with this subgraph and add the ports
@@ -114,7 +114,7 @@ public class SubScheduleEntry implements IScheduleEntry
 		{
 			for (int index = 0, end = f.getSiblingCount(); index < end; index++)
 				//whatsLeft.remove(p);
-				ports.add(new Port(f,index));
+				ports.add(f.getPort(index));
 		}
 		return ports;
 		

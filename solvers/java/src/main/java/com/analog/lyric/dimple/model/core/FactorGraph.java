@@ -1016,7 +1016,7 @@ public class FactorGraph extends FactorBase
 		
 		// Give factor a descriptive name to ease debugging.
 		f.setName(String.format("$BFP_%s_to_%s_%s",
-			factorPort.getSibling().getName(), var.getName(), f.getReverseSiblingNumber(0)));
+			factorPort.getSiblingNode().getName(), var.getName(), f.getReverseSiblingNumber(0)));
 
 		if (setVarSolver)
 		{
@@ -2052,7 +2052,7 @@ public class FactorGraph extends FactorBase
 					{
 						if (var == factor.getSibling(j))
 						{
-							ports.add(new Port(factor, j));
+							ports.add(factor.getPort(j));
 						}
 					}
 				}
@@ -3170,7 +3170,7 @@ public class FactorGraph extends FactorBase
 	 * @since 0.08
 	 * @see #structureVersion
 	 */
-	public long globalStructureVersion()
+	public long graphTreeStructureVersion()
 	{
 		return _graphTreeState._globalStructureVersion;
 	}
@@ -3180,7 +3180,7 @@ public class FactorGraph extends FactorBase
 	 * <p>
 	 * May be used to verify cached information that depends on the graph structure.
 	 * @since 0.08
-	 * @see #globalStructureVersion()
+	 * @see #graphTreeStructureVersion()
 	 */
 	public long structureVersion()
 	{
@@ -3333,10 +3333,23 @@ public class FactorGraph extends FactorBase
 	}
 	
 	/**
+	 * Returns node in same graph tree with given {@linkplain INode#getGraphTreeId() graph tree id}, if it exists.
+	 * @since 0.08
+	 */
+	public @Nullable Node getNodeByGraphTreeId(long id)
+	{
+		FactorGraph graph = getGraphByTreeIndex(NodeId.graphTreeIndexFromGraphTreeId(id));
+		return graph != null ? graph.getNodeByLocalId(NodeId.localIdFromGraphTreeId(id)) : null;
+	}
+	
+	/**
 	 * Returns node directly owned by this graph with given local id.
 	 * @return node with given id or null if not found.
 	 * @since 0.08
 	 * @see #getNodeByGlobalId
+	 * @see #getFactorByLocalId(int)
+	 * @see #getVariableByLocalId(int)
+	 * @see #getGraphByLocalId(int)
 	 */
 	@Internal
 	public @Nullable Node getNodeByLocalId(int id)

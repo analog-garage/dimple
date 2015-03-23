@@ -43,7 +43,7 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 		_factor = f;
 		_portForOtherVar = f.getPortForOtherVariable();
 		Variable varConnectedToBlast = f.getVariableConnectedToBlast();
-	    _portForBlastVar = new Port(varConnectedToBlast,varConnectedToBlast.findSibling(getModelObject()));
+	    _portForBlastVar = varConnectedToBlast.getPort(varConnectedToBlast.findSibling(getModelObject()));
 	    _parent = parent;
 	}
 	
@@ -230,11 +230,11 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 	{
 		// FIXME lookup through solver graph
 		EdgeState edgeState = _portForBlastVar.toEdgeState();
-		ISolverFactorGraph sfg = _portForBlastVar.node.getParentGraph().getSolver();
+		ISolverFactorGraph sfg = _portForBlastVar.getNode().getParentGraph().getSolver();
 		ISolverEdgeState sedge = sfg.getSolverEdge(edgeState);
 		
 		EdgeState edgeState2 = _portForOtherVar.toEdgeState();
-		ISolverFactorGraph sfg2 = _portForOtherVar.node.getParentGraph().getSolver();
+		ISolverFactorGraph sfg2 = _portForOtherVar.getNode().getParentGraph().getSolver();
 		ISolverEdgeState sedge2 = sfg2.getSolverEdge(edgeState2);
 		
 		sedge.setFrom(sedge2);

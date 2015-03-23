@@ -34,7 +34,7 @@ public class BlastFromThePastFactor extends Factor
 	@Internal
 	public BlastFromThePastFactor(Variable varConnectedToBlast, Port portForOtherVar)
 	{
-		super(((Factor)portForOtherVar.getSibling()).getFactorFunction());
+		super(((Factor)portForOtherVar.getSiblingNode()).getFactorFunction());
 		
 		_portForOtherVariable = portForOtherVar;
 		_variableConnectedToBlast = varConnectedToBlast;

@@ -99,8 +99,9 @@ public class FixedSchedule extends ScheduleBase implements IGibbsSchedule
 			{
 				for (int index = 0, end = f.getSiblingCount(); index < end; index++)
 				{
-					setOfAllPorts.add(new Port(f,index));
-					whatsLeft.add(new Port(f,index));
+					final Port port = f.getPort(index);
+					setOfAllPorts.add(port);
+					whatsLeft.add(port);
 				}
 			}
 
@@ -114,8 +115,9 @@ public class FixedSchedule extends ScheduleBase implements IGibbsSchedule
 			{
 				for (int index = 0, end = v.getSiblingCount(); index < end; index++)
 				{
-					whatsLeft.add(new Port(v,index));
-					setOfAllPorts.add(new Port(v,index));
+					final Port port = v.getPort(index);
+					whatsLeft.add(port);
+					setOfAllPorts.add(port);
 				}
 			}
 

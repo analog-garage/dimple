@@ -25,6 +25,35 @@ import com.analog.lyric.dimple.environment.DimpleEnvironment;
 /**
  * Contains utility methods for manipulating node identifiers.
  * <p>
+ * There are a number of different types of identifiers used to index
+ * nodes and other objects belonging to factor graphs. All are represented
+ * as a primitive int or long.
+ * <p>
+ * <ul>
+ * <li><b>local id</b> - identifies a node uniquely within the factor graph
+ * that contains it. The local id also identifies the type of object (e.g. factor, variable).
+ * {@link FactorGraph} provides methods for retrieving nodes by their local id, such as
+ * {@linkplain FactorGraph#getNodeByLocalId(int) getNodeByLocalId}.
+ * 
+ * <li><b>graph id</b> - uniquely identifies a {@link FactorGraph} within the
+ * {@link DimpleEnvironment}'s (typically there is only one) {@linkplain DimpleEnvironment#factorGraphs() factor
+ * graph registry}.
+ * 
+ * <li><b>global id</b> - combines the local id and graph id to uniquely identify a node within
+ * the environment. The {@code getNodeByGlobalId} method in both {@linkplain DimpleEnvironment#getNodeByGlobalId(long)
+ * DimpleEnvironment} and {@linkplain FactorGraph#getNodeByGlobalId(long) FactorGraph} provides relatively fast lookup
+ * of a node by its global id.
+ * 
+ * <li><b>graph tree index</b> - is a simple index that uniquely identifies a graph within the
+ * tree off graphs sharing a common root graph. All of the graphs in the tree are stored in an array
+ * shared by the graphs in the same tree. This index indicates the position in the array, so lookup by
+ * this index is fast.
+ * 
+ * <li><b>graph tree id</b> - combines the local id and graph tree index to uniquely identify
+ * a node within its graph tree. This provides fast lookup of nodes within the tree using
+ * {@link FactorGraph#getNodeByGraphTreeId(long)}.
+ * </ul>
+ * <p>
  * @since 0.08
  */
 public class NodeId
@@ -274,6 +303,16 @@ public class NodeId
 		return (int)(globalId >>> 32);
 	}
 	
+	public static long graphTreeIdFromParts(int graphTreeIndex, int localId)
+	{
+		return (long)graphTreeIndex << 32 | 0xFFFFFFFFL & localId;
+	}
+	
+	public static int graphTreeIndexFromGraphTreeId(long graphTreeId)
+	{
+		return (int)(graphTreeId >>> 32);
+	}
+	
 	/**
 	 * Constructs local id from type and index.
 	 * @since 0.08
@@ -384,6 +423,11 @@ public class NodeId
 	public static int localIdFromGlobalId(long globalId)
 	{
 		return (int)(globalId & 0xFFFFFFFFL);
+	}
+	
+	public static int localIdFromGraphTreeId(long graphTreeId)
+	{
+		return (int)(graphTreeId & 0xFFFFFFFFL);
 	}
 	
 	/**
