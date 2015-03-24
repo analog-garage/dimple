@@ -41,7 +41,7 @@ final class OwnedGraphs extends OwnedArray<FactorGraph>
 	@Override
 	int idTypeMask()
 	{
-		return NodeId.GRAPH_TYPE << NodeId.LOCAL_ID_TYPE_OFFSET;
+		return Ids.GRAPH_TYPE << Ids.LOCAL_ID_TYPE_OFFSET;
 	}
 	
 	@Override

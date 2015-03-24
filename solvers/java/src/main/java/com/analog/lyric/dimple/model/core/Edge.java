@@ -80,13 +80,13 @@ public final class Edge implements IFactorGraphChild
 	@Override
 	public final long getGlobalId()
 	{
-		return NodeId.globalIdFromParts(_graph.getGraphId(), getLocalId());
+		return Ids.globalIdFromParts(_graph.getGraphId(), getLocalId());
 	}
 	
 	@Override
 	public long getGraphTreeId()
 	{
-		return NodeId.graphTreeIdFromParts(_graph.getGraphTreeIndex(), getLocalId());
+		return Ids.graphTreeIdFromParts(_graph.getGraphTreeIndex(), getLocalId());
 	}
 	
 	@Deprecated
@@ -99,7 +99,7 @@ public final class Edge implements IFactorGraphChild
 	@Override
 	public final int getLocalId()
 	{
-		return NodeId.localIdFromParts(NodeId.EDGE_TYPE, _edge.edgeIndexInParent(_graph));
+		return Ids.localIdFromParts(Ids.EDGE_TYPE, _edge.edgeIndexInParent(_graph));
 	}
 	
 	@Override
@@ -117,7 +117,7 @@ public final class Edge implements IFactorGraphChild
 	@Override
 	public UUID getUUID()
 	{
-		return NodeId.makeUUID(_graph.getEnvironment().getEnvId(), getGlobalId());
+		return Ids.makeUUID(_graph.getEnvironment().getEnvId(), getGlobalId());
 	}
 	
 	/*--------------

@@ -55,7 +55,7 @@ public class VariablePort extends Port
 	@Override
 	public int getLocalId()
 	{
-		return NodeId.localIdFromParts(NodeId.FACTOR_PORT_TYPE, _edgeState.factorEdgeIndex());
+		return Ids.localIdFromParts(Ids.FACTOR_PORT_TYPE, _edgeState.factorEdgeIndex());
 	}
 
 	/*--------------

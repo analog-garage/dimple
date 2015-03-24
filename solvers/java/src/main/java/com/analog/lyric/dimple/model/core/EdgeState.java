@@ -185,7 +185,7 @@ public abstract class EdgeState
 	 */
 	public int factorLocalId()
 	{
-		return NodeId.localIdFromParts(NodeId.FACTOR_TYPE, factorIndex());
+		return Ids.localIdFromParts(Ids.FACTOR_TYPE, factorIndex());
 	}
 
 	/**

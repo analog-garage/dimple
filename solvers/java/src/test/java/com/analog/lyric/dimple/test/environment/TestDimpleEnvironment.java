@@ -37,7 +37,7 @@ import com.analog.lyric.dimple.events.IDimpleEventSource;
 import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.NodeId;
+import com.analog.lyric.dimple.model.core.Ids;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
@@ -66,7 +66,7 @@ public class TestDimpleEnvironment extends DimpleTestBase
 		
 		UUID uid = global1.getUUID();
 		assertEquals(2, uid.variant());
-		assertEquals(NodeId.DIMPLE_UUID_VERSION, uid.version());
+		assertEquals(Ids.DIMPLE_UUID_VERSION, uid.version());
 		assertEquals(0, uid.getLeastSignificantBits() & (1L<<62) - 1);
 		
 		Thread thread1 = new Thread() {
@@ -121,7 +121,7 @@ public class TestDimpleEnvironment extends DimpleTestBase
 		
 		try
 		{
-			new DimpleEnvironment(NodeId.ENV_ID_MAX + 1);
+			new DimpleEnvironment(Ids.ENV_ID_MAX + 1);
 		}
 		catch (IllegalArgumentException ex)
 		{
@@ -133,7 +133,7 @@ public class TestDimpleEnvironment extends DimpleTestBase
 		
 		try
 		{
-			new DimpleEnvironment(NodeId.ENV_ID_MIN - 1);
+			new DimpleEnvironment(Ids.ENV_ID_MIN - 1);
 		}
 		catch (IllegalArgumentException ex)
 		{

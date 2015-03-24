@@ -25,7 +25,7 @@ import java.util.UUID;
 import org.junit.Test;
 
 import com.analog.lyric.collect.tests.CollectionTester;
-import com.analog.lyric.dimple.model.core.NodeId;
+import com.analog.lyric.dimple.model.core.Ids;
 import com.analog.lyric.util.misc.IGetId;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.MapList;
@@ -64,7 +64,7 @@ public class TestMapList
 		@Override
 		public UUID getUUID()
 		{
-			return NodeId.makeUUID(0, _id);
+			return Ids.makeUUID(0, _id);
 		}
 	}
 	

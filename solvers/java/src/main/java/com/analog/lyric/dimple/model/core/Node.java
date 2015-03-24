@@ -146,7 +146,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	protected Node(Node other)
 	{
 		super(other);
-		_id = other._id | NodeId.LOCAL_ID_INDEX_MAX;
+		_id = other._id | Ids.LOCAL_ID_INDEX_MAX;
 		_name = other._name;
 	}
 	
@@ -532,7 +532,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	 * <p>
 	 * @since 0.08
 	 * @see #getGlobalId()
-	 * @see NodeId
+	 * @see Ids
 	 */
 	@Override
 	public int getLocalId()
@@ -548,20 +548,20 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	 * <p>
 	 * @since 0.08
 	 * @see #getLocalId()
-	 * @see NodeId
+	 * @see Ids
 	 */
 	@Override
 	public long getGlobalId()
 	{
 		final FactorGraph parent = _parentGraph;
-		return NodeId.globalIdFromParts(parent != null ? parent.getGraphId() : 0, _id);
+		return Ids.globalIdFromParts(parent != null ? parent.getGraphId() : 0, _id);
 	}
 	
 	@Override
 	public long getGraphTreeId()
 	{
 		final FactorGraph parent = _parentGraph;
-		return NodeId.graphTreeIdFromParts(parent != null ? parent.getGraphTreeIndex() : 0, _id);
+		return Ids.graphTreeIdFromParts(parent != null ? parent.getGraphTreeIndex() : 0, _id);
 	}
 	
 	@Override
@@ -599,20 +599,20 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	 * {@inheritDoc}
 	 * <p>
 	 * For regular nodes implicitly generated name will be computed
-	 * by {@link NodeId#defaultNameForLocalId(int)} using the
+	 * by {@link Ids#defaultNameForLocalId(int)} using the
 	 * value of {@link #getId()}.
 	 */
 	@Override
 	public String getName()
 	{
 		String name = _name;
-		return name != null ? name : NodeId.defaultNameForLocalId(_id);
+		return name != null ? name : Ids.defaultNameForLocalId(_id);
 	}
 	
     @Override
 	public UUID getUUID()
 	{
-    	return NodeId.makeUUID(getEnvironment().getEnvId(), getGlobalId());
+    	return Ids.makeUUID(getEnvironment().getEnvId(), getGlobalId());
 	}
     
     abstract public String getClassLabel();

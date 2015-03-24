@@ -18,12 +18,12 @@ package com.analog.lyric.util.misc;
 
 import java.util.UUID;
 
-import com.analog.lyric.dimple.model.core.NodeId;
+import com.analog.lyric.dimple.model.core.Ids;
 
 /**
  * Interface for objects that provide identifiers.
  * <p>
- * @see NodeId
+ * @see Ids
  */
 public interface IGetId
 {

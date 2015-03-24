@@ -37,7 +37,7 @@ import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.FactorPort;
 import com.analog.lyric.dimple.model.core.INode;
-import com.analog.lyric.dimple.model.core.NodeId;
+import com.analog.lyric.dimple.model.core.Ids;
 import com.analog.lyric.dimple.model.core.NodeType;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.DomainList;
@@ -89,7 +89,7 @@ public class Factor extends FactorBase implements Cloneable
 	@Internal
 	public Factor(FactorFunction factorFunc)
 	{
-		super(NodeId.INITIAL_FACTOR_ID);
+		super(Ids.INITIAL_FACTOR_ID);
 		
 		_factorFunction = factorFunc;
 		_modelerFunctionName = factorFunc.getName();

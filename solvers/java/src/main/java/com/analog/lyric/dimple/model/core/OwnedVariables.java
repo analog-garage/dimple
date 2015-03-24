@@ -43,7 +43,7 @@ final class OwnedVariables extends OwnedArray<Variable>
 	@Override
 	int idTypeMask()
 	{
-		return NodeId.VARIABLE_TYPE << NodeId.LOCAL_ID_TYPE_OFFSET;
+		return Ids.VARIABLE_TYPE << Ids.LOCAL_ID_TYPE_OFFSET;
 	}
 	
 	@Override

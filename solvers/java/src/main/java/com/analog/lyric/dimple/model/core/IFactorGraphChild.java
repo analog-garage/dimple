@@ -35,9 +35,9 @@ public interface IFactorGraphChild extends IGetId
 	 * lookup by the global id.
 	 * <p>
 	 * @since 0.08
-	 * @see NodeId#graphTreeIdFromParts(int, int)
-	 * @see NodeId#graphTreeIndexFromGraphTreeId(long)
-	 * @see NodeId#localIdFromGraphTreeId(long)
+	 * @see Ids#graphTreeIdFromParts(int, int)
+	 * @see Ids#graphTreeIndexFromGraphTreeId(long)
+	 * @see Ids#localIdFromGraphTreeId(long)
 	 */
 	public long getGraphTreeId();
 

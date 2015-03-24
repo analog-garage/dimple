@@ -264,7 +264,7 @@ abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
 		final T[] nodes = _nodes;
 		if (nodes != null)
 		{
-			int index = NodeId.indexFromLocalId(localId);
+			int index = Ids.indexFromLocalId(localId);
 			if (index < _end)
 			{
 				return nodes[index];
@@ -279,7 +279,7 @@ abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
 		if (nodes != null)
 		{
 			final int id = node.getLocalId();
-			final int index = NodeId.indexFromLocalId(id);
+			final int index = Ids.indexFromLocalId(id);
 			if (index < _end && nodes[index] == node)
 			{
 				nodes[index] = null;

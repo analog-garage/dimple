@@ -78,13 +78,13 @@ public abstract class Port implements IFactorGraphChild
 	@Override
 	public long getGlobalId()
 	{
-		return NodeId.globalIdFromParts(_graph.getGraphId(), getLocalId());
+		return Ids.globalIdFromParts(_graph.getGraphId(), getLocalId());
 	}
 	
 	@Override
 	public long getGraphTreeId()
 	{
-		return NodeId.graphTreeIdFromParts(_graph.getGraphTreeIndex(), getLocalId());
+		return Ids.graphTreeIdFromParts(_graph.getGraphTreeIndex(), getLocalId());
 	}
 
 	@Deprecated
@@ -109,7 +109,7 @@ public abstract class Port implements IFactorGraphChild
 	@Override
 	public UUID getUUID()
 	{
-		return NodeId.makeUUID(_graph.getEnvironment().getEnvId(), getGlobalId());
+		return Ids.makeUUID(_graph.getEnvironment().getEnvId(), getGlobalId());
 	}
 	
 	/*--------------

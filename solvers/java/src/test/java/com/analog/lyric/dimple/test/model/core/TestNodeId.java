@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.test.model.core;
 
-import static com.analog.lyric.dimple.model.core.NodeId.*;
+import static com.analog.lyric.dimple.model.core.Ids.*;
 import static org.junit.Assert.*;
 
 import java.util.UUID;
@@ -24,7 +24,7 @@ import java.util.UUID;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
-import com.analog.lyric.dimple.model.core.NodeId.Type;
+import com.analog.lyric.dimple.model.core.Ids.Type;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
 /**

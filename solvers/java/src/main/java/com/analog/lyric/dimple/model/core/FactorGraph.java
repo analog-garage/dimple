@@ -304,7 +304,7 @@ public class FactorGraph extends FactorBase
 		@Override
 		public final int variableLocalId()
 		{
-			return NodeId.localIdFromParts(NodeId.VARIABLE_TYPE, variableIndex());
+			return Ids.localIdFromParts(Ids.VARIABLE_TYPE, variableIndex());
 		}
 	}
 	
@@ -485,7 +485,7 @@ public class FactorGraph extends FactorBase
 		@Override
 		public final int factorIndex()
 		{
-			return NodeId.indexFromLocalId(_factor.getLocalId());
+			return Ids.indexFromLocalId(_factor.getLocalId());
 		}
 		
 		@Override
@@ -497,7 +497,7 @@ public class FactorGraph extends FactorBase
 		@Override
 		public int variableLocalId()
 		{
-			return NodeId.localIdFromParts(NodeId.BOUNDARY_VARIABLE_TYPE, variableIndex());
+			return Ids.localIdFromParts(Ids.BOUNDARY_VARIABLE_TYPE, variableIndex());
 		}
 	}
 	
@@ -640,7 +640,7 @@ public class FactorGraph extends FactorBase
 		@Nullable String name,
 		@Nullable IFactorGraphFactory<?> solver)
 	{
-		super(NodeId.INITIAL_GRAPH_ID);
+		super(Ids.INITIAL_GRAPH_ID);
 		
 		_env = DimpleEnvironment.active();
 		_graphId = _env.factorGraphs().registerIdForFactorGraph(this);
@@ -695,7 +695,7 @@ public class FactorGraph extends FactorBase
 	/**
 	 * Unique identifier of graph within its {@linkplain #getEnvironment() environment}.
 	 * <p>
-	 * Will be in the range from {@link NodeId#GRAPH_ID_MIN} to {@link NodeId#GRAPH_ID_MAX}.
+	 * Will be in the range from {@link Ids#GRAPH_ID_MIN} to {@link Ids#GRAPH_ID_MAX}.
 	 * <p>
 	 * @since 0.08
 	 */
@@ -710,7 +710,7 @@ public class FactorGraph extends FactorBase
 		if (getParentGraph() == null)
 		{
 			// If there is no parent graph, then use the graph id as the id.
-			return  NodeId.globalIdFromParts(0, NodeId.GRAPH_TYPE, _graphId);
+			return  Ids.globalIdFromParts(0, Ids.GRAPH_TYPE, _graphId);
 		}
 		else
 		{
@@ -722,7 +722,7 @@ public class FactorGraph extends FactorBase
 	 * {@inheritDoc}
 	 * <p>
 	 * For root graphs (that have no {@linkplain #getParentGraph() parent graph})
-	 * the implicitly generated name will be computed by {@link NodeId#defaultNameForGraphId(int)}
+	 * the implicitly generated name will be computed by {@link Ids#defaultNameForGraphId(int)}
 	 * using the value of {@link #getGraphId()}.
 	 */
 	@Override
@@ -736,11 +736,11 @@ public class FactorGraph extends FactorBase
 		
 		if (getParentGraph() == null)
 		{
-			return NodeId.defaultNameForGraphId(_graphId);
+			return Ids.defaultNameForGraphId(_graphId);
 		}
 		else
 		{
-			return NodeId.defaultNameForLocalId(getLocalId());
+			return Ids.defaultNameForLocalId(getLocalId());
 		}
 	}
 	
@@ -3005,12 +3005,12 @@ public class FactorGraph extends FactorBase
 	
 	public @Nullable Variable getVariableByLocalId(int id)
 	{
-		switch (id >>> NodeId.LOCAL_ID_TYPE_OFFSET)
+		switch (id >>> Ids.LOCAL_ID_TYPE_OFFSET)
 		{
-		case NodeId.VARIABLE_TYPE:
+		case Ids.VARIABLE_TYPE:
 			return _ownedVariables.getByLocalId(id);
-		case NodeId.BOUNDARY_VARIABLE_TYPE:
-			return _boundaryVariables.get(NodeId.indexFromLocalId(id));
+		case Ids.BOUNDARY_VARIABLE_TYPE:
+			return _boundaryVariables.get(Ids.indexFromLocalId(id));
 		default:
 			return null;
 		}
@@ -3106,12 +3106,12 @@ public class FactorGraph extends FactorBase
 	
 	public @Nullable Factor getFactorByLocalId(int id)
 	{
-		return NodeId.typeIndexFromLocalId(id) == NodeId.FACTOR_TYPE ? _ownedFactors.getByLocalId(id) : null;
+		return Ids.typeIndexFromLocalId(id) == Ids.FACTOR_TYPE ? _ownedFactors.getByLocalId(id) : null;
 	}
 	
 	public @Nullable FactorGraph getGraphByLocalId(int id)
 	{
-		return NodeId.typeIndexFromLocalId(id) == NodeId.GRAPH_TYPE ? _ownedSubGraphs.getByLocalId(id) : null;
+		return Ids.typeIndexFromLocalId(id) == Ids.GRAPH_TYPE ? _ownedSubGraphs.getByLocalId(id) : null;
 	}
 
 	@Nullable INode getFirstNode()
@@ -3255,7 +3255,7 @@ public class FactorGraph extends FactorBase
 		
 		if (name != null && !name.isEmpty())
 		{
-			if (NodeId.isUUIDString(name))
+			if (Ids.isUUIDString(name))
 			{
 				obj = getObjectByUUID(UUID.fromString(name));
 			}
@@ -3270,7 +3270,7 @@ public class FactorGraph extends FactorBase
 					name = name.substring(0, dotOffset);
 					
 					// Check to see if name refers to this graph.
-					if (name.equals(_name) || _graphId == NodeId.graphIdFromDefaultName(name))
+					if (name.equals(_name) || _graphId == Ids.graphIdFromDefaultName(name))
 					{
 						name = remainder;
 						remainder = null;
@@ -3287,7 +3287,7 @@ public class FactorGraph extends FactorBase
 				obj = _name2object.get(name);
 				if (obj == null)
 				{
-					obj = getNodeByLocalId(NodeId.localIdFromDefaultName(name));
+					obj = getNodeByLocalId(Ids.localIdFromDefaultName(name));
 				}
 		
 				if (remainder != null && obj instanceof FactorGraph)
@@ -3303,7 +3303,7 @@ public class FactorGraph extends FactorBase
 
 	public @Nullable Node getObjectByUUID(UUID uuid)
 	{
-		return getNodeByGlobalId(NodeId.globalIdFromUUID(uuid));
+		return getNodeByGlobalId(Ids.globalIdFromUUID(uuid));
 	}
 	
 	/**
@@ -3314,8 +3314,8 @@ public class FactorGraph extends FactorBase
 	 */
 	public @Nullable Node getNodeByGlobalId(long gid)
 	{
-		final int graphId = NodeId.graphIdFromGlobalId(gid);
-		final int id = NodeId.localIdFromGlobalId(gid);
+		final int graphId = Ids.graphIdFromGlobalId(gid);
+		final int id = Ids.localIdFromGlobalId(gid);
 		if (_graphId == graphId)
 		{
 			return getNodeByLocalId(id);
@@ -3338,8 +3338,8 @@ public class FactorGraph extends FactorBase
 	 */
 	public @Nullable Node getNodeByGraphTreeId(long id)
 	{
-		FactorGraph graph = getGraphByTreeIndex(NodeId.graphTreeIndexFromGraphTreeId(id));
-		return graph != null ? graph.getNodeByLocalId(NodeId.localIdFromGraphTreeId(id)) : null;
+		FactorGraph graph = getGraphByTreeIndex(Ids.graphTreeIndexFromGraphTreeId(id));
+		return graph != null ? graph.getNodeByLocalId(Ids.localIdFromGraphTreeId(id)) : null;
 	}
 	
 	/**
@@ -3354,16 +3354,16 @@ public class FactorGraph extends FactorBase
 	@Internal
 	public @Nullable Node getNodeByLocalId(int id)
 	{
-		switch (id >>> NodeId.LOCAL_ID_TYPE_OFFSET)
+		switch (id >>> Ids.LOCAL_ID_TYPE_OFFSET)
 		{
-		case NodeId.FACTOR_TYPE:
+		case Ids.FACTOR_TYPE:
 			return _ownedFactors.getByLocalId(id);
-		case NodeId.GRAPH_TYPE:
+		case Ids.GRAPH_TYPE:
 			return _ownedSubGraphs.getByLocalId(id);
-		case NodeId.VARIABLE_TYPE:
+		case Ids.VARIABLE_TYPE:
 			return _ownedVariables.getByLocalId(id);
-		case NodeId.BOUNDARY_VARIABLE_TYPE:
-			return _boundaryVariables.get(NodeId.indexFromLocalId(id));
+		case Ids.BOUNDARY_VARIABLE_TYPE:
+			return _boundaryVariables.get(Ids.indexFromLocalId(id));
 		default:
 			return null;
 		}
@@ -3615,8 +3615,8 @@ public class FactorGraph extends FactorBase
 	
 	private EdgeState createLocalEdge(int edgeIndex, Factor factor, Variable variable)
 	{
-		final int factorOffset = NodeId.indexFromLocalId(factor.getLocalId());
-		final int variableOffset = NodeId.indexFromLocalId(variable.getLocalId());
+		final int factorOffset = Ids.indexFromLocalId(factor.getLocalId());
+		final int variableOffset = Ids.indexFromLocalId(variable.getLocalId());
 		return LocalEdgeState.create(edgeIndex, factorOffset, variableOffset);
 	}
 	

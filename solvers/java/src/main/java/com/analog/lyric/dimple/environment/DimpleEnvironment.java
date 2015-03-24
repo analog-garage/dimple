@@ -40,7 +40,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionRegistry;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.FactorGraphRegistry;
 import com.analog.lyric.dimple.model.core.Node;
-import com.analog.lyric.dimple.model.core.NodeId;
+import com.analog.lyric.dimple.model.core.Ids;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.options.DimpleOptionRegistry;
 import com.analog.lyric.dimple.solvers.core.DimpleSolverRegistry;
@@ -216,12 +216,12 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 */
 	public DimpleEnvironment()
 	{
-		this(new SecureRandom().nextLong() & NodeId.ENV_ID_MAX);
+		this(new SecureRandom().nextLong() & Ids.ENV_ID_MAX);
 	}
 	
 	public DimpleEnvironment(long envId)
 	{
-		if (envId < NodeId.ENV_ID_MIN || envId > NodeId.ENV_ID_MAX)
+		if (envId < Ids.ENV_ID_MIN || envId > Ids.ENV_ID_MAX)
 		{
 			throw new IllegalArgumentException(String.format("%d is not a valid environment id", envId));
 		}
@@ -236,7 +236,7 @@ public class DimpleEnvironment extends DimpleOptionHolder
 		}
 
 		_envId = envId;
-		_uuid = NodeId.makeUUID(envId, 0L);
+		_uuid = Ids.makeUUID(envId, 0L);
 		
 		Logger logger = getDefaultLogger();
 		
@@ -450,8 +450,8 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	/**
 	 * Randomly generated unique id for environment instance.
 	 * <p>
-	 * Identifier will be in range {@link NodeId#ENV_ID_MIN} and
-	 * {@link NodeId#ENV_ID_MAX}.
+	 * Identifier will be in range {@link Ids#ENV_ID_MIN} and
+	 * {@link Ids#ENV_ID_MAX}.
 	 * 
 	 * @since 0.08
 	 */
@@ -465,7 +465,7 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 * <p>
 	 * @since 0.08
 	 * @see #getEnvId()
-	 * @see NodeId#makeUUID(long, long)
+	 * @see Ids#makeUUID(long, long)
 	 */
 	public UUID getUUID()
 	{
@@ -701,10 +701,10 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 */
 	public @Nullable Node getNodeByGlobalId(long globalId)
 	{
-		FactorGraph graph = _factorGraphs.getGraphWithId(NodeId.graphIdFromGlobalId(globalId));
+		FactorGraph graph = _factorGraphs.getGraphWithId(Ids.graphIdFromGlobalId(globalId));
 		if (graph != null)
 		{
-			return graph.getNodeByLocalId(NodeId.localIdFromGlobalId(globalId));
+			return graph.getNodeByLocalId(Ids.localIdFromGlobalId(globalId));
 		}
 		
 		return null;

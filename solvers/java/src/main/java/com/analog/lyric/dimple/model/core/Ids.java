@@ -64,7 +64,7 @@ import com.analog.lyric.util.misc.Internal;
  * <p>
  * @since 0.08
  */
-public abstract class NodeId
+public abstract class Ids
 {
 	/*-----------
 	 * Constants
@@ -199,7 +199,7 @@ public abstract class NodeId
 	 * Enumerates supported identifier types.
 	 * <p>
 	 * These correspond to the similarly named type index constants, e.g.
-	 * {@link Type#FACTOR} corresponds to {@link NodeId#FACTOR_TYPE}.
+	 * {@link Type#FACTOR} corresponds to {@link Ids#FACTOR_TYPE}.
 	 * <p>
 	 * @since 0.08
 	 * @author Christopher Barber
@@ -597,7 +597,7 @@ public abstract class NodeId
 	
 	/**
 	 * Returns type encoded in local identifier.
-	 * @param localId a local identifier constructed with {@link NodeId#localIdFromParts(int, int)}.
+	 * @param localId a local identifier constructed with {@link Ids#localIdFromParts(int, int)}.
 	 * @return {@link Type} of given id, or null if id has an invalid type index.
 	 * @since 0.08
 	 * @see #typeIndexFromLocalId(int)

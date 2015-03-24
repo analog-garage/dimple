@@ -42,7 +42,7 @@ final class OwnedFactors extends OwnedArray<Factor>
 	@Override
 	int idTypeMask()
 	{
-		return NodeId.FACTOR_TYPE << NodeId.LOCAL_ID_TYPE_OFFSET;
+		return Ids.FACTOR_TYPE << Ids.LOCAL_ID_TYPE_OFFSET;
 	}
 	
 	@Override

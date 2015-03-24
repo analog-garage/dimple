@@ -34,7 +34,7 @@ import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
-import com.analog.lyric.dimple.model.core.NodeId;
+import com.analog.lyric.dimple.model.core.Ids;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorBase;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
@@ -198,14 +198,14 @@ public abstract class SFactorGraphBase
 	@Override
 	public @Nullable ISolverNode getSolverNodeByLocalId(int localId)
 	{
-		final int index = NodeId.indexFromLocalId(localId);
-		switch (localId >>> NodeId.LOCAL_ID_TYPE_OFFSET)
+		final int index = Ids.indexFromLocalId(localId);
+		switch (localId >>> Ids.LOCAL_ID_TYPE_OFFSET)
 		{
-		case NodeId.FACTOR_TYPE:
+		case Ids.FACTOR_TYPE:
 			return getSolverFactorByIndex(index);
-		case NodeId.GRAPH_TYPE:
+		case Ids.GRAPH_TYPE:
 			return getSolverSubgraphByIndex(index);
-		case NodeId.VARIABLE_TYPE:
+		case Ids.VARIABLE_TYPE:
 			return getSolverVariableByIndex(index);
 		default:
 				return null;
@@ -331,7 +331,7 @@ public abstract class SFactorGraphBase
 			throw new IllegalArgumentException(String.format("'%s' does not belong to '%s'", snode, this));
 		}
 		
-		list.set(NodeId.indexFromLocalId(snode.getModelObject().getLocalId()), null);
+		list.set(Ids.indexFromLocalId(snode.getModelObject().getLocalId()), null);
 	}
 
 	@Override
@@ -1121,7 +1121,7 @@ public abstract class SFactorGraphBase
 		}
 		else
 		{
-			return _subgraphs.getOrNull(NodeId.indexFromLocalId(subgraph.getLocalId()));
+			return _subgraphs.getOrNull(Ids.indexFromLocalId(subgraph.getLocalId()));
 		}
 	}
 	
@@ -1199,7 +1199,7 @@ public abstract class SFactorGraphBase
 	{
 		assertSameGraph(factor);
 		
-		final int index = NodeId.indexFromLocalId(factor.getLocalId());
+		final int index = Ids.indexFromLocalId(factor.getLocalId());
 		final ExtendedArrayList<SFactor> factors = _factors;
 		
 		@SuppressWarnings("unchecked")
@@ -1269,7 +1269,7 @@ public abstract class SFactorGraphBase
 	{
 		assertSameGraph(subgraph);
 		
-		final int index = NodeId.indexFromLocalId(subgraph.getLocalId());
+		final int index = Ids.indexFromLocalId(subgraph.getLocalId());
 		final ExtendedArrayList<ISolverFactorGraph> graphs = _subgraphs;
 		
 		@SuppressWarnings("unchecked")
@@ -1295,7 +1295,7 @@ public abstract class SFactorGraphBase
 	{
 		assertSameGraph(variable);
 		
-		final int index = NodeId.indexFromLocalId(variable.getLocalId());
+		final int index = Ids.indexFromLocalId(variable.getLocalId());
 		final ExtendedArrayList<SVariable> variables = _variables;
 		
 		@SuppressWarnings("unchecked")
@@ -1329,7 +1329,7 @@ public abstract class SFactorGraphBase
 	{
 		assertSameGraph(subgraph);
 		
-		final int index = NodeId.indexFromLocalId(subgraph.getLocalId());
+		final int index = Ids.indexFromLocalId(subgraph.getLocalId());
 		final ExtendedArrayList<ISolverFactorGraph> graphs = _subgraphs;
 		if (sgraph != null)
 		{

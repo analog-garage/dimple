@@ -30,7 +30,7 @@ import com.analog.lyric.dimple.factorfunctions.Equality;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
-import com.analog.lyric.dimple.model.core.NodeId;
+import com.analog.lyric.dimple.model.core.Ids;
 import com.analog.lyric.dimple.model.core.NodeType;
 import com.analog.lyric.dimple.model.core.VariablePort;
 import com.analog.lyric.dimple.model.domains.Domain;
@@ -101,7 +101,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	
 	public Variable(Domain domain, String modelerClassName)
 	{
-		super(NodeId.INITIAL_VARIABLE_ID);
+		super(Ids.INITIAL_VARIABLE_ID);
 		
 		_modelerClassName = modelerClassName;
 		_domain = domain;

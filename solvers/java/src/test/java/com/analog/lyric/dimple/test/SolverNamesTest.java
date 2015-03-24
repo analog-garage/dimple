@@ -28,7 +28,7 @@ import org.junit.Test;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.NodeId;
+import com.analog.lyric.dimple.model.core.Ids;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
@@ -41,11 +41,11 @@ public class SolverNamesTest extends DimpleTestBase
 		Discrete variable = new Discrete(DiscreteDomain.bit(), "Variable");
 		
 		assertTrue(variable.getParentGraph() == null);
-		assertEquals(NodeId.defaultNameForLocalId(variable.getLocalId()), variable.getName());
+		assertEquals(Ids.defaultNameForLocalId(variable.getLocalId()), variable.getName());
 		
 		FactorGraph fg = new FactorGraph(new Discrete[]{variable});
 		assertNull(fg.getParentGraph());
-		assertEquals(NodeId.defaultNameForGraphId(fg.getGraphId()), fg.getName());
+		assertEquals(Ids.defaultNameForGraphId(fg.getGraphId()), fg.getName());
 		assertEquals(fg, variable.getParentGraph());
 				
 		String fgNameSet = "FactorGraphName";
@@ -73,7 +73,7 @@ public class SolverNamesTest extends DimpleTestBase
 		for (Discrete variable : variables)
 		{
 			assertNull(variable.getParentGraph());
-			assertEquals(NodeId.defaultNameForLocalId(variable.getLocalId()), variable.getName());
+			assertEquals(Ids.defaultNameForLocalId(variable.getLocalId()), variable.getName());
 		}
 		
 		//new graph
@@ -82,7 +82,7 @@ public class SolverNamesTest extends DimpleTestBase
 	
 		//simple checks on graph
 		assertNull(fg.getParentGraph());
-		assertEquals(NodeId.defaultNameForGraphId(fg.getGraphId()), fg.getName());
+		assertEquals(Ids.defaultNameForGraphId(fg.getGraphId()), fg.getName());
 		
 		int[][] dummyTable = new int[3][3];
   		for(int i = 0; i < dummyTable.length; ++i)
@@ -110,7 +110,7 @@ public class SolverNamesTest extends DimpleTestBase
 				FactorTable.create(dummyTable, dummyValues, DiscreteDomain.create(0,1), DiscreteDomain.create(0,1), DiscreteDomain.create(0,1)));
 		//fg.createTable(dummyTable, dummyValues,);
 		Factor fn = fg.addFactor(factorFunc, variables);
-		assertEquals(NodeId.defaultNameForLocalId(fn.getLocalId()), fn.getName());
+		assertEquals(Ids.defaultNameForLocalId(fn.getLocalId()), fn.getName());
 		
 		//check parent
 		assertTrue(fn.getParentGraph() == fg);
@@ -214,7 +214,7 @@ public class SolverNamesTest extends DimpleTestBase
 		assertNull(fg.getObjectByName(fn.getExplicitName()));
 		assertSame(fn, fg.getObjectByName(fn.getName()));
 		assertSame(fn, fg.getObjectByUUID(fn.getUUID()));
-		assertEquals(NodeId.defaultNameForGraphId(fg.getGraphId()), fg.getName());
+		assertEquals(Ids.defaultNameForGraphId(fg.getGraphId()), fg.getName());
 		assertNull(fg.getExplicitName());
 		
 		assertNull(fg.getObjectByName(variables[0].getExplicitName()));
