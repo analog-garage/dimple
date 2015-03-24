@@ -199,7 +199,7 @@ public abstract class SFactorGraphBase
 	public @Nullable ISolverNode getSolverNodeByLocalId(int localId)
 	{
 		final int index = NodeId.indexFromLocalId(localId);
-		switch (localId >>> NodeId.LOCAL_ID_NODE_TYPE_OFFSET)
+		switch (localId >>> NodeId.LOCAL_ID_TYPE_OFFSET)
 		{
 		case NodeId.FACTOR_TYPE:
 			return getSolverFactorByIndex(index);

@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2014 Analog Devices, Inc.
+*   Copyright 2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -18,42 +18,31 @@ package com.analog.lyric.dimple.model.core;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.util.misc.IGetId;
 
 /**
  * 
  * @since 0.08
  * @author Christopher Barber
  */
-final class OwnedVariables extends OwnedArray<Variable>
+public interface IFactorGraphChild extends IGetId
 {
-	/*--------------
-	 * Construction
+	/**
+	 * Uniquely identifies node within its graph tree.
+	 * <p>
+	 * Similar to the {@linkplain #getGlobalId() global id} but is only unique within the
+	 * tree of graphs containing this node. Looking up nodes by this id is faster than
+	 * lookup by the global id.
+	 * <p>
+	 * @since 0.08
+	 * @see NodeId#graphTreeIdFromParts(int, int)
+	 * @see NodeId#graphTreeIndexFromGraphTreeId(long)
+	 * @see NodeId#localIdFromGraphTreeId(long)
 	 */
-	
-	OwnedVariables()
-	{
-		super();
-	}
+	public long getGraphTreeId();
 
-	/*
-	 * Methods
-	 */
+	public @Nullable FactorGraph getParentGraph();
 	
-	@Override
-	int idTypeMask()
-	{
-		return NodeId.VARIABLE_TYPE << NodeId.LOCAL_ID_TYPE_OFFSET;
-	}
-	
-	@Override
-	Variable[] resize(@Nullable Variable[] array, int length)
-	{
-		final Variable[] newArray = new Variable[length];
-		if (array != null)
-		{
-			System.arraycopy(array, 0, newArray, 0, Math.min(length, array.length));
-		}
-		return newArray;
-	}
+	public @Nullable FactorGraph getRootGraph();
+
 }

@@ -17,6 +17,9 @@
 package com.analog.lyric.dimple.model.core;
 
 import static java.util.Objects.*;
+
+import java.util.UUID;
+
 import net.jcip.annotations.Immutable;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -28,16 +31,28 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
  * Represents half an edge in the factor graph.
  */
 @Immutable
-public abstract class Port
+public abstract class Port implements IFactorGraphChild
 {
+	/*-------
+	 * State
+	 */
+	
 	final EdgeState _edgeState;
 	final FactorGraph _graph;
+	
+	/*--------------
+	 * Construction
+	 */
 	
 	Port(EdgeState edgeState, FactorGraph graph)
 	{
 		_edgeState = edgeState;
 		_graph = graph;
 	}
+	
+	/*----------------
+	 * Object methods
+	 */
 	
 	@Override
 	public int hashCode()
@@ -55,6 +70,51 @@ public abstract class Port
 		}
 		return false;
 	}
+	
+	/*---------------------------
+	 * IFactorGraphChild methods
+	 */
+
+	@Override
+	public long getGlobalId()
+	{
+		return NodeId.globalIdFromParts(_graph.getGraphId(), getLocalId());
+	}
+	
+	@Override
+	public long getGraphTreeId()
+	{
+		return NodeId.graphTreeIdFromParts(_graph.getGraphTreeIndex(), getLocalId());
+	}
+
+	@Deprecated
+	@Override
+	public long getId()
+	{
+		return getLocalId();
+	}
+	
+	@Override
+	public @Nullable FactorGraph getParentGraph()
+	{
+		return _graph;
+	}
+
+	@Override
+	public @Nullable FactorGraph getRootGraph()
+	{
+		return _graph.getRootGraph();
+	}
+	
+	@Override
+	public UUID getUUID()
+	{
+		return NodeId.makeUUID(_graph.getEnvironment().getEnvId(), getGlobalId());
+	}
+	
+	/*--------------
+	 * Port methods
+	 */
 	
 	@Override
 	public String toString()

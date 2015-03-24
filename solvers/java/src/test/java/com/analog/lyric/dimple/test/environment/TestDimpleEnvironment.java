@@ -53,6 +53,7 @@ import com.analog.lyric.util.test.TestLogger;
  */
 public class TestDimpleEnvironment extends DimpleTestBase
 {
+	@SuppressWarnings("unused")
 	@Test
 	public void testInstances()
 	{
@@ -117,6 +118,43 @@ public class TestDimpleEnvironment extends DimpleTestBase
 		{
 			fail(ex.toString());
 		}
+		
+		try
+		{
+			new DimpleEnvironment(NodeId.ENV_ID_MAX + 1);
+		}
+		catch (IllegalArgumentException ex)
+		{
+		}
+		catch (Throwable ex)
+		{
+			fail("expected IllegalArgumentException");
+		}
+		
+		try
+		{
+			new DimpleEnvironment(NodeId.ENV_ID_MIN - 1);
+		}
+		catch (IllegalArgumentException ex)
+		{
+		}
+		catch (Throwable ex)
+		{
+			fail("expected IllegalArgumentException");
+		}
+		
+		try
+		{
+			new DimpleEnvironment(DimpleEnvironment.active().getEnvId());
+		}
+		catch (IllegalStateException ex)
+		{
+		}
+		catch (Throwable ex)
+		{
+			fail("expected IllegalStateException");
+		}
+
 	}
 	
 	@Test

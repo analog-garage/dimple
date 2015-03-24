@@ -30,6 +30,10 @@ import com.analog.lyric.util.misc.Internal;
 @Immutable
 public class VariablePort extends Port
 {
+	/*--------------
+	 * Construction
+	 */
+	
 	VariablePort(EdgeState edgeState, FactorGraph graph)
 	{
 		super(edgeState, graph);
@@ -43,6 +47,20 @@ public class VariablePort extends Port
 	{
 		this(variable.getSiblingEdgeState(siblingNumber), variable.requireParentGraph());
 	}
+	
+	/*----------------
+	 * IGetId methods
+	 */
+	
+	@Override
+	public int getLocalId()
+	{
+		return NodeId.localIdFromParts(NodeId.FACTOR_PORT_TYPE, _edgeState.factorEdgeIndex());
+	}
+
+	/*--------------
+	 * Port methods
+	 */
 	
 	@Override
 	public Variable getNode()

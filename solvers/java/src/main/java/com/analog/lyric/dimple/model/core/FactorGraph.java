@@ -3005,7 +3005,7 @@ public class FactorGraph extends FactorBase
 	
 	public @Nullable Variable getVariableByLocalId(int id)
 	{
-		switch (id >>> NodeId.LOCAL_ID_NODE_TYPE_OFFSET)
+		switch (id >>> NodeId.LOCAL_ID_TYPE_OFFSET)
 		{
 		case NodeId.VARIABLE_TYPE:
 			return _ownedVariables.getByLocalId(id);
@@ -3106,12 +3106,12 @@ public class FactorGraph extends FactorBase
 	
 	public @Nullable Factor getFactorByLocalId(int id)
 	{
-		return NodeId.nodeTypeFromLocalId(id) == NodeType.FACTOR ? _ownedFactors.getByLocalId(id) : null;
+		return NodeId.typeIndexFromLocalId(id) == NodeId.FACTOR_TYPE ? _ownedFactors.getByLocalId(id) : null;
 	}
 	
 	public @Nullable FactorGraph getGraphByLocalId(int id)
 	{
-		return NodeId.nodeTypeFromLocalId(id) == NodeType.GRAPH ? _ownedSubGraphs.getByLocalId(id) : null;
+		return NodeId.typeIndexFromLocalId(id) == NodeId.GRAPH_TYPE ? _ownedSubGraphs.getByLocalId(id) : null;
 	}
 
 	@Nullable INode getFirstNode()
@@ -3354,7 +3354,7 @@ public class FactorGraph extends FactorBase
 	@Internal
 	public @Nullable Node getNodeByLocalId(int id)
 	{
-		switch (id >>> NodeId.LOCAL_ID_NODE_TYPE_OFFSET)
+		switch (id >>> NodeId.LOCAL_ID_TYPE_OFFSET)
 		{
 		case NodeId.FACTOR_TYPE:
 			return _ownedFactors.getByLocalId(id);

@@ -16,13 +16,15 @@
 
 package com.analog.lyric.dimple.model.core;
 
+import java.util.UUID;
+
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 
 
-public final class Edge
+public final class Edge implements IFactorGraphChild
 {
 	/*--------
 	 * State
@@ -69,6 +71,53 @@ public final class Edge
 	public String toString()
 	{
 		return String.format("[Edge %s - %s]", _edge.getFactor(_graph), _edge.getVariable(_graph));
+	}
+	
+	/*---------------------------
+	 * IFactorGraphChild methods
+	 */
+
+	@Override
+	public final long getGlobalId()
+	{
+		return NodeId.globalIdFromParts(_graph.getGraphId(), getLocalId());
+	}
+	
+	@Override
+	public long getGraphTreeId()
+	{
+		return NodeId.graphTreeIdFromParts(_graph.getGraphTreeIndex(), getLocalId());
+	}
+	
+	@Deprecated
+	@Override
+	public long getId()
+	{
+		return getLocalId();
+	}
+	
+	@Override
+	public final int getLocalId()
+	{
+		return NodeId.localIdFromParts(NodeId.EDGE_TYPE, _edge.edgeIndexInParent(_graph));
+	}
+	
+	@Override
+	public @Nullable FactorGraph getParentGraph()
+	{
+		return _graph;
+	}
+
+	@Override
+	public @Nullable FactorGraph getRootGraph()
+	{
+		return _graph.getRootGraph();
+	}
+	
+	@Override
+	public UUID getUUID()
+	{
+		return NodeId.makeUUID(_graph.getEnvironment().getEnvId(), getGlobalId());
 	}
 	
 	/*--------------

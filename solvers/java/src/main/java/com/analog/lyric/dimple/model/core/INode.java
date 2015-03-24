@@ -35,7 +35,7 @@ import com.analog.lyric.util.misc.Internal;
  * @since 0.06 - extends {@link IModelEventSource}.
  * @author Christopher Barber
  */
-public interface INode  extends INameable, IModelEventSource
+public interface INode extends IFactorGraphChild, INameable, IModelEventSource
 {
 	/**
 	 * If node is a {@link Factor} returns it, otherwise null.
@@ -73,20 +73,6 @@ public interface INode  extends INameable, IModelEventSource
 	 */
 	public boolean isVariable();
 	
-	/**
-	 * Uniquely identifies node within its graph tree.
-	 * <p>
-	 * Similar to the {@linkplain #getGlobalId() global id} but is only unique within the
-	 * tree of graphs containing this node. Looking up nodes by this id is faster than
-	 * lookup by the global id.
-	 * <p>
-	 * @since 0.08
-	 * @see NodeId#graphTreeIdFromParts(int, int)
-	 * @see NodeId#graphTreeIndexFromGraphTreeId(long)
-	 * @see NodeId#localIdFromGraphTreeId(long)
-	 */
-	public long getGraphTreeId();
-
 	/**
 	 * Indicates whether node is a factor, graph, or variable.
 	 * <p>
@@ -136,7 +122,9 @@ public interface INode  extends INameable, IModelEventSource
 	 */
 	public @Nullable ISolverNode getSolver();
 	
+	@Override
 	public @Nullable FactorGraph getParentGraph();
+	@Override
 	public @Nullable FactorGraph getRootGraph();
 	public boolean hasParentGraph();
 	

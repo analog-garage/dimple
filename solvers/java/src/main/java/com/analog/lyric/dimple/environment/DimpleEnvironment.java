@@ -216,11 +216,16 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 */
 	public DimpleEnvironment()
 	{
-		this(new SecureRandom().nextLong());
+		this(new SecureRandom().nextLong() & NodeId.ENV_ID_MAX);
 	}
 	
 	public DimpleEnvironment(long envId)
 	{
+		if (envId < NodeId.ENV_ID_MIN || envId > NodeId.ENV_ID_MAX)
+		{
+			throw new IllegalArgumentException(String.format("%d is not a valid environment id", envId));
+		}
+		
 		synchronized (_allInstances)
 		{
 			if (_allInstances.containsKey(envId))

@@ -16,14 +16,17 @@
 
 package com.analog.lyric.dimple.model.core;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
+import com.analog.lyric.util.misc.IGetId;
+import com.analog.lyric.util.misc.Internal;
 
 /**
- * Contains utility methods for manipulating node identifiers.
+ * Static utility methods for manipulating factor graph child identifiers.
  * <p>
  * There are a number of different types of identifiers used to index
  * nodes and other objects belonging to factor graphs. All are represented
@@ -54,9 +57,14 @@ import com.analog.lyric.dimple.environment.DimpleEnvironment;
  * {@link FactorGraph#getNodeByGraphTreeId(long)}.
  * </ul>
  * <p>
+ * Note that some objects may be represented by more than one identifier. The same variable may
+ * be represented by its variable id in the graph that owns it, or a boundary variable id in a graph that has
+ * it as a boundary variable. The same boundary edge will have different identifiers with respect to the two
+ * graphs that refer to it.
+ * <p>
  * @since 0.08
  */
-public class NodeId
+public abstract class NodeId
 {
 	/*-----------
 	 * Constants
@@ -127,12 +135,99 @@ public class NodeId
 	 */
 	public static final long GLOBAL_ID_MIN = ((long)GRAPH_ID_MIN << 32);
 
-	public static final int LOCAL_ID_NODE_TYPE_OFFSET = 28;
-	public static final int FACTOR_TYPE =    0;
-	public static final int GRAPH_TYPE =     1;
-	public static final int VARIABLE_TYPE =  2;
-	public static final int BOUNDARY_VARIABLE_TYPE = 6;
+	/**
+	 * Offset of the type index portion of a local identifier.
+	 * @see #typeIndexFromLocalId(int)
+	 * @category internal
+	 */
+	@Internal
+	public static final int LOCAL_ID_TYPE_OFFSET = 28;
 	
+	/**
+	 * Type index for factor identifiers.
+	 * @see #typeIndexFromLocalId(int)
+	 */
+	public static final int FACTOR_TYPE =    0;
+	
+	/**
+	 * Type index for subgraph identifiers.
+	 * @see #typeIndexFromLocalId(int)
+	 */
+	public static final int GRAPH_TYPE =     1;
+	
+	/**
+	 * Type index for owned (non-boundary) variable identifiers.
+	 * @see #typeIndexFromLocalId(int)
+	 */
+	public static final int VARIABLE_TYPE =  2;
+
+	/**
+	 * Type index for boundary variable identifiers.
+	 * @see #typeIndexFromLocalId(int)
+	 */
+	public static final int BOUNDARY_VARIABLE_TYPE = 3;
+
+	/**
+	 * Type index for edge identifiers.
+	 * @see #typeIndexFromLocalId(int)
+	 */
+	public static final int EDGE_TYPE = 4;
+	
+	/**
+	 * Type index for factor port identifiers
+	 * @see #typeIndexFromLocalId(int)
+	 */
+	public static final int FACTOR_PORT_TYPE = 5;
+
+	/**
+	 * Type index for variable port identifiers
+	 * @see #typeIndexFromLocalId(int)
+	 */
+	public static final int VARIABLE_PORT_TYPE = 6;
+	
+	/**
+	 * Value of minimum type index for local identifiers
+	 */
+	public static final int TYPE_MIN = 0;
+	
+	/**
+	 * Value of max type index for local identifiers
+	 */
+	public static final int TYPE_MAX = 6;
+	
+	/**
+	 * Enumerates supported identifier types.
+	 * <p>
+	 * These correspond to the similarly named type index constants, e.g.
+	 * {@link Type#FACTOR} corresponds to {@link NodeId#FACTOR_TYPE}.
+	 * <p>
+	 * @since 0.08
+	 * @author Christopher Barber
+	 */
+	public enum Type
+	{
+		FACTOR,
+		GRAPH,
+		VARIABLE,
+		BOUNDARY_VARIABLE,
+		EDGE,
+		FACTOR_PORT,
+		VARIABLE_PORT;
+		
+		private static final Type[] _values = Type.values();
+		
+		private static final String DEFAULT_NAME_PREFIX = "FGVBEPQ";
+		
+		/**
+		 * Returns {@code Type} value with given ordinal value
+		 * @since 0.08
+		 */
+		public static Type valueOf(int ordinal)
+		{
+			return _values[ordinal];
+		}
+	}
+
 	/**
 	 * Maximum value for the index portion of a local identifier.
 	 * <p>
@@ -140,7 +235,7 @@ public class NodeId
 	 * @see #LOCAL_ID_INDEX_MIN
 	 * @see #indexFromLocalId(int)
 	 */
-	public static final int LOCAL_ID_INDEX_MAX = (1<<LOCAL_ID_NODE_TYPE_OFFSET) - 1;
+	public static final int LOCAL_ID_INDEX_MAX = (1<<LOCAL_ID_TYPE_OFFSET) - 1;
 
 	/**
 	 * Minimum value for the index portion of a local identifier.
@@ -151,21 +246,47 @@ public class NodeId
 	 */
 	public static final int LOCAL_ID_INDEX_MIN = 0;
 	
+	/**
+	 * Default value of local id for a factor that has not yet been added to a {@link FactorGraph}.
+	 * @category internal
+	 */
+	@Internal
+	public static final int INITIAL_FACTOR_ID   = FACTOR_TYPE   << LOCAL_ID_TYPE_OFFSET | LOCAL_ID_INDEX_MAX;
+
+	/**
+	 * Default value of local id for a subgraph that has not yet been added to a {@link FactorGraph}.
+	 * @category internal
+	 */
+	@Internal
+	public static final int INITIAL_GRAPH_ID    = GRAPH_TYPE    << LOCAL_ID_TYPE_OFFSET | LOCAL_ID_INDEX_MAX;
+	
+	/**
+	 * Default value of local id for a variable that has not yet been added to a {@link FactorGraph}.
+	 * @category internal
+	 */
+	@Internal
+	public static final int INITIAL_VARIABLE_ID = VARIABLE_TYPE << LOCAL_ID_TYPE_OFFSET | LOCAL_ID_INDEX_MAX;
+	
 	private static String DEFAULT_GRAPH_NAME_PREFIX = "$Graph";
 	
+	/**
+	 * Mask for global identifier within UUID.
+	 */
 	private static final long GLOBAL_ID_MASK = GLOBAL_ID_MAX;
 	
+	/**
+	 * Mask for index (non-type) portion of local identifier.
+	 */
 	private static final int LOCAL_ID_INDEX_MASK = LOCAL_ID_INDEX_MAX;
 
 	private static final int UUID_VERSION_OFFSET = 12;
 	private static final int UUID_VERSION_WIDTH = 4;
 	
 	private static final long UUID_NON_VERSION_MASK = (1L << UUID_VERSION_OFFSET) - 1;
-	private static final long UUID_NON_VERSION_SHIFT = UUID_VERSION_OFFSET + UUID_VERSION_WIDTH;
 	
-	public static final int INITIAL_FACTOR_ID   = FACTOR_TYPE   << LOCAL_ID_NODE_TYPE_OFFSET | LOCAL_ID_INDEX_MAX;
-	public static final int INITIAL_GRAPH_ID    = GRAPH_TYPE    << LOCAL_ID_NODE_TYPE_OFFSET | LOCAL_ID_INDEX_MAX;
-	public static final int INITIAL_VARIABLE_ID = VARIABLE_TYPE << LOCAL_ID_NODE_TYPE_OFFSET | LOCAL_ID_INDEX_MAX;
+	/*----------------
+	 * Static methods
+	 */
 	
 	/**
 	 * Makes a UUID instance encoding Dimple environment and global identifiers.
@@ -211,8 +332,8 @@ public class NodeId
 	 */
 	public static String defaultNameForLocalId(int id)
 	{
-		int type = id >>> LOCAL_ID_NODE_TYPE_OFFSET;
-		char c = type < 3 ? "FGV".charAt(type) : 'X';
+		int type = id >>> LOCAL_ID_TYPE_OFFSET;
+		char c = type <= TYPE_MAX ? Type.DEFAULT_NAME_PREFIX.charAt(type) : 'X';
 		return String.format("$%c%d", c, id & LOCAL_ID_INDEX_MASK);
 	}
 	
@@ -230,12 +351,7 @@ public class NodeId
 			return -1L;
 		}
 		final long msb = uid.getMostSignificantBits();
-		return msb & UUID_NON_VERSION_MASK | msb >>> UUID_NON_VERSION_SHIFT;
-	}
-	
-	public static int factorIdFromIndex(int index)
-	{
-		return localIdFromParts(FACTOR_TYPE, index);
+		return msb & UUID_NON_VERSION_MASK | (msb >>> UUID_VERSION_WIDTH) & ~UUID_NON_VERSION_MASK;
 	}
 	
 	/**
@@ -254,14 +370,26 @@ public class NodeId
 		return nodeUid.getLeastSignificantBits() & GLOBAL_ID_MASK;
 	}
 	
+	/**
+	 * Construct a global identifier from its {@linkplain FactorGraph#getGraphId graph id} and its
+	 * {@linkplain IGetId#getLocalId() local id}.
+	 * @since 0.08
+	 */
 	public static long globalIdFromParts(int graphId, int localId)
 	{
 		return (long)graphId << 32 | 0xFFFFFFFFL & localId;
 	}
 	
-	public static long globalIdFromParts(int graphId, int nodeType, int localIndex)
+	/**
+	 * Construct a global identifier from its {@linkplain FactorGraph#getGraphId graph id}, its
+	 * local id type index and its local index.
+	 * @since 0.08
+	 * @see #globalIdFromParts(int, int)
+	 * @see #localIdFromParts(int, int)
+	 */
+	public static long globalIdFromParts(int graphId, int idType, int localIndex)
 	{
-		return globalIdFromParts(graphId, localIdFromParts(nodeType, localIndex));
+		return globalIdFromParts(graphId, localIdFromParts(idType, localIndex));
 	}
 
 	/**
@@ -308,6 +436,11 @@ public class NodeId
 		return (long)graphTreeIndex << 32 | 0xFFFFFFFFL & localId;
 	}
 	
+	/**
+	 * Returns {@linkplain FactorGraph#getGraphTreeIndex() graph tree index} portion of
+	 * {@linkplain IFactorGraphChild#getGraphTreeId() graph tree identifier}.
+	 * @since 0.08
+	 */
 	public static int graphTreeIndexFromGraphTreeId(long graphTreeId)
 	{
 		return (int)(graphTreeId >>> 32);
@@ -319,7 +452,7 @@ public class NodeId
 	 */
 	public static int localIdFromParts(int nodeType, int index)
 	{
-		return (nodeType << LOCAL_ID_NODE_TYPE_OFFSET) | index;
+		return (nodeType << LOCAL_ID_TYPE_OFFSET) | index;
 	}
 	
 	/**
@@ -368,6 +501,13 @@ public class NodeId
 				}
 				break;
 				
+			case 19:
+				if (c != '8' && c != '9' && c != 'a' && c != 'b' && c != 'A' && c != 'B')
+				{
+					return false;
+				}
+				break;
+				
 			default:
 				if (c < '0' || c > 'f' || c > '9' && c < 'A' || c > 'F' && c < 'a')
 				{
@@ -399,10 +539,14 @@ public class NodeId
 				try
 				{
 					int index = Integer.parseInt(name.substring(2));
+					System.out.println(index);
 					if (LOCAL_ID_INDEX_MIN <= index && index <= LOCAL_ID_INDEX_MAX)
 					{
-						int type = "FGV".indexOf(c);
-						return (type << LOCAL_ID_NODE_TYPE_OFFSET) | index;
+						int type = Type.DEFAULT_NAME_PREFIX.indexOf(c);
+						if (type >= 0)
+						{
+							return (type << LOCAL_ID_TYPE_OFFSET) | index;
+						}
 					}
 				}
 				catch (NumberFormatException ex)
@@ -418,41 +562,48 @@ public class NodeId
 	/**
 	 * Return local identifier from Dimple global id
 	 * @since 0.08
-	 * @see Node#getGlobalId()
+	 * @see INode#getGlobalId()
 	 */
 	public static int localIdFromGlobalId(long globalId)
 	{
 		return (int)(globalId & 0xFFFFFFFFL);
 	}
 	
+	/**
+	 * Return local identifier from Dimple graph tree id
+	 * @since 0.08
+	 * @see INode#getGraphTreeId()
+	 */
 	public static int localIdFromGraphTreeId(long graphTreeId)
 	{
 		return (int)(graphTreeId & 0xFFFFFFFFL);
 	}
 	
 	/**
-	 * Returns node type encoded in local identifier
+	 * Returns index of type encoded in local identifier
 	 * <p>
-	 * @return {@link NodeType} encoded in identifier or null if type encoding is not valid.
+	 * @return type index portion of local identifier. Valid local ids should return a number
+	 * in the range {@link #TYPE_MIN} to {@link #TYPE_MAX}.
+	 * <p>
 	 * @since 0.08
+	 * @see #typeFromLocalId(int)
 	 */
-	public static @Nullable NodeType nodeTypeFromLocalId(int localId)
+	public static int typeIndexFromLocalId(int localId)
 	{
-		switch (localId >>> LOCAL_ID_NODE_TYPE_OFFSET)
-		{
-		case FACTOR_TYPE:
-			return NodeType.FACTOR;
-		case GRAPH_TYPE:
-			return NodeType.GRAPH;
-		case VARIABLE_TYPE:
-			return NodeType.VARIABLE;
-		}
-		
-		return null;
+		return localId >>> LOCAL_ID_TYPE_OFFSET;
 	}
 	
-	public static int variableIdFromIndex(int index)
+	private static final Type[] _localIdTypes = Arrays.copyOf(Type.values(), 16);
+	
+	/**
+	 * Returns type encoded in local identifier.
+	 * @param localId a local identifier constructed with {@link NodeId#localIdFromParts(int, int)}.
+	 * @return {@link Type} of given id, or null if id has an invalid type index.
+	 * @since 0.08
+	 * @see #typeIndexFromLocalId(int)
+	 */
+	public static @Nullable Type typeFromLocalId(int localId)
 	{
-		return NodeId.localIdFromParts(VARIABLE_TYPE, index);
+		return _localIdTypes[localId >>> LOCAL_ID_TYPE_OFFSET];
 	}
 }
