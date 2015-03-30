@@ -2261,12 +2261,6 @@ public class FactorGraph extends FactorBase
 		addName(variable);
 	}
 
-	@Override
-	public void initialize(int portNum)
-	{
-		throw new DimpleException("not supported");
-	}
-
 	public void recreateMessages()
 	{
 		for (Variable v : getVariablesFlat())
@@ -2876,6 +2870,48 @@ public class FactorGraph extends FactorBase
 	{
 		return _boundaryVariables.get(i);
 	}
+
+	public @Nullable IFactorGraphChild getChildByGlobalId(long globalId)
+	{
+		final FactorGraph fg = getSubgraphForGlobalId(globalId);
+		return fg != null ? fg.getChildByLocalId(Ids.localIdFromGlobalId(globalId)) : null;
+	}
+	
+	public @Nullable IFactorGraphChild getChildByGraphTreeId(long graphTreeId)
+	{
+		final FactorGraph fg = getGraphByTreeIndex(Ids.graphTreeIndexFromGraphTreeId(graphTreeId));
+		return fg != null ? fg.getChildByLocalId(Ids.localIdFromGlobalId(graphTreeId)) : null;
+	}
+	
+	/**
+	 * Get child of graph identified by {@code localId}.
+	 * <p>
+	 * @param localId
+	 * @return child or null
+	 * @since 0.08
+	 */
+	public @Nullable IFactorGraphChild getChildByLocalId(int localId)
+	{
+		switch (Ids.typeIndexFromLocalId(localId))
+		{
+		case Ids.FACTOR_TYPE:
+			return _ownedFactors.getByLocalId(localId);
+		case Ids.GRAPH_TYPE:
+			return _ownedSubGraphs.getByLocalId(localId);
+		case Ids.VARIABLE_TYPE:
+			return _ownedVariables.getByLocalId(localId);
+		case Ids.BOUNDARY_VARIABLE_TYPE:
+			return _boundaryVariables.get(Ids.indexFromLocalId(localId));
+		case Ids.EDGE_TYPE:
+			return new Edge(this, _edges.get(Ids.indexFromLocalId(localId)));
+		case Ids.FACTOR_PORT_TYPE:
+			return new FactorPort(_edges.get(Ids.indexFromLocalId(localId)), this);
+		case Ids.VARIABLE_PORT_TYPE:
+			return new VariablePort(_edges.get(Ids.indexFromLocalId(localId)), this);
+		default:
+			return null;
+		}
+	}
 	
 	/**
 	 * Returns the number of variables contained directly in this graph
@@ -3314,22 +3350,8 @@ public class FactorGraph extends FactorBase
 	 */
 	public @Nullable Node getNodeByGlobalId(long gid)
 	{
-		final int graphId = Ids.graphIdFromGlobalId(gid);
-		final int id = Ids.localIdFromGlobalId(gid);
-		if (_graphId == graphId)
-		{
-			return getNodeByLocalId(id);
-		}
-		else
-		{
-			FactorGraph fg = getEnvironment().factorGraphs().getGraphWithId(graphId);
-			if (fg != null && isAncestorOf(fg))
-			{
-				return fg.getNodeByLocalId(id);
-			}
-		}
-		
-		return null;
+		final FactorGraph fg = getSubgraphForGlobalId(gid);
+		return fg != null ? fg.getNodeByLocalId(Ids.localIdFromGlobalId(gid)) : null ;
 	}
 	
 	/**
@@ -3483,18 +3505,6 @@ public class FactorGraph extends FactorBase
 		return sfg != null && sfg.isSolverRunning();
 	}
 
-	//TODO: should these only be on solver?
-	@Override
-	public void update()
-	{
-		throw new DimpleException("Not supported");
-	}
-	@Override
-	public void updateEdge(int outPortNum)
-	{
-		throw new DimpleException("Not supported");
-	}
-
 	@Override
 	public FactorGraph getRootGraph()
 	{
@@ -3506,29 +3516,10 @@ public class FactorGraph extends FactorBase
 		return _solverFactory;
 	}
 
-	@Override
-	public double getScore()
-	{
-		return requireSolver("getScore").getScore();
-	}
-
 	public double getBetheFreeEnergy()
 	{
 		return requireSolver("getBetheFreeEnergy").getBetheFreeEnergy();
 	}
-
-	@Override
-	public double getInternalEnergy()
-	{
-		return requireSolver("getInternalEnergy").getInternalEnergy();
-	}
-
-	@Override
-	public double getBetheEntropy()
-	{
-		return requireSolver("getBetheEntropy").getBetheEntropy();
-	}
-
 
 	// For operating collectively on groups of variables that are not already part of a variable vector
 	protected @Nullable HashMap<Integer, ArrayList<Variable>> _variableGroups;
@@ -3774,13 +3765,14 @@ public class FactorGraph extends FactorBase
 	 * <p>
 	 * For internal use only.
 	 */
+	@Override
 	@Internal
 	public ISolverFactorGraph requireSolver(String method)
 	{
 		ISolverFactorGraph solver = getSolver();
 		if (solver == null)
 		{
-			throw new DimpleException("Solver not set. Required by '%s'", method);
+			throw new NullPointerException(String.format("Solver not set. Required by '%s'", method));
 		}
 		return solver;
 	}
@@ -3944,5 +3936,37 @@ public class FactorGraph extends FactorBase
 	{
 		Helpers.setNamesByStructure(this, boundaryString, ownedString, factorString, rootGraphString, childGraphString);
 	}
+	
+	/*-----------------
+	 * Private methods
+	 */
+	
+	/**
+	 * Returns subgraph identified by global id
+	 * @param globalId
+	 * @return subgraph with graph id matching that in {@code globalId} or null if no such graph, or
+	 * not a subgraph of this graph.
+	 * @since 0.08
+	 */
+	private @Nullable FactorGraph getSubgraphForGlobalId(long globalId)
+	{
+		final int graphId = Ids.graphIdFromGlobalId(globalId);
+		if (_graphId == graphId)
+		{
+			return this;
+		}
+		else
+		{
+			FactorGraph fg = getEnvironment().factorGraphs().getGraphWithId(graphId);
+			if (fg != null && isAncestorOf(fg))
+			{
+				return fg;
+			}
+		}
+		
+		return null;
+	}
+	
 }
+
 

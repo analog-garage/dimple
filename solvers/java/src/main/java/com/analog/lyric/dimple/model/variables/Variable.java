@@ -29,8 +29,8 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Equality;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.Ids;
+import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.NodeType;
 import com.analog.lyric.dimple.model.core.VariablePort;
 import com.analog.lyric.dimple.model.domains.Domain;
@@ -192,30 +192,6 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		return null;
 	}
 	
-	@Override
-	public double getScore()
-	{
-		return requireSolver("getScore").getScore();
-	}
-
-	@Override
-	public double getBetheEntropy()
-	{
-		return requireSolver("getBetheEntropy").getBetheEntropy();
-	}
-	
-	@Override
-	public double getInternalEnergy()
-	{
-		return requireSolver("getInternalEnergy").getInternalEnergy();
-		
-	}
-	
-	@Override
-	public void initialize(int portNum)
-	{
-	}
-    
 	/**
 	 * Model-specific initialization for variables.
 	 * <p>
@@ -228,18 +204,6 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
     	super.initialize();
     }
     
-	@Override
-	public void update()
-	{
-		requireSolver("update").update();
-	}
-
-	@Override
-	public void updateEdge(int outPortNum)
-	{
-		requireSolver("updateEdge").updateEdge(outPortNum);
-	}
-
 	/*--------------
 	 * Node methods
 	 */
@@ -532,13 +496,14 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
      * <p>
      * @since 0.06
      */
-    @Internal
+    @Override
+	@Internal
     public ISolverVariable requireSolver(String methodName)
     {
     	final ISolverVariable svar = getSolver();
     	if (svar == null)
     	{
-    		throw new DimpleException("solver must be set before using '%s'", methodName);
+    		throw new NullPointerException(String.format("solver must be set before using '%s'", methodName));
     	}
     	return svar;
     }

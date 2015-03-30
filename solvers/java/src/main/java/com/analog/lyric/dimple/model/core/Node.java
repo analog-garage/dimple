@@ -43,6 +43,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.options.DimpleOptions;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.MapList;
@@ -185,9 +186,6 @@ public abstract class Node extends DimpleOptionHolder implements INode
     	clearFlags(getEventMask());
     }
 
-    /*----------------------------
-     * IDimpleEventSource methods
-     */
 	/*---------------
 	 * INode methods
 	 */
@@ -243,6 +241,12 @@ public abstract class Node extends DimpleOptionHolder implements INode
 		}
 		
 		return ancestor;
+	}
+	
+	@Override
+	public final double getBetheEntropy()
+	{
+		return requireSolver("getBetheEntropy").getBetheEntropy();
 	}
 	
 	/**
@@ -328,6 +332,17 @@ public abstract class Node extends DimpleOptionHolder implements INode
 		return getSibling(portNum);
 	}
 
+	@Override
+	public final double getInternalEnergy()
+	{
+		return requireSolver("getInternalEnergy").getInternalEnergy();
+	}
+	
+	@Override
+	public final double getScore()
+	{
+		return requireSolver("getScore").getScore();
+	}
 	
 	@Override
 	public List<? extends INode> getSiblings()
@@ -707,6 +722,18 @@ public abstract class Node extends DimpleOptionHolder implements INode
 		clearFlags();
 	}
 	
+	@Override
+	public final void update()
+	{
+		requireSolver("update").update();
+	}
+	
+	@Override
+	public final void updateEdge(int siblingNumber)
+	{
+		requireSolver("updateEdge").updateEdge(siblingNumber);
+	}
+	
 	@Deprecated
 	@Override
 	public void updateEdge(INode other)
@@ -1030,6 +1057,8 @@ public abstract class Node extends DimpleOptionHolder implements INode
 		}
 	}
 	
+	protected abstract ISolverNode requireSolver(String method);
+	
 	/**
 	 * Sets all of the bits in {@code mask} in the flags.
 	 * <p>
@@ -1118,5 +1147,11 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	public int getSiblingPortIndex(int siblingNumber)
 	{
 		return getReverseSiblingNumber(siblingNumber);
+	}
+	
+	@Deprecated
+	@Override
+	public final void initialize(int siblingNumber)
+	{
 	}
 }

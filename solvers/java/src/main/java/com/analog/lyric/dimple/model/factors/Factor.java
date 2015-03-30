@@ -355,11 +355,6 @@ public class Factor extends FactorBase implements Cloneable
 		return new Factor(this);
 	}
 
-	@Override
-	public void initialize(int portNum)
-	{
-	}
-    
 	/**
 	 * Model-specific initialization for factors.
 	 * <p>
@@ -392,17 +387,6 @@ public class Factor extends FactorBase implements Cloneable
 	}
 	
 	@Override
-	public void update()
-	{
-		requireSolver("update").update();
-	}
-
-	@Override
-	public void updateEdge(int outPortNum)
-	{
-		requireSolver("updateEdge").updateEdge(outPortNum);
-	}
-	
 	@Internal
 	public ISolverFactor requireSolver(String method)
 	{
@@ -413,7 +397,7 @@ public class Factor extends FactorBase implements Cloneable
 	{
 		if (solverFactor == null)
 		{
-			throw new DimpleException("solver must be set before using '%s'.", method);
+			throw new NullPointerException(String.format("solver must be set before using '%s'.", method));
 		}
 		return solverFactor;
 	}
@@ -424,27 +408,6 @@ public class Factor extends FactorBase implements Cloneable
 		throw new DimpleException("not implemented");
 	}
 	
-	@Override
-	public double getScore()
-	{
-		return requireSolver("getScore").getScore();
-	}
-	
-	@Override
-	public double getInternalEnergy()
-	{
-		return requireSolver("getInternalEnergy").getInternalEnergy();
-		
-	}
-
-	@Override
-	public double getBetheEntropy()
-	{
-		return requireSolver("getBetheEntropy").getBetheEntropy();
-		
-	}
-
-
 	public boolean isDirected()
 	{
 		ensureDirectedToSet();

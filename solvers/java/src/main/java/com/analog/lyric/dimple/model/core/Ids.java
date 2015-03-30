@@ -539,7 +539,6 @@ public abstract class Ids
 				try
 				{
 					int index = Integer.parseInt(name.substring(2));
-					System.out.println(index);
 					if (LOCAL_ID_INDEX_MIN <= index && index <= LOCAL_ID_INDEX_MAX)
 					{
 						int type = Type.DEFAULT_NAME_PREFIX.indexOf(c);
