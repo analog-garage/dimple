@@ -43,7 +43,7 @@ import com.google.common.collect.UnmodifiableIterator;
  * @author Christopher Barber
  */
 @NotThreadSafe
-abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
+abstract class OwnedArray<T extends FactorGraphChild> extends AbstractCollection<T>
 {
 	/*-------
 	 * State
@@ -208,7 +208,7 @@ abstract class OwnedArray<T extends Node> extends AbstractCollection<T>
 		}
 	}
 	
-	boolean containsNode(Node node)
+	boolean containsNode(FactorGraphChild node)
 	{
 		return node == getByLocalId(node.getLocalId());
 	}

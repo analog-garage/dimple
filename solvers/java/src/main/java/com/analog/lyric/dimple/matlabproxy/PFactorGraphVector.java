@@ -39,6 +39,7 @@ import com.analog.lyric.dimple.model.repeated.IVariableStreamSlice;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.VariableBlock;
 import com.analog.lyric.dimple.schedulers.IScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
@@ -790,7 +791,13 @@ public class PFactorGraphVector extends PFactorBaseVector
 
 	
 	// For operating collectively on groups of variables that are not already part of a variable vector
+	@Deprecated
 	public int defineVariableGroup(Object[] variables)
+	{
+		return addVariableBlock(variables);
+	}
+	
+	public int addVariableBlock(Object[] variables)
 	{
 		ArrayList<Variable> variableList = new ArrayList<Variable>();
 		for (int i = 0; i < variables.length; i++)
@@ -800,7 +807,8 @@ public class PFactorGraphVector extends PFactorBaseVector
 				variableList.add(modelerVariables[j]);
 		}
 
-		return getGraph().defineVariableGroup(variableList);
+		final VariableBlock block = getGraph().addVariableBlock(variableList);
+		return block.getLocalId();
 	}
 
 }

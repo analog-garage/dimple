@@ -924,7 +924,7 @@ classdef FactorGraph < Node
                     end
                 end
             end
-            variableGroupID = obj.VectorObject.defineVariableGroup(variables);
+            variableGroupID = obj.VectorObject.addVariableBlock(variables);
         end
 
     end

@@ -27,21 +27,17 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
 
 import cern.colt.list.IntArrayList;
 
 import com.analog.lyric.collect.BitSetUtil;
-import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.events.DimpleEvent;
 import com.analog.lyric.dimple.events.IDimpleEventListener;
-import com.analog.lyric.dimple.events.IDimpleEventSource;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
-import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.options.DimpleOptions;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.IMapList;
@@ -50,7 +46,7 @@ import com.analog.lyric.util.misc.MapList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.UnmodifiableIterator;
 
-public abstract class Node extends DimpleOptionHolder implements INode
+public abstract class Node extends FactorGraphChild implements INode
 {
 	/*-----------
 	 * Constants
@@ -76,10 +72,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	 * State
 	 */
 	
-	private int _id;
 	protected @Nullable String _name;
-	private @Nullable FactorGraph _parentGraph;
-	
 	/**
 	 * Identifies the edges that connect to this node.
 	 * <p>
@@ -154,18 +147,6 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	/*----------------------------
 	 * IDimpleEventSource methods
 	 */
-	
-	@Override
-	public @Nullable FactorGraph getContainingGraph()
-	{
-		return _parentGraph;
-	}
-	
-	@Override
-	public @Nullable IDimpleEventSource getEventParent()
-	{
-		return _parentGraph;
-	}
 	
 	@Override
 	public String getEventSourceName()
@@ -484,34 +465,6 @@ public abstract class Node extends DimpleOptionHolder implements INode
 		return getConnectedNodes(0);
 	}
 	
-	protected void setParentGraph(@Nullable FactorGraph parentGraph)
-	{
-		// TODO: combine with adding to owned list?
-		_parentGraph = parentGraph;
-	}
-	
-	/**
-	 * Returns the graph that immediately contains this node, or null if node does not belong to any graph
-	 * or this is the root graph.
-	 * <p>
-	 * @see #requireParentGraph()
-	 */
-	@Override
-	public @Nullable FactorGraph getParentGraph()
-	{
-		return _parentGraph;
-	}
-	
-	/**
-	 * Returns the outermost graph containing this node. Returns the node itself if it is the root graph.
-	 */
-	@Override
-	public @Nullable FactorGraph getRootGraph()
-	{
-		FactorGraph parent = _parentGraph;
-		return parent != null ? parent.getRootGraph() : null;
-	}
-	
 	@Override
 	public Collection<Port> getPorts()
 	{
@@ -526,57 +479,6 @@ public abstract class Node extends DimpleOptionHolder implements INode
 	public boolean hasParentGraph()
 	{
 		return _parentGraph != null;
-	}
-	
-	@Deprecated
-	@Override
-	public long getId()
-	{
-		return getGlobalId();
-	}
-	
-	void setLocalId(int id)
-	{
-		_id = id;
-	}
-	
-	/**
-	 * A local identifier that uniquely identifies the node within its containing graph.
-	 * <p>
-	 * This id can be used to retrieve the node from its graph using {@link FactorGraph#getNodeByLocalId(int)}.
-	 * <p>
-	 * @since 0.08
-	 * @see #getGlobalId()
-	 * @see Ids
-	 */
-	@Override
-	public int getLocalId()
-	{
-		return _id;
-	}
-	
-	/**
-	 * A global identifier that uniquely identifies the node within the containing Dimple environment.
-	 * <p>
-	 * This id can be used to retrieve the node from its graph using {@link FactorGraph#getNodeByGlobalId(long)}
-	 * or from the environment using {@link DimpleEnvironment#getNodeByGlobalId}.
-	 * <p>
-	 * @since 0.08
-	 * @see #getLocalId()
-	 * @see Ids
-	 */
-	@Override
-	public long getGlobalId()
-	{
-		final FactorGraph parent = _parentGraph;
-		return Ids.globalIdFromParts(parent != null ? parent.getGraphId() : 0, _id);
-	}
-	
-	@Override
-	public long getGraphTreeId()
-	{
-		final FactorGraph parent = _parentGraph;
-		return Ids.graphTreeIdFromParts(parent != null ? parent.getGraphTreeIndex() : 0, _id);
 	}
 	
 	@Override
@@ -624,12 +526,6 @@ public abstract class Node extends DimpleOptionHolder implements INode
 		return name != null ? name : Ids.defaultNameForLocalId(_id);
 	}
 	
-    @Override
-	public UUID getUUID()
-	{
-    	return Ids.makeUUID(getEnvironment().getEnvId(), getGlobalId());
-	}
-    
     abstract public String getClassLabel();
     
 	@Override
@@ -818,22 +714,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 		return isVariable() ? edge._variableToFactorEdgeNumber : edge._factorToVariableEdgeNumber;
 	}
 	
-	/**
-	 * Returns parent {@link FactorGraph} or throws an exception if none.
-	 * @since 0.08
-	 * @throws IllegalStateException if {@link #getParentGraph()} is null.
-	 */
-	public FactorGraph requireParentGraph()
-	{
-		final FactorGraph parent = _parentGraph;
-		
-		if (parent != null)
-		{
-			return parent;
-		}
-		
-		throw new IllegalStateException(String.format("Node '%s' does not belong to a graph.", this));
-	}
+	
 	
 	/*------------------
 	 * Internal methods
@@ -1134,7 +1015,7 @@ public abstract class Node extends DimpleOptionHolder implements INode
 				return true;
 			}
 		}
-		
+	
 		return false;
 	}
 	

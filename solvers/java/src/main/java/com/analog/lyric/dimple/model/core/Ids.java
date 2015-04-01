@@ -186,6 +186,12 @@ public abstract class Ids
 	public static final int VARIABLE_PORT_TYPE = 6;
 	
 	/**
+	 * Type index for variable block identifiers.
+	 * @see #typeIndexFromLocalId(int)
+	 */
+	public static final int VARIABLE_BLOCK_TYPE = 7;
+	
+	/**
 	 * Value of minimum type index for local identifiers
 	 */
 	public static final int TYPE_MIN = 0;
@@ -212,11 +218,12 @@ public abstract class Ids
 		BOUNDARY_VARIABLE,
 		EDGE,
 		FACTOR_PORT,
-		VARIABLE_PORT;
+		VARIABLE_PORT,
+		VARIABLE_BLOCK;
 		
 		private static final Type[] _values = Type.values();
 		
-		private static final String DEFAULT_NAME_PREFIX = "FGVBEPQ";
+		private static final String DEFAULT_NAME_PREFIX = "FGVBEPQK";
 		
 		/**
 		 * Returns {@code Type} value with given ordinal value

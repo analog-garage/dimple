@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.model.core;
 import static java.util.Objects.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
@@ -69,6 +70,7 @@ import com.analog.lyric.dimple.model.repeated.IVariableStreamSlice;
 import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.VariableBlock;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.schedulers.DefaultScheduler;
 import com.analog.lyric.dimple.schedulers.IScheduler;
@@ -143,6 +145,8 @@ public class FactorGraph extends FactorBase
 	
 	private final OwnedGraphs _ownedSubGraphs = new OwnedGraphs();
 	
+	private final OwnedVariableBlocks _ownedVariableBlocks = new OwnedVariableBlocks();
+
 	/**
 	 * Holds state common to entire tree of FactorGraphs.
 	 */
@@ -1405,9 +1409,32 @@ public class FactorGraph extends FactorBase
 	}
 
 	/**
+	 * Creates a {@link VariableBlock} containing the specified variables.
+	 * @param variables are the variables that will comprise the block. The variables will be added in the
+	 * order of the {@linkplain Collection#iterator iterator}.
+	 * @since 0.08
+	 * @throws IllegalArgumentException if a variable does not belong to the same tree of graphs as {@code parent}.
+	 */
+	public VariableBlock addVariableBlock(Collection<Variable> variables)
+	{
+		VariableBlock block = new VariableBlock(this, variables);
+		_ownedVariableBlocks.add(block);
+		return block;
+	}
+
+	/**
+	 * @see #addVariableBlock(Collection)
+	 * @since 0.08
+	 */
+	public VariableBlock addVariableBlock(Variable ... variables)
+	{
+		return addVariableBlock(Arrays.asList(variables));
+	}
+
+	/**
 	 * Joining factors replaces all the original factors with one joint factor.
 	 * <p>
-	 * We take the cartesian product of the entries of the tables such that the
+	 * We take the Cartesian product of the entries of the tables such that the
 	 * variables values are consistent. The variable order is determined by taking
 	 * all of the variables from the first factor in order, then adding remaining
 	 * variables in order from each remaining factor in turn.
@@ -2908,6 +2935,8 @@ public class FactorGraph extends FactorBase
 			return new FactorPort(_edges.get(Ids.indexFromLocalId(localId)), this);
 		case Ids.VARIABLE_PORT_TYPE:
 			return new VariablePort(_edges.get(Ids.indexFromLocalId(localId)), this);
+		case Ids.VARIABLE_BLOCK_TYPE:
+			return _ownedVariableBlocks.getByLocalId(localId);
 		default:
 			return null;
 		}
@@ -3050,6 +3079,17 @@ public class FactorGraph extends FactorBase
 		default:
 			return null;
 		}
+	}
+	
+	/**
+	 * Returns {@link VariableBlock} instance with given local id, if it exists.
+	 * @return variable block with given {@code localId} in this graph or else null if id is invalid or
+	 * there is no such block.
+	 * @see #addVariableBlock(Collection)
+	 */
+	public @Nullable VariableBlock getVariableBlockByLocalId(int localId)
+	{
+		return Ids.typeIndexFromLocalId(localId) == Ids.VARIABLE_BLOCK_TYPE ? _ownedVariableBlocks.getByLocalId(localId) : null;
 	}
 
 	public FactorList getNonGraphFactors()
@@ -3521,24 +3561,23 @@ public class FactorGraph extends FactorBase
 		return requireSolver("getBetheFreeEnergy").getBetheFreeEnergy();
 	}
 
-	// For operating collectively on groups of variables that are not already part of a variable vector
-	protected @Nullable HashMap<Integer, ArrayList<Variable>> _variableGroups;
-	protected int _variableGroupID = 0;
+	/**
+	 * @deprecated use {@link #addVariableBlock(Collection)} instead.
+	 */
+	@Deprecated
 	public int defineVariableGroup(ArrayList<Variable> variableList)
 	{
-		HashMap<Integer, ArrayList<Variable>> variableGroups = _variableGroups;
-		if (variableGroups == null)
-		{
-			variableGroups = _variableGroups = new HashMap<Integer, ArrayList<Variable>>();
-		}
-		variableGroups.put(_variableGroupID, variableList);
-		return _variableGroupID++;
+		VariableBlock block = addVariableBlock(variableList);
+		return block.getLocalId();
 	}
 
-	public @Nullable ArrayList<Variable> getVariableGroup(int variableGroupID)
+	/**
+	 * @deprecated use {@link #getVariableBlockByLocalId(int)} instead
+	 */
+	@Deprecated
+	public @Nullable List<Variable> getVariableGroup(int variableGroupID)
 	{
-		final HashMap<Integer, ArrayList<Variable>> groups = _variableGroups;
-		return groups != null ? groups.get(variableGroupID) : null;
+		return getVariableBlockByLocalId(variableGroupID);
 	}
 
 	//==================

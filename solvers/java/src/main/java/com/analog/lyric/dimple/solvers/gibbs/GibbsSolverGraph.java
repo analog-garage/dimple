@@ -21,6 +21,7 @@ import static java.util.Objects.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -53,8 +54,8 @@ import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.factorfunctions.Poisson;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.DirectedNodeSorter;
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.EdgeState;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.FactorGraphIterables;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -1037,9 +1038,9 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	}
 	
 	// Helpers for operating on pre-specified groups of variables in the graph
-	public double[] getVariableSampleValues(int variableGroupID)
+	public double[] getVariableSampleValues(int variableBlockLocalId)
 	{
-		ArrayList<Variable> variableList = _model.getVariableGroup(variableGroupID);
+		List<Variable> variableList = _model.getVariableBlockByLocalId(variableBlockLocalId);
 		if (variableList == null)
 		{
 			return ArrayUtil.EMPTY_DOUBLE_ARRAY;
@@ -1061,10 +1062,10 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 		}
 		return result;
 	}
-	public void setAndHoldVariableSampleValues(int variableGroupID, Object[] values) {setAndHoldVariableSampleValues(variableGroupID, (double[])values[0]);}	// Due to the way MATLAB passes objects
-	public void setAndHoldVariableSampleValues(int variableGroupID, double[] values)
+	public void setAndHoldVariableSampleValues(int variableBlockLocalId, Object[] values) {setAndHoldVariableSampleValues(variableBlockLocalId, (double[])values[0]);}	// Due to the way MATLAB passes objects
+	public void setAndHoldVariableSampleValues(int variableBlockLocalId, double[] values)
 	{
-		ArrayList<Variable> variableList = _model.getVariableGroup(variableGroupID);
+		List<Variable> variableList = _model.getVariableBlockByLocalId(variableBlockLocalId);
 		if (variableList != null)
 		{
 			int numVariables = variableList.size();
@@ -1087,9 +1088,9 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 			}
 		}
 	}
-	public void holdVariableSampleValues(int variableGroupID)
+	public void holdVariableSampleValues(int variableBlockLocalId)
 	{
-		ArrayList<Variable> variableList = _model.getVariableGroup(variableGroupID);
+		List<Variable> variableList = _model.getVariableBlockByLocalId(variableBlockLocalId);
 		if (variableList != null)
 		{
 			final SolverNodeMapping solvers = getSolverMapping();
@@ -1106,9 +1107,9 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 			}
 		}
 	}
-	public void releaseVariableSampleValues(int variableGroupID)
+	public void releaseVariableSampleValues(int variableBlockLocalId)
 	{
-		ArrayList<Variable> variableList = _model.getVariableGroup(variableGroupID);
+		List<Variable> variableList = _model.getVariableBlockByLocalId(variableBlockLocalId);
 		if (variableList != null)
 		{
 			final SolverNodeMapping solvers = getSolverMapping();
