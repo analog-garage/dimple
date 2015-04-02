@@ -16,7 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.core.multithreading;
 
-import java.util.HashMap;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 
@@ -27,6 +28,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraph;
 import com.analog.lyric.dimple.solvers.core.multithreading.phasealgorithm.PhaseMultithreadingAlgorithm;
 import com.analog.lyric.dimple.solvers.core.multithreading.singlequeuealgorithm.SingleQueueMutlithreadingAlgorithm;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 /*
  * The MultiThreading Manager handles the collection of multithreading algorithms
@@ -34,27 +36,29 @@ import com.analog.lyric.dimple.solvers.core.multithreading.singlequeuealgorithm.
  */
 public class MultiThreadingManager
 {
+	private final ISolverFactorGraph _sgraph;
+	private Map<MultithreadingMode,MultithreadingAlgorithm> _mode2alg =
+		new EnumMap<MultithreadingMode, MultithreadingAlgorithm>(MultithreadingMode.class);
+	private final @Nullable ExecutorService _service;
+
 	private int _numWorkers;
-	private FactorGraph _factorGraph;
 	private long _cachedVersion = -1;
 	private @Nullable StaticDependencyGraph _cachedDependencyGraph;
-	private HashMap<MultithreadingMode,MultithreadingAlgorithm> _mode2alg = new HashMap<MultithreadingMode, MultithreadingAlgorithm>();
 	private MultithreadingMode _whichAlg = MultithreadingMode.Phase;
-	private @Nullable ExecutorService _service;
 
-	public MultiThreadingManager(FactorGraph fg, @Nullable ExecutorService service)
+	public MultiThreadingManager(ISolverFactorGraph sfg, @Nullable ExecutorService service)
 	{
+		_sgraph = sfg;
 		_service = service;
 		setNumWorkersToDefault();
 		_mode2alg.put(MultithreadingMode.Phase,new PhaseMultithreadingAlgorithm(this));
 		_mode2alg.put(MultithreadingMode.SingleQueue,new SingleQueueMutlithreadingAlgorithm(this));
-		_factorGraph = fg;
 	}
 
 	
-	public MultiThreadingManager(FactorGraph fg)
+	public MultiThreadingManager(ISolverFactorGraph sfg)
 	{
-		this(fg,null);
+		this(sfg,null);
 	}
 	
 	public ExecutorService getService()
@@ -83,7 +87,7 @@ public class MultiThreadingManager
 	
 	public FactorGraph getFactorGraph()
 	{
-		return _factorGraph;
+		return _sgraph.getModelObject();
 	}
 	
 	/*
@@ -118,11 +122,12 @@ public class MultiThreadingManager
 	 */
 	public StaticDependencyGraph getDependencyGraph()
 	{
-		long version = _factorGraph.structureVersion();
+		final FactorGraph fg = _sgraph.getModelObject();
+		long version = fg.structureVersion();
 		if (version != _cachedVersion)
 		{
 			_cachedVersion = version;
-			_cachedDependencyGraph = new StaticDependencyGraph(_factorGraph);
+			_cachedDependencyGraph = new StaticDependencyGraph(fg);
 		}
 		
 		return Objects.requireNonNull(_cachedDependencyGraph);

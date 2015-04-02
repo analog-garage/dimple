@@ -58,7 +58,7 @@ public class TestSolverOptions extends DimpleTestBase
 
 		DummyFactorGraph sfg = new DummyFactorGraph(fg);
 		// Set manager so that calling useMultithreading(boolean) won't barf.
-		sfg.setMultithreadingManager(new MultiThreadingManager(fg));
+		sfg.setMultithreadingManager(new MultiThreadingManager(sfg));
 		
 		// Test pre-initialization state. Most if not all options are not updated until
 		// initialize() is called.

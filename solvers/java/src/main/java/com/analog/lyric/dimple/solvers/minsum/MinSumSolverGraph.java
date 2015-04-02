@@ -25,8 +25,8 @@ import com.analog.lyric.dimple.factorfunctions.Xor;
 import com.analog.lyric.dimple.factorfunctions.core.CustomFactorFunctionWrapper;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.EdgeState;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
@@ -68,7 +68,7 @@ public class MinSumSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVar
 	public MinSumSolverGraph(FactorGraph factorGraph, @Nullable ISolverFactorGraph parent)
 	{
 		super(factorGraph, parent);
-		setMultithreadingManager(new MultiThreadingManager(getModelObject()));
+		setMultithreadingManager(new MultiThreadingManager(this));
 	}
 	
 	@Override
