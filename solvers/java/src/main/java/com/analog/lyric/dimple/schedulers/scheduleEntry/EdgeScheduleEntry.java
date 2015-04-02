@@ -137,4 +137,10 @@ public class EdgeScheduleEntry implements IScheduleEntry
 				,getPortNum()
 				,getNode().getSibling(getPortNum()).getLabel());
 	}
+	
+	@Override
+	public Type type()
+	{
+		return Type.EDGE;
+	}
 }

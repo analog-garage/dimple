@@ -524,7 +524,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 			if (!scheduleIterator.hasNext())
 				scheduleIterator = _scheduleIterator = schedule.iterator();	// Wrap-around the schedule if reached the end
 
-			scheduleIterator.next().update();
+			runScheduleEntry(scheduleIterator.next());
 		}
 		
 		// Allow interruption (if the solver is run as a thread); currently interruption is allowed only between iterations, not within a single iteration
@@ -1265,5 +1265,12 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	protected String getSolverName()
 	{
 		return "Gibbs";
+	}
+	
+	@Override
+	protected void runBlockScheduleEntry(BlockScheduleEntry blockEntry)
+	{
+		// FIXME
+		blockEntry.update(getSolverMapping());
 	}
 }

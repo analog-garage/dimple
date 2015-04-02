@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.Matlab;
 
@@ -192,6 +193,8 @@ public interface ISolverFactorGraph	extends ISolverNode
 	 */
 	@Internal
 	public void removeSolverVariable(ISolverVariable variable);
+	
+	public void runScheduleEntry(IScheduleEntry entry);
 	
 	/**
 	 * Indicates whether or not the specified factor is available only as a custom factor.

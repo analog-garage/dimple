@@ -32,17 +32,30 @@ import com.analog.lyric.util.misc.Internal;
  */
 public interface IScheduleEntry
 {
+	public static enum Type
+	{
+		EDGE,
+		NODE,
+		VARIABLE_BLOCK,
+		SUB,
+		CUSTOM;
+	}
+	
 	/**
 	 * All types of schedule entries must implement the update() method,
 	 * which is to update the portion of the graph associated with the
 	 * entry.
 	 */
+	@Deprecated
 	public void update();
 	
+	@Deprecated
 	@Internal
 	public void update(SolverNodeMapping solvers);
 	
 	public @Nullable IScheduleEntry copy(Map<Node,Node> old2newObjs);
 	public @Nullable IScheduleEntry copyToRoot(Map<Node,Node> old2newObjs);
 	public @Nullable Iterable<Port> getPorts();
+	
+	public Type type();
 }

@@ -124,4 +124,10 @@ public class NodeScheduleEntry implements IScheduleEntry
 		return String.format("IScheduleEntry [%s]"
 				,getNode().getName());
 	}
+	
+	@Override
+	public Type type()
+	{
+		return Type.NODE;
+	}
 }

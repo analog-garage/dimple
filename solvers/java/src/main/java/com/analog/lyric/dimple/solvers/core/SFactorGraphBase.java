@@ -28,20 +28,26 @@ import java.util.Iterator;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ExtendedArrayList;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.environment.DimpleThread;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.Node;
+import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Ids;
+import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorBase;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.options.SolverOptions;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.interfaces.IParameterizedSolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
@@ -335,6 +341,70 @@ public abstract class SFactorGraphBase
 	}
 
 	@Override
+	public void runScheduleEntry(IScheduleEntry entry)
+	{
+		switch (entry.type())
+		{
+		case VARIABLE_BLOCK:
+		{
+			runBlockScheduleEntry((BlockScheduleEntry)entry);
+			break;
+		}
+		case EDGE:
+		{
+			runEdgeScheduleEntry((EdgeScheduleEntry)entry);
+			break;
+		}
+		case NODE:
+		{
+			runNodeScheduleEntry((NodeScheduleEntry)entry);
+			break;
+		}
+		case SUB:
+		{
+			runSubScheduleEntry((SubScheduleEntry)entry);
+			break;
+		}
+		case CUSTOM:
+			runCustomScheduleEntry(entry);
+			break;
+		}
+	}
+	
+	protected void runBlockScheduleEntry(BlockScheduleEntry blockEntry)
+	{
+		for (INode node : blockEntry.getNodeList())
+		{
+			_solverNodeMapping.getSolverNode(node).update();
+		}
+	}
+	
+	protected void runEdgeScheduleEntry(EdgeScheduleEntry edgeEntry)
+	{
+		ISolverNode snode = _solverNodeMapping.getSolverNode(edgeEntry.getNode());
+		snode.updateEdge(edgeEntry.getPortNum());
+	}
+	
+	protected void runNodeScheduleEntry(NodeScheduleEntry nodeEntry)
+	{
+		ISolverNode snode = _solverNodeMapping.getSolverNode(nodeEntry.getNode());
+		snode.update();
+	}
+	
+	protected void runSubScheduleEntry(SubScheduleEntry subSchedule)
+	{
+		for (IScheduleEntry subentry : subSchedule.getSchedule())
+		{
+			runScheduleEntry(subentry);
+		}
+	}
+	
+	protected void runCustomScheduleEntry(IScheduleEntry entry)
+	{
+		DimpleEnvironment.logError("Cannot handle custom schedule entry '%s'", entry);
+	}
+	
+	@Override
 	public boolean customFactorExists(String funcName)
 	{
 		return false;
@@ -370,9 +440,10 @@ public abstract class SFactorGraphBase
 	@Override
 	public void update()
 	{
+		// FIXME - get schedule from this object instead of model
 		for (IScheduleEntry entry : _model.getSchedule())
 		{
-			entry.update();
+			runScheduleEntry(entry);
 		}
 
 	}

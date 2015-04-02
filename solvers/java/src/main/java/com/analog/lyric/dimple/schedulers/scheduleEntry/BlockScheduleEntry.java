@@ -37,7 +37,7 @@ import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
  */
 public class BlockScheduleEntry implements IScheduleEntry
 {
-	IBlockUpdater _blockUpdater;
+	private final IBlockUpdater _blockUpdater;
 	
 	public BlockScheduleEntry(IBlockUpdater blockUpdater, INode... nodeList)
 	{
@@ -56,6 +56,7 @@ public class BlockScheduleEntry implements IScheduleEntry
 		_blockUpdater.attachNodes(nodes);
 	}
 
+	@Deprecated
 	@Override
 	public void update(SolverNodeMapping solvers)
 	{
@@ -118,4 +119,9 @@ public class BlockScheduleEntry implements IScheduleEntry
 		return ports;
 	}
 
+	@Override
+	public Type type()
+	{
+		return IScheduleEntry.Type.VARIABLE_BLOCK;
+	}
 }

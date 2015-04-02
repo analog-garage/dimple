@@ -119,4 +119,10 @@ public class SubScheduleEntry implements IScheduleEntry
 		return ports;
 		
 	}
+	
+	@Override
+	public Type type()
+	{
+		return Type.SUB;
+	}
 }
