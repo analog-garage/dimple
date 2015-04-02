@@ -16,6 +16,11 @@
 
 package com.analog.lyric.dimple.model.core;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.variables.VariableBlock;
@@ -29,8 +34,67 @@ import com.analog.lyric.dimple.model.variables.VariableBlock;
  */
 final class OwnedVariableBlocks extends OwnedArray<VariableBlock>
 {
+	/*-------
+	 * State
+	 */
+	
+	private Map<VariableBlock,VariableBlock> _blocks = Collections.EMPTY_MAP;
+	
+	/*--------------
+	 * Construction
+	 */
+	
 	OwnedVariableBlocks()
 	{
+	}
+	
+	/*--------------------
+	 * Collection methods
+	 */
+
+	@NonNullByDefault(false)
+	@Override
+	public boolean add(VariableBlock block)
+	{
+		if (!_blocks.containsKey(block))
+		{
+			_blocks.put(block, block);
+			return super.add(block);
+		}
+		
+		return false;
+	}
+	
+	@Override
+	public void clear()
+	{
+		_blocks.clear();
+	}
+	
+	/*--------------------
+	 * OwnedArray methods
+	 */
+	
+	@Override
+	void ensureCapacity(int newCapacity)
+	{
+		super.ensureCapacity(newCapacity);
+		if (_blocks == Collections.EMPTY_MAP)
+		{
+			_blocks = new HashMap<>(newCapacity);
+		}
+	}
+	
+	@Override
+	boolean removeNode(FactorGraphChild node)
+	{
+		if (super.removeNode(node))
+		{
+			_blocks.remove(node);
+			return true;
+		}
+		
+		return false;
 	}
 	
 	@Override
@@ -50,4 +114,26 @@ final class OwnedVariableBlocks extends OwnedArray<VariableBlock>
 		return newArray;
 	}
 
+	/*----------------------------
+	 * OwnedVariableArray methods
+	 */
+	
+	public VariableBlock addBlock(VariableBlock block)
+	{
+		if (_blocks == Collections.EMPTY_MAP)
+		{
+			_blocks = new HashMap<>();
+		}
+		
+		VariableBlock result = _blocks.get(block);
+		
+		if (result != null)
+		{
+			return result;
+		}
+		
+		super.add(block);
+		_blocks.put(block, block);
+		return block;
+	}
 }

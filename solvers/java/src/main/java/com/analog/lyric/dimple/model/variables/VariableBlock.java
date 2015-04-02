@@ -16,24 +16,26 @@
 
 package com.analog.lyric.dimple.model.variables;
 
-import static java.util.Objects.*;
-
 import java.util.AbstractList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.RandomAccess;
 
+import net.jcip.annotations.Immutable;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import cern.colt.list.LongArrayList;
+import cern.colt.map.OpenLongObjectHashMap;
 
 import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.FactorGraphChild;
 import com.analog.lyric.util.misc.Internal;
+import com.google.common.primitives.Longs;
 
 /**
  * Represents a block of {@link Variable}s in a {@link FactorGraph}.
@@ -42,14 +44,17 @@ import com.analog.lyric.util.misc.Internal;
  * <p>
  * @since 0.08
  * @author Christopher Barber
+ * @see FactorGraph#addVariableBlock(Collection)
  */
+@Immutable
 public final class VariableBlock extends FactorGraphChild implements List<Variable>, RandomAccess
 {
 	/*-------
 	 * State
 	 */
 	
-	private final LongArrayList _variableGraphTreeIds;
+	private final long[] _variableGraphTreeIds;
+	private final int _hashCode;
 	
 	/*--------------
 	 * Construction
@@ -65,7 +70,8 @@ public final class VariableBlock extends FactorGraphChild implements List<Variab
 	 * @param variables are the variables that will comprise the block. The variables will be added in the
 	 * order of the {@linkplain Collection#iterator iterator}.
 	 * @since 0.08
-	 * @throws IllegalArgumentException if a variable does not belong to the same tree of graphs as {@code parent}.
+	 * @throws IllegalArgumentException if a variable does not belong to the same tree of graphs as {@code parent}
+	 * or the same variable appears more than once.
 	 * @category internal
 	 */
 	@Internal
@@ -74,18 +80,62 @@ public final class VariableBlock extends FactorGraphChild implements List<Variab
 		super();
 		super.setParentGraph(parent);
 		
+		final int n = variables.size();
+		
+		if (n <= 0)
+		{
+			throw new IllegalArgumentException("Cannot create empty VariableBlock");
+		}
+		
+		final OpenLongObjectHashMap varSet = new OpenLongObjectHashMap(n);
 		final FactorGraph root = parent.getRootGraph();
-		_variableGraphTreeIds = new LongArrayList(variables.size());
+		_variableGraphTreeIds = new long[n];
+		
+		int i = -1;
 		for (Variable var : variables)
 		{
 			if (var.getRootGraph() != root)
 			{
-				throw new IllegalArgumentException("");
+				throw new IllegalArgumentException(String.format("Variable '%s' not in graph tree", var));
 			}
 			
-			// TODO - verify varibles are from same graph tree
-			_variableGraphTreeIds.add(var.getGraphTreeId());
+			final long id = var.getGraphTreeId();
+			
+			if (!varSet.put(id, null))
+			{
+				throw new IllegalArgumentException(String.format("Variable '%s' was specified more than once", var));
+			}
+			
+			_variableGraphTreeIds[++i] = id;
 		}
+		
+		_hashCode = Arrays.hashCode(_variableGraphTreeIds);
+	}
+	
+	/*----------------
+	 * Object methods
+	 */
+
+	@Override
+	public boolean equals(@Nullable Object obj)
+	{
+		if (obj == this)
+		{
+			return true;
+		}
+		
+		if (obj instanceof VariableBlock && obj.hashCode() == _hashCode)
+		{
+			return Arrays.equals(_variableGraphTreeIds, ((VariableBlock)obj)._variableGraphTreeIds);
+		}
+		
+		return false;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return _hashCode;
 	}
 	
 	/*----------------------------
@@ -113,13 +163,11 @@ public final class VariableBlock extends FactorGraphChild implements List<Variab
 	 * FactorGraphChild methods
 	 */
 	
+	@SuppressWarnings("null")
 	@Override
-	protected void setParentGraph(@Nullable FactorGraph parentGraph)
+	public FactorGraph getParentGraph()
 	{
-		if (parentGraph != _parentGraph)
-		{
-			throw new UnsupportedOperationException("Cannot invoke setParentGraph on VariableBlock");
-		}
+		return _parentGraph;
 	}
 	
 	/*---------------
@@ -129,29 +177,20 @@ public final class VariableBlock extends FactorGraphChild implements List<Variab
 	@Override
 	public boolean isEmpty()
 	{
-		return size() == 0;
+		return false; // Empty variable block is not allowed, see constructor.
 	}
 
 	@Override
 	public int size()
 	{
-		return _variableGraphTreeIds.size();
+		return _variableGraphTreeIds.length;
 	}
 
 	@NonNullByDefault(false)
 	@Override
 	public boolean contains(Object obj)
 	{
-		if (obj instanceof Variable)
-		{
-			Variable var = (Variable)obj;
-			if (var.getRootGraph() == requireParentGraph().getRootGraph())
-			{
-				return _variableGraphTreeIds.contains(var.getGraphTreeId());
-			}
-		}
-		
-		return false;
+		return indexOf(obj) >= 0;
 	}
 
 	@NonNullByDefault(false)
@@ -172,8 +211,15 @@ public final class VariableBlock extends FactorGraphChild implements List<Variab
 	@Override
 	public Variable get(int index)
 	{
-		long id = _variableGraphTreeIds.get(index);
-		return (Variable)requireNonNull(requireParentGraph().getNodeByGraphTreeId(id));
+		final long id = _variableGraphTreeIds[index];
+		Variable var = (Variable)requireParentGraph().getNodeByGraphTreeId(id);
+		
+		if (var == null)
+		{
+			throw new IllegalStateException(String.format("Variable with graph tree id 0x%X no longer in graph", id));
+		}
+		
+		return var;
 	}
 
 	@NonNullByDefault(false)
@@ -185,7 +231,7 @@ public final class VariableBlock extends FactorGraphChild implements List<Variab
 			Variable var = (Variable)obj;
 			if (var.getRootGraph() == requireParentGraph().getRootGraph())
 			{
-				return _variableGraphTreeIds.indexOf(var.getGraphTreeId());
+				return Longs.indexOf(_variableGraphTreeIds, var.getGraphTreeId());
 			}
 		}
 		
@@ -207,7 +253,7 @@ public final class VariableBlock extends FactorGraphChild implements List<Variab
 			Variable var = (Variable)obj;
 			if (var.getRootGraph() == requireParentGraph().getRootGraph())
 			{
-				return _variableGraphTreeIds.lastIndexOf(var.getGraphTreeId());
+				return Longs.lastIndexOf(_variableGraphTreeIds, var.getGraphTreeId());
 			}
 		}
 		
@@ -217,7 +263,7 @@ public final class VariableBlock extends FactorGraphChild implements List<Variab
 	@Override
 	public ListIterator<Variable> listIterator()
 	{
-		return new Wrapper().listIterator();
+		return listIterator(0);
 	}
 
 	@Override
@@ -264,7 +310,7 @@ public final class VariableBlock extends FactorGraphChild implements List<Variab
 	 */
 	public long getVariableGraphTreeId(int index)
 	{
-		return _variableGraphTreeIds.get(index);
+		return _variableGraphTreeIds[index];
 	}
 
 	/*--------------------------
@@ -362,12 +408,12 @@ public final class VariableBlock extends FactorGraphChild implements List<Variab
 		@Override
 		public int size()
 		{
-			return _variableGraphTreeIds.size();
+			return _variableGraphTreeIds.length;
 		}
 	}
 	
 	private static RuntimeException immutable()
 	{
-		throw new UnsupportedOperationException("VariableBlock is immutable");
+		return new UnsupportedOperationException("VariableBlock is immutable");
 	}
 }

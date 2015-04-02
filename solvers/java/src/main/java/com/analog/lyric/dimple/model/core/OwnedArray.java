@@ -85,21 +85,11 @@ abstract class OwnedArray<T extends FactorGraphChild> extends AbstractCollection
 	public boolean addAll(Collection<? extends T> nodes)
 	{
 		ensureCapacity(capacity() + nodes.size());
-		final T[] array = requireNonNull(_nodes);
-		
 		final int prevSize = _size;
-		final int typeMask = idTypeMask();
 		
 		for (T node : nodes)
 		{
-			if (!containsNode(node))
-			{
-				int index = _end;
-				_end = index + 1;
-				++_size;
-				array[index] = node;
-				node.setLocalId(index|typeMask);
-			}
+			add(node);
 		}
 		
 		return _size != prevSize;
@@ -118,9 +108,9 @@ abstract class OwnedArray<T extends FactorGraphChild> extends AbstractCollection
 	@Override
 	public boolean contains(@Nullable Object obj)
 	{
-		if (obj instanceof Node)
+		if (obj instanceof FactorGraphChild)
 		{
-			return containsNode((Node)obj);
+			return containsNode((FactorGraphChild)obj);
 		}
 		
 		return false;
@@ -176,9 +166,9 @@ abstract class OwnedArray<T extends FactorGraphChild> extends AbstractCollection
 	@Override
 	public boolean remove(@Nullable Object obj)
 	{
-		if (obj instanceof Node)
+		if (obj instanceof FactorGraphChild)
 		{
-			return removeNode((Node)obj);
+			return removeNode((FactorGraphChild)obj);
 		}
 		
 		return false;
@@ -273,7 +263,7 @@ abstract class OwnedArray<T extends FactorGraphChild> extends AbstractCollection
 		return null;
 	}
 	
-	boolean removeNode(Node node)
+	boolean removeNode(FactorGraphChild node)
 	{
 		final T[] nodes = _nodes;
 		if (nodes != null)

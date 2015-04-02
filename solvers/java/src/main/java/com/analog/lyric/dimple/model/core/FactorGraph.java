@@ -1262,11 +1262,11 @@ public class FactorGraph extends FactorBase
 	}
 	
 	/**
-	 * True if node is owned directly by this graph.
+	 * True if child is owned directly by this graph.
 	 *
 	 * @param node
 	 */
-	public boolean ownsDirectly(Node node)
+	public boolean ownsDirectly(FactorGraphChild node)
 	{
 		final boolean owns = node.getParentGraph() == this;
 		assert(owns == ownsDirectly_(node));
@@ -1277,16 +1277,18 @@ public class FactorGraph extends FactorBase
 	 * Slower version of {@link #OwnsDirectly} just used for
 	 * checking correctness in assertion.
 	 */
-	private boolean ownsDirectly_(Node node)
+	private boolean ownsDirectly_(FactorGraphChild node)
 	{
-		switch (node.getNodeType())
+		switch (Ids.typeIndexFromLocalId(node.getLocalId()))
 		{
-		case VARIABLE:
+		case Ids.VARIABLE_TYPE:
 			return _ownedVariables.containsNode(node);
-		case FACTOR:
+		case Ids.FACTOR_TYPE:
 			return _ownedFactors.containsNode(node);
-		case GRAPH:
+		case Ids.GRAPH_TYPE:
 			return _ownedSubGraphs.containsNode(node);
+		case Ids.VARIABLE_BLOCK_TYPE:
+			return _ownedVariableBlocks.containsNode(node);
 		}
 		
 		return false;
@@ -1417,9 +1419,7 @@ public class FactorGraph extends FactorBase
 	 */
 	public VariableBlock addVariableBlock(Collection<Variable> variables)
 	{
-		VariableBlock block = new VariableBlock(this, variables);
-		_ownedVariableBlocks.add(block);
-		return block;
+		return _ownedVariableBlocks.addBlock(new VariableBlock(this, variables));
 	}
 
 	/**
@@ -2977,6 +2977,15 @@ public class FactorGraph extends FactorBase
 	public Collection<Variable> getOwnedVariables()
 	{
 		return Collections.unmodifiableCollection(_ownedVariables);
+	}
+	
+	/**
+	 * Unmodifiable collection that enumerates variable blocks owned by this graph.
+	 * @since 0.08
+	 */
+	public Collection<VariableBlock> getOwnedVariableBlocks()
+	{
+		return Collections.unmodifiableCollection(_ownedVariableBlocks);
 	}
 	
 	/**

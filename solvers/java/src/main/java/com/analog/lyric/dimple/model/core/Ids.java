@@ -199,7 +199,7 @@ public abstract class Ids
 	/**
 	 * Value of max type index for local identifiers
 	 */
-	public static final int TYPE_MAX = 6;
+	public static final int TYPE_MAX = 7;
 	
 	/**
 	 * Enumerates supported identifier types.
