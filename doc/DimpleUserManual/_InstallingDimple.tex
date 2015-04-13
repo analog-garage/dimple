@@ -77,9 +77,17 @@ PASSED ALL TESTS
 Developers interested in investigating Dimple source code, helping with bug fixes, or contributing to the source code can install Dimple from source.  Developers only interested in using Dimple should install from binaries (described in the previous section).
 
 \begin{enumerate}
-\item Download the source from https://github.com/AnalogDevicesLyricLabs/dimple
 \item Install Gradle from http://www.gradle.org/.  (Gradle is a Java build tool that pulls down jars from Maven repositories.)
-\item Change to root directory
+\item Download the source from https://github.com/AnalogDevicesLyricLabs/dimple
+\item Change to root directory of Dimple source
+\item Checkout the appropriate release branch (``release\_\version'') from git:
+
+\begin{lstlisting}
+> git checkout %*release\_\version*
+\end{lstlisting}
+
+If you skip this step, you will be using the master development branch. This is not recommended because the code is not stable, will mostly likely not have up-to-date documentation, and will often contain incomplete features or unresolved bugs.
+
 \item Run gradle by typing ``gradle''
 \end{enumerate}
 
