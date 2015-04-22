@@ -201,6 +201,12 @@ public abstract class EdgeState
 	abstract public boolean isLocal();
 	
 	/**
+	 * Describe type of edge with respect to given graph.
+	 * @since 0.08
+	 */
+	abstract public Edge.Type type(FactorGraph graph);
+	
+	/**
 	 * The index of the {@link Variable} referred to by this edge within the graph that owns this edge.
 	 * <p>
 	 * Note that the graph that owns the edge is the one that owns the edge's {@link Factor}, which may

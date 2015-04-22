@@ -89,6 +89,7 @@ public class TestReleasableIterators
 		iter.release(); // does nothing
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Test
 	public void testSingleIterator()
 	{

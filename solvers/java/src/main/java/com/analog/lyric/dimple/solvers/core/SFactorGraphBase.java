@@ -106,7 +106,7 @@ public abstract class SFactorGraphBase
 		_factors = new ExtendedArrayList<>(graph.getFactorCount(0));
 		_variables = new ExtendedArrayList<>(graph.getVariableCount(0));
 		_subgraphs = new ExtendedArrayList<>(graph.getOwnedGraphs().size());
-		_edges = new ExtendedArrayList<SEdge>(hasEdgeState() ? graph.getGraphEdgeCount() : 0);
+		_edges = new ExtendedArrayList<SEdge>(hasEdgeState() ? graph.getGraphEdgeStateMaxIndex() + 1: 0);
 		_solverNodeMapping = new StandardSolverNodeMapping(this);
 		_parent = parent;
 	}
@@ -1323,7 +1323,7 @@ public abstract class SFactorGraphBase
 		ExtendedArrayList<SEdge> edges = _edges;
 		if (hasEdgeState())
 		{
-			final int n = getModelGraph().getGraphEdgeCount();
+			final int n = getModelGraph().getGraphEdgeStateMaxIndex() + 1;
 			edges.setSize(n);
 			for (int i = 0; i < n; ++i)
 			{

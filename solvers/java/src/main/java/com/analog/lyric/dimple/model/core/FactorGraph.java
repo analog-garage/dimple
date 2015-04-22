@@ -60,6 +60,7 @@ import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.JointFactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.JointFactorFunction.Functions;
 import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
+import com.analog.lyric.dimple.model.core.Edge.Type;
 import com.analog.lyric.dimple.model.factors.DiscreteFactor;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorBase;
@@ -234,7 +235,7 @@ public class FactorGraph extends FactorBase
 	//new identity related members
 	private final HashMap<String, Node> _name2object = new HashMap<>();
 	
-	private final ArrayList<EdgeState> _edges;
+	private final EdgeStateList _edges;
 	
 	/**
 	 * Edges defining the graph's siblings.
@@ -305,6 +306,12 @@ public class FactorGraph extends FactorBase
 			return true;
 		}
 
+		@Override
+		public Type type(FactorGraph graph)
+		{
+			return Edge.Type.LOCAL;
+		}
+		
 		@Override
 		public final int variableLocalId()
 		{
@@ -497,6 +504,12 @@ public class FactorGraph extends FactorBase
 		{
 			return false;
 		}
+		
+		@Override
+		public Type type(FactorGraph graph)
+		{
+			return getFactorParent(graph) == graph ? Edge.Type.OUTER : Edge.Type.INNER;
+		}
 
 		@Override
 		public int variableLocalId()
@@ -651,7 +664,7 @@ public class FactorGraph extends FactorBase
 		_eventAndOptionParent = _env;
 		_graphTreeState = rootState != null ? rootState.addGraph(this) : new GraphTreeState(this);
 		
-		_edges = new ArrayList<>();
+		_edges = new EdgeStateList(this);
 		
 		if (boundaryVariables != null)
 		{
@@ -2155,14 +2168,71 @@ public class FactorGraph extends FactorBase
 		return _graphSiblings.indexOf(edge);
 	}
 	
-	public @Nullable EdgeState getGraphEdgeState(int i)
+	/**
+	 * Returns {@link Edge} at given index, if it exists.
+	 * <p>
+	 * If this returns a non-null {@code edge}, the following will be true:
+	 * <blockquote><code>
+	 *     edge.{@linkplain Edge#edgeIndex() edgeIndex()} == index &&
+	 *     edge.{@linkplain Edge#graph() graph()} == this
+	 * </code></blockquote>
+	 * 
+	 * @param index an integer in the range [0, {@link #getGraphEdgeStateMaxIndex}]
+	 * @since 0.08
+	 * @throws ArrayIndexOutOfBoundsException if {@code index} is not in valid range
+	 */
+	public @Nullable Edge getGraphEdge(int index)
 	{
-		return _edges.get(i);
+		final EdgeState state = getGraphEdgeState(index);
+		return state != null ? new Edge(this, state) : null;
+	}
+	
+	/**
+	 * Returns collection of {@link Edge}s held by this graph.
+	 * @since 0.08
+	 */
+	public Collection<Edge> getGraphEdges()
+	{
+		return _edges.allEdges();
+	}
+	
+	/**
+	 * Returns collection of all {@link EdgeState} objects held by this graph.
+	 * @since 0.08
+	 */
+	public Collection<EdgeState> getGraphEdgeState()
+	{
+		return _edges.allEdgeState();
+	}
+	
+	/**
+	 * Returns {@link EdgeState} at given index, if it exists.
+	 * <p>
+	 * If this returns a non-null {@code edgeState}, the following will be true:
+	 * <blockquote><code>
+	 *     edgeState.{@linkplain EdgeState#edgeIndexInParent(FactorGraph) edgeIndexInParent(this)} == index
+	 * </code></blockquote>
+	 * 
+	 * @param index an integer in the range [0, {@link #getGraphEdgeStateMaxIndex}]
+	 * @since 0.08
+	 * @throws ArrayIndexOutOfBoundsException if {@code index} is not in valid range
+	 */
+	public @Nullable EdgeState getGraphEdgeState(int index)
+	{
+		return _edges.get(index);
 	}
 
-	public int getGraphEdgeCount()
+	/**
+	 * Returns the maximum index of slots currently reserved for {@link EdgeState} belonging to this graph.
+	 * <p>
+	 * There may not necessarily be an edge state object currently at this index.
+	 * <p>
+	 * @return Returns max edge index or -1 if there is currently no space allocated for edge state.
+	 * @since 0.08
+	 */
+	public int getGraphEdgeStateMaxIndex()
 	{
-		return _edges.size();
+		return _edges.size() - 1;
 	}
 
 	//============================

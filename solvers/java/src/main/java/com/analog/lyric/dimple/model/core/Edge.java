@@ -23,9 +23,39 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 
-
+/**
+ * Describes an edge between a {@link Factor} and {@link Variable}.
+ * 
+ * @since 0.08
+ * @author Christopher Barber
+ * @see Node#getSiblingEdge(int)
+ */
 public final class Edge implements IFactorGraphChild
 {
+	/**
+	 * Classifies type of edge.
+	 * 
+	 * @since 0.08
+	 * @author Christopher Barber
+	 */
+	public enum Type
+	{
+		/**
+		 * A local edge connecting a variable and factor owned by the same graph.
+		 */
+		LOCAL,
+		/**
+		 * A boundary edge connecting a factor owned by graph to a boundary variable from
+		 * an outer graph.
+		 */
+		OUTER,
+		/**
+		 * A boundary edge connecting a variable owned by this graph to a factor from
+		 * a subgraph.
+		 */
+		INNER;
+	}
+	
 	/*--------
 	 * State
 	 */
@@ -168,6 +198,15 @@ public final class Edge implements IFactorGraphChild
 	public boolean isLocal()
 	{
 		return _edge.isLocal();
+	}
+	
+	/**
+	 * Describe type of edge with respect to {@link #graph}.
+	 * @since 0.08
+	 */
+	public Type type()
+	{
+		return _edge.type(_graph);
 	}
 	
 	/**

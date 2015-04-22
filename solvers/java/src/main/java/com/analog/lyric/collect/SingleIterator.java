@@ -23,6 +23,10 @@ import com.google.common.collect.UnmodifiableIterator;
 /**
  * An iterator that returns a single value.
  * <p>
+ * Unlike Guava's {@link com.google.common.collect.Iterators#singletonIterator}
+ * this implementation will return null instead of throwing exception if
+ * {@link #next()} is called at end of iteration.
+ * <p>
  * @since 0.08
  * @author Christopher Barber
  */
