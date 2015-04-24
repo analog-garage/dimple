@@ -47,6 +47,9 @@ public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable,
 	public void setBeta(double beta);
 	
 	@Override
+	public GibbsSolverGraph getParentGraph();
+	
+	@Override
 	public ISolverFactorGibbs getSibling(int edge);
 	
 	@Override

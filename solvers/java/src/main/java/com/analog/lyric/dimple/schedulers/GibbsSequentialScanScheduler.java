@@ -16,14 +16,13 @@
 
 package com.analog.lyric.dimple.schedulers;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
+import java.util.Map;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
-import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
-import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
+import com.analog.lyric.dimple.schedulers.schedule.IGibbsSchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
-import org.eclipse.jdt.annotation.Nullable;
 
 
 /**
@@ -40,31 +39,44 @@ import org.eclipse.jdt.annotation.Nullable;
  *         schedule. I believe this is a necessary limitation for Gibbs sampling
  *         to operate properly.
  */
-public class GibbsSequentialScanScheduler implements IGibbsScheduler
+public class GibbsSequentialScanScheduler extends GibbsSchedulerBase
 {
-	@Nullable FixedSchedule _schedule;
+	private static final long serialVersionUID = 1L;
+
+	/*-------------
+	 * Constructor
+	 */
+	
+	public GibbsSequentialScanScheduler()
+	{
+		super();
+	}
+	
+	protected GibbsSequentialScanScheduler(GibbsSequentialScanScheduler other, Map<Object,Object> old2NewMap,
+		boolean copyToRoot)
+	{
+		super(other, old2NewMap, copyToRoot);
+	}
+	
+	/*------------
+	 * IScheduler
+	 */
 	
 	@Override
-	public ISchedule createSchedule(FactorGraph g)
+	public IScheduler copy(Map<Object, Object> old2NewMap, boolean copyToRoot)
 	{
-		FixedSchedule schedule = _schedule = new FixedSchedule();
+		return new GibbsSequentialScanScheduler(this, old2NewMap, copyToRoot);
+	}
+	
+	@Override
+	public IGibbsSchedule createSchedule(FactorGraph g)
+	{
+		FixedSchedule schedule = new FixedSchedule(this, g);
 
 		// Update all owned variables
 		for (Variable v : g.getVariablesFlat())
 			schedule.add(new NodeScheduleEntry(v));
 
-		return schedule;
-	}
-
-	
-	// Add a block schedule entry, which will replace individual variable updates included in the block
-	@Override
-	public void addBlockScheduleEntry(BlockScheduleEntry blockScheduleEntry)
-	{
-		FixedSchedule schedule = _schedule;
-		if (schedule == null)
-			throw new DimpleException("Schedule must be created before adding a block schedule entry.");
-		
-		schedule.addBlockScheduleEntry(blockScheduleEntry);
+		return addBlockEntries(schedule);
 	}
 }

@@ -28,6 +28,7 @@ import java.util.Iterator;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ExtendedArrayList;
+import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.environment.DimpleThread;
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -43,11 +44,19 @@ import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.options.SolverOptions;
+import com.analog.lyric.dimple.schedulers.EmptyScheduler;
+import com.analog.lyric.dimple.schedulers.IScheduler;
+import com.analog.lyric.dimple.schedulers.SchedulerOptionKey;
+import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
+import com.analog.lyric.dimple.schedulers.schedule.ScheduleValidationException;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.SubgraphScheduleEntry;
+import com.analog.lyric.dimple.schedulers.validator.ScheduleValidator;
+import com.analog.lyric.dimple.schedulers.validator.ScheduleValidatorOptionKey;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.interfaces.IParameterizedSolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
@@ -57,6 +66,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
+import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.util.misc.Internal;
 import com.google.common.collect.UnmodifiableIterator;
 
@@ -95,6 +105,8 @@ public abstract class SFactorGraphBase
 	private final ExtendedArrayList<SEdge> _edges;
 	
 	private SolverNodeMapping _solverNodeMapping;
+
+	protected @Nullable ISchedule _schedule;
 	
 	/*--------------
 	 * Construction
@@ -143,6 +155,135 @@ public abstract class SFactorGraphBase
 		_parent = parent;
 		_solverNodeMapping = parent.getSolverMapping();
 		_solverNodeMapping.addSolverGraph(this);
+	}
+	
+	@Override
+	public ISchedule getSchedule()
+	{
+		ISchedule schedule = _schedule;
+
+		if (schedule != null && schedule.isUpToDateForSolver(this))
+		{
+			return schedule;
+		}
+		
+		final IScheduler scheduler = getScheduler();
+		_schedule = schedule = scheduler.createSchedule(this);
+		schedule.setScheduler(scheduler);
+		return schedule;
+	}
+
+	@Override
+	public void setSchedule(@Nullable ISchedule schedule)
+	{
+		if (schedule == null && getSchedulerKey() == null)
+		{
+			throw new UnsupportedOperationException(String.format("%s does not support schedules", this));
+		}
+		
+		_schedule = schedule;
+	}
+	
+	@Override
+	public IScheduler getScheduler()
+	{
+		final SchedulerOptionKey schedulerKey = getSchedulerKey();
+		if (schedulerKey == null)
+		{
+			return EmptyScheduler.INSTANCE;
+		}
+
+		IScheduler scheduler = getLocalOption(schedulerKey);
+		if (scheduler == null || scheduler.isDefaultScheduler())
+		{
+			// If this is the default scheduler, we need to check to see if it has been
+			// superceded by a schedule set further in the delegation chain.
+			ReleasableIterator<? extends IOptionHolder> delegates = getOptionDelegates();
+			delegates.next(); // skip this solver graph
+			
+			IScheduler nextScheduler = null;
+			
+			while (delegates.hasNext())
+			{
+				nextScheduler = delegates.next().getLocalOption(schedulerKey);
+				if (nextScheduler != null && schedulerKey.validForDelegator(nextScheduler, this))
+				{
+					break;
+				}
+				nextScheduler = null;
+			}
+			
+			if (nextScheduler != null || scheduler != null && scheduler.getClass() != schedulerKey.defaultClass())
+			{
+				// If we found a scheduler in the delegation chain or if the default class
+				// is not this class, then clear the currently saved schedule and use the
+				// delegate version instead.
+				scheduler = nextScheduler;
+				unsetOption(schedulerKey);
+			}
+
+			delegates.release();
+		}
+		
+		if (scheduler == null)
+		{
+			// If no schedule was found, create a default instance and save it locally
+			scheduler = schedulerKey.defaultValue();
+			setOption(schedulerKey, scheduler);
+		}
+		
+		return scheduler;
+	}
+	
+	/**
+	 * Validates schedule.
+	 * <p>
+	 * This can be used to validate schedules before use. This is invoked by {@link #initialize()}.
+	 * <p>
+	 * The implementation currently only validates custom schedules but could be used to validate
+	 * other schedules for debugging purposes subject to an option setting.
+	 * <p>
+	 * This uses the the current {@linkplain #getSchedulerKey() scheduler key} to find what
+	 * {@linkplain SchedulerOptionKey#getValidatorKey() validator} to use, if any.
+	 * @since 0.08
+	 */
+	protected void validateSchedule(ISchedule schedule) throws ScheduleValidationException
+	{
+		if (schedule.isCustom())
+		{
+			final SchedulerOptionKey schedulerKey = getSchedulerKey();
+			if (schedulerKey != null)
+			{
+				ScheduleValidatorOptionKey validatorKey = schedulerKey.getValidatorKey();
+				if (validatorKey != null)
+				{
+					ScheduleValidator validator = validatorKey.instantiate(this);
+					validator.validate(schedule);
+				}
+			}
+		}
+	}
+	
+	@Override
+	public void setScheduler(@Nullable IScheduler scheduler)
+	{
+		final SchedulerOptionKey schedulerKey = getSchedulerKey();
+		
+		if (schedulerKey != null)
+		{
+			if (scheduler == null)
+			{
+				schedulerKey.unset(this);
+			}
+			else
+			{
+				schedulerKey.set(this, scheduler);
+			}
+		}
+		else if (scheduler != null)
+		{
+			throw new UnsupportedOperationException(String.format("%s does not support schedulers", this));
+		}
 	}
 	
 	@Override
@@ -340,6 +481,7 @@ public abstract class SFactorGraphBase
 		list.set(Ids.indexFromLocalId(snode.getModelObject().getLocalId()), null);
 	}
 
+	@SuppressWarnings("deprecation") // for SUBSCHEDULE
 	@Override
 	public void runScheduleEntry(IScheduleEntry entry)
 	{
@@ -360,7 +502,12 @@ public abstract class SFactorGraphBase
 			runNodeScheduleEntry((NodeScheduleEntry)entry);
 			break;
 		}
-		case SUB:
+		case SUBGRAPH:
+		{
+			runSubgraphEntry((SubgraphScheduleEntry)entry);
+			break;
+		}
+		case SUBSCHEDULE:
 		{
 			runSubScheduleEntry((SubScheduleEntry)entry);
 			break;
@@ -391,6 +538,13 @@ public abstract class SFactorGraphBase
 		snode.update();
 	}
 	
+	protected void runSubgraphEntry(SubgraphScheduleEntry subgraphEntry)
+	{
+		ISolverFactorGraph subgraph = _solverNodeMapping.getSolverGraph(subgraphEntry.getSubgraph());
+		subgraph.update();
+	}
+	
+	@SuppressWarnings("deprecation")
 	protected void runSubScheduleEntry(SubScheduleEntry subSchedule)
 	{
 		for (IScheduleEntry subentry : subSchedule.getSchedule())
@@ -440,8 +594,7 @@ public abstract class SFactorGraphBase
 	@Override
 	public void update()
 	{
-		// FIXME - get schedule from this object instead of model
-		for (IScheduleEntry entry : _model.getSchedule())
+		for (IScheduleEntry entry : getSchedule())
 		{
 			runScheduleEntry(entry);
 		}
@@ -794,6 +947,8 @@ public abstract class SFactorGraphBase
 		_numIterations = getOptionOrDefault(BPOptions.iterations);
 		_useMultithreading = getOptionOrDefault(SolverOptions.enableMultithreading);
 
+		validateSchedule(getSchedule());
+		
 		initializeSolverEdges();
 		
 		FactorGraph fg = _model;

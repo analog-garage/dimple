@@ -97,4 +97,10 @@ public class OptionIntegerList extends AbstractOptionValueList<Integer>
 	{
 		return Ints.toArray(this);
 	}
+	
+	@Override
+	public boolean isMutable()
+	{
+		return false;
+	}
 }

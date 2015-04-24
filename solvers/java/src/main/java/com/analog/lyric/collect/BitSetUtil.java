@@ -66,6 +66,24 @@ public class BitSetUtil
 		}
 		return indices;
 	}
+	
+	/**
+	 * True if all bits set in first bitset are also set in second.
+	 * @since 0.08
+	 */
+	public static boolean isSubset(BitSet bits1, BitSet bits2)
+	{
+		int index = -1;
+		while (true)
+		{
+			if (0 > (index = bits1.nextSetBit(++index)))
+				break;
+			if (!bits2.get(index))
+				return false;
+		}
+		
+		return true;
+	}
 
 	/**
 	 * Sets bit at {@code index} in {@code bits} to zero.

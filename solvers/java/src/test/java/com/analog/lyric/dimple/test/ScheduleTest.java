@@ -19,6 +19,8 @@
  */
 package com.analog.lyric.dimple.test;
 
+import static java.util.Objects.*;
+
 import org.junit.Test;
 
 import com.analog.lyric.dimple.factorfunctions.XorDelta;
@@ -30,8 +32,8 @@ import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
+import com.analog.lyric.dimple.solvers.minsum.MinSumSolver;
 import com.analog.lyric.dimple.solvers.minsum.MinSumSolverGraph;
-import com.analog.lyric.dimple.solvers.minsum.Solver;
 import com.analog.lyric.util.test.Helpers;
 
 /**
@@ -41,14 +43,14 @@ import com.analog.lyric.util.test.Helpers;
 public class ScheduleTest extends DimpleTestBase
 {
 	@Test
-	public void verify_im_not_crazy()
+	public void test1()
 	{
 		int factors = 10;
 		String tag = "crazy";
 		int iterations = 1;
 
 		FactorGraph fg = new FactorGraph();
-		MinSumSolverGraph solver = fg.createSolver(new Solver());
+		MinSumSolverGraph solver = requireNonNull(fg.setSolverFactory(new MinSumSolver()));
 		fg.setName(tag);
 		solver.setNumIterations(iterations);
 
@@ -76,7 +78,7 @@ public class ScheduleTest extends DimpleTestBase
 		fg.solve();
 		double[][] beliefsA = Helpers.beliefs(fg, true);
 
-		FixedSchedule fs = new FixedSchedule();
+		FixedSchedule fs = new FixedSchedule(fg);
 		for(Variable vb : fg.getVariables())
 		{
 			fs.add(new NodeScheduleEntry(vb));
@@ -85,26 +87,27 @@ public class ScheduleTest extends DimpleTestBase
 		{
 			fs.add(new NodeScheduleEntry(f));
 		}
-		ISchedule oldSchedule = fg.getSchedule();
-		fg.setSchedule(fs);
+		ISchedule oldSchedule = solver.getSchedule();
+		solver.setSchedule(fs);
 
 		fg.solve();
 		double[][] beliefsB = Helpers.beliefs(fg, true);
 
 		Helpers.assertBeliefsDifferent(beliefsA, beliefsB);
 
-		fg.setSchedule(oldSchedule);
+		solver.setSchedule(oldSchedule);
 		fg.solve();
 		double[][] beliefsC = Helpers.beliefs(fg, true);
 		Helpers.compareBeliefs(beliefsA, beliefsC);
 
 		fg = Helpers.MakeSimpleChainGraph(tag, fg.getFactorGraphFactory(), factors, true);
+		solver = (MinSumSolverGraph)requireNonNull(fg.getSolver());
 		solver.setNumIterations(iterations);
 		fg.solve();
 
 		beliefsA = Helpers.beliefs(fg, true);
 
-		fs = new FixedSchedule();
+		fs = new FixedSchedule(fg);
 		for(Variable vb : fg.getVariables())
 		{
 			fs.add(new NodeScheduleEntry(vb));
@@ -113,15 +116,15 @@ public class ScheduleTest extends DimpleTestBase
 		{
 			fs.add(new NodeScheduleEntry(f));
 		}
-		oldSchedule = fg.getSchedule();
-		fg.setSchedule(fs);
+		oldSchedule = solver.getSchedule();
+		solver.setSchedule(fs);
 
 		fg.solve();
 		beliefsB = Helpers.beliefs(fg, true);
 
 		Helpers.assertBeliefsDifferent(beliefsA, beliefsB);
 
-		fg.setSchedule(oldSchedule);
+		solver.setSchedule(oldSchedule);
 		fg.solve();
 
 		beliefsC = Helpers.beliefs(fg, true);

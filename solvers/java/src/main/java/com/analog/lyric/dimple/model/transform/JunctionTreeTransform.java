@@ -45,7 +45,6 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTableIterator;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -58,6 +57,7 @@ import com.analog.lyric.dimple.model.transform.VariableEliminator.VariableCost;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
+import com.analog.lyric.dimple.options.BPOptions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
@@ -712,9 +712,9 @@ public class JunctionTreeTransform
 		final int nVariables = variables.size();
 		final int nFactors = model.getFactorCount();
 
-		final BiMap<Node,Node> old2new = HashBiMap.create(nVariables * 2);
+		final BiMap<Object,Object> old2new = HashBiMap.create(nVariables * 2);
 		final FactorGraph targetModel = model.copyRoot(old2new);
-		targetModel.setSchedule(null); // don't use the copied schedule!
+		targetModel.unsetOption(BPOptions.scheduler); // Don't use copied scheduler
 		
 		// Make copied factors undirected.
 		for (Factor factor : targetModel.getFactors())
@@ -724,13 +724,12 @@ public class JunctionTreeTransform
 		
 		final JunctionTreeTransformMap transformMap = JunctionTreeTransformMap.create(model, targetModel);
 		
-		for (Entry<Node,Node> entry : old2new.entrySet())
+		for (Entry<Object,Object> entry : old2new.entrySet())
 		{
-			final Node source = entry.getKey();
-			final Variable var = source.asVariable();
-			if (var != null)
+			final Object source = entry.getKey();
+			if (source instanceof Variable)
 			{
-				transformMap.addVariableMapping(var, Objects.requireNonNull(entry.getValue().asVariable()));
+				transformMap.addVariableMapping((Variable)source, Objects.requireNonNull((Variable)entry.getValue()));
 			}
 		}
 

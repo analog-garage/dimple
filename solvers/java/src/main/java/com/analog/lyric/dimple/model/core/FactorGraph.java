@@ -73,13 +73,19 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableBlock;
 import com.analog.lyric.dimple.model.variables.VariableList;
-import com.analog.lyric.dimple.schedulers.DefaultScheduler;
+import com.analog.lyric.dimple.schedulers.CustomScheduler;
 import com.analog.lyric.dimple.schedulers.IScheduler;
+import com.analog.lyric.dimple.schedulers.SchedulerOptionKey;
+import com.analog.lyric.dimple.schedulers.schedule.EmptySchedule;
+import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.options.IOption;
+import com.analog.lyric.options.IOptionKey;
+import com.analog.lyric.options.Option;
 import com.analog.lyric.util.misc.FactorGraphDiffs;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
@@ -204,12 +210,6 @@ public class FactorGraph extends FactorBase
 	 */
 	private int _graphTreeIndex = -1;
 	
-	// TODO : some state only needs to be in root graph. Put it in common object.
-	
-	private @Nullable ISchedule _schedule = null;
-	private @Nullable IScheduler _explicitlyAssociatedScheduler = null;
-	private @Nullable IScheduler _solverSpecificDefaultScheduler = null;
-	
 	/**
 	 * Incremented for every change to the structure of this graph.
 	 */
@@ -220,10 +220,8 @@ public class FactorGraph extends FactorBase
 	 */
 	private long _siblingVersionId = -1;
 
-	private long _scheduleVersionId = 0;
-	private long _scheduleAssociatedGraphVerisionId = -1;
-	private boolean _hasCustomScheduleSet = false;
-	private @Nullable Class<? extends ISolverFactorGraph> _schedulerSolverClass;
+	// TODO : some state only needs to be in root graph. Put it in common object.
+	
 	private @Nullable IFactorGraphFactory<?> _solverFactory;
 	private @Nullable ISolverFactorGraph _solverFactorGraph;
 	private @Nullable LoadingCache<Functions, JointFactorFunction> _jointFactorCache = null;
@@ -947,10 +945,6 @@ public class FactorGraph extends FactorBase
 	 */
 	public @Nullable <SG extends ISolverFactorGraph> SG setSolverFactory(@Nullable IFactorGraphFactory<SG> factory)
 	{
-
-		// First, clear out solver-specific state
-		_solverSpecificDefaultScheduler = null;
-		
 		_solverFactory = factory;
 
 		final FactorGraph parent = getParentGraph();
@@ -1698,136 +1692,104 @@ public class FactorGraph extends FactorBase
 	//
 	//==============
 
-
-	// This is the method to use when specifically setting a custom schedule to override an automatic scheduler
-	// Setting the schedule to null removes any previously set custom schedule
+	/**
+	 * Sets schedule on current solver.
+	 * <p>
+	 * If {@code schedule} is a {@link FixedSchedule}, then this will create a new
+	 * {@link CustomScheduler} containing the specified schedule entries, otherwise
+	 * this will set the schedule on the {@linkplain #getSolver current solver graph}.
+	 * <p>
+	 * @deprecated instead use {@linkplain ISolverFactorGraph#setSchedule setSchedule} on {@linkplain #getSolver()
+	 * solver graph}.
+	 */
+	@Deprecated
 	public void setSchedule(@Nullable ISchedule schedule)
 	{
-		_hasCustomScheduleSet = (schedule != null);
-		_setSchedule(schedule);
+		if (schedule instanceof FixedSchedule)
+		{
+			CustomScheduler scheduler = new CustomScheduler(this);
+			scheduler.addAll(schedule);
+			setScheduler(scheduler);
+		}
+		else if (schedule != null)
+		{
+			requireSolver("setSchedule").setSchedule(schedule);
+		}
+		else
+		{
+			// Don't throw exception if solver is not set when schedule is null
+			ISolverFactorGraph solver = getSolver();
+			if (solver != null)
+			{
+				solver.setSchedule(schedule);
+			}
+		}
 	}
 	
-	// Get the schedule if one exists or create one if not already created
+	/**
+	 * Gets schedule on current solver
+	 * @deprecated instead use {@linkplain ISolverFactorGraph #getSchedule getSchedule} on {@linkplain #getSolver()
+	 * solver graph}.
+	 */
+	@Deprecated
 	public ISchedule getSchedule()
 	{
-		return _createScheduleIfNeeded();
+		final ISolverFactorGraph sgraph = getSolver();
+		return sgraph != null ? sgraph.getSchedule() : EmptySchedule.INSTANCE;
 	}
 
 	// This is the method to use when specifically setting the scheduler, overriding any default scheduler that would otherwise be used
 	// Setting the scheduler to null removes any previously set scheduler
+	/**
+	 * @deprecated instead of using this method it is preferable to set the appropriate scheduler
+	 * option (e.g. {@link com.analog.lyric.dimple.options.BPOptions#scheduler BPOptions.scheduler} or
+	 * {@link com.analog.lyric.dimple.solvers.gibbs.GibbsOptions#scheduler GibbsOptions.scheduler}).
+	 * <p>
+	 * @param scheduler if non-null, will be set as an option value for all of the option keys
+	 * it lists in its {@linkplain IScheduler#applicableSchedulerOptions() applicableSchedulerOptions()}
+	 * method. If null and graph has a {@link #getSolver() current solver}, its
+	 * {@linkplain ISolverFactorGraph#getSchedulerKey() scheduler key} will be unset, otherwise
+	 * no action will be taken.
+	 */
+	@Deprecated
 	public void setScheduler(@Nullable IScheduler scheduler)
 	{
-		// Associate the scheduler with the factor graph.
-		// This association is maintained by a FactorGraph object so that it can use
-		// it when a graph is cloned in the copy constructor used by addGraph.
-		_explicitlyAssociatedScheduler = scheduler;
-		_createSchedule();								// Create the schedule using this scheduler
+		if (scheduler != null)
+		{
+			for (SchedulerOptionKey key : scheduler.applicableSchedulerOptions())
+			{
+				key.set(this, scheduler);
+			}
+		}
+		else
+		{
+			final ISolverFactorGraph sgraph = getSolver();
+			if (sgraph != null)
+			{
+				SchedulerOptionKey key = sgraph.getSchedulerKey();
+				if (key != null)
+				{
+					unsetOption(key);
+				}
+			}
+		}
 	}
 
-	// Get the scheduler that would be used if no custom schedule is set
+	/**
+	 * Returns the scheduler associated with the current solver, if any.
+	 * <p>
+	 * @deprecated instead either use {@linkplain ISolverFactorGraph#getScheduler() corresponding method on solver}
+	 * or look up the corresponding option value (e.g.
+	 * {@linkplain com.analog.lyric.dimple.options.BPOptions#scheduler BPOptions.scheduler}
+	 * or {@link com.analog.lyric.dimple.solvers.gibbs.GibbsOptions#scheduler GibbsOptions.scheduler}).
+	 */
+	@Deprecated
 	public @Nullable IScheduler getScheduler()
 	{
-		if (_hasCustomScheduleSet)
-			return null;
-		else if (_explicitlyAssociatedScheduler != null)
-			return _explicitlyAssociatedScheduler;
-		else if (_solverSpecificDefaultScheduler != null)
-			return _solverSpecificDefaultScheduler;
-		else
-			return new DefaultScheduler();
+		ISolverFactorGraph sfg = getSolver();
+		return sfg != null ? sfg.getScheduler() : null;
 	}
 	
-	// Has a custom schedule been set
-	public boolean hasCustomSchedule()
-	{
-		return _hasCustomScheduleSet;
-	}
-	
-	// Has a scheduler been explicitly set
-	public boolean hasExplicitlyAssociatedScheduler()
-	{
-		return _explicitlyAssociatedScheduler != null;
-	}
-
-	// Get the scheduler that has been explicitly set, if any
-	public @Nullable IScheduler getExplicitlySetScheduler()
-	{
-		return _explicitlyAssociatedScheduler;
-	}
-	
-
-	// Allow a specific solver to set a default scheduler that overrides the normal default
-	// This would be used if the client doesn't otherwise specify a schedule
-	// This should be set by the solver factor-graph's constructor
-	public void setSolverSpecificDefaultScheduler(@Nullable IScheduler scheduler)
-	{
-		_solverSpecificDefaultScheduler = scheduler;
-	}
-	
-
-	private void _setSchedule(@Nullable ISchedule schedule)
-	{
-		if (schedule != null)
-		{
-			schedule.attach(this);
-		}
-		_schedule = schedule;
-		_scheduleVersionId++;
-		_scheduleAssociatedGraphVerisionId = _structureVersion;
-		final ISolverFactorGraph sfg = _solverFactorGraph;
-		_schedulerSolverClass = (sfg == null) ? null : sfg.getClass();
-	}
-
-	private ISchedule _createSchedule()
-	{
-		IScheduler scheduler = getScheduler();	// Get the scheduler or create one if not already set
-		if (scheduler == null)
-			throw new DimpleException("Custom schedule has been set, but is not up-to-date with the current graph.");
-		final ISchedule schedule = scheduler.createSchedule(this);
-		_setSchedule(schedule);
-		return schedule;
-	}
-
-	private ISchedule _createScheduleIfNeeded()
-	{
-		// If there's no schedule yet, or if it isn't up-to-date, then create one
-		// Otherwise, don't bother to spend the time since there's already a perfectly good schedule
-		final ISchedule schedule = _schedule;
-		return schedule != null && isUpToDateSchedulePresent() ? schedule : _createSchedule();
-	}
-
-	
-	// Has the solver changed since last time the schedule has been created
-	private boolean _solverHasChanged()
-	{
-		final ISolverFactorGraph sfg = _solverFactorGraph;
-		final Class<? extends ISolverFactorGraph> sfgClass = _schedulerSolverClass;
-		
-		if (sfgClass == null && sfg == null)
-			return false;
-		else if (sfgClass != null && sfg != null && sfgClass.equals(sfg.getClass()))
-			return false;
-		else
-			return true;
-	}
-
-
-	// This allows the caller to determine if the scheduler will be run in solve
-	public boolean isUpToDateSchedulePresent()
-	{
-		if (_schedule == null)											// Not up-to-date if no current schedule
-			return false;
-		else if (_scheduleAssociatedGraphVerisionId != _structureVersion)		// Not up-to-date if graph has changed
-			return false;
-		else if (_hasCustomScheduleSet)									// If custom schedule has been set, then keep that regardless of whether the solver has changed
-			return true;
-		else if (_solverHasChanged())									// Not up-to-date if solver has changed
-			return false;
-		else
-			return true;
-		
-	}
-
 	//============================
 	//
 	// Nested Graphs
@@ -1931,7 +1893,7 @@ public class FactorGraph extends FactorBase
 				templateGraph,
 				parentGraph,
 				false,
-				new HashMap<Node, Node>());
+				new HashMap<>());
 			}
 
 	// Copy constructor -- create a graph incorporating all of the variables, functions, and sub-graphs of the template graph
@@ -1939,11 +1901,14 @@ public class FactorGraph extends FactorBase
 			FactorGraph templateGraph,
 			@Nullable FactorGraph parentGraph,
 			boolean copyToRoot,
-			Map<Node, Node> old2newObjs)
+			Map<Object, Object> old2newObjs)
 	{
 		this(parentGraph != null ? parentGraph._graphTreeState : null, boundaryVariables,
 			templateGraph.getExplicitName(), null);
 
+		// Add mapping from template to this graph
+		old2newObjs.put(templateGraph, this);
+		
 		// Copy owned variables
 		for (Variable vTemplate : templateGraph._ownedVariables)
 		{
@@ -1978,9 +1943,20 @@ public class FactorGraph extends FactorBase
 				if (!vBoundary.getDomain().equals(vTemplate.getDomain()))
 					throw new DimpleException("Boundary variable does not have the same domain as template graph.  Index: " + (i-1));
 
-				//old2newIds.put(vTemplate.getId(), vBoundary.getId());
 				old2newObjs.put(vTemplate,vBoundary);
 			}
+		}
+		
+		// Copy blocks
+		for (VariableBlock templateBlock : templateGraph._ownedVariableBlocks)
+		{
+			Variable[] vars = templateBlock.toArray(new Variable[templateBlock.size()]);
+			for (int i = vars.length; --i>=0;)
+			{
+				vars[i] = (Variable)old2newObjs.get(vars[i]);
+			}
+			VariableBlock block = addVariableBlock(vars);
+			old2newObjs.put(templateBlock, block);
 		}
 
 		for (FactorGraph subGraph : templateGraph._ownedSubGraphs)
@@ -2011,32 +1987,33 @@ public class FactorGraph extends FactorBase
 			}
 		}
 
-		// If there's a scheduler associated with the template graph, copy it
-		// for use to this graph. But leave the creation of a schedule for later
-		// when the parent graph's schedule is created.
-		_explicitlyAssociatedScheduler = templateGraph._explicitlyAssociatedScheduler;
-
-		_setParentGraph(parentGraph);
-
-		//Now that we've copied the graph, let's copy the Schedule if it's
-		//already been created.
-		ISchedule templateSchedule = templateGraph._schedule;
-		if (templateSchedule != null)
+		// Copy options from template
+		for (IOption<?> option : templateGraph.getLocalOptions())
 		{
-			ISchedule scheduleCopy = copyToRoot ?
-					templateSchedule.copyToRoot(old2newObjs) :
-						templateSchedule.copy(old2newObjs);
-			_setSchedule(scheduleCopy);	// Might or might not be a custom schedule
-			_hasCustomScheduleSet = templateGraph._hasCustomScheduleSet;
+			IOptionKey<?> key = option.key();
+			
+			if (key instanceof SchedulerOptionKey)
+			{
+				// TODO perhaps we should generalize this copy operation to support other types
+				// of special option values.
+				SchedulerOptionKey schedulerKey = (SchedulerOptionKey)key;
+				IScheduler scheduler = (IScheduler)requireNonNull(option.value());
+				scheduler = scheduler.copy(old2newObjs, copyToRoot);
+				option = new Option<IScheduler>(schedulerKey, scheduler);
+			}
+
+			Option.setOptions(this, option);
 		}
+		
+		_setParentGraph(parentGraph);
 
 	}
 
 	public FactorGraph copyRoot()
 	{
-		return copyRoot(new HashMap<Node, Node>());
+		return copyRoot(new HashMap<Object, Object>());
 	}
-	public FactorGraph copyRoot(Map<Node, Node> old2newObjs)
+	public FactorGraph copyRoot(Map<Object, Object> old2newObjs)
 	{
 		FactorGraph root = getRootGraph();
 
@@ -3348,9 +3325,15 @@ public class FactorGraph extends FactorBase
 		++_graphTreeState._globalStructureVersion;
 	}
 
+	/**
+	 * @deprecated instead get {@linkplain ISchedule#scheduleVersion() scheduleVersion} from
+	 * {@linkplain #getSolver() solver graph's} {@linkplain ISolverFactorGraph#getSchedule() schedule}.
+	 */
+	@Deprecated
 	public long getScheduleVersionId()
 	{
-		return _scheduleVersionId;
+		final ISolverFactorGraph sgraph = getSolver();
+		return sgraph != null ? sgraph.getSchedule().scheduleVersion() : -1L;
 	}
 
 

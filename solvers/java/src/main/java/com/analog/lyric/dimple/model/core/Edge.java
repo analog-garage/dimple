@@ -106,6 +106,12 @@ public final class Edge implements IFactorGraphChild
 	/*---------------------------
 	 * IFactorGraphChild methods
 	 */
+	
+	@Override
+	public FactorGraph getContainingGraph()
+	{
+		return _graph;
+	}
 
 	@Override
 	public final long getGlobalId()

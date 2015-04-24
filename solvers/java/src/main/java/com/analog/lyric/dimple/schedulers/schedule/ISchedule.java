@@ -16,13 +16,13 @@
 
 package com.analog.lyric.dimple.schedulers.schedule;
 
-import java.util.Map;
-
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.Node;
+import com.analog.lyric.dimple.schedulers.IScheduler;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+import com.analog.lyric.options.IOptionValue;
 
 
 /**
@@ -32,16 +32,56 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
  *         schedule is required to implement the Iterable interface, with each
  *         iteration, returning a sequence of ScheduleEntry objects.
  */
-public interface ISchedule extends Iterable<IScheduleEntry>
+public interface ISchedule extends Iterable<IScheduleEntry>, IOptionValue
 {
 	
 	/*
 	 * This method is called when setSchedule is called on the FactorGraph.
 	 */
+	@Deprecated
 	public void attach(FactorGraph factorGraph) ;
 	
 	public @Nullable FactorGraph getFactorGraph();
 	
-	public @Nullable ISchedule copy(Map<Node,Node> old2newObjs) ;
-	public @Nullable ISchedule copyToRoot(Map<Node,Node> old2newObjs) ;
+	/**
+	 * The scheduler that created this schedule, if any.
+	 * @since 0.08
+	 */
+	public @Nullable IScheduler getScheduler();
+	
+	/**
+	 * Override the {@link #getScheduler scheduler} attribute.
+	 * <p>
+	 * This should be used by schedulers that use another scheduler to do their work.
+	 */
+	public void setScheduler(IScheduler scheduler);
+	
+	/**
+	 * True if this is a custom schedule.
+	 * <p>
+	 * Custom schedule's are subject to validation upon graph initialization.
+	 * <p>
+	 * Currently only true for {@link FixedSchedule}s produced manually or by a
+	 * {@linkplain IScheduler#isCustomScheduler() custom scheduler}.
+	 * @since 0.08
+	 */
+	public boolean isCustom();
+	
+	public boolean isUpToDateForSolver(ISolverFactorGraph sgraph);
+	
+	/**
+	 * A simple counter that is incremented if the schedule changes.
+	 * <p>
+	 * For dynamic schedules, this number should only be incremented if the
+	 * the parameters of the schedule changes.
+	 */
+	public long scheduleVersion();
+	
+	/**
+	 * The {@linkplain FactorGraph#structureVersion() structure version} of the {@linkplain #getFactorGraph graph}
+	 * when schedule was last updated.
+	 * <p>
+	 * @since 0.08
+	 */
+	public long structureVersion();
 }

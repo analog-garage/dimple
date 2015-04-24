@@ -17,6 +17,11 @@
 package com.analog.lyric.dimple.solvers.gibbs;
 
 import com.analog.lyric.dimple.options.SolverOptions;
+import com.analog.lyric.dimple.schedulers.DefaultScheduler;
+import com.analog.lyric.dimple.schedulers.GibbsDefaultScheduler;
+import com.analog.lyric.dimple.schedulers.SchedulerOptionKey;
+import com.analog.lyric.dimple.schedulers.validator.VariablesOnlyScheduleValidator;
+import com.analog.lyric.dimple.schedulers.validator.ScheduleValidatorOptionKey;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.CDFSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.GenericSamplerOptionKey;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.SliceSampler;
@@ -188,4 +193,23 @@ public class GibbsOptions extends SolverOptions
 	 */
 	public static final DoubleOptionKey initialTemperature =
 		new DoubleOptionKey(GibbsOptions.class, "initialTemperature", 1.0, 0.0, Double.MAX_VALUE);
+
+	/**
+	 * Specifies schedule validation that should be applied for Gibbs solvers.
+	 * <p>
+	 * This is used to validate custom schedules.
+	 * @since 0.08
+	 */
+	public static final ScheduleValidatorOptionKey scheduleValidator =
+		new ScheduleValidatorOptionKey(GibbsOptions.class, "scheduleValidator", VariablesOnlyScheduleValidator.class);
+
+	/**
+	 * Specifies class of scheduler for generating inference schedule.
+	 * <p>
+	 * The default scheduler implementation is {@link DefaultScheduler}.
+	 * <p>
+	 * @since 0.08
+	 */
+	public static final SchedulerOptionKey scheduler =
+		new SchedulerOptionKey(GibbsOptions.class, "scheduler", GibbsDefaultScheduler.class, scheduleValidator);
 }

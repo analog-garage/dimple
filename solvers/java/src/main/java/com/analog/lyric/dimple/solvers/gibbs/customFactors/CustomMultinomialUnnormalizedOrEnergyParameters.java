@@ -30,12 +30,11 @@ import com.analog.lyric.dimple.factorfunctions.MultinomialUnnormalizedParameters
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
-import com.analog.lyric.dimple.schedulers.IGibbsScheduler;
-import com.analog.lyric.dimple.schedulers.IScheduler;
-import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
+import com.analog.lyric.dimple.model.variables.VariableBlock;
+import com.analog.lyric.dimple.schedulers.schedule.IGibbsSchedule;
+import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
@@ -189,26 +188,22 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 		
 		// Create a block schedule entry with a BlockMHSampler and a MultinomialBlockProposal kernel
 		BlockMHSampler blockSampler = new BlockMHSampler(new MultinomialBlockProposal(this));
-		INode[] nodeList = new INode[_outputVariables.length + (_hasConstantN ? 0 : 1)];
+		Variable[] nodeList = new Variable[_outputVariables.length + (_hasConstantN ? 0 : 1)];
 		int nodeIndex = 0;
 		if (!_hasConstantN)
 			nodeList[nodeIndex++] = _NVariable.getModelObject();
 		for (int i = 0; i < _outputVariables.length; i++, nodeIndex++)
 			nodeList[nodeIndex] = _outputVariables[i].getModelObject();
-		BlockScheduleEntry blockScheduleEntry = new BlockScheduleEntry(blockSampler, nodeList);
+
+		VariableBlock block = getParentGraph().getModel().addVariableBlock(nodeList);
+		BlockScheduleEntry blockScheduleEntry = new BlockScheduleEntry(blockSampler, block);
 		
 		// Add the block updater to the schedule
 		FactorGraph rootGraph = _model.getRootGraph();
-		if (rootGraph.hasCustomSchedule())	// If there's a custom schedule
+		ISchedule schedule = rootGraph.getSchedule(); // Assumes scheduler for Gibbs solver is flattened to root graph
+		if (schedule instanceof IGibbsSchedule)
 		{
-			FixedSchedule schedule = (FixedSchedule)rootGraph.getSchedule();	// A custom schedule is a fixed schedule
-			schedule.addBlockScheduleEntry(blockScheduleEntry);					// Add the block schedule entry, which replaces node entries for the nodes in the block
-		}
-		else	// There's a scheduler to create the schedule
-		{
-			IScheduler scheduler = rootGraph.getScheduler();	// Assumes scheduler for Gibbs solver is flattened to root graph
-			if (scheduler instanceof IGibbsScheduler)
-				((IGibbsScheduler)scheduler).addBlockScheduleEntry(blockScheduleEntry);
+			((IGibbsSchedule)schedule).addBlockScheduleEntry(blockScheduleEntry);
 		}
 			
 		// Use the block sampler to initialize the neighboring variables

@@ -33,6 +33,18 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 @Immutable
 public abstract class Port implements IFactorGraphChild
 {
+	/**
+	 * Identifies type of {@link Port} by the type of its {@linkplain Port#getNode() node}.
+	 * 
+	 * @since 0.08
+	 * @author Christopher Barber
+	 */
+	public static enum Type
+	{
+		FACTOR,
+		VARIABLE;
+	}
+	
 	/*-------
 	 * State
 	 */
@@ -76,6 +88,12 @@ public abstract class Port implements IFactorGraphChild
 	 */
 
 	@Override
+	public FactorGraph getContainingGraph()
+	{
+		return _graph;
+	}
+	
+	@Override
 	public long getGlobalId()
 	{
 		return Ids.globalIdFromParts(_graph.getGraphId(), getLocalId());
@@ -95,13 +113,13 @@ public abstract class Port implements IFactorGraphChild
 	}
 	
 	@Override
-	public @Nullable FactorGraph getParentGraph()
+	public FactorGraph getParentGraph()
 	{
 		return _graph;
 	}
 
 	@Override
-	public @Nullable FactorGraph getRootGraph()
+	public FactorGraph getRootGraph()
 	{
 		return _graph.getRootGraph();
 	}
@@ -154,6 +172,8 @@ public abstract class Port implements IFactorGraphChild
 	{
 		return _edgeState;
 	}
+	
+	public abstract Type portType();
 
 	/*--------------------
 	 * Deprecated methods

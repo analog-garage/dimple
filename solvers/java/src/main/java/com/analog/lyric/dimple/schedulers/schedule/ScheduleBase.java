@@ -16,15 +16,67 @@
 
 package com.analog.lyric.dimple.schedulers.schedule;
 
-import java.util.Map;
+import net.jcip.annotations.NotThreadSafe;
 
-import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.Node;
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.schedulers.IScheduler;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+
+@NotThreadSafe
 public abstract class ScheduleBase implements ISchedule
 {
+	private static final long serialVersionUID = 1L;
+
+	/*-------
+	 * State
+	 */
+	
+	protected @Nullable IScheduler _scheduler;
 	protected @Nullable FactorGraph _factorGraph;
+	protected long _structureVersion;
+	protected long _version;
+	
+	/*--------------
+	 * Construction
+	 */
+	
+	protected ScheduleBase(@Nullable IScheduler scheduler, @Nullable FactorGraph factorGraph)
+	{
+		_scheduler = scheduler;
+		_factorGraph = factorGraph;
+		_structureVersion = factorGraph != null ? factorGraph.structureVersion() : -1L;
+	}
+	
+	/*----------------
+	 * Object methods
+	 */
+	
+	@Override
+	public String toString()
+	{
+		return super.toString();
+	}
+
+	/*--------------------
+	 * IOptionKey methods
+	 */
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Most schedules are mutable, so this returns true.
+	 */
+	@Override
+	public boolean isMutable()
+	{
+		return true;
+	}
+	
+	/*-------------------
+	 * ISchedule methods
+	 */
 	
 	/*
 	 * This method is called when setSchedule is called on the FactorGraph.
@@ -32,7 +84,12 @@ public abstract class ScheduleBase implements ISchedule
 	@Override
 	public void attach(FactorGraph factorGraph)
 	{
-		_factorGraph = factorGraph;
+		if (factorGraph != _factorGraph)
+		{
+			++_version;
+			_factorGraph = factorGraph;
+		}
+		_structureVersion = factorGraph.structureVersion();
 	}
 	
 	@Override
@@ -40,16 +97,43 @@ public abstract class ScheduleBase implements ISchedule
 	{
 		return _factorGraph;
 	}
-
+	
 	@Override
-	public @Nullable ISchedule copy(Map<Node,Node> old2newObjs)
+	public @Nullable IScheduler getScheduler()
 	{
-		return null;
+		return _scheduler;
+	}
+
+	public
+	void setScheduler(IScheduler scheduler)
+	{
+		_scheduler = scheduler;
 	}
 	
 	@Override
-	public @Nullable ISchedule copyToRoot(Map<Node,Node> old2newObjs)
+	public boolean isCustom()
 	{
-		return null;
+		return false;
+	}
+	
+	@Override
+	public boolean isUpToDateForSolver(ISolverFactorGraph sgraph)
+	{
+		final FactorGraph fg = sgraph.getModelObject();
+		final IScheduler scheduler = _scheduler;
+		return (scheduler == null || scheduler.equals(sgraph.getScheduler())) &&
+			_factorGraph == fg && _structureVersion == fg.structureVersion();
+	}
+	
+	@Override
+	public long scheduleVersion()
+	{
+		return _version;
+	}
+	
+	@Override
+	public long structureVersion()
+	{
+		return _structureVersion;
 	}
 }

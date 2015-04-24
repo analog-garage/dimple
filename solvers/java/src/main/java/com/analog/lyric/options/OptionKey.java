@@ -212,6 +212,12 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 	}
 	
 	@Override
+	public boolean validForDelegator(T value, IOptionHolder delegator)
+	{
+		return true;
+	}
+	
+	@Override
 	public T validate(T value, @Nullable IOptionHolder optionHolder)
 	{
 		return type().cast(value);

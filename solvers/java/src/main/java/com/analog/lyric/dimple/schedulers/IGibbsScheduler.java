@@ -16,7 +16,11 @@
 
 package com.analog.lyric.dimple.schedulers;
 
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.schedulers.schedule.IGibbsSchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+
 
 /**
  * 
@@ -25,5 +29,11 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
  */
 public interface IGibbsScheduler extends IScheduler
 {
+	@Override
+	public IGibbsSchedule createSchedule(FactorGraph graph);
+	
+	@Override
+	public IGibbsSchedule createSchedule(ISolverFactorGraph graph);
+	
 	public void addBlockScheduleEntry(BlockScheduleEntry blockScheduleEntry);
 }

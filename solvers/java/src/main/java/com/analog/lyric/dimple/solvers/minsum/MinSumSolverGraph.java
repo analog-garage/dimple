@@ -31,8 +31,8 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.BPOptions;
+import com.analog.lyric.dimple.solvers.core.BPSolverGraph;
 import com.analog.lyric.dimple.solvers.core.NoSolverEdge;
-import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -61,7 +61,7 @@ import com.analog.lyric.options.IOptionKey;
  *  <p>
  * @since 0.07
  */
-public class MinSumSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVariable,ISolverEdgeState>
+public class MinSumSolverGraph extends BPSolverGraph<ISolverFactor,ISolverVariable,ISolverEdgeState>
 {
 	protected double _damping = 0;
 

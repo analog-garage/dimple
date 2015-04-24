@@ -65,6 +65,12 @@ public class GibbsRealFactorBlastFromThePast extends SBlastFromThePast implement
 	}
 	
 	@Override
+	public GibbsSolverGraph getParentGraph()
+	{
+		return (GibbsSolverGraph)_parent;
+	}
+	
+	@Override
 	public ISolverVariableGibbs getSibling(int edge)
 	{
 		return (ISolverVariableGibbs)super.getSibling(edge);

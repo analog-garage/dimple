@@ -25,6 +25,15 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
  */
 public interface IGibbsSchedule extends ISchedule
 {
-	public void addBlockScheduleEntry(BlockScheduleEntry blockScheduleEntry);	// Add a block schedule entry and replace individual node entries
-	public int size();	// Number of entries in the schedule considered one Gibbs scan
+	/**
+	 *  Add a block schedule entry and replace individual node entries
+	 * @since 0.06
+	 */
+	public void addBlockScheduleEntry(BlockScheduleEntry blockScheduleEntry);
+	
+	/**
+	 * Number of entries in the schedule considered one Gibbs scan
+	 * @since 0.06
+	 */
+	public int size();
 }

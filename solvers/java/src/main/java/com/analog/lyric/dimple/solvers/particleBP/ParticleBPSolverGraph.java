@@ -20,15 +20,15 @@ import static java.util.Objects.*;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.EdgeState;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
+import com.analog.lyric.dimple.solvers.core.BPSolverGraph;
 import com.analog.lyric.dimple.solvers.core.NoSolverEdge;
-import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
@@ -47,7 +47,7 @@ import com.analog.lyric.math.DimpleRandomGenerator;
  * @since 0.07
  */
 @SuppressWarnings("deprecation") // TODO remove when SDiscreteVariable removed
-public class ParticleBPSolverGraph extends SFactorGraphBase<ISolverFactor, IParticleBPVariable, ISolverEdgeState>
+public class ParticleBPSolverGraph extends BPSolverGraph<ISolverFactor, IParticleBPVariable, ISolverEdgeState>
 {
 	protected int _numIterationsBetweenResampling = 1;
 	protected boolean _temper = false;

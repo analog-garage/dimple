@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.helpers.Edge;
@@ -27,7 +29,6 @@ import com.analog.lyric.dimple.schedulers.dependencyGraph.helpers.LastUpdateGrap
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
-import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /*
  * A single node in the StaticDependencyGraph.
@@ -80,9 +81,10 @@ public class StaticDependencyGraphNode
 	
 	/*
 	 * The constructor will set up dependencies.
+	 * <p>
+	 * @scheduleEntry must be either a {@link EdgeScheduleEntry} or a {@link NodeScheduleEntry}
 	 */
-	public StaticDependencyGraphNode(IScheduleEntry scheduleEntry,
-			LastUpdateGraph lastUpdateGraph, int id)
+	StaticDependencyGraphNode(IScheduleEntry scheduleEntry, LastUpdateGraph lastUpdateGraph, int id)
 	{
 		_phase = 0;
 		_scheduleEntry = scheduleEntry;
@@ -199,13 +201,27 @@ public class StaticDependencyGraphNode
 		return false;
 	}
 	
-	/*
-	 * Retrievew the schedule entry stringand then makes it more concise.
+	/**
+	 * Generate label for dependency node.
+	 * @since 0.08
 	 */
-	@Override
-	public String toString()
+	public String getLabel()
 	{
-		int first = _scheduleEntry.toString().indexOf('[');
-		return _scheduleEntry.toString().substring(first);
+		switch (_scheduleEntry.type())
+		{
+		case EDGE:
+		{
+			EdgeScheduleEntry entry = (EdgeScheduleEntry)_scheduleEntry;
+			return String.format("[%s] -> %d -> [%s]",
+				entry.getNode(), entry.getPortNum(), entry.getPort().getSiblingNode());
+		}
+		case NODE:
+		{
+			NodeScheduleEntry entry = (NodeScheduleEntry)_scheduleEntry;
+			return String.format("[%s]", entry.getNode());
+		}
+		default:
+			return "?";
+		}
 	}
 }

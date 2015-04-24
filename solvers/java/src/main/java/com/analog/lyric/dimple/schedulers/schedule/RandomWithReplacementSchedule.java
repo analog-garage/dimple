@@ -21,11 +21,13 @@ import java.util.Iterator;
 import java.util.Objects;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.EdgeState;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorList;
+import com.analog.lyric.dimple.schedulers.IScheduler;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
@@ -49,16 +51,34 @@ import com.analog.lyric.math.DimpleRandomGenerator;
  */
 public class RandomWithReplacementSchedule extends ScheduleBase
 {
+	private static final long serialVersionUID = 1L;
+
+	/*-------
+	 * State
+	 */
+	
 	protected FactorList _factors;
 	protected int _numFactors;
 
-
-	@SuppressWarnings("null")
+	/*--------------
+	 * Construction
+	 */
+	
 	public RandomWithReplacementSchedule(FactorGraph factorGraph)
 	{
-		_factorGraph = factorGraph;
+		this(null, factorGraph);
+	}
+
+	@SuppressWarnings("null")
+	public RandomWithReplacementSchedule(@Nullable IScheduler scheduler, FactorGraph factorGraph)
+	{
+		super(scheduler, factorGraph);
 		initialize();
 	}
+	
+	/*-------------------
+	 * ISchedule methods
+	 */
 
 	@Override
 	public void attach(FactorGraph factorGraph)
@@ -71,6 +91,7 @@ public class RandomWithReplacementSchedule extends ScheduleBase
 	{
 		_factors = getFactorGraph().getNonGraphFactors();
 		_numFactors = _factors.size();
+		++_version;
 	}
 
 	@Override

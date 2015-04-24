@@ -20,10 +20,8 @@ import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.model.core.Node;
-import com.analog.lyric.dimple.model.core.Port;
-import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
-import com.analog.lyric.util.misc.Internal;
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.INode;
 
 
 /**
@@ -32,30 +30,61 @@ import com.analog.lyric.util.misc.Internal;
  */
 public interface IScheduleEntry
 {
+	/**
+	 * Identifies {@linkplain IScheduleEntry#type type} of {@link IScheduleEntry}.
+	 * 
+	 * @since 0.08
+	 * @author Christopher Barber
+	 */
 	public static enum Type
 	{
+		/**
+		 * Type of {@link EdgeScheduleEntry} instances.
+		 */
 		EDGE,
+		/**
+		 * Type of {@link NodeScheduleEntry} instances.
+		 */
 		NODE,
+		/**
+		 * Type of {@link BlockScheduleEntry} instances.
+		 */
 		VARIABLE_BLOCK,
-		SUB,
+		/**
+		 * Type of {@link SubgraphScheduleEntry} instances,
+		 */
+		SUBGRAPH,
+		/**
+		 * Type of {@link SubScheduleEntry} instances.
+		 */
+		@Deprecated
+		SUBSCHEDULE,
+		/**
+		 * Type that should be returned by a user-defined {@link IScheduleEntry} implementation.
+		 * Note that such an entry will only be supported by a user-defined solver.
+		 */
 		CUSTOM;
 	}
 	
+	public @Nullable IScheduleEntry copy(Map<Object,Object> old2new, boolean copyToRoot);
+	
 	/**
-	 * All types of schedule entries must implement the update() method,
-	 * which is to update the portion of the graph associated with the
-	 * entry.
+	 * Returns parent graph of entry, if applicable.
+	 * @since 0.08
 	 */
-	@Deprecated
-	public void update();
+	public @Nullable FactorGraph getParentGraph();
 	
-	@Deprecated
-	@Internal
-	public void update(SolverNodeMapping solvers);
+	/**
+	 * Returns iterator over nodes referenced in schedule entry.
+	 * @since 0.08
+	 */
+	public Iterable<? extends INode> getNodes();
 	
-	public @Nullable IScheduleEntry copy(Map<Node,Node> old2newObjs);
-	public @Nullable IScheduleEntry copyToRoot(Map<Node,Node> old2newObjs);
-	public @Nullable Iterable<Port> getPorts();
-	
+	/**
+	 * Indicates the type of schedule entry.
+	 * <p>
+	 * This can be used in a switch statement to avoid doing instanceof checks.
+	 * @since 0.08
+	 */
 	public Type type();
 }

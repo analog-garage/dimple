@@ -257,7 +257,6 @@ public class TestJunctionTreeTransform extends DimpleTestBase
 		
 		// Try with conditioning
 		model.setSolverFactory(null);
-		model.setSchedule(null);
 		VariableList variables = model.getVariables();
 		for (int i = 0; i < 100000; ++i)
 		{

@@ -15,7 +15,7 @@ import com.analog.lyric.util.misc.Internal;
 /**
  * Represents an activity driven by a schedule.
  * 
- * @see ScheduleVisitor#visit(com.analog.lyric.dimple.schedulers.schedule.ISchedule, IScheduledActivity)
+ * @see ScheduleVisitor#visit
  * @since 0.07
  * @author jking
  */

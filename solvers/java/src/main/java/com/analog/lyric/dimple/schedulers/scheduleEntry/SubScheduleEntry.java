@@ -17,112 +17,80 @@
 package com.analog.lyric.dimple.schedulers.scheduleEntry;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.Node;
-import com.analog.lyric.dimple.model.core.Port;
-import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
-import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
+import com.google.common.collect.Iterables;
 
 
 /**
- * @author jeffb
- * 
- *         A schedule entry that contains a sub-schedule. The update method runs
- *         through the entire sub-schedule, executing the update method on each
- *         entry.
+ * <p>
+ * A schedule entry that contains a sub-schedule.
+ * <p>
+ * If you want to simply refer to the
+ * <p>
+ * @deprecated use {@link SubgraphScheduleEntry} instead.
  */
+@Deprecated
 public class SubScheduleEntry implements IScheduleEntry
 {
-	private ISchedule _subschedule;
+	private final ISchedule _subschedule;
 	
 	public SubScheduleEntry(ISchedule subschedule)
 	{
 		_subschedule = subschedule;
 	}
 	
-	@Override
-	public void update(SolverNodeMapping solvers)
-	{
-		for (IScheduleEntry entry : _subschedule)
-		{
-			entry.update(solvers);
-		}
-	}
-	
-	@Override
-	public void update()
-	{
-		for (IScheduleEntry entry : _subschedule)
-		{
-			entry.update();
-		}
-	}
-	
-
 	public ISchedule getSchedule()
 	{
 		return _subschedule;
 	}
 	
 	@Override
-	public IScheduleEntry copy(Map<Node,Node> old2newObjs)
+	public IScheduleEntry copy(Map<Object,Object> old2newObjs, boolean copyToRoot)
 	{
-		return copy(old2newObjs, false);
-	}
-	@Override
-	public IScheduleEntry copyToRoot(Map<Node,Node> old2newObjs)
-	{
-		return copy(old2newObjs, true);
-	}
-
-	public IScheduleEntry copy(Map<Node,Node> old2newObjs, boolean copyToRoot)
-	{
-		
 		FactorGraph newGraph = (FactorGraph)old2newObjs.get(this.getSchedule().getFactorGraph());
 		return new SubScheduleEntry(newGraph.getSchedule());
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * @return {@linkplain ISchedule#getFactorGraph() graph} of {@linkplain #getSubschedule() subschedule}.
+	 */
 	@Override
-	public @Nullable Iterable<Port> getPorts()
+	public @Nullable FactorGraph getParentGraph()
 	{
-		//This is a subgraph.
-		ArrayList<Port> ports = new ArrayList<Port>();
-
-		FactorGraph subGraph = this.getSchedule().getFactorGraph();
-		
-		if (subGraph == null)	// If no sub-graph associated with this graph, don't return any ports
-			return null;
-		
-		//Get all the non boundary variables associated with this sub graph
-		//and add their ports.  subGraph getVariables does not return boundary variables.
-		for (Variable v : subGraph.getVariables())
-		{
-			for (int index = 0, end = v.getSiblingCount(); index < end; index++)
-			
-				//whatsLeft.remove(p);
-				ports.add(v.getPort(index));
-		}
-		
-		//Get all the factors associated with this subgraph and add the ports
-		for (Factor f : subGraph.getNonGraphFactors())
-		{
-			for (int index = 0, end = f.getSiblingCount(); index < end; index++)
-				//whatsLeft.remove(p);
-				ports.add(f.getPort(index));
-		}
-		return ports;
-		
+		return _subschedule.getFactorGraph();
 	}
 	
 	@Override
+	public Iterable<? extends INode> getNodes()
+	{
+		List<INode> nodes = new ArrayList<>();
+		for (IScheduleEntry subentry : _subschedule)
+		{
+			Iterables.addAll(nodes, subentry.getNodes());
+		}
+		return nodes;
+	}
+
+	/**
+	 * @return the subschedule
+	 */
+	public ISchedule getSubschedule()
+	{
+		return _subschedule;
+	}
+
+	@Override
 	public Type type()
 	{
-		return Type.SUB;
+		return Type.SUBSCHEDULE;
 	}
 }

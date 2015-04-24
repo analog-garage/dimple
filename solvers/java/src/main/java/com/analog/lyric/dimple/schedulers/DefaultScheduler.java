@@ -22,4 +22,18 @@ package com.analog.lyric.dimple.schedulers;
  *         This class's purpose is simply to point to the scheduler that should
  *         be used if no other scheduler is specified.
  */
-public class DefaultScheduler extends TreeOrFloodingScheduler {}
+public final class DefaultScheduler extends TreeOrFloodingScheduler
+{
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @return true
+	 */
+	@Override
+	public boolean isDefaultScheduler()
+	{
+		return true;
+	}
+}

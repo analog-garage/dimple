@@ -33,4 +33,17 @@ public interface IOptionValue extends Serializable
 	@Override
 	public String toString();
 
+	/*----------------------
+	 * IOptionValue methods
+	 */
+	
+	/**
+	 * Indicate whether value instance has mutable state.
+	 * <p>
+	 * Usually it is best for option values to be immutable, but in some cases it may be necessary or
+	 * desirable to have mutable option values. Subclasses that may return true for this method should
+	 * explicitly document this fact.
+	 * @since 0.08
+	 */
+	public boolean isMutable();
 }

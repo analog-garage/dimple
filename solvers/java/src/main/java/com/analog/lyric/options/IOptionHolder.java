@@ -97,6 +97,21 @@ public interface IOptionHolder
 	public <T extends Serializable> T getOption(IOptionKey<T> key);
 	
 	/**
+	 * Returns value and source of option with given key if set, else null.
+	 * <p>
+	 * Declaration moved up from {@link AbstractOptionHolder} in release 0.08.
+	 * <p>
+	 * @param key is a non-null option key.
+	 * @param source if non-null with length at least one, the first element will
+	 * be set to the object whose {@linkplain #getLocalOption(IOptionKey) local option}
+	 * setting produced the return value. Nothing will be written if this method returns null.
+	 * @see #getOption
+	 * @since 0.08
+	 */
+	@Nullable
+	public <T extends Serializable> T getOptionAndSource(IOptionKey<T> key, @Nullable IOptionHolder[] source);
+
+	/**
 	 * Returns value of option with given key if set directly on this object, else null.
 	 * <p>
 	 * @param key is a non-null option key.

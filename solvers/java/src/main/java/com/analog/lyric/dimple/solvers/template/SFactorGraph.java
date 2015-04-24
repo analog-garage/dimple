@@ -18,14 +18,14 @@ package com.analog.lyric.dimple.solvers.template;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.EdgeState;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.solvers.core.BPSolverGraph;
 import com.analog.lyric.dimple.solvers.core.NoSolverEdge;
 import com.analog.lyric.dimple.solvers.core.SDiscreteZeroedWeightEdge;
-import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
@@ -37,7 +37,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
  * @author shershey
  *
  */
-public class SFactorGraph  extends SFactorGraphBase<ISolverFactor,ISolverVariable,ISolverEdgeState>
+public class SFactorGraph extends BPSolverGraph<ISolverFactor,ISolverVariable,ISolverEdgeState>
 {
 
 	/**

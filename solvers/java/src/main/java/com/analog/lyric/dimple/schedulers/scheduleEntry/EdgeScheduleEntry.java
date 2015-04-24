@@ -25,10 +25,8 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
-import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.Variable;
-import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 
 
 
@@ -60,16 +58,13 @@ public class EdgeScheduleEntry implements IScheduleEntry
 		_portNum = node.findSibling(other);
 	}
 
-	@Override
-	public void update(SolverNodeMapping solvers)
+	/**
+	 * Return port description for edge update.
+	 * @since 0.08
+	 */
+	public Port getPort()
 	{
-		solvers.getSolverNode(_node).updateEdge(_portNum);
-	}
-	
-	@Override
-	public void update()
-	{
-		_node.updateEdge(_portNum);
+		return (_node.getPort(_portNum));
 	}
 	
 	public INode getNode()
@@ -83,17 +78,7 @@ public class EdgeScheduleEntry implements IScheduleEntry
 	}
 	
 	@Override
-	public @Nullable IScheduleEntry copy(Map<Node,Node> old2newObjs)
-	{
-		return copy(old2newObjs, false);
-	}
-	@Override
-	public @Nullable IScheduleEntry copyToRoot(Map<Node,Node> old2newObjs)
-	{
-		return copy(old2newObjs, true);
-	}
-	
-	public @Nullable IScheduleEntry copy(Map<Node,Node> old2newObjs, boolean copyToRoot)
+	public @Nullable IScheduleEntry copy(Map<Object,Object> old2newObjs, boolean copyToRoot)
 	{
 		boolean skip = false;
 		boolean isBoundaryVariable = false;
@@ -116,23 +101,34 @@ public class EdgeScheduleEntry implements IScheduleEntry
 		
 		if (!skip)
 		{
-			INode newNode = old2newObjs.get(node);
+			INode newNode = (INode)old2newObjs.get(node);
 			return new EdgeScheduleEntry(newNode,this.getPortNum());
 		
 		}
 		return null;
 	}
+
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * @return parent of {@link #getNode() edge node}.
+	 */
+	@Override
+	public @Nullable FactorGraph getParentGraph()
+	{
+		return _node.getParentGraph();
+	}
 	
 	@Override
-	public Iterable<Port> getPorts()
+	public Iterable<? extends INode> getNodes()
 	{
-		return Collections.singleton(_node.getPort(_portNum));
+		return Collections.singletonList(_node);
 	}
 	
 	@Override
 	public String toString()
 	{
-		return String.format("IScheduleEntry [%s] -> %d -> [%s]"
+		return String.format("[EdgeScheduleEntry '%s' -%d-> '%s'"
 				,getNode().getLabel()
 				,getPortNum()
 				,getNode().getSibling(getPortNum()).getLabel());

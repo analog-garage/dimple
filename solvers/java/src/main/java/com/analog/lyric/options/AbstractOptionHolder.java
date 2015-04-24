@@ -72,6 +72,7 @@ public abstract class AbstractOptionHolder implements IOptionHolder
 	 * @see #getOption
 	 * @since 0.07
 	 */
+	@Override
 	@Nullable
 	public <T extends Serializable> T getOptionAndSource(IOptionKey<T> key, @Nullable IOptionHolder[] source)
 	{
@@ -88,7 +89,7 @@ public abstract class AbstractOptionHolder implements IOptionHolder
 				delegate = delegates.next();
 
 				result = delegate.getLocalOption(key);
-				if (result != null)
+				if (result != null && key.validForDelegator(result, this))
 				{
 					break;
 				}
@@ -135,7 +136,7 @@ public abstract class AbstractOptionHolder implements IOptionHolder
             final IOptionHolder delegate = delegates.next();
         
             result = delegate.getLocalOption(key);
-            if (result != null)
+            if (result != null && key.validForDelegator(result,  this))
             {
                 break;
             }

@@ -34,7 +34,7 @@ import com.analog.lyric.dimple.solvers.core.multithreading.MultithreadingAlgorit
 public class SingleQueueMutlithreadingAlgorithm extends MultithreadingAlgorithm
 {
 
-	public SingleQueueMutlithreadingAlgorithm(MultiThreadingManager manager) 
+	public SingleQueueMutlithreadingAlgorithm(MultiThreadingManager manager)
 	{
 		super(manager);
 	}
@@ -43,7 +43,7 @@ public class SingleQueueMutlithreadingAlgorithm extends MultithreadingAlgorithm
 	 * Sets up the worker threads and kicks them off.
 	 */
 	@Override
-	public void iterate(int numIters) 
+	public void iterate(int numIters)
 	{
 		//get the dependency graph.
  		StaticDependencyGraph dg = getManager().getDependencyGraph();
@@ -65,10 +65,10 @@ public class SingleQueueMutlithreadingAlgorithm extends MultithreadingAlgorithm
 
 	 		
 			//Instantiate the Callable objects.
-	 		int numThreads = getManager().getNumWorkers();	 		
-			ArrayList<Callable<Object>> workers = new ArrayList<Callable<Object>>();			
-	 		for (int i = 0; i < numThreads; i++)	 			
-	 			workers.add(new SingleQueueWorker(workQueue, dg.getNumNodes(), nodesLeft));
+	 		int numThreads = getManager().getNumWorkers();
+			ArrayList<Callable<Object>> workers = new ArrayList<Callable<Object>>();
+	 		for (int i = 0; i < numThreads; i++)
+	 			workers.add(new SingleQueueWorker(getManager().getSolverGraph(), workQueue, dg.getNumNodes(), nodesLeft));
 	 		
 	 		//Kick off the work
 	 		try {

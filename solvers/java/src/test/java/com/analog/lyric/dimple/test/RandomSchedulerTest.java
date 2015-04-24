@@ -80,13 +80,13 @@ public class RandomSchedulerTest extends DimpleTestBase
 		{
 			if (debugPrint) System.out.println(entry.toString());
 			if (i == 3)
-				assertTrue(entry.toString().equals("IScheduleEntry [F2]"));
+				assertEquals("[NodeScheduleEntry F2]", entry.toString());
 			else if (i == 7)
-				assertTrue(entry.toString().equals("IScheduleEntry [F4]"));
+				assertEquals("[NodeScheduleEntry F4]", entry.toString());
 			else if (i == 11)
-				assertTrue(entry.toString().equals("IScheduleEntry [F3]"));
+				assertEquals("[NodeScheduleEntry F3]", entry.toString());
 			else if (i == 15)
-				assertTrue(entry.toString().equals("IScheduleEntry [F1]"));
+				assertEquals("[NodeScheduleEntry F1]", entry.toString());
 			i++;
 		}
 
@@ -135,13 +135,13 @@ public class RandomSchedulerTest extends DimpleTestBase
 		{
 			if (debugPrint) System.out.println(entry.toString());
 			if (i == 3)
-				assertTrue(entry.toString().equals("IScheduleEntry [F1]"));
+				assertEquals("[NodeScheduleEntry F1]", entry.toString());
 			else if (i == 7)
-				assertTrue(entry.toString().equals("IScheduleEntry [F2]"));
+				assertEquals("[NodeScheduleEntry F2]", entry.toString());
 			else if (i == 11)
-				assertTrue(entry.toString().equals("IScheduleEntry [F2]"));
+				assertEquals("[NodeScheduleEntry F2]", entry.toString());
 			else if (i == 15)
-				assertTrue(entry.toString().equals("IScheduleEntry [F4]"));
+				assertEquals("[NodeScheduleEntry F4]", entry.toString());
 			i++;
 		}
 

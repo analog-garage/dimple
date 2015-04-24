@@ -99,4 +99,10 @@ public class OptionDoubleList extends AbstractOptionValueList<Double>
 	{
 		return Doubles.toArray(this);
 	}
+	
+	@Override
+	public boolean isMutable()
+	{
+		return false;
+	}
 }

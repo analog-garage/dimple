@@ -39,10 +39,12 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionRegistry;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.FactorGraphRegistry;
-import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.Ids;
+import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.options.DimpleOptionRegistry;
+import com.analog.lyric.dimple.schedulers.IScheduler;
+import com.analog.lyric.dimple.schedulers.validator.ScheduleValidator;
 import com.analog.lyric.dimple.solvers.core.DimpleSolverRegistry;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IGenericSampler;
@@ -198,6 +200,12 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	
 	@SuppressWarnings("deprecation")
 	private final DimpleOptionRegistry _optionRegistry = new DimpleOptionRegistry();
+	
+	private final ConstructorRegistry<IScheduler> _schedulers =
+		new ConstructorRegistry<>(IScheduler.class);
+	
+	private final ConstructorRegistry<ScheduleValidator> _scheduleValidators =
+		new ConstructorRegistry<>(ScheduleValidator.class);
 	
 	private final DimpleSolverRegistry _solverRegistry = new DimpleSolverRegistry();
 	
@@ -676,7 +684,35 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	{
 		return _proposalKernels;
 	}
-
+	
+	/**
+	 * Registry of scheduler classes for this environment.
+	 * <p>
+	 * Supports lookup of {@link IScheduler} implementations by class name.
+	 * Primarily for use in dynamic language implementations of Dimple.
+	 * <p>
+	 * @see ConstructorRegistry
+	 * @since 0.08
+	 */
+	public ConstructorRegistry<IScheduler> schedulers()
+	{
+		return _schedulers;
+	}
+	
+	/**
+	 * Registry of schedule validator classes for this environment.
+	 * <p>
+	 * Supports lookup of {@link ScheduleValidator} implementations by class name.
+	 * Primarily for use in dynamic language implementations of Dimple.
+	 * <p>
+	 * @see ConstructorRegistry
+	 * @since 0.08
+	 */
+	public ConstructorRegistry<ScheduleValidator> scheduleValidators()
+	{
+		return _scheduleValidators;
+	}
+	
 	/**
 	 * Registry of solver factory classes for this environment.
 	 * <p>

@@ -46,6 +46,15 @@ public class DimpleException extends RuntimeException
 	{
 		super(String.format(format, args));
 	}
+	
+	/**
+	 * Construct exception wrapping given {@code cause} with message formatted by {@link String#format}.
+	 * @since 0.08
+	 */
+	public DimpleException(Throwable cause, String format, Object ... args)
+	{
+		super(String.format(format, args), cause);
+	}
 
 	/**
 	 * Constructs exception wrapping given exception.

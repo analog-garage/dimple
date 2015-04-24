@@ -16,6 +16,10 @@
 
 package com.analog.lyric.dimple.options;
 
+import com.analog.lyric.dimple.schedulers.DefaultScheduler;
+import com.analog.lyric.dimple.schedulers.SchedulerOptionKey;
+import com.analog.lyric.dimple.schedulers.validator.AllEdgeScheduleValidator;
+import com.analog.lyric.dimple.schedulers.validator.ScheduleValidatorOptionKey;
 import com.analog.lyric.dimple.solvers.core.SNode;
 import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateApproach;
 import com.analog.lyric.options.DoubleListOptionKey;
@@ -127,5 +131,24 @@ public class BPOptions extends SolverOptions
 	 */
 	public static final DoubleOptionKey optimizedUpdateSparseThreshold = new DoubleOptionKey(BPOptions.class,
 			"optimizedUpdateSparseThreshold", 1.0, 0.0, 1.0);
+
+	/**
+	 * Specifies schedule validation that should be applied for BP solvers.
+	 * <p>
+	 * This is used to validate custom schedules.
+	 * @since 0.08
+	 */
+	public static final ScheduleValidatorOptionKey scheduleValidator =
+		new ScheduleValidatorOptionKey(BPOptions.class, "scheduleValidator", AllEdgeScheduleValidator.class);
+
+	/**
+	 * Specifies class of scheduler for generating inference schedule.
+	 * <p>
+	 * The default scheduler implementation is {@link DefaultScheduler}.
+	 * <p>
+	 * @since 0.08
+	 */
+	public static final SchedulerOptionKey scheduler =
+		new SchedulerOptionKey(BPOptions.class, "scheduler", DefaultScheduler.class, scheduleValidator);
 
 }

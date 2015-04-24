@@ -199,6 +199,12 @@ public class GibbsReal extends SRealVariableBase
 	 */
 	
 	@Override
+	public GibbsSolverGraph getParentGraph()
+	{
+		return (GibbsSolverGraph)_parent;
+	}
+	
+	@Override
 	public ISolverFactorGibbs getSibling(int edge)
 	{
 		return (ISolverFactorGibbs)super.getSibling(edge);

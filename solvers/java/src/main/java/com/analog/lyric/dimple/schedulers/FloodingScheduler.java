@@ -16,13 +16,19 @@
 
 package com.analog.lyric.dimple.schedulers;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
+import java.util.Map;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 
 /**
  * @author jeffb
@@ -38,17 +44,85 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
  *         default scheduler used for sub-graphs. This is useful in cases where
  *         this scheduler is used as a fall-back to a different scheduler.
  */
-public class FloodingScheduler implements IScheduler
+public class FloodingScheduler extends BPSchedulerBase
 {
-	@SuppressWarnings("all")
-	protected Class _subGraphSchedulerClass = FloodingScheduler.class;
+	private static final long serialVersionUID = 1L;
 
+	/*-------
+	 * State
+	 */
+	
+	protected Class<? extends IScheduler> _subGraphSchedulerClass = FloodingScheduler.class;
+
+	/*--------------
+	 * Construction
+	 */
+	
+	public FloodingScheduler()
+	{
+	}
+	
+	FloodingScheduler(FloodingScheduler other)
+	{
+		_subGraphSchedulerClass = other._subGraphSchedulerClass;
+	}
+	
+	/*----------------
+	 * Object methods
+	 */
 	
 	@Override
-	@SuppressWarnings("unchecked")
-	public ISchedule createSchedule(FactorGraph factorGraph)
+	public int hashCode()
 	{
-		FixedSchedule schedule = new FixedSchedule();
+		return getClass().hashCode() + 13 * _subGraphSchedulerClass.hashCode();
+	}
+	
+	@Override
+	public boolean equals(@Nullable Object obj)
+	{
+		return obj instanceof FloodingScheduler &&
+			((FloodingScheduler)obj)._subGraphSchedulerClass == _subGraphSchedulerClass;
+	}
+	
+	/*----------------------
+	 * IOptionValue methods
+	 */
+
+	/**
+	 * This type of scheduler is mutable.
+	 * @see #setSubGraphScheduler(Class)
+	 */
+	@Override
+	public boolean isMutable()
+	{
+		return true;
+	}
+	
+	/*--------------------
+	 * IScheduler methods
+	 */
+	
+	@Override
+	public IScheduler copy(Map<Object, Object> old2NewMap, boolean copyToRoot)
+	{
+		return new FloodingScheduler(this);
+	}
+	
+	@Override
+	public ISchedule createSchedule(ISolverFactorGraph solverGraph)
+	{
+		return createSchedule(solverGraph.getModelObject(), solverGraph.getSolverMapping());
+	}
+
+	@Override
+	public ISchedule createSchedule(FactorGraph graph)
+	{
+		return createSchedule(graph, null);
+	}
+	
+	private ISchedule createSchedule(FactorGraph factorGraph, @Nullable SolverNodeMapping solverMap)
+	{
+		FixedSchedule schedule = new FixedSchedule(this, factorGraph);
 
 		// Update all the variables
 		for (Variable v : factorGraph.getVariablesTop())
@@ -58,37 +132,45 @@ public class FloodingScheduler implements IScheduler
 		for (Factor f : factorGraph.getNonGraphFactorsTop())
 			schedule.add(new NodeScheduleEntry(f));
 		
-		// Update all the sub-graphs
-		for (FactorGraph sg : factorGraph.getOwnedGraphs())
+		for (FactorGraph subgraph : factorGraph.getOwnedGraphs())
 		{
-			final IScheduler scheduler = sg.getExplicitlySetScheduler();
-			if (scheduler != null)	// If there's a scheduler associated with the sub-graph, use that and re-create the sub-graph schedule
+			IScheduler subscheduler = null;
+			
+			if (solverMap != null)
 			{
-				ISchedule tmp = scheduler.createSchedule(sg);
-				tmp.attach(sg);
-				schedule.add(tmp);
-			}
-			else										// Otherwise, create a new schedule for the sub-graph too (flooding by default)
-			{
-				ISchedule tmp=null;
-				try {
-					tmp = ((IScheduler)_subGraphSchedulerClass.getConstructor().newInstance()).createSchedule(sg);
-				} catch (Exception e) {
-					throw new DimpleException("could not instantiate scheduler class");
+				ISolverFactorGraph ssubgraph = solverMap.getSolverGraphOrNull(subgraph);
+				if (ssubgraph != null)
+				{
+					subscheduler = ssubgraph.getLocalOption(BPOptions.scheduler);
 				}
-				tmp.attach(sg);
-				schedule.add(tmp);
 			}
+			
+			if (subscheduler == null)
+			{
+				subscheduler = subgraph.getLocalOption(BPOptions.scheduler);
+			}
+			
+			if (subscheduler == null)
+			{
+				// If scheduler has not been set on the solver or model subgraph, then use the
+				// subgraph scheduler.
+				subscheduler = SchedulerBase.instantiateClass(_subGraphSchedulerClass);
+			}
+			
+			schedule.add(subgraph);
 		}
-
+		
 		return schedule;
 	}
-	
+
+	/*---------------------------
+	 * FloodingScheduler methods
+	 */
 	
 	@SuppressWarnings("all")
-	public void setSubGraphScheduler(Class schedulerClass)
+	public void setSubGraphScheduler(Class<? extends IScheduler> schedulerClass)
 	{
-		_subGraphSchedulerClass = schedulerClass;
+		_subGraphSchedulerClass = SchedulerBase.validateClass(schedulerClass);
 	}
 
 }

@@ -16,12 +16,11 @@
 
 package com.analog.lyric.dimple.schedulers;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
+import java.util.Map;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.schedulers.schedule.GibbsRandomScanSchedule;
-import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
-import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
-import org.eclipse.jdt.annotation.Nullable;
+import com.analog.lyric.dimple.schedulers.schedule.IGibbsSchedule;
 
 /**
  * @author jeffb
@@ -38,23 +37,37 @@ import org.eclipse.jdt.annotation.Nullable;
  *         to operate properly.
  * 
  */
-public class GibbsRandomScanScheduler implements IGibbsScheduler
+public class GibbsRandomScanScheduler extends GibbsSchedulerBase
 {
-	private @Nullable GibbsRandomScanSchedule _schedule;
+	private static final long serialVersionUID = 1L;
+
+	/*--------------
+	 * Construction
+	 */
 	
-	@Override
-	public ISchedule createSchedule(FactorGraph g)
+	public GibbsRandomScanScheduler()
 	{
-		return _schedule = new GibbsRandomScanSchedule(g);
+		super();
 	}
 	
-	// Add a block schedule entry, which will replace individual variable updates included in the block
-	@Override
-	public void addBlockScheduleEntry(BlockScheduleEntry blockScheduleEntry)
+	protected GibbsRandomScanScheduler(GibbsRandomScanScheduler other, Map<Object,Object> old2New, boolean copyToRoot)
 	{
-		final GibbsRandomScanSchedule schedule = _schedule;
-		if (schedule == null)
-			throw new DimpleException("Schedule must be created before adding a block schedule entry.");
-		schedule.addBlockScheduleEntry(blockScheduleEntry);
+		super(other, old2New, copyToRoot);
+	}
+	
+	/*--------------------
+	 * IScheduler methods
+	 */
+	
+	@Override
+	public IScheduler copy(Map<Object, Object> old2NewMap, boolean copyToRoot)
+	{
+		return new GibbsRandomScanScheduler(this, old2NewMap, copyToRoot);
+	}
+	
+	@Override
+	public IGibbsSchedule createSchedule(FactorGraph g)
+	{
+		return addBlockEntries(new GibbsRandomScanSchedule(g));
 	}
 }

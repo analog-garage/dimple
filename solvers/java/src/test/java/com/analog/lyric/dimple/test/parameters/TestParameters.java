@@ -90,49 +90,54 @@ public class TestParameters extends DimpleTestBase
 	{
 		alpha(0, RealDomain.unbounded());
 		
-		 private final double _defaultValue;
-		 private final RealDomain _domain;
+		private final double _defaultValue;
+		private final RealDomain _domain;
 
-		 private Alpha(double defaultValue, RealDomain domain)
-		 {
-			 _defaultValue = defaultValue;
-			 _domain = domain;
-		 }
+		private Alpha(double defaultValue, RealDomain domain)
+		{
+			_defaultValue = defaultValue;
+			_domain = domain;
+		}
 
-		 @Override
-		 public Class<Double> type() { return Double.class; }
-		 @Override
+		@Override
+		public Class<Double> type() { return Double.class; }
+		@Override
 		public Object convertToExternal(Double value)
 		{
-			 return value;
+			return value;
 		}
-		 @Override
-		 public Double convertToValue(Object value) { return type().cast(value); }
-		 @Override
-		 public Double defaultValue() { return _defaultValue; }
-		 @Override
+		@Override
+		public Double convertToValue(Object value) { return type().cast(value); }
+		@Override
+		public Double defaultValue() { return _defaultValue; }
+		@Override
 		public Double getOrDefault(IOptionHolder holder) { return holder.getOptionOrDefault(this); }
-		 @Override
+		@Override
 		public @Nullable Double get(IOptionHolder holder) { return holder.getOption(this); }
-		 @Override
-		 public boolean local() { return false; }
-		 @Override
+		@Override
+		public boolean local() { return false; }
+		@Override
 		public IOptionKey.Lookup lookupMethod()
 		{
-			 return IOptionKey.Lookup.NONLOCAL;
+			return IOptionKey.Lookup.NONLOCAL;
 		}
 		@Override
 		public void set(IOptionHolder holder, Double value) { holder.setOption(this,  value); }
-			
-		 @Override
+
+		@Override
 		public void unset(IOptionHolder holder) { holder.unsetOption(this); }
-		 @Override
-		 public RealDomain domain() { return _domain; }
-			@Override
-			public Double validate(Double value, IOptionHolder optionHolder)
-			{
-				return type().cast(value);
-			}
+		@Override
+		public RealDomain domain() { return _domain; }
+		@Override
+		public boolean validForDelegator(Double value, IOptionHolder delegator)
+		{
+			return true;
+		}
+		@Override
+		public Double validate(Double value, IOptionHolder optionHolder)
+		{
+			return type().cast(value);
+		}
 	}
 	
 	public static class Param1 extends ParameterList1<Alpha>

@@ -178,6 +178,20 @@ public interface IOptionKey<T extends Serializable> extends Serializable
 	public abstract void unset(IOptionHolder holder);
 	
 	/**
+	 * Determine if value obtained locally from an option holder can be used by another option holder.
+	 * <p>
+	 * This method is called by implementations of {@link IOptionHolder#getOption(IOptionKey)} and
+	 * related methods when determining whether or not to skip over a value found in a delegate option
+	 * holder.
+	 * <p>
+	 * @param value is non-null value that has been set locally on some option holder
+	 * @param delegator is the option holder from which the lookup originates.
+	 * @return true if value can be used by {@code delegator}. Most implemtnations will simply return true.
+	 * @since 0.08
+	 */
+	public boolean validForDelegator(T value, IOptionHolder delegator);
+	
+	/**
 	 * Validates value for this key.
 	 * <p>
 	 * This is invoked by implementations of {@link IOptionHolder#setOption} and can be

@@ -28,7 +28,6 @@ import org.junit.Test;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.factors.DiscreteFactor;
@@ -176,8 +175,8 @@ public class TestJunctionTree extends DimpleTestBase
 		assertTrue(transformedModel.isForest());
 		
 		// Do solve again on a copy of the graph with all factors merged into single giant factor.
-		final BiMap<Node,Node> old2new = HashBiMap.create();
-		final BiMap<Node,Node> new2old = old2new.inverse();
+		final BiMap<Object,Object> old2new = HashBiMap.create();
+		final BiMap<Object,Object> new2old = old2new.inverse();
 		FactorGraph model2 = model.copyRoot(old2new);
 		IMapList<Factor> factors2 = model2.getFactors();
 		Factor factor2 = null;
@@ -297,9 +296,9 @@ public class TestJunctionTree extends DimpleTestBase
 		for (int i = 0; i < 10; ++i)
 		{
 			// Randomly set guesses
-			for (Map.Entry<Node,Node> entry : old2new.entrySet())
+			for (Map.Entry<Object,Object> entry : old2new.entrySet())
 			{
-				Node node = entry.getKey();
+				Object node = entry.getKey();
 				if (node instanceof Discrete)
 				{
 					Discrete var = (Discrete)node;

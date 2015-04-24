@@ -16,12 +16,15 @@
 
 package com.analog.lyric.dimple.schedulers;
 
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.SubgraphScheduleEntry;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.util.misc.Internal;
 
 /**
@@ -29,6 +32,7 @@ import com.analog.lyric.util.misc.Internal;
  * 
  * @since 0.07
  * @author jking
+ * @category internal
  */
 @Internal
 public final class ScheduleVisitor
@@ -37,29 +41,51 @@ public final class ScheduleVisitor
 	{
 	}
 
-	public static void visit(ISchedule schedule, IScheduledActivity scheduledActivity)
+	@SuppressWarnings("deprecation") // for SUBSCHEDULE
+	public static void visit(ISchedule schedule, ISolverFactorGraph solverGraph, IScheduledActivity scheduledActivity)
 	{
 		for (IScheduleEntry scheduleEntry : schedule)
 		{
-			if (scheduleEntry instanceof BlockScheduleEntry)
+			switch (scheduleEntry.type())
 			{
-				// Block updates are ignored.
+			case VARIABLE_BLOCK:
+			{
+				BlockScheduleEntry blockEntry = (BlockScheduleEntry)scheduleEntry;
+				for (Variable var : blockEntry.getBlock())
+				{
+					scheduledActivity.update(var);
+				}
+				break;
 			}
-			if (scheduleEntry instanceof EdgeScheduleEntry)
+			case EDGE:
 			{
 				EdgeScheduleEntry edgeScheduleEntry = (EdgeScheduleEntry) scheduleEntry;
 				int portNum = edgeScheduleEntry.getPortNum();
 				scheduledActivity.updateEdge(edgeScheduleEntry.getNode(), portNum);
+				break;
 			}
-			if (scheduleEntry instanceof NodeScheduleEntry)
+			case NODE:
 			{
 				NodeScheduleEntry nodeScheduleEntry = (NodeScheduleEntry) scheduleEntry;
 				scheduledActivity.update(nodeScheduleEntry.getNode());
+				break;
 			}
-			if (scheduleEntry instanceof SubScheduleEntry)
+			case SUBGRAPH:
+			{
+				SubgraphScheduleEntry subgraphEntry = (SubgraphScheduleEntry)scheduleEntry;
+				ISolverFactorGraph ssubgraph = solverGraph.getSolverSubgraph(subgraphEntry.getSubgraph());
+				visit(ssubgraph.getSchedule(), ssubgraph, scheduledActivity);
+				break;
+			}
+			case SUBSCHEDULE:
 			{
 				SubScheduleEntry subScheduleEntry = (SubScheduleEntry) scheduleEntry;
-				visit(subScheduleEntry.getSchedule(), scheduledActivity);
+				visit(subScheduleEntry.getSchedule(), solverGraph, scheduledActivity);
+				break;
+			}
+			case CUSTOM:
+				// ignore
+				break;
 			}
 		}
 	}

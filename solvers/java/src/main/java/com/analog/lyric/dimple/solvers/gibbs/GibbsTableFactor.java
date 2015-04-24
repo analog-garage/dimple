@@ -79,6 +79,12 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 		// The Gibbs solver doesn't directly update factors, but the equivalent is instead done calls from variables
 		// This is ignored and doesn't throw an error so that a custom schedule that updates factors won't cause a problem
 	}
+
+	@Override
+	public GibbsSolverGraph getParentGraph()
+	{
+		return (GibbsSolverGraph)_parent;
+	}
 	
 	@Override
 	public GibbsDiscrete getSibling(int edge)

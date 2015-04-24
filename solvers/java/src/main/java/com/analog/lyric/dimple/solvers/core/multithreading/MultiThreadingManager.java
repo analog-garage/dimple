@@ -90,6 +90,11 @@ public class MultiThreadingManager
 		return _sgraph.getModelObject();
 	}
 	
+	public ISolverFactorGraph getSolverGraph()
+	{
+		return _sgraph;
+	}
+	
 	/*
 	 * Create the threads in the thread pool.
 	 */
@@ -127,7 +132,7 @@ public class MultiThreadingManager
 		if (version != _cachedVersion)
 		{
 			_cachedVersion = version;
-			_cachedDependencyGraph = new StaticDependencyGraph(fg);
+			_cachedDependencyGraph = new StaticDependencyGraph(_sgraph);
 		}
 		
 		return Objects.requireNonNull(_cachedDependencyGraph);

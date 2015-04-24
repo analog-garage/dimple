@@ -33,10 +33,13 @@ import com.analog.lyric.dimple.schedulers.schedule.RandomWithoutReplacementSched
  *         associated scheduler, that scheduler is ignored in creating this
  *         schedule.
  */
-public class RandomWithoutReplacementScheduler implements IScheduler
+public class RandomWithoutReplacementScheduler extends StatelessBPScheduler
 {
-	public ISchedule createSchedule(FactorGraph g) 
+	private static final long serialVersionUID = 1L;
+
+	@Override
+	public ISchedule createSchedule(FactorGraph g)
 	{
-		return new RandomWithoutReplacementSchedule(g);
+		return new RandomWithoutReplacementSchedule(this, g);
 	}
 }

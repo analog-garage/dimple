@@ -53,6 +53,7 @@ function testCustomSchedule()
     f = fg_tmp.addFactor(eq,b_tmp(1),b_tmp(2));
     try
         fg_tmp.Schedule = {b_tmp(1),b_tmp(2),f,b};
+        fg_tmp.initialize();
     catch Err
         valid = 0;
     end
@@ -64,6 +65,7 @@ function testCustomSchedule()
     valid = 1;
     try
         fg.Schedule = {b};
+        fg.initialize();
     catch Err
         valid = 0;
     end

@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.schedulers;
 
+import java.util.Map;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 
@@ -34,13 +36,32 @@ import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
  */
 public class TreeOrFloodingScheduler extends TreeSchedulerAbstract
 {
+	private static final long serialVersionUID = 1L;
+
+	public TreeOrFloodingScheduler()
+	{
+	}
+	
+	TreeOrFloodingScheduler(TreeOrFloodingScheduler other)
+	{
+		super(other);
+	}
+	
 	@Override
-	protected ISchedule createNonTreeSchedule(FactorGraph g) 
+	public IScheduler copy(Map<Object, Object> old2NewMap, boolean copyToRoot)
+	{
+		return new TreeOrFloodingScheduler(this);
+	}
+	
+	@Override
+	protected ISchedule createNonTreeSchedule(FactorGraph g)
 	{
 		FloodingScheduler floodingScheduler = new FloodingScheduler();
 		floodingScheduler.setSubGraphScheduler(TreeOrFloodingScheduler.class);
 		
-		return floodingScheduler.createSchedule(g);
+		ISchedule schedule = floodingScheduler.createSchedule(g);
+		schedule.setScheduler(this);
+		return schedule;
 	}
 
 }

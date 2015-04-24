@@ -188,9 +188,9 @@ public final class UpdateCostOptimizer
 		final int workers = _sFactorGraphAdapter.getWorkers(sfactorGraph);
 		final Map<IFactorTable, FactorTableUpdateSettings> settingsByFactorTable = new IdentityHashMap<>();
 		_sFactorGraphAdapter.putFactorTableUpdateSettings(settingsByFactorTable);
-		final ISchedule schedule = sfactorGraph.getModelObject().getSchedule();
+		final ISchedule schedule = sfactorGraph.getSchedule();
 		final IScheduledActivity updatesCollector = new UpdateCollector(settingsByFactorTable);
-		ScheduleVisitor.visit(schedule, ScheduleVisitorFactorFilter.create(updatesCollector));
+		ScheduleVisitor.visit(schedule, sfactorGraph, ScheduleVisitorFactorFilter.create(updatesCollector));
 		for (Entry<IFactorTable, FactorTableUpdateSettings> entry : settingsByFactorTable.entrySet())
 		{
 			final IFactorTable factorTable = entry.getKey();

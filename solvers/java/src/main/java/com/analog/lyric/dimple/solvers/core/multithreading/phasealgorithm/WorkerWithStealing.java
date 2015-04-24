@@ -20,8 +20,10 @@ import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 /*
  * Responsible for picking of a chunk of schedule entries,
@@ -31,15 +33,19 @@ import org.eclipse.jdt.annotation.Nullable;
  */
 class WorkerWithStealing implements Callable<Object>
 {
-	private ConcurrentLinkedQueue<IScheduleEntry> [] _deques;
-	private int _which;
-	private ArrayList<IScheduleEntry> _nodes;
-	private boolean _stealing;
+	private final ISolverFactorGraph _solverGraph;
+	private final ConcurrentLinkedQueue<IScheduleEntry> [] _deques;
+	private final int _which;
+	private final ArrayList<IScheduleEntry> _nodes;
+	private final boolean _stealing;
 	
-	public WorkerWithStealing(ArrayList<IScheduleEntry> nodes,
-			int which, ConcurrentLinkedQueue<IScheduleEntry> [] deques,
-			boolean stealing)
+	WorkerWithStealing(
+		ISolverFactorGraph solverGraph,
+		ArrayList<IScheduleEntry> nodes,
+		int which, ConcurrentLinkedQueue<IScheduleEntry> [] deques,
+		boolean stealing)
 	{
+		_solverGraph = solverGraph;
 		_which = which;
 		_deques = deques;
 		_nodes= nodes;
@@ -76,7 +82,7 @@ class WorkerWithStealing implements Callable<Object>
 		while (n != null)
 		{
 			//update the schedule entry.
-			n.update();
+			_solverGraph.runScheduleEntry(n);
 						
 			//get the next guy.
 			n = _deques[which].poll();

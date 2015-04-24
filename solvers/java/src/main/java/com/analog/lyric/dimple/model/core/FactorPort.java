@@ -85,4 +85,10 @@ public class FactorPort extends Port
 	{
 		return new VariablePort(_edgeState, _edgeState.getVariableParent(_graph));
 	}
+	
+	@Override
+	public Type portType()
+	{
+		return Type.FACTOR;
+	}
 }

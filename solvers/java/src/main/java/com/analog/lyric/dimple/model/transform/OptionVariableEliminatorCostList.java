@@ -148,4 +148,10 @@ public class OptionVariableEliminatorCostList extends AbstractOptionValueList<Va
 		return (CostFunction)value;
 	}
 
+	
+	@Override
+	public boolean isMutable()
+	{
+		return false;
+	}
 }

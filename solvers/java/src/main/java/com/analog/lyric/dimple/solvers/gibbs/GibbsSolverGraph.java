@@ -68,7 +68,7 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.DimpleOptions;
-import com.analog.lyric.dimple.schedulers.GibbsDefaultScheduler;
+import com.analog.lyric.dimple.schedulers.SchedulerOptionKey;
 import com.analog.lyric.dimple.schedulers.schedule.IGibbsSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
@@ -127,7 +127,6 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	 * State
 	 */
 	
-	private @Nullable IGibbsSchedule _schedule;
 	private @Nullable Iterator<IScheduleEntry> _scheduleIterator;
 	private @Nullable ArrayList<IBlockInitializer> _blockInitializers;
 	private int _numSamples = GibbsOptions.numSamples.defaultIntValue();
@@ -158,12 +157,32 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	 */
 	private int _deferDeterministicFactorUpdatesCounter = 0;
 
+	/*--------------
+	 * Construction
+	 */
+	
 	protected GibbsSolverGraph(FactorGraph factorGraph, @Nullable ISolverFactorGraph parent)
 	{
 		super(factorGraph, parent);
-		_model.setSolverSpecificDefaultScheduler(new GibbsDefaultScheduler());	// Override the common default scheduler
 	}
 
+	/*----------------------------
+	 * ISolverFactorGraph methods
+	 */
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * @return {@link GibbsOptions#scheduler}.
+	 */
+	@Override
+	public SchedulerOptionKey getSchedulerKey()
+	{
+		return GibbsOptions.scheduler;
+	}
+	
+	// TODO - rearrange methods
+	
 	@Override
 	public boolean hasEdgeState()
 	{
@@ -286,6 +305,12 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	}
 	
 	@Override
+	public IGibbsSchedule getSchedule()
+	{
+		return (IGibbsSchedule)super.getSchedule();
+	}
+	
+	@Override
 	public ISolverFactorGibbs getSolverFactor(Factor factor)
 	{
 		return (ISolverFactorGibbs)super.getSolverFactor(factor);
@@ -342,7 +367,8 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 		}
 
 		// Make sure the schedule is created before factor initialization to allow custom factors to modify the schedule if needed
-		final IGibbsSchedule schedule = _schedule = (IGibbsSchedule)_model.getSchedule();
+		final ISchedule schedule = getSchedule();
+		validateSchedule(schedule);
 
 		FactorGraph fg = _model;
 		Map<Node,Integer> nodeOrder = DirectedNodeSorter.orderDirectedNodes(fg);
@@ -517,17 +543,23 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	public void iterate(int numUpdates)
 	{
 		Iterator<IScheduleEntry> scheduleIterator = Objects.requireNonNull(_scheduleIterator);
-		final ISchedule schedule = Objects.requireNonNull(_schedule);
+		final ISchedule schedule = getSchedule();
 		
 		for (int iterNum = 0; iterNum < numUpdates; iterNum++)
 		{
 			if (!scheduleIterator.hasNext())
-				scheduleIterator = _scheduleIterator = schedule.iterator();	// Wrap-around the schedule if reached the end
+			{
+				// Wrap-around the schedule if reached the end
+				scheduleIterator = _scheduleIterator = schedule.iterator();
+			}
 
 			runScheduleEntry(scheduleIterator.next());
 		}
 		
-		// Allow interruption (if the solver is run as a thread); currently interruption is allowed only between iterations, not within a single iteration
+		// Allow interruption (if the solver is run as a thread); currently interruption is allowed only between
+		// iterations, not within a single iteration.
+		// FIXME - is this really doing anything? Seems like this is just going to check the interrupt bit and
+		// then ignore it.
 		try {interruptCheck();}
 		catch (InterruptedException e) {return;}
 	}
@@ -725,7 +757,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 		}
 		
 		// Accumulate the rejection statistics for any BlockMHSamplers in the schedule
-		ISchedule schedule = _model.getSchedule();
+		ISchedule schedule = getSchedule();
 		for (IScheduleEntry s : schedule)
 		{
 			if (s instanceof BlockScheduleEntry)
@@ -753,7 +785,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 			requireNonNull(getSolverVariable(v)).resetRejectionRateStats();
 		
 		// Reset the rejection statistics for any BlockMHSamplers in the schedule
-		ISchedule schedule = _model.getSchedule();
+		ISchedule schedule = getSchedule();
 		for (IScheduleEntry s : schedule)
 		{
 			if (s instanceof BlockScheduleEntry)
@@ -860,7 +892,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	{
 		if (_scansPerSample > 0)
 		{
-			final IGibbsSchedule schedule = _schedule;
+			final IGibbsSchedule schedule = (IGibbsSchedule)_schedule;
 			_updatesPerSample = _scansPerSample * (schedule != null ? schedule.size() : _model.getVariableCount());
 		}
 	}
@@ -913,7 +945,7 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	{
 		if (_burnInScans > 0)
 		{
-			final IGibbsSchedule schedule = _schedule;
+			final IGibbsSchedule schedule = (IGibbsSchedule)_schedule;
 			_burnInUpdates = _burnInScans * (schedule != null ? schedule.size() : _model.getVariableCount());
 		}
 	}
@@ -1271,6 +1303,6 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	protected void runBlockScheduleEntry(BlockScheduleEntry blockEntry)
 	{
 		// FIXME
-		blockEntry.update(getSolverMapping());
+		blockEntry.update();
 	}
 }

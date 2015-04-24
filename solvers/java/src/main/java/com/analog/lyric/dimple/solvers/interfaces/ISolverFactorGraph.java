@@ -26,6 +26,9 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.schedulers.IScheduler;
+import com.analog.lyric.dimple.schedulers.SchedulerOptionKey;
+import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.Matlab;
@@ -47,6 +50,36 @@ public interface ISolverFactorGraph	extends ISolverNode
 	/*----------------------------
 	 * ISolverFactorGraph methods
 	 */
+	
+	/**
+	 * Returns schedule used by this solver, creating a new one if necessary.
+	 * @since 0.08
+	 */
+	public ISchedule getSchedule();
+
+	public void setSchedule(@Nullable ISchedule schedule);
+
+	/**
+	 * Returns scheduler for this solver graph.
+	 * <p>
+	 * Solvers that don't use schedules should simply return the
+	 * {@linkplain com.analog.lyric.dimple.schedulers.EmptyScheduler EmptyScheduler}.
+	 * instance.
+	 * @since 0.08
+	 */
+	public IScheduler getScheduler();
+	
+	/**
+	 * Returns option key for specifying scheduler, if any.
+	 * <p>
+	 * If the solver uses schedules, this should return the option key
+	 * that is used to specify which scheduler to use. Solvers that don't
+	 * require a scheduler should return null.
+	 * @since 0.08
+	 */
+	public @Nullable SchedulerOptionKey getSchedulerKey();
+
+	public void setScheduler(@Nullable IScheduler scheduler);
 	
 	public @Nullable ISolverEdgeState getSolverEdge(EdgeState edge);
 	
@@ -91,8 +124,17 @@ public interface ISolverFactorGraph	extends ISolverNode
 	 */
 	public @Nullable ISolverNode getSolverNodeByLocalId(int localId);
 	
+	/**
+	 * Returns solver subgraph corresponding to given model subgraph, creating if necessary.
+	 * @since 0.08
+	 */
 	public ISolverFactorGraph getSolverSubgraph(FactorGraph subgraph);
 	
+	/**
+	 * Returns solver subgraph corresponding to given model subgraph or null.
+	 * @param create if true will cause graph to be created if necessary.
+	 * @since 0.08
+	 */
 	public @Nullable ISolverFactorGraph getSolverSubgraph(FactorGraph subgraph, boolean create);
 	
 	/**
@@ -106,8 +148,23 @@ public interface ISolverFactorGraph	extends ISolverNode
 	 */
 	public @Nullable ISolverFactorGraph getSolverSubgraphByIndex(int index);
 	
+	/**
+	 * Returns unmodifiable view of immediate solver subgraphs of this graph.
+	 * <p>
+	 * @since 0.08
+	 * @see #getSolverSubgraphsRecursive()
+	 */
 	public Collection<? extends ISolverFactorGraph> getSolverSubgraphs();
 	
+	// TODO - rename this method to be more distinct from getSolverSubgraphs?
+	// e.g. getSolverGraphsRecursive
+	/**
+	 * Returns collection of solver graphs rooted at this graph.
+	 * <p>
+	 * Note that unlike {@link #getSolverSubgraphs()}, this collection includes the
+	 * graph on which it is invoked.
+	 * @since 0.08
+	 */
 	public Collection<? extends ISolverFactorGraph> getSolverSubgraphsRecursive();
 
 	/**

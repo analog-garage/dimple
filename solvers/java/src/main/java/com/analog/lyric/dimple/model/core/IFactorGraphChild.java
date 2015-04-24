@@ -41,8 +41,15 @@ public interface IFactorGraphChild extends IGetId
 	 */
 	public long getGraphTreeId();
 
+	/**
+	 * Returns factor graph most immediately containing this object. Returns this object if
+	 * it is already a {@link FactorGraph}.
+	 *
+	 * @since 0.08
+	 */
+	public @Nullable FactorGraph getContainingGraph();
+	
 	public @Nullable FactorGraph getParentGraph();
 	
 	public @Nullable FactorGraph getRootGraph();
-
 }

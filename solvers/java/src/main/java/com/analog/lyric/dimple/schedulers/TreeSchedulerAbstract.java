@@ -42,10 +42,59 @@ import com.analog.lyric.util.misc.IMapList;
  *         associated with it, that scheduler will be used for that sub-graph
  *         instead of this one.
  */
-public abstract class TreeSchedulerAbstract implements IScheduler
+public abstract class TreeSchedulerAbstract extends BPSchedulerBase
 {
-	protected int _nodeUpdateThreshold = 1;		// Will use node-update if number of edges to update is greater than threshold, otherwise will use edge update
+	private static final long serialVersionUID = 1L;
 	
+	/*-------
+	 * State
+	 */
+	
+	/**
+	 * Will use node-update if number of edges to update is greater than threshold, otherwise will use edge update.
+	 */
+	protected int _nodeUpdateThreshold = 1;
+	
+	/*--------------
+	 * Construction
+	 */
+	
+	protected TreeSchedulerAbstract()
+	{
+	}
+
+	protected TreeSchedulerAbstract(TreeSchedulerAbstract other)
+	{
+		_nodeUpdateThreshold = other._nodeUpdateThreshold;
+	}
+	
+	/*----------------
+	 * Object methods
+	 */
+	
+	@Override
+	public int hashCode()
+	{
+		return getClass().hashCode() + 13 * _nodeUpdateThreshold;
+	}
+	
+	/*----------------------
+	 * IOptionValue methods
+	 */
+
+	/**
+	 * This type of scheduler is mutable.
+	 * @see #setNodeUpdateThreshold(int)
+	 */
+	@Override
+	public boolean isMutable()
+	{
+		return true;
+	}
+	
+	/*--------------------
+	 * IScheduler methods
+	 */
 	
 	@Override
 	public ISchedule createSchedule(FactorGraph g)
@@ -66,7 +115,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 	@SuppressWarnings("unchecked")
 	protected ISchedule createTreeSchedule(FactorGraph g)
 	{
-		FixedSchedule schedule = new FixedSchedule();
+		FixedSchedule schedule = new FixedSchedule(this, g);
 		
 
 		HashMap<Long,NodeUpdateState> updateState = new HashMap<>();
@@ -304,5 +353,4 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 		public final int getNumInputPortsNotUpdated() {return _portCount - _inputUpdateCount;}
 		public final int getNumOutputPortsNotUpdated() {return _portCount - _outputUpdateCount;}
 	}
-
 }

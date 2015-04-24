@@ -22,12 +22,14 @@ import java.util.HashSet;
 import java.util.LinkedList;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.helpers.LastUpdateGraph;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.SubgraphScheduleEntry;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 /**
  * Creates a static dependency graph for a single iteration.  The crossiteration dependency graphs
@@ -36,7 +38,7 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
  * The StaticDependencyGraph consists of StaticDependencyGraphNodes with directed edges
  * indicating what shedule entries depend on other schedule entries.
  */
-public class StaticDependencyGraph 
+public class StaticDependencyGraph
 {
 	private int _numScheduleEntries;
     private ArrayList<StaticDependencyGraphNode> _initialEntries;
@@ -46,29 +48,31 @@ public class StaticDependencyGraph
 	/**
 	 * Construct the graph for one iteration
 	 */
-	public StaticDependencyGraph(FactorGraph fg)
+	public StaticDependencyGraph(ISolverFactorGraph sfg)
 	{
-		this(fg,1);
+		this(sfg,1);
 	}
 	
 	/**
 	 * Construct the graph.
 	 */
-	public StaticDependencyGraph(FactorGraph fg,int iters)
+	public StaticDependencyGraph(ISolverFactorGraph sfg,int iters)
 	{
 		//Instantiate the data structure that keeps track of the last IScheduleEntry update to touch an edge.
-		LastUpdateGraph lug = new LastUpdateGraph();		
+		LastUpdateGraph lug = new LastUpdateGraph();
 		
 		//Initialize the initial entries.
 		_initialEntries = new ArrayList<StaticDependencyGraphNode>();
 		
 		//Get the schedule
-		ISchedule schedule = fg.getSchedule();
+		ISchedule schedule = sfg.getSchedule();
 		
 		//Do the work of building the dependency graph.
 		//Allow building dependency graph for multiple iterations
 		for (int i = 0; i < iters; i++)
-			buildFromSchedule(schedule,lug);
+		{
+			buildFromSchedule(sfg, schedule,lug);
+		}
 	}
 	
 	/**
@@ -135,7 +139,7 @@ public class StaticDependencyGraph
 			String color = colors[colorIndex];
 			
 			//print out the node.
-			sb.append(node.getId() + "[label=\"" + node + "\",color=\"" + color + "\"];\n");
+			sb.append(node.getId() + "[label=\"" + node.getLabel() + "\",color=\"" + color + "\"];\n");
 			
 			//now print out the edges.
 			for (int i = 0; i  < node.getNumDependents(); i++)
@@ -176,7 +180,9 @@ public class StaticDependencyGraph
 	/*
 	 * Recursive method for building dependency graph from an ISchedule node.
 	 */
-	private void buildFromSchedule(ISchedule schedule,LastUpdateGraph lug)
+	private void buildFromSchedule(ISolverFactorGraph sfg,
+		Iterable<? extends IScheduleEntry> schedule,
+		LastUpdateGraph lug)
 	{
 		if (! (schedule instanceof FixedSchedule))
 			throw new DimpleException("Cannot currently create dependency graph of Dynamic Schedule");
@@ -184,13 +190,19 @@ public class StaticDependencyGraph
 		//For each entry in the schedule
 		for (IScheduleEntry se : schedule)
 		{
-			
-			//If this is a subscheduleEntry, recurse.
-			if (se instanceof SubScheduleEntry)
+			switch (se.type())
 			{
-				buildFromSchedule(((SubScheduleEntry)se).getSchedule(), lug);
-			}
-			else
+			case SUBGRAPH:
+				buildFromSchedule(sfg, ((SubgraphScheduleEntry)se).getSubgraphSchedule(sfg), lug);
+				break;
+			case SUBSCHEDULE:
+				buildFromSchedule(sfg, ((SubScheduleEntry)se).getSchedule(), lug);
+				break;
+			case VARIABLE_BLOCK:
+				buildFromSchedule(sfg, ((BlockScheduleEntry)se).toNodeEntries(), lug);
+				break;
+			case NODE:
+			case EDGE:
 			{
 				//Instantiate a static dependency graph node (builds dependencies)
 				StaticDependencyGraphNode dgn = new StaticDependencyGraphNode(se,lug,_nextNodeId);
@@ -200,7 +212,7 @@ public class StaticDependencyGraph
 				_numScheduleEntries++;
 				
 				//Add this entry to the correct phase.
-				int phase = dgn.getPhase();				
+				int phase = dgn.getPhase();
 				while (_phases.size() <= phase)
 					_phases.add(new ArrayList<IScheduleEntry>());
 				_phases.get(phase).add(dgn.getScheduleEntry());
@@ -208,6 +220,8 @@ public class StaticDependencyGraph
 				//if this is phase 0, add it to the initial entries.
 				if (phase == 0)
 					_initialEntries.add(dgn);
+				break;
+			}
 			}
 		}
 	}

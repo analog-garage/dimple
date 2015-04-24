@@ -19,13 +19,14 @@ package com.analog.lyric.dimple.schedulers.dependencyGraph.helpers;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraphNode;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
-import org.eclipse.jdt.annotation.Nullable;
 
 /*
  * The LastUpdateGraph data structure provides the ability to retrieve edges associated
@@ -46,13 +47,15 @@ public class LastUpdateGraph
 	 */
 	public ArrayList<Edge> getEdges(IScheduleEntry entry)
 	{
-		
-		if (entry instanceof NodeScheduleEntry)
+		switch (entry.type())
+		{
+		case NODE:
 			return getEdges((NodeScheduleEntry)entry);
-		else if (entry instanceof EdgeScheduleEntry)
+		case EDGE:
 			return getEdges((EdgeScheduleEntry)entry);
-		else
+		default:
 			throw new DimpleException("Not supported");
+		}
 	}
 	
 	/*

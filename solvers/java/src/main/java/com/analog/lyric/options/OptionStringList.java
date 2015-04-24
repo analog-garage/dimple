@@ -77,5 +77,10 @@ public final class OptionStringList extends AbstractOptionValueList<String>
 		throw new OptionValidationException("Cannot convert %s to strings", object);
 	}
 	
-
+	
+	@Override
+	public boolean isMutable()
+	{
+		return false;
+	}
 }

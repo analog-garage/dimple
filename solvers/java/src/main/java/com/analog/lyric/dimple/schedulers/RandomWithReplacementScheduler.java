@@ -16,7 +16,11 @@
 
 package com.analog.lyric.dimple.schedulers;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.schedule.RandomWithReplacementSchedule;
 
@@ -36,10 +40,19 @@ import com.analog.lyric.dimple.schedulers.schedule.RandomWithReplacementSchedule
  *         associated scheduler, that scheduler is ignored in creating this
  *         schedule.
  */
-public class RandomWithReplacementScheduler implements IScheduler
+public class RandomWithReplacementScheduler extends StatelessBPScheduler
 {
-	public ISchedule createSchedule(FactorGraph g) 
+	private static final long serialVersionUID = 1L;
+
+	@Override
+	public ISchedule createSchedule(FactorGraph g)
 	{
-		return new RandomWithReplacementSchedule(g);
+		return new RandomWithReplacementSchedule(this, g);
+	}
+	
+	@Override
+	public List<SchedulerOptionKey> applicableSchedulerOptions()
+	{
+		return Collections.singletonList(BPOptions.scheduler);
 	}
 }

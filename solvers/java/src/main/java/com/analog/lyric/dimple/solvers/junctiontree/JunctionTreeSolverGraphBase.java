@@ -33,7 +33,9 @@ import com.analog.lyric.dimple.model.transform.VariableEliminator.CostFunction;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.VariableCost;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.options.DimpleOptions;
+import com.analog.lyric.dimple.schedulers.SchedulerOptionKey;
 import com.analog.lyric.dimple.solvers.core.NoSolverEdge;
 import com.analog.lyric.dimple.solvers.core.proxy.ProxySolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
@@ -231,6 +233,16 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	public void setNumIterations(int numIterations)
 	{
 		super.setNumIterations(1);
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * @return {@link BPOptions#scheduler}
+	 */
+	@Override
+	public @Nullable SchedulerOptionKey getSchedulerKey()
+	{
+		return BPOptions.scheduler;
 	}
 	
 	@Override

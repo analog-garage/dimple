@@ -20,9 +20,11 @@ import java.util.Iterator;
 import java.util.Objects;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.schedulers.GibbsSequentialScanScheduler;
+import com.analog.lyric.dimple.schedulers.IScheduler;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.math.DimpleRandomGenerator;
@@ -45,15 +47,33 @@ import com.google.common.collect.Iterators;
  */
 public class GibbsRandomScanSchedule extends ScheduleBase implements IGibbsSchedule
 {
+	private static final long serialVersionUID = 1L;
+
+	/*-------
+	 * State
+	 */
+	
 	protected FixedSchedule _scheduleEntryPool;
 
+	/*--------------
+	 * Construction
+	 */
 	
-	@SuppressWarnings("null")
 	public GibbsRandomScanSchedule(FactorGraph factorGraph)
 	{
-		_factorGraph = factorGraph;
+		this(null, factorGraph);
+	}
+
+	@SuppressWarnings("null")
+	public GibbsRandomScanSchedule(@Nullable IScheduler scheduler, FactorGraph factorGraph)
+	{
+		super(scheduler, factorGraph);
 		initialize();
 	}
+	
+	/*-------------------
+	 * ISchedule methods
+	 */
 	
 	@Override
 	public void attach(FactorGraph factorGraph)
@@ -67,6 +87,7 @@ public class GibbsRandomScanSchedule extends ScheduleBase implements IGibbsSched
 		// Create a pool of schedule entries that will be randomly chosen from
 		// By default, this is the same set of nodes in a sequential-scan schedule
 		_scheduleEntryPool = (FixedSchedule)new GibbsSequentialScanScheduler().createSchedule(getFactorGraph());
+		++_version;
 	}
 
 	@Override
@@ -95,11 +116,16 @@ public class GibbsRandomScanSchedule extends ScheduleBase implements IGibbsSched
 		_scheduleEntryPool.addBlockScheduleEntry(blockScheduleEntry);
 	}
 
+	@Override
+	public final long scheduleVersion()
+	{
+		return _scheduleEntryPool.scheduleVersion();
+	}
+	
 	// Indicate the number of entries in the schedule entry pool
 	@Override
 	public int size()
 	{
 		return _scheduleEntryPool.size();
 	}
-
 }

@@ -49,10 +49,9 @@ classdef Scheduler
                 scheduleElements = [scheduleElements; nodes];
             end
             
-            javaScheduleEntry = BlockScheduleEntry(updater, scheduleElements);
-            
-            obj.Graph.VectorObject.getModelerNode(0).getSchedule;   % Make sure the schedule is created
+            javaGraph = obj.Graph.VectorObject.getModelerNode(0);
             javaScheduler = obj.Graph.VectorObject.getScheduler();
+            javaScheduleEntry = BlockScheduleEntry(javaGraph, updater, scheduleElements);
             javaScheduler.addBlockScheduleEntry(javaScheduleEntry);
         end
         
@@ -61,7 +60,7 @@ classdef Scheduler
             
             numEntries = numel(varargin);
             
-            obj.Graph.VectorObject.getModelerNode(0).getSchedule;   % Make sure the schedule is created
+            javaGraph = obj.Graph.VectorObject.getModelerNode(0);
             javaScheduler = obj.Graph.VectorObject.getScheduler();
 
             for i=1:numEntries
@@ -78,7 +77,7 @@ classdef Scheduler
                     scheduleElements = [scheduleElements; nodes];
                 end
                 
-                javaScheduleEntry = BlockScheduleEntry(updater, scheduleElements);
+                javaScheduleEntry = BlockScheduleEntry(javaGraph, updater, scheduleElements);
                 javaScheduler.addBlockScheduleEntry(javaScheduleEntry);
 
             end

@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.schedulers.SchedulerOptionKey;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
@@ -93,6 +94,16 @@ public class DummyFactorGraph extends SFactorGraphBase<ISolverFactor,ISolverVari
 			return false;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * @return {@code null}
+	 */
+	@Override
+	public @Nullable SchedulerOptionKey getSchedulerKey()
+	{
+		return null;
+	}
+	
 	@Override
 	public void setMultithreadingManager(@Nullable MultiThreadingManager manager)
 	{

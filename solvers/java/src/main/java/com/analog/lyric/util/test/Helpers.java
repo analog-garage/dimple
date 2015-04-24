@@ -22,7 +22,6 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -46,13 +45,15 @@ import com.analog.lyric.dimple.model.factors.FactorList;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
-import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
-import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
+import com.analog.lyric.util.misc.Internal;
 import com.google.common.base.Strings;
 
-
+/**
+ * @category internal
+ */
+@Internal
 public class Helpers
 {
 	static public Random _r = new Random();
@@ -100,73 +101,6 @@ public class Helpers
 	static public FactorGraph MakeSimpleGraph(String tag)
 	{
 		return MakeSimpleGraph(tag, Model.getInstance().getDefaultGraphFactory(), false);
-	}
-	static public FactorGraph MakeTrivialRandomGraph(String tag,
-												 	 @Nullable IFactorGraphFactory<?> graphFactory,
-												 	 int variables,
-												 	 int extraFactors,
-												 	 int maxDegree,
-												 	 boolean randomInput)
-	{
-		FactorGraph fg = new FactorGraph();
-		fg.setSolverFactory(graphFactory);
-		fg.setName(tag);
-		Discrete[] discretes = new Discrete[variables];
-		for(int variable = 0; variable < discretes.length; ++variable)
-		{
-			discretes[variable] = new Discrete(0.0, 1.0);
-		}
-		
-		XorDelta xorFF = new XorDelta();
-
-		//make sure graph is connected.
-		for(int factor = 0; factor < variables; ++factor)
-		{
-			if(factor < variables - 1)
-			{
-				fg.addFactor(xorFF, discretes[factor], discretes[factor + 1]);
-			}
-			else
-			{
-				fg.addFactor(xorFF, discretes[0], discretes[factor]);
-			}
-		}
-		
-		Random r = new Random();
-		for(int extra = 0; extra < extraFactors; ++extra)
-		{
-			ArrayList<Integer> shuffledVariables = new ArrayList<Integer>();
-			for(int i = 0; i < variables; ++i)
-			{
-				shuffledVariables.add(i);
-			}
-			Collections.shuffle(shuffledVariables);
-
-			int degree = Math.max(r.nextInt(maxDegree), 2);
-			Object[] edges = new Variable[degree];
-			for(int i = 0; i < edges.length; ++i)
-			{
-				edges[i] = discretes[shuffledVariables.get(i)];
-			}
-			
-			fg.addFactor(xorFF, edges);
-		}
-
-		if(randomInput)
-		{
-			VariableList variableList = fg.getVariables();
-			double[][] trivialRandomCodeword =
-				trivialRandomCodeword(variableList.size());
-			for(int variable = 0; variable < variableList.size(); ++variable)
-			{
-				((Discrete)variableList.getByIndex(variable)).setInput(trivialRandomCodeword[variable]);
-			}
-		}
-		
-		FixedSchedule fs = (FixedSchedule) fg.getSchedule();
-		ArrayList<IScheduleEntry> entries  = fs.getSchedule();
-		Collections.shuffle(entries);
-		return fg;
 	}
 	static public FactorGraph MakeSimpleChainGraph(	String tag,
 												 	@Nullable IFactorGraphFactory<?> graphFactory,
@@ -672,75 +606,6 @@ public class Helpers
 		}
 		return codeWord;
 	}
-	public static double decodeZerosCodeword( double[][] codewordWithErrors,
-			FactorGraph fg,
-			int iterations,
-			IFactorGraphFactory<?> solver,
-			ISchedule schedule)
-	{
-		return decodeZerosCodeword(codewordWithErrors,
-							fg,
-							iterations,
-							solver,
-							schedule,
-							false);
-	}
-	public static double decodeZerosCodeword( double[][] codewordWithErrors,
-			FactorGraph fg,
-											int iterations,
-											IFactorGraphFactory<?> solver,
-											ISchedule schedule,
-											boolean shouldFail)
-	{
-		double diffSum = 0;
-		initFgForDecode(fg, solver, schedule, iterations);
-		double beliefs [][] = decodeGeneralCodeword(codewordWithErrors, fg);
-		double epsilon = 0.00001;
-		if(!shouldFail)
-		{
-			for(int i = 0; i < beliefs.length; ++i)
-			{
-				//double d0 = 0 - beliefs[i][0];
-				//double d1 = 1 - beliefs[i][1];
-				//boolean diff0 = Math.abs(d0) > epsilon;
-				//boolean diff1 = Math.abs(d1) > epsilon;
-				//System.out.println(String.format("%2d: [0 - %f == %f, diff:%s]  [1 - %f == %f, diff:%s]"
-				//		,i
-				//		,beliefs[i][0]
-				//		,d0
-				//		,diff0
-				//		,beliefs[i][1]
-				//		,d1
-				//		,diff1));
-				assertEquals(0, beliefs[i][0], epsilon);
-				assertEquals(1, beliefs[i][1], epsilon);
-
-				diffSum += Math.abs(0 - beliefs[i][0]);
-				diffSum += Math.abs(1 - beliefs[i][1]);
-			}
-		}
-		else
-		{
-			double sum0 = 0;
-			double sum1 = 0;
-			for(int i = 0; i < beliefs.length; ++i)
-			{
-				sum0 += beliefs[i][0];
-				sum1 += beliefs[i][1];
-
-				diffSum += Math.abs(0 - beliefs[i][0]);
-				diffSum += Math.abs(1 - beliefs[i][1]);
-			}
-			double maxDiff = beliefs.length * epsilon;
-			double sum1OnDecode = beliefs.length;
-			
-			assertTrue(sum0 > (maxDiff));
-			assertTrue((sum1 < (sum1OnDecode - maxDiff)) ||
-				       (sum1 > (sum1OnDecode + maxDiff)));
-		}
-		return diffSum;
-	}
-	
 	static @Nullable Variable[] ordered_vars;
 	
 	public static void initFgForDecode(FactorGraph fg, IFactorGraphFactory<?> solver, ISchedule schedule, int iterations)
@@ -872,38 +737,6 @@ public class Helpers
   		return new TableFactorFunction("silly", dummyTable, dummyValues, domains);
 	}
 
-	static public void verifyDecode(FactorGraph fg, int errors, int iterations)
-	{
-		long initialStartDBG = System.currentTimeMillis();
-		long diffDBG = 0;
-
-		ArrayList<Variable>	variables = (ArrayList<Variable>) fg.getVariables().values();
-		IFactorGraphFactory<?>	solver = Objects.requireNonNull(fg.getFactorGraphFactory());
-		ISchedule schedule = fg.getSchedule();
-		
-		double[][] codewordWithTooManyErrors 	= zerosCodeWord(variables.size(), (int)(variables.size() * 0.9) );
-		double[][] codeword 					= zerosCodeWord(variables.size(), errors);
-
-		decodeZerosCodeword(
-				codewordWithTooManyErrors,
-				fg,
-				iterations,
-				solver,
-				schedule,
-				true);
-		decodeZerosCodeword(
-				codeword,
-				fg,
-				iterations,
-				solver,
-				schedule,
-				false);
-
-
-		diffDBG = System.currentTimeMillis() - initialStartDBG;
-		System.out.println(String.format("verifyDecode time:%d (total)\n", diffDBG));
-	}
-	
 	static public void setSeed(long seed)
 	{
 		_r.setSeed(seed);

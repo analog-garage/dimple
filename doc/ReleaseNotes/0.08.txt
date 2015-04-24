@@ -1,11 +1,17 @@
 Dimple version 0.08 release notes
 ==================================
 
-Significant New Features Since v0.07
+Significant Changes Since v0.07
 ------------------------------------
 * SolverOptions.maxAutomaticFactorTableSize option allows control of when factor tables are generated based on size.
 
 * New events for monitoring Gibbs solver.
+
+* New scheduler & scheduleValidator options in BPOptions and GibbsOptions for specifying schedulers and
+  schedule validation logic.
+  
+* New API for specifying custom schedules. Custom schedules are now validated at graph initialization time
+  instead of when first assigned.
 
 Significant Bug Fixes Since v0.07
 ---------------------------------

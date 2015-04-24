@@ -204,6 +204,8 @@ public class PNodeVector extends POptionHolder
 	
 	public void setName(String name)
 	{
+		// FIXME - I don't think this is correct if there is more than one variable unless they
+		// are from differnent graphs.
 		for (Node variable : _nodes)
 			variable.setName(name);
 	}
@@ -212,6 +214,7 @@ public class PNodeVector extends POptionHolder
 	{
 		for(int i = 0; i < _nodes.length; ++i)
 		{
+			// FIXME - the _vv part is annoying. Is this really what the user wants?
 			_nodes[i].setName(String.format("%s_vv%d", baseName, i));
 		}
 	}

@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.matlabproxy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -40,16 +41,15 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableBlock;
+import com.analog.lyric.dimple.options.DimpleOptionRegistry;
+import com.analog.lyric.dimple.schedulers.CustomScheduler;
 import com.analog.lyric.dimple.schedulers.IScheduler;
-import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
-import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
-import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
+import com.analog.lyric.dimple.schedulers.SchedulerOptionKey;
+import com.analog.lyric.dimple.schedulers.schedule.ScheduleValidationException;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IBlockUpdater;
-import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
-import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
-import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.util.misc.FactorGraphDiffs;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Matlab;
@@ -523,14 +523,76 @@ public class PFactorGraphVector extends PFactorBaseVector
 	 * 
 	 * TODO: Push this down
 	 */
-	public void setSchedule(Object[] schedule)
+	public void setSchedule(Object[] scheduleEntries)
 	{
-		ArrayList<IScheduleEntry> alEntries = new ArrayList<IScheduleEntry>();
+		final FactorGraph fg = getGraph();
+
+		int i = 0, n = scheduleEntries.length;
+		
+		SchedulerOptionKey schedulerKey = null;
+		
+		if (n > 0)
+		{
+			// See if first entry specifies the type of schedule
+			Object first = scheduleEntries[i];
+			
+			if (first instanceof SchedulerOptionKey)
+			{
+				++i;
+				schedulerKey = (SchedulerOptionKey)first;
+			}
+			else if (first instanceof String)
+			{
+				++i;
+				final String str = (String)first;
+				final DimpleOptionRegistry options = fg.getEnvironment().optionRegistry();
+				
+				IOptionKey<?> key = null;
+				
+				if (str.contains("."))
+				{
+					// If str contains a dot require an exact match.
+					key = options.get(str);
+				}
+				else
+				{
+					// Otherwise use a regexp
+					ArrayList<IOptionKey<?>> keys = options.getAllMatching(Pattern.quote(str) + "\\w+\\.scheduler");
+					switch (keys.size())
+					{
+					case 0:
+						break;
+					case 1:
+						key = keys.get(0);
+						break;
+					default:
+						throw new ScheduleValidationException("'%s' is ambiguous could be any of: %s", str, keys);
+					}
+				}
+				
+				if (key == null)
+				{
+					throw new ScheduleValidationException("'%s' does not refer to a known option key", str);
+				}
+				if (key instanceof SchedulerOptionKey)
+				{
+					schedulerKey = (SchedulerOptionKey)key;
+				}
+				else
+				{
+					throw new ScheduleValidationException("'%s' does not refer to a scheduler option key", str);
+				}
+			}
+		}
+		
+		@SuppressWarnings("deprecation")
+		final CustomScheduler scheduler =
+			schedulerKey != null ? new CustomScheduler(fg, schedulerKey) : new CustomScheduler(fg);
 		
 		//Convert schedule to a list of nodes and edges
-		for (int i = 0; i < schedule.length; i++)
+		for (; i < n; ++i)
 		{
-			Object obj = schedule[i];
+			final Object obj = scheduleEntries[i];
 			
 			if (obj instanceof Object[])
 			{
@@ -541,11 +603,11 @@ public class PFactorGraphVector extends PFactorBaseVector
 					int argumentIndex = 0;
 					int numNodes = objArray.length - 1;
 					IBlockUpdater blockUpdater = (IBlockUpdater)objArray[argumentIndex++];
-					INode[] nodes = new INode[numNodes];
+					Variable[] nodes = new Variable[numNodes];
 					for (int entry = 0; entry < numNodes; entry++, argumentIndex++)
-						nodes[entry] = PHelpers.convertToNode(objArray[argumentIndex]);
+						nodes[entry] = (Variable)PHelpers.convertToNode(objArray[argumentIndex]);
 					
-					alEntries.add(new BlockScheduleEntry(blockUpdater, nodes));
+					scheduler.addBlock(blockUpdater, nodes);
 				}
 				else
 				{
@@ -556,32 +618,23 @@ public class PFactorGraphVector extends PFactorBaseVector
 					INode node1 = PHelpers.convertToNode(objArray[0]);
 					INode node2 = PHelpers.convertToNode(objArray[1]);
 					int portNum = node1.findSibling(node2);
-					alEntries.add(new EdgeScheduleEntry(node1, portNum));
+					
+					scheduler.addEdge(node1, portNum);
 				}
 			}
 			else
 			{
-				if (obj instanceof PFactorGraphVector)
+				for (Node node : PHelpers.convertToNodeArray(obj))
 				{
-					// Entry is a sub-graph
-					Node [] nodes = PHelpers.convertToNodeArray(obj);
-					for (Node n : nodes)
-						alEntries.add(new SubScheduleEntry(((FactorGraph)n).getSchedule()));
-				}
-				else
-				{
-					// Entry is a node
-					Node [] nodes = PHelpers.convertToNodeArray(obj);
-					for (Node n : nodes)
-						alEntries.add(new NodeScheduleEntry(n));
+					scheduler.addNode(node);
 				}
 			}
 		}
 
-		IScheduleEntry [] entries = new IScheduleEntry[alEntries.size()];
-		alEntries.toArray(entries);
-		
-		getGraph().setSchedule(new FixedSchedule(entries));
+		for (SchedulerOptionKey key : scheduler.applicableSchedulerOptions())
+		{
+			key.set(fg, scheduler);
+		}
 	}
 	
 	public void removeFactor(PFactorVector factor)
@@ -701,6 +754,7 @@ public class PFactorGraphVector extends PFactorBaseVector
 			return null;
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void setScheduler(@Nullable IScheduler scheduler)
 	{
     	if (getGraph().isSolverRunning())
@@ -709,6 +763,7 @@ public class PFactorGraphVector extends PFactorBaseVector
     	getGraph().setScheduler(scheduler);
 	}
 	
+	@SuppressWarnings("deprecation")
 	public @Nullable IScheduler getScheduler()
 	{
 		return getGraph().getScheduler();

@@ -18,14 +18,18 @@ function testCustomScheduleNested()
 
     eq = @(x,y) x == y;
     b = Bit(2,1);
+    b.setNames('nb');
     nfg = FactorGraph(b);
     nfg.addFactor(eq,b(1),b(2));
 
     b = Bit(3,1);
+    b.setNames('b');
     fg = FactorGraph();
+    fg.Name = 'fg';
     nf1 = fg.addFactor(nfg,b(1),b(2));
+    nf1.Name = 'nf1';
     nf2 = fg.addFactor(nfg,b(2),b(3));
-    
+    nf2.Name = 'nf2';
     
     fg.Schedule = {b(1),nf1,b(2),nf2,b(3)};
     b(1).Input = .7;
@@ -43,6 +47,7 @@ function testCustomScheduleNested()
     waserror = 0;
     try
         fg.Schedule = {b(1),b(2),b(3)};
+        fg.initialize();
     catch Err
         waserror = 1;
     end

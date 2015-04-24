@@ -195,6 +195,12 @@ public class TestOptionKey
 		}
 
 		@Override
+		public boolean validForDelegator(Serializable value, IOptionHolder delegator)
+		{
+			return true;
+		}
+		
+		@Override
 		public Serializable validate(Serializable value, IOptionHolder optionHolder)
 		{
 			return type().cast(value);

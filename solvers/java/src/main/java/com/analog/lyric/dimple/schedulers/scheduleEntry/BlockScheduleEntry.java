@@ -17,12 +17,18 @@
 package com.analog.lyric.dimple.schedulers.scheduleEntry;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
-import com.analog.lyric.dimple.model.core.Node;
-import com.analog.lyric.dimple.model.core.Port;
-import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
+import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.VariableBlock;
+import com.analog.lyric.util.misc.Internal;
+import com.analog.lyric.util.misc.Matlab;
 
 
 
@@ -37,91 +43,119 @@ import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
  */
 public class BlockScheduleEntry implements IScheduleEntry
 {
-	private final IBlockUpdater _blockUpdater;
+	/*-------
+	 * State
+	 */
 	
-	public BlockScheduleEntry(IBlockUpdater blockUpdater, INode... nodeList)
+	private final IBlockUpdater _blockUpdater;
+	private final VariableBlock _block;
+
+	/*---------------
+	 * Construction
+	 */
+	
+	/**
+	 * 
+	 * @param blockUpdater
+	 * @param block
+	 * @since 0.08
+	 */
+	public BlockScheduleEntry(IBlockUpdater blockUpdater, VariableBlock block)
 	{
 		_blockUpdater = blockUpdater;
-		_blockUpdater.attachNodes(nodeList);
+		_block = block;
+		_blockUpdater.attachNodes(block.toArray(new INode[block.size()]));
 	}
-	public BlockScheduleEntry(Class<IBlockUpdater> blockUpdaterClass, INode... nodeList) throws Exception
+	
+	/**
+	 * @param blockUpdater
+	 * @param nodeList
+	 * @since 0.08
+	 * @category internal
+	 * @deprecated this will eventually be replaced by something in the matlabproxy package.
+	 */
+	@Deprecated
+	@Internal
+	@Matlab
+	public BlockScheduleEntry(FactorGraph graph, IBlockUpdater blockUpdater, Object ... nodeList)
 	{
-		this(blockUpdaterClass.newInstance(), nodeList);
-	}
-	public BlockScheduleEntry(IBlockUpdater blockUpdater, Object... nodeList)	// For MATLAB
-	{
-		_blockUpdater = blockUpdater;
-		INode[] nodes = new INode[nodeList.length];
-		System.arraycopy(nodeList, 0, nodes, 0, nodeList.length);
-		_blockUpdater.attachNodes(nodes);
+		this(blockUpdater, graph.addVariableBlock(Arrays.copyOf(nodeList, nodeList.length, Variable[].class)));
 	}
 
-	@Deprecated
+	/*------------------------
+	 * IScheduleEntry methods
+	 */
+	
 	@Override
-	public void update(SolverNodeMapping solvers)
+	public BlockScheduleEntry copy(Map<Object,Object> old2newObjs, boolean copyToRoot)
 	{
-		// FIXME
-		update();
+		return new BlockScheduleEntry(_blockUpdater.create(), (VariableBlock)old2newObjs.get(_block));
 	}
 	
 	@Override
+	public Type type()
+	{
+		return IScheduleEntry.Type.VARIABLE_BLOCK;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * @returns parent of {@link #getBlock() variable block}, which is not necessarily the same as the
+	 * parent of the variables contained in the block.
+	 */
+	@Override
+	public @Nullable FactorGraph getParentGraph()
+	{
+		return _block.getParentGraph();
+	}
+	
+	@Override
+	public Iterable<? extends INode> getNodes()
+	{
+		return _block;
+	}
+	
+	@Deprecated
 	public void update()
 	{
 		_blockUpdater.update();
 	}
 
-	public INode[] getNodeList()
-	{
-		return _blockUpdater.getNodeList();
-	}
+	/*----------------------------
+	 * BlockScheduleEntry methods
+	 */
 	
 	public IBlockUpdater getBlockUpdater()
 	{
 		return _blockUpdater;
 	}
 	
-	@Override
-	public IScheduleEntry copy(Map<Node,Node> old2newObjs)
+	/**
+	 * Variable block for entry.
+	 * @since 0.08
+	 */
+	public VariableBlock getBlock()
 	{
-		return copy(old2newObjs, false);
-	}
-	@Override
-	public IScheduleEntry copyToRoot(Map<Node,Node> old2newObjs)
-	{
-		return copy(old2newObjs, true);
+		return _block;
 	}
 	
-	public IScheduleEntry copy(Map<Node,Node> old2newObjs, boolean copyToRoot)
+	public INode[] getNodeList()
 	{
-		INode[] oldNodeList = _blockUpdater.getNodeList();
-		INode[] newNodeList = new INode[oldNodeList.length];
-		
-		for (int i = 0; i < oldNodeList.length; i++)
-			newNodeList[i] = old2newObjs.get(oldNodeList[i]);
-		
-		return new BlockScheduleEntry(_blockUpdater.create(), newNodeList);
+		return _blockUpdater.getNodeList();
 	}
-
-	@Override
-	public Iterable<Port> getPorts()
+	
+	/**
+	 * Returns {@link NodeScheduleEntry}s for each variable in the block.
+	 * @since 0.08
+	 */
+	public List<NodeScheduleEntry> toNodeEntries()
 	{
-		ArrayList<Port> ports = new ArrayList<Port>();
-		
-		// For all nodes in the block
-		for (INode node : _blockUpdater.getNodeList())
+		ArrayList<NodeScheduleEntry> entries = new ArrayList<>(_block.size());
+		for (Variable var : _block)
 		{
-			// Add each port of this node to the list.
-			for (int index = 0, end = node.getSiblingCount(); index < end; index++)
-			{
-				ports.add(node.getPort(index));
-			}
+			entries.add(new NodeScheduleEntry(var));
 		}
-		return ports;
-	}
-
-	@Override
-	public Type type()
-	{
-		return IScheduleEntry.Type.VARIABLE_BLOCK;
+		return entries;
 	}
 }

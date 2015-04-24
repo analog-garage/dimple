@@ -39,6 +39,7 @@ import com.analog.lyric.dimple.model.factors.DiscreteFactor;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.schedulers.SchedulerOptionKey;
 import com.analog.lyric.dimple.solvers.core.NoSolverEdge;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
@@ -241,6 +242,16 @@ public class LPSolverGraph extends SFactorGraphBase<LPTableFactor, LPDiscrete, N
 	public @Nullable String getMatlabSolveWrapper()
 	{
 		return useMatlabSolver() ? "dimpleLPSolve" : null;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * @return {@code null}
+	 */
+	@Override
+	public @Nullable SchedulerOptionKey getSchedulerKey()
+	{
+		return null;
 	}
 	
 	@SuppressWarnings("unchecked")

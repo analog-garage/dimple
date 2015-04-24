@@ -53,9 +53,9 @@ import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.options.DimpleOptions;
+import com.analog.lyric.dimple.solvers.core.BPSolverGraph;
 import com.analog.lyric.dimple.solvers.core.NoSolverEdge;
 import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
-import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
@@ -103,7 +103,7 @@ import com.analog.lyric.options.IOptionKey;
  * 
  * @since 0.07
  */
-public class SumProductSolverGraph extends SFactorGraphBase<ISolverFactor,ISolverVariable,ISolverEdgeState>
+public class SumProductSolverGraph extends BPSolverGraph<ISolverFactor,ISolverVariable,ISolverEdgeState>
 {
 	private double _damping = 0;
 	private @Nullable IFactorTable _currentFactorTable = null;

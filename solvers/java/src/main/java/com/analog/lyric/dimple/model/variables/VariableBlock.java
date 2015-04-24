@@ -99,6 +99,7 @@ public final class VariableBlock extends FactorGraphChild implements List<Variab
 				throw new IllegalArgumentException(String.format("Variable '%s' not in graph tree", var));
 			}
 			
+			// TODO - perhaps boundary variables should be stored using their boundary id
 			final long id = var.getGraphTreeId();
 			
 			if (!varSet.put(id, null))

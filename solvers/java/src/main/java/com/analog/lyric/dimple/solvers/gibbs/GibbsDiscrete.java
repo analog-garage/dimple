@@ -249,6 +249,12 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	}
 	
 	@Override
+	public GibbsSolverGraph getParentGraph()
+	{
+		return (GibbsSolverGraph)_parent;
+	}
+	
+	@Override
 	public ISolverFactorGibbs getSibling(int edge)
 	{
 		return (ISolverFactorGibbs)super.getSibling(edge);

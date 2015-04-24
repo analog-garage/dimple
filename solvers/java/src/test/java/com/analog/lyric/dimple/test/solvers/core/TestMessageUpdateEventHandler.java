@@ -201,15 +201,15 @@ public class TestMessageUpdateEventHandler extends DimpleEventHandler<SolverEven
 		FactorGraph model = solver.getModelObject();
 
 		// Create a fixed schedule to exerise full update messages
-		FixedSchedule schedule = new FixedSchedule();
+		FixedSchedule schedule = new FixedSchedule(model);
 		for (INode node : model.getNodes())
 		{
 			schedule.add(node);
 		}
-		model.setSchedule(schedule);
+		solver.setSchedule(schedule);
 		
 		solver.iterate();
-		assertEventsFromSchedule(model.getSchedule(), solver);
+		assertEventsFromSchedule(solver.getSchedule(), solver);
 		observedEvents.clear();
 	}
 	
@@ -218,7 +218,7 @@ public class TestMessageUpdateEventHandler extends DimpleEventHandler<SolverEven
 		FactorGraph model = solver.getModelObject();
 		
 		// Create a fixed edge schedule to exercise edge messages
-		FixedSchedule schedule = new FixedSchedule();
+		FixedSchedule schedule = new FixedSchedule(model);
 		for (INode node : model.getNodes())
 		{
 			for (int i = node.getSiblingCount(); --i>=0;)
@@ -227,10 +227,10 @@ public class TestMessageUpdateEventHandler extends DimpleEventHandler<SolverEven
 			}
 		}
 		
-		model.setSchedule(schedule);
+		solver.setSchedule(schedule);
 		solver.iterate();
 		
-		assertEventsFromSchedule(model.getSchedule(), solver);
+		assertEventsFromSchedule(solver.getSchedule(), solver);
 		observedEvents.clear();
 	}
 	

@@ -33,10 +33,10 @@ import com.analog.lyric.dimple.solvers.core.multithreading.MultithreadingAlgorit
  * There is some interaction in that, if a thread runs out of work, it will steal
  * work from another thread.
  */
-public class PhaseMultithreadingAlgorithm extends MultithreadingAlgorithm 
+public class PhaseMultithreadingAlgorithm extends MultithreadingAlgorithm
 {
 
-	public PhaseMultithreadingAlgorithm(MultiThreadingManager manager) 
+	public PhaseMultithreadingAlgorithm(MultiThreadingManager manager)
 	{
 		super(manager);
 
@@ -47,7 +47,7 @@ public class PhaseMultithreadingAlgorithm extends MultithreadingAlgorithm
 	 * entries in that phase concurrently.
 	 */
 	@Override
-	public void iterate(int numIters) 
+	public void iterate(int numIters)
 	{
 		ArrayList<ArrayList<IScheduleEntry>> phases = getManager().getDependencyGraph().getPhases();
 		ExecutorService service = getManager().getService();
@@ -56,7 +56,7 @@ public class PhaseMultithreadingAlgorithm extends MultithreadingAlgorithm
 		for (int i = 0; i < numIters; i++)
 		{
 			for (int j = 0; j < phases.size(); j++)
-			{				
+			{
 				updateScheduleEntries(service, phases.get(j), numThreads, true);
 			}
 		}
@@ -67,8 +67,8 @@ public class PhaseMultithreadingAlgorithm extends MultithreadingAlgorithm
 	 * Update all schedule entries assuming there are no dependencies between them.
 	 */
 	@SuppressWarnings("unchecked")
-	public void updateScheduleEntries(ExecutorService service, 
-			ArrayList<IScheduleEntry> scheduleEntries, 
+	public void updateScheduleEntries(ExecutorService service,
+			ArrayList<IScheduleEntry> scheduleEntries,
 			int numThreads, boolean stealing)
 	{
 		
@@ -84,13 +84,13 @@ public class PhaseMultithreadingAlgorithm extends MultithreadingAlgorithm
 		//Instantiate the Callable object that will do the updates. Each object is responsible
 		//for filling its queue so that building the queues is also multithreaded.
 		for (int i = 0; i < numThreads; i++)
-			ll.add(new WorkerWithStealing(scheduleEntries, i, deques, stealing));
+			ll.add(new WorkerWithStealing(getManager().getSolverGraph(), scheduleEntries, i, deques, stealing));
 				
 		//Kick off the threads and wait for them to complete.
 		try {
 			service.invokeAll(ll);
 		} catch (InterruptedException e) {
-			throw new DimpleException(e);			
+			throw new DimpleException(e);
 		}
 	}
 

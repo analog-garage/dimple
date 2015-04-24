@@ -36,6 +36,9 @@ public interface ISolverFactorGibbs extends ISolverFactor, ISolverNodeGibbs
 	public Value getInputMsg(int portIndex);
 
 	@Override
+	public GibbsSolverGraph getParentGraph();
+	
+	@Override
 	public ISolverVariableGibbs getSibling(int edge);
 	
 	@Override

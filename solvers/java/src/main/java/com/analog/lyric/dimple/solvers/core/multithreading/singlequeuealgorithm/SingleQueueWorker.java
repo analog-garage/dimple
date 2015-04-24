@@ -20,8 +20,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraphNode;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraphNode;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 /*
  * Object that retrieves data from the work queue until there is nothing left.
@@ -30,14 +32,17 @@ import org.eclipse.jdt.annotation.Nullable;
  */
 class SingleQueueWorker implements Callable<Object>
 {
-	private LinkedBlockingQueue<StaticDependencyGraphNode> _workQueue;
-	private AtomicInteger _nodesDone;
+	private final ISolverFactorGraph _solverGraph;
+	private final LinkedBlockingQueue<StaticDependencyGraphNode> _workQueue;
+	private final AtomicInteger _nodesDone;
 	
-	public SingleQueueWorker(LinkedBlockingQueue<StaticDependencyGraphNode>
-		workQueue,
+	SingleQueueWorker(
+		ISolverFactorGraph solverGraph,
+		LinkedBlockingQueue<StaticDependencyGraphNode> workQueue,
 		int numNodes,
 		AtomicInteger nodesDone)
 	{
+		_solverGraph = solverGraph;
 		_workQueue = workQueue;
 		_nodesDone = nodesDone;
 	}
@@ -58,7 +63,7 @@ class SingleQueueWorker implements Callable<Object>
 			}
 			
 			//run the update.
-			entry.getScheduleEntry().update();
+			_solverGraph.runScheduleEntry(entry.getScheduleEntry());
 			
 			//Decrement the number of ndoes that are done.
 			int nodesLeft = _nodesDone.decrementAndGet();

@@ -200,7 +200,7 @@ public class Misc
 
 	static public FixedSchedule nodeFloodingSchedule(FactorGraph fg)
 	{
-		FixedSchedule fs = new FixedSchedule();
+		FixedSchedule fs = new FixedSchedule(fg);
 		for(Variable vb : fg.getVariablesFlat().values())
 		{
 			fs.add(new NodeScheduleEntry(vb));
