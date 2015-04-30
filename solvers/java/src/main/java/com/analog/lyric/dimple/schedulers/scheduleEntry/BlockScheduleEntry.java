@@ -64,7 +64,6 @@ public class BlockScheduleEntry implements IScheduleEntry
 	{
 		_blockUpdater = blockUpdater;
 		_block = block;
-		_blockUpdater.attachNodes(block.toArray(new INode[block.size()]));
 	}
 	
 	/**
@@ -89,7 +88,7 @@ public class BlockScheduleEntry implements IScheduleEntry
 	@Override
 	public BlockScheduleEntry copy(Map<Object,Object> old2newObjs, boolean copyToRoot)
 	{
-		return new BlockScheduleEntry(_blockUpdater.create(), (VariableBlock)old2newObjs.get(_block));
+		return new BlockScheduleEntry(_blockUpdater.copy(old2newObjs), (VariableBlock)old2newObjs.get(_block));
 	}
 	
 	@Override
@@ -116,12 +115,6 @@ public class BlockScheduleEntry implements IScheduleEntry
 		return _block;
 	}
 	
-	@Deprecated
-	public void update()
-	{
-		_blockUpdater.update();
-	}
-
 	/*----------------------------
 	 * BlockScheduleEntry methods
 	 */
@@ -138,11 +131,6 @@ public class BlockScheduleEntry implements IScheduleEntry
 	public VariableBlock getBlock()
 	{
 		return _block;
-	}
-	
-	public INode[] getNodeList()
-	{
-		return _blockUpdater.getNodeList();
 	}
 	
 	/**

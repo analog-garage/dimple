@@ -20,8 +20,8 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.EdgeState;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
@@ -29,13 +29,14 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariableBlock;
 
 /**
  * @since 0.05
  */
 public abstract class ProxySolverFactorGraph<SFactor extends ISolverFactor, SVariable extends ISolverVariable,
-	SEdge extends ISolverEdgeState, Delegate extends ISolverFactorGraph>
-	extends SFactorGraphBase<SFactor, SVariable, SEdge>
+	SEdge extends ISolverEdgeState, SBlock extends ISolverVariableBlock, Delegate extends ISolverFactorGraph>
+	extends SFactorGraphBase<SFactor, SVariable, SEdge, SBlock>
 	implements IProxySolverNode<ISolverFactorGraph>
 {
 	/*--------------

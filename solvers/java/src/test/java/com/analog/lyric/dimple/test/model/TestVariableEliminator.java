@@ -37,6 +37,7 @@ import com.analog.lyric.dimple.model.transform.VariableEliminatorCostListOptionK
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.options.LocalOptionHolder;
 
@@ -422,7 +423,7 @@ public class TestVariableEliminator extends DimpleTestBase
 	{
 		// For now we do not support non-Discrete variables at all.
 		FactorGraph model = new FactorGraph();
-		model.setSolverFactory(new com.analog.lyric.dimple.solvers.gibbs.Solver());
+		model.setSolverFactory(new GibbsSolver());
 		Discrete a = newVar(4, "a");
 		Discrete b = newVar(5, "b");
 		Real r = new Real();

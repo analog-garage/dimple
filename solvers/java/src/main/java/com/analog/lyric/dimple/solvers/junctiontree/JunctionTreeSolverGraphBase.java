@@ -37,6 +37,7 @@ import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.options.DimpleOptions;
 import com.analog.lyric.dimple.schedulers.SchedulerOptionKey;
 import com.analog.lyric.dimple.solvers.core.NoSolverEdge;
+import com.analog.lyric.dimple.solvers.core.NoSolverVariableBlock;
 import com.analog.lyric.dimple.solvers.core.proxy.ProxySolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
@@ -56,7 +57,8 @@ import com.analog.lyric.util.misc.Misc;
  * @author Christopher Barber
  */
 public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactorGraph>
-	extends ProxySolverFactorGraph<JunctionTreeSolverFactor, IJunctionTreeSolverVariable<?>, NoSolverEdge, Delegate>
+	extends ProxySolverFactorGraph<JunctionTreeSolverFactor, IJunctionTreeSolverVariable<?>, NoSolverEdge,
+		NoSolverVariableBlock, Delegate>
 {
 	private final JunctionTreeTransform _transformer;
 	private final @Nullable IFactorGraphFactory<?> _solverFactory;

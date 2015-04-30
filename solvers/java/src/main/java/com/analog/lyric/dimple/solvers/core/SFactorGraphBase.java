@@ -35,13 +35,14 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.INode;
+import com.analog.lyric.dimple.model.core.IFactorGraphChild;
 import com.analog.lyric.dimple.model.core.Ids;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorBase;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.VariableBlock;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.options.SolverOptions;
 import com.analog.lyric.dimple.schedulers.EmptyScheduler;
@@ -65,15 +66,29 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariableBlock;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.util.misc.Internal;
 import com.google.common.collect.UnmodifiableIterator;
 
+/**
+ * Standard base implementation of {@link IParameterizedSolverFactorGraph}.
+ * <p>
+ * @param <SFactor> type of solver factor objects for this graph
+ * @param <SVariable> type of solver variable objects for this graph
+ * @param <SEdge> type of solver edge objects for this graph. Graphs that do not support solver edges can
+ * use {@link NoSolverEdge} for this type.
+ * @param <SBlock> type of solver variable block objects for this graph if applicable. Graphs that do not support
+ * solver variable blocks can use {@link NoSolverVariableBlock} for this type.
+ * @since 0.08
+ * @author Christopher Barber
+ */
 public abstract class SFactorGraphBase
-	<SFactor extends ISolverFactor, SVariable extends ISolverVariable, SEdge extends ISolverEdgeState>
+	<SFactor extends ISolverFactor, SVariable extends ISolverVariable,
+		SEdge extends ISolverEdgeState, SBlock extends ISolverVariableBlock>
 	extends SNode<FactorGraph>
-	implements IParameterizedSolverFactorGraph<SFactor, SVariable, SEdge>
+	implements IParameterizedSolverFactorGraph<SFactor, SVariable, SEdge, SBlock>
 {
 	/**
 	 * Bits in {@link #_flags} reserved by this class and its superclasses.
@@ -104,6 +119,8 @@ public abstract class SFactorGraphBase
 	
 	private final ExtendedArrayList<SEdge> _edges;
 	
+	private final ExtendedArrayList<SBlock> _blocks;
+	
 	private SolverNodeMapping _solverNodeMapping;
 
 	protected @Nullable ISchedule _schedule;
@@ -119,6 +136,7 @@ public abstract class SFactorGraphBase
 		_variables = new ExtendedArrayList<>(graph.getVariableCount(0));
 		_subgraphs = new ExtendedArrayList<>(graph.getOwnedGraphs().size());
 		_edges = new ExtendedArrayList<SEdge>(hasEdgeState() ? graph.getGraphEdgeStateMaxIndex() + 1: 0);
+		_blocks = new ExtendedArrayList<>(graph.getOwnedVariableBlocks().size());
 		_solverNodeMapping = new StandardSolverNodeMapping(this);
 		_parent = parent;
 	}
@@ -128,7 +146,7 @@ public abstract class SFactorGraphBase
 	 */
 	
 	@Override
-	public SFactorGraphBase<SFactor,SVariable,SEdge> getContainingSolverGraph()
+	public SFactorGraphBase<SFactor,SVariable,SEdge, SBlock> getContainingSolverGraph()
 	{
 		return this;
 	}
@@ -315,6 +333,13 @@ public abstract class SFactorGraphBase
 	@Override
 	public abstract SVariable createVariable(Variable variable);
 	
+	@SuppressWarnings("null")
+	@Override
+	public SBlock createVariableBlock(VariableBlock block)
+	{
+		return null;
+	}
+	
 	@Override
 	public @Nullable SEdge getSolverEdge(EdgeState edge)
 	{
@@ -365,19 +390,17 @@ public abstract class SFactorGraphBase
 		return _solverNodeMapping.getSolverGraph(subgraph);
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 * <p>
-	 * The default implementation simply returns {@link Variable#getSolver()}, which
-	 * assumes that the {@code variable}'s model is currently attached to this solver graph.
-	 * Subclasses may override this to return a more precise type or to support solvers that
-	 * can still be used when they are detached from the model.
-	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public ISolverVariable getSolverVariable(Variable variable)
 	{
 		return _solverNodeMapping.getSolverVariable(variable);
+	}
+	
+	@Override
+	public @Nullable ISolverVariableBlock getSolverVariableBlock(VariableBlock block)
+	{
+		return _solverNodeMapping.getSolverVariableBlock(block);
 	}
 	
 	/**
@@ -394,7 +417,8 @@ public abstract class SFactorGraphBase
 	public void moveMessages(ISolverNode other)
 	{
 		@SuppressWarnings("unchecked")
-		SFactorGraphBase<SFactor,SVariable,SEdge> sother = (SFactorGraphBase<SFactor,SVariable,SEdge>)other;
+		SFactorGraphBase<SFactor,SVariable,SEdge,SBlock> sother =
+			(SFactorGraphBase<SFactor,SVariable,SEdge,SBlock>)other;
 		FactorGraph otherGraph = sother.getModelGraph();
 		
 		final ExtendedArrayList<SEdge> edges = _edges;
@@ -520,9 +544,14 @@ public abstract class SFactorGraphBase
 	
 	protected void runBlockScheduleEntry(BlockScheduleEntry blockEntry)
 	{
-		for (INode node : blockEntry.getNodeList())
+		final VariableBlock block = blockEntry.getBlock();
+		final ISolverVariableBlock sblock = getSolverVariableBlock(block);
+		if (sblock == null || !	blockEntry.getBlockUpdater().update(sblock))
 		{
-			_solverNodeMapping.getSolverNode(node).update();
+			for (Variable var : block)
+			{
+				_solverNodeMapping.getSolverVariable(var).update();
+			}
 		}
 	}
 	
@@ -932,10 +961,13 @@ public abstract class SFactorGraphBase
 	 * Default implementation does the following:
 	 * <ul>
 	 * <li>Initializes {@linkplain #getNumIterations() iterations} and multithreading from options.
+	 * <li>Builds and {@linkplain #validateSchedule(ISchedule) validates} the schedule.
+	 * <li>{@linkplain #initializeSolverEdges() Initializes solver edge state}.
 	 * <li>Invokes {@linkplain ISolverNode#initialize() initialize} on contents of graph in this order
 	 * <ol>
 	 * <li>owned solver variables
 	 * <li>boundary solver variables (only if this is the root solver graph)
+	 * <li>solver variable blocks
 	 * <li>solver factors
 	 * <li>solver subgraphs
 	 * </ol>
@@ -961,6 +993,14 @@ public abstract class SFactorGraphBase
 			for (int i = 0, end = fg.getBoundaryVariableCount(); i <end; ++i)
 			{
 				getSolverVariable(fg.getBoundaryVariable(i)).initialize();
+			}
+		}
+		for (VariableBlock block : fg.getOwnedVariableBlocks())
+		{
+			ISolverVariableBlock sblock = getSolverVariableBlock(block);
+			if (sblock != null)
+			{
+				sblock.initialize();
 			}
 		}
 		for (Factor f : fg.getOwnedFactors())
@@ -1299,7 +1339,7 @@ public abstract class SFactorGraphBase
 		return this.getModelObject();
 	}
 	
-	public final IParameterizedSolverFactorGraph<SFactor,SVariable,SEdge> getSolverGraph()
+	public final IParameterizedSolverFactorGraph<SFactor,SVariable,SEdge,SBlock> getSolverGraph()
 	{
 		return this;
 	}
@@ -1550,7 +1590,41 @@ public abstract class SFactorGraphBase
 	{
 		return _variables.getOrNull(index);
 	}
+
+	@Override
+	public @Nullable SBlock getSolverVariableBlock(VariableBlock block, boolean create)
+	{
+		assertSameGraph(block);
+		
+		final int index = Ids.indexFromLocalId(block.getLocalId());
+		final ExtendedArrayList<SBlock> sblocks = _blocks;
+		
+		SBlock sblock = sblocks.getOrNull(index);
+		
+		if (sblock == null || sblock.getModelObject() != block)
+		{
+			if (create)
+			{
+				sblock = createVariableBlock(block);
+			}
+			sblocks.set(index, sblock);
+		}
+		
+		return sblock;
+	}
 	
+	@Override
+	public @Nullable SBlock getSolverVariableBlockByIndex(int index)
+	{
+		return _blocks.getOrNull(index);
+	}
+	
+	@Override
+	public Collection<SBlock> getSolverVariableBlocks()
+	{
+		return Collections.unmodifiableList(_blocks);
+	}
+
 	public void setSubgraphSolver(FactorGraph subgraph, @Nullable ISolverFactorGraph sgraph)
 	{
 		assertSameGraph(subgraph);
@@ -1568,12 +1642,11 @@ public abstract class SFactorGraphBase
 	 * Private methods
 	 */
 	
-	private void assertSameGraph(Node node)
+	private void assertSameGraph(IFactorGraphChild child)
 	{
-		if (node.getParentGraph() != this.getModelObject())
+		if (child.getParentGraph() != this.getModelObject())
 		{
-			throw new IllegalArgumentException(String.format("The %s '%s' does not belong to graph.",
-				node.getNodeType().name().toLowerCase(), node));
+			throw new IllegalArgumentException(String.format("'%s' does not belong to graph.", child));
 		}
 	}
 }

@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.VariableBlock;
 import com.analog.lyric.util.misc.Internal;
 
 /**
@@ -246,6 +247,16 @@ public abstract class SolverNodeMapping
 	public ISolverVariable getSolverVariable(Variable variable)
 	{
 		return getSolverGraph(variable.getParentGraph()).getSolverVariable(variable, true);
+	}
+	
+	/**
+	 * Returns solver variable block for given model block, if any.
+	 * <p>
+	 * @since 0.08
+	 */
+	public @Nullable ISolverVariableBlock getSolverVariableBlock(VariableBlock block)
+	{
+		return getSolverGraph(block.getParentGraph()).getSolverVariableBlock(block, true);
 	}
 
 	/**

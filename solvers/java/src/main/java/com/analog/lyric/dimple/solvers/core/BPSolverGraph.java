@@ -37,7 +37,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
  */
 public abstract class BPSolverGraph
 	<SFactor extends ISolverFactor, SVariable extends ISolverVariable, SEdge extends ISolverEdgeState>
-	extends SFactorGraphBase<SFactor, SVariable, SEdge>
+	extends SFactorGraphBase<SFactor, SVariable, SEdge, NoSolverVariableBlock>
 {
 	/*--------------
 	 * Construction

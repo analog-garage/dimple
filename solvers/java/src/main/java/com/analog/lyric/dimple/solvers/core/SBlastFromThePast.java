@@ -57,6 +57,16 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 		return String.format("[%s %s]", getClass().getSimpleName(), _factor.getQualifiedName());
 	}
 	
+	/*----------------------------
+	 * IDimpleEventSource methods
+	 */
+	
+	@Override
+	public Factor getModelEventSource()
+	{
+		return getModelObject();
+	}
+	
 	/*----------------------
 	 * ISolverNode methods
 	 */

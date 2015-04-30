@@ -22,14 +22,16 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.events.IDimpleEventSource;
+import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
 
 /**
- * 
+ * Abstract base class for child objects of a {@link FactorGraph}.
+ * <p>
  * @since 0.08
  * @author Christopher Barber
  */
-public abstract class FactorGraphChild extends DimpleOptionHolder implements IFactorGraphChild
+public abstract class FactorGraphChild extends DimpleOptionHolder implements IFactorGraphChild, IModelEventSource
 {
 	/*-------
 	 * State
@@ -43,20 +45,12 @@ public abstract class FactorGraphChild extends DimpleOptionHolder implements IFa
 	 * Construction
 	 */
 	
-	/**
-	 * 
-	 * @since 0.08
-	 */
 	protected FactorGraphChild()
 	{
 		super();
 	}
 
-	/**
-	 * @param other
-	 * @since 0.08
-	 */
-	public FactorGraphChild(DimpleOptionHolder other)
+	protected FactorGraphChild(DimpleOptionHolder other)
 	{
 		super(other);
 	}

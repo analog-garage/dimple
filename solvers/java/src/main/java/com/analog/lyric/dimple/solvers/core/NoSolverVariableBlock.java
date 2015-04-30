@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2014 Analog Devices, Inc.
+*   Copyright 2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -14,17 +14,21 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.samplers.block;
+package com.analog.lyric.dimple.solvers.core;
 
-
+import com.analog.lyric.dimple.solvers.interfaces.IParameterizedSolverFactorGraph;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariableBlock;
 
 /**
- * Sampler that updates a block of variables instead of updating one variable at a time.
- * Extends IBlockSampler specifically for MCMC-based samplers.
- * 
- * @since 0.07
- * @author jeffb
+ * Dummy {@link ISolverVariableBlock} subtype.
+ * <p>
+ * This interface is not expected to have an
+ * This can be used in {@link IParameterizedSolverFactorGraph} declarations to document that solver
+ * graph does not support solver variable blocks.
+ * @since 0.08
+ * @author Christopher Barber
  */
-public interface IBlockMCMCSampler extends IBlockSampler
+public interface NoSolverVariableBlock extends ISolverVariableBlock
 {
+
 }

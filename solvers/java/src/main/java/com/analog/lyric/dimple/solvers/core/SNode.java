@@ -22,7 +22,6 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.events.IDimpleEventListener;
 import com.analog.lyric.dimple.events.SolverEvent;
-import com.analog.lyric.dimple.events.SolverEventSource;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
@@ -30,7 +29,11 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
-public abstract class SNode<MNode extends Node> extends SolverEventSource implements ISolverNode
+/**
+ * Abstract base implementation of {@link ISolverNode}
+ * @param <MNode> is the corresponding model {@link Node} type.
+ */
+public abstract class SNode<MNode extends Node> extends SChild<MNode> implements ISolverNode
 {
 	/*-----------
 	 * Constants
@@ -52,24 +55,14 @@ public abstract class SNode<MNode extends Node> extends SolverEventSource implem
 	
 	protected static final int EVENT_MASK = MESSAGE_EVENT_MASK;
 	
-	/*-------
-	 * State
-	 */
-
-	protected final MNode _model;
-
 	/*--------------
 	 * Construction
 	 */
 	
 	public SNode(MNode n)
 	{
-		_model = n;
+		super(n);
 	}
-	
-	/*----------------
-	 * Object methods
-	 */
 	
 	@Override
 	public String toString()
@@ -77,25 +70,9 @@ public abstract class SNode<MNode extends Node> extends SolverEventSource implem
 		return String.format("[%s %s]", getClass().getSimpleName(), _model.getQualifiedName());
 	}
 	
-	/*-----------------------
-	 * IOptionHolder methods
-	 */
-	
 	/*---------------------
 	 * ISolverNode methods
 	 */
-	
-	@Override
-	public MNode getModelObject()
-    {
-    	return _model;
-    }
-	
-	@Override
-	public ISolverFactorGraph getRootSolverGraph()
-	{
-		return getContainingSolverGraph().getRootSolverGraph();
-	}
 	
 	@Override
 	public ISolverNode getSibling(int edge)
@@ -108,17 +85,6 @@ public abstract class SNode<MNode extends Node> extends SolverEventSource implem
 	public int getSiblingCount()
 	{
 		return _model.getSiblingCount();
-	}
-	
-	/**
-	 * Initialize solver node.
-	 * <p>
-	 * Clears internal state flags and resets messages for edges.
-	 */
-	@Override
-	public void initialize()
-	{
-		clearFlags();
 	}
 	
 	/**

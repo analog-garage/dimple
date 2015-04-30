@@ -62,7 +62,7 @@ public class TestSFactorGraphBase extends DimpleTestBase
 	}
 	
 	
-	private void assertInvariants(SFactorGraphBase<?,?,?> state)
+	private void assertInvariants(SFactorGraphBase<?,?,?,?> state)
 	{
 		final FactorGraph root = state.getModelObject();
 		assertSame(root, state.getModelGraph());
@@ -106,7 +106,7 @@ public class TestSFactorGraphBase extends DimpleTestBase
 				
 				if (sgraph instanceof SFactorGraphBase)
 				{
-					assertInvariants((SFactorGraphBase<?,?,?>)sgraph);
+					assertInvariants((SFactorGraphBase<?,?,?,?>)sgraph);
 				}
 			}
 			
@@ -166,7 +166,7 @@ public class TestSFactorGraphBase extends DimpleTestBase
 		Discrete looseVar = new Bit();
 		looseVar.setName("looseVar");
 		
-		expectThrow(IllegalArgumentException.class, "The variable 'looseVar' does not belong to graph.",
+		expectThrow(IllegalArgumentException.class, "'looseVar' does not belong to graph.",
 			state, "getSolverVariable", looseVar, true);
 		
 		FactorGraph otherGraph = new FactorGraph();

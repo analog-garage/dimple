@@ -34,7 +34,7 @@ public abstract class ProxyDiscreteSolverVariable<Delegate extends IDiscreteSolv
 	 * @param modelVariable
 	 * @since 0.07
 	 */
-	protected ProxyDiscreteSolverVariable(Discrete modelVariable, ProxySolverFactorGraph<?,?,?,?> parent)
+	protected ProxyDiscreteSolverVariable(Discrete modelVariable, ProxySolverFactorGraph<?,?,?,?,?> parent)
 	{
 		super(modelVariable, parent);
 	}

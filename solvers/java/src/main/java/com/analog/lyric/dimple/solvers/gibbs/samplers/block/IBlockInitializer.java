@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.solvers.gibbs.samplers.block;
 
 /**
- * 
  * Interface for supporting block initialization, where a block of variables must be
  * initialized together to ensure a consistent joint value.
  * 

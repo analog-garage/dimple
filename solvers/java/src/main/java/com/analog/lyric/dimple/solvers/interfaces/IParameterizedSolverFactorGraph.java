@@ -20,10 +20,11 @@ import java.util.Collection;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.EdgeState;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.VariableBlock;
 
 /**
  * Solver graph interface parameterized by types of solver factors and variables.
@@ -33,7 +34,8 @@ import com.analog.lyric.dimple.model.variables.Variable;
  * @author Christopher Barber
  */
 public interface IParameterizedSolverFactorGraph
-	<SFactor extends ISolverFactor, SVariable extends ISolverVariable, SEdge extends ISolverEdgeState>
+	<SFactor extends ISolverFactor, SVariable extends ISolverVariable, SEdge extends ISolverEdgeState,
+		SBlock extends ISolverVariableBlock>
 	extends ISolverFactorGraph
 {
 	public SEdge createEdgeState(EdgeState edge);
@@ -41,6 +43,8 @@ public interface IParameterizedSolverFactorGraph
 	public SFactor createFactor(Factor factor);
 	
 	public SVariable createVariable(Variable variable);
+	
+	public SBlock createVariableBlock(VariableBlock block);
 
 	public ISolverFactorGraph createSubgraph(FactorGraph subgraph);
 	
@@ -69,6 +73,15 @@ public interface IParameterizedSolverFactorGraph
 	 */
 	@Override
 	public Collection<SVariable> getSolverVariables();
+	
+	@Override
+	public @Nullable SBlock getSolverVariableBlock(VariableBlock block, boolean create);
+	
+	@Override
+	public @Nullable SBlock getSolverVariableBlockByIndex(int index);
+	
+	@Override
+	public Collection<SBlock> getSolverVariableBlocks();
 	
 	/**
 	 * True if solver uses edge-specific state.

@@ -28,12 +28,10 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.factorfunctions.Multinomial;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.EdgeState;
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableBlock;
 import com.analog.lyric.dimple.schedulers.schedule.IGibbsSchedule;
-import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDirichletEdge;
@@ -42,7 +40,8 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealJoint;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHSampler;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsVariableBlock;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHInitializer;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
@@ -167,7 +166,6 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 		
 		
 		// Create a block schedule entry with a BlockMHSampler and a MultinomialBlockProposal kernel
-		BlockMHSampler blockSampler = new BlockMHSampler(new MultinomialBlockProposal(this));
 		final GibbsDiscrete[] outputVariables = Objects.requireNonNull(_outputVariables);
 		Variable[] nodeList = new Variable[outputVariables.length + (_hasConstantN ? 0 : 1)];
 		int nodeIndex = 0;
@@ -176,19 +174,19 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 		for (int i = 0; i < outputVariables.length; i++, nodeIndex++)
 			nodeList[nodeIndex] = outputVariables[i].getModelObject();
 		
-		VariableBlock block = getParentGraph().getModel().addVariableBlock(nodeList);
+		GibbsSolverGraph parent = getParentGraph();
+		VariableBlock block = parent.getModel().addVariableBlock(nodeList);
+		GibbsVariableBlock sblock = requireNonNull(parent.getSolverVariableBlock(block, true));
+		BlockMHInitializer blockSampler = new BlockMHInitializer(sblock, new MultinomialBlockProposal(this));
 		BlockScheduleEntry blockScheduleEntry = new BlockScheduleEntry(blockSampler, block);
 		
 		// Add the block updater to the schedule
-		FactorGraph rootGraph = requireNonNull(_model.getRootGraph());
-		ISchedule schedule = rootGraph.getSchedule(); // Assumes scheduler for Gibbs solver is flattened to root graph
-		if (schedule instanceof IGibbsSchedule)
-		{
-			((IGibbsSchedule)schedule).addBlockScheduleEntry(blockScheduleEntry);
-		}
+		GibbsSolverGraph rootGraph = (GibbsSolverGraph)parent.getRootSolverGraph(); // FIXME don't assume root
+		IGibbsSchedule schedule = rootGraph.getSchedule(); // Assumes scheduler for Gibbs solver is flattened to root graph
+		schedule.addBlockScheduleEntry(blockScheduleEntry);
 		
 		// Use the block sampler to initialize the neighboring variables
-		((GibbsSolverGraph)rootGraph.requireSolver("initialize")).addBlockInitializer(blockSampler);
+		rootGraph.addBlockInitializer(blockSampler);
 	}
 	
 	

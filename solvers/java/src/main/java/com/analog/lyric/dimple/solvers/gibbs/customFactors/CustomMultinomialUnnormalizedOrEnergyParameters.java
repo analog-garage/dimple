@@ -29,12 +29,10 @@ import com.analog.lyric.dimple.factorfunctions.MultinomialEnergyParameters;
 import com.analog.lyric.dimple.factorfunctions.MultinomialUnnormalizedParameters;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.EdgeState;
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableBlock;
 import com.analog.lyric.dimple.schedulers.schedule.IGibbsSchedule;
-import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
@@ -43,7 +41,8 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHSampler;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsVariableBlock;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHInitializer;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
@@ -187,7 +186,6 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 		
 		
 		// Create a block schedule entry with a BlockMHSampler and a MultinomialBlockProposal kernel
-		BlockMHSampler blockSampler = new BlockMHSampler(new MultinomialBlockProposal(this));
 		Variable[] nodeList = new Variable[_outputVariables.length + (_hasConstantN ? 0 : 1)];
 		int nodeIndex = 0;
 		if (!_hasConstantN)
@@ -195,19 +193,19 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 		for (int i = 0; i < _outputVariables.length; i++, nodeIndex++)
 			nodeList[nodeIndex] = _outputVariables[i].getModelObject();
 
+		GibbsSolverGraph parent = getParentGraph();
 		VariableBlock block = getParentGraph().getModel().addVariableBlock(nodeList);
+		GibbsVariableBlock sblock = requireNonNull(parent.getSolverVariableBlock(block, true));
+		BlockMHInitializer blockSampler = new BlockMHInitializer(sblock, new MultinomialBlockProposal(this));
 		BlockScheduleEntry blockScheduleEntry = new BlockScheduleEntry(blockSampler, block);
 		
 		// Add the block updater to the schedule
-		FactorGraph rootGraph = _model.getRootGraph();
-		ISchedule schedule = rootGraph.getSchedule(); // Assumes scheduler for Gibbs solver is flattened to root graph
-		if (schedule instanceof IGibbsSchedule)
-		{
-			((IGibbsSchedule)schedule).addBlockScheduleEntry(blockScheduleEntry);
-		}
+		GibbsSolverGraph rootGraph = (GibbsSolverGraph)parent.getRootSolverGraph(); // FIXME don't assume root
+		IGibbsSchedule schedule = rootGraph.getSchedule(); // Assumes scheduler for Gibbs solver is flattened to root graph
+		schedule.addBlockScheduleEntry(blockScheduleEntry);
 			
 		// Use the block sampler to initialize the neighboring variables
-		((GibbsSolverGraph)getRootSolverGraph()).addBlockInitializer(blockSampler);
+		rootGraph.addBlockInitializer(blockSampler);
 	}
 	
 	

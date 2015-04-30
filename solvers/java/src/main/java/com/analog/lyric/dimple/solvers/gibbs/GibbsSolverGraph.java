@@ -67,12 +67,11 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.VariableBlock;
 import com.analog.lyric.dimple.options.DimpleOptions;
 import com.analog.lyric.dimple.schedulers.SchedulerOptionKey;
 import com.analog.lyric.dimple.schedulers.schedule.IGibbsSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
-import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
-import com.analog.lyric.dimple.schedulers.scheduleEntry.IBlockUpdater;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomBernoulli;
@@ -92,9 +91,7 @@ import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomMultiplexer;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNegativeExpGamma;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNormal;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomPoisson;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockInitializer;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockMCMCSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -108,7 +105,8 @@ import com.analog.lyric.math.DimpleRandomGenerator;
  *  <p>
  * @since 0.07
  */
-public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolverVariableGibbs, GibbsSolverEdge<?>>
+public class GibbsSolverGraph
+	extends SFactorGraphBase<ISolverFactorGibbs, ISolverVariableGibbs, GibbsSolverEdge<?>, GibbsVariableBlock>
 {
 	/*
 	 * Constants
@@ -302,6 +300,12 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 			return new GibbsTableFactorBlastFromThePast(factor, this);
 		else
 			return new GibbsRealFactorBlastFromThePast(factor, this);
+	}
+	
+	@Override
+	public GibbsVariableBlock createVariableBlock(VariableBlock block)
+	{
+		return new GibbsVariableBlock(block,  this);
 	}
 	
 	@Override
@@ -756,19 +760,11 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 			rejectCount += variable.getRejectionCount();
 		}
 		
-		// Accumulate the rejection statistics for any BlockMHSamplers in the schedule
-		ISchedule schedule = getSchedule();
-		for (IScheduleEntry s : schedule)
+		// Accumulate the rejection statistics for any variable blocks in the graph
+		for (GibbsVariableBlock sblock : getSolverVariableBlocks())
 		{
-			if (s instanceof BlockScheduleEntry)
-			{
-				IBlockUpdater b = ((BlockScheduleEntry)s).getBlockUpdater();
-				if (b instanceof IBlockMCMCSampler)
-				{
-					updateCount += ((BlockMHSampler)b).getUpdateCount();
-					rejectCount += ((BlockMHSampler)b).getRejectionCount();
-				}
-			}
+			updateCount += sblock.getUpdateCount();
+			rejectCount += sblock.getRejectionCount();
 		}
 		
 		return (updateCount > 0) ? (double)rejectCount / (double)updateCount : 0;
@@ -784,16 +780,10 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 		for (Variable v : _model.getVariables())
 			requireNonNull(getSolverVariable(v)).resetRejectionRateStats();
 		
-		// Reset the rejection statistics for any BlockMHSamplers in the schedule
-		ISchedule schedule = getSchedule();
-		for (IScheduleEntry s : schedule)
+		// Reset the rejection statistics for any variable blocks in the graph
+		for (GibbsVariableBlock sblock : getSolverVariableBlocks())
 		{
-			if (s instanceof BlockScheduleEntry)
-			{
-				IBlockUpdater b = ((BlockScheduleEntry)s).getBlockUpdater();
-				if (b instanceof IBlockMCMCSampler)
-					((BlockMHSampler)b).resetRejectionRateStats();
-			}
+			sblock.resetCounts();
 		}
 	}
 	
@@ -1297,12 +1287,5 @@ public class GibbsSolverGraph extends SFactorGraphBase<ISolverFactorGibbs, ISolv
 	protected String getSolverName()
 	{
 		return "Gibbs";
-	}
-	
-	@Override
-	protected void runBlockScheduleEntry(BlockScheduleEntry blockEntry)
-	{
-		// FIXME
-		blockEntry.update();
 	}
 }

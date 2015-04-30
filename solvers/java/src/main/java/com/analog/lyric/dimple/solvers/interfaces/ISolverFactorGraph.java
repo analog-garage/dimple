@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.VariableBlock;
 import com.analog.lyric.dimple.schedulers.IScheduler;
 import com.analog.lyric.dimple.schedulers.SchedulerOptionKey;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
@@ -80,9 +81,19 @@ public interface ISolverFactorGraph	extends ISolverNode
 	public @Nullable SchedulerOptionKey getSchedulerKey();
 
 	public void setScheduler(@Nullable IScheduler scheduler);
-	
+
+	/**
+	 * Get solver edge state for corresponding edge state if any, creating if necessary.
+	 * <p>
+	 * @since 0.08
+	 */
 	public @Nullable ISolverEdgeState getSolverEdge(EdgeState edge);
 	
+	/**
+	 * Get solver edge state if any for corresponding edge state index, creating if necessary.
+	 * <p>
+	 * @since 0.08
+	 */
 	public @Nullable ISolverEdgeState getSolverEdge(int edgeIndex);
 	
 	/**
@@ -195,6 +206,39 @@ public interface ISolverFactorGraph	extends ISolverNode
 	public Collection<? extends ISolverVariable> getSolverVariables();
 	
 	public Collection<? extends ISolverVariable> getSolverVariablesRecursive();
+	
+	/**
+	 * Get solver variable block if any for corresponding model variable block
+	 * <p>
+	 * @since 0.08
+	 */
+	public @Nullable ISolverVariableBlock getSolverVariableBlock(VariableBlock block);
+	
+	/**
+	 * Get solver variable block for given model block
+	 * <p>
+	 * @param block must be a block whose parent is the same as the {@linkplain #getModelObject model object}.
+	 * @param create if true, the solver will attempt to create the solver block if it has not already done so.
+	 * @since 0.08
+	 */
+	public @Nullable ISolverVariableBlock getSolverVariableBlock(VariableBlock block, boolean create);
+	
+	/**
+	 * Get solver variable block with given local index in this solver graph, if it exists.
+	 * <p>
+	 * This method does not force instantiation of the solver block
+	 * <p>
+	 * @param index is the local index of the variable block within its graph, i.e. the index portion of the
+	 * block's local id.
+	 * @since 0.08
+	 */
+	public @Nullable ISolverVariableBlock getSolverVariableBlockByIndex(int index);
+	
+	/**
+	 * An immutable view of solver variable blocks owned by this graph.
+	 * @since 0.08
+	 */
+	public Collection<? extends ISolverVariableBlock> getSolverVariableBlocks();
 	
 	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor factor);
 

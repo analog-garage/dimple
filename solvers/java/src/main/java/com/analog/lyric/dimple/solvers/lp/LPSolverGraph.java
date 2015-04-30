@@ -41,6 +41,7 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.schedulers.SchedulerOptionKey;
 import com.analog.lyric.dimple.solvers.core.NoSolverEdge;
+import com.analog.lyric.dimple.solvers.core.NoSolverVariableBlock;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -55,7 +56,7 @@ import com.analog.lyric.util.misc.Matlab;
  * @since 0.07
  */
 @NotThreadSafe
-public class LPSolverGraph extends SFactorGraphBase<LPTableFactor, LPDiscrete, NoSolverEdge>
+public class LPSolverGraph extends SFactorGraphBase<LPTableFactor, LPDiscrete, NoSolverEdge, NoSolverVariableBlock>
 {
 	/*-------
 	 * State

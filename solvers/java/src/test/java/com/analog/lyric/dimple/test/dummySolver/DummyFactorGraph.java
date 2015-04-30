@@ -31,8 +31,10 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariableBlock;
 
-public class DummyFactorGraph extends SFactorGraphBase<ISolverFactor,ISolverVariable,ISolverEdgeState>
+public class DummyFactorGraph
+	extends SFactorGraphBase<ISolverFactor,ISolverVariable,ISolverEdgeState,ISolverVariableBlock>
 {
 	public DummyFactorGraph(FactorGraph factorGraph)
 	{

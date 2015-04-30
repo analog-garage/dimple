@@ -30,7 +30,7 @@ import com.analog.lyric.options.IOptionHolder;
  * <p>
  * @author schweitz
  */
-public interface ISolverNode extends IOptionHolder, ISolverEventSource
+public interface ISolverNode extends ISolverFactorGraphChild, IOptionHolder, ISolverEventSource
 {
 	/**
 	 * Perform update of this node.
@@ -67,17 +67,6 @@ public interface ISolverNode extends IOptionHolder, ISolverEventSource
 	public @Nullable ISolverEdgeState getSiblingEdgeState(int siblingNumber);
 	
 	/**
-	 * Returns the solver factor graph to which this node belongs.
-	 */
-	public @Nullable ISolverFactorGraph getParentGraph();
-	
-	/**
-	 * Gets the highest level solver graph to which this node belongs (could be the node itself).
-	 * @since 0.08
-	 */
-	public ISolverFactorGraph getRootSolverGraph();
-
-	/**
 	 * Returns solver node attached to this node through edge with given edge number.
 	 * @param siblingNumber is non-negative value less than {@link #getSiblingCount()}
 	 * @since 0.06
@@ -94,12 +83,6 @@ public interface ISolverNode extends IOptionHolder, ISolverEventSource
 	 */
 	public int getSiblingCount();
 	
-	/**
-	 * Returns mapping of nodes to solvers for entire solver graph tree.
-	 * @since 0.08
-	 */
-	public SolverNodeMapping getSolverMapping();
-	
 	public double getScore() ;
     public double getInternalEnergy() ;
     public double getBetheEntropy() ;
@@ -107,7 +90,8 @@ public interface ISolverNode extends IOptionHolder, ISolverEventSource
     /**
      * Return the model object associated with this solver node.
      */
-    public INode getModelObject();
+    @Override
+	public INode getModelObject();
 
     /*--------------------
      * Deprecated methods

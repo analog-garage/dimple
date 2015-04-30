@@ -22,15 +22,17 @@ import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraphChild;
 import com.analog.lyric.util.misc.Internal;
 
 /**
- * 
+ * Abstract base implementation of {@link ISolverEventSource}
  * @since 0.06
  * @author Christopher Barber
  */
-public abstract class SolverEventSource extends DimpleOptionHolder implements ISolverEventSource, ISolverNode
+public abstract class SolverEventSource
+	extends DimpleOptionHolder
+	implements ISolverEventSource, ISolverFactorGraphChild
 {
 	/*-----------
 	 * Constants
@@ -95,12 +97,6 @@ public abstract class SolverEventSource extends DimpleOptionHolder implements IS
 		return modelObj != null ? modelObj.getEventSourceName() : toString();
 	}
 
-    @Override
-    public @Nullable IModelEventSource getModelEventSource()
-    {
-    	return getModelObject();
-    }
-    
 	/*----------------------------
 	 * ISolverEventSource methods
 	 */

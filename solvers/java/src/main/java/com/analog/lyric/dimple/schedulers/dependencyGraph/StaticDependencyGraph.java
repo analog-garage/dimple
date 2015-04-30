@@ -180,6 +180,7 @@ public class StaticDependencyGraph
 	/*
 	 * Recursive method for building dependency graph from an ISchedule node.
 	 */
+	@SuppressWarnings("deprecation")
 	private void buildFromSchedule(ISolverFactorGraph sfg,
 		Iterable<? extends IScheduleEntry> schedule,
 		LastUpdateGraph lug)
@@ -222,6 +223,8 @@ public class StaticDependencyGraph
 					_initialEntries.add(dgn);
 				break;
 			}
+			case CUSTOM:
+				break;
 			}
 		}
 	}
