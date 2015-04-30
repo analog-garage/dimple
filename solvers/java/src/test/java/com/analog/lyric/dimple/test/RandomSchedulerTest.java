@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.schedulers.RandomWithReplacementScheduler;
 import com.analog.lyric.dimple.schedulers.RandomWithoutReplacementScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
@@ -46,7 +47,7 @@ public class RandomSchedulerTest extends DimpleTestBase
 		g.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
 		RandomWithoutReplacementScheduler scheduler = new RandomWithoutReplacementScheduler();
 		DimpleRandomGenerator.setSeed(1);		// Make it repeatable
-		g.setScheduler(scheduler);
+		g.setOption(BPOptions.scheduler, scheduler);
 		requireNonNull(g.getSolver()).setNumIterations(20);
 
 		DiscreteDomain bit = DiscreteDomain.bit();
@@ -101,7 +102,7 @@ public class RandomSchedulerTest extends DimpleTestBase
 		g.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
 		RandomWithReplacementScheduler scheduler = new RandomWithReplacementScheduler();
 		DimpleRandomGenerator.setSeed(1);		// Make it repeatable
-		g.setScheduler(scheduler);
+		g.setOption(BPOptions.scheduler, scheduler);
 		requireNonNull(g.getSolver()).setNumIterations(20);
 
 		DiscreteDomain bit = DiscreteDomain.bit();

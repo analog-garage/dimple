@@ -32,7 +32,6 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
-import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.SubgraphScheduleEntry;
 
 
@@ -58,6 +57,11 @@ public class FixedSchedule extends ScheduleBase implements IGibbsSchedule
 	 * Construction
 	 */
 	
+	/**
+	 * @deprecated instead use {@link #FixedSchedule(FactorGraph)}
+	 * 
+	 * @since 0.08
+	 */
 	@Deprecated
 	public FixedSchedule()
 	{
@@ -74,6 +78,9 @@ public class FixedSchedule extends ScheduleBase implements IGibbsSchedule
 		super(scheduler, fg);
 	}
 	
+	/**
+	 * @deprecated instead use {@link #FixedSchedule(FactorGraph, IScheduleEntry[])}
+	 */
 	@Deprecated
 	public FixedSchedule(IScheduleEntry[] entries)
 	{
@@ -99,6 +106,10 @@ public class FixedSchedule extends ScheduleBase implements IGibbsSchedule
 		add(entries);
 	}
 
+	/**
+	 * @deprecated instead use {@link #FixedSchedule(IScheduler, FactorGraph, Iterable)}
+	 */
+	@Deprecated
 	public FixedSchedule(Iterable<IScheduleEntry> entries)
 	{
 		this();
@@ -110,6 +121,7 @@ public class FixedSchedule extends ScheduleBase implements IGibbsSchedule
 		return _schedule;
 	}
 	
+	@Deprecated
 	public FixedSchedule(ISchedule s)
 	{
 		this();
@@ -172,11 +184,12 @@ public class FixedSchedule extends ScheduleBase implements IGibbsSchedule
 	}
 	
 	// Add a sub-schedule
+	@Deprecated
 	public void add(@Nullable ISchedule s)
 	{
 		if (s != null)
 		{
-			add(new SubScheduleEntry(s));
+			add(new com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry(s));
 		}
 	}
 	

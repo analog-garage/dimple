@@ -54,7 +54,6 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
-import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.SubgraphScheduleEntry;
 import com.analog.lyric.dimple.schedulers.validator.ScheduleValidator;
 import com.analog.lyric.dimple.schedulers.validator.ScheduleValidatorOptionKey;
@@ -533,7 +532,7 @@ public abstract class SFactorGraphBase
 		}
 		case SUBSCHEDULE:
 		{
-			runSubScheduleEntry((SubScheduleEntry)entry);
+			runSubScheduleEntry((com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry)entry);
 			break;
 		}
 		case CUSTOM:
@@ -573,8 +572,8 @@ public abstract class SFactorGraphBase
 		subgraph.update();
 	}
 	
-	@SuppressWarnings("deprecation")
-	protected void runSubScheduleEntry(SubScheduleEntry subSchedule)
+	@Deprecated
+	protected void runSubScheduleEntry(com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry subSchedule)
 	{
 		for (IScheduleEntry subentry : subSchedule.getSchedule())
 		{

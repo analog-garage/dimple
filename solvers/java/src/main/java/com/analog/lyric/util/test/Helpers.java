@@ -608,6 +608,7 @@ public class Helpers
 	}
 	static @Nullable Variable[] ordered_vars;
 	
+	@SuppressWarnings("deprecation")
 	public static void initFgForDecode(FactorGraph fg, IFactorGraphFactory<?> solver, ISchedule schedule, int iterations)
 			
 	{

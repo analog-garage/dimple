@@ -27,7 +27,6 @@ import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
-import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.SubgraphScheduleEntry;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
@@ -197,7 +196,7 @@ public class StaticDependencyGraph
 				buildFromSchedule(sfg, ((SubgraphScheduleEntry)se).getSubgraphSchedule(sfg), lug);
 				break;
 			case SUBSCHEDULE:
-				buildFromSchedule(sfg, ((SubScheduleEntry)se).getSchedule(), lug);
+				buildFromSchedule(sfg, ((com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry)se).getSchedule(), lug);
 				break;
 			case VARIABLE_BLOCK:
 				buildFromSchedule(sfg, ((BlockScheduleEntry)se).toNodeEntries(), lug);

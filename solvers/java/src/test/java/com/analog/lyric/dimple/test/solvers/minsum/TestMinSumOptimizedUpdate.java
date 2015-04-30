@@ -358,7 +358,7 @@ public class TestMinSumOptimizedUpdate extends DimpleTestBase
 	{
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new MinSumSolver());
-		fg.setScheduler(new FloodingScheduler());
+		fg.setOption(BPOptions.scheduler, new FloodingScheduler());
 		@SuppressWarnings("unused")
 		Graph2 g = new Graph2(fg, rnd);
 		runSolver(fg, sparsityControl, damping, useMultithreading);

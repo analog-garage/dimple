@@ -34,6 +34,7 @@ import com.analog.lyric.util.misc.Internal;
  * @author jking
  * @category internal
  */
+@SuppressWarnings("deprecation")
 @Internal
 public final class ScheduleVisitor
 {
