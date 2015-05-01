@@ -66,6 +66,7 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.VariableBlock;
 
 
 /**
@@ -205,6 +206,16 @@ public class ModelSyntacticSugar
 	 */
 	
 	/**
+	 * Adds a new variable block containing the specified variables.
+	 * @since 0.08
+	 */
+	@SafeVarargs
+	public static VariableBlock block(Variable ... vars)
+	{
+		return graph().addVariableBlock(vars);
+	}
+	
+	/**
 	 * Adds variable as boundary variable to current {@link #graph}.
 	 * @param var
 	 * @return {@code var}
@@ -223,6 +234,16 @@ public class ModelSyntacticSugar
 	public static Discrete discrete(String name, DiscreteDomain domain)
 	{
 		return nameAndAdd(name, new Discrete(domain));
+	}
+	
+	public static Discrete[] discretes(String namePrefix, DiscreteDomain domain, int n)
+	{
+		final Discrete[] vars = new Discrete[n];
+		for (int i = 0; i < n; ++i)
+		{
+			vars[i] = discrete(namePrefix + i, domain);
+		}
+		return vars;
 	}
 	
 	public static Real fixed(String name, double value)

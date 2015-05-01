@@ -72,6 +72,7 @@ public class DimpleRandom extends RandomAdaptor
 	public DimpleRandom()
 	{
 		this(new org.apache.commons.math3.random.MersenneTwister());
+		setSeed(nextLong());
 	}
 
 	/*----------------
@@ -166,6 +167,11 @@ public class DimpleRandom extends RandomAdaptor
 			return n;
 		else
 			return _randBinomial.nextInt(n, p);
+	}
+	
+	public boolean nextBoolean(double p)
+	{
+		return nextBernoulli(p) == 1;
 	}
 	
 	/**
