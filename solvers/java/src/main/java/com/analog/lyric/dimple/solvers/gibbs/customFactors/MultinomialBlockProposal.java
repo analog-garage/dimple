@@ -20,12 +20,13 @@ import static java.util.Objects.*;
 
 import java.util.Arrays;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.BlockProposal;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IBlockProposalKernel;
 import com.analog.lyric.math.DimpleRandomGenerator;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * 
@@ -153,8 +154,11 @@ public class MultinomialBlockProposal implements IBlockProposalKernel
 		return new BlockProposal(newValue, proposalForwardEnergy, proposalReverseEnergy);
 	}
 	
+	@Deprecated
 	@Override
 	public void setParameters(Object... parameters) {}
+	
+	@Deprecated
 	@Override
 	public @Nullable Object[] getParameters() {return null;}
 	

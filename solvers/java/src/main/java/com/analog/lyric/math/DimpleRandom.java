@@ -16,6 +16,8 @@
 
 package com.analog.lyric.math;
 
+import java.util.Random;
+
 import net.jcip.annotations.NotThreadSafe;
 
 import org.apache.commons.math3.random.RandomAdaptor;
@@ -25,7 +27,8 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import cern.jet.random.engine.RandomEngine;
 
 /**
- * 
+ * Extended implementation of {@link Random} for use in Dimple
+ * <p>
  * @since 0.08
  * @author Christopher Barber
  */
@@ -69,6 +72,11 @@ public class DimpleRandom extends RandomAdaptor
 		this(new org.apache.commons.math3.random.MersenneTwister(seed), seed);
 	}
 	
+	/**
+	 * Construct with randomly generated seed.
+	 * 
+	 * @since 0.08
+	 */
 	public DimpleRandom()
 	{
 		this(new org.apache.commons.math3.random.MersenneTwister());
@@ -113,6 +121,12 @@ public class DimpleRandom extends RandomAdaptor
 	 * DimpleRandom methods
 	 */
 	
+	/**
+	 * Returns seed used to initialize random generator.
+	 * <p>
+	 * Returns seed set by one of the {@link #setSeed} methods or randomly generated in constructor.
+	 * @since 0.08
+	 */
 	public long getSeed()
 	{
 		return _seed;
@@ -140,13 +154,17 @@ public class DimpleRandom extends RandomAdaptor
 	/**
 	 * Returns sample from bernoulli distribution with parameter p set to .5.
 	 * @since 0.08
-	 * @see #nextBeta(double, double)
+	 * @see #nextBernoulli(double)
 	 */
 	public int nextBernoulli()
 	{
 		return _randBinomial.nextInt();
 	}
 	
+	/**
+	 * Returns sample from bernoulli distribution with given probability of drawing 1.
+	 * @since 0.08
+	 */
 	public int nextBernoulli(double p)
 	{
 		return nextBinomial(1, p);
@@ -169,6 +187,10 @@ public class DimpleRandom extends RandomAdaptor
 			return _randBinomial.nextInt(n, p);
 	}
 	
+	/**
+	 * Returns boolean with given probability {@code p} of being {@code true}.
+	 * @since 0.08
+	 */
 	public boolean nextBoolean(double p)
 	{
 		return nextBernoulli(p) == 1;

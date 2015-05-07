@@ -28,6 +28,7 @@ import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.options.DimpleOptionRegistry;
+import com.analog.lyric.dimple.schedulers.IScheduler;
 import com.analog.lyric.options.IOption;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.Option;
@@ -46,8 +47,15 @@ public abstract class POptionHolder extends PObject
 		return size() > 0 ? getOptionHolder(0).getEnvironment() : null;
 	}
 	
+	/**
+	 * Return ith delegate option holder in vector.
+	 * @param i a non-negative integer less than {@link #size()}.
+	 */
 	public abstract DimpleOptionHolder getOptionHolder(int i);
 	
+	/**
+	 * Number of instances of underlying delegate objects in vector.
+	 */
 	public abstract int size();
 
 	public void clearOptions()
@@ -235,6 +243,10 @@ public abstract class POptionHolder extends PObject
 		if (value instanceof Domain)
 		{
 			return PHelpers.wrapDomain((Domain)value);
+		}
+		else if (value instanceof IScheduler)
+		{
+			return new PScheduler((IScheduler)value);
 		}
 		
 		return value;

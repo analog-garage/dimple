@@ -18,8 +18,11 @@ package com.analog.lyric.dimple.solvers.core.proposalKernels;
 
 import com.analog.lyric.dimple.model.values.RealValue;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHSampler;
 
 /**
+ * Block variable sample proposal for use by {@link BlockMHSampler}
+ * <p>
  * @since 0.06
  * @author jeffb
  */
