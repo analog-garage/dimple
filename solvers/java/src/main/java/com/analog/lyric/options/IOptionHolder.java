@@ -22,6 +22,7 @@ import java.util.Collection;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ReleasableIterator;
+import com.analog.lyric.util.misc.Matlab;
 
 /**
  * Interface for object that can hold option values.
@@ -93,6 +94,7 @@ public interface IOptionHolder
 	 * @param key is a non-null option key.
 	 * @since 0.07
 	 */
+	@Matlab
 	@Nullable
 	public <T extends Serializable> T getOption(IOptionKey<T> key);
 	
@@ -129,6 +131,7 @@ public interface IOptionHolder
 	 * @throws UnsupportedOperationException if implementation does not support local option storage.
 	 * @throws IllegalArgumentException if implementation does not support local option storage for given key.
 	 */
+	@Matlab
 	public <T extends Serializable> void setOption(IOptionKey<T> key, T value);
 	
 	/**

@@ -38,6 +38,7 @@ import com.analog.lyric.dimple.solvers.sumproduct.STableFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscreteEdge;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductTableFactor;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.util.misc.Matlab;
 
 /**
  * Solver-specific factor graph for Particle BP solver.
@@ -192,6 +193,7 @@ public class ParticleBPSolverGraph extends BPSolverGraph<ISolverFactor, IParticl
 	
 
 	// Set/get the current temperature for all variables in the graph (for tempering)
+	@Matlab
 	public void setTemperature(double T)
 	{
 		_temperature = T;
@@ -216,6 +218,8 @@ public class ParticleBPSolverGraph extends BPSolverGraph<ISolverFactor, IParticl
 		
 		// TODO: discrete factors could have temperatures too
 	}
+	
+	@Matlab
 	public double getTemperature() {return _temperature;}
 	
 	// Sets the random seed for the Particle BP solver.  This allows runs of the solver to be repeatable.

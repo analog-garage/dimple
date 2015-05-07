@@ -97,6 +97,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.util.misc.Matlab;
 
 /**
  * Solver-specific factor graph for Gibbs solver.
@@ -480,6 +481,7 @@ public class GibbsSolverGraph
 	 * <p>
 	 * This invokes {@link #burnIn(int)} with value zero.
 	 */
+	@Matlab
 	public final void burnIn()
 	{
 		burnIn(0);
@@ -528,6 +530,7 @@ public class GibbsSolverGraph
 	 * <p>
 	 * @param numSamples is a positive number indicating the number of samples to generate.
 	 */
+	@Matlab
 	public void sample(int numSamples)
 	{
 		for (int sample = 0; sample < numSamples; sample++)
@@ -652,6 +655,7 @@ public class GibbsSolverGraph
 	/**
 	 * @deprecated use {@link #getSampleScore()} instead.
 	 */
+	@Matlab
 	@Deprecated
 	@SuppressWarnings("null")
 	public double getTotalPotential()
@@ -731,6 +735,7 @@ public class GibbsSolverGraph
 	/**
 	 * If the score had been saved, return the array of score values, otherwise null.
 	 */
+	@Matlab
 	public final @Nullable double[] getAllScores()
 	{
 		final DoubleArrayList scoreArray = _scoreArray;
@@ -747,6 +752,7 @@ public class GibbsSolverGraph
 	 * @return rejection rate
 	 * @since 0.07
 	 */
+	@Matlab
 	public final double getRejectionRate()
 	{
 		long updateCount = 0;
@@ -774,6 +780,7 @@ public class GibbsSolverGraph
 	 * Clear the rejection rate statistics
 	 * @since 0.07
 	 */
+	@Matlab
 	public final void resetRejectionRateStats()
 	{
 		// Reset the rejection statistics for all variables
@@ -789,6 +796,7 @@ public class GibbsSolverGraph
 	
 	
 	// Set/get the current temperature for all variables in the graph (for tempering)
+	@Matlab
 	@SuppressWarnings("null")
 	public void setTemperature(double T)
 	{
@@ -797,6 +805,8 @@ public class GibbsSolverGraph
 		for (Variable v : _model.getVariables())
 			getSolverVariable(v).setBeta(beta);
 	}
+	
+	@Matlab
 	public double getTemperature() {return _temperature;}
 	
 	// Sets the random seed for the Gibbs solver.  This allows runs of the solver to be repeatable.

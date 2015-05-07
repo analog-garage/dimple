@@ -45,12 +45,13 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
+import com.analog.lyric.util.misc.Matlab;
 
 // TODO: how many of these functions are intended to be invoked from MATLAB? And how many don't need to be public?
 
 public class PHelpers
 {
-	
+	@Matlab
 	public static Variable [] convertToVariableArray(Object [] vlVectors)
 	{
 		ArrayList<Variable> al = new ArrayList<Variable>();

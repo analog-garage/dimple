@@ -67,6 +67,7 @@ import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.util.misc.Internal;
+import com.analog.lyric.util.misc.Matlab;
 import com.google.common.primitives.Doubles;
 
 /*
@@ -637,6 +638,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		return 0d;
 	}
 	
+	@Matlab
 	public final double[] getSampleMean()
 	{
 		if (_sampleSum != null)
@@ -652,6 +654,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		}
 	}
 	
+	@Matlab
 	public final double[][] getSampleCovariance()
 	{
 		if (_sampleSum != null)
@@ -874,17 +877,19 @@ public class GibbsRealJoint extends SRealJointVariableBase
 			neighbors.update(oldValue);
 	}
 
-
+	@Matlab
 	public final double[] getCurrentSample()
 	{
 		return _currentSample.getValue();
 	}
 
+	@Matlab
 	public final double[] getBestSample()
 	{
 		return _bestSampleValue;
 	}
 
+	@Matlab
 	@Override
 	public final double[][] getAllSamples()
 	{
@@ -1061,6 +1066,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	 * @deprecated Will be removed in future release. Instead set sampler by setting
 	 * {@link GibbsOptions#realSampler} option using {@link #setOption}.
 	 */
+	@Matlab
 	@Deprecated
 	public final void setSampler(String samplerName)
 	{
@@ -1068,6 +1074,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		_samplerSpecificallySpecified = true;
 	}
 	
+	@Matlab
 	@Override
 	public final @Nullable ISampler getSampler()
 	{
@@ -1093,6 +1100,8 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		else
 			return null;
 	}
+	
+	@Matlab
 	public final String getSamplerName()
 	{
 		ISampler sampler = getSampler();
@@ -1102,12 +1111,14 @@ public class GibbsRealJoint extends SRealJointVariableBase
 			return "";
 	}
 
+	@Matlab
 	public final void setInitialSampleValue(double[] initialSampleValue)
 	{
 		_initialSampleValue = initialSampleValue;
 		_initialSampleValueSet = true;
 	}
 
+	@Matlab
 	public final double[] getInitialSampleValue()
 	{
 		return _initialSampleValue;

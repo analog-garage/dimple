@@ -35,7 +35,7 @@ import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
-import com.analog.lyric.util.misc.Internal;
+import com.analog.lyric.util.misc.Matlab;
 
 /**
  * Solver table factor for Gibbs solver.
@@ -182,8 +182,8 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 		return factorTable.getEnergyForValues(_currentSamples);
 	}
 	
+	@Matlab
 	@Deprecated
-	@Internal
 	public double getPotential(int[] inputs)
 	{
 		return getFactorTable().getEnergyForIndices(inputs);

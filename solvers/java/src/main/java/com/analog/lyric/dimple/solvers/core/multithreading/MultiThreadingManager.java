@@ -29,6 +29,7 @@ import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraph;
 import com.analog.lyric.dimple.solvers.core.multithreading.phasealgorithm.PhaseMultithreadingAlgorithm;
 import com.analog.lyric.dimple.solvers.core.multithreading.singlequeuealgorithm.SingleQueueMutlithreadingAlgorithm;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+import com.analog.lyric.util.misc.Matlab;
 
 /*
  * The MultiThreading Manager handles the collection of multithreading algorithms
@@ -70,16 +71,19 @@ public class MultiThreadingManager
 			return service;
 	}
 	
+	@Matlab
 	public MultithreadingMode [] getModes()
 	{
 		return MultithreadingMode.values();
 	}
 	
+	@Matlab
 	public void setMode(String mode)
 	{
 		setMode(MultithreadingMode.valueOf(mode));
 	}
 	
+	@Matlab
 	public void setMode(MultithreadingMode mode)
 	{
 		_whichAlg = mode;
@@ -98,6 +102,7 @@ public class MultiThreadingManager
 	/*
 	 * Create the threads in the thread pool.
 	 */
+	@Matlab
 	public void setNumWorkers(int numWorkers)
 	{
 		if (numWorkers < 1)
@@ -106,12 +111,13 @@ public class MultiThreadingManager
 		_numWorkers = numWorkers;
 	}
 	
+	@Matlab
 	public void setNumWorkersToDefault()
 	{
 		_numWorkers = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
 	}
 	
-	
+	@Matlab
 	public int getNumWorkers()
 	{
 		return _numWorkers;

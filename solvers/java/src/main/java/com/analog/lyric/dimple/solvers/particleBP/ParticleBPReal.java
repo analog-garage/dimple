@@ -26,8 +26,8 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.EdgeState;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -42,6 +42,7 @@ import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.OptionDoubleList;
 import com.analog.lyric.options.OptionValidationException;
+import com.analog.lyric.util.misc.Matlab;
 
 /**
  * Solver variable for Real variables under Particle BP solver.
@@ -420,6 +421,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 	}
 
 	// Alternative belief, returned for a specified set of variable values
+	@Matlab
 	public double [] getBelief(double[] valueSet)
 	{
 		final double minLog = -100;
@@ -465,6 +467,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 		return outBelief;
 	}
 
+	@Matlab
 	public double[] getParticleValues()
 	{
 		double[] particles = new double[_numParticles];
@@ -519,6 +522,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 	 * @deprecated instead set {@link NormalProposalKernel#standardDeviation} option using
 	 * {@link #setOption} method.
 	 */
+	@Matlab
 	@Deprecated
 	public void setProposalStandardDeviation(double stdDev)
 	{
@@ -529,6 +533,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 	 * @deprecated instead lookup {@link NormalProposalKernel#standardDeviation} option using
 	 * {@link #getOptionOrDefault} method.
 	 */
+	@Matlab
 	@Deprecated
 	public double getProposalStandardDeviation()
 	{

@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.ISamplerClient;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Internal;
+import com.analog.lyric.util.misc.Matlab;
 
 public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable, ISamplerClient
 {
@@ -59,6 +60,7 @@ public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable,
 	 * Returns all saved samples in an array of the appropriate type.
 	 * @since 0.07
 	 */
+	@Matlab
 	public Object getAllSamples();
 	
 	/**
@@ -66,6 +68,7 @@ public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable,
 	 * 
 	 * @since 0.06
 	 */
+	@Matlab
 	public @Nullable ISampler getSampler();
 	
 	/**
@@ -85,6 +88,7 @@ public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable,
 	 * @return rejection rate
 	 * @since 0.07
 	 */
+	@Matlab
 	public double getRejectionRate();
 	
 	/**
@@ -92,12 +96,14 @@ public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable,
 	 * @return average number of scores computed per update
 	 * @since 0.07
 	 */
+	@Matlab
 	public double getNumScoresPerUpdate();
 	
 	/**
 	 * Clear the rejection rate statistics
 	 * @since 0.07
 	 */
+	@Matlab
 	public void resetRejectionRateStats();
 	
 	// Internal methods

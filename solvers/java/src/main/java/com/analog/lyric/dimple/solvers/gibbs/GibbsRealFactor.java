@@ -31,6 +31,7 @@ import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
+import com.analog.lyric.util.misc.Matlab;
 
 /**
  * Real solver factor under Gibbs solver.
@@ -154,6 +155,7 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 			return Double.POSITIVE_INFINITY;
 	}
 	
+	@Matlab
 	@Override
 	public double getPotential(Object[] inputs)
 	{

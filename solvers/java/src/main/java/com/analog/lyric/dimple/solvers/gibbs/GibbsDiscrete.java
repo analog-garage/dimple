@@ -51,6 +51,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IMCMCSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.Internal;
+import com.analog.lyric.util.misc.Matlab;
 import com.google.common.primitives.Doubles;
 
 
@@ -705,24 +706,31 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		_currentSample.setIndexForce(index);
 	}
     
+	@Matlab
     public final Object getCurrentSample()
     {
     	return _currentSample.getObject();
     }
+	
+	@Matlab
     public final int getCurrentSampleIndex()
     {
     	return _currentSample.getIndex();
     }
     
+    @Matlab
     public final Object getBestSample()
     {
     	return _model.getDiscreteDomain().getElement(_bestSampleIndex);
     }
+    
+    @Matlab
     public final int getBestSampleIndex()
     {
     	return _bestSampleIndex;
     }
 
+    @Matlab
     @Override
 	public final Object[] getAllSamples()
     {
@@ -739,6 +747,8 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
     		retval[i] = domain.getElement(sampleIndexArray.get(i));
     	return retval;
     }
+    
+    @Matlab
     public final int[] getAllSampleIndices()
     {
     	final IntArrayList sampleIndexArray = _sampleIndexArray;
@@ -808,21 +818,27 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		_holdSampleValue = false;
 	}
 	
+	@Matlab
 	public final void setInitialSampleValue(Object initialSampleValue)
 	{
 		_initialSampleValue = Value.create(_model.getDomain(), initialSampleValue);
 	}
+	
+	@Matlab
 	public final void setInitialSampleIndex(int initialSampleIndex)
 	{
 		DiscreteValue val = _initialSampleValue = Value.create(_model.getDomain());
 		val.setIndex(initialSampleIndex);
 	}
 
+	@Matlab
 	public final @Nullable Object getInitialSampleValue()
 	{
 		final DiscreteValue val = _initialSampleValue;
 		return val != null ? val.getObject() : null;
 	}
+	
+	@Matlab
 	public final int getInitialSampleIndex()
 	{
 		final DiscreteValue val = _initialSampleValue;
@@ -880,6 +896,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	 * @deprecated Will be removed in future release. Instead set sampler by setting
 	 * {@link GibbsOptions#discreteSampler} option using {@link #setOption}.
 	 */
+    @Matlab
     @Deprecated
    public final void setSampler(String samplerName)
     {
@@ -888,6 +905,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
     	_samplerSpecificallySpecified = true;
     }
     
+    @Matlab
     @Override
     public final ISampler getSampler()
     {
@@ -906,6 +924,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
     	return sampler;
     }
 	
+    @Matlab
 	public final String getSamplerName()
 	{
 		final ISampler sampler = getSampler();

@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.gibbs;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+import com.analog.lyric.util.misc.Matlab;
 
 /**
  * @deprecated Use {@link GibbsRealFactor} instead.
@@ -31,5 +32,6 @@ public abstract class SRealFactor extends SFactorBase
 		super(factor, parent);
 	}
 
+	@Matlab
 	public abstract double getPotential(Object[] inputs);
 }

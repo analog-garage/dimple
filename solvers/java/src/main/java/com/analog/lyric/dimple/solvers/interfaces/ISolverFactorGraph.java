@@ -309,7 +309,11 @@ public interface ISolverFactorGraph	extends ISolverNode
 	public void continueSolve();
 	public void startSolveOneStep();
 	public void startContinueSolve();
+	
+	@Matlab
 	public void iterate();
+	
+	@Matlab
 	public void iterate(int numIters);
 	public boolean isSolverRunning();
 	public void interruptSolver();

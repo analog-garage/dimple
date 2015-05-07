@@ -69,6 +69,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariableBlock;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.util.misc.Internal;
+import com.analog.lyric.util.misc.Matlab;
 import com.google.common.collect.UnmodifiableIterator;
 
 /**
@@ -933,7 +934,7 @@ public abstract class SFactorGraphBase
 		return _useMultithreading;
 	}
 	
-	
+	@Matlab
 	public MultiThreadingManager getMultithreadingManager()
 	{
 		final MultiThreadingManager multithreader = _multithreader;

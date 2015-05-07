@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.solvers.gibbs;
 
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.Internal;
+import com.analog.lyric.util.misc.Matlab;
 
 /**
  * @since 0.05
@@ -27,6 +28,7 @@ public interface ISolverNodeGibbs extends ISolverNode
 	@Override
 	public ISolverNodeGibbs getSibling(int edge);
 	
+	@Matlab
 	public double getPotential();
 	
 	/**

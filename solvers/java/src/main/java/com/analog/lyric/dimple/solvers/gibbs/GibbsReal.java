@@ -63,6 +63,7 @@ import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.util.misc.Internal;
+import com.analog.lyric.util.misc.Matlab;
 import com.google.common.primitives.Doubles;
 
 /*
@@ -532,6 +533,7 @@ public class GibbsReal extends SRealVariableBase
 		return 0d;
 	}
 	
+	@Matlab
 	public final double getSampleMean()
 	{
 		return _sampleSum / _sampleCount;
@@ -672,16 +674,19 @@ public class GibbsReal extends SRealVariableBase
 		_currentSample.setDoubleForce(value);
 	}
 
+	@Matlab
 	public final double getCurrentSample()
 	{
 		return _currentSample.getDouble();
 	}
 
+	@Matlab
 	public final double getBestSample()
 	{
 		return _bestSampleValue;
 	}
 
+	@Matlab
 	@Override
 	public final double[] getAllSamples()
 	{
@@ -870,6 +875,7 @@ public class GibbsReal extends SRealVariableBase
 	 * @deprecated Will be removed in future release. Instead set sampler by setting
 	 * {@link GibbsOptions#realSampler} option using {@link #setOption}.
 	 */
+	@Matlab
 	@Deprecated
 	public final void setSampler(String samplerName)
 	{
@@ -880,6 +886,7 @@ public class GibbsReal extends SRealVariableBase
 		sampler.initializeFromVariable(this);
 	}
 	
+	@Matlab
 	@Override
 	public final @Nullable ISampler getSampler()
 	{
@@ -902,6 +909,8 @@ public class GibbsReal extends SRealVariableBase
 			}
 		}
 	}
+	
+	@Matlab
 	public final String getSamplerName()
 	{
 		ISampler sampler = getSampler();
@@ -911,12 +920,14 @@ public class GibbsReal extends SRealVariableBase
 			return "";
 	}
 
+	@Matlab
 	public final void setInitialSampleValue(double initialSampleValue)
 	{
 		_initialSampleValue = initialSampleValue;
 		_initialSampleValueSet = true;
 	}
 
+	@Matlab
 	public final double getInitialSampleValue()
 	{
 		return _initialSampleValue;
