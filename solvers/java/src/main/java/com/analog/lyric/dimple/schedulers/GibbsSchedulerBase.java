@@ -21,8 +21,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.analog.lyric.dimple.model.variables.VariableBlock;
 import com.analog.lyric.dimple.schedulers.schedule.IGibbsSchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.IBlockUpdater;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
@@ -84,7 +86,7 @@ public abstract class GibbsSchedulerBase extends SchedulerBase implements IGibbs
 	 */
 	
 	@Override
-	public List<SchedulerOptionKey> applicableSchedulerOptions()
+	public List<? extends SchedulerOptionKey> applicableSchedulerOptions()
 	{
 		return Collections.singletonList(GibbsOptions.scheduler);
 	}
@@ -93,10 +95,17 @@ public abstract class GibbsSchedulerBase extends SchedulerBase implements IGibbs
 	 * IGibbsScheduler methods
 	 */
 	
+	@Deprecated
 	@Override
 	public void addBlockScheduleEntry(BlockScheduleEntry blockScheduleEntry)
 	{
 		_blockEntries.add(blockScheduleEntry);
+	}
+	
+	@Override
+	public void addBlockWithReplacement(IBlockUpdater blockUpdater, VariableBlock block)
+	{
+		addBlockScheduleEntry(new BlockScheduleEntry(blockUpdater, block));
 	}
 	
 	/*-------------------

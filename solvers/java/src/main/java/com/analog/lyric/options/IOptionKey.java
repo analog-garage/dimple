@@ -138,7 +138,7 @@ public interface IOptionKey<T extends Serializable> extends Serializable
 	/**
 	 * The type of the option's value, which should be the same as the type parameter {@code T}.
 	 */
-	public abstract Class<T> type();
+	public abstract Class<? extends T> type();
 	
 	/**
 	 * The default value of the option if not set. This must not be null!

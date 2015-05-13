@@ -19,6 +19,8 @@ package com.analog.lyric.dimple.test.solvers.gibbs;
 import java.util.Objects;
 import java.util.Random;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
@@ -27,7 +29,6 @@ import com.analog.lyric.dimple.solvers.core.proposalKernels.BlockProposal;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IBlockProposalKernel;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.math.Utilities;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * 
@@ -86,11 +87,13 @@ public class TrivialNonuniformBlockProposer implements IBlockProposalKernel
 		return new BlockProposal(newValue, proposalForwardEnergy, proposalReverseEnergy);
 	}
 
+	@Deprecated
 	@Override
 	public void setParameters(Object... parameters)
 	{
 	}
 
+	@Deprecated
 	@Override
 	public @Nullable Object[] getParameters()
 	{

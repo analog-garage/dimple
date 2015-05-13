@@ -328,7 +328,7 @@ public class TestOptionKey
 
 	<T extends Serializable> void assertOptionInvariants(IOptionKey<T> key)
 	{
-		Class<T> type = key.type();
+		Class<? extends T> type = key.type();
 		Class<?> declaringClass = key.getDeclaringClass();
 		assertEquals(key.local(), key.lookupMethod()== IOptionKey.Lookup.LOCAL);
 		assertEquals(key.local(), key.name().startsWith("LOCAL_"));

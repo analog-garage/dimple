@@ -14,7 +14,7 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.test;
+package com.analog.lyric.dimple.test.schedulers;
 
 import static java.util.Objects.*;
 import static org.junit.Assert.*;
@@ -31,6 +31,7 @@ import com.analog.lyric.dimple.schedulers.RandomWithReplacementScheduler;
 import com.analog.lyric.dimple.schedulers.RandomWithoutReplacementScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.math.DimpleRandomGenerator;
 
 

@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.schedulers;
 
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
+import com.analog.lyric.dimple.matlabproxy.PScheduler;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
@@ -81,6 +83,44 @@ public abstract class SchedulerBase implements IScheduler
 	 */
 	
 	/**
+	 * Instantiate a scheduler instance.
+	 * <p>
+	 * @param env is the {@link DimpleEnvironment} to use for looking up registered
+	 * {@linkplain DimpleEnvironment#schedulers schedulers}.
+	 * @param value is one of the following:
+	 * <ul>
+	 * <li>{@link IScheduler}
+	 * <li>{@link PScheduler} MATLAB proxy
+	 * <li>Java {@link Class} of concrete scheduler implementation.
+	 * <li>String name of scheduler class that will be looked up in registry.
+	 * </ul>
+	 * @since 0.08
+	 */
+	public static IScheduler instantiate(DimpleEnvironment env, Object value)
+	{
+		if (value instanceof IScheduler)
+		{
+			return (IScheduler)value;
+		}
+		else if (value instanceof PScheduler) // generalize this to avoid explicit MATLAB proxy dependency??
+		{
+			return ((PScheduler)value).getDelegate();
+		}
+		
+		if (value instanceof String)
+		{
+			value = env.schedulers().getClass((String)value);
+		}
+
+		if (value instanceof Class<?>)
+		{
+			value = instantiateClass(validateClass((Class<?>)value));
+		}
+
+		return (IScheduler)value;
+	}
+	
+	/**
 	 * Instantiate a scheduler instance given its class.
 	 * <p>
 	 * 
@@ -89,7 +129,7 @@ public abstract class SchedulerBase implements IScheduler
 	 * the first instance in the enumeration will be returned.
 	 * @since 0.08
 	 */
-	public static IScheduler instantiateClass(Class<? extends IScheduler> schedulerClass)
+	public static <Scheduler extends IScheduler> Scheduler instantiateClass(Class<Scheduler> schedulerClass)
 	{
 		if (schedulerClass.isEnum())
 		{

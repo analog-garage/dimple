@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -34,7 +35,6 @@ import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableBlock;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
-import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ScheduleValidationException;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
@@ -42,10 +42,11 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.IBlockUpdater;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.SubgraphScheduleEntry;
-import com.analog.lyric.dimple.solvers.core.proposalKernels.IBlockProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHSampler;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.util.misc.Internal;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 
 /**
  * A schedule for producing a fixed custom schedule for a given graph.
@@ -53,7 +54,7 @@ import com.analog.lyric.util.misc.Internal;
  * @since 0.08
  * @author Christopher Barber
  */
-public class CustomScheduler extends SchedulerBase
+public class CustomScheduler extends SchedulerBase implements IGibbsScheduler
 {
 	private static final long serialVersionUID = 1L;
 	
@@ -163,10 +164,16 @@ public class CustomScheduler extends SchedulerBase
 	 * {@linkplain #getGraph graph} for which this scheduler was constructed.
 	 */
 	@Override
-	public ISchedule createSchedule(FactorGraph graph)
+	public FixedSchedule createSchedule(FactorGraph graph)
 	{
 		validateForGraph(graph);
 		return new FixedSchedule(this, graph, _entries);
+	}
+	
+	@Override
+	public FixedSchedule createSchedule(ISolverFactorGraph solverGraph)
+	{
+		return createSchedule(solverGraph.getModelObject());
 	}
 
 	@Override
@@ -190,9 +197,49 @@ public class CustomScheduler extends SchedulerBase
 	}
 	
 	/*-------------------------
+	 * IGibbsScheduler methods
+	 */
+	
+	@Deprecated
+	@Override
+	public void addBlockScheduleEntry(BlockScheduleEntry blockScheduleEntry)
+	{
+		final VariableBlock block = blockScheduleEntry.getBlock();
+		Iterables.removeIf(_entries, new Predicate<IScheduleEntry>() {
+			@NonNullByDefault(false)
+			@Override
+			public boolean apply(IScheduleEntry entry)
+			{
+				switch (entry.type())
+				{
+				case NODE:
+					return block.contains(((NodeScheduleEntry)entry).getNode());
+					
+				case EDGE:
+					return block.contains(((EdgeScheduleEntry)entry).getNode());
+					
+				default:
+					return false;
+				}
+			}
+		});
+		_entries.add(blockScheduleEntry);
+	}
+	
+	@Override
+	public void addBlockWithReplacement(IBlockUpdater blockUpdater, VariableBlock block)
+	{
+		addBlockScheduleEntry(new BlockScheduleEntry(blockUpdater,  block));
+	}
+	
+	/*-------------------------
 	 * CustomScheduler methods
 	 */
 
+	/**
+	 * Adds all entries to the custom schedule in order.
+	 * @since 0.08
+	 */
 	public void addAll(Iterable<? extends IScheduleEntry> entries)
 	{
 		if (entries instanceof Collection)
@@ -210,19 +257,9 @@ public class CustomScheduler extends SchedulerBase
 		addEntry(new BlockScheduleEntry(blockUpdater, block));
 	}
 	
-	public void addBlock(IBlockProposalKernel proposalKernel, VariableBlock block)
-	{
-		addEntry(new BlockScheduleEntry(new BlockMHSampler(proposalKernel), block));
-	}
-	
 	public void addBlock(IBlockUpdater blockUpdater, Variable ... variables)
 	{
 		addBlock(blockUpdater, _graph.addVariableBlock(variables));
-	}
-	
-	public void addBlock(IBlockProposalKernel proposalKernel, Variable ... variables)
-	{
-		addBlock(proposalKernel, _graph.addVariableBlock(variables));
 	}
 	
 	public void addEdge(Port edge)
@@ -235,9 +272,32 @@ public class CustomScheduler extends SchedulerBase
 		addEntry(new EdgeScheduleEntry(node, siblingNumber));
 	}
 	
+	/**
+	 * Adds edge update from {@code source} to {@code target} nodes.
+	 * <p>
+	 * If there is more than one edge between {@code source} and {@code target}, then
+	 * this will produce an update for the lowest numbered edge from the perspective of
+	 * {@code source}.
+	 * <p>
+	 * @param source either a variable or factor
+	 * @param target a factor or variable that is connected to {@code source}.
+	 * @since 0.08
+	 * @see #addEdge(INode, int)
+	 */
+	public void addEdge(INode source, INode target)
+	{
+		addEdge(source, source.findSibling(target));
+	}
+	
 	public void addFactor(Factor factor)
 	{
 		addEntry(new NodeScheduleEntry(factor));
+	}
+	
+	public void addFactors(Factor ... factors)
+	{
+		for (Factor factor : factors)
+			addFactor(factor);
 	}
 	
 	public void addNode(INode node)
@@ -245,6 +305,14 @@ public class CustomScheduler extends SchedulerBase
 		addEntry(node instanceof FactorGraph ?
 			new SubgraphScheduleEntry((FactorGraph)node) :
 				new NodeScheduleEntry(node));
+	}
+	
+	public void addNodes(INode ... nodes)
+	{
+		for (INode node : nodes)
+		{
+			addNode(node);
+		}
 	}
 	
 	public void addVariable(Variable var)
@@ -293,6 +361,14 @@ public class CustomScheduler extends SchedulerBase
 		return _schedulerKey;
 	}
 	
+	/**
+	 * The graph for which the scheduler was constructed.
+	 * <p>
+	 * The scheduler will not be able to be used on graphs other than this one and any entries
+	 * added to the custom schedule must be for objects that are in this graph or its subgraphs.
+	 * @since 0.08
+	 * @see #CustomScheduler(FactorGraph, SchedulerOptionKey)
+	 */
 	public FactorGraph getGraph()
 	{
 		return _graph;

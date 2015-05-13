@@ -1738,20 +1738,15 @@ public class FactorGraph extends FactorBase
 		return sgraph != null ? sgraph.getSchedule() : EmptySchedule.INSTANCE;
 	}
 
-	// This is the method to use when specifically setting the scheduler, overriding any default scheduler that would otherwise be used
-	// Setting the scheduler to null removes any previously set scheduler
 	/**
-	 * @deprecated instead of using this method it is preferable to set the appropriate scheduler
-	 * option (e.g. {@link com.analog.lyric.dimple.options.BPOptions#scheduler BPOptions.scheduler} or
-	 * {@link com.analog.lyric.dimple.solvers.gibbs.GibbsOptions#scheduler GibbsOptions.scheduler}).
-	 * <p>
+	 * Sets scheduler options applicable to input scheduler.
+	 * 
 	 * @param scheduler if non-null, will be set as an option value for all of the option keys
 	 * it lists in its {@linkplain IScheduler#applicableSchedulerOptions() applicableSchedulerOptions()}
 	 * method. If null and graph has a {@link #getSolver() current solver}, its
 	 * {@linkplain ISolverFactorGraph#getSchedulerKey() scheduler key} will be unset, otherwise
 	 * no action will be taken.
 	 */
-	@Deprecated
 	public void setScheduler(@Nullable IScheduler scheduler)
 	{
 		if (scheduler != null)

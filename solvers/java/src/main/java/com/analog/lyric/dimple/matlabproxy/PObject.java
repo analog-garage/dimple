@@ -92,6 +92,18 @@ public abstract class PObject
 	public boolean isFactorTable() { return false; }
 	
 	/**
+	 * True if object is a {@link PScheduler}
+	 * @since 0.08
+	 */
+	public boolean isScheduler() { return false; }
+
+	/**
+	 * True if object is a {@link PVariableBlock}
+	 * @since 0.08
+	 */
+	public boolean isVariableBlock() { return false; }
+	
+	/**
 	 * True if object applies only to {@link RealJoint} variables.
 	 * Implies not {@link #isDiscrete} and not {@link #isReal}.
 	 */

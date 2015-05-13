@@ -19,12 +19,7 @@ function testProxyWrapping()
 
 assert(isempty(wrapProxyObject([])));
 
-try
-    wrapProxyObject(42);
-    assert(false);
-catch err
-    assert(all(err.message == 'not supported'));
-end
+assert(42 == wrapProxyObject(42));
 
 domain = DiscreteDomain(1:2);
 domain2 = wrapProxyObject(domain.IDomain);

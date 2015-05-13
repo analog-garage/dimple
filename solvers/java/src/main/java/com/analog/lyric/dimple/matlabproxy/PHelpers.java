@@ -54,10 +54,15 @@ public class PHelpers
 	@Matlab
 	public static Variable [] convertToVariableArray(Object [] vlVectors)
 	{
+		return convertToVariableArray(vlVectors, 0);
+	}
+	
+	public static Variable[] convertToVariableArray(Object[] vectors, int start)
+	{
 		ArrayList<Variable> al = new ArrayList<Variable>();
-		for (Object o : vlVectors)
+		for (int i = start, n = vectors.length; i < n; ++i)
 		{
-			PVariableVector vec = (PVariableVector)o;
+			PVariableVector vec = (PVariableVector)vectors[i];
 			for (Variable vb : vec.getVariableArray())
 				al.add(vb);
 		}

@@ -227,6 +227,22 @@ There are a number of options that are applicable to multiple solvers that are b
 {graph}
 {Controls how many iterations to perform when running solve(). This is not applicable to all solvers. It is currently only used by the SumProduct, MinSum and ParticleBP solvers. It only makes sense to set this to a value greater than one if the graph is not singly connected or "loopy", that is when there is more than one unique path between two or more nodes in the graph. You can tell if a graph is loopy using the FactorGraph method isForest(), which will be false if the graph is not singly connected.}
 
+\para{BPOptions.scheduler}
+
+\dimpleOption{BPOptions.scheduler}
+{scheduler}
+{DefaultScheduler}
+{graph}
+{Controls what scheduling strategy will be used for ordering edge updates. The option may either be specified as an actual scheduler object or as the name or instance of the scheduler class.}
+
+\para{BPOptions.scheduleValidator}
+
+\dimpleOption{BPOptions.scheduleValidator}
+{string}
+{AllEdgeScheduleValidator}
+{graph}
+{Specifies validation strategy for schedules. This is used to validate schedules produced by CustomScheduler. The default validator ensures that the schedule contains at least one edge entry for each direction of every edge in the graph. The NullScheduleValidator may be used to disable validation of custom schedules.}
+
 \para{BPOptions.damping}
 
 \dimpleOption{BPOptions.damping}
@@ -625,6 +641,22 @@ See description in \autoref{option:SolverOptions.maxAutomaticFactorTableSize}.
 {false}
 {graph}
 {Specifies whether to save scores for all generated samples in Gibbs. If true, then for each sample the total energy/log-likelihood a.k.a. \emph{score} of the graph will be saved. The saved scores can later be retrieved by the getAllScores() method described below.}
+
+\subpara{GibbsOptions.scheduler}
+
+\dimpleOption{GibbsOptions.scheduler}
+{scheduler}
+{GobbsDefaultScheduler}
+{graph}
+{Controls what scheduling strategy will be used for ordering variable updates. The option may either be specified as an actual scheduler object or as the name or instance of the scheduler class.}
+
+\subpara{GibbsOptions.scheduleValidator}
+
+\dimpleOption{GibbsOptions.scheduleValidator}
+{string}
+{VariablesOnlyScheduleValidator}
+{graph}
+{Specifies validation strategy for schedules. This is used to validate schedules produced by CustomScheduler. The default validator ensures that the schedule contains at least one node entry for every variable in the graph. The NullScheduleValidator may be used to disable validation of custom schedules.}
 
 \subpara{GibbsOptions.discreteSampler}
 
@@ -1123,7 +1155,7 @@ To specify a block schedule entry in a custom schedule, the schedule entry consi
 \begin{lstlisting}
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHSampler;
 ...
-fg.Schedule = {{BlockMHSampler(MyProposalKernel), a, b, c}, d, e};
+fg.Scheduler = CustomScheduler(fg, 'GibbsOptions.scheduler', {BlockMHSampler(MyProposalKernel), a, b, c}, d, e);
 \end{lstlisting}
 \fi
 
@@ -1131,11 +1163,11 @@ fg.Schedule = {{BlockMHSampler(MyProposalKernel), a, b, c}, d, e};
 To add a block schedule entry to a custom schedule, the the argument to the \texttt{add} method is a reference to a sampler object, and the subsequent entries are the variables to be included in the block.  For example:
 
 \begin{lstlisting}
-FixedSchedule s = new FixedSchedule();
-s.add(new BlockScheduleEntry(new BlockMHSampler(new MyProposalKernel()), a, b, c));
-s.add(new NodeScheduleEntry(d));
-s.add(new NodeScheduleEntry(e));
-fg.setSchedule(s);
+CustomScheduler s = new CustomScheduler(fg, GibbsOptions.scheduler);
+s.addBlock(new BlockMHSampler(new MyProposalKernel()), a, b, c));
+s.addNode(new NodeScheduleEntry(d));
+s.addNode(new NodeScheduleEntry(e));
+fg.setOption(GibbsOptions.scheduler, s);
 \end{lstlisting}
 \fi
 
@@ -1146,40 +1178,38 @@ Block schedule entries can also be used with either of the Gibbs-specific built-
 \ifmatlab
 A block schedule entry can be added when using a built-in Gibbs-specific scheduler using:
 \begin{lstlisting}
-fg.Scheduler.addBlockScheduleEntry(blockSampler, listOfVariables);
+fg.Scheduler.addBlockWithReplacement(blockSampler, block);
 \end{lstlisting}
+
+where block is either a VariableBlock or a list of variables used to define the block.
 
 The following example shows adding a block schedule entry that includes two elements of the variable x, and variable y.
 
 \begin{lstlisting}
-fg.Scheduler.addBlockScheduleEntry(BlockMHSampler(MyKernel), x(2:3), y);
+fg.Scheduler.addBlockWithReplacement(BlockMHSampler(MyKernel), x(2:3), y);
 \end{lstlisting}
 
 
 Multiple block schedule entries can be added at once using:
 \begin{lstlisting}
-fg.Scheduler.addBlockScheduleEntries({blockSampler1, listOfVariables1}, {blockSampler1, listOfVariables1}, ...);
+fg.Scheduler.addBlocksWithReplacement({blockSampler1, block1}, {blockSampler1, block2}, ...);
 \end{lstlisting}
 
 The following example shows adding a block schedule entry that includes two elements of the variable x, and variable y, and a second block that includes variables a and b.
 
 \begin{lstlisting}
-fg.Scheduler.addBlockScheduleEntries({BlockMHSampler(MyKernel1), x(2:3), y}, {BlockMHSampler(MyKernel2), a, b});
+fg.Scheduler.addBlocksWithReplacement({BlockMHSampler(MyKernel), x(2:3), y}, {BlockMHSampler(MyKernel2), a, b});
 \end{lstlisting}
 
 \fi
 
 \ifjava
-A block schedule entry can be added when using a built-in Gibbs-specific scheduler using:
+A block schedule entry can be added when using a built-in Gibbs-specific scheduler by defining a VariableBlock containing the variables and using the addBlockScheduleEntry method on the scheduler. For instance, the following example shows adding a block schedule entry that includes the variables a, b, and c:
 
 \begin{lstlisting}
-((IGibbsScheduler)fg.getScheduler()).addBlockScheduleEntry(new BlockScheduleEntry(blockSampler, listOfVariables));
-\end{lstlisting}
-
-The following example shows adding a block schedule entry that includes the variables a, b, and c.
-
-\begin{lstlisting}
-((IGibbsScheduler)fg.getScheduler()).addBlockScheduleEntry(new BlockScheduleEntry(new BlockMHSampler(new MyProposalKernel()), a, b, c));
+IGibbsScheduler scheduler = GibbsOptions.scheduler.getOrDefault(fg);
+VariableBlock block = fg.addVariableBlock(a, b, c);
+scheduler.addBlockWithReplacement(new BlockMHSampler(myKernel), block);
 \end{lstlisting}
 
 Note that to use the addBlockScheduleEntry method, the scheduler must first have been explicitly set to one of the Gibbs-specific schedulers.

@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Copyright 2014 Analog Devices, Inc.
+%   Copyright 2014-2015 Analog Devices, Inc.
 %
 %   Licensed under the Apache License, Version 2.0 (the "License");
 %   you may not use this file except in compliance with the License.
@@ -14,74 +14,117 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-classdef Scheduler
+classdef Scheduler < handle
     
-    properties(Access=private)
+    properties
+        % Underlying Java scheduler object.
+        IScheduler;
+        
+        % Graph instance associated with this Scheduler, if any.
         Graph;
     end
     
     methods(Access=public)
         
-        function obj = Scheduler(graph)
-            obj.Graph = graph;
+        function obj = Scheduler(arg1, varargin)
+            % Holds scheduler instance for a graph.
+            %
+            %   Scheduler(graph, scheduler)
+            %   Scheduler(graph)
+            %   Scheduler(scheduler)
+            %
+            % 'scheduler' argument can either be a string naming the
+            % scheduler class or a Java PScheduler instance.
+            %
+            % If graph argument is provided, then the addBlockScheduleEntry
+            % method will accept variables as arguments.
+            narginchk(1,2);
+            
+            if (nargin == 2)
+                validateattributes(arg1, {'FactorGraph'}, {'scalar'});
+                obj.Graph = arg1;
+                arg2 = varargin{2};
+                validateattributes(arg2, {'char', 'com.analog.lyric.dimple.matlabproxy.PScheduler'}, {});
+                if (ischar(arg2))
+                    modeler = getModeler;
+                    obj.IScheduler = modeler.createScheduler(arg2);
+                else
+                    obj.IScheduler = arg2;
+                end
+            else
+                validateattributes(arg1, ...
+                    {'char', 'com.analog.lyric.dimple.matlabproxy.PScheduler', 'FactorGraph'}, ...
+                    {});
+                if isa(arg1, 'com.analog.lyric.dimple.matlabproxy.PScheduler')
+                    obj.IScheduler = arg1;
+                elseif ischar(arg1)
+                    modeler = getModeler;
+                    obj.IScheduler = modeler.createScheduler(arg1);
+                elseif isa(arg1,'FactorGraph')
+                    % Deprecated syntax - grab current scheduler from graph
+                    obj.Graph = arg1;
+                    obj.IScheduler = arg1.VectorObject.getScheduler();
+                end
+            end
         end
         
         function disp(obj)
-            disp(obj.Graph.VectorObject.getScheduler().getClass().getName());
+            disp(obj.IScheduler.getDelegate().getClass().getSimpleName());
         end
         
         function addBlockScheduleEntry(obj, varargin)
-            import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
+            % Deprecated as of release 0.08.
+            %
+            % Use addBlockWithReplacement instead.
+            addBlockWithReplacement(obj, varargin{:});
+        end
+        
+        function addBlockWithReplacement(obj, arg1, varargin)
+            % Adds a block schedule entry replacing existing node and edge entries
+            if (isempty(varargin))
+                validateattributes(arg1, {'cell'}, {});
+                updater = arg1{1};
+                args = arg1(2:end);
+            else
+                updater = arg1;
+                args = varargin;
+            end
+                
+            validateattributes(updater, {'com.analog.lyric.dimple.schedulers.scheduleEntry.IBlockUpdater'}, {});
             
-            args = varargin;
+            block = [];
             if (numel(args) == 1)
-                args = args{1};
+                block = args{1};
+                validateattributes(block, {'VariableBlock'}, {});
+            else
+                cellfun(@(n) validateattributes(n, {'VariableBase'},{}), args);
+                if isa(obj.Graph, 'FactorGraph')
+                    block = obj.Graph.addVariableBlock(args{:});
+                end
             end
             
-            updater = args{1};
-            if ~isa(updater, 'com.analog.lyric.dimple.schedulers.scheduleEntry.IBlockUpdater')
-                error('First element of block schedule entry must be a block updater');
+            if (isa(block, 'VariableBase'))
+                obj.IScheduler.addBlockScheduleEntry(updater, block.VectorObject);
+            else
+                vars = cellfun(@(v) {v.VectorObject}, args);
+                obj.IScheduler.addBlockScheduleEntry(updater, vars);
             end
-            
-            scheduleElements = {};
-            for j=2:length(args)
-                nodes = num2cell(args{j}.VectorObject.getModelerNodes());
-                scheduleElements = [scheduleElements; nodes];
-            end
-            
-            javaGraph = obj.Graph.VectorObject.getModelerNode(0);
-            javaScheduler = obj.Graph.VectorObject.getScheduler();
-            javaScheduleEntry = BlockScheduleEntry(javaGraph, updater, scheduleElements);
-            javaScheduler.addBlockScheduleEntry(javaScheduleEntry);
         end
         
         function addBlockScheduleEntries(obj, varargin)
-            import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
-            
+            % Deprecated as of release 0.08.
+            %
+            % Use addBlocksWithReplacement instead.
+            addBlocksWithReplacement(obj, varargin{:});
+        end
+        
+        function addBlocksWithReplacement(obj, varargin)
             numEntries = numel(varargin);
             
-            javaGraph = obj.Graph.VectorObject.getModelerNode(0);
-            javaScheduler = obj.Graph.VectorObject.getScheduler();
-
             for i=1:numEntries
                 args = varargin{i};
-                
-                updater = args{1};
-                if ~isa(updater, 'com.analog.lyric.dimple.schedulers.scheduleEntry.IBlockUpdater')
-                    error('First element of block schedule entry must be a block updater');
-                end
-                
-                scheduleElements = {};
-                for j=2:length(args)
-                    nodes = num2cell(args{j}.VectorObject.getModelerNodes());
-                    scheduleElements = [scheduleElements; nodes];
-                end
-                
-                javaScheduleEntry = BlockScheduleEntry(javaGraph, updater, scheduleElements);
-                javaScheduler.addBlockScheduleEntry(javaScheduleEntry);
-
+                obj.addBlockScheduleEntry(args{:});
             end
-
         end
 
     end

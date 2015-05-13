@@ -249,7 +249,7 @@ In a rolled-up graph, the Input property of a variable can be set using a data s
 
 All of the Dimple solvers operate by successively performing the inference computation on each element in the graph.  In the case of BP solvers, both variable and factor nodes must be updated, and the performance of the inference can depend strongly on the order that these updates occur.  Similarly, for the Gibbs solver, while variables must be updated in an order that maintains the requirements of valid Gibbs sampling, performance may depend on the particular order chosen.
 
-The order of updates in Dimple is called a ``schedule.''  The schedule may either be determined automatically using one of Dimple's built-in ``schedulers,'' or the user may specify a custom schedule.
+The order of updates in Dimple is called a ``schedule.''  The schedule may either be determined automatically using one of Dimple's built-in ``schedulers,'' or the user may specify a custom scheduler.
 
 Each solver has a default scheduler, so if the user does not explicitly choose one, a reasonable choice is made automatically.
 
@@ -258,12 +258,17 @@ Each solver has a default scheduler, so if the user does not explicitly choose o
 
 If no scheduler or custom schedule is specified, a default scheduler will be used.  The default scheduler depends on the selected solver.
 
-Another scheduler may be specified by setting the Scheduler property of a graph:
+Another scheduler may be specified by setting the scheduler option appropriate to the type of
+solver. ``GibbsOptions.scheduler'' should be used for scheduling Gibbs solver updates, and
+``BPOptions.scheduler'' should be used for scheduling SumProduct, MinSum and ParticleBP. The
+scheduler may be provided either as a class name or instance or an actual scheduler instance.
 
 \ifmatlab
 
 \begin{lstlisting}
-myGraph.Scheduler = 'ExampleScheduler';	
+% These are equivalent
+myGraph.setOption('BPOptions.scheduler', 'FloodingScheduler');
+myGraph.setOption('BPOptions.scheduler', Scheduler('FloodingScheduler'));
 \end{lstlisting}
 
 When setting the scheduler for a graph, the name of the scheduler is case sensitive.
@@ -272,7 +277,25 @@ When setting the scheduler for a graph, the name of the scheduler is case sensit
 
 \ifjava
 \begin{lstlisting}
-myGraph.setScheduler(new ExampleScheduler());
+// These are equivalent
+myGraph.setOption(BPOptions.scheduler, FloodingScheduler.class);
+myGraph.setOption(BPOptions.scheduler, "FloodingScheduler");
+myGraph.setOption(BPOptions.scheduler, new FloodingScheduler());
+\end{lstlisting}
+\fi
+
+Since most schedulers know what options they can be applied to, you can also set the scheduler
+directly on the graph using this technique, and it will set the appropriate options for you:
+
+\ifmatlab
+\begin{lstlisting}
+myGraph.Scheduler = 'FloodingScheduler';
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+myGraph.setScheduler(new FloodingScheduler());
 \end{lstlisting}
 \fi
 
@@ -294,9 +317,9 @@ It is possible for subgraphs to be designated to use a schedule different from t
 \ifmatlab
 
 \begin{lstlisting}
-SubGraph.Scheduler = 'SequentialScheduler';
+SubGraph.setOption('BPOptions.scheduler', 'SequentialScheduler');
 ParentGraph.addFactor(SubGraph, boundaryVariables);
-ParentGraph.Scheduler = 'FloodingScheduler';
+ParentGraph.setOption('BPOptions.schedule', 'FloodingScheduler');
 \end{lstlisting}
 
 \fi
@@ -304,9 +327,9 @@ ParentGraph.Scheduler = 'FloodingScheduler';
 \ifjava
 
 \begin{lstlisting}
-SubGraph.setScheduler(new SequentialScheduler());
+SubGraph.setOption(BPOptions.scheduler, new SequentialScheduler());
 ParentGraph.addFactor(SubGraph, boundaryVariables);
-ParentGraph.setScheduler(new FloodingScheduler());
+ParentGraph.setOption(BPOptions.scheduler, new FloodingScheduler());
 \end{lstlisting}
 
 \fi
@@ -353,17 +376,8 @@ The following code demonstrates this feature:
    % update c->eq2
    % update eq1->b
    % update eq2->b
-   schedule = {
-       b,
-       {eq1,a},
-       {eq2,c},
-       {a,eq1},
-       {c,eq2},
-       {eq1,b},
-       {eq2,b}
-       };
-   
-   fg.Schedule = schedule;
+   fg.Scheduler = CustomScheduler(fg, 'BPOptions.scheduler', 
+       {b, {eq1,a},{eq2,c},{a,eq1},{c,eq2},{eq1,b},{eq2,b}});
    
    %Set priors
    a.Input = .6;
@@ -388,17 +402,17 @@ Factor eq1 = fg.addFactor(eq,a,b);
 Factor eq2 = fg.addFactor(eq,b,c);
 
 //define schedule
-FixedSchedule fs = new FixedSchedule();
-fs.add(b);
-fs.add(eq1,a);
-fs.add(eq2,c);
-fs.add(a,eq1);
-fs.add(c,eq2);
-fs.add(eq1,b);
-fs.add(eq2,b);
+CustomScheduler custom = new CustomScheduler(fg, BPOptions.scheduler);
+custom.addVariable(b);
+custom.addEdge(eq1,a);
+fs.addEdge(eq2,c);
+fs.addEdge(a,eq1);
+fs.addEdge(c,eq2);
+fs.addEdge(eq1,b);
+fs.addEdge(eq2,b);
 		
-//set schedule
-fg.setSchedule(fs);
+//set scheduler
+fg.setOption(BPOptions.scheduler, custom);
 
 //Set priors
 a.setInput(0.6);
@@ -425,7 +439,7 @@ Dimple also supports nesting custom schedules and nesting in general. The follow
    nf2 = fg.addFactor(nfg,b(2),b(3));
    
    
-   fg.Schedule = {b(1),nf1,b(2),nf2,b(3)};
+   fg.Scheduler = CustomScheduler(fg, 'BPOptions.scheduler', {b(1),nf1,b(2),nf2,b(3)});
    b(1).Input = .7;
    fg.NumIterations = 1;
    fg.solve();
@@ -448,8 +462,9 @@ FactorGraph fg = new FactorGraph();
 FactorGraph nf1 = fg.addFactor(nfg,c1,c2);
 FactorGraph nf2 = fg.addFactor(nfg,c2,c3);
 
-FixedSchedule schedule = new FixedSchedule();
-schedule.add(c1,nf1,c2,nf2,c3);
+CustomScheduler custom = new CustomScheduler(fg, BPOptions.scheduler);
+custom.addNodes(c1,nf1,c2,nf2,c3);
+fg.setOption(BPOptions.scheduler, custom);
 c1.setInput(0.7);
 fg.solve();
 \end{lstlisting}
@@ -482,7 +497,8 @@ And finally we look at nesting a custom schedule:
    assertElementsAlmostEqual(eb(2).Belief,eb(1).Input(1));
    
    %Now we create a schedule that will not propagate the info.
-   nfg.Schedule = {ib,{f1,eb(1)},{f2,eb(2)},eb(1),eb(2),f1,f2};
+   nfg.Scheduler = CustomScheduler(nfg,BPOptions.scheduler'
+        {ib,{f1,eb(1)},{f2,eb(2)},eb(1),eb(2),f1,f2});
    nfg.solve();
    
    assertElementsAlmostEqual(eb(2).Belief,.5);
@@ -492,7 +508,7 @@ And finally we look at nesting a custom schedule:
    fg = FactorGraph();
    g = fg.addFactor(nfg,b);
    
-   fg.Schedule = {b(1),b(2),g};
+   fg.Scheduler = CustomScheduler(fg, 'BPOptions.scheduler' {b(1),b(2),g});
    
    b(1).Input = .8;
    fg.NumIterations = 1;
@@ -526,15 +542,15 @@ nfg.solve();
 System.out.println(eb2.getP1() - eb1.getInput()[0]);
 
 //Now we create a schedule that will not propagate the info.
-FixedSchedule schedule = new FixedSchedule();
-schedule.add(ib);
-schedule.add(f1,eb1);
-schedule.add(f2,eb2);
-schedule.add(eb1);
-schedule.add(eb2);
-schedule.add(f1);
-schedule.add(f2);
-nfg.setSchedule(schedule);
+CustomScheduler custom = new CustomScheduler(nfg, BPOptions.scheduler);
+schedule.addVariable(ib);
+schedule.addEdge(f1,eb1);
+schedule.addEdge(f2,eb2);
+schedule.addVariable(eb1);
+schedule.addVariable(eb2);
+schedule.addFactor(f1);
+schedule.addFactor(f2);
+nfg.setOption(BPOptions.scheduler, custom);
 nfg.solve();
 
 System.out.println(eb2.getP1() - 0.5);
@@ -546,9 +562,9 @@ Bit b2 = new Bit();
 FactorGraph fg = new FactorGraph();
 FactorGraph g = fg.addFactor(nfg,b1,b2);
 
-FixedSchedule schedule2 = new FixedSchedule();
-schedule2.add(b1,b2,g);
-fg.setSchedule(schedule2);
+CustomScheduler custom2 = new CustomScheduler(fg, BPOptions.scheduler);
+custom2.addNodes(b1,b2,g);
+fg.setOption(BPOptions.scheduler, custom2);
 
 b1.setInput(0.8);		
 fg.solve();

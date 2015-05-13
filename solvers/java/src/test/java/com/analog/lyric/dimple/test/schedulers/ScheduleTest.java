@@ -17,7 +17,7 @@
 /**
  * 
  */
-package com.analog.lyric.dimple.test;
+package com.analog.lyric.dimple.test.schedulers;
 
 import static java.util.Objects.*;
 
@@ -34,6 +34,7 @@ import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
 import com.analog.lyric.dimple.solvers.minsum.MinSumSolver;
 import com.analog.lyric.dimple.solvers.minsum.MinSumSolverGraph;
+import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.util.test.Helpers;
 
 /**

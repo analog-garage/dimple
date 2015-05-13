@@ -14,7 +14,15 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function result = wrapProxyObject(proxyObject)
+function result = wrapProxyObject(proxyObject, varargin)
+    narginchk(1,2);
+    
+    optionHolder = [];
+    if (nargin == 2)
+        optionHolder = varargin{2};
+        validateattributes(optionHolder, {'FactorGraphChild'}, {'scalar'});
+    end
+    
     result = [];
     
     if isempty(proxyObject)
@@ -56,10 +64,25 @@ function result = wrapProxyObject(proxyObject)
             elseif proxyObject.isJoint()
                 result = RealJointDomain(proxyObject);
             end
+            
+        elseif proxyObject.isScheduler()
+            if isa(optionHolder, 'FactorGraph')
+                result = Scheduler(optionHolder, proxyObject);
+            else
+                result = Scheduler(proxyObject);
+            end
+            
+        elseif proxyObject.isVariableBlock()
+            result = VariableBlock(proxyObject);
         end
+        
+        if isempty(result) && ~isempty(proxyObject)
+            error('not supported');
+        end
+        
+    else
+        % Pass regular MATLAB objects through
+        result = proxyObject;
     end
     
-    if isempty(result) && ~isempty(proxyObject)
-        error('not supported');
-    end
 end

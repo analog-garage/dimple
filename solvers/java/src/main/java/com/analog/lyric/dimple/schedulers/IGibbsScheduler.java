@@ -17,8 +17,10 @@
 package com.analog.lyric.dimple.schedulers;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.variables.VariableBlock;
 import com.analog.lyric.dimple.schedulers.schedule.IGibbsSchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.IBlockUpdater;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 
@@ -34,6 +36,21 @@ public interface IGibbsScheduler extends IScheduler
 	
 	@Override
 	public IGibbsSchedule createSchedule(ISolverFactorGraph graph);
-	
+
+	/**
+	 * @deprecated use {@link #addBlockWithReplacement(IBlockUpdater, VariableBlock)} instead.
+	 */
+	@Deprecated
 	public void addBlockScheduleEntry(BlockScheduleEntry blockScheduleEntry);
+	
+	/**
+	 * Adds a block schedule entry and replacing any existing node and edge entries.
+	 * <p>
+	 * This will remove any node or edge schedule entries for variables contained in the block.
+	 * <p>
+	 * @param blockUpdater
+	 * @param block
+	 * @since 0.08
+	 */
+	public void addBlockWithReplacement(IBlockUpdater blockUpdater, VariableBlock block);
 }

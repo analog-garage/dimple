@@ -18,6 +18,9 @@ package com.analog.lyric.dimple.matlabproxy;
 
 import java.util.ArrayList;
 
+import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.matlabproxy.repeated.PDiscreteStream;
 import com.analog.lyric.dimple.matlabproxy.repeated.PDoubleArrayDataSink;
 import com.analog.lyric.dimple.matlabproxy.repeated.PDoubleArrayDataSource;
@@ -32,18 +35,60 @@ import com.analog.lyric.dimple.model.core.Model;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.schedulers.SchedulerOptionKey;
 import com.analog.lyric.dimple.solvers.core.multithreading.ThreadPool;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
-import org.eclipse.jdt.annotation.Nullable;
+import com.analog.lyric.util.misc.Matlab;
 
 /*
  * The model factory creates variable vectors and FactorGraphs for MATLAB
  */
+@Matlab
 public class ModelFactory
 {
-
+	/**
+	 * Create custom scheduler for graph.
+	 * 
+	 * @param graph
+	 * @param schedulerKey either a {@link SchedulerOptionKey} or its qualified name.
+	 * @param scheduleEntries are in format given by CustomScheduler class in MATLAB.
+	 * @since 0.08
+	 */
+	public PScheduler createCustomScheduler(PFactorGraphVector graph, @Nullable Object schedulerKey,
+		Object[] scheduleEntries)
+	{
+		if (schedulerKey instanceof SchedulerOptionKey)
+		{
+			return new PScheduler(graph, (SchedulerOptionKey)schedulerKey, scheduleEntries);
+		}
+		else
+		{
+			String schedulerKeyName = (String)schedulerKey;
+			if (schedulerKeyName == null || schedulerKeyName.isEmpty())
+			{
+				// This is only to support
+				@SuppressWarnings("deprecation")
+				PScheduler scheduler = new PScheduler(graph, scheduleEntries);
+				return scheduler;
+			}
+			else
+			{
+				return new PScheduler(graph, schedulerKeyName, scheduleEntries);
+			}
+		}
+	}
+	
+	/**
+	 * Create scheduler with given class name, looking up in active Dimple environment.
+	 * @since 0.08
+	 */
+	public PScheduler createScheduler(String name)
+	{
+		return new PScheduler(DimpleEnvironment.active().schedulers().instantiate(name));
+	}
+	
 	public MultivariateNormalParameters createMultivariateNormalParameters(double[] mean, double[][] covariance)
 	{
 		return new MultivariateNormalParameters(mean, covariance);

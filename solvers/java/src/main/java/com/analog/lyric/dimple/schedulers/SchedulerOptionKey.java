@@ -164,7 +164,7 @@ public class SchedulerOptionKey extends OptionKey<IScheduler>
 	}
 
 	@Override
-	public Class<IScheduler> type()
+	public Class<? extends IScheduler> type()
 	{
 		return IScheduler.class;
 	}
@@ -253,11 +253,11 @@ public class SchedulerOptionKey extends OptionKey<IScheduler>
 		return _validatorKey;
 	}
 
-	/*-----------------
-	 * Private methods
+	/*-------------------
+	 * Protected methods
 	 */
 
-	private Class<? extends IScheduler> validateClass(Class<?> schedulerClass)
+	protected Class<? extends IScheduler> validateClass(Class<?> schedulerClass)
 	{
 		try
 		{

@@ -22,9 +22,32 @@ Each scheduler is applicable only to a certain subset of solvers.  For the BP so
 %
 \textsf{RandomWithReplacementScheduler} & The solver will apply a Sequential Schedule with the order of factors chosen randomly with replacement.  On each subsequent iteration, a new random order is chosen.  The number of factors updated per iteration is equal to the total number of factors in the graph. However, since the factors are chosen randomly with replacement, not all factors are necessarily updated in a single iteration, and some may be updated more than once. \\ \hline
 %
+\textsf{CustomScheduler} & The custom scheduler generates a schedule with a fixed list of schedule entries specified by the user. \\ \hline
+%
 \end{longtable}
 
 For the JunctionTree and JunctionTreeMAP solvers, only a Tree Schedule will be used.  When using these solvers, the Scheduler setting will be ignored.
+
+The scheduler for BP solvers is specified through the BPOptions.scheduler option, which may be set either to an actual scheduler object or to its class or class name. The following are equivalent:
+
+\ifmatlab
+\begin{lstlisting}
+import com.analog.lyric.dimple.schedulers.*;
+
+graph.setOption('BPOptions.scheduler', 'SequentialScheduler');
+graph.setOption('BPOptions.scheduler', SequentialScheduler());
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+import com.analog.lyric.dimple.schedulers.SequentialScheduler;
+
+graph.setOption(BPOptions.scheduler, "SequentialScheduler");
+graph.setOption(BPOptions.scheduler, SequentialScheduler.class);
+graph.setOption(BPOptions.scheduler, new SequentialScheduler());
+\end{lstlisting}
+\fi
 
 In a nested graph, for most of the schedulers listed above (except for the random schedulers), the schedule is applied hierarchically.  In particular, a subgraph is treated as a factor in the nesting level that it appears.  When that subgraph is updated, the schedule for the corresponding subgraph is run in its entirety, updating all factors and variables contained within according to its specified schedule.
 
@@ -32,17 +55,17 @@ It is possible for subgraphs to be designated to use a schedule different from t
 
 \ifmatlab
 \begin{lstlisting}
-SubGraph.Scheduler = 'SequentialScheduler';
-ParentGraph.addFactor(SubGraph, boundaryVariables);
-ParentGraph.Scheduler = 'FloodingScheduler';
+subGraph.setOption('BPOptions.scheduler', 'SequentialScheduler');
+parentGraph.addFactor(subGraph, boundaryVariables);
+parentGraph.setOption('BPOptions.scheduler', 'FloodingScheduler');
 \end{lstlisting}
 \fi
 
 \ifjava
 \begin{lstlisting}
-SubGraph.setScheduler(new com.analog.lyric.dimple.schedulers.SequentialScheduler()); 
-ParentGraph.addFactor(SubGraph , a,b); 
-ParentGraph.setScheduler(new com.analog.lyric.dimple.schedulers.TreeOrFloodingScheduler());		
+subGraph.setOption(BPOptions.scheduler, new SequentialScheduler()); 
+parentGraph.addFactor(subGraph, a, b); 
+parentGraph.setOption(BPOptions.scheduler, new TreeOrFloodingScheduler());		
 \end{lstlisting}
 \fi
 
@@ -51,7 +74,7 @@ For the TreeOrFloodingScheduler and the TreeOrSequentialScheduler, the choice of
 For the RandomWithoutReplacementScheduler and RandomWithReplacementScheduler, if these are applied to a graph or subgraph, the hierarchy of any lower nesting layers is ignored.  That is, the subgraphs below are essentially flattened prior to schedule creation, and any schedulers or custom schedules specified in lower layers of the hierarchy are ignored.
 
 
-Because of the differences in operation between the Gibbs solver and the BP based solvers, the Gibbs solver supports a distinct set of schedulers.  For the Gibbs solver, the following schedulers are available:
+Because of the differences in operation between the Gibbs solver and the BP based solvers, the Gibbs solver supports a distinct set of schedulers through the corresponding GibbsOptions.scheduler option.  For the Gibbs solver, the following schedulers are available:
 
 \begin{tabular}{l p{4in}}
 \textbf{Name} & \textbf{Description} \\ \hline \hline
@@ -62,6 +85,7 @@ Because of the differences in operation between the Gibbs solver and the BP base
 %
 \textsf{GibbsRandomScanScheduler} & The solver will apply a Random Scan Schedule.  Each successive variable to be resampled is chosen randomly with replacement.  The number of variables resampled per scan is equal to the total number of variables in the graph, but not all variables are necessarily resampled in a given scan, and some may be resampled more than once. \\ \hline
 %
+\textsf{CustomScheduler} & The custom scheduler as described above may also be used with the Gibbs solver, but should not contain edge entries.
 \end{tabular}
 
 Because of the nature of the Gibbs solver, the nested structure of a graph is ignored in creating the schedule.  That is, the graph hierarchy is essentially flattened prior to schedule creation, and only the scheduler specified on the outermost graph is applied.

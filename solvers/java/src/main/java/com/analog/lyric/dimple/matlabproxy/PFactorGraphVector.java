@@ -16,10 +16,11 @@
 
 package com.analog.lyric.dimple.matlabproxy;
 
+import static java.util.Objects.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -40,16 +41,10 @@ import com.analog.lyric.dimple.model.repeated.IVariableStreamSlice;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
-import com.analog.lyric.dimple.model.variables.VariableBlock;
-import com.analog.lyric.dimple.options.DimpleOptionRegistry;
-import com.analog.lyric.dimple.schedulers.CustomScheduler;
 import com.analog.lyric.dimple.schedulers.IScheduler;
-import com.analog.lyric.dimple.schedulers.SchedulerOptionKey;
-import com.analog.lyric.dimple.schedulers.schedule.ScheduleValidationException;
-import com.analog.lyric.dimple.schedulers.scheduleEntry.IBlockUpdater;
+import com.analog.lyric.dimple.schedulers.SchedulerBase;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.util.misc.FactorGraphDiffs;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Matlab;
@@ -512,131 +507,6 @@ public class PFactorGraphVector extends PFactorBaseVector
 		return getGraph().isAncestorOf(pn.getModelerNode(0));
 	}
 		
-	 /*
-	 * Let's the user specify a fixed schedule.  Expects a list of items
-	 * where each item is one of the following:
-	 * -A VariableVector
-	 * -A FactorVector
-	 * -An edge (specified with a list of two connected nodes)
-	 * -A sub-graph
-	 * -A block of nodes
-	 * 
-	 * TODO: Push this down
-	 */
-	public void setSchedule(Object[] scheduleEntries)
-	{
-		final FactorGraph fg = getGraph();
-
-		int i = 0, n = scheduleEntries.length;
-		
-		SchedulerOptionKey schedulerKey = null;
-		
-		if (n > 0)
-		{
-			// See if first entry specifies the type of schedule
-			Object first = scheduleEntries[i];
-			
-			if (first instanceof SchedulerOptionKey)
-			{
-				++i;
-				schedulerKey = (SchedulerOptionKey)first;
-			}
-			else if (first instanceof String)
-			{
-				++i;
-				final String str = (String)first;
-				final DimpleOptionRegistry options = fg.getEnvironment().optionRegistry();
-				
-				IOptionKey<?> key = null;
-				
-				if (str.contains("."))
-				{
-					// If str contains a dot require an exact match.
-					key = options.get(str);
-				}
-				else
-				{
-					// Otherwise use a regexp
-					ArrayList<IOptionKey<?>> keys = options.getAllMatching(Pattern.quote(str) + "\\w+\\.scheduler");
-					switch (keys.size())
-					{
-					case 0:
-						break;
-					case 1:
-						key = keys.get(0);
-						break;
-					default:
-						throw new ScheduleValidationException("'%s' is ambiguous could be any of: %s", str, keys);
-					}
-				}
-				
-				if (key == null)
-				{
-					throw new ScheduleValidationException("'%s' does not refer to a known option key", str);
-				}
-				if (key instanceof SchedulerOptionKey)
-				{
-					schedulerKey = (SchedulerOptionKey)key;
-				}
-				else
-				{
-					throw new ScheduleValidationException("'%s' does not refer to a scheduler option key", str);
-				}
-			}
-		}
-		
-		@SuppressWarnings("deprecation")
-		final CustomScheduler scheduler =
-			schedulerKey != null ? new CustomScheduler(fg, schedulerKey) : new CustomScheduler(fg);
-		
-		//Convert schedule to a list of nodes and edges
-		for (; i < n; ++i)
-		{
-			final Object obj = scheduleEntries[i];
-			
-			if (obj instanceof Object[])
-			{
-				Object[] objArray = (Object[])obj;
-				if (objArray.length >= 2 && objArray[0] instanceof IBlockUpdater)
-				{
-					// This is a block schedule entry
-					int argumentIndex = 0;
-					int numNodes = objArray.length - 1;
-					IBlockUpdater blockUpdater = (IBlockUpdater)objArray[argumentIndex++];
-					Variable[] nodes = new Variable[numNodes];
-					for (int entry = 0; entry < numNodes; entry++, argumentIndex++)
-						nodes[entry] = (Variable)PHelpers.convertToNode(objArray[argumentIndex]);
-					
-					scheduler.addBlock(blockUpdater, nodes);
-				}
-				else
-				{
-					// Entry is a pair of nodes, that represent an edge
-					if (objArray.length != 2)
-						throw new DimpleException("Length of array containing edge must be 2");
-
-					INode node1 = PHelpers.convertToNode(objArray[0]);
-					INode node2 = PHelpers.convertToNode(objArray[1]);
-					int portNum = node1.findSibling(node2);
-					
-					scheduler.addEdge(node1, portNum);
-				}
-			}
-			else
-			{
-				for (Node node : PHelpers.convertToNodeArray(obj))
-				{
-					scheduler.addNode(node);
-				}
-			}
-		}
-
-		for (SchedulerOptionKey key : scheduler.applicableSchedulerOptions())
-		{
-			key.set(fg, scheduler);
-		}
-	}
-	
 	public void removeFactor(PFactorVector factor)
 	{
 		Node [] factors = factor.getModelerNodes();
@@ -755,18 +625,21 @@ public class PFactorGraphVector extends PFactorBaseVector
 	}
 	
 	@SuppressWarnings("deprecation")
-	public void setScheduler(@Nullable IScheduler scheduler)
+	public void setScheduler(@Nullable Object obj)
 	{
-    	if (getGraph().isSolverRunning())
+		final FactorGraph graph  = getGraph();
+		
+    	if (graph.isSolverRunning())
     		throw new DimpleException("No changes allowed while the solver is running.");
 
-    	getGraph().setScheduler(scheduler);
+    	graph.setScheduler(obj != null ? SchedulerBase.instantiate(graph.getEnvironment(), obj) : null);
 	}
 	
 	@SuppressWarnings("deprecation")
-	public @Nullable IScheduler getScheduler()
+	public @Nullable PScheduler getScheduler()
 	{
-		return getGraph().getScheduler();
+		IScheduler scheduler = getGraph().getScheduler();
+		return scheduler != null ? new PScheduler(scheduler) : null;
 	}
 	
 		
@@ -849,10 +722,15 @@ public class PFactorGraphVector extends PFactorBaseVector
 	@Deprecated
 	public int defineVariableGroup(Object[] variables)
 	{
-		return addVariableBlock(variables);
+		return addVariableBlock(variables).getLocalId();
 	}
 	
-	public int addVariableBlock(Object[] variables)
+	public PVariableBlock addVariableBlock(Object[] variables)
+	{
+		return addVariableBlock(getGraph(), variables);
+	}
+
+	static PVariableBlock addVariableBlock(@Nullable FactorGraph graph, Object[] variables)
 	{
 		ArrayList<Variable> variableList = new ArrayList<Variable>();
 		for (int i = 0; i < variables.length; i++)
@@ -861,9 +739,23 @@ public class PFactorGraphVector extends PFactorBaseVector
 			for (int j = 0; j < modelerVariables.length; j++)
 				variableList.add(modelerVariables[j]);
 		}
+		
+		if (graph == null)
+		{
+			// Choose graph from variables. If all come from the same graph, use that graph, otherwise
+			// use the root graph.
+			graph = variableList.get(0).getParentGraph();
+			for (int i = 1, n = variableList.size(); i < n; ++i)
+			{
+				Variable var = variableList.get(i);
+				if (graph != var.getParentGraph())
+				{
+					graph = var.getRootGraph();
+					break;
+				}
+			}
+		}
 
-		final VariableBlock block = getGraph().addVariableBlock(variableList);
-		return block.getLocalId();
+		return new PVariableBlock(requireNonNull(graph).addVariableBlock(variableList));
 	}
-
 }

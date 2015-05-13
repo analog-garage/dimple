@@ -19,9 +19,8 @@ package com.analog.lyric.dimple.solvers.gibbs;
 import com.analog.lyric.dimple.options.SolverOptions;
 import com.analog.lyric.dimple.schedulers.DefaultScheduler;
 import com.analog.lyric.dimple.schedulers.GibbsDefaultScheduler;
-import com.analog.lyric.dimple.schedulers.SchedulerOptionKey;
-import com.analog.lyric.dimple.schedulers.validator.VariablesOnlyScheduleValidator;
 import com.analog.lyric.dimple.schedulers.validator.ScheduleValidatorOptionKey;
+import com.analog.lyric.dimple.schedulers.validator.VariablesOnlyScheduleValidator;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.CDFSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.GenericSamplerOptionKey;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.SliceSampler;
@@ -210,6 +209,6 @@ public class GibbsOptions extends SolverOptions
 	 * <p>
 	 * @since 0.08
 	 */
-	public static final SchedulerOptionKey scheduler =
-		new SchedulerOptionKey(GibbsOptions.class, "scheduler", GibbsDefaultScheduler.class, scheduleValidator);
+	public static final GibbsSchedulerOptionKey scheduler =
+		new GibbsSchedulerOptionKey(GibbsDefaultScheduler.class, scheduleValidator);
 }

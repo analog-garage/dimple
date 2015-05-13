@@ -57,7 +57,7 @@ public interface IScheduler extends IOptionValue
 	 * listed by the scheduler.
 	 * @since 0.08
 	 */
-	public List<SchedulerOptionKey> applicableSchedulerOptions();
+	public List<? extends SchedulerOptionKey> applicableSchedulerOptions();
 	
 	public IScheduler copy(Map<Object,Object> old2NewMap, boolean copyToRoot);
 	

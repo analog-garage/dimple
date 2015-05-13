@@ -57,7 +57,9 @@ classdef FactorGraph < Node
         Variables;
         VariablesFlat;
         VariablesTop;
+        % Deprecated as of release 0.8
         Schedule;
+        % Get scheduler for current solver. Set access deprecated as of release 0.8
         Scheduler;
         AdjacencyMatrix;
         BetheFreeEnergy;
@@ -546,15 +548,12 @@ classdef FactorGraph < Node
             
         end
         
-        
-        % Use the scheduler to create a schedule for this graph
         function setScheduler(obj, scheduler)
-            if ischar(scheduler)
-                registry = SchedulerRegistry();
-                scheduler = registry.get(scheduler);
-                scheduler = scheduler();
+            validateattributes(scheduler,...
+                {'char', 'Scheduler', 'com.analog.lyric.dimple.schedulers.IScheduler', 'java.lang.Class'},{});
+            if isa(scheduler, 'Scheduler')
+                scheduler = scheduler.IScheduler;
             end
-                        
             obj.VectorObject.setScheduler(scheduler);
         end
         
@@ -563,47 +562,17 @@ classdef FactorGraph < Node
         end
         
         function scheduler = get.Scheduler(obj)
+            if (isempty(obj.Solver))
+                scheduler = [];
+            end
             scheduler = Scheduler(obj);
         end
 
-        
         function set.Schedule(obj,schedule)
-            %Make sure schedule is a cell array
-            
-            %Convert variable vectors to variables?
-            for i = 1:length(schedule)
-                tmp = schedule{i};
-                
-                if isa(tmp,'cell')
-                    % Could either be an edge or block entry
-                    e = tmp(1);
-                    if isa(e,'cell')
-                        e = e{1};
-                    end
-                    if isa(e, 'com.analog.lyric.dimple.schedulers.scheduleEntry.IBlockUpdater')
-                        % Must be a block entry
-       
-                        scheduleEntry = cell(1,length(tmp));
-                        scheduleEntry{1} = e;
-                        for j=2:length(tmp)
-                            scheduleEntry{j} = tmp{j}.VectorObject;
-                        end
-                        schedule{i} = scheduleEntry;
-                    else
-                        % Must be an edge entry
-                        if length(tmp) ~= 2
-                            error('Expected a list of two elements if trying to specify an edge.');
-                        end
-                        schedule{i} = {tmp{1}.VectorObject,tmp{2}.VectorObject};
-                    end
-                else
-                    schedule{i} = tmp.VectorObject;
-                end
-            end
-            
-            obj.VectorObject.setSchedule(schedule);
-            
-            %Pass down to FactorGraph
+            % Deprecated as of release 0.08.
+            %
+            % Instead set Scheduler to a CustomScheduler.
+            obj.setScheduler(CustomScheduler(obj, '', schedule));
         end
         
         function out = getFactorGraphDiffsByName(obj,input)
@@ -913,6 +882,10 @@ classdef FactorGraph < Node
         % that are not all part of a single variable vector or matrix.
         % Each input argument can be a varilable or variable matrix.
         function variableGroupID = defineVariableGroup(obj, varargin)
+            variableGroupID = obj.addVariableBlock(varargin).LocalId;
+        end
+
+        function block = addVariableBlock(obj, varargin)
             varargin = [varargin{:}];
             variables = {};
             if isa(varargin,'VariableBase')
@@ -924,9 +897,8 @@ classdef FactorGraph < Node
                     end
                 end
             end
-            variableGroupID = obj.VectorObject.addVariableBlock(variables);
+            block = VariableBlock(obj.VectorObject.addVariableBlock(variables));
         end
-
     end
     
     methods (Access = private)

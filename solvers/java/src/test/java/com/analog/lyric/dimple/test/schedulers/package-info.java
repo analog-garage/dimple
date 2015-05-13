@@ -15,11 +15,11 @@
  ********************************************************************************/
 
 /**
- * 
+ * Tests for com.analog.lyric.dimple.schedulers package.
  * @since 0.08
  * @author Christopher Barber
  */
 @NonNullByDefault
-package math.test;
+package com.analog.lyric.dimple.test.schedulers;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 

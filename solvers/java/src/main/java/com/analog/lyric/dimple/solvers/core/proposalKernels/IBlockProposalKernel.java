@@ -16,13 +16,18 @@
 
 package com.analog.lyric.dimple.solvers.core.proposalKernels;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
-import org.eclipse.jdt.annotation.Nullable;
 
 public interface IBlockProposalKernel
 {
 	public BlockProposal next(Value[] currentValue, Domain[] variableDomain);
+	
+	@Deprecated
 	public void setParameters(Object... parameters);
+	
+	@Deprecated
 	public @Nullable Object[] getParameters();
 }
