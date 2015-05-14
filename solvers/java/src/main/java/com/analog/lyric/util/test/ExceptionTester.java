@@ -21,8 +21,9 @@ import static org.junit.Assert.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.regex.Pattern;
 
-import com.analog.lyric.collect.Supers;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.collect.Supers;
 
 /**
  * Utility functions for testing exception behavior.
@@ -82,6 +83,7 @@ public class ExceptionTester
 			
 			if (!expectedException.isInstance(ex))
 			{
+				ex.printStackTrace();
 				fail(String.format("Expected '%s' but caught '%s'", expectedException.getSimpleName(),
 					ex.getClass().getSimpleName()));
 			}
