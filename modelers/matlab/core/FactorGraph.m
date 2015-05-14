@@ -549,8 +549,10 @@ classdef FactorGraph < Node
         end
         
         function setScheduler(obj, scheduler)
-            validateattributes(scheduler,...
-                {'char', 'Scheduler', 'com.analog.lyric.dimple.schedulers.IScheduler', 'java.lang.Class'},{});
+            if (~isempty(scheduler))
+                validateattributes(scheduler,...
+                    {'char', 'Scheduler', 'com.analog.lyric.dimple.schedulers.IScheduler', 'java.lang.Class'},{});
+            end
             if isa(scheduler, 'Scheduler')
                 scheduler = scheduler.IScheduler;
             end

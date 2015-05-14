@@ -18,7 +18,6 @@ package com.analog.lyric.dimple.model.sugar;
 
 import java.lang.reflect.Array;
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Deque;
 
 import com.analog.lyric.dimple.factorfunctions.ACos;
@@ -52,6 +51,7 @@ import com.analog.lyric.dimple.factorfunctions.Square;
 import com.analog.lyric.dimple.factorfunctions.Sum;
 import com.analog.lyric.dimple.factorfunctions.Tan;
 import com.analog.lyric.dimple.factorfunctions.Tanh;
+import com.analog.lyric.dimple.factorfunctions.Xor;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
@@ -67,6 +67,7 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableBlock;
+import com.google.common.collect.ObjectArrays;
 
 
 /**
@@ -204,6 +205,11 @@ public class ModelSyntacticSugar
 	/*------------
 	 * Variables
 	 */
+	
+	public static Bit bit(String name)
+	{
+		return nameAndAdd(name, new Bit());
+	}
 	
 	/**
 	 * Adds a new variable block containing the specified variables.
@@ -644,6 +650,11 @@ public class ModelSyntacticSugar
 		return addFactorWithRealFirst(new Tanh(), x);
 	}
 	
+	public static Bit xor(Bit ... bits)
+	{
+		return addFactorWithBitFirst(new Xor(), (Object[])bits);
+	}
+	
 	/*-----------------
 	 * Private methods
 	 */
@@ -654,33 +665,32 @@ public class ModelSyntacticSugar
 		var.setName(name);
 		return var;
 	}
+
+	private static Bit addFactorWithBitFirst(FactorFunction function, Object ... args)
+	{
+		Bit bit = new Bit();
+		graph().addFactor(function, ObjectArrays.concat(bit, args));
+		return bit;
+	}
 	
 	private static Real addFactorWithRealFirst(FactorFunction function, Object ... args)
 	{
 		Real var = new Real();
-		Object[] expandedArgs = new Object[args.length + 1];
-		expandedArgs[0] = var;
-		System.arraycopy(args, 0, expandedArgs, 1, args.length);
-		graph().addFactor(function, expandedArgs);
+		graph().addFactor(function, ObjectArrays.concat(var, args));
 		return var;
 	}
 	
 	private static Real addFactorWithRealLast(FactorFunction function, Object ... args)
 	{
 		Real var = new Real();
-		Object[] expandedArgs = Arrays.copyOf(args, args.length + 1);
-		expandedArgs[args.length] = var;
-		graph().addFactor(function, expandedArgs);
+		graph().addFactor(function, ObjectArrays.concat(args, var));
 		return var;
 	}
 	
 	private static Complex addFactorWithComplexFirst(FactorFunction function, Object ... args)
 	{
 		Complex var = new Complex();
-		Object[] expandedArgs = new Object[args.length + 1];
-		expandedArgs[0] = var;
-		System.arraycopy(args, 0, expandedArgs, 1, args.length);
-		graph().addFactor(function, expandedArgs);
+		graph().addFactor(function, ObjectArrays.concat(var, args));
 		return var;
 	}
 	

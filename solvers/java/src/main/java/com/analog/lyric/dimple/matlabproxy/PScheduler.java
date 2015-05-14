@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.INode;
@@ -64,7 +66,7 @@ public class PScheduler extends PObject
 	 * @param pgraph identifies the graph for which the scheduler is being created
 	 * @since 0.08
 	 */
-	PScheduler(PFactorGraphVector pgraph, SchedulerOptionKey schedulerKey, Object[] scheduleEntries)
+	PScheduler(PFactorGraphVector pgraph, SchedulerOptionKey schedulerKey, @Nullable Object[] scheduleEntries)
 	{
 		this(new CustomScheduler(pgraph.getGraph(), schedulerKey));
 		addCustomEntries(scheduleEntries);
@@ -74,13 +76,13 @@ public class PScheduler extends PObject
 	 * @deprecated only to support Matlab FactorGraph.Schedule setter
 	 */
 	@Deprecated
-	PScheduler(PFactorGraphVector pgraph, Object[] scheduleEntries)
+	PScheduler(PFactorGraphVector pgraph, @Nullable Object[] scheduleEntries)
 	{
 		this(new CustomScheduler(pgraph.getGraph()));
 		addCustomEntries(scheduleEntries);
 	}
 	
-	PScheduler(PFactorGraphVector pgraph, String schedulerKey, Object[] scheduleEntries)
+	PScheduler(PFactorGraphVector pgraph, String schedulerKey, @Nullable Object[] scheduleEntries)
 	{
 		this(pgraph, lookupSchedulerKey(pgraph.getGraph().getEnvironment(), schedulerKey), scheduleEntries);
 	}
@@ -187,11 +189,14 @@ public class PScheduler extends PObject
 	 * @throws UnsupportedOperationException if this does not hold a {@link CustomScheduler}.
 	 * @since 0.08
 	 */
-	public void addCustomEntries(Object[] scheduleEntries)
+	public void addCustomEntries(@Nullable Object[] scheduleEntries)
 	{
-		assertCustom();
+		final CustomScheduler scheduler = assertCustom();
 		
-		final CustomScheduler scheduler = (CustomScheduler)_scheduler;
+		if (scheduleEntries == null)
+		{
+			return;
+		}
 		
 		//Convert schedule to a list of nodes and edges
 		for (Object entry : scheduleEntries)
@@ -237,6 +242,28 @@ public class PScheduler extends PObject
 		}
 	}
 	
+	public void addCustomPath(Object[] nodes)
+	{
+		ArrayList<INode> list = new ArrayList<>(nodes.length);
+		for (Object obj : nodes)
+		{
+			if (obj instanceof INode)
+			{
+				list.add((INode)obj);
+			}
+			else if (obj instanceof PNodeVector)
+			{
+				PNodeVector vec = (PNodeVector)obj;
+				if (vec.size() != 1)
+				{
+					throw new IllegalArgumentException("Can only use scalar nodes in path.");
+				}
+				list.add(vec.getModelerNode(0));
+			}
+		}
+		assertCustom().addPath(list);
+	}
+	
 	public String[] applicableSchedulerOptions()
 	{
 		final List<? extends SchedulerOptionKey> keys = _scheduler.applicableSchedulerOptions();
@@ -253,11 +280,13 @@ public class PScheduler extends PObject
 	 * Private methods
 	 */
 	
-	private void assertCustom()
+	private CustomScheduler assertCustom()
 	{
 		if (!(_scheduler instanceof CustomScheduler))
 		{
 			throw new UnsupportedOperationException(String.format("%s is not a CustomScheduler", _scheduler));
 		}
+		
+		return (CustomScheduler)_scheduler;
 	}
 }

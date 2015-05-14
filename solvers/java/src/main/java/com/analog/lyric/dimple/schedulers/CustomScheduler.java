@@ -20,8 +20,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -204,7 +207,12 @@ public class CustomScheduler extends SchedulerBase implements IGibbsScheduler
 	@Override
 	public void addBlockScheduleEntry(BlockScheduleEntry blockScheduleEntry)
 	{
-		final VariableBlock block = blockScheduleEntry.getBlock();
+		addBlockWithReplacement(blockScheduleEntry.getBlockUpdater(), blockScheduleEntry.getBlock());
+	}
+	
+	@Override
+	public void addBlockWithReplacement(IBlockUpdater blockUpdater, final VariableBlock block)
+	{
 		Iterables.removeIf(_entries, new Predicate<IScheduleEntry>() {
 			@NonNullByDefault(false)
 			@Override
@@ -223,13 +231,7 @@ public class CustomScheduler extends SchedulerBase implements IGibbsScheduler
 				}
 			}
 		});
-		_entries.add(blockScheduleEntry);
-	}
-	
-	@Override
-	public void addBlockWithReplacement(IBlockUpdater blockUpdater, VariableBlock block)
-	{
-		addBlockScheduleEntry(new BlockScheduleEntry(blockUpdater,  block));
+		addBlock(blockUpdater, block);
 	}
 	
 	/*-------------------------
@@ -238,6 +240,9 @@ public class CustomScheduler extends SchedulerBase implements IGibbsScheduler
 
 	/**
 	 * Adds all entries to the custom schedule in order.
+	 * <p>
+	 * Note that the deprecated {@code SubScheduleEntry} type is not supported by this method.
+	 * <p>
 	 * @since 0.08
 	 */
 	public void addAll(Iterable<? extends IScheduleEntry> entries)
@@ -252,21 +257,56 @@ public class CustomScheduler extends SchedulerBase implements IGibbsScheduler
 		}
 	}
 	
+	/**
+	 * Adds a block schedule entry using given updater and variable block.
+	 * @since 0.08
+	 */
 	public void addBlock(IBlockUpdater blockUpdater, VariableBlock block)
 	{
 		addEntry(new BlockScheduleEntry(blockUpdater, block));
 	}
-	
+
+	/**
+	 * Adds a block schedule entry using given updater and variable block defined from specified variables.
+	 * <p>
+	 * This will define a {@link VariableBlock} for the given {@code variables} on the {@linkplain #getGraph()
+	 * graph} associated with this scheduler.
+	 * <p>
+	 * @since 0.08
+	 * @see #addBlock(IBlockUpdater, VariableBlock)
+	 */
 	public void addBlock(IBlockUpdater blockUpdater, Variable ... variables)
 	{
 		addBlock(blockUpdater, _graph.addVariableBlock(variables));
 	}
 	
+	/**
+	 * Adds an edge schedule entry for the given port.
+	 * <p>
+	 * @param edge a {@link Port} object describing the originating node and index of outgoing edge.
+	 * @since 0.08
+	 */
 	public void addEdge(Port edge)
 	{
 		addEdge(edge.getNode(), edge.getSiblingNumber());
 	}
+	
+	/**
+	 * Adds edge schedule entries for the given ports.
+	 * <p>
+	 * @since 0.08
+	 * @see #addEdge(Port)
+	 */
+	public void addEdges(Port ... edges)
+	{
+		for (Port port : edges)
+			addEdge(port);
+	}
 
+	/**
+	 * Adds edge schedule entry for given node and {@code siblingNumber} of outgoing edge.
+	 * @since 0.08
+	 */
 	public void addEdge(INode node, int siblingNumber)
 	{
 		addEntry(new EdgeScheduleEntry(node, siblingNumber));
@@ -289,17 +329,32 @@ public class CustomScheduler extends SchedulerBase implements IGibbsScheduler
 		addEdge(source, source.findSibling(target));
 	}
 	
+	/**
+	 * Add node update for given {@code factor}.
+	 * @since 0.08
+	 */
 	public void addFactor(Factor factor)
 	{
 		addEntry(new NodeScheduleEntry(factor));
 	}
 	
+	/**
+	 * Add node update for {@code factors} in given order.
+	 * @since 0.08
+	 */
 	public void addFactors(Factor ... factors)
 	{
 		for (Factor factor : factors)
 			addFactor(factor);
 	}
 	
+	/**
+	 * Add node update for given {@code node}.
+	 * <p>
+	 * If {@code node} is a {@link FactorGraph}, a subgraph schedule entry will be added, otherwise
+	 * a node update entry will be added.
+	 * @since 0.08
+	 */
 	public void addNode(INode node)
 	{
 		addEntry(node instanceof FactorGraph ?
@@ -307,6 +362,11 @@ public class CustomScheduler extends SchedulerBase implements IGibbsScheduler
 				new NodeScheduleEntry(node));
 	}
 	
+	/**
+	 * Adds node updates for {@code nodes} in given order.
+	 * @since 0.08
+	 * @see #addNode(INode)
+	 */
 	public void addNodes(INode ... nodes)
 	{
 		for (INode node : nodes)
@@ -315,17 +375,99 @@ public class CustomScheduler extends SchedulerBase implements IGibbsScheduler
 		}
 	}
 	
-	public void addVariable(Variable var)
+	/**
+	 * Adds edge entries following path through specified nodes.
+	 * <p>
+	 * Creates edge update entries starting from first node and terminating with last node.
+	 * <p>
+	 * @param nodes each node must not be separated from the previous node by more than one other node
+	 * and there must be only one possible path between nodes.
+	 * 
+	 * @since 0.08
+	 */
+	public void addPath(INode ... nodes)
 	{
-		addEntry(new NodeScheduleEntry(var));
+		addPath(Arrays.asList(nodes));
 	}
 	
-	public void addVariables(Variable ... vars)
+	/**
+	 * Adds edge entries following path through specified nodes.
+	 * <p>
+	 * Creates edge update entries starting from first node and terminating with last node.
+	 * <p>
+	 * @param nodes each node must not be separated from the previous node by more than one other node
+	 * and there must be only one possible path between nodes.
+	 * 
+	 * @since 0.08
+	 */
+	public void addPath(List<INode> nodes)
+	{
+		// TODO - extend this method to support nodes that are farther than two edges apart if there is a
+		// unique path.
+		
+		if (nodes.size() < 2)
+		{
+			throw new ScheduleValidationException("addPath requires at least two nodes");
+		}
+		
+		final Iterator<INode> iter = nodes.iterator();
+		for (INode from = iter.next(), to = null; iter.hasNext() && (to = iter.next()) != null; from = to)
+		{
+			int toi = from.findSibling(to);
+			if (toi >= 0)
+			{
+				if (from.findSibling(to, toi + 1) >= 0)
+				{
+					throw new ScheduleValidationException("There is not a unique path from %s to %s", from, to);
+				}
+				addEdge(from, to);
+			}
+			else
+			{
+				// Not connected directly. See if there is a common sibling.
+				Set<INode> commonSiblings = new HashSet<>(from.getSiblings());
+				commonSiblings.retainAll(to.getSiblings());
+
+				switch (commonSiblings.size())
+				{
+				case 0:
+					throw new ScheduleValidationException(
+						"Nodes %s and %s are not adjacent and don't share common sibling",
+						from, to);
+				case 1:
+					INode middle = Iterables.getOnlyElement(commonSiblings);
+					addEdge(from, middle);
+					addEdge(middle, to);
+					break;
+				default:
+					throw new ScheduleValidationException(
+						"Nodes %s and %s are connected by more than one path", from, to);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Adds node update for given {@code variable}.
+	 * @param variable
+	 * @since 0.08
+	 */
+	public void addVariable(Variable variable)
+	{
+		addEntry(new NodeScheduleEntry(variable));
+	}
+	
+	/**
+	 * Adds node update for {@code variables} in given order.
+	 * @since 0.08
+	 * @see #addVariable(Variable)
+	 */
+	public void addVariables(Variable ... variables)
 	{
 		int size = _entries.size();
 		try
 		{
-			for (Variable var : vars)
+			for (Variable var : variables)
 			{
 				addVariable(var);
 			}
@@ -341,6 +483,12 @@ public class CustomScheduler extends SchedulerBase implements IGibbsScheduler
 		}
 	}
 	
+	/**
+	 * Adds a subgraph schedule entry for given subgraph.
+	 * <p>
+	 * @param graph must be a subgraph of {@linkplain #getGraph() graph} associated with scheduler.
+	 * @since 0.08
+	 */
 	public void addSubgraph(FactorGraph graph)
 	{
 		addEntry(new SubgraphScheduleEntry(graph));
@@ -439,7 +587,7 @@ public class CustomScheduler extends SchedulerBase implements IGibbsScheduler
 		final FactorGraph parent = child.getParentGraph();
 		if (_graph != parent &&
 			!_graph.isAncestorOf(child.getContainingGraph()) &&
-			!(child instanceof Variable && !_graph.isBoundaryVariable((Variable)child)))
+			!(child instanceof Variable && _graph.isBoundaryVariable((Variable)child)))
 		{
 			throw new ScheduleValidationException("Cannot add entry containing %s because it is not in root graph %s",
 				child, _graph);

@@ -51,6 +51,26 @@ classdef CustomScheduler < Scheduler
  
            obj.IScheduler.addCustomEntries(formatEntries(varargin{:}));
         end
+        
+        function addPath(obj, varargin)
+            % Adds edge entries following path through specified nodes.
+            %
+            % Arguments are a list of two or more variables or factors
+            % either specified in a single cell array or as arguments.
+            % Creates edge update entries starting from first node in the
+            % argument list through the last. Each node must not be
+            % separated by the previous node by more than one other node
+            % and there must be only one possible path between nodes.
+            if numel(varargin) == 1
+                args = varargin{1};
+                validateattributes(args, {'cell'}, {'vector'});
+            else
+                args = varargin;
+            end
+            cellfun(@(arg) validateattributes(arg, {'Node'}, {'scalar'}), args);
+            args = cellfun(@(n) {n.VectorObject}, args);
+            obj.IScheduler.addCustomPath(args);
+        end
     end
     
     methods(Access=private,Static)
