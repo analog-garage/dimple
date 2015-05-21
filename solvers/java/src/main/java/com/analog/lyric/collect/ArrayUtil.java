@@ -441,6 +441,30 @@ public abstract class ArrayUtil
 	}
 
 	/**
+	 * Returns a copy of {@code array} returning null if {@code array}
+	 * is null and returns {@link #EMPTY_DOUBLE_ARRAY_ARRAY} if empty.
+	 * Note that this does not make a deep copy of the array elements.
+	 *
+	 * @since 0.08
+	 * @see #deepCloneArray(double[][])
+	 */
+	public static @Nullable double[][] cloneArray(@Nullable double[][] array)
+	{
+		if (array == null)
+		{
+			return null;
+		}
+		else if (array.length == 0)
+		{
+			return EMPTY_DOUBLE_ARRAY_ARRAY;
+		}
+		else
+		{
+			return array.clone();
+		}
+	}
+
+	/**
 	 * Returns a copy of {@code array} but with space for insertion of {@code insertLength}
 	 * values at offset {@code insertionPoint}.
 	 * @throws ArrayIndexOutOfBoundsException if {@code insertionPoint} is not in the range
@@ -505,6 +529,35 @@ public abstract class ArrayUtil
 		System.arraycopy(array, insertionPoint, newArray, insertionPoint + insertLength, curSize - insertionPoint);
 		
 		return newArray;
+	}
+
+	/**
+	 * Returns a deep copy of {@code array} returning null if {@code array}
+	 * is null and returns {@link #EMPTY_DOUBLE_ARRAY_ARRAY} if empty.
+	 * 
+	 * @since 0.08
+	 * @see #cloneArray(double[][])
+	 */
+	public static @Nullable double[][] deepCloneArray(@Nullable double[][] array)
+	{
+		if (array == null)
+		{
+			return null;
+		}
+		else if (array.length == 0)
+		{
+			return EMPTY_DOUBLE_ARRAY_ARRAY;
+		}
+		else
+		{
+			final int n = array.length;
+			double[][] clone = new double[n][];
+			for (int i = 0; i < n; ++i)
+			{
+				clone[i] = array[i].clone();
+			}
+			return clone;
+		}
 	}
 
 	public static @Nullable Object[] toArray(@Nullable Object value)

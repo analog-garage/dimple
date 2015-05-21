@@ -90,6 +90,20 @@ public class TestArrayUtil
 		assertArrayEquals(ii, ii2);
 		assertNotSame(ii, ii2);
 		assertSame(ii[0], ii2[0]);
+		
+		assertNull(ArrayUtil.cloneArray((double[][])null));
+		assertNull(ArrayUtil.deepCloneArray((double[][])null));
+		assertSame(ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY, ArrayUtil.cloneArray(new double[0][]));
+		assertSame(ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY, ArrayUtil.deepCloneArray(new double[0][]));
+		double dd[][] = new double[][] { new double[] { 1.2, 2.2}, new double[] { 3.2, 4.2} };
+		double dd2[][] = requireNonNull(ArrayUtil.cloneArray(dd));
+		double dd3[][] = requireNonNull(ArrayUtil.deepCloneArray(dd));
+		assertArrayEquals(dd, dd2);
+		assertNotSame(dd, dd2);
+		assertSame(dd[0], dd2[0]);
+		assertNotSame(dd[0], dd3[0]);
+		assertArrayEquals(dd[0], dd3[0], 0.0);
+		assertArrayEquals(dd[1], dd3[1], 0.0);
 	}
 
 	@Test
