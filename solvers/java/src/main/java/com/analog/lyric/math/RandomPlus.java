@@ -18,7 +18,8 @@ package com.analog.lyric.math;
 
 import java.util.Random;
 
-public class RandomPlus extends Random 
+@Deprecated
+public class RandomPlus extends Random
 {
 	/**
 	 * 
@@ -39,11 +40,15 @@ public class RandomPlus extends Random
 			int tmp = answer[i];
 			answer[i] = answer[j];
 			answer[j] = tmp;
-		}		
+		}
 		
 		return answer;
 	}
 	
+	/**
+	 * @deprecated use {@link DimpleRandom#nextGamma} instead.
+	 */
+	@Deprecated
 	public double nextGamma(double alpha, double theta)
 	{
 
@@ -74,7 +79,7 @@ public class RandomPlus extends Random
 				if (eta <= Math.pow(xi,delta-1) * Math.exp(-xi))
 				{
 					break;
-				}	
+				}
 				g = xi;
 			}
 		}
