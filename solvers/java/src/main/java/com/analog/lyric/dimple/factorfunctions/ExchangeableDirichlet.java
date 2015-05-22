@@ -19,10 +19,11 @@ package com.analog.lyric.dimple.factorfunctions;
 import java.util.Arrays;
 
 import org.apache.commons.math3.special.Gamma;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -31,19 +32,22 @@ import com.analog.lyric.dimple.model.values.Value;
  * associated with a variable or fixed parameter vector. In this version,
  * all of the parameter values are common and specified as a single real
  * value.  The variables are ordered as follows in the argument list:
- * 
- * 1) Parameter (non-negative Real variable).
- * 2...) An arbitrary number of RealJoint variables, each one a Dirichlet distributed random variable.
- * 
+ * <p>
+ * <ol>
+ * <li>Parameter (non-negative Real variable).
+ * <li> An arbitrary number of RealJoint variables, each one a Dirichlet distributed random variable.
+ * </ol>
  * The dimension of the Dirichlet variable must be specified in the constructor.
- * 
+ * <p>
  * The parameter may optionally be specified as constants in the constructor.
  * In this case, the parameters are not included in the list of arguments.
  * 
  * @since 0.05
  */
-public class ExchangeableDirichlet extends FactorFunction
+public class ExchangeableDirichlet extends UnaryFactorFunction
 {
+	private static final long serialVersionUID = 1L;
+
 	private int _dimension;
 	private double _alpha;
 	private double _logBetaAlpha;
@@ -54,14 +58,14 @@ public class ExchangeableDirichlet extends FactorFunction
 
 	public ExchangeableDirichlet(int dimension)		// Variable parameter
 	{
-		super();
+		super((String)null);
 		_dimension = dimension;
 		_parametersConstant = false;
 		_firstDirectedToIndex = 1;
 	}
 	public ExchangeableDirichlet(int dimension, double alpha)	// Constant parameter
 	{
-		super();
+		super((String)null);
 		_dimension = dimension;
 		_alpha = alpha;
 		_logBetaAlpha = logBeta(_alpha);
@@ -70,7 +74,46 @@ public class ExchangeableDirichlet extends FactorFunction
 		if (_alpha <= 0) throw new DimpleException("Non-positive alpha parameter. Domain must be restricted to positive values.");
 	}
 	
-
+	protected ExchangeableDirichlet(ExchangeableDirichlet other)
+	{
+		super(other);
+		_dimension = other._dimension;
+		_alpha = other._alpha;
+		_logBetaAlpha = other._logBetaAlpha;
+		_firstDirectedToIndex = other._firstDirectedToIndex;
+		_parametersConstant = other._parametersConstant;
+	}
+	
+	@Override
+	public ExchangeableDirichlet clone()
+	{
+		return new ExchangeableDirichlet(this);
+	}
+	
+	/*----------------
+	 * IDatum methods
+	 */
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other instanceof ExchangeableDirichlet)
+		{
+			ExchangeableDirichlet that = (ExchangeableDirichlet)other;
+			return _parametersConstant == that._parametersConstant &&
+				_dimension == that._dimension &&
+				_alpha == that._alpha &&
+				_firstDirectedToIndex == that._firstDirectedToIndex;
+		}
+		
+		return false;
+	}
+	
     @Override
     public final double evalEnergy(Value[] arguments)
     {

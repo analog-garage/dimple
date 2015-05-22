@@ -21,6 +21,8 @@ import static org.junit.Assert.*;
 
 import java.io.PrintStream;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.ParameterizedMessageBase;
 import com.analog.lyric.dimple.test.DimpleTestBase;
@@ -44,7 +46,12 @@ public class TestParameterizedMessage extends DimpleTestBase
 			return new BogusParameters();
 		}
 		
-		
+		@Override
+		public boolean objectEquals(@Nullable Object other)
+		{
+			return other instanceof BogusParameters;
+		}
+
 		@Override
 		public void print(PrintStream out, int verbosity)
 		{

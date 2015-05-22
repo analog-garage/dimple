@@ -18,6 +18,10 @@ package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
 import java.io.PrintStream;
 
+import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.data.DataRepresentationType;
+
 /**
  * A singleton empty message with no parameters.
  * <p>
@@ -34,6 +38,18 @@ public class NullMessage implements IParameterizedMessage, Cloneable
 	
 	private NullMessage()
 	{
+	}
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		return other instanceof NullMessage;
+	}
+	
+	@Override
+	public DataRepresentationType representationType()
+	{
+		return DataRepresentationType.MESSAGE;
 	}
 	
 	@Override

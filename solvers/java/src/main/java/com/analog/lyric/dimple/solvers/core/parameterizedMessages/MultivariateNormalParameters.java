@@ -100,7 +100,6 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 		return new MultivariateNormalParameters(this);
 	}
 	
-
 	public final void setMeanAndCovariance(double[] mean, double[][] covariance)
 	{
 		_vector = _mean = mean.clone();
@@ -122,6 +121,44 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 		_vector = other._vector.clone();
 		_matrix = cloneMatrix(other._matrix);
 		_isInInformationForm = other._isInInformationForm;
+	}
+	
+	/*----------------
+	 * IDatum methods
+	 */
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+
+		if (other instanceof MultivariateNormalParameters)
+		{
+			MultivariateNormalParameters that = (MultivariateNormalParameters)other;
+			if (_isInInformationForm == that._isInInformationForm &&
+				Arrays.equals(_vector,that._vector) && Arrays.equals(_mean, that._mean))
+			{
+				final double[][] thisMatrix = _matrix;
+				final double[][] thatMatrix = that._matrix;
+				
+				if (thisMatrix.length == thatMatrix.length)
+				{
+					for (int i = thisMatrix.length; --i>=0;)
+					{
+						if (!Arrays.equals(thisMatrix[i], thatMatrix[i]))
+						{
+							return false;
+						}
+					}
+					return true;
+				}
+			}
+		}
+		
+		return false;
 	}
 	
 	/*--------------------

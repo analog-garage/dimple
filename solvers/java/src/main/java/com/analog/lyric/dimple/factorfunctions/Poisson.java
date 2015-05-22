@@ -21,9 +21,9 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 
 /**
@@ -45,8 +45,10 @@ import com.analog.lyric.dimple.model.values.Value;
  * The rate parameter may optionally be specified as constants in the constructor.
  * In this case, it is not included in the list of arguments.
  */
-public class Poisson extends FactorFunction implements IParametricFactorFunction
+public class Poisson extends UnaryFactorFunction implements IParametricFactorFunction
 {
+	private static final long serialVersionUID = 1L;
+
 	protected double _lambda;
 	protected double _logLambda;
 	protected boolean _lambdaParameterConstant = false;
@@ -56,7 +58,7 @@ public class Poisson extends FactorFunction implements IParametricFactorFunction
 	 * Construction
 	 */
 	
-	public Poisson() {super();}		// For variable lambda
+	public Poisson() {super((String)null);}		// For variable lambda
 	public Poisson(double lambda)	// For fixed lambda
 	{
 		this();
@@ -77,6 +79,45 @@ public class Poisson extends FactorFunction implements IParametricFactorFunction
 	{
 		this((double)getOrDefault(parameters, "lambda", 1.0));
 	}
+	
+	protected Poisson(Poisson other)
+	{
+		super(other);
+		_lambda = other._lambda;
+		_logLambda = other._logLambda;
+		_lambdaParameterConstant = other._lambdaParameterConstant;
+		_firstDirectedToIndex = other._firstDirectedToIndex;
+	}
+	
+	@Override
+	public Poisson clone()
+	{
+		return new Poisson(this);
+	}
+	
+	/*----------------
+	 * IDatum methods
+	 */
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other instanceof Poisson)
+		{
+			Poisson that = (Poisson)other;
+			return _lambdaParameterConstant == that._lambdaParameterConstant &&
+				_lambda == that._lambda &&
+				_firstDirectedToIndex == that._firstDirectedToIndex;
+		}
+		
+		return false;
+	}
+	
 	
 	/*------------------------
 	 * FactorFunction methods

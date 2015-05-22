@@ -58,13 +58,25 @@ public abstract class FactorFunction implements IFactorFunction
 	
 	protected FactorFunction()
 	{
-		this(null);
+		this((String)null);
 	}
 	
     protected FactorFunction(@Nullable String name)
     {
 		_name = name != null ? name : getClass().getSimpleName();
 	}
+    
+    protected FactorFunction(FactorFunction other)
+    {
+    	_name = other._name;
+    }
+    
+    @Override
+    public FactorFunction clone() throws CloneNotSupportedException
+    {
+    	throw new CloneNotSupportedException(String.format("%s objects do not support cloning",
+    		getClass().getSimpleName()));
+    }
 
     /*------------------
      * Abstract methods

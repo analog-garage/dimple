@@ -16,7 +16,9 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 
 /**
@@ -24,13 +26,27 @@ import com.analog.lyric.dimple.model.values.Value;
  * 
  * @since 0.05
  */
-public class Uniform extends FactorFunction
+public class Uniform extends UnaryFactorFunction
 {
+	private static final long serialVersionUID = 1L;
+
 	public static Uniform INSTANCE = new Uniform();
 	
 	public Uniform()
 	{
 		super("Uniform");
+	}
+	
+	@Override
+	public UnaryFactorFunction clone()
+	{
+		return INSTANCE;
+	}
+
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		return other instanceof Uniform;
 	}
 	
 	@Override
@@ -56,4 +72,5 @@ public class Uniform extends FactorFunction
 	{
 		return 1.0;
 	}
+
 }

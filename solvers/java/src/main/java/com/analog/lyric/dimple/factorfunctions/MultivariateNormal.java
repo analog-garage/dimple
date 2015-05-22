@@ -16,10 +16,14 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import static java.util.Objects.*;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 
@@ -29,18 +33,20 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNo
  * with a vector representing the mean parameter and a matrix (in the form of an array of vectors)
  * representing the precision, or alternatively a vector representing the information vector and
  * a matrix representing the information matrix.
- * 
+ * <p>
  * TODO: THE CURRENT IMPLEMENTATION OF THIS FACTOR FUNCTION SUPPORTS ONLY CONSTANT PARAMETRES,
  * SPECIFIED IN THE CONSTRUCTOR.  VARIABLE PARAMETER SUPPORT SHOULD BE ADDED.
- * 
+ * <p>
  * The variables are ordered as follows in the argument list:
  * 
  * 1...) An arbitrary number of RealJoint variables
  * 
  * @since 0.05
  */
-public class MultivariateNormal extends FactorFunction
+public class MultivariateNormal extends UnaryFactorFunction
 {
+	private static final long serialVersionUID = 1L;
+
 	private MultivariateNormalParameters _parameters;
 	private double[][] _informationMatrix;
 	private double[] _mean;
@@ -65,12 +71,31 @@ public class MultivariateNormal extends FactorFunction
 
 	public MultivariateNormal(MultivariateNormalParameters parameters)
 	{
-		super();
+		super((String)null);
 		_parameters = parameters;
 		_informationMatrix = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
 		_mean = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 		_diff = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 		initializeConstantParameters(parameters);
+	}
+	
+	protected MultivariateNormal(MultivariateNormal other)
+	{
+		super(other);
+		_parameters = other._parameters.clone();
+		_informationMatrix = requireNonNull(ArrayUtil.deepCloneArray(other._informationMatrix));
+		_mean = requireNonNull(ArrayUtil.cloneArray(other._mean));
+		_diff = requireNonNull(ArrayUtil.cloneArray(other._diff));
+		_parametersConstant = other._parametersConstant;
+		_firstDirectedToIndex = other._firstDirectedToIndex;
+		_dimension = other._dimension;
+		_normalizationConstant = other._normalizationConstant;
+	}
+	
+	@Override
+	public MultivariateNormal clone()
+	{
+		return new MultivariateNormal(this);
 	}
 	
 	// Common initialization method used when parameters are constant
@@ -94,6 +119,29 @@ public class MultivariateNormal extends FactorFunction
 		Jama.Matrix informationMatrix = new Jama.Matrix(_informationMatrix);
 		double determinant = informationMatrix.det();
 		_normalizationConstant = (_dimension * _logSqrt2pi) - (Math.log(determinant) * 0.5);
+	}
+	
+	/*----------------
+	 * IDatum methods
+	 */
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other instanceof MultivariateNormal)
+		{
+			MultivariateNormal that = (MultivariateNormal)other;
+			return _parametersConstant == that._parametersConstant &&
+				_firstDirectedToIndex == that._firstDirectedToIndex &&
+				_parameters.objectEquals(that._parameters);
+		}
+		
+		return false;
 	}
 	
 

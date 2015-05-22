@@ -17,6 +17,9 @@
 package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
 import java.io.PrintStream;
+import java.util.Arrays;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.math.Utilities;
 
@@ -43,6 +46,27 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	DiscreteMessage(double[] message)
 	{
 		_message = message.clone();
+	}
+	
+	/*----------------
+	 * IDatum methods
+	 */
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other != null && other.getClass() == getClass())
+		{
+			DiscreteMessage that = (DiscreteMessage)other;
+			return Arrays.equals(_message, that._message);
+		}
+		
+		return false;
 	}
 	
 	/*--------------------

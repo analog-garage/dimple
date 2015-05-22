@@ -16,32 +16,40 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import java.util.Arrays;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
- * Parameterized categorical distribution, which corresponds to p(x | alpha),
+ * Parameterized categorical distribution
+ * <p>
+ * Corresponds to p(x | alpha),
  * where alpha is a vector of probabilities that are parameterized as energy values
  * (-log of unnormalized probabilities).
- * 
+ * <p>
  * Representing alpha as described, the conjugate prior for alpha is such that
  * each entry of alpha is independently distributed according to
  * a negative exp-Gamma distribution, all with a common Beta parameter.
  * Depending on the solver, it may or may not be necessary to use a
  * conjugate prior (for the Gibbs solver, for example, it is not).
- * 
+ * <p>
  * The variables in the argument list are ordered as follows:
- * 
- * 1..N) Alpha: Vector of energy values (-log of unnormalized probabilities)
- * N+1...) An arbitrary number of discrete output variable (MUST be zero-based integer values) 	// TODO: remove this restriction
- * 
+ * <ul>
+ * <li>1..N) Alpha: Vector of energy values (-log of unnormalized probabilities)
+ * <li>N+1...) An arbitrary number of discrete output variable (MUST be zero-based integer values) 	// TODO: remove this restriction
+ * </ul>
  * The parameters may optionally be specified as constants in the constructor.
  * In this case, the parameters are not included in the list of arguments.
  */
-public class CategoricalEnergyParameters extends FactorFunction
+public class CategoricalEnergyParameters extends UnaryFactorFunction
 {
+	private static final long serialVersionUID = 1L;
+
 	private int _dimension;
 	private double[] _alpha;
 	private boolean _parametersConstant;
@@ -49,7 +57,7 @@ public class CategoricalEnergyParameters extends FactorFunction
 
 	public CategoricalEnergyParameters(int dimension)		// Variable parameters
 	{
-		super();
+		super((String)null);
 		_dimension = dimension;
 		_firstDirectedToIndex = dimension;
 		_parametersConstant = false;
@@ -61,11 +69,50 @@ public class CategoricalEnergyParameters extends FactorFunction
 	 */
 	public CategoricalEnergyParameters(int dimension, double[] alpha)		// Constant parameters
 	{
-		super();
+		super((String)null);
 		_dimension = dimension;
 		_firstDirectedToIndex = 0;
 		_parametersConstant = true;
 		_alpha = alpha.clone();
+	}
+	
+	protected CategoricalEnergyParameters(CategoricalEnergyParameters other)
+	{
+		super(other);
+		_alpha = other._alpha.clone();
+		_dimension = other._dimension;
+		_firstDirectedToIndex = other._firstDirectedToIndex;
+		_parametersConstant = other._parametersConstant;
+	}
+	
+	@Override
+	public CategoricalEnergyParameters clone()
+	{
+		return new CategoricalEnergyParameters(this);
+	}
+	
+	/*----------------
+	 * IDatum methods
+	 */
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other instanceof CategoricalEnergyParameters)
+		{
+			CategoricalEnergyParameters that = (CategoricalEnergyParameters)other;
+			return _parametersConstant == that._parametersConstant &&
+				_firstDirectedToIndex == that._firstDirectedToIndex &&
+				_dimension == that._dimension &&
+				Arrays.equals(_alpha, that._alpha);
+		}
+		
+		return false;
 	}
 	
     @Override

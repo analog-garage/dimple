@@ -21,26 +21,29 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 
 
 /**
- * Log-normal distribution. The variables in the argument list are ordered as follows:
- * 
- * 1) Mean parameter
- * 2) Precision parameter (inverse variance) (non-negative)
- * 3...) An arbitrary number of real variables
- * 
+ * Log-normal distribution.
+ * <p>
+ * The variables in the argument list are ordered as follows:
+ * <ol>
+ * <li>Mean parameter
+ * <li>Precision parameter (inverse variance) (non-negative)
+ * <li>An arbitrary number of real variables
+ * </ol>
  * Mean and precision parameters may optionally be specified as constants in the constructor.
  * In this case, the mean and precision are not included in the list of arguments.
- * 
  */
-public class LogNormal extends FactorFunction implements IParametricFactorFunction
+public class LogNormal extends UnaryFactorFunction implements IParametricFactorFunction
 {
+	private static final long serialVersionUID = 1L;
+
 	protected double _mean;
 	protected double _precision;
 	protected double _logSqrtPrecisionOver2Pi;
@@ -53,7 +56,7 @@ public class LogNormal extends FactorFunction implements IParametricFactorFuncti
 	 * Construction
 	 */
 	
-	public LogNormal() {super();}
+	public LogNormal() {super((String)null);}
 	public LogNormal(double mean, double precision)
 	{
 		this();
@@ -76,9 +79,50 @@ public class LogNormal extends FactorFunction implements IParametricFactorFuncti
 		this(new NormalParameters(parameters));
 	}
 	
+	protected LogNormal(LogNormal other)
+	{
+		super(other);
+		_mean = other._mean;
+		_precision = other._precision;
+		_logSqrtPrecisionOver2Pi = other._logSqrtPrecisionOver2Pi;
+		_precisionOverTwo = other._precisionOverTwo;
+		_parametersConstant = other._parametersConstant;
+		_firstDirectedToIndex = other._firstDirectedToIndex;
+	}
+	
+	@Override
+	public LogNormal clone()
+	{
+		return new LogNormal(this);
+	}
+	
 	private LogNormal(NormalParameters parameters)
 	{
 		this(parameters.getMean(), parameters.getPrecision());
+	}
+	
+	/*----------------
+	 * IDatum methods
+	 */
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other instanceof LogNormal)
+		{
+			LogNormal that = (LogNormal)other;
+			return _parametersConstant == that._parametersConstant &&
+				_mean == that._mean &&
+				_precision == that._precision &&
+				_firstDirectedToIndex == that._firstDirectedToIndex;
+		}
+		
+		return false;
 	}
 	
 	/*------------------------

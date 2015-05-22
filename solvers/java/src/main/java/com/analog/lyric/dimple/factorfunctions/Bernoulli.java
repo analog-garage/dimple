@@ -21,9 +21,9 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -43,8 +43,10 @@ import com.analog.lyric.dimple.model.values.Value;
  * The parameter may optionally be specified as a constant in the constructor.
  * In this case, the parameter is not included in the list of arguments.
  */
-public class Bernoulli extends FactorFunction implements IParametricFactorFunction
+public class Bernoulli extends UnaryFactorFunction implements IParametricFactorFunction
 {
+	private static final long serialVersionUID = 1L;
+
 	private double _p;
 	private boolean _parametersConstant;
 	private int _firstDirectedToIndex;
@@ -55,7 +57,7 @@ public class Bernoulli extends FactorFunction implements IParametricFactorFuncti
 	
 	public Bernoulli()		// Variable parameter
 	{
-		super();
+		super((String)null);
 		_parametersConstant = false;
 		_firstDirectedToIndex = 1;
 	}
@@ -65,7 +67,7 @@ public class Bernoulli extends FactorFunction implements IParametricFactorFuncti
 	 */
 	public Bernoulli(double p)	// Constant parameter
 	{
-		super();
+		this();
 		_p = p;
 		_parametersConstant = true;
 		_firstDirectedToIndex = 0;
@@ -83,6 +85,43 @@ public class Bernoulli extends FactorFunction implements IParametricFactorFuncti
 		this((double)getOrDefault(parameterMap, "p", .5));
 	}
 
+	protected Bernoulli(Bernoulli other)
+	{
+		super(other);
+		_p = other._p;
+		_parametersConstant = other._parametersConstant;
+		_firstDirectedToIndex = other._firstDirectedToIndex;
+	}
+	
+	@Override
+	public Bernoulli clone()
+	{
+		return new Bernoulli(this);
+	}
+	
+	/*----------------
+	 * IDatum methods
+	 */
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other instanceof Bernoulli)
+		{
+			Bernoulli that = (Bernoulli)other;
+			return _p == that._p &&
+				_parametersConstant == that._parametersConstant &&
+				_firstDirectedToIndex == that._firstDirectedToIndex;
+		}
+		
+		return false;
+	}
+	
 	/*-------------------------
 	 *  FactorFunction methods
 	 */

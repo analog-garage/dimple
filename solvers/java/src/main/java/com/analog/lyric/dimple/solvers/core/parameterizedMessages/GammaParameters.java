@@ -20,6 +20,8 @@ import static org.apache.commons.math3.special.Gamma.*;
 
 import java.io.PrintStream;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 public class GammaParameters extends ParameterizedMessageBase
 {
 	private static final long serialVersionUID = 1L;
@@ -44,6 +46,22 @@ public class GammaParameters extends ParameterizedMessageBase
 		return new GammaParameters(this);
 	}
 
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other instanceof GammaParameters)
+		{
+			GammaParameters that = (GammaParameters)other;
+			return _alphaMinusOne == that._alphaMinusOne && _beta == that._beta;
+		}
+
+		return false;
+	}
 
 	// Natural parameters are alpha-1 and beta
 	public final double getAlphaMinusOne() {return _alphaMinusOne;}

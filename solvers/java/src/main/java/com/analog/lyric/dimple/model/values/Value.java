@@ -24,6 +24,8 @@ import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.data.DataRepresentationType;
+import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
@@ -45,7 +47,7 @@ import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
  * 
  * @since 0.05
  */
-public abstract class Value implements Cloneable, Serializable
+public abstract class Value implements IDatum, Cloneable, Serializable
 {
 	private static final long serialVersionUID = 1L;
 
@@ -255,6 +257,37 @@ public abstract class Value implements Cloneable, Serializable
 	public String toString()
 	{
 		return getObject() + "";
+	}
+	
+	/*----------------
+	 * IDatum methods
+	 */
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other instanceof Value)
+		{
+			return valueEquals((Value)other);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Returns {@link DataRepresentationType#VALUE}.
+	 */
+	@Override
+	public final DataRepresentationType representationType()
+	{
+		return DataRepresentationType.VALUE;
 	}
 	
 	/*---------------

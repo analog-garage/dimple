@@ -21,6 +21,8 @@ import static org.apache.commons.math3.special.Gamma.*;
 
 import java.io.PrintStream;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 public class BetaParameters extends ParameterizedMessageBase
 {
 	private static final long serialVersionUID = 1L;
@@ -58,6 +60,27 @@ public class BetaParameters extends ParameterizedMessageBase
 	public String toString()
 	{
 		return String.format("Beta(%g,%g)", getAlpha(), getBeta());
+	}
+	
+	/*----------------
+	 * IDatum methods
+	 */
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (other == this)
+		{
+			return true;
+		}
+		
+		if (other instanceof BetaParameters)
+		{
+			BetaParameters that = (BetaParameters)other;
+			return _alphaMinusOne == that._alphaMinusOne && _betaMinusOne == that._betaMinusOne;
+		}
+		
+		return false;
 	}
 	
 	/*--------------------

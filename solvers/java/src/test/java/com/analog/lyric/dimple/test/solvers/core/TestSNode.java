@@ -218,6 +218,12 @@ public class TestSNode extends DimpleTestBase
 		}
 		
 		@Override
+		public boolean objectEquals(@Nullable Object other)
+		{
+			return other instanceof TestMessage && ((TestMessage)other)._counter == _counter;
+		}
+		
+		@Override
 		public void print(PrintStream out, int verbosity)
 		{
 			out.format("TestMessage(counter=%d)", _counter);

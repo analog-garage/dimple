@@ -21,9 +21,9 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 
@@ -42,8 +42,10 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParamete
  * In this case, the mean and precision are not included in the list of arguments.
  * 
  */
-public class Normal extends FactorFunction implements IParametricFactorFunction
+public class Normal extends UnaryFactorFunction implements IParametricFactorFunction
 {
+	private static final long serialVersionUID = 1L;
+
 	protected double _mean;
 	protected double _precision;
 	protected double _logSqrtPrecisionOver2Pi;
@@ -56,7 +58,7 @@ public class Normal extends FactorFunction implements IParametricFactorFunction
 	 * Construction
 	 */
 	
-	public Normal() {super();}
+	public Normal() {super((String)null);}
 	public Normal(double mean, double precision)
 	{
 		this();
@@ -96,6 +98,47 @@ public class Normal extends FactorFunction implements IParametricFactorFunction
 		this(new NormalParameters(parameters));
 	}
 
+	protected Normal(Normal other)
+	{
+		super(other);
+		_mean = other._mean;
+		_precision = other._precision;
+		_precisionOverTwo = other._precisionOverTwo;
+		_firstDirectedToIndex = other._firstDirectedToIndex;
+		_logSqrtPrecisionOver2Pi = other._logSqrtPrecisionOver2Pi;
+		_parametersConstant = other._parametersConstant;
+	}
+	
+	@Override
+	public Normal clone()
+	{
+		return new Normal(this);
+	}
+	
+	/*----------------
+	 * IDatum methods
+	 */
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other instanceof Normal)
+		{
+			Normal that = (Normal)other;
+			return _parametersConstant == that._parametersConstant &&
+				_mean == that._mean &&
+				_precision == that._precision &&
+				_firstDirectedToIndex == that._firstDirectedToIndex;
+		}
+		
+		return false;
+	}
+	
 	/*------------------------
 	 * FactorFunction methods
 	 */

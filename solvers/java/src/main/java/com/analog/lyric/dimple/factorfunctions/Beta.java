@@ -21,21 +21,27 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 
 /**
- * Gamma distribution. The variables in the argument list are ordered as follows:
- * 1) Alpha: Alpha parameter of the Beta distribution (non-negative)
- * 2) Beta: Beta parameter of the Beta distribution (non-negative)
- * 3...) An arbitrary number of real variables
+ * Gamma distribution.
+ * <p>
+ * The variables in the argument list are ordered as follows:
+ * <ol>
+ * <li>Alpha: Alpha parameter of the Beta distribution (non-negative)
+ * <li>Beta: Beta parameter of the Beta distribution (non-negative)
+ * <li>An arbitrary number of real variables
+ * </ol>
  * Alpha and Beta parameters may optionally be specified as constants in the constructor.
  * In this case, they are not included in the list of arguments.
  */
-public class Beta extends FactorFunction implements IParametricFactorFunction
+public class Beta extends UnaryFactorFunction implements IParametricFactorFunction
 {
+	private static final long serialVersionUID = 1L;
+
 	protected double _alpha;
 	protected double _beta;
 	protected double _alphaMinusOne;
@@ -50,7 +56,7 @@ public class Beta extends FactorFunction implements IParametricFactorFunction
 
 	public Beta()
 	{
-		super();
+		super((String)null);
 	}
 
 	public Beta(double alpha, double beta)
@@ -84,6 +90,48 @@ public class Beta extends FactorFunction implements IParametricFactorFunction
 		this((double) getOrDefault(parameters, "alpha", 1.0), (double) getOrDefault(parameters, "beta", 1.0));
 	}
 
+	protected Beta(Beta other)
+	{
+		super(other);
+		_alpha = other._alpha;
+		_beta = other._beta;
+		_alphaMinusOne = other._alphaMinusOne;
+		_betaMinusOne = other._betaMinusOne;
+		_logBetaAlphaBeta = other._logBetaAlphaBeta;
+		_parametersConstant = other._parametersConstant;
+		_firstDirectedToIndex = other._firstDirectedToIndex;
+	}
+	
+	@Override
+	public Beta clone()
+	{
+		return new Beta(this);
+	}
+	
+	/*----------------
+	 * IDatum methods
+	 */
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other instanceof Beta)
+		{
+			Beta that = (Beta)other;
+			return _parametersConstant == that._parametersConstant &&
+				_alpha == that._alpha &&
+				_beta == that._beta &&
+				_firstDirectedToIndex == that._firstDirectedToIndex;
+		}
+		
+		return false;
+	}
+	
 	/*------------------------
 	 * FactorFunction methods
 	 */

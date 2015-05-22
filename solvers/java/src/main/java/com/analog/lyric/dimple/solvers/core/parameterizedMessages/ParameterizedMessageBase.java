@@ -11,6 +11,7 @@ package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
 import java.io.PrintStream;
 
+import com.analog.lyric.dimple.data.DataRepresentationType;
 import com.analog.lyric.util.misc.IPrintable;
 
 /**
@@ -49,6 +50,21 @@ public abstract class ParameterizedMessageBase implements IParameterizedMessage
 		return IPrintable.Methods.toString(this, verbosity);
 	}
 
+	/*----------------
+	 * IDatum methods
+	 */
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Returns {@link DataRepresentationType#MESSAGE}.
+	 */
+	@Override
+	public DataRepresentationType representationType()
+	{
+		return DataRepresentationType.MESSAGE;
+	}
+	
 	/*-------------------------------
 	 * IParameterizedMessage methods
 	 */

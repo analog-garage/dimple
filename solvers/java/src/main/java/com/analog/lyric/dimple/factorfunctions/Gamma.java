@@ -21,9 +21,9 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -38,8 +38,10 @@ import com.analog.lyric.dimple.model.values.Value;
  * In this case, they are not included in the list of arguments.
  * 
  */
-public class Gamma extends FactorFunction implements IParametricFactorFunction
+public class Gamma extends UnaryFactorFunction implements IParametricFactorFunction
 {
+	private static final long serialVersionUID = 1L;
+
 	protected double _alpha;
 	protected double _beta;
 	protected double _alphaMinusOne;
@@ -52,7 +54,7 @@ public class Gamma extends FactorFunction implements IParametricFactorFunction
 	 * Construction
 	 */
 	
-	public Gamma() {super();}
+	public Gamma() {super((String)null);}
 	public Gamma(double alpha, double beta)
 	{
 		this();
@@ -79,6 +81,48 @@ public class Gamma extends FactorFunction implements IParametricFactorFunction
 	public Gamma(Map<String,Object> parameters)
 	{
 		this((double)getOrDefault(parameters, "alpha", 1.0), (double)getOrDefault(parameters, "beta", 1.0));
+	}
+	
+	protected Gamma(Gamma other)
+	{
+		super(other);
+		_alpha = other._alpha;
+		_alphaMinusOne = other._alphaMinusOne;
+		_beta = other._beta;
+		_logBeta = other._logBeta;
+		_logGammaAlphaMinusAlphaLogBeta = other._logGammaAlphaMinusAlphaLogBeta;
+		_firstDirectedToIndex = other._firstDirectedToIndex;
+		_parametersConstant = other._parametersConstant;
+	}
+	
+	@Override
+	public Gamma clone()
+	{
+		return new Gamma(this);
+	}
+	
+	/*----------------
+	 * IDatum methods
+	 */
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other instanceof Gamma)
+		{
+			Gamma that = (Gamma)other;
+			return _parametersConstant == that._parametersConstant &&
+				_alpha == that._alpha &&
+				_beta == that._beta &&
+				_firstDirectedToIndex == that._firstDirectedToIndex;
+		}
+		
+		return false;
 	}
 	
 	/*------------------------

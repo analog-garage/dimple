@@ -16,15 +16,16 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -45,8 +46,10 @@ import com.analog.lyric.dimple.model.values.Value;
  * The parameters may optionally be specified as constants in the constructor.
  * In this case, the parameters are not included in the list of arguments.
  */
-public class Categorical extends FactorFunction implements IParametricFactorFunction
+public class Categorical extends UnaryFactorFunction implements IParametricFactorFunction
 {
+	private static final long serialVersionUID = 1L;
+
 	private double[] _alpha;
 	private boolean _parametersConstant;
 	private int _firstDirectedToIndex;
@@ -57,7 +60,7 @@ public class Categorical extends FactorFunction implements IParametricFactorFunc
 	
 	public Categorical()		// Variable parameters
 	{
-		super();
+		super((String)null);
 		_alpha = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 		_parametersConstant = false;
 		_firstDirectedToIndex = 1;	// Parameter vector is an array (one RealJoint variable)
@@ -68,7 +71,7 @@ public class Categorical extends FactorFunction implements IParametricFactorFunc
 	 */
 	public Categorical(double[] alpha)	// Constant parameters
 	{
-		super();
+		super((String)null);
 		_alpha = alpha.clone();
 		_parametersConstant = true;
 		_firstDirectedToIndex = 0;
@@ -94,6 +97,43 @@ public class Categorical extends FactorFunction implements IParametricFactorFunc
 	public Categorical(Map<String,Object> parameters)
 	{
 		this((double[])require(parameters, "alpha", "alphas"));
+	}
+	
+	protected Categorical(Categorical other)
+	{
+		super(other);
+		_alpha = other._alpha.clone();
+		_parametersConstant = other._parametersConstant;
+		_firstDirectedToIndex = other._firstDirectedToIndex;
+	}
+	
+	@Override
+	public Categorical clone()
+	{
+		return new Categorical(this);
+	}
+	
+	/*----------------
+	 * IDatum methods
+	 */
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other instanceof Categorical)
+		{
+			Categorical that = (Categorical)other;
+			return _parametersConstant == that._parametersConstant &&
+				_firstDirectedToIndex == that._firstDirectedToIndex &&
+				Arrays.equals(_alpha, that._alpha);
+		}
+		
+		return false;
 	}
 	
 	/*------------------------

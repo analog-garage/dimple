@@ -21,25 +21,28 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
  * Inverse Gamma distribution. The variables in the argument list are ordered as follows:
- * 
- * 1) Alpha: Alpha parameter of the Inverse Gamma distribution (non-negative)
- * 2) Beta: Beta parameter of the Inverse Gamma distribution (non-negative)
- * 3...) An arbitrary number of real variables
- * 
+ * <p>
+ * <ol>
+ * <li>Alpha: Alpha parameter of the Inverse Gamma distribution (non-negative)
+ * <li>Beta: Beta parameter of the Inverse Gamma distribution (non-negative)
+ * <li>... an arbitrary number of real variables
+ * </ol>
  * Alpha and Beta parameters may optionally be specified as constants in the constructor.
  * In this case, they are not included in the list of arguments.
  * 
  */
-public class InverseGamma extends FactorFunction implements IParametricFactorFunction
+public class InverseGamma extends UnaryFactorFunction implements IParametricFactorFunction
 {
+	private static final long serialVersionUID = 1L;
+
 	protected double _alpha;
 	protected double _beta;
 	protected double _alphaPlusOne;
@@ -51,7 +54,7 @@ public class InverseGamma extends FactorFunction implements IParametricFactorFun
 	 * Construction
 	 */
 	
-	public InverseGamma() {super();}
+	public InverseGamma() {super((String)null);}
 	public InverseGamma(double alpha, double beta)
 	{
 		this();
@@ -74,6 +77,47 @@ public class InverseGamma extends FactorFunction implements IParametricFactorFun
 	public InverseGamma(Map<String,Object> parameters)
 	{
 		this((double)getOrDefault(parameters, "alpha", 1.0), (double)getOrDefault(parameters, "beta", 1.0));
+	}
+	
+	protected InverseGamma(InverseGamma other)
+	{
+		super(other);
+		_alpha = other._alpha;
+		_beta = other._beta;
+		_alphaPlusOne = other._alphaPlusOne;
+		_logGammaAlphaMinusAlphaLogBeta = other._logGammaAlphaMinusAlphaLogBeta;
+		_parametersConstant = other._parametersConstant;
+		_firstDirectedToIndex = other._firstDirectedToIndex;
+	}
+	
+	@Override
+	public InverseGamma clone()
+	{
+		return new InverseGamma(this);
+	}
+	
+	/*----------------
+	 * IDatum methods
+	 */
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other instanceof InverseGamma)
+		{
+			InverseGamma that = (InverseGamma)other;
+			return _parametersConstant == that._parametersConstant &&
+				_alpha == that._alpha &&
+				_beta == that._beta &&
+				_firstDirectedToIndex == that._firstDirectedToIndex;
+		}
+		
+		return false;
 	}
 	
 	/*------------------------

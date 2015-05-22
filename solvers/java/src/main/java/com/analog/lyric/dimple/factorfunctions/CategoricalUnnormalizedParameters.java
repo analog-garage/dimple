@@ -16,9 +16,13 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import java.util.Arrays;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -40,8 +44,10 @@ import com.analog.lyric.dimple.model.values.Value;
  * The parameters may optionally be specified as constants in the constructor.
  * In this case, the parameters are not included in the list of arguments.
  */
-public class CategoricalUnnormalizedParameters extends FactorFunction
+public class CategoricalUnnormalizedParameters extends UnaryFactorFunction
 {
+	private static final long serialVersionUID = 1L;
+
 	private int _dimension;
 	private double[] _alpha;
 	private boolean _parametersConstant;
@@ -49,7 +55,7 @@ public class CategoricalUnnormalizedParameters extends FactorFunction
 
 	public CategoricalUnnormalizedParameters(int dimension)		// Variable parameters
 	{
-		super();
+		super((String)null);
 		_dimension = dimension;
 		_firstDirectedToIndex = dimension;
 		_parametersConstant = false;
@@ -61,7 +67,7 @@ public class CategoricalUnnormalizedParameters extends FactorFunction
 	 */
 	public CategoricalUnnormalizedParameters(int dimension, double[] alpha)		// Constant parameters
 	{
-		super();
+		super((String)null);
 		_dimension = dimension;
 		_firstDirectedToIndex = 0;
 		_parametersConstant = true;
@@ -74,6 +80,45 @@ public class CategoricalUnnormalizedParameters extends FactorFunction
     	}
     	for (int i = 0; i < _alpha.length; i++)		// Normalize the alpha vector in case they're not already normalized
     		_alpha[i] /= sum;
+	}
+	
+	protected CategoricalUnnormalizedParameters(CategoricalUnnormalizedParameters other)
+	{
+		super(other);
+		_dimension = other._dimension;
+		_alpha = other._alpha.clone();
+		_firstDirectedToIndex = other._firstDirectedToIndex;
+		_parametersConstant = other._parametersConstant;
+	}
+		
+	@Override
+	public CategoricalUnnormalizedParameters clone()
+	{
+		return new CategoricalUnnormalizedParameters(this);
+	}
+	
+	/*----------------
+	 * IDatum methods
+	 */
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other instanceof CategoricalUnnormalizedParameters)
+		{
+			CategoricalUnnormalizedParameters that = (CategoricalUnnormalizedParameters)other;
+			return _parametersConstant == that._parametersConstant &&
+				_firstDirectedToIndex == that._firstDirectedToIndex &&
+				_dimension == that._dimension &&
+				Arrays.equals(_alpha, that._alpha);
+		}
+		
+		return false;
 	}
 	
     @Override

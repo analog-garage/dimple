@@ -18,9 +18,10 @@ package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
 import java.io.Serializable;
 
+import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.util.misc.IPrintable;
 
-public interface IParameterizedMessage extends Cloneable, Serializable, IPrintable
+public interface IParameterizedMessage extends IDatum, Cloneable, Serializable, IPrintable
 {
 	public abstract IParameterizedMessage clone();
 	

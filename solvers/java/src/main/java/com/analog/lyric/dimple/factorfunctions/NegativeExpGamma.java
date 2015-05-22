@@ -60,6 +60,23 @@ public class NegativeExpGamma extends FactorFunction
     	if (_beta <= 0) throw new DimpleException("Non-positive beta parameter. This must be a positive value.");
 	}
 	
+	protected NegativeExpGamma(NegativeExpGamma other)
+	{
+		super(other);
+		_alpha = other._alpha;
+		_alphaMinusOne = other._alphaMinusOne;
+		_beta = other._beta;
+		_firstDirectedToIndex = other._firstDirectedToIndex;
+		_logGammaAlphaMinusAlphaLogBeta = other._logGammaAlphaMinusAlphaLogBeta;
+		_parametersConstant = other._parametersConstant;
+	}
+	
+	@Override
+	public NegativeExpGamma clone()
+	{
+		return new NegativeExpGamma(this);
+	}
+	
     @Override
 	public final double evalEnergy(Value[] arguments)
     {

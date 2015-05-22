@@ -19,6 +19,8 @@ package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 import java.io.PrintStream;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 
 
@@ -86,6 +88,27 @@ public class NormalParameters extends ParameterizedMessageBase
 		return new NormalParameters(this);
 	}
 
+	/*----------------
+	 * IDatum methods
+	 */
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other instanceof NormalParameters)
+		{
+			NormalParameters that = (NormalParameters)other;
+			return _mean == that._mean && _precision == that._precision;
+		}
+
+		return false;
+	}
+	
 	/*--------------------
 	 * IPrintable methods
 	 */

@@ -21,24 +21,27 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
- * Rayleigh distribution. The variables in the argument list are ordered as follows:
- * 
- * 1) Sigma parameter (non-negative)
- * 2...) An arbitrary number of real variables
- * 
+ * Rayleigh distribution.
+ * <p>
+ * The variables in the argument list are ordered as follows:
+ * <ol>
+ * <li>Sigma parameter (non-negative)
+ * <li>An arbitrary number of real variables
+ * </ol>
  * The sigma parameter may optionally be specified as constant in the constructor.
  * In this case, it is not included in the list of arguments.
- * 
  */
-public class Rayleigh extends FactorFunction implements IParametricFactorFunction
+public class Rayleigh extends UnaryFactorFunction implements IParametricFactorFunction
 {
+	private static final long serialVersionUID = 1L;
+	
 	protected double _sigma;
 	protected double _inverseSigmaSquared;
 	protected double _halfInverseSigmaSquared;
@@ -49,7 +52,7 @@ public class Rayleigh extends FactorFunction implements IParametricFactorFunctio
 	 * Construction
 	 */
 	
-	public Rayleigh() {super();}
+	public Rayleigh() {super((String)null);}
 	public Rayleigh(double sigma)
 	{
 		this();
@@ -70,6 +73,44 @@ public class Rayleigh extends FactorFunction implements IParametricFactorFunctio
 	public Rayleigh(Map<String,Object> parameters)
 	{
 		this((double)getOrDefault(parameters, "sigma", 1.0));
+	}
+	
+	protected Rayleigh(Rayleigh other)
+	{
+		super(other);
+		_sigma = other._sigma;
+		_inverseSigmaSquared = other._inverseSigmaSquared;
+		_halfInverseSigmaSquared = other._halfInverseSigmaSquared;
+		_parametersConstant = other._parametersConstant;
+		_firstDirectedToIndex = other._firstDirectedToIndex;
+	}
+	
+	@Override
+	public Rayleigh clone()
+	{
+		return new Rayleigh(this);
+	}
+	
+	/*----------------
+	 * IDatum methods
+	 */
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other instanceof Rayleigh)
+		{
+			Rayleigh that = (Rayleigh)other;
+			return _parametersConstant == that._parametersConstant &&
+				_sigma == that._sigma &&
+				_firstDirectedToIndex == that._firstDirectedToIndex;		}
+		
+		return false;
 	}
 	
 	/*------------------------

@@ -23,26 +23,29 @@ import org.eclipse.jdt.annotation.Nullable;
 import cern.jet.math.Bessel;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 
 
 /**
- * von Mises distribution. The variables in the argument list are ordered as follows:
- * 
- * 1) Mean parameter
- * 2) Precision parameter (inverse variance) (non-negative)
- * 3...) An arbitrary number of real variables, each must be between -PI and PI
- * 
+ * von Mises distribution.
+ * <p>
+ * The variables in the argument list are ordered as follows:
+ * <ol>
+ * <li>Mean parameter
+ * <li>Precision parameter (inverse variance) (non-negative)
+ * <li>An arbitrary number of real variables, each must be between -PI and PI
+ * </ol>
  * Mean and precision parameters may optionally be specified as constants in the constructor.
  * In this case, the mean and precision are not included in the list of arguments.
- * 
  */
-public class VonMises extends FactorFunction implements IParametricFactorFunction
+public class VonMises extends UnaryFactorFunction implements IParametricFactorFunction
 {
+	private static final long serialVersionUID = 1L;
+
 	protected double _mean;
 	protected double _precision;
 	protected double _log2piBesseli0Precision;
@@ -56,7 +59,7 @@ public class VonMises extends FactorFunction implements IParametricFactorFunctio
 	 * Construction
 	 */
 	
-	public VonMises() {super();}
+	public VonMises() {super((String)null);}
 	public VonMises(double mean, double precision)
 	{
 		this();
@@ -81,6 +84,46 @@ public class VonMises extends FactorFunction implements IParametricFactorFunctio
 	private VonMises(NormalParameters parameters)
 	{
 		this(parameters.getMean(), parameters.getPrecision());
+	}
+	
+	protected VonMises(VonMises other)
+	{
+		super(other);
+		_mean = other._mean;
+		_precision = other._precision;
+		_log2piBesseli0Precision = other._log2piBesseli0Precision;
+		_parametersConstant = other._parametersConstant;
+		_firstDirectedToIndex = other._firstDirectedToIndex;
+	}
+	
+	@Override
+	public VonMises clone()
+	{
+		return new VonMises(this);
+	}
+	
+	/*----------------
+	 * IDatum methods
+	 */
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other instanceof VonMises)
+		{
+			VonMises that = (VonMises)other;
+			return _parametersConstant == that._parametersConstant &&
+				_mean == that._mean &&
+				_precision == that._precision &&
+				_firstDirectedToIndex == that._firstDirectedToIndex;
+		}
+		
+		return false;
 	}
 	
 	/*------------------------

@@ -21,6 +21,8 @@ import static org.apache.commons.math3.special.Gamma.*;
 import java.io.PrintStream;
 import java.util.Arrays;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 public class DirichletParameters extends ParameterizedMessageBase
 {
 	private static final long serialVersionUID = 1L;
@@ -51,6 +53,22 @@ public class DirichletParameters extends ParameterizedMessageBase
 		return new DirichletParameters(this);
 	}
 	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (other == this)
+		{
+			return true;
+		}
+		
+		if (other instanceof DirichletParameters)
+		{
+			DirichletParameters that = (DirichletParameters)other;
+			return Arrays.equals(_alphaMinusOne, that._alphaMinusOne);
+		}
+		
+		return false;
+	}
 	
 	public final int getSize() {return _alphaMinusOne.length;}
 	public final void setSize(int size) {_alphaMinusOne = new double[size];}
