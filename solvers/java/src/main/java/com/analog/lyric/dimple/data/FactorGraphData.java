@@ -22,6 +22,7 @@ import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -37,7 +38,6 @@ import com.analog.lyric.dimple.model.core.Ids;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.util.misc.Internal;
 import com.google.common.collect.UnmodifiableIterator;
-import com.sun.org.apache.xalan.internal.utils.Objects;
 
 /**
  * Holds data for variables directly owned by a single {@link FactorGraph}.
