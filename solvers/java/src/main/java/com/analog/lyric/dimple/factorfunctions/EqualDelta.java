@@ -16,7 +16,10 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
-// This is for backwards compatibility with test and demo code
+/**
+ * @deprecated use {@link Equality} instead.
+ */
+@Deprecated
 public class EqualDelta extends Equality
 {
 	public EqualDelta() {super();}

@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.commons.math3.special.Gamma;
@@ -23,9 +24,9 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -33,15 +34,18 @@ import com.analog.lyric.dimple.model.values.Value;
  * Factor for an exchangeable set of Dirichlet distributed variables
  * associated with a variable or fixed parameter vector. The variables are
  * ordered as follows in the argument list:
- * 
- * 1) Parameters (non-negative RealJoint variable).
- * 2...) An arbitrary number of RealJoint variables, each one a Dirichlet distributed random variable.
- * 
+ * <p>
+ * <ul>
+ * <li> Parameters (non-negative RealJoint variable).
+ * <li> ...) An arbitrary number of RealJoint variables, each one a Dirichlet distributed random variable.
+ * </ul>
  * The parameters may optionally be specified as constants in the constructor.
  * In this case, the parameters are not included in the list of arguments.
  */
-public class Dirichlet extends FactorFunction implements IParametricFactorFunction
+public class Dirichlet extends UnaryFactorFunction implements IParametricFactorFunction
 {
+	private static final long serialVersionUID = 1L;
+
 	private int _dimension;
 	private double[] _alphaMinusOne;
 	private double _logBetaAlpha;
@@ -55,14 +59,14 @@ public class Dirichlet extends FactorFunction implements IParametricFactorFuncti
 	
 	public Dirichlet()		// Variable parameters
 	{
-		super();
+		super((String)null);
 		_alphaMinusOne = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 		_parametersConstant = false;
 		_firstDirectedToIndex = 1;	// Parameter vector is an array (one RealJoint variable)
 	}
 	public Dirichlet(double[] alpha)	// Constant parameters
 	{
-		super();
+		super((String)null);
 		_dimension = alpha.length;
 		_alphaMinusOne = new double[_dimension];
 		_logBetaAlpha = logBeta(alpha);
@@ -87,6 +91,47 @@ public class Dirichlet extends FactorFunction implements IParametricFactorFuncti
 	public Dirichlet(Map<String,Object> parameters)
 	{
 		this((double[])require(parameters, "alpha", "alphas"));
+	}
+	
+	protected Dirichlet(Dirichlet other)
+	{
+		super(other);
+		_alphaMinusOne = other._alphaMinusOne.clone();
+		_dimension = other._dimension;
+		_firstDirectedToIndex = other._firstDirectedToIndex;
+		_logBetaAlpha = other._logBetaAlpha;
+		_parametersConstant = other._parametersConstant;
+	}
+	
+	@Override
+	public Dirichlet clone()
+	{
+		return new Dirichlet(this);
+	}
+	
+	/*----------------
+	 * IDatum methods
+	 */
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other instanceof Dirichlet)
+		{
+			Dirichlet that = (Dirichlet)other;
+			return _parametersConstant == that._parametersConstant &&
+				_dimension == that._dimension &&
+				_logBetaAlpha == that._logBetaAlpha &&
+				_firstDirectedToIndex == that._firstDirectedToIndex &&
+				Arrays.equals(_alphaMinusOne, that._alphaMinusOne);
+		}
+		
+		return false;
 	}
 	
 	/*------------------------

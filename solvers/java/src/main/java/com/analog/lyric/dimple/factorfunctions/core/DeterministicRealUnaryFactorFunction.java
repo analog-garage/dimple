@@ -18,24 +18,24 @@ package com.analog.lyric.dimple.factorfunctions.core;
 
 import com.analog.lyric.dimple.model.values.Value;
 
+/**
+ * Deterministic unary factor function. This is a deterministic directed factor
+ * (if smoothing is not enabled).
+ * <p>
+ * Optional smoothing may be applied, by providing a smoothing value in
+ * the constructor. If smoothing is enabled, the distribution is
+ * smoothed by exp(-difference^2/smoothing), where difference is the
+ * distance between the output value and the deterministic output value
+ * for the corresponding inputs.
+ * <p>
+ * The variables are ordered as follows in the argument list:
+ * <ol>
+ * <li>Output
+ * <li>Input
+ * </ol>
+ */
 public abstract class DeterministicRealUnaryFactorFunction extends FactorFunction
 {
-	/**
-	 * Deterministic unary factor function. This is a deterministic directed factor
-	 * (if smoothing is not enabled).
-	 * 
-	 * Optional smoothing may be applied, by providing a smoothing value in
-	 * the constructor. If smoothing is enabled, the distribution is
-	 * smoothed by exp(-difference^2/smoothing), where difference is the
-	 * distance between the output value and the deterministic output value
-	 * for the corresponding inputs.
-	 * 
-	 * The variables are ordered as follows in the argument list:
-	 * 
-	 * 1) Output
-	 * 2) Input
-	 * 
-	 */
 	protected double _beta = 0;
 	protected boolean _smoothingSpecified = false;
 	public DeterministicRealUnaryFactorFunction() {this(0);}

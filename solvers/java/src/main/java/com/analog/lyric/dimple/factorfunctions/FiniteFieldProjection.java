@@ -24,18 +24,18 @@ import com.analog.lyric.dimple.model.values.Value;
 /**
  * Deterministic finite field (GF(2^n)) projection, which projects one or more bits of a
  * finite field variable value onto individual bit variables. This is a deterministic directed factor.
- * 
+ * <p>
  * The variables are ordered as follows in the argument list:
- * 
- * 1) FiniteFieldVariable
- * 2) Constant array of bit positions to project
- * 3...) Bit variables
- * 
+ * <ol>
+ * <li>FiniteFieldVariable
+ * <li>Constant array of bit positions to project
+ * <li>... Bit variables
+ * </ol>
  * @since 0.05
  */
 public class FiniteFieldProjection extends FactorFunction
 {
-    @Override
+	@Override
     public final double evalEnergy(Value[] arguments)
     {
     	int index = 0;

@@ -23,18 +23,18 @@ import com.analog.lyric.dimple.model.values.Value;
 /**
  * Deterministic division. This is a deterministic directed factor (if
  * smoothing is not enabled).
- * 
+ * <p>
  * Optional smoothing may be applied, by providing a smoothing value in the
  * constructor. If smoothing is enabled, the distribution is smoothed by
  * exp(-difference^2/smoothing), where difference is the distance between the
  * output value and the deterministic output value for the corresponding inputs.
- * 
+ * <p>
  * The variables are ordered as follows in the argument list:
- * 
- * 1) Output (quotient = dividend / divisor)
- * 2) Dividend
- * 3) Divisor
- * 
+ * <ol>
+ * <li>Output (quotient = dividend / divisor)
+ * <li>Dividend
+ * <li>Divisor
+ * </ol>
  */
 public class Divide extends FactorFunction
 {

@@ -25,18 +25,18 @@ import com.analog.lyric.dimple.model.values.Value;
 
 /**
  * Deterministic finite field (GF(2^n)) addition. This is a deterministic directed factor.
- * 
+ * <p>
  * The variables are ordered as follows in the argument list:
- * 
- * 1) Output (FiniteFieldVariable; Output = input1 + input2)
- * 2) Input1 (FiniteFieldVariable)
- * 3) Input2 (FiniteFieldVariable)
- * 
+ * <ol>
+ * <li>Output (FiniteFieldVariable; Output = input1 + input2)
+ * <li>Input1 (FiniteFieldVariable)
+ * <li>Input2 (FiniteFieldVariable)
+ * </ol>
  * @since 0.05
  */
 public class FiniteFieldAdd extends FactorFunction
 {
-    @Override
+	@Override
     public final double evalEnergy(Value[] arguments)
     {
     	final int result = arguments[0].getInt();

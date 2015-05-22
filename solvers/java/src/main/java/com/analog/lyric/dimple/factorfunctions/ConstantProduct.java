@@ -21,19 +21,22 @@ import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
- * Deterministic multiplication by a constant. The constant is specified in the constructor.
+ * Deterministic multiplication by a constant.
+ * <p.
+ * The constant is specified in the constructor.
  * This is a deterministic directed factor (if smoothing is not enabled).
- * 
+ * <p>
  * Optional smoothing may be applied, by providing a smoothing value in
  * the constructor. If smoothing is enabled, the distribution is
  * smoothed by exp(-difference^2/smoothing), where difference is the
  * distance between the output value and the deterministic output value
  * for the corresponding inputs.
- * 
+ * <p>
  * The variables are ordered as follows in the argument list:
- * 
- * 1) Output (product = input * constant)
- * 2) Inputs (double or integer)
+ * <ol>
+ * <li>Output (product = input * constant)
+ * <li>Inputs (double or integer)
+ * </ol>
  * 
  */
 public class ConstantProduct extends FactorFunction

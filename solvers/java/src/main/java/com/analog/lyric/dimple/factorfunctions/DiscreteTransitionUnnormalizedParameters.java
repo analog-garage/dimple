@@ -29,19 +29,19 @@ import com.analog.lyric.dimple.model.values.Value;
  * the output distribution for each input state. That is, the transition
  * matrix multiplies on the left.  The domain of x and y do not need to be
  * the same.
- * 
+ * <p>
  * Representing A as described, the conjugate prior for A is such that
  * each entry of the A matrix is independently distributed according to
  * a Gamma distribution, all with a common Beta parameter.
  * Depending on the solver, it may or may not be necessary to use a
  * conjugate prior (for the Gibbs solver, for example, it is not).
- * 
+ * <p>
  * The variables in the argument list are ordered as follows:
- * 
- * y: Discrete output variable (MUST be zero-based integer values) 	// TODO: remove this restriction
- * x: Discrete input variable (MUST be zero-based integer values) 	// TODO: remove this restriction
- * A: Matrix of transition matrix values
- * 
+ * <ol>
+ * <li>y: Discrete output variable (MUST be zero-based integer values)
+ * <li>x: Discrete input variable (MUST be zero-based integer values)
+ * <li>A: Matrix of transition matrix values
+ * </ol>
  */
 public class DiscreteTransitionUnnormalizedParameters extends FactorFunction
 {
@@ -64,6 +64,8 @@ public class DiscreteTransitionUnnormalizedParameters extends FactorFunction
     {
     	if (arguments.length != _xDimension*_yDimension + NUM_DATA_ARGUMENTS)
     		throw new DimpleException("Incorrect number of arguments.");
+    	
+     	// TODO: remove restriction on zero-based integer values
     	
     	final int y = arguments[0].getInt();				// First argument is y (output variable)
     	final int x = arguments[1].getInt();				// Second argument is x (input variable)

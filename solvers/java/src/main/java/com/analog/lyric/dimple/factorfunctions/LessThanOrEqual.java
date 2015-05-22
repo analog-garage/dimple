@@ -22,18 +22,18 @@ import com.analog.lyric.dimple.model.values.Value;
 
 /**
  * Deterministic less-than or equal function. This is a deterministic directed factor.
- * 
+ * <p>
  * The variables are ordered as follows in the argument list:
- * 
- * 1) Output (Logical output = FirstValue < SecondValue)
- * 2) FirstValue (double or integer)
- * 3) SecondValue (double or integer)
- * 
+ * <ol>
+ * <li>Output (Logical output = FirstValue < SecondValue)
+ * <li>FirstValue (double or integer)
+ * <li>SecondValue (double or integer)
+ * </ol>
  * @since 0.07
  */
 public class LessThanOrEqual extends FactorFunction
 {
-    @Override
+	@Override
     public final double evalEnergy(Value[] arguments)
     {
     	final boolean indicator = arguments[0].getBoolean();

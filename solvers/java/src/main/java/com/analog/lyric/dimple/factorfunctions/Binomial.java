@@ -23,20 +23,22 @@ import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
- * Binomial distribution, which corresponds to p(x | N, p),
+ * Binomial distribution.
+ * <p>
+ * Corresponds to p(x | N, p),
  * where x is a count of the number of ones, N is the total count (ones and zeros),
  * and p is the probability parameter.
- * 
+ * <p>
  * The conjugate prior for p is a Beta distribution.
  * Depending on the solver, it may or may not be necessary to use a
  * conjugate prior (for the Gibbs solver, for example, it is not).
- * 
+ * <p>
  * The variables in the argument list are ordered as follows:
- * 
- * 1) N: Parameter indicating the total count (ones and zeros)
- * 2) p: Probability parameter
- * 3) x: Count of ones
- * 
+ * <ol>
+ * <li>N: Parameter indicating the total count (ones and zeros)
+ * <li> p: Probability parameter
+ * <li>x: Count of ones
+ * </ol>
  * N parameter may optionally be specified as constants in the constructor.
  * In this case, N is not included in the list of arguments.
  */
@@ -48,7 +50,7 @@ public class Binomial extends FactorFunction
 	private int _firstDirectedToIndex = 2;
 	
 	
-	public Binomial() {super();}		// Variable N
+	public Binomial() {super((String)null);}		// Variable N
 	public Binomial(int N)				// Fixed N
 	{
 		this();
@@ -58,7 +60,7 @@ public class Binomial extends FactorFunction
 		_NParameterConstant = true;
 		_firstDirectedToIndex = 1;
 	}
-
+	
 	
     @Override
 	public final double evalEnergy(Value[] arguments)

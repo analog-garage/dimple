@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.factorfunctions.core;
 
 import com.analog.lyric.dimple.model.values.Value;
 
-// This is a prototype interface for factor functions to accomodate parameterization.
+// This is a prototype interface for factor functions to accommodate parameterization.
 // I am not sure whether we would want to make this an actual interface of FactorFunction or just modify
 // the FactorFunction class accordingly.
 

@@ -22,7 +22,7 @@ import com.analog.lyric.dimple.model.values.Value;
 
 /**
  * Deterministic equals function. This is a deterministic directed factor.
- * 
+ * <p>
  * The variables are ordered as follows in the argument list:
  * 
  * 1) Output (Logical output = all other values equal)
@@ -31,7 +31,7 @@ import com.analog.lyric.dimple.model.values.Value;
  */
 public class Equals extends FactorFunction
 {
-    @Override
+	@Override
     public final double evalEnergy(Value[] arguments)
     {
     	int index = 0;

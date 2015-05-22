@@ -33,24 +33,24 @@ import com.analog.lyric.dimple.model.values.Value;
 /**
  * Deterministic matrix product. This is a deterministic directed factor
  * (if smoothing is not enabled).
- * 
+ * <p>
  * The constructor has three arguments that specify the sizes of the input and output
  * matrices.  The first two are the number of rows and columns, respectively, of the
  * first input matrix.  The third is the number of columns of the second input matrix.
  * The number of rows of the second input matrix must equal the number of columns of the
  * first input matrix.
- * 
+ * <p>
  * Optional smoothing may be applied, by providing a smoothing value in the
  * constructor. If smoothing is enabled, the distribution is smoothed by
  * exp(-difference^2/smoothing), where difference is the distance between the
  * output value and the deterministic output value for the corresponding inputs.
- * 
+ * <p>
  * The variables are ordered as follows in the argument list:
- * 
- * 1) Output matrix (Nr x Nc, scanned by columns [because MATLAB assumes this])
- * 2) Input matrix 1 (Nr x Nx, scanned by columns [because MATLAB assumes this])
- * 3) Input matrix 2 (Nx x Nc, scanned by columns [because MATLAB assumes this])
- * 
+ * <ol>
+ * <li>Output matrix (Nr x Nc, scanned by columns [because MATLAB assumes this])
+ * <li>Input matrix 1 (Nr x Nx, scanned by columns [because MATLAB assumes this])
+ * <li>Input matrix 2 (Nx x Nc, scanned by columns [because MATLAB assumes this])
+ * </ol>
  * @since 0.05
  */
 public class MatrixProduct extends FactorFunction

@@ -24,17 +24,18 @@ import com.analog.lyric.dimple.model.values.Value;
  * Deterministic linear equation, multiplying an input vector by a constant weight vector.
  * The constant vector is specified in the constructor.
  * This is a deterministic directed factor (if smoothing is not enabled).
- * 
+ * <p>
  * Optional smoothing may be applied, by providing a smoothing value in
  * the constructor. If smoothing is enabled, the distribution is
  * smoothed by exp(-difference^2/smoothing), where difference is the
  * distance between the output value and the deterministic output value
  * for the corresponding inputs.
- * 
+ * <p>
  * The variables are ordered as follows in the argument list:
- * 
- * 1) Output (inner product of Input vector with Weight vector)
- * 2...) Input vector (double or integer array; length must be identical to Weight vector length)
+ * <ol>
+ * <li>Output (inner product of Input vector with Weight vector)
+ * <li>Input vector (double or integer array; length must be identical to Weight vector length)
+ * </ol>
  * 
  */
 public class LinearEquation extends FactorFunction
