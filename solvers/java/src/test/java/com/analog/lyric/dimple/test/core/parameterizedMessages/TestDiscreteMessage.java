@@ -32,7 +32,7 @@ import com.analog.lyric.util.test.SerializationTester;
 import com.google.common.primitives.Doubles;
 
 /**
- * 
+ * Unit test for {@link DiscreteMessage} implementations
  * @since 0.06
  * @author Christopher Barber
  */
@@ -53,6 +53,13 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 			msg.setEnergy(i,i);
 			assertEquals(i, msg.getEnergy(i), 0.0);
 		}
+		assertEquals(1.0, msg.getWeightDenormalizer(), 0.0);
+		
+		double sum = msg.sumOfWeights();
+		msg.normalize();
+		assertEquals(1.0, msg.sumOfWeights(), 1e-10);
+		assertInvariants(msg);
+		assertEquals(sum, msg.getWeightDenormalizer(), 1e-10);
 		
 		Arrays.fill(msg.representation(), 23);
 		msg.setNull();
@@ -107,6 +114,10 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 		assertEquals(5, msg.getEnergy(1), 0.0);
 		assertEquals(6, msg.getEnergy(2), 0.0);
 		
+		sum = msg.sumOfWeights();
+		msg.normalize();
+		assertEquals(sum, msg.getWeightDenormalizer(), 1e-10);
+		
 		msg = new DiscreteWeightMessage(10);
 		DiscreteMessage msg2 = new DiscreteEnergyMessage(10);
 		Random rand = new Random(42);
@@ -146,6 +157,10 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 	{
 		assertGenericInvariants(message);
 		
+		assertFalse(message.objectEquals(null));
+		assertFalse(message.objectEquals("bogus"));
+		assertTrue(message.objectEquals(message));
+		
 		final int size = message.size();
 		for (int i = 0; i < size; ++i)
 		{
@@ -175,18 +190,43 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 		expectThrow(ArrayIndexOutOfBoundsException.class, message, "getWeight", -1);
 		expectThrow(ArrayIndexOutOfBoundsException.class, message, "getWeight", size);
 		
+		assertEquals(message.getWeightDenormalizer(), energyToWeight(message.getEnergyDenormalizer()), 1e-10);
+		
 		DiscreteMessage message2 = message.clone();
+		assertTrue(message.objectEquals(message2));
 		assertEquals(message.size(), message2.size());
 		for (int i = 0; i < size; ++i)
 		{
 			assertEquals(message.getWeight(i), message2.getWeight(i), 0.0);
 		}
-
+		assertEquals(message.getEnergyDenormalizer(), message2.getEnergyDenormalizer(), 0.0);
+		
+		double prevDenormalizer = message2.getEnergyDenormalizer();
+		message2.resetDenormalizer();
+		assertEquals(0.0, message2.getEnergyDenormalizer(), 0.0);
+		assertEquals(1.0, message2.getWeightDenormalizer(), 0.0);
+		
+		if (prevDenormalizer != message2.getEnergyDenormalizer())
+		{
+			assertFalse(message.objectEquals(message2));
+		}
+		
+		message2.normalize();
+		message2.denormalize();
+		assertEquals(0.0, message2.getEnergyDenormalizer(), 0.0);
+		message2.setWeightDenormalizer(energyToWeight(prevDenormalizer));
+		assertArrayEquals(message.representation(), message2.representation(), 1e-10);
+		
+		message2.setEnergyDenormalizer(42);
+		assertEquals(42, message2.getEnergyDenormalizer(), 0.0);
+		
 		DiscreteMessage message3 = SerializationTester.clone(message);
+		assertTrue(message.objectEquals(message));
 		assertEquals(message.size(), message3.size());
 		for (int i = 0; i < size; ++i)
 		{
 			assertEquals(message.getWeight(i), message3.getWeight(i), 0.0);
 		}
+		assertEquals(message.getEnergyDenormalizer(), message3.getEnergyDenormalizer(), 0.0);
 	}
 }

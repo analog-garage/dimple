@@ -22,6 +22,7 @@ import com.analog.lyric.dimple.schedulers.validator.AllEdgeScheduleValidator;
 import com.analog.lyric.dimple.schedulers.validator.ScheduleValidatorOptionKey;
 import com.analog.lyric.dimple.solvers.core.SNode;
 import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateApproach;
+import com.analog.lyric.options.BooleanOptionKey;
 import com.analog.lyric.options.DoubleListOptionKey;
 import com.analog.lyric.options.DoubleOptionKey;
 import com.analog.lyric.options.EnumOptionKey;
@@ -46,6 +47,14 @@ public class BPOptions extends SolverOptions
 	 * @since 0.07
 	 */
 	public static final DoubleOptionKey damping = new DoubleOptionKey(BPOptions.class, "damping", 0.0, 0.0, 1.0);
+	
+	/**
+	 * Specifies whether to normalize messages.
+	 * <p>
+	 * @since 0.08
+	 */
+	public static final BooleanOptionKey normalizeMessages =
+		new BooleanOptionKey(BPOptions.class, "normalizeMessages", true);
 	
 	/**
 	 * Specifies the number of iterations to perform when solving.

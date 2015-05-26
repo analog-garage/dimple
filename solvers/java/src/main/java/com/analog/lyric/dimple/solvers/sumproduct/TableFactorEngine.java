@@ -16,12 +16,15 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
+import static com.analog.lyric.math.Utilities.*;
+
 import java.util.Arrays;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 
 /*
  * Provides the update and updateEdge logic for sumproduct
@@ -52,6 +55,16 @@ public class TableFactorEngine
 
     	final double damping = tableFactor._dampingInUse ? tableFactor._dampingParams[outPortNum] : 0.0;
 
+		DiscreteMessage outMsg = _tableFactor.getSiblingEdgeState(outPortNum).factorToVarMsg;
+    	double denormalizer = outMsg.getEnergyDenormalizer();
+    	for (int i = 0; i < numPorts; ++i)
+    	{
+    		if (i != outPortNum)
+    		{
+    			denormalizer += _tableFactor.getSiblingEdgeState(i).getVarToFactorMsg().getEnergyDenormalizer();
+    		}
+    	}
+    	
     	if (damping != 0.0)
     	{
     		final double[] saved = DimpleEnvironment.doubleArrayCache.allocateAtLeast(outputMsgLength);
@@ -82,9 +95,13 @@ public class TableFactorEngine
     				+ outPortNum + " on factor " + _factor.getLabel());
     		}
 
-    		for (int i = outputMsgLength; --i>=0;)
+    		if (_tableFactor._normalizeMessages)
     		{
-    			outputMsgs[i] /= sum;
+    			denormalizer += weightToEnergy(sum);
+    			for (int i = outputMsgLength; --i>=0;)
+    			{
+    				outputMsgs[i] /= sum;
+    			}
     		}
 
     		final double inverseDamping = 1 - damping;
@@ -122,11 +139,17 @@ public class TableFactorEngine
     				+ outPortNum + " on factor " + _factor.getLabel());
     		}
 
-    		for (int i = outputMsgLength; --i>=0;)
+    		if (_tableFactor._normalizeMessages)
     		{
-    			outputMsgs[i] /= sum;
+    			denormalizer += weightToEnergy(sum);
+    			for (int i = outputMsgLength; --i>=0;)
+    			{
+    				outputMsgs[i] /= sum;
+    			}
     		}
     	}
+		
+		outMsg.setEnergyDenormalizer(denormalizer);
 	}
 	
 	

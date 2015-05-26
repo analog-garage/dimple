@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
+import static com.analog.lyric.math.Utilities.*;
 import static java.util.Objects.*;
 
 import java.util.Arrays;
@@ -31,6 +32,7 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.util.misc.Internal;
 
@@ -51,6 +53,9 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	protected double[][] _inMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
 	protected double[][] _outMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
 
+	// TODO = move into flags
+	private boolean _normalizeMessages = true;
+	
     /*--------------
      * Construction
      */
@@ -79,6 +84,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		}
 		
 		configureDampingFromOptions();
+		_normalizeMessages = BPOptions.normalizeMessages.getOrDefault(this);
 	}
 
 	public Variable getVariable()
@@ -130,7 +136,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	protected void doUpdateEdge(int outPortNum)
     {
     	
-        final double minLog = -100;
+        final double minLog = Double.NEGATIVE_INFINITY;//-100;
         double[] priors = _input;
         final int M = priors.length;
         final int D = _model.getSiblingCount();
@@ -140,6 +146,16 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		final double[][] inMsgs = _inMsgs;
 		final double[] dampingParams = _dampingParams;
 		final double damping = dampingParams != null ? dampingParams[outPortNum] : 0.0;
+
+		DiscreteMessage outMsg = getSiblingEdgeState(outPortNum).varToFactorMsg;
+		double denormalizer = outMsg.getEnergyDenormalizer();
+		for (int d = 0; d < D; ++d)
+		{
+			if (d != outPortNum)
+			{
+				denormalizer += getSiblingEdgeState(d).factorToVarMsg.getEnergyDenormalizer();
+			}
+		}
 
 		if (damping != 0.0)
 		{
@@ -167,8 +183,8 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 				outMsgs[m] = out;
 			}
 
-			//create sum
-			double sum = 0;
+			// convert from log domain
+			double sum = 0.0;
 			for (int m = M; --m>=0;)
 			{
 				double out = Math.exp(outMsgs[m] - maxLog);
@@ -176,9 +192,15 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 				sum += out;
 			}
 
-			//calculate message by dividing by sum
-			for (int m = M; --m>=0;)
-				outMsgs[m] /= sum;
+			if (_normalizeMessages)
+			{
+				// normalize
+				denormalizer += weightToEnergy(sum);
+				for (int m = M; --m>=0;)
+				{
+					outMsgs[m] /= sum;
+				}
+			}
 			
 			// Apply damping
 			final double inverseDamping = 1.0 - damping;
@@ -210,8 +232,8 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 				outMsgs[m] = out;
 			}
 
-			//create sum
-			double sum = 0;
+			// Convert from log domain
+			double sum = 0.0;
 			for (int m = M; --m>=0;)
 			{
 				double out = Math.exp(outMsgs[m] - maxLog);
@@ -219,12 +241,19 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 				sum += out;
 			}
 
-			//calculate message by dividing by sum
-			for (int m = M; --m>=0;)
-				outMsgs[m] /= sum;
+			if (_normalizeMessages)
+			{
+				denormalizer += weightToEnergy(sum);
+				for (int m = M; --m>=0;)
+				{
+					outMsgs[m] /= sum;
+				}
+			}
 		}
-		
-        if (_calculateDerivative)
+
+		getSiblingEdgeState(outPortNum).varToFactorMsg.setEnergyDenormalizer(denormalizer);
+
+		if (_calculateDerivative)
         {
         	updateDerivative(outPortNum);
         }
@@ -285,21 +314,19 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 					outMsgs[m] = out;
 				}
 
-				//create sum
-				double sum = 0;
+				// convert from log domain
 				for (int m = M; --m>=0;)
 				{
 					double out = Math.exp(outMsgs[m] - maxLog);
 					outMsgs[m] = out;
-					sum += out;
 				}
 
-				//calculate message by dividing by sum
-				for (int m = M; --m>=0;)
+				// normalize
+				if (_normalizeMessages)
 				{
-					outMsgs[m] /= sum;
+					getSiblingEdgeState(out_d).varToFactorMsg.normalize();
 				}
-
+				
 				if (damping != 0)
 				{
 					final double inverseDamping = 1.0 - damping;
@@ -330,19 +357,17 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 					outMsgs[m] = out;
 				}
 
-				//create sum
-				double sum = 0;
+				// convert from log domain
 				for (int m = M; --m>=0;)
 				{
 					double out = Math.exp(outMsgs[m] - maxLog);
 					outMsgs[m] = out;
-					sum += out;
 				}
 
-				//calculate message by dividing by sum
-				for (int m = M; --m>=0;)
+				// normalize
+				if (_normalizeMessages)
 				{
-					outMsgs[m] /= sum;
+					getSiblingEdgeState(out_d).varToFactorMsg.normalize();
 				}
 			}
 		}
@@ -401,7 +426,6 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         	outBelief[m] /= sum;
         }
         
-        
         return outBelief;
     }
     
@@ -429,14 +453,48 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		for (int i = 0, n = getSiblingCount(); i < n; i++)
 		{
 			final double[] inMsg = getSiblingEdgeState(i).factorToVarMsg.representation();
-			for (int j=  0; j < retval.length; j++)
+			for (int j =  0; j < retval.length; j++)
 			{
 				retval[j] *= inMsg[j];
-			}
+		}
 		}
 		
 		return retval;
-			
+	}
+
+	/**
+	 * experimental
+	 * @category internal
+	 * @since 0.08
+	 */
+	@Internal
+	public double computeUnnormalizedLogLikelihood()
+	{
+		if (_model.hasFixedValue())
+		{
+			return 0.0;
+		}
+		
+		double [] retval = _input.clone();
+		
+		for (int i = 0, n = getSiblingCount(); i < n; i++)
+		{
+			DiscreteMessage inMsg = getSiblingEdgeState(i).factorToVarMsg;
+			for (int j =  0; j < retval.length; j++)
+			{
+				retval[j] *= inMsg.getUnnormalizedWeight(j);
+			}
+		}
+		
+		double sum = 0.0;
+		
+		for (int j = 0; j < retval.length; ++j)
+		{
+			sum += retval[j];
+		}
+		
+		return weightToEnergy(sum);
+		
 	}
 	
 	/******************************************************

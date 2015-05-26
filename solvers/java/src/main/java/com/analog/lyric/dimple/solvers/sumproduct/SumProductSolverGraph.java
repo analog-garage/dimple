@@ -786,4 +786,22 @@ public class SumProductSolverGraph extends BPSolverGraph<ISolverFactor,ISolverVa
 		return "sum-product";
 	}
 
+	public double computeUnnormalizedLogLikelihood()
+	{
+		double Z = 0.0;
+		
+		for (ISolverFactor sfactor : getSolverFactorsRecursive())
+		{
+			SumProductTableFactor tableFactor = (SumProductTableFactor)sfactor;
+			Z += tableFactor.computeUnnormalizedLogLikelihood();
+		}
+		
+		for (ISolverVariable svar : getSolverVariablesRecursive())
+		{
+			SumProductDiscrete sdiscrete = (SumProductDiscrete)svar;
+			Z += sdiscrete.computeUnnormalizedLogLikelihood();
+		}
+		
+		return Z;
+	}
 }

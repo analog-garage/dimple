@@ -37,17 +37,23 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	 * State
 	 */
 	
+	/**
+	 * For converting normalized message to unnormalized form.
+	 */
+	protected double _denormalizer;
+	
 	protected final double[] _message;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	DiscreteMessage(double[] message)
+	DiscreteMessage(double[] message, double denormalizer)
 	{
 		_message = message.clone();
+		_denormalizer = denormalizer;
 	}
-	
+
 	/*----------------
 	 * IDatum methods
 	 */
@@ -63,7 +69,7 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 		if (other != null && other.getClass() == getClass())
 		{
 			DiscreteMessage that = (DiscreteMessage)other;
-			return Arrays.equals(_message, that._message);
+			return _denormalizer == that._denormalizer && Arrays.equals(_message, that._message);
 		}
 		
 		return false;
@@ -196,8 +202,42 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 		}
 	}
 	
+	/**
+	 * Returns the stored denormalization constant using weight representation.
+	 * @since 0.08
+	 */
+	public abstract double getWeightDenormalizer();
+
+	/**
+	 * Sets the stored denormalization constant using weight representation.
+	 * @since 0.08
+	 */
+	public abstract void setWeightDenormalizer(double denormalizer);
+
+	/**
+	 * Returns the stored denormalization constant using energy (negative log) representation.
+	 * @since 0.08
+	 */
+	public abstract double getEnergyDenormalizer();
+
+	/**
+	 * Sets the stored denormalization constant using energy (negative log) representation.
+	 * @since 0.08
+	 */
+	public abstract void setEnergyDenormalizer(double denormalizer);
+	
+	/**
+	 * Resets the denormalization constant to indicate no normalization has been performed:
+	 * {@link #getWeightDenormalizer()} will be 1.0 and {@link #getEnergyDenormalizer()} will be 0.0.
+	 * 
+	 * @since 0.08
+	 */
+	public abstract void resetDenormalizer();
+	
 	public abstract double getWeight(int i);
 	public abstract void setWeight(int i, double weight);
+	
+	public abstract double getUnnormalizedWeight(int i);
 	
 	public abstract double getEnergy(int i);
 	public abstract void setEnergy(int i, double energy);
@@ -207,7 +247,36 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	
 	public abstract void setWeightsToZero();
 	
+	/**
+	 * Compute sum of all weights in message.
+	 * @since 0.08
+	 */
+	public abstract double sumOfWeights();
+	
+	/**
+	 * Normalize so that weights sum to one.
+	 * <p>
+	 * This will compute the {@linkplain #sumOfWeights() sum of the weights} and use that to
+	 * normalize the message and update the stored denormalization constant according to the
+	 * underlying representation:
+	 * <ul>
+	 * <li><b>weight representation</b>: Divides all message values by the sum, and multiplies the stored
+	 * {@linkplain #getWeightDenormalizer() denormalizer} by the sum.
+	 * <li><b>energy representation</b>: Computes the negative log of the sum and adds it the message values
+	 * and the stored {@linkplain #getEnergyDenormalizer() denormalizer} constant.
+	 * </ul>
+	 * </dl>
+	 */
 	public abstract void normalize();
+	
+	/**
+	 * Convert back to a denormalized form.
+	 * <p>
+	 * Uses stored denormalization constant to convert message to an unnormalized form.
+	 * <p>
+	 * @since 0.08
+	 */
+	public abstract void denormalize();
 	
 	/**
 	 * Sets values from another message of the same size.
@@ -229,11 +298,13 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 		{
 			if (storesWeights())
 			{
+				_denormalizer = other.getWeightDenormalizer();
 				for (int i = 0; i < n; ++i)
 					_message[i] = Utilities.energyToWeight(_message[i]);
 			}
 			else
 			{
+				_denormalizer = other.getEnergyDenormalizer();
 				for (int i = 0; i < n; ++i)
 					_message[i] = Utilities.weightToEnergy(_message[i]);
 			}

@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.domains;
 
+import java.util.List;
+
 import net.jcip.annotations.Immutable;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -82,6 +84,19 @@ public abstract class DiscreteDomain extends Domain
 	public static TypedDiscreteDomain<Boolean> bool()
 	{
 		return create(false, true);
+	}
+	
+	/**
+	 * Returns a discrete domain consisting of the specified elements in the specified order.
+	 * <p>
+	 * @param elements must either be immutable or must implement {@link Object#equals(Object)} and
+	 * {@link Object#hashCode()} methods that do not depend on any mutable state.
+	 * @since 0.08
+	 */
+	public static <T> TypedDiscreteDomain<T> create(List<T> elements)
+	{
+		// TODO - instead implement in terms of List<T> and implement array versions using Arrays.asList().
+		return create(elements.get(0), 1, elements.toArray());
 	}
 	
 	/**

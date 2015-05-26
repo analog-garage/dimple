@@ -29,6 +29,7 @@ import com.analog.lyric.collect.Selection;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.EdgeState;
@@ -70,7 +71,7 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 	protected boolean _kIsSmallerThanDomain = false;
 	protected boolean _updateDerivative = false;
 	protected boolean _dampingInUse = false;
-	
+	protected boolean _normalizeMessages = true;
 	
 	/*--------------
 	 * Construction
@@ -112,6 +113,8 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 			_inputMessages[i] = edge.varToFactorMsg.representation();
 			_outputMessages[i] = edge.factorToVarMsg.representation();
 		}
+		
+		_normalizeMessages = BPOptions.normalizeMessages.getOrDefault(this);
 	}
 	
 	@Internal
@@ -405,6 +408,48 @@ public class SumProductTableFactor extends STableFactorDoubleArray
 		return retval;
 	}
 	
+	/**
+	 * experimental
+	 * @category internal
+	 * @since 0.08
+	 */
+	@Internal
+	public IFactorTable getUnnormalizedBeliefTable()
+	{
+		IFactorTable beliefs = FactorTable.create(getFactorTable().getDomainIndexer());
+		beliefs.setWeightsSparse(getFactorTable().getIndicesSparseUnsafe(), getUnormalizedBelief());
+		return beliefs;
+	}
+	
+	/**
+	 * experimental
+	 * @category internal
+	 * @since 0.08
+	 */
+	@Internal
+	public double computeUnnormalizedLogLikelihood()
+	{
+		final int [][] table = getFactorTable().getIndicesSparseUnsafe();
+		final double [] values = getFactorTable().getWeightsSparseUnsafe();
+		final int nEntries = values.length;
+
+		double sum = 0.0;
+		
+		for (int i = 0; i < nEntries; i++)
+		{
+			double val = 1.0;
+			
+			final int[] indices = table[i];
+			for (int j = 0; j < indices.length; j++)
+			{
+				val *= getSiblingEdgeState(j).varToFactorMsg.getUnnormalizedWeight(indices[j]);
+			}
+			
+			sum += val * values[i];
+		}
+		
+		return weightToEnergy(sum);
+	}
 
 	@Override
 	public FactorFunction getFactorFunction()

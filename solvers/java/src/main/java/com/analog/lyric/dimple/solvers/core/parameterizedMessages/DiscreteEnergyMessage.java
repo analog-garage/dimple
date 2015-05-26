@@ -40,21 +40,26 @@ public final class DiscreteEnergyMessage extends DiscreteMessage
 	 * Construction
 	 */
 	
+	public DiscreteEnergyMessage(double[] message, double denormalizer)
+	{
+		super(message, denormalizer);
+	}
+	
 	public DiscreteEnergyMessage(double[] message)
 	{
-		super(message);
+		this(message, 0.0);
 	}
 	
 	public DiscreteEnergyMessage(int size)
 	{
-		super(new double[size]);
+		this(new double[size], 0.0);
 		setNull();
 	}
 	
 	@Override
 	public DiscreteEnergyMessage clone()
 	{
-		return new DiscreteEnergyMessage(_message);
+		return new DiscreteEnergyMessage(_message, _denormalizer);
 	}
 
 	/*-------------------------------
@@ -70,12 +75,43 @@ public final class DiscreteEnergyMessage extends DiscreteMessage
 	public void setUniform()
 	{
 		Arrays.fill(_message, 0.0);
+		resetDenormalizer();
 	}
 
 	/*-------------------------
 	 * DiscreteMessage methods
 	 */
 
+	@Override
+	public double getEnergyDenormalizer()
+	{
+		return _denormalizer;
+	}
+	
+	@Override
+	public void setEnergyDenormalizer(double denormalizer)
+	{
+		_denormalizer = denormalizer;
+	}
+
+	@Override
+	public double getWeightDenormalizer()
+	{
+		return Utilities.energyToWeight(_denormalizer);
+	}
+	
+	@Override
+	public void setWeightDenormalizer(double denormalizer)
+	{
+		_denormalizer = Utilities.weightToEnergy(denormalizer);
+	}
+	
+	@Override
+	public void resetDenormalizer()
+	{
+		_denormalizer = 0.0;
+	}
+	
 	@Override
 	public double getWeight(int i)
 	{
@@ -89,6 +125,12 @@ public final class DiscreteEnergyMessage extends DiscreteMessage
 	}
 	
 	@Override
+	public double getUnnormalizedWeight(int i)
+	{
+		return energyToWeight(_message[i] - _denormalizer);
+	}
+	
+	@Override
 	public void setWeights(double... weights)
 	{
 		final int length = weights.length;
@@ -98,6 +140,7 @@ public final class DiscreteEnergyMessage extends DiscreteMessage
 		{
 			_message[i] = weightToEnergy(weights[i]);
 		}
+		resetDenormalizer();
 	}
 
 	@Override
@@ -119,23 +162,44 @@ public final class DiscreteEnergyMessage extends DiscreteMessage
 		assertSameSize(length);
 		
 		System.arraycopy(energies, 0, _message, 0, length);
+		resetDenormalizer();
+	}
+	
+	@Override
+	public double sumOfWeights()
+	{
+		double sum = 0.0;
+		for (double e : _message)
+			sum += Utilities.energyToWeight(e);
+		return sum;
 	}
 	
 	@Override
 	public void normalize()
 	{
-		double sum = 0.0;
-		for (double e : _message)
-			sum += Utilities.energyToWeight(e);
-		double normalizer = Utilities.weightToEnergy(sum);
+		double normalizer = Utilities.weightToEnergy(sumOfWeights());
+		_denormalizer += normalizer;
 		for (int i = _message.length; --i >=0;)
 			_message[i] += normalizer;
+	}
+	
+	@Override
+	public void denormalize()
+	{
+		final double denormalizer = _denormalizer;
+		if (denormalizer != 0.0)
+		{
+			for (int i = _message.length; --i>=0;)
+				_message[i] -= denormalizer;
+			resetDenormalizer();
+		}
 	}
 	
 	@Override
 	public void setWeightsToZero()
 	{
 		Arrays.fill(_message, Double.POSITIVE_INFINITY);
+		resetDenormalizer();
 	}
 	
 	@Override
