@@ -27,12 +27,7 @@ import com.analog.lyric.math.Utilities;
  * @since 0.06
  * @author Christopher Barber
  */
-/**
- * 
- * @since 0.06
- * @author Christopher Barber
- */
-public final class DiscreteEnergyMessage extends DiscreteMessage
+public class DiscreteEnergyMessage extends DiscreteMessage
 {
 	private static final long serialVersionUID = 1L;
 
@@ -40,26 +35,21 @@ public final class DiscreteEnergyMessage extends DiscreteMessage
 	 * Construction
 	 */
 	
-	public DiscreteEnergyMessage(double[] message, double denormalizer)
-	{
-		super(message, denormalizer);
-	}
-	
 	public DiscreteEnergyMessage(double[] message)
 	{
-		this(message, 0.0);
+		super(message);
 	}
 	
 	public DiscreteEnergyMessage(int size)
 	{
-		this(new double[size], 0.0);
+		this(new double[size]);
 		setNull();
 	}
 	
 	@Override
 	public DiscreteEnergyMessage clone()
 	{
-		return new DiscreteEnergyMessage(_message, _denormalizer);
+		return new DiscreteEnergyMessage(_message);
 	}
 
 	/*-------------------------------
@@ -75,7 +65,7 @@ public final class DiscreteEnergyMessage extends DiscreteMessage
 	public void setUniform()
 	{
 		Arrays.fill(_message, 0.0);
-		resetDenormalizer();
+		setNormalizationEnergyIfSupported(0.0);
 	}
 
 	/*-------------------------
@@ -83,51 +73,15 @@ public final class DiscreteEnergyMessage extends DiscreteMessage
 	 */
 
 	@Override
-	public double getEnergyDenormalizer()
-	{
-		return _denormalizer;
-	}
-	
-	@Override
-	public void setEnergyDenormalizer(double denormalizer)
-	{
-		_denormalizer = denormalizer;
-	}
-
-	@Override
-	public double getWeightDenormalizer()
-	{
-		return Utilities.energyToWeight(_denormalizer);
-	}
-	
-	@Override
-	public void setWeightDenormalizer(double denormalizer)
-	{
-		_denormalizer = Utilities.weightToEnergy(denormalizer);
-	}
-	
-	@Override
-	public void resetDenormalizer()
-	{
-		_denormalizer = 0.0;
-	}
-	
-	@Override
-	public double getWeight(int i)
+	public final double getWeight(int i)
 	{
 		return Utilities.energyToWeight(_message[i]);
 	}
 
 	@Override
-	public void setWeight(int i, double weight)
+	public final void setWeight(int i, double weight)
 	{
 		_message[i] = Utilities.weightToEnergy(weight);
-	}
-	
-	@Override
-	public double getUnnormalizedWeight(int i)
-	{
-		return energyToWeight(_message[i] - _denormalizer);
 	}
 	
 	@Override
@@ -140,17 +94,17 @@ public final class DiscreteEnergyMessage extends DiscreteMessage
 		{
 			_message[i] = weightToEnergy(weights[i]);
 		}
-		resetDenormalizer();
+		setNormalizationEnergyIfSupported(0.0);
 	}
 
 	@Override
-	public double getEnergy(int i)
+	public final double getEnergy(int i)
 	{
 		return _message[i];
 	}
 
 	@Override
-	public void setEnergy(int i, double energy)
+	public final void setEnergy(int i, double energy)
 	{
 		_message[i] = energy;
 	}
@@ -162,11 +116,12 @@ public final class DiscreteEnergyMessage extends DiscreteMessage
 		assertSameSize(length);
 		
 		System.arraycopy(energies, 0, _message, 0, length);
-		resetDenormalizer();
+		
+		setNormalizationEnergyIfSupported(0.0);
 	}
 	
 	@Override
-	public double sumOfWeights()
+	public final double sumOfWeights()
 	{
 		double sum = 0.0;
 		for (double e : _message)
@@ -177,33 +132,21 @@ public final class DiscreteEnergyMessage extends DiscreteMessage
 	@Override
 	public void normalize()
 	{
-		double normalizer = Utilities.weightToEnergy(sumOfWeights());
-		_denormalizer += normalizer;
+		double normalizer = Utilities.weightToEnergy(assertNonZeroSumOfWeights());
 		for (int i = _message.length; --i >=0;)
 			_message[i] += normalizer;
-	}
-	
-	@Override
-	public void denormalize()
-	{
-		final double denormalizer = _denormalizer;
-		if (denormalizer != 0.0)
-		{
-			for (int i = _message.length; --i>=0;)
-				_message[i] -= denormalizer;
-			resetDenormalizer();
-		}
+		incrementNormalizationEnergy(normalizer);
 	}
 	
 	@Override
 	public void setWeightsToZero()
 	{
 		Arrays.fill(_message, Double.POSITIVE_INFINITY);
-		resetDenormalizer();
+		setNormalizationEnergyIfSupported(0.0);
 	}
 	
 	@Override
-	public boolean storesWeights()
+	public final boolean storesWeights()
 	{
 		return false;
 	}
@@ -242,6 +185,7 @@ public final class DiscreteEnergyMessage extends DiscreteMessage
 			{
 				_message[i] -= min;
 			}
+			incrementNormalizationEnergy(-min);
 		}
 	}
 }

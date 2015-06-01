@@ -16,12 +16,14 @@
 
 package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
+import static com.analog.lyric.math.Utilities.*;
+
 import java.io.PrintStream;
 import java.util.Arrays;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.math.Utilities;
+import com.analog.lyric.dimple.exceptions.NormalizationException;
 
 
 /**
@@ -37,21 +39,15 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	 * State
 	 */
 	
-	/**
-	 * For converting normalized message to unnormalized form.
-	 */
-	protected double _denormalizer;
-	
 	protected final double[] _message;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	DiscreteMessage(double[] message, double denormalizer)
+	DiscreteMessage(double[] message)
 	{
 		_message = message.clone();
-		_denormalizer = denormalizer;
 	}
 
 	/*----------------
@@ -69,7 +65,8 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 		if (other != null && other.getClass() == getClass())
 		{
 			DiscreteMessage that = (DiscreteMessage)other;
-			return _denormalizer == that._denormalizer && Arrays.equals(_message, that._message);
+			return getNormalizationEnergy() == that.getNormalizationEnergy() &&
+				Arrays.equals(_message, that._message);
 		}
 		
 		return false;
@@ -103,6 +100,19 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 				out.format("%g", _message[i]);
 			}
 			out.print(')');
+			
+			final double normalizationEnergy = getNormalizationEnergy();
+			if (normalizationEnergy != 0.0)
+			{
+				if (storesWeights())
+				{
+					out.format(" [* %g]", energyToWeight(normalizationEnergy));
+				}
+				else
+				{
+					out.format(" [+ %g]", -normalizationEnergy);
+				}
+			}
 		}
 	}
 	
@@ -203,41 +213,62 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	}
 	
 	/**
-	 * Returns the stored denormalization constant using weight representation.
+	 * Returns the stored normalization energy for the message, if supported.
+	 * <p>
+	 * This is an optional feature and is only supported by subclasses for which
+	 * {@link #storesNormalizationEnergy()} is true.
+	 * <p>
+	 * The normalization energy is the energy (negative log) of the normalization factor that
+	 * was used to normalize values. This value is set explicitly by {@link #setNormalizationEnergy(double)}
+	 * and implicitly by the following methods:
+	 * <ul>
+	 * <li>{@link #setUniform} resets it to zero.
+	 * <li>{@link #setEnergies} resets it to zero
+	 * <li>{@link #setWeights} resets it to zero.
+	 * <li>{@link #setWeightsToZero()} resets it to zero
+	 * <li>{@link #normalize} adds the energy of the sum of the weights prior to the call.
+	 * </ul>
+	 * <p>
+	 * @returns stored normalization energy value if supported, and 0.0 otherwise.
+	 * <p>
 	 * @since 0.08
 	 */
-	public abstract double getWeightDenormalizer();
+	public double getNormalizationEnergy()
+	{
+		return 0.0;
+	}
 
 	/**
-	 * Sets the stored denormalization constant using weight representation.
+	 * Sets the stored normalization energy for the message, if supported.
+	 * <p>
+	 * This is an optional feature and is only supported by subclasses for which
+	 * {@link #storesNormalizationEnergy()} is true.
+	 * <p>
+	 * @throws UnsupportedOperationException if not supported by this implementation.
 	 * @since 0.08
+	 * @see #getNormalizationEnergy()
 	 */
-	public abstract void setWeightDenormalizer(double denormalizer);
-
-	/**
-	 * Returns the stored denormalization constant using energy (negative log) representation.
-	 * @since 0.08
-	 */
-	public abstract double getEnergyDenormalizer();
-
-	/**
-	 * Sets the stored denormalization constant using energy (negative log) representation.
-	 * @since 0.08
-	 */
-	public abstract void setEnergyDenormalizer(double denormalizer);
+	public void setNormalizationEnergy(double normalizationEnergy)
+	{
+		throw new UnsupportedOperationException(String.format("%s does not store normalization energy",
+			getClass().getSimpleName()));
+	}
 	
 	/**
-	 * Resets the denormalization constant to indicate no normalization has been performed:
-	 * {@link #getWeightDenormalizer()} will be 1.0 and {@link #getEnergyDenormalizer()} will be 0.0.
-	 * 
+	 * True if implementation stores normalization energy values.
+	 * <p>
+	 * The default implementation returns false.
 	 * @since 0.08
+	 * @see #getNormalizationEnergy()
+	 * @see #setNormalizationEnergy(double)
 	 */
-	public abstract void resetDenormalizer();
+	public boolean storesNormalizationEnergy()
+	{
+		return false;
+	}
 	
 	public abstract double getWeight(int i);
 	public abstract void setWeight(int i, double weight);
-	
-	public abstract double getUnnormalizedWeight(int i);
 	
 	public abstract double getEnergy(int i);
 	public abstract void setEnergy(int i, double energy);
@@ -257,26 +288,14 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	 * Normalize so that weights sum to one.
 	 * <p>
 	 * This will compute the {@linkplain #sumOfWeights() sum of the weights} and use that to
-	 * normalize the message and update the stored denormalization constant according to the
-	 * underlying representation:
-	 * <ul>
-	 * <li><b>weight representation</b>: Divides all message values by the sum, and multiplies the stored
-	 * {@linkplain #getWeightDenormalizer() denormalizer} by the sum.
-	 * <li><b>energy representation</b>: Computes the negative log of the sum and adds it the message values
-	 * and the stored {@linkplain #getEnergyDenormalizer() denormalizer} constant.
-	 * </ul>
-	 * </dl>
+	 * normalize the message.
+	 * <p>
+	 * If the message {@linkplain #storesNormalizationEnergy() stores normalization energy}, then this
+	 * will update the normalization energy by adding the energy of the sum of weights.
+	 * <P>
+	 * @throws NormalizationException if {@link #sumOfWeights()} is zero.
 	 */
 	public abstract void normalize();
-	
-	/**
-	 * Convert back to a denormalized form.
-	 * <p>
-	 * Uses stored denormalization constant to convert message to an unnormalized form.
-	 * <p>
-	 * @since 0.08
-	 */
-	public abstract void denormalize();
 	
 	/**
 	 * Sets values from another message of the same size.
@@ -288,27 +307,18 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	 */
 	public void setFrom(DiscreteMessage other)
 	{
-		final int n = _message.length;
+		final double[] otherRep = other.representation();
 		
-		assertSameSize(other.size());
-
-		System.arraycopy(other.representation(), 0, _message, 0, n);
-
-		if (storesWeights() != other.storesWeights())
+		if (other.storesWeights())
 		{
-			if (storesWeights())
-			{
-				_denormalizer = other.getWeightDenormalizer();
-				for (int i = 0; i < n; ++i)
-					_message[i] = Utilities.energyToWeight(_message[i]);
-			}
-			else
-			{
-				_denormalizer = other.getEnergyDenormalizer();
-				for (int i = 0; i < n; ++i)
-					_message[i] = Utilities.weightToEnergy(_message[i]);
-			}
+			setWeights(otherRep);
 		}
+		else
+		{
+			setEnergies(otherRep);
+		}
+		
+		setNormalizationEnergyIfSupported(other.getNormalizationEnergy());
 	}
 	
 	/**
@@ -326,6 +336,10 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	 */
 	public abstract boolean storesWeights();
 	
+	/*-------------------
+	 * Protected methods
+	 */
+	
 	protected void assertSameSize(int otherSize)
 	{
 		if (size() != otherSize)
@@ -333,5 +347,36 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 			throw new IllegalArgumentException(String.format("Cannot set from message with different size (%d vs %d)",
 				size(), otherSize));
 		}
+	}
+	
+	protected double assertNonZeroSumOfWeights()
+	{
+		double sum = sumOfWeights();
+		if (sum == 0.0)
+		{
+			throw new NormalizationException("Cannot normalize message because weights add up to zero");
+		}
+		return sum;
+	}
+
+	/**
+	 * Set {@linkplain #getNormalizationEnergy() normalization energy} to specified value, if supported.
+	 * <p>
+	 * Unlike {@link #setNormalizationEnergy(double)} this will not throw an exception if not supported.
+	 * @param normalizationEnergy TODO
+	 * @since 0.08
+	 */
+	protected void setNormalizationEnergyIfSupported(double normalizationEnergy)
+	{
+	}
+
+	/**
+	 * Adds to {@linkplain #getNormalizationEnergy() normalization energy}, if supported.
+	 * <p>
+	 * Unlike {@link #setNormalizationEnergy(double)} this will simply do nothing if not supported.
+	 * @since 0.08
+	 */
+	protected void incrementNormalizationEnergy(double additionalNormalizationEnergy)
+	{
 	}
 }

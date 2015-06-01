@@ -16,12 +16,11 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
-import static com.analog.lyric.math.Utilities.*;
-
 import java.util.Arrays;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.exceptions.NormalizationException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
@@ -55,16 +54,6 @@ public class TableFactorEngine
 
     	final double damping = tableFactor._dampingInUse ? tableFactor._dampingParams[outPortNum] : 0.0;
 
-		DiscreteMessage outMsg = _tableFactor.getSiblingEdgeState(outPortNum).factorToVarMsg;
-    	double denormalizer = outMsg.getEnergyDenormalizer();
-    	for (int i = 0; i < numPorts; ++i)
-    	{
-    		if (i != outPortNum)
-    		{
-    			denormalizer += _tableFactor.getSiblingEdgeState(i).getVarToFactorMsg().getEnergyDenormalizer();
-    		}
-    	}
-    	
     	if (damping != 0.0)
     	{
     		final double[] saved = DimpleEnvironment.doubleArrayCache.allocateAtLeast(outputMsgLength);
@@ -95,13 +84,9 @@ public class TableFactorEngine
     				+ outPortNum + " on factor " + _factor.getLabel());
     		}
 
-    		if (_tableFactor._normalizeMessages)
+    		for (int i = outputMsgLength; --i>=0;)
     		{
-    			denormalizer += weightToEnergy(sum);
-    			for (int i = outputMsgLength; --i>=0;)
-    			{
-    				outputMsgs[i] /= sum;
-    			}
+    			outputMsgs[i] /= sum;
     		}
 
     		final double inverseDamping = 1 - damping;
@@ -114,7 +99,25 @@ public class TableFactorEngine
     	}
     	else
     	{
-    		double sum = 0.0;
+			// Only update normalization energy when damping is disabled because it probably
+			// won't be useful in that case.
+
+    		final DiscreteMessage outMsg = _tableFactor.getSiblingEdgeState(outPortNum).factorToVarMsg;
+
+        	if (outMsg.storesNormalizationEnergy())
+        	{
+        		double normalizationEnergy = 0.0;
+        		for (int i = numPorts; --i > outPortNum;)
+        		{
+    				normalizationEnergy += _tableFactor.getSiblingEdgeState(i).varToFactorMsg.getNormalizationEnergy();
+        		}
+        		for (int i = outPortNum; --i >= 0;)
+        		{
+    				normalizationEnergy += _tableFactor.getSiblingEdgeState(i).varToFactorMsg.getNormalizationEnergy();
+        		}
+        		outMsg.setNormalizationEnergy(normalizationEnergy);
+        	}
+        	
     		Arrays.fill(outputMsgs, 0);
 
     		for (int tableIndex = tableLength; --tableIndex>=0;)
@@ -130,26 +133,19 @@ public class TableFactorEngine
     				prob *= inputMsgs[inPortNum][tableRow[inPortNum]];
 
     			outputMsgs[outputIndex] += prob;
-    			sum += prob;
     		}
         
-    		if (sum == 0)
+    		try
+    		{
+    			outMsg.normalize();
+    		}
+    		catch (NormalizationException ex)
     		{
     			throw new DimpleException("UpdateEdge failed in SumProduct Solver.  All probabilities were zero when calculating message for port "
     				+ outPortNum + " on factor " + _factor.getLabel());
     		}
-
-    		if (_tableFactor._normalizeMessages)
-    		{
-    			denormalizer += weightToEnergy(sum);
-    			for (int i = outputMsgLength; --i>=0;)
-    			{
-    				outputMsgs[i] /= sum;
-    			}
-    		}
     	}
 		
-		outMsg.setEnergyDenormalizer(denormalizer);
 	}
 	
 	
@@ -226,7 +222,7 @@ public class TableFactorEngine
 
 	    	DimpleEnvironment.doubleArrayCache.release(saved);
 	    }
-	    else
+	    else // no damping
 	    {
 	    	for (int outPortNum = numPorts; --outPortNum>=0;)
 	    	{
@@ -260,6 +256,7 @@ public class TableFactorEngine
 	    				+ outPortNum + " on factor " +_factor.getLabel());
 	    		}
 
+	    		// normalize
 	    		for (int i = outputMsgLength; --i>=0;)
 	    		{
 	    			outputMsgs[i] /= sum;

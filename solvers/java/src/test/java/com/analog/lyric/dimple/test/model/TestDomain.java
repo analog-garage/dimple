@@ -141,6 +141,8 @@ public class TestDomain extends DimpleTestBase
 			assertEquals(i + 1, r1to5.getIntElement(i));
 		}
 		assertSame(r1to5, DiscreteDomain.create(1,2,3,4,5));
+		assertSame(r1to5, DiscreteDomain.create(Arrays.asList(1,2,3,4,5)));
+		assertSame(r1to5, DiscreteDomain.create(new Integer[] { 1,2,3,4,5 }));
 		assertEquals("{1,2,3,4,5}", r1to5.toString());
 		
 		IntRangeDomain r0to4 = DiscreteDomain.range(0,4);

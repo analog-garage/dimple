@@ -27,7 +27,11 @@ import org.junit.Test;
 
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergyMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteNormalizedEnergyMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteNormalizedWeightMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.util.test.SerializationTester;
 import com.google.common.primitives.Doubles;
 
@@ -41,7 +45,7 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 	@Test
 	public void test()
 	{
-		DiscreteMessage msg = new DiscreteWeightMessage(10);
+		DiscreteMessage msg = new DiscreteNormalizedWeightMessage(10);
 		assertInvariants(msg);
 		
 		for (int i = msg.size(); --i>=0;)
@@ -53,13 +57,13 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 			msg.setEnergy(i,i);
 			assertEquals(i, msg.getEnergy(i), 0.0);
 		}
-		assertEquals(1.0, msg.getWeightDenormalizer(), 0.0);
+		assertEquals(0.0, msg.getNormalizationEnergy(), 0.0);
 		
 		double sum = msg.sumOfWeights();
 		msg.normalize();
 		assertEquals(1.0, msg.sumOfWeights(), 1e-10);
 		assertInvariants(msg);
-		assertEquals(sum, msg.getWeightDenormalizer(), 1e-10);
+		assertEquals(sum, energyToWeight(msg.getNormalizationEnergy()), 1e-10);
 		
 		Arrays.fill(msg.representation(), 23);
 		msg.setNull();
@@ -108,7 +112,7 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 			assertEquals(0, msg.getEnergy(i), 0.0);
 		}
 		
-		msg = new DiscreteEnergyMessage(new double[] { 4, 5, 6 });
+		msg = new DiscreteNormalizedEnergyMessage(new double[] { 4, 5, 6 });
 		assertInvariants(msg);
 		assertEquals(4, msg.getEnergy(0), 0.0);
 		assertEquals(5, msg.getEnergy(1), 0.0);
@@ -116,7 +120,7 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 		
 		sum = msg.sumOfWeights();
 		msg.normalize();
-		assertEquals(sum, msg.getWeightDenormalizer(), 1e-10);
+		assertEquals(sum, energyToWeight(msg.getNormalizationEnergy()), 1e-10);
 		
 		msg = new DiscreteWeightMessage(10);
 		DiscreteMessage msg2 = new DiscreteEnergyMessage(10);
@@ -128,6 +132,8 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 		}
 
 		assertEquals(expectedKL(msg, msg2), msg.computeKLDivergence(msg2), 1e-14);
+		assertInvariants(msg);
+		assertInvariants(msg2);
 		
 		expectThrow(IllegalArgumentException.class, msg, "computeKLDivergence", new DiscreteEnergyMessage(3));
 	}
@@ -149,6 +155,8 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 			double q = msg2.getWeight(i)/total2;
 			KL += p * Math.log(p/q);
 		}
+		
+		assertTrue(KL >= 0.0);
 		
 		return KL;
 	}
@@ -187,10 +195,17 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 			}
 		}
 		
+		if (!message.storesNormalizationEnergy())
+		{
+			assertEquals(0.0, message.getNormalizationEnergy(), 0.0);
+			expectThrow(UnsupportedOperationException.class, message, "setNormalizationEnergy", 0.0);
+		}
+		
 		expectThrow(ArrayIndexOutOfBoundsException.class, message, "getWeight", -1);
 		expectThrow(ArrayIndexOutOfBoundsException.class, message, "getWeight", size);
-		
-		assertEquals(message.getWeightDenormalizer(), energyToWeight(message.getEnergyDenormalizer()), 1e-10);
+		expectThrow(ClassCastException.class, message, "setFrom", new NormalParameters());
+		expectThrow(IllegalArgumentException.class, message, "setWeights", new double[size+1]);
+		expectThrow(IllegalArgumentException.class, message, "setEnergies", new double[size+1]);
 		
 		DiscreteMessage message2 = message.clone();
 		assertTrue(message.objectEquals(message2));
@@ -199,26 +214,24 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 		{
 			assertEquals(message.getWeight(i), message2.getWeight(i), 0.0);
 		}
-		assertEquals(message.getEnergyDenormalizer(), message2.getEnergyDenormalizer(), 0.0);
+		assertEquals(message.getNormalizationEnergy(), message2.getNormalizationEnergy(), 0.0);
 		
-		double prevDenormalizer = message2.getEnergyDenormalizer();
-		message2.resetDenormalizer();
-		assertEquals(0.0, message2.getEnergyDenormalizer(), 0.0);
-		assertEquals(1.0, message2.getWeightDenormalizer(), 0.0);
+		double prevDenormalizer = message2.getNormalizationEnergy();
 		
-		if (prevDenormalizer != message2.getEnergyDenormalizer())
+		if (prevDenormalizer != message2.getNormalizationEnergy())
 		{
 			assertFalse(message.objectEquals(message2));
 		}
 		
-		message2.normalize();
-		message2.denormalize();
-		assertEquals(0.0, message2.getEnergyDenormalizer(), 0.0);
-		message2.setWeightDenormalizer(energyToWeight(prevDenormalizer));
-		assertArrayEquals(message.representation(), message2.representation(), 1e-10);
-		
-		message2.setEnergyDenormalizer(42);
-		assertEquals(42, message2.getEnergyDenormalizer(), 0.0);
+		if (message2.storesNormalizationEnergy())
+		{
+			message2.setNormalizationEnergy(42);
+			assertEquals(42, message2.getNormalizationEnergy(), 0.0);
+		}
+		else
+		{
+			expectThrow(UnsupportedOperationException.class, message2, "setNormalizationEnergy", 42.0);
+		}
 		
 		DiscreteMessage message3 = SerializationTester.clone(message);
 		assertTrue(message.objectEquals(message));
@@ -227,6 +240,70 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 		{
 			assertEquals(message.getWeight(i), message3.getWeight(i), 0.0);
 		}
-		assertEquals(message.getEnergyDenormalizer(), message3.getEnergyDenormalizer(), 0.0);
+		assertEquals(message.getNormalizationEnergy(), message3.getNormalizationEnergy(), 0.0);
+		
+		message3.setWeightsToZero();
+		assertEquals(0.0, message3.sumOfWeights(), 0.0);
+		for (int i = message3.size(); --i>=0;)
+		{
+			assertEquals(0.0, message3.getWeight(i), 0.0);
+			assertEquals(Double.POSITIVE_INFINITY, message3.getEnergy(i), 0.0);
+		}
+		assertEquals(0.0, message3.getNormalizationEnergy(), 0.0);
+		
+		message3.setFrom(message);
+		assertTrue(message.objectEquals(message3));
+		
+		message3.setUniform();
+		assertEquals(0.0, message3.getNormalizationEnergy(), 0.0);
+		if (message3.storesWeights())
+		{
+			assertEquals(1.0, message3.sumOfWeights(), 1e-10);
+			message3.setWeights(message.representation());
+		}
+		else
+		{
+			assertEquals(size, message3.sumOfWeights(), 0.0);
+			message3.setEnergies(message.representation());
+		}
+		assertEquals(0.0, message3.getNormalizationEnergy(), 0.0);
+		
+		if (message3.storesNormalizationEnergy())
+		{
+			message3.setNormalizationEnergy(message.getNormalizationEnergy());
+			assertTrue(message3.objectEquals(message));
+			
+			message3.setNormalizationEnergy(message3.getNormalizationEnergy() + 1.0);
+			assertFalse(message.objectEquals(message3));
+			assertEquals(message.getNormalizationEnergy() + 1.0, message3.getNormalizationEnergy(), 0.0);
+			
+			message3.setWeight(0, message3.getWeight(0) + 1.0);
+			assertFalse(message.objectEquals(message3));
+			message3.setNormalizationEnergy(message.getNormalizationEnergy());
+			assertFalse(message.objectEquals(message3));
+			
+			message3.setFrom((IParameterizedMessage)message);
+			assertTrue(message.objectEquals(message3));
+		}
+		
+		message3.addWeightsFrom(message);
+		for (int i = size; --i>=0;)
+		{
+			assertEquals(message.getWeight(i) * 2, message3.getWeight(i), 1e-10);
+		}
+
+		DiscreteMessage message4 = message.storesWeights() ? new DiscreteNormalizedEnergyMessage(size) :
+			new DiscreteNormalizedWeightMessage(size);
+		assertFalse(message.objectEquals(message4));
+		message4.setFrom(message);
+		assertFalse(message.objectEquals(message4));
+		assertEquals(message.getNormalizationEnergy(), message4.getNormalizationEnergy(), 0.0);
+		assertEquals(0.0, message.computeKLDivergence(message4), 1e-10);
+		
+		message4.addWeightsFrom(message);
+		for (int i = size; --i>=0;)
+		{
+			assertEquals(message.getWeight(i) * 2, message4.getWeight(i), 1e-10);
+		}
 	}
 }

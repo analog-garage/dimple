@@ -14,29 +14,19 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.sumproduct;
-
-import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.solvers.core.SDiscreteWeightEdge;
-import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteNormalizedWeightMessage;
-
+package com.analog.lyric.dimple.exceptions;
 
 /**
  * 
  * @since 0.08
  * @author Christopher Barber
  */
-public class SumProductDiscreteEdge extends SDiscreteWeightEdge
+public class NormalizationException extends DimpleException
 {
-	public SumProductDiscreteEdge(Discrete discrete)
+	private static final long serialVersionUID = 1L;
+
+	public NormalizationException(String format, Object ... args)
 	{
-		this(new DiscreteNormalizedWeightMessage(discrete.getDomain().size()),
-			new DiscreteNormalizedWeightMessage(discrete.getDomain().size()));
-	}
-	
-	public SumProductDiscreteEdge(DiscreteNormalizedWeightMessage varToFactorMsg,
-		DiscreteNormalizedWeightMessage factorToVarMsg)
-	{
-		super(varToFactorMsg, factorToVarMsg);
+		super(String.format(format, args));
 	}
 }

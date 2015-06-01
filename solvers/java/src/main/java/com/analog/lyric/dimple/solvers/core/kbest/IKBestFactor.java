@@ -19,8 +19,6 @@ package com.analog.lyric.dimple.solvers.core.kbest;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.solvers.core.SDiscreteEdge;
-import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 
 /*
  * Solver Factors that need to support kbest can implement this interface
@@ -33,7 +31,6 @@ public interface IKBestFactor
 	public double[] getInPortMsg(int edgeNumber);
 	public double [][] getOutPortMsgs();
 	public double[] getOutPortMsg(int edgeNumber);
-	public SDiscreteEdge<? extends DiscreteMessage> getSiblingEdgeState(int edgeNumber);
 	public Factor getFactor();
 	FactorFunction getFactorFunction();
 	double initAccumulator();

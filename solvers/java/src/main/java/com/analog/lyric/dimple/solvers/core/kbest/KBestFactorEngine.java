@@ -18,7 +18,6 @@ package com.analog.lyric.dimple.solvers.core.kbest;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.util.misc.IndexCounter;
 
 /*
@@ -110,8 +109,6 @@ public class KBestFactorEngine
 		int [] domainLengths = new int[_inPortMsgs.length];
 		
 		//For each port
-		double denormalizer = 1.0;
-		
 		for (int i = 0; i < _inPortMsgs.length; i++)
 		{
 			double [] inPortMsg = _inPortMsgs[i];
@@ -121,8 +118,6 @@ public class KBestFactorEngine
 				domainIndices[i] = new int[]{0};
 			else
 			{
-				denormalizer *= _kbestFactor.getSiblingEdgeState(i).varToFactorMsg.getWeightDenormalizer();
-				
 				//Here we check to see that k is actually less than the domain length
 				if (_k < inPortMsg.length)
 					domainIndices[i] = _kbestFactor.findKBestForMsg(inPortMsg,_k);
@@ -181,10 +176,7 @@ public class KBestFactorEngine
 			}
 		}
 
-		DiscreteMessage outMsg = _kbestFactor.getSiblingEdgeState(outPortNum).factorToVarMsg;
-		outMsg.setWeightDenormalizer(denormalizer * outMsg.getWeightDenormalizer());
-		outMsg.normalize();
-//		_kbestFactor.normalize(outputMsg);
+		_kbestFactor.normalize(outputMsg);
 		
 	}
 	

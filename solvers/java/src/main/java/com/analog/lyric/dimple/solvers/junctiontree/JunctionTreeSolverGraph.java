@@ -75,4 +75,10 @@ public class JunctionTreeSolverGraph extends JunctionTreeSolverGraphBase<SumProd
 	{
 		return "Junction tree";
 	}
+	
+	public double computeLogPartitionFunction()
+	{
+		initialize();
+		return requireDelegate("computeLogPartitionFunction").computeLogPartitionFunction();
+	}
 }

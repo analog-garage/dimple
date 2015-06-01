@@ -37,21 +37,9 @@ public class DiscreteWeightMessage extends DiscreteMessage
 	
 	public DiscreteWeightMessage(double[] message)
 	{
-		this(message, 1.0);
+		super(message);
 	}
 	
-	/**
-	 * Construct with weights and denormalization constant.
-	 * <p>
-	 * @param message
-	 * @param denormalizer
-	 * @since 0.08
-	 */
-	public DiscreteWeightMessage(double[] message, double denormalizer)
-	{
-		super(message, denormalizer);
-	}
-
 	public DiscreteWeightMessage(int size)
 	{
 		this(new double[size]);
@@ -61,7 +49,7 @@ public class DiscreteWeightMessage extends DiscreteMessage
 	@Override
 	public DiscreteWeightMessage clone()
 	{
-		return new DiscreteWeightMessage(_message, _denormalizer);
+		return new DiscreteWeightMessage(_message);
 	}
 
 	/*-------------------------------
@@ -77,7 +65,7 @@ public class DiscreteWeightMessage extends DiscreteMessage
 	public void setUniform()
 	{
 		Arrays.fill(_message, 1.0 / _message.length);
-		resetDenormalizer();
+		setNormalizationEnergyIfSupported(0.0);
 	}
 
 	/*-------------------------
@@ -109,36 +97,6 @@ public class DiscreteWeightMessage extends DiscreteMessage
 	}
 	
 	@Override
-	public double getEnergyDenormalizer()
-	{
-		return Utilities.weightToEnergy(_denormalizer);
-	}
-
-	@Override
-	public void setEnergyDenormalizer(double denormalizer)
-	{
-		_denormalizer = Utilities.energyToWeight(denormalizer);
-	}
-
-	@Override
-	public double getWeightDenormalizer()
-	{
-		return _denormalizer;
-	}
-	
-	@Override
-	public void setWeightDenormalizer(double denormalizer)
-	{
-		_denormalizer = denormalizer;
-	}
-	
-	@Override
-	public void resetDenormalizer()
-	{
-		_denormalizer = 1.0;
-	}
-	
-	@Override
 	public double getWeight(int i)
 	{
 		return _message[i];
@@ -151,19 +109,13 @@ public class DiscreteWeightMessage extends DiscreteMessage
 	}
 	
 	@Override
-	public double getUnnormalizedWeight(int i)
-	{
-		return _message[i] *  _denormalizer;
-	}
-	
-	@Override
 	public void setWeights(double... weights)
 	{
 		final int length = weights.length;
 		assertSameSize(length);
 		
 		System.arraycopy(weights, 0, _message, 0, length);
-		resetDenormalizer();
+		setNormalizationEnergyIfSupported(0.0);
 	}
 
 	@Override
@@ -188,7 +140,7 @@ public class DiscreteWeightMessage extends DiscreteMessage
 		{
 			_message[i] = energyToWeight(energies[i]);
 		}
-		resetDenormalizer();
+		setNormalizationEnergyIfSupported(0.0);
 	}
 	
 	@Override
@@ -203,21 +155,13 @@ public class DiscreteWeightMessage extends DiscreteMessage
 	@Override
 	public void normalize()
 	{
-		double sum = sumOfWeights();
-		_denormalizer *= sum;
+		final double sum = assertNonZeroSumOfWeights();
+		
 		for (int i = _message.length; --i >=0;)
 			_message[i] /= sum;
-	}
-	
-	@Override
-	public void denormalize()
-	{
-		final double denormalizer = _denormalizer;
-		if (denormalizer != 1.0)
+		if (storesNormalizationEnergy())
 		{
-			for (int i = _message.length; --i >=0;)
-				_message[i] *= denormalizer;
-			resetDenormalizer();
+			incrementNormalizationEnergy(weightToEnergy(sum));
 		}
 	}
 	
@@ -225,6 +169,7 @@ public class DiscreteWeightMessage extends DiscreteMessage
 	public void setWeightsToZero()
 	{
 		Arrays.fill(_message, 0.0);
+		setNormalizationEnergyIfSupported(0.0);
 	}
 	
 	@Override
@@ -232,4 +177,5 @@ public class DiscreteWeightMessage extends DiscreteMessage
 	{
 		return true;
 	}
+	
 }

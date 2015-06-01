@@ -53,6 +53,8 @@ import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.options.DimpleOptions;
+import com.analog.lyric.dimple.schedulers.DefaultScheduler;
+import com.analog.lyric.dimple.schedulers.TreeSchedulerAbstract;
 import com.analog.lyric.dimple.solvers.core.BPSolverGraph;
 import com.analog.lyric.dimple.solvers.core.NoSolverEdge;
 import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
@@ -97,19 +99,27 @@ import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomNormalCons
 import com.analog.lyric.dimple.solvers.sumproduct.sampledfactor.SampledFactor;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.IOptionKey;
+import com.analog.lyric.options.TemporaryOptionSettings;
 
 /**
  * Solver representation of factor graph under Sum-Product solver.
- * 
+ * <p>
  * @since 0.07
  */
 public class SumProductSolverGraph extends BPSolverGraph<ISolverFactor,ISolverVariable,ISolverEdgeState>
 {
+	/*-------
+	 * State
+	 */
+	
 	private double _damping = 0;
 	private @Nullable IFactorTable _currentFactorTable = null;
 	private static Random _rand = new Random();
 
-
+	/*--------------
+	 * Construction
+	 */
+	
 	public SumProductSolverGraph(FactorGraph factorGraph, @Nullable ISolverFactorGraph parent)
 	{
 		super(factorGraph, parent);
@@ -121,6 +131,12 @@ public class SumProductSolverGraph extends BPSolverGraph<ISolverFactor,ISolverVa
 		setOption(GibbsOptions.scansPerSample, SampledFactor.DEFAULT_SCANS_PER_SAMPLE);
 	}
 
+	/*----------------------
+	 * ISolverGraph methods
+	 */
+	
+	// TODO - rearrange methods
+	
 	@Override
 	public boolean hasEdgeState()
 	{
@@ -772,9 +788,86 @@ public class SumProductSolverGraph extends BPSolverGraph<ISolverFactor,ISolverVa
 		_damping = getOptionOrDefault(BPOptions.damping);
 	}
 
-	/*
-	 * 
+	/*-------------------------------
+	 * SumProductSolverGraph methods
 	 */
+	
+	public double computeLogPartitionFunction()
+	{
+		if (!_model.isForest())
+		{
+			throw new UnsupportedOperationException(String.format(
+				"%s is not a tree or forest. Sum-product cannot compute partition function on loopy graph.", _model));
+		}
+		
+		SumProductDiscrete minVar = null;
+		int minCost = Integer.MAX_VALUE;
+		
+		for (ISolverVariable svar : getSolverVariablesRecursive())
+		{
+			if (svar instanceof SumProductDiscrete)
+			{
+				// Pick variable with smallest marginalization cost.
+				SumProductDiscrete sdiscrete = (SumProductDiscrete)svar;
+				int computationCost = sdiscrete.getDomain().size() * (svar.getSiblingCount() + 1);
+				if (computationCost < minCost)
+				{
+					minVar = sdiscrete;
+					minCost = computationCost;
+				}
+			}
+			else
+			{
+				throw new UnsupportedOperationException(String.format(
+					"Variable %s is not discrete sum-product variable.", svar));
+			}
+		}
+		
+		if (minVar == null)
+		{
+			// Graph has no variables!
+			return 0.0;
+		}
+		
+		try (TemporaryOptionSettings tmp = new TemporaryOptionSettings())
+		{
+			// We don't implement passing normalization energy when using node update
+			// (which are less useful in tree schedules in any case), so we make sure
+			// we are using an edge only schedule.
+			TreeSchedulerAbstract scheduler = new DefaultScheduler();
+			scheduler.useOnlyEdgeUpdates();
+			tmp.set(this, BPOptions.scheduler, scheduler);
+
+			tmp.set(this, BPOptions.updateApproach, UpdateApproach.NORMAL);
+			tmp.set(this, BPOptions.damping, 0.0);
+			tmp.set(this, BPOptions.maxMessageSize, Integer.MAX_VALUE);
+
+			for (ISolverVariable svar : getSolverVariablesRecursive())
+			{
+				tmp.setIfDifferent(svar, BPOptions.damping, 0.0);
+			}
+			for (ISolverFactor sfactor : getSolverFactorsRecursive())
+			{
+				tmp.setIfDifferent(sfactor, BPOptions.damping, 0.0);
+				tmp.setIfDifferent(sfactor, BPOptions.updateApproach, UpdateApproach.NORMAL);
+				tmp.setIfDifferent(sfactor, BPOptions.maxMessageSize, Integer.MAX_VALUE);
+			}
+			
+			// TODO:
+			//  - only use messages with normalization energy if this method
+			//    is called.
+			
+			initialize();
+			iterate();
+		}
+		
+		return minVar.computeLogPartitionFunction();
+	}
+	
+	/*-------------------
+	 * Protected methods
+	 */
+	
 	@Override
 	protected void doUpdateEdge(int edge)
 	{
@@ -784,24 +877,5 @@ public class SumProductSolverGraph extends BPSolverGraph<ISolverFactor,ISolverVa
 	protected String getSolverName()
 	{
 		return "sum-product";
-	}
-
-	public double computeUnnormalizedLogLikelihood()
-	{
-		double Z = 0.0;
-		
-		for (ISolverFactor sfactor : getSolverFactorsRecursive())
-		{
-			SumProductTableFactor tableFactor = (SumProductTableFactor)sfactor;
-			Z += tableFactor.computeUnnormalizedLogLikelihood();
-		}
-		
-		for (ISolverVariable svar : getSolverVariablesRecursive())
-		{
-			SumProductDiscrete sdiscrete = (SumProductDiscrete)svar;
-			Z += sdiscrete.computeUnnormalizedLogLikelihood();
-		}
-		
-		return Z;
 	}
 }

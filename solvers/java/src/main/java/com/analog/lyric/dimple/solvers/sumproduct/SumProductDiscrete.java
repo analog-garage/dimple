@@ -52,9 +52,6 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	protected @Nullable double[] _dampingParams = null;
 	protected double[][] _inMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
 	protected double[][] _outMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
-
-	// TODO = move into flags
-	private boolean _normalizeMessages = true;
 	
     /*--------------
      * Construction
@@ -84,7 +81,6 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		}
 		
 		configureDampingFromOptions();
-		_normalizeMessages = BPOptions.normalizeMessages.getOrDefault(this);
 	}
 
 	public Variable getVariable()
@@ -136,7 +132,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	protected void doUpdateEdge(int outPortNum)
     {
     	
-        final double minLog = Double.NEGATIVE_INFINITY;//-100;
+        final double minLog = -100; // FIXME
         double[] priors = _input;
         final int M = priors.length;
         final int D = _model.getSiblingCount();
@@ -146,16 +142,6 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		final double[][] inMsgs = _inMsgs;
 		final double[] dampingParams = _dampingParams;
 		final double damping = dampingParams != null ? dampingParams[outPortNum] : 0.0;
-
-		DiscreteMessage outMsg = getSiblingEdgeState(outPortNum).varToFactorMsg;
-		double denormalizer = outMsg.getEnergyDenormalizer();
-		for (int d = 0; d < D; ++d)
-		{
-			if (d != outPortNum)
-			{
-				denormalizer += getSiblingEdgeState(d).factorToVarMsg.getEnergyDenormalizer();
-			}
-		}
 
 		if (damping != 0.0)
 		{
@@ -192,14 +178,10 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 				sum += out;
 			}
 
-			if (_normalizeMessages)
+			// normalize
+			for (int m = M; --m>=0;)
 			{
-				// normalize
-				denormalizer += weightToEnergy(sum);
-				for (int m = M; --m>=0;)
-				{
-					outMsgs[m] /= sum;
-				}
+				outMsgs[m] /= sum;
 			}
 			
 			// Apply damping
@@ -212,6 +194,20 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		}
 		else
 		{
+			// Only update normalization energy when damping is disabled because it probably
+			// won't be useful in that case.
+			
+			final DiscreteMessage outMsg = getSiblingEdgeState(outPortNum).varToFactorMsg;
+			final boolean setNormalizationEnergy = outMsg.storesNormalizationEnergy();
+			double normalizationEnergy = 0.0;
+			if (setNormalizationEnergy)
+			{
+				for (int d = D; -- d> outPortNum;)
+					normalizationEnergy += getSiblingEdgeState(d).factorToVarMsg.getNormalizationEnergy();
+				for (int d = outPortNum; --d >=0;)
+					normalizationEnergy += getSiblingEdgeState(d).factorToVarMsg.getNormalizationEnergy();
+			}
+
 			for (int m = M; --m>=0;)
 			{
 				double prior = priors[m];
@@ -233,25 +229,19 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 			}
 
 			// Convert from log domain
-			double sum = 0.0;
 			for (int m = M; --m>=0;)
 			{
 				double out = Math.exp(outMsgs[m] - maxLog);
 				outMsgs[m] = out;
-				sum += out;
 			}
 
-			if (_normalizeMessages)
+			if (setNormalizationEnergy)
 			{
-				denormalizer += weightToEnergy(sum);
-				for (int m = M; --m>=0;)
-				{
-					outMsgs[m] /= sum;
-				}
+				outMsg.setNormalizationEnergy(normalizationEnergy - maxLog);
 			}
-		}
 
-		getSiblingEdgeState(outPortNum).varToFactorMsg.setEnergyDenormalizer(denormalizer);
+			outMsg.normalize();
+		}
 
 		if (_calculateDerivative)
         {
@@ -262,7 +252,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     @Override
 	protected void doUpdate()
     {
-        final double minLog = -100;
+        final double minLog = -100; // FIXME
         final double[] priors = _input;
         final int M = priors.length;
         final int D = _model.getSiblingCount();
@@ -315,16 +305,18 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 				}
 
 				// convert from log domain
+				double sum = 0.0;
 				for (int m = M; --m>=0;)
 				{
 					double out = Math.exp(outMsgs[m] - maxLog);
 					outMsgs[m] = out;
+					sum += out;
 				}
 
 				// normalize
-				if (_normalizeMessages)
+				for (int m = M; --m>=0;)
 				{
-					getSiblingEdgeState(out_d).varToFactorMsg.normalize();
+					outMsgs[m] /= sum;
 				}
 				
 				if (damping != 0)
@@ -340,8 +332,14 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 
 			DimpleEnvironment.doubleArrayCache.release(savedOutMsgArray);
 		}
-		else
+		else // no damping
 		{
+	        double incomingNormalizationEnergy = 0.0;
+	        for (int d = 0; d < D; ++d)
+	        {
+	        	incomingNormalizationEnergy += getSiblingEdgeState(d).factorToVarMsg.getNormalizationEnergy();
+	        }
+
 			for (int out_d = 0, dm = 0; out_d < D; out_d++, dm += M )
 			{
 				final double[] outMsgs = _outMsgs[out_d];
@@ -358,17 +356,27 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 				}
 
 				// convert from log domain
+				double sum = 0.0;
 				for (int m = M; --m>=0;)
 				{
-					double out = Math.exp(outMsgs[m] - maxLog);
+					final double out = Math.exp(outMsgs[m] - maxLog);
+					sum += out;
 					outMsgs[m] = out;
 				}
 
 				// normalize
-				if (_normalizeMessages)
+				for (int m = M; --m>=0;)
 				{
-					getSiblingEdgeState(out_d).varToFactorMsg.normalize();
+					outMsgs[m] /= sum;
 				}
+
+				// Update normalization energy on outgoing message:
+				//   includes energy from edges used to compute the outgoing message
+				//   plus that used to do the final normalization.
+				final SumProductDiscreteEdge outEdge = getSiblingEdgeState(out_d);
+				final double normalizationEnergy =
+					weightToEnergy(sum) - maxLog + incomingNormalizationEnergy - outEdge.factorToVarMsg.getNormalizationEnergy();
+				outEdge.varToFactorMsg.setNormalizationEnergy(normalizationEnergy);
 			}
 		}
 		
@@ -463,27 +471,30 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	}
 
 	/**
-	 * experimental
+	 * Computes the log partion function of the graph (under appropriate conditions)
+	 * <p>
+	 * This returns the log of sum of the weights of the unnormalized variable belief, which
+	 * is the same as the log partition function of the graph as long as it is a tree (or forest)
+	 * and solve has been run.
+	 * <p>
 	 * @category internal
 	 * @since 0.08
+	 * @see SumProductSolverGraph#computeLogPartitionFunction()
 	 */
 	@Internal
-	public double computeUnnormalizedLogLikelihood()
+	public double computeLogPartitionFunction()
 	{
-		if (_model.hasFixedValue())
-		{
-			return 0.0;
-		}
-		
 		double [] retval = _input.clone();
+		double normalizationEnergy = 0.0;
 		
 		for (int i = 0, n = getSiblingCount(); i < n; i++)
 		{
 			DiscreteMessage inMsg = getSiblingEdgeState(i).factorToVarMsg;
 			for (int j =  0; j < retval.length; j++)
 			{
-				retval[j] *= inMsg.getUnnormalizedWeight(j);
+				retval[j] *= inMsg.getWeight(j);
 			}
+			normalizationEnergy += inMsg.getNormalizationEnergy();
 		}
 		
 		double sum = 0.0;
@@ -492,8 +503,10 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		{
 			sum += retval[j];
 		}
+
+		double energy = weightToEnergy(sum);
 		
-		return weightToEnergy(sum);
+		return energy + normalizationEnergy;
 		
 	}
 	

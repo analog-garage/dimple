@@ -61,7 +61,7 @@ public class Option<T extends Serializable> implements IOption<T>
 	/**
 	 * Constructs key/value pair from corresponding arguments.
 	 * @param key a non-null option key.
-	 * @param value a non-null value of the correct type for the key.
+	 * @param value a value of the correct type for the key or null if missing.
 	 * @since 0.07
 	 */
 	public Option(IOptionKey<T> key, @Nullable T value)
@@ -95,6 +95,16 @@ public class Option<T extends Serializable> implements IOption<T>
 		return new Option<T>(key, holder.getOption(key));
 	}
 	
+	/**
+	 * Constructs an option key/value pair by looking it up locally in the holder.
+	 * <p>
+	 * @since 0.08
+	 */
+	public static <T extends Serializable> Option<T> lookupLocal(IOptionHolder holder, IOptionKey<T> key)
+	{
+		return new Option<T>(key, holder.getLocalOption(key));
+	}
+
 	/*----------------
 	 * Static methods
 	 */
@@ -188,5 +198,11 @@ public class Option<T extends Serializable> implements IOption<T>
 	{
 		T value = _value;
 		return value == null ? null : _key.convertToExternal(value);
+	}
+	
+	@Override
+	public void setOn(IOptionHolder holder)
+	{
+		doSet(holder, this);
 	}
 }

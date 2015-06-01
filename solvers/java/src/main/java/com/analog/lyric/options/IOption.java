@@ -54,4 +54,12 @@ public interface IOption<T extends Serializable>
 	 * @since 0.07
 	 */
 	public abstract @Nullable Object externalValue();
+	
+	/**
+	 * Set the option for given {@link #key} to specified {@link #value} on {@code holder}.
+	 * <p>
+	 * If {@link #value} is null, then the option will be unset.
+	 * @since 0.08
+	 */
+	public void setOn(IOptionHolder holder);
 }
