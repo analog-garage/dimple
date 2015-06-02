@@ -123,7 +123,7 @@ public class CustomCategorical extends GibbsRealFactor implements IRealJointConj
 
 		// Determine what parameters are constants or edges, and save the state
 		determineConstantsAndEdges();
-				}
+	}
 	
 	
 	private void determineConstantsAndEdges()

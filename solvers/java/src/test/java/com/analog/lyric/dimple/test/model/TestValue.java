@@ -28,6 +28,7 @@ import com.analog.lyric.dimple.model.domains.IntDomain;
 import com.analog.lyric.dimple.model.domains.ObjectDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
+import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.DoubleRangeValue;
 import com.analog.lyric.dimple.model.values.GenericDiscreteValue;
 import com.analog.lyric.dimple.model.values.GenericIntDiscreteValue;
@@ -406,6 +407,15 @@ public class TestValue extends DimpleTestBase
 		else if (objValue instanceof double[])
 		{
 			assertArrayEquals((double[])objValue, value.getDoubleArray(), 0.0);
+		}
+		
+		if (value instanceof DiscreteValue)
+		{
+			assertEquals(value.getIndex(), value.getIndexOrInt());
+		}
+		else if (objValue instanceof Number)
+		{
+			assertEquals(value.getInt(), value.getIndexOrInt());
 		}
 		
 		Value value2 = value.clone();

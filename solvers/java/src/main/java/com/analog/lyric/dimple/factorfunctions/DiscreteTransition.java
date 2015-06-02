@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import static com.analog.lyric.math.Utilities.*;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
@@ -39,8 +41,8 @@ import com.analog.lyric.dimple.model.values.Value;
  * <p>
  * The variables in the argument list are ordered as follows:
  * <ol>
- * <li>y: Discrete output variable (MUST be zero-based integer values)
- * <li>x: Discrete input variable (MUST be zero-based integer values)
+ * <li>y: Discrete output variable
+ * <li>x: Discrete input variable
  * <li>A: Matrix of transition matrix values (1D vector of RealJoint variables)
  * </ol>
  */
@@ -54,14 +56,12 @@ public class DiscreteTransition extends FactorFunction
     	if (arguments.length < NUM_DATA_ARGUMENTS + 1)
     		throw new DimpleException("Insufficient number of arguments.");
 		
-    	// TODO: remove restriction on zero-based integer values
-
-    	final int y = arguments[0].getInt(); 	// First argument is y (output variable)
-    	final int x = arguments[1].getInt(); 	// Second argument is x (input variable)
+    	final int y = arguments[0].getIndexOrInt(); 	// First argument is y (output variable)
+    	final int x = arguments[1].getIndexOrInt(); 	// Second argument is x (input variable)
 
     	// Choose column of A indexed by input variable x
     	final double[] Acol = arguments[x + NUM_DATA_ARGUMENTS].getDoubleArray();
 
-    	return -Math.log(Acol[y]);
+    	return weightToEnergy(Acol[y]);
 	}
 }

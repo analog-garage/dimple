@@ -16,16 +16,10 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
-import java.util.Arrays;
+import static com.analog.lyric.math.Utilities.*;
+
 import java.util.Map;
 
-import org.eclipse.jdt.annotation.Nullable;
-
-import com.analog.lyric.collect.ArrayUtil;
-import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -41,18 +35,14 @@ import com.analog.lyric.dimple.model.values.Value;
  * The variables in the argument list are ordered as follows:
  * 
  * 1) Alpha: RealJoint variable containing probabilities
- * 2...) An arbitrary number of discrete output variable (MUST be zero-based integer values) 	// TODO: remove this restriction
+ * 2...) An arbitrary number of discrete output variable
  *
  * The parameters may optionally be specified as constants in the constructor.
  * In this case, the parameters are not included in the list of arguments.
  */
-public class Categorical extends UnaryFactorFunction implements IParametricFactorFunction
+public class Categorical extends CategoricalBase
 {
 	private static final long serialVersionUID = 1L;
-
-	private double[] _alpha;
-	private boolean _parametersConstant;
-	private int _firstDirectedToIndex;
 
 	/*--------------
 	 * Construction
@@ -60,10 +50,7 @@ public class Categorical extends UnaryFactorFunction implements IParametricFacto
 	
 	public Categorical()		// Variable parameters
 	{
-		super((String)null);
-		_alpha = ArrayUtil.EMPTY_DOUBLE_ARRAY;
-		_parametersConstant = false;
-		_firstDirectedToIndex = 1;	// Parameter vector is an array (one RealJoint variable)
+		super();
 	}
 	
 	/**
@@ -71,26 +58,15 @@ public class Categorical extends UnaryFactorFunction implements IParametricFacto
 	 */
 	public Categorical(double[] alpha)	// Constant parameters
 	{
-		super((String)null);
-		_alpha = alpha.clone();
-		_parametersConstant = true;
-		_firstDirectedToIndex = 0;
-		double sum = 0;
-    	for (int i = 0; i < _alpha.length; i++)
-    	{
-    		if (_alpha[i] < 0) throw new DimpleException("Non-positive alpha parameter. Domain must be restricted to positive values.");
-    		sum += _alpha[i];
-    	}
-    	for (int i = 0; i < _alpha.length; i++)		// Normalize the alpha vector in case they're not already normalized
-    		_alpha[i] /= sum;
+		super(alpha);
+		normalizeAlphas();
 	}
 	
 	/**
-	 * Construct fromm specified parameters
+	 * Construct from specified parameters
 	 * @param parameters the following keys are supported:
 	 * <ul>
-	 * <li>alpha (default 1.0)
-	 * <li>beta (default 1.0)
+	 * <li>alpha(s)
 	 * </ul>
 	 * @since 0.07
 	 */
@@ -102,38 +78,12 @@ public class Categorical extends UnaryFactorFunction implements IParametricFacto
 	protected Categorical(Categorical other)
 	{
 		super(other);
-		_alpha = other._alpha.clone();
-		_parametersConstant = other._parametersConstant;
-		_firstDirectedToIndex = other._firstDirectedToIndex;
 	}
 	
 	@Override
 	public Categorical clone()
 	{
 		return new Categorical(this);
-	}
-	
-	/*----------------
-	 * IDatum methods
-	 */
-	
-	@Override
-	public boolean objectEquals(@Nullable Object other)
-	{
-		if (this == other)
-		{
-			return true;
-		}
-		
-		if (other instanceof Categorical)
-		{
-			Categorical that = (Categorical)other;
-			return _parametersConstant == that._parametersConstant &&
-				_firstDirectedToIndex == that._firstDirectedToIndex &&
-				Arrays.equals(_alpha, that._alpha);
-		}
-		
-		return false;
 	}
 	
 	/*------------------------
@@ -145,73 +95,16 @@ public class Categorical extends UnaryFactorFunction implements IParametricFacto
     {
     	int index = 0;
     	if (!_parametersConstant)
-    		_alpha = arguments[index++].getDoubleArray();		// First argument is the parameter vector, if not constant
+    		_alpha = arguments[index++].getDoubleArray();	// First argument is the parameter vector, if not constant
 
+    	// Remaining arguments are Categorical variables
     	final int length = arguments.length;
     	double sum = 0;
     	for (; index < length; index++)
     	{
-    		final int x = arguments[index].getInt();			// Remaining arguments are Categorical variables
-    		sum += -Math.log(_alpha[x]);
+    		final int x = arguments[index].getIndexOrInt();
+    		sum += weightToEnergy(_alpha[x]);
     	}
     	return sum;
 	}
-    
-    @Override
-    public final boolean isDirected() {return true;}
-    @Override
-	public final int[] getDirectedToIndices(int numEdges)
-	{
-    	// All edges except the parameter edges (if present) are directed-to edges
-		return FactorFunctionUtilities.getListOfIndices(_firstDirectedToIndex, numEdges-1);
-	}
-    
-    /*-----------------------------------
-     * IParametricFactorFunction methods
-     */
-    
-    @Override
-    public int copyParametersInto(Map<String, Object> parameters)
-    {
-    	if (_parametersConstant)
-    	{
-    		parameters.put("alpha", _alpha.clone());
-    		return 1;
-    	}
-    	return 0;
-    }
-    
-    @Override
-    public @Nullable Object getParameter(String parameterName)
-    {
-    	if (_parametersConstant)
-    	{
-    		switch (parameterName)
-    		{
-    		case "alpha":
-    		case "alphas":
-    			return _alpha.clone();
-    		}
-    	}
-    	return null;
-    }
-    
-    @Override
-	public final boolean hasConstantParameters()
-    {
-    	return _parametersConstant;
-    }
-
-    /*-------------------------
-     * Factor-specific methods
-     */
-    
-    public final double[] getParameters()
-    {
-    	return _alpha;
-    }
-    public final int getDimension()
-    {
-    	return _alpha.length;
-    }
 }

@@ -3,6 +3,8 @@ Dimple version 0.08 release notes
 
 Significant Changes Since v0.07
 ------------------------------------
+* Categorical and DiscreteTransition factor functions no longer limited to zero-based integers and can be used with arbitrary discrete variables.
+
 * SolverOptions.maxAutomaticFactorTableSize option allows control of when factor tables are generated based on size.
 
 * New events for monitoring Gibbs solver.

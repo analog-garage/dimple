@@ -216,6 +216,24 @@ public abstract class Value implements IDatum, Cloneable, Serializable
 	}
 	
 	/**
+	 * Creates a {@link RealValue} with unbounded domain and initial value matching {@code value}.
+	 * @since 0.08
+	 */
+	public static RealValue createReal(double value)
+	{
+		return new RealValue(value);
+	}
+	
+	/**
+	 * Creates a {@link RealJointValue} with unbounded domain and dimensions and initial value matching {@code value}.
+	 * @since 0.08
+	 */
+	public static RealJointValue createRealJoint(double ... value)
+	{
+		return new RealJointValue(value);
+	}
+	
+	/**
 	 * Creates a {@code Value} instance with specified {@code initialValue}.
 	 */
 	public static Value create(@Nullable Object initialValue)
@@ -374,6 +392,17 @@ public abstract class Value implements IDatum, Cloneable, Serializable
 		return -1;
 	}
 
+	/**
+	 * Returns either discrete index or integer value.
+	 * <p>
+	 * Same as {@link #getIndex()} if this is a {@link DiscreteValue} and otherwise is the same as {@link #getInt()}.
+	 * @since 0.08
+	 */
+	public int getIndexOrInt()
+	{
+		return getInt();
+	}
+	
 	/**
 	 * Returns current value as a {@code int}.
 	 */

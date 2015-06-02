@@ -16,79 +16,74 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
-import java.util.Arrays;
-
-import org.eclipse.jdt.annotation.Nullable;
-
-import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.misc.Internal;
+import com.analog.lyric.util.misc.Matlab;
 
 
 /**
  * Parameterized categorical distribution, which corresponds to p(x | alpha),
  * where alpha is a vector of *unnormalized* probabilities
- * 
+ * <p>
  * Representing alpha as described, the conjugate prior for alpha is such that
  * each entry of alpha is independently distributed according to
  * a Gamma distribution, all with a common Beta parameter.
  * Depending on the solver, it may or may not be necessary to use a
  * conjugate prior (for the Gibbs solver, for example, it is not).
- * 
+ * <p>
  * The variables in the argument list are ordered as follows:
- * 
- * 1..N) Alpha: Vector of unnormalized probabilities
- * N+1...) An arbitrary number of discrete output variable (MUST be zero-based integer values) 	// TODO: remove this restriction
- * 
+ * <ul>
+ * <li>1..N) Alpha: Vector of unnormalized probabilities
+ * <li>N+1...) An arbitrary number of discrete output variable
+ * </ul>
  * The parameters may optionally be specified as constants in the constructor.
  * In this case, the parameters are not included in the list of arguments.
  */
-public class CategoricalUnnormalizedParameters extends UnaryFactorFunction
+public class CategoricalUnnormalizedParameters extends CategoricalBase
 {
 	private static final long serialVersionUID = 1L;
 
-	private int _dimension;
-	private double[] _alpha;
-	private boolean _parametersConstant;
-	private int _firstDirectedToIndex;
-
+	/**
+	 * @category internal
+	 */
+	@Internal
+	@Matlab
+	public CategoricalUnnormalizedParameters(double dimension)
+	{
+		// HACK - this method exists because otherwise MATLAB would call the double[] constructor
+		// with a singleton array!
+		this((int)dimension);
+	}
+	
 	public CategoricalUnnormalizedParameters(int dimension)		// Variable parameters
 	{
-		super((String)null);
-		_dimension = dimension;
-		_firstDirectedToIndex = dimension;
-		_parametersConstant = false;
-		_alpha = new double[dimension];
+		super(dimension);
 	}
 	
 	/**
+	 * @deprecated use {@link #CategoricalUnnormalizedParameters(double[])} instead.
 	 * @since 0.05
 	 */
+	@Deprecated
 	public CategoricalUnnormalizedParameters(int dimension, double[] alpha)		// Constant parameters
 	{
-		super((String)null);
-		_dimension = dimension;
-		_firstDirectedToIndex = 0;
-		_parametersConstant = true;
-		_alpha = alpha.clone();
-		double sum = 0;
-    	for (int i = 0; i < _alpha.length; i++)
-    	{
-    		if (_alpha[i] < 0) throw new DimpleException("Non-positive alpha parameter. Domain must be restricted to positive values.");
-    		sum += _alpha[i];
-    	}
-    	for (int i = 0; i < _alpha.length; i++)		// Normalize the alpha vector in case they're not already normalized
-    		_alpha[i] /= sum;
+		this(alpha);
+		assert(dimension == alpha.length);
+	}
+	
+	/**
+	 * Construct with specific constant alpha parameters.
+	 * @since 0.08
+	 */
+	public CategoricalUnnormalizedParameters(double[] alpha)		// Constant parameters
+	{
+		super(alpha);
+		normalizeAlphas();
 	}
 	
 	protected CategoricalUnnormalizedParameters(CategoricalUnnormalizedParameters other)
 	{
 		super(other);
-		_dimension = other._dimension;
-		_alpha = other._alpha.clone();
-		_firstDirectedToIndex = other._firstDirectedToIndex;
-		_parametersConstant = other._parametersConstant;
 	}
 		
 	@Override
@@ -97,82 +92,38 @@ public class CategoricalUnnormalizedParameters extends UnaryFactorFunction
 		return new CategoricalUnnormalizedParameters(this);
 	}
 	
-	/*----------------
-	 * IDatum methods
+	/*------------------------
+	 * FactorFunction methods
 	 */
-	
-	@Override
-	public boolean objectEquals(@Nullable Object other)
-	{
-		if (this == other)
-		{
-			return true;
-		}
-		
-		if (other instanceof CategoricalUnnormalizedParameters)
-		{
-			CategoricalUnnormalizedParameters that = (CategoricalUnnormalizedParameters)other;
-			return _parametersConstant == that._parametersConstant &&
-				_firstDirectedToIndex == that._firstDirectedToIndex &&
-				_dimension == that._dimension &&
-				Arrays.equals(_alpha, that._alpha);
-		}
-		
-		return false;
-	}
 	
     @Override
 	public final double evalEnergy(Value[] arguments)
     {
+    	final int dimension = _alpha.length;
     	int index = 0;
+    	
+    	double normalizationValue = 0;
 
     	if (!_parametersConstant)
     	{
-    		for (int i = 0; i < _dimension; i++)
+    		for (int i = 0; i < dimension; i++)
     		{
     			final double a = arguments[index++].getDouble();	// First _dimension arguments are vector of Alpha parameters, if not constant
     			if (a < 0) return Double.POSITIVE_INFINITY;
     			_alpha[i] = a;
+        		normalizationValue += a;
     		}
+    		normalizationValue = Math.log(normalizationValue);
     	}
-    	
-    	// Get the normalization value
-    	double normalizationValue = 0;
-    	for (int i = 0; i < _dimension; i++)
-    		normalizationValue += _alpha[i];
     	
     	final int length = arguments.length;
     	final int N = length - index;								// Number of non-parameter variables
     	double sum = 0;
     	for (; index < length; index++)
     	{
-    		final int x = arguments[index].getInt();				// Remaining arguments are Categorical variables
+    		final int x = arguments[index].getIndexOrInt();			// Remaining arguments are Categorical variables
     		sum += -Math.log(_alpha[x]);
     	}
-    	return sum + N * Math.log(normalizationValue);
+    	return sum + N * normalizationValue;
 	}
-    
-    @Override
-    public final boolean isDirected() {return true;}
-    @Override
-	public final int[] getDirectedToIndices(int numEdges)
-	{
-    	// All edges except the parameter edges (if present) are directed-to edges
-		return FactorFunctionUtilities.getListOfIndices(_firstDirectedToIndex, numEdges-1);
-	}
-    
-    
-    // Factor-specific methods
-    public final boolean hasConstantParameters()
-    {
-    	return _parametersConstant;
-    }
-    public final double[] getParameters()
-    {
-    	return _alpha;
-    }
-    public final int getDimension()
-    {
-    	return _dimension;
-    }
 }

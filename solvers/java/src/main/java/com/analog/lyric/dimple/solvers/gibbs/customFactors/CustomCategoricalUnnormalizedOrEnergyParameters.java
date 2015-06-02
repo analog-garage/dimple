@@ -132,7 +132,7 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends GibbsRealFa
 		
 		// Determine what parameters are constants or edges, and save the state
 		determineConstantsAndEdges();
-				}
+	}
 	
 	
 	private void determineConstantsAndEdges()

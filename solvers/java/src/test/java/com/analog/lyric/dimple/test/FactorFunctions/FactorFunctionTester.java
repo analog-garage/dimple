@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
@@ -37,6 +38,56 @@ import com.google.common.math.DoubleMath;
  */
 public class FactorFunctionTester extends DimpleTestBase
 {
+	public static void assertEvalEnergy(FactorFunction function, double expectedEnergy, Value ... values)
+	{
+		assertEquals(expectedEnergy, function.evalEnergy(values), 1e-15);
+	}
+	
+	public static void assertEvalEnergyReal(FactorFunction function, double expectedEnergy, double ... values)
+	{
+		Value[] reals = new Value[values.length];
+		for (int i = values.length; --i>=0;)
+		{
+			reals[i] = Value.createReal(values[i]);
+		}
+		
+		assertEquals(expectedEnergy, function.evalEnergy(reals), 1e-15);
+	}
+	
+	public static void assertEvalEnergyDiscrete(FactorFunction function, double expectedEnergy, DiscreteDomain domain,
+		Object ... values)
+	{
+		Value[] discretes = new Value[values.length];
+		for (int i = values.length; --i>=0;)
+		{
+			discretes[i] = Value.create(domain, values[i]);
+		}
+		
+		assertEquals(expectedEnergy, function.evalEnergy(discretes), 1e-15);
+	}
+
+	public static void assertEvalEnergyBit(FactorFunction function, double expectedEnergy, Object ... values)
+	{
+		Value[] discretes = new Value[values.length];
+		for (int i = values.length; --i>=0;)
+		{
+			discretes[i] = Value.create(DiscreteDomain.bit(), values[i]);
+		}
+		
+		assertEquals(expectedEnergy, function.evalEnergy(discretes), 1e-15);
+	}
+
+	public static void assertEvalEnergyBool(FactorFunction function, double expectedEnergy, boolean ... values)
+	{
+		Value[] discretes = new Value[values.length];
+		for (int i = values.length; --i>=0;)
+		{
+			discretes[i] = Value.create(DiscreteDomain.bool(), values[i]);
+		}
+		
+		assertEquals(expectedEnergy, function.evalEnergy(discretes), 1e-15);
+	}
+
 	/**
 	 * Tests given factor function over set of test cases.
 	 * <p>

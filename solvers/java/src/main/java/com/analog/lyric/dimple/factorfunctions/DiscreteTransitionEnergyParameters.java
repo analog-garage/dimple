@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import static com.analog.lyric.math.Utilities.*;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
@@ -38,26 +40,38 @@ import com.analog.lyric.dimple.model.values.Value;
  * <p>
  * The variables in the argument list are ordered as follows:
  * <ol>
- * <li>y: Discrete output variable (MUST be zero-based integer values)
- * <li>x: Discrete input variable (MUST be zero-based integer values)
- * <li>A: Matrix of transition energy values
+ * <li>y: Discrete output variable
+ * <li>x: Discrete input variable
+ * <li>...: The entries of the transition matrix flattened out in column major order (the standard
+ * multidimensional array order used by MATLAB).
  * </ol>
  */
 public class DiscreteTransitionEnergyParameters extends FactorFunction
 {
-	protected int _yDimension;
-	protected int _xDimension;
-	protected double[] _Acol;
+	/*-------
+	 * State
+	 */
+	
 	private final static int NUM_DATA_ARGUMENTS = 2;
 
+	protected final int _yDimension;
+	protected final int _xDimension;
+
+	/*--------------
+	 * Construction
+	 */
+	
 	public DiscreteTransitionEnergyParameters(int dimension) {this(dimension, dimension);}	// Square transition matrix
 	public DiscreteTransitionEnergyParameters(int yDimension, int xDimension)
 	{
 		super();
 		_yDimension = yDimension;
 		_xDimension = xDimension;
-		_Acol = new double[yDimension];
 	}
+	
+	/*------------------------
+	 * FactorFunction methods
+	 */
 	
     @Override
 	public final double evalEnergy(Value[] arguments)
@@ -65,20 +79,19 @@ public class DiscreteTransitionEnergyParameters extends FactorFunction
     	if (arguments.length != _xDimension*_yDimension + NUM_DATA_ARGUMENTS)
     		throw new DimpleException("Incorrect number of arguments.");
     	
-    	// TODO: remove restriction on zero-based integer values
+    	final int y = arguments[0].getIndexOrInt();				// First argument is y (output variable)
+    	final int x = arguments[1].getIndexOrInt();				// Second argument is x (input variable)
 
-    	final int y = arguments[0].getInt();				// First argument is y (output variable)
-    	final int x = arguments[1].getInt();				// Second argument is x (input variable)
-
-    	int index = x * _yDimension + NUM_DATA_ARGUMENTS;	// Beginning of the column for the given value of x (matrix is scanned by columns)
-    	for (int row = 0; row < _yDimension; row++)
-    		_Acol[row] = arguments[index++].getDouble();
+    	// Beginning of the column for the given value of x (matrix is scanned by columns)
+    	final int colStartIndex = x * _yDimension + NUM_DATA_ARGUMENTS;
     	
-    	double sum = 0;										// Normalize over column selected by the value of x
-    	for (int row = 0; row < _yDimension; row++)
-    		sum += Math.exp(-_Acol[row]);
+       	double sum = 0;
+    	for (int index = colStartIndex + _yDimension; --index>=colStartIndex;)
+    	{
+    		sum += energyToWeight(arguments[index].getDouble());
+    	}
     	
-    	return _Acol[y] + Math.log(sum);
+    	return arguments[colStartIndex + y].getDouble() + Math.log(sum);
 	}
     
     
