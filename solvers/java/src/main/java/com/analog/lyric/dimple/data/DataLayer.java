@@ -263,9 +263,9 @@ public class DataLayer<D extends IDatum> extends AbstractMap<Variable, D> implem
 		return new GenericDataLayer(graph);
 	}
 	
-	public static SampleDataLayer createSample(FactorGraph graph)
+	public static ValueDataLayer createDenseValue(FactorGraph graph)
 	{
-		return new SampleDataLayer(graph);
+		return new ValueDataLayer(graph);
 	}
 	
 	@Override
@@ -456,6 +456,23 @@ public class DataLayer<D extends IDatum> extends AbstractMap<Variable, D> implem
 	public Iterable<? extends FactorGraphData<D>> getData()
 	{
 		return Iterables.filter(_data, Predicates.notNull());
+	}
+	
+	/**
+	 * True if the layer contains data for every variable in the graph.
+	 * @since 0.08
+	 */
+	public boolean isFull()
+	{
+		for (FactorGraphData<D> data : getData())
+		{
+			if (!data.isFull())
+			{
+				return false;
+			}
+		}
+		
+		return true;
 	}
 	
 	public @Nullable FactorGraphData<D> removeDataForGraph(FactorGraph graph)

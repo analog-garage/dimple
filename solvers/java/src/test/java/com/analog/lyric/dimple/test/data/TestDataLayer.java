@@ -37,7 +37,7 @@ import com.analog.lyric.dimple.data.DenseFactorGraphData;
 import com.analog.lyric.dimple.data.FactorGraphData;
 import com.analog.lyric.dimple.data.GenericDataLayer;
 import com.analog.lyric.dimple.data.IDatum;
-import com.analog.lyric.dimple.data.SampleDataLayer;
+import com.analog.lyric.dimple.data.ValueDataLayer;
 import com.analog.lyric.dimple.data.SparseFactorGraphData;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Ids;
@@ -90,11 +90,11 @@ public class TestDataLayer extends DimpleTestBase
 		test(root, DenseFactorGraphData.constructorForType(Value.class));
 		test(root, SparseFactorGraphData.constructorForType(IDatum.class));
 		
-		SampleDataLayer sampleLayer = new SampleDataLayer(root);
+		ValueDataLayer sampleLayer = new ValueDataLayer(root);
 		assertSame(Value.class, sampleLayer.baseType());
 		test(sampleLayer);
 
-		SampleDataLayer sampleLayer2 = DataLayer.createSample(nested3);
+		ValueDataLayer sampleLayer2 = DataLayer.createDenseValue(nested3);
 		assertSame(root, sampleLayer2.rootGraph());
 		
 		DataLayer<RealValue> sampleLayer3 = DataLayer.createDense(root, RealValue.class);

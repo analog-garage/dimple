@@ -21,30 +21,34 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.values.Value;
 
 /**
- * 
+ * A dense {@link DataLayer} that can only contain {@link Value} objects.
+ * <p>
+ * Can be used to represent samples, MAP assignments, conditioning, and for computing
+ * likelihood of given assignment.
+ * <p>
  * @since 0.08
  * @author Christopher Barber
  */
-public class SampleDataLayer extends DataLayer<Value>
+public class ValueDataLayer extends DataLayer<Value>
 {
-	public SampleDataLayer(FactorGraph graph, Constructor<Value> constructor)
+	public ValueDataLayer(FactorGraph graph, Constructor<Value> constructor)
 	{
 		super(graph, constructor);
 	}
 
-	public SampleDataLayer(FactorGraph graph)
+	public ValueDataLayer(FactorGraph graph)
 	{
 		this(graph, DenseFactorGraphData.constructorForType(Value.class));
 	}
 	
-	protected SampleDataLayer(SampleDataLayer other)
+	protected ValueDataLayer(ValueDataLayer other)
 	{
 		super(other);
 	}
 	
 	@Override
-	public SampleDataLayer clone()
+	public ValueDataLayer clone()
 	{
-		return new SampleDataLayer(this);
+		return new ValueDataLayer(this);
 	}
 }

@@ -405,6 +405,15 @@ public abstract class FactorGraphData<D extends IDatum> extends AbstractMap<Vari
 	 */
 	public abstract PrimitiveIterable.OfInt getLocalIndices();
 	
+	/**
+	 * True if this contains data for every owned variable in the graph.
+	 * @since 0.08
+	 */
+	public boolean isFull()
+	{
+		return size() == _graph.getOwnedVariableCount();
+	}
+	
 	public abstract @Nullable D setByLocalIndex(int index, @Nullable D datum);
 	
 	/*-----------------

@@ -26,7 +26,7 @@ import org.junit.Test;
 import cern.colt.list.IntArrayList;
 
 import com.analog.lyric.dimple.data.DataLayer;
-import com.analog.lyric.dimple.data.SampleDataLayer;
+import com.analog.lyric.dimple.data.ValueDataLayer;
 import com.analog.lyric.dimple.events.DimpleEventLogger;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
@@ -147,7 +147,7 @@ public class TestDiscreteLikelihood extends DimpleTestBase
 		
 		int N = 100;
 		
-		SampleDataLayer dataLayer = DataLayer.createSample(fg);
+		ValueDataLayer dataLayer = DataLayer.createDenseValue(fg);
 		
 		for (int i = 0; i < N; ++i)
 		{
