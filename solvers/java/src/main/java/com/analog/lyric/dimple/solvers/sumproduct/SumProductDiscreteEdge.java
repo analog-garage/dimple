@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.SDiscreteWeightEdge;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteNormalizedWeightMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 
 
 /**
@@ -34,8 +35,7 @@ public class SumProductDiscreteEdge extends SDiscreteWeightEdge
 			new DiscreteNormalizedWeightMessage(discrete.getDomain().size()));
 	}
 	
-	public SumProductDiscreteEdge(DiscreteNormalizedWeightMessage varToFactorMsg,
-		DiscreteNormalizedWeightMessage factorToVarMsg)
+	public SumProductDiscreteEdge(DiscreteWeightMessage varToFactorMsg, DiscreteWeightMessage factorToVarMsg)
 	{
 		super(varToFactorMsg, factorToVarMsg);
 	}
