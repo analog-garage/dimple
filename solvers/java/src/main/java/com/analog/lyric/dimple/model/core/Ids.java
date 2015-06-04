@@ -62,6 +62,36 @@ import com.analog.lyric.util.misc.Internal;
  * it as a boundary variable. The same boundary edge will have different identifiers with respect to the two
  * graphs that refer to it.
  * <p>
+ * <h2>Internal layout</h2>
+ * 
+ * Identifiers have the following internal layouts:
+ * <p>
+ * <ul>
+ * <li><b>local id</b>
+ * <pre>
+ * +------+-----------------------------+
+ * | type |          index              |
+ * +------+-----------------------------+
+ * 31     28                            0
+ * </pre>
+ * 
+ * <li><b>global id</b>
+ * <pre>
+ * +----+-------------------------------+--------------------------------------+
+ * | 01 |           graph id            |               local id               |
+ * +----+-------------------------------+--------------------------------------+
+ * 63   61                              32                                     0
+ * </pre>
+
+ * <li><b>graph tree id</b>
+ * <pre>
+ * +----+-------------------------------+--------------------------------------+
+ * | 00 |      graph tree index         |               local id               |
+ * +----+-------------------------------+--------------------------------------+
+ * 63   61                              32                                     0
+ * </pre>
+ * </ul>
+ * 
  * @since 0.08
  */
 public abstract class Ids
@@ -124,7 +154,7 @@ public abstract class Ids
 	 * @see #GLOBAL_ID_MIN
 	 * @see Node#getGlobalId()
 	 */
-	public static final long GLOBAL_ID_MAX = (1L<<62) - 1;
+	public static final long GLOBAL_ID_MAX = (1L<<63) - 1;
 
 	/**
 	 * Minimum value for a Dimple global identifier.
@@ -133,7 +163,7 @@ public abstract class Ids
 	 * @see #GLOBAL_ID_MAX
 	 * @see Node#getGlobalId()
 	 */
-	public static final long GLOBAL_ID_MIN = ((long)GRAPH_ID_MIN << 32);
+	public static final long GLOBAL_ID_MIN = ((long)GRAPH_ID_MIN << 32) | 1L<<62;
 
 	/**
 	 * Offset of the type index portion of a local identifier.
@@ -221,6 +251,12 @@ public abstract class Ids
 		VARIABLE_PORT,
 		VARIABLE_BLOCK;
 		
+		// Future types:
+		//   CONSTANT
+		//   PARAMETER
+		//   COST VARIABLE
+		//   ACTION FACTOR
+		
 		private static final Type[] _values = Type.values();
 		
 		private static final String DEFAULT_NAME_PREFIX = "FGVBEPQK";
@@ -279,7 +315,12 @@ public abstract class Ids
 	/**
 	 * Mask for global identifier within UUID.
 	 */
-	private static final long GLOBAL_ID_MASK = GLOBAL_ID_MAX;
+	private static final long GLOBAL_ID_UUID_MASK = (1L<<62) - 1;
+	
+	/**
+	 * High-order two bits used to distinguish global id from a graph tree id.
+	 */
+	private static final long GLOBAL_ID_INDICATOR = 1L<<62;
 	
 	/**
 	 * Mask for index (non-type) portion of local identifier.
@@ -314,7 +355,7 @@ public abstract class Ids
 		msb |= DIMPLE_UUID_VERSION;
 		msb <<= UUID_VERSION_OFFSET;
 		msb |= envId & UUID_NON_VERSION_MASK;
-		final long lsb = Long.MIN_VALUE | globalId & GLOBAL_ID_MASK;
+		final long lsb = Long.MIN_VALUE | globalId & GLOBAL_ID_UUID_MASK;
 		return new UUID(msb, lsb);
 	}
 	
@@ -374,7 +415,7 @@ public abstract class Ids
 		{
 			return -1L;
 		}
-		return nodeUid.getLeastSignificantBits() & GLOBAL_ID_MASK;
+		return nodeUid.getLeastSignificantBits() & GLOBAL_ID_UUID_MASK | GLOBAL_ID_INDICATOR;
 	}
 	
 	/**
@@ -384,7 +425,7 @@ public abstract class Ids
 	 */
 	public static long globalIdFromParts(int graphId, int localId)
 	{
-		return (long)graphId << 32 | 0xFFFFFFFFL & localId;
+		return (long)graphId << 32 | 0xFFFFFFFFL & localId | GLOBAL_ID_INDICATOR;
 	}
 	
 	/**
@@ -435,7 +476,7 @@ public abstract class Ids
 	 */
 	public static int graphIdFromGlobalId(long globalId)
 	{
-		return (int)(globalId >>> 32);
+		return (int)(globalId >>> 32) & 0x3FFFFFFF;
 	}
 	
 	public static long graphTreeIdFromParts(int graphTreeIndex, int localId)
@@ -470,6 +511,11 @@ public abstract class Ids
 	public static int indexFromLocalId(int id)
 	{
 		return id & LOCAL_ID_INDEX_MASK;
+	}
+	
+	public static boolean isGlobalId(long id)
+	{
+		return (id >>> 62) == 1L;
 	}
 	
 	/**

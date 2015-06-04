@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.test.model;
 
+import static com.analog.lyric.util.test.ExceptionTester.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -95,6 +96,14 @@ public class TestFactorGraph extends DimpleTestBase
 		assertNull(b1.getSolver());
 		assertNull(b2.getSolver());
 		assertNull(sum1.getSolver());
+		
+		RandomGraphGenerator gen = new RandomGraphGenerator(testRand);
+		fg = gen.buildRandomGraph(42);
+		assertFactorGraphInvariants(fg);
+		
+		// Test getNode
+		assertNull(fg.getNode(null));
+		expectThrow(IllegalArgumentException.class, fg, "getNode", fg.getClass());
 	}
 	
 	public static void assertFactorGraphInvariants(FactorGraph fg)
@@ -113,6 +122,12 @@ public class TestFactorGraph extends DimpleTestBase
 		for (Variable var : vars)
 		{
 			assertSame(var, fg.getVariableByUUID(var.getUUID()));
+			assertSame(var, fg.getNode(var));
+			assertSame(var, fg.getNode(var.getGlobalId()));
+			assertSame(var, fg.getNode(var.getGraphTreeId()));
+			assertSame(var, fg.getNode(var.getUUID()));
+			assertSame(var, fg.getNode(var.getQualifiedName()));
+			assertSame(var, var.requireParentGraph().getNode(var.getLocalId()));
 		}
 	}
 }

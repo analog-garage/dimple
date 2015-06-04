@@ -28,7 +28,8 @@ import com.analog.lyric.dimple.model.core.Ids.Type;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
 /**
- * 
+ * Test for Ids static methods
+ * <p>
  * @since 0.08
  * @author Christopher Barber
  */
@@ -105,6 +106,7 @@ public class TestNodeId extends DimpleTestBase
 			assertEquals(globalId, globalId2);
 			assertTrue(GLOBAL_ID_MIN <= globalId);
 			assertTrue(GLOBAL_ID_MAX >= globalId);
+			assertTrue(isGlobalId(globalId));
 			
 			assertEquals(graphId, graphIdFromGlobalId(globalId));
 			assertEquals(localId, localIdFromGlobalId(globalId));
@@ -116,6 +118,7 @@ public class TestNodeId extends DimpleTestBase
 			long graphTreeId = graphTreeIdFromParts(graphTreeIndex, localId);
 			assertEquals(graphTreeIndex, graphTreeIndexFromGraphTreeId(graphTreeId));
 			assertEquals(localId, localIdFromGraphTreeId(graphTreeId));
+			assertFalse(isGlobalId(graphTreeId));
 			
 			long envId = DimpleEnvironment.active().getEnvId();
 			UUID uuid = makeUUID(envId, globalId);

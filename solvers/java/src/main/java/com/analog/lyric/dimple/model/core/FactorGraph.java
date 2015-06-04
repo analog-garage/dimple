@@ -3114,9 +3114,18 @@ public class FactorGraph extends FactorBase
 		return _boundaryVariables.contains(mv);
 	}
 
+	/**
+	 * Looks up variable using its global or graph tree id.
+	 * <p>
+	 * @param id is either a global id or a graph tree id for the variable.
+	 * @return {@code Variable} in same graph tree as this graph that is indexed by given identifier or else
+	 * null if there is no object with given identifier in the graph tree.
+	 * @throws ClassCastException if {@code id} refers to an object other than a {@code Variable} (such as a
+	 * {@code Factor}).
+	 */
 	public @Nullable Variable getVariable(long id)
 	{
-		return (Variable)getNodeByGlobalId(id);
+		return Ids.isGlobalId(id) ? (Variable)getNodeByGlobalId(id) : (Variable)getNodeByGraphTreeId(id);
 	}
 	
 	public @Nullable Variable getVariableByLocalId(int id)
@@ -3437,6 +3446,67 @@ public class FactorGraph extends FactorBase
 	public @Nullable Node getObjectByUUID(UUID uuid)
 	{
 		return getNodeByGlobalId(Ids.globalIdFromUUID(uuid));
+	}
+	
+	/**
+	 * Looks up node in graph tree using given key.
+	 * <p>
+	 * Supports flexible lookup of nodes by a variety of different key types.
+	 * <p>
+	 * @param key must be one of the following:
+	 * <p>
+	 * <dl>
+	 * <dt>{@code null} or {@link Node}</dt>
+	 * <dd> Value will simply be returned (even if node does not belong to this graph)</dd>
+	 * <dl>{@link Long}</dl>
+	 * <dd>If number appears to be a global id according to {@link Ids#isGlobalId} then
+	 * {@link #getNodeByGlobalId} will be used to look up the node, otherwise it will be treated as a graph
+	 * tree id and passed to {@link #getNodeByGraphTreeId}.
+	 * </dd>
+	 * <dt>{@link Integer}
+	 * <dd>Will be treated as a local identifier and passed to {@link #getNodeByLocalId}.
+	 * <dt>{@link String}
+	 * <dd>Will be treated as a qualified name and passed to {@link #getObjectByName}.
+	 * <dt>{@link UUID}
+	 * <dd>Will be passed to {@link #getObjectByUUID}.
+	 * </dl>
+	 * @throws IllegalArgumentException if {@code key} is not one of the above types.
+	 * @since 0.08
+	 */
+	public @Nullable Node getNode(@Nullable Object key)
+	{
+		if (key == null || key instanceof Node)
+		{
+			return (Node)key;
+		}
+
+		if (key instanceof Long)
+		{
+			final long id = (Long)key;
+			if (Ids.isGlobalId(id))
+			{
+				return getNodeByGlobalId(id);
+			}
+			else
+			{
+				return getNodeByGraphTreeId(id);
+			}
+		}
+		if (key instanceof String)
+		{
+			return getObjectByName((String)key);
+		}
+		if (key instanceof UUID)
+		{
+			return getObjectByUUID((UUID)key);
+		}
+		if (key instanceof Integer)
+		{
+			return getNodeByLocalId((Integer)key);
+		}
+		
+		throw new IllegalArgumentException(String.format(
+			"Key %s is not one of Node, String, UUID, Long, or Integer", key));
 	}
 	
 	/**
