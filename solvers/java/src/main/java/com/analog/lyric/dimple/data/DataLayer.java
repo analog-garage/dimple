@@ -32,6 +32,7 @@ import com.analog.lyric.collect.ExtendedArrayList;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Ids;
+import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
@@ -346,8 +347,8 @@ public class DataLayer<D extends IDatum> extends AbstractMap<Variable, D> implem
 	@Override
 	public boolean containsKey(@Nullable Object key)
 	{
-		final FactorGraphData<D> data = getDataForKey(key);
-		return data != null && data.containsKey(key);
+		final Node node = _rootGraph.getNode(key);
+		return node instanceof Variable && containsDataFor((Variable)node);
 	}
 	
 	@Override
@@ -359,8 +360,19 @@ public class DataLayer<D extends IDatum> extends AbstractMap<Variable, D> implem
 	@Override
 	public @Nullable D get(@Nullable Object key)
 	{
-		final FactorGraphData<D> data = getDataForKey(key);
-		return data != null ? data.get(key) : null;
+		Node node = _rootGraph.getNode(key);
+		if (node instanceof Variable)
+		{
+			return get((Variable)node);
+		}
+		
+		return null;
+	}
+	
+	public @Nullable D get (Variable var)
+	{
+		final FactorGraphData<D> data = getDataForVariable(var);
+		return data != null ? data.get(var) : null;
 	}
 	
 	@Override
@@ -404,11 +416,37 @@ public class DataLayer<D extends IDatum> extends AbstractMap<Variable, D> implem
 	 * DataLayer methods
 	 */
 	
+	/**
+	 * Base type instance for data held in this layer.
+	 * <p>
+	 * @since 0.08
+	 */
 	public final Class<D> baseType()
 	{
 		return _baseType;
 	}
 	
+	/**
+	 * True if data layer contains a non-null datum for given {@code var}.
+	 * <p>
+	 * This is the same as {@link #containsKey(Object)} but requires a {@link Variable} argument.
+	 * <p>
+	 * @since 0.08
+	 */
+	public boolean containsDataFor(Variable var)
+	{
+		final FactorGraphData<D> data = getDataForVariable(var);
+		return data != null && data.containsKey(var);
+	}
+	
+	/**
+	 * Force instantiation of {@link FactorGraphData} for given {@code graph} for this layer.
+	 * <p>
+	 * Unlike {@link #getDataForGraph(FactorGraph)} this will create a new instance if necessary.
+	 * <p>
+	 * @param graph must be a graph in the same graph tree as this layer.
+	 * @since 0.08
+	 */
 	public FactorGraphData<D> createDataForGraph(FactorGraph graph)
 	{
 		assertSharesRoot(graph);
@@ -424,11 +462,24 @@ public class DataLayer<D extends IDatum> extends AbstractMap<Variable, D> implem
 		return data;
 	}
 	
+	/**
+	 * The {@linkplain FactorGraphData.Constructor constructor object} used to create new {@link FactorGraphData}
+	 * instances.
+	 * <p>
+	 * This is used by {@link #createDataForGraph(FactorGraph)} to create new instances.
+	 * <p>
+	 * @since 0.08
+	 */
 	public final FactorGraphData.Constructor<D> dataConstructor()
 	{
 		return _constructor;
 	}
 	
+	/**
+	 * Lookup data for variable with given graph tree id.
+	 * @since 0.08
+	 * @see #get(Object)
+	 */
 	public @Nullable D getByGraphTreeId(long id)
 	{
 		int localId = Ids.localIdFromGraphTreeId(id);
@@ -442,6 +493,11 @@ public class DataLayer<D extends IDatum> extends AbstractMap<Variable, D> implem
 		return null;
 	}
 	
+	/**
+	 * Lookup data for variable with given graph tree and local indices.
+	 * @since 0.08
+	 * @see #getByGraphTreeId(long)
+	 */
 	public @Nullable D getByGraphTreeAndLocalIndices(int graphTreeIndex, int localIndex)
 	{
 		FactorGraphData<D> data = _data.getOrNull(graphTreeIndex);
@@ -480,6 +536,10 @@ public class DataLayer<D extends IDatum> extends AbstractMap<Variable, D> implem
 		return sharesRoot(graph) ? _data.set(graph.getGraphTreeIndex(), null) : null;
 	}
 	
+	/**
+	 * Root {@link FactorGraph} of the graph tree represented by this data layer.
+	 * @since 0.08
+	 */
 	public FactorGraph rootGraph()
 	{
 		return _rootGraph;
@@ -495,6 +555,10 @@ public class DataLayer<D extends IDatum> extends AbstractMap<Variable, D> implem
 		return _data.set(data.graph().getGraphTreeIndex(), data);
 	}
 	
+	/**
+	 * True if {@code node} is in the same graph tree represented by this data layer.
+	 * @since 0.08
+	 */
 	public boolean sharesRoot(INode node)
 	{
 		return node.getRootGraph() == _rootGraph;

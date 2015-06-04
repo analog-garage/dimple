@@ -37,8 +37,8 @@ import com.analog.lyric.dimple.data.DenseFactorGraphData;
 import com.analog.lyric.dimple.data.FactorGraphData;
 import com.analog.lyric.dimple.data.GenericDataLayer;
 import com.analog.lyric.dimple.data.IDatum;
-import com.analog.lyric.dimple.data.ValueDataLayer;
 import com.analog.lyric.dimple.data.SparseFactorGraphData;
+import com.analog.lyric.dimple.data.ValueDataLayer;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Ids;
 import com.analog.lyric.dimple.model.sugar.ModelSyntacticSugar.CurrentModel;
@@ -296,6 +296,7 @@ public class TestDataLayer extends DimpleTestBase
 			assertSame(datum, valueIter.next());
 			
 			assertTrue(layer.containsKey(var));
+			assertTrue(layer.containsDataFor(var));
 			assertTrue(vars.contains(var));
 			assertTrue(entries.contains(entry));
 			assertTrue(entries.contains(new AbstractMap.SimpleEntry<>(var, datum)));
@@ -305,6 +306,9 @@ public class TestDataLayer extends DimpleTestBase
 			
 			long graphTreeId = var.getGraphTreeId();
 			assertSame(datum, layer.getByGraphTreeId(graphTreeId));
+			assertSame(datum, layer.get(graphTreeId));
+			assertSame(datum, layer.get(var.getGlobalId()));
+			assertSame(datum, layer.get(var.getQualifiedName()));
 			
 			int graphTreeIndex = Ids.graphTreeIndexFromGraphTreeId(graphTreeId);
 			int localId = Ids.localIdFromGraphTreeId(graphTreeId);
