@@ -26,22 +26,35 @@ import org.eclipse.jdt.annotation.Nullable;
 import Jama.Matrix;
 
 import com.analog.lyric.collect.ArrayUtil;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.math.LyricEigenvalueDecomposition;
 
 public class MultivariateNormalParameters extends ParameterizedMessageBase
 {
+	/*-------
+	 * State
+	 */
+	
 	private static final long serialVersionUID = 1L;
 
+	private static final double EPS = 0.0000001; //minimum value for small eigenvalues or 1/(max value)
+	protected static final double LOG_SQRT_2PI = Math.log(2*Math.PI)*0.5;
+
+	// TODO - instead of toggling between covariance and information forms, perhaps we should instead
+	// store the eigendecomposition of the matrix and use that for computation, only constructing the
+	// actual matrix if requested.
+	
 	private double [] _vector = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	// Cache means to avoid having to recompute
 	private @Nullable double [] _mean = null;
 	private double [][] _matrix = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
 	private boolean _isInInformationForm;
-	private final double eps = 0.0000001; //minimum value for small eigenvalues or 1/(max value)
-
 	
-	// Constructors
+	/*--------------
+	 * Constructors
+	 */
+
 	public MultivariateNormalParameters()
 	{
 		this(ArrayUtil.EMPTY_DOUBLE_ARRAY, ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY);
@@ -113,18 +126,22 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 		_mean = null;
 		_matrix = cloneMatrix(informationMatrix);
 		_isInInformationForm = true;
+		forgetNormalizationEnergy();
 	}
 
 	// Set from another parameter set without first extracting the components or determining which form
 	public final void set(MultivariateNormalParameters other)
 	{
+		double[] mean = other._mean;
+		_mean = mean != null ? mean.clone() : null;
 		_vector = other._vector.clone();
 		_matrix = cloneMatrix(other._matrix);
 		_isInInformationForm = other._isInInformationForm;
+		copyNormalizationEnergy(other);
 	}
 	
-	/*----------------
-	 * IDatum methods
+	/*-----------------
+	 * IEquals methods
 	 */
 	
 	@Override
@@ -159,6 +176,36 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 		}
 		
 		return false;
+	}
+	
+	/*----------------------
+	 * IUnaryFactorFunction
+	 */
+	
+	@Override
+	public double evalEnergy(Value value)
+	{
+		// TODO - this requires both covariance and information forms. Can we avoid this?
+		final double[] x = value.getDoubleArray().clone();
+		final double[] mean = getMean();
+		
+		final int n = mean.length;
+		for (int i = n; --i>=0;)
+			x[i] -= mean[i];
+		
+		final double[][] informationMatrix = getInformationMatrix();
+		
+		double colSum = 0;
+		for (int row = 0; row < n; row++)
+		{
+			double rowSum = 0;
+			final double[] informationMatrixRow = informationMatrix[row];
+			for (int col = 0; col < n; col++)
+				rowSum += informationMatrixRow[col] * x[col];	// Matrix * vector
+			colSum += rowSum * x[row];	// Vector * vector
+		}
+
+		return colSum * .5;
 	}
 	
 	/*--------------------
@@ -336,6 +383,7 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 		_matrix = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
 		_mean = null;
 		_isInInformationForm = true;
+		_normalizationEnergy = 0.0;
 	}
 	
 	/**
@@ -357,6 +405,7 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 		{
 			Arrays.fill(array, Double.POSITIVE_INFINITY);
 		}
+		forgetNormalizationEnergy();
 	}
 	
 	public final double[] getMeans() {return getMean();}	// For backward compatibility
@@ -398,6 +447,7 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 		return _isInInformationForm;
 	}
 	
+	@Override
 	public final boolean isNull()
 	{
 		return _vector.length == 0;
@@ -425,6 +475,14 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 				return false;
 		}
 		return true;
+	}
+	
+	@Override
+	protected double computeNormalizationEnergy()
+	{
+		final double[][] informationMatrix = getInformationMatrix();
+		final int n = informationMatrix.length;
+		return n == 0 ? 0.0 : (n * LOG_SQRT_2PI - Math.log(new Jama.Matrix(informationMatrix).det()) * .5);
 	}
 	
 	private final void toCovarianceFormat()
@@ -479,7 +537,7 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 					//Compute inverse of eigenvalues except for those less than eps we set to large constant.
 
 					double d = D.get(i,i);
-					d = (d>eps) ? (1/d) : 1/eps;
+					d = (d>EPS) ? (1/d) : 1/EPS;
 					D.set(i,i,d);
 
 					assert(d > 0); // Eigenvalues should always be positive for positive definite matrices

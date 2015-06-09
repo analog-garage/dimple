@@ -43,31 +43,52 @@ public class DiscreteWeightMessage extends DiscreteMessage
 	public DiscreteWeightMessage(int size)
 	{
 		this(new double[size]);
-		setUniform();
+		setNull();
+	}
+	
+	public DiscreteWeightMessage(DiscreteWeightMessage other)
+	{
+		super(other);
 	}
 	
 	@Override
 	public DiscreteWeightMessage clone()
 	{
-		return new DiscreteWeightMessage(_message);
+		return new DiscreteWeightMessage(this);
 	}
 
 	/*-------------------------------
 	 * IParameterizedMessage methods
 	 */
 	
+	@Override
+	public boolean isNull()
+	{
+		for (double w : _message)
+			if (w != 1.0)
+				return false;
+		return true;
+	}
+
+	@Override
+	public void setNull()
+	{
+		Arrays.fill(_message, 1.0);
+		_normalizationEnergy = weightToEnergy(_message.length);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * <p>
-	 * This implementation normalizes all weight values to 1 / {@link #size()}.
+	 * Sets all weight values to 1 / N (normalized).
 	 */
 	@Override
 	public void setUniform()
 	{
 		Arrays.fill(_message, 1.0 / _message.length);
-		setNormalizationEnergyIfSupported(0.0);
+		_normalizationEnergy = 0.0;
 	}
-
+	
 	/*-------------------------
 	 * DiscreteMessage methods
 	 */
@@ -94,6 +115,8 @@ public class DiscreteWeightMessage extends DiscreteMessage
 				message[i] += other.getWeight(i);
 			}
 		}
+		
+		forgetNormalizationEnergy();
 	}
 	
 	@Override
@@ -106,6 +129,7 @@ public class DiscreteWeightMessage extends DiscreteMessage
 	public void setWeight(int i, double weight)
 	{
 		_message[i] = weight;
+		forgetNormalizationEnergy();
 	}
 	
 	@Override
@@ -115,7 +139,7 @@ public class DiscreteWeightMessage extends DiscreteMessage
 		assertSameSize(length);
 		
 		System.arraycopy(weights, 0, _message, 0, length);
-		setNormalizationEnergyIfSupported(0.0);
+		forgetNormalizationEnergy();
 	}
 
 	@Override
@@ -128,6 +152,7 @@ public class DiscreteWeightMessage extends DiscreteMessage
 	public void setEnergy(int i, double energy)
 	{
 		_message[i] = Utilities.energyToWeight(energy);
+		forgetNormalizationEnergy();
 	}
 	
 	@Override
@@ -140,7 +165,7 @@ public class DiscreteWeightMessage extends DiscreteMessage
 		{
 			_message[i] = energyToWeight(energies[i]);
 		}
-		setNormalizationEnergyIfSupported(0.0);
+		forgetNormalizationEnergy();
 	}
 	
 	@Override
@@ -159,9 +184,15 @@ public class DiscreteWeightMessage extends DiscreteMessage
 		
 		for (int i = _message.length; --i >=0;)
 			_message[i] /= sum;
-		if (storesNormalizationEnergy())
+		
+		final double normalizer = weightToEnergy(sum);
+		if (_normalizationEnergy != _normalizationEnergy) // NaN
 		{
-			incrementNormalizationEnergy(weightToEnergy(sum));
+			_normalizationEnergy = 0.0;
+		}
+		else
+		{
+			_normalizationEnergy += normalizer;
 		}
 	}
 	
@@ -169,11 +200,11 @@ public class DiscreteWeightMessage extends DiscreteMessage
 	public void setWeightsToZero()
 	{
 		Arrays.fill(_message, 0.0);
-		setNormalizationEnergyIfSupported(0.0);
+		forgetNormalizationEnergy();
 	}
 	
 	@Override
-	public boolean storesWeights()
+	public final boolean storesWeights()
 	{
 		return true;
 	}

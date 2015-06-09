@@ -19,8 +19,13 @@ package com.analog.lyric.dimple.test.core.parameterizedMessages;
 import static com.analog.lyric.util.test.ExceptionTester.*;
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
+
 import org.junit.Test;
 
+import com.analog.lyric.dimple.factorfunctions.Dirichlet;
+import com.analog.lyric.dimple.model.domains.RealJointDomain;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
 import com.analog.lyric.util.test.SerializationTester;
 
@@ -146,6 +151,32 @@ public class TestDirichletParameters extends TestParameterizedMessage
 		{
 			assertEquals(msg.getAlpha(i) - 1, msg.getAlphaMinusOne(i), 1e-14);
 		}
-		
+
+		if (n > 0)
+		{
+			Value value = Value.create(RealJointDomain.create(n));
+			Dirichlet factor = new Dirichlet(msg.getAlphas());
+			
+			boolean isNull = msg.isNull();
+
+			for (int i = 0; i < 10; ++i)
+			{
+				double[] array = value.getDoubleArray();
+				double sum = 0.0;
+				for (int j = n; --j>=0;)
+					sum += array[j] = testRand.nextDouble();
+				for (int j = n; --j>=0;)
+					array[j] /= sum;
+				assertEquals(factor.evalEnergy(value), msg.evalEnergy(value)- msg.getNormalizationEnergy(), 1e-12);
+				if (isNull)
+					assertEquals(0.0, msg.evalEnergy(value), 0.0);
+			}
+			
+			Arrays.fill(value.getDoubleArray(), 2.0); // not on probability simplex
+			assertEquals(Double.POSITIVE_INFINITY, msg.evalEnergy(value), 0.0);
+			
+			value.getDoubleArray()[0] = -2*n - 1;
+			assertEquals(Double.POSITIVE_INFINITY, msg.evalEnergy(value), 0.0);
+		}
 	}
 }

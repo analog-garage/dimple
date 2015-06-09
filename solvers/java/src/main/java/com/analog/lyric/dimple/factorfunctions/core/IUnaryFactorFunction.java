@@ -27,5 +27,13 @@ import com.analog.lyric.dimple.model.values.Value;
  */
 public interface IUnaryFactorFunction extends IDatum
 {
+	/**
+	 * Computes the energy produced by the function for the given value.
+	 * <p>
+	 * The energy may be thought of either as a cost or as an unnormalized log probability.
+	 * <p>
+	 * @param value must have a type compatible with the function.
+	 * @since 0.08
+	 */
 	public double evalEnergy(Value value);
 }

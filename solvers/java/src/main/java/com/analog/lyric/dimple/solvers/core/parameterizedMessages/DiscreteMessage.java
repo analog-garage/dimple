@@ -24,6 +24,7 @@ import java.util.Arrays;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.NormalizationException;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -49,10 +50,22 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	{
 		_message = message.clone();
 	}
+	
+	DiscreteMessage(DiscreteMessage other)
+	{
+		super(other);
+		_message = other._message.clone();
+	}
 
 	/*----------------
 	 * IDatum methods
 	 */
+	
+	@Override
+	public double evalEnergy(Value value)
+	{
+		return getEnergy(value.getIndexOrInt());
+	}
 	
 	@Override
 	public boolean objectEquals(@Nullable Object other)
@@ -65,8 +78,7 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 		if (other != null && other.getClass() == getClass())
 		{
 			DiscreteMessage that = (DiscreteMessage)other;
-			return getNormalizationEnergy() == that.getNormalizationEnergy() &&
-				Arrays.equals(_message, that._message);
+			return super.objectEquals(other) &&	Arrays.equals(_message, that._message);
 		}
 		
 		return false;
@@ -106,11 +118,11 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 			{
 				if (storesWeights())
 				{
-					out.format(" [* %g]", energyToWeight(normalizationEnergy));
+					out.format(" [/ %g]", energyToWeight(normalizationEnergy));
 				}
 				else
 				{
-					out.format(" [+ %g]", -normalizationEnergy);
+					out.format(" [- %g]", normalizationEnergy);
 				}
 			}
 		}
@@ -212,61 +224,6 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 		}
 	}
 	
-	/**
-	 * Returns the stored normalization energy for the message, if supported.
-	 * <p>
-	 * This is an optional feature and is only supported by subclasses for which
-	 * {@link #storesNormalizationEnergy()} is true.
-	 * <p>
-	 * The normalization energy is the energy (negative log) of the normalization factor that
-	 * was used to normalize values. This value is set explicitly by {@link #setNormalizationEnergy(double)}
-	 * and implicitly by the following methods:
-	 * <ul>
-	 * <li>{@link #setUniform} resets it to zero.
-	 * <li>{@link #setEnergies} resets it to zero
-	 * <li>{@link #setWeights} resets it to zero.
-	 * <li>{@link #setWeightsToZero()} resets it to zero
-	 * <li>{@link #normalize} adds the energy of the sum of the weights prior to the call.
-	 * </ul>
-	 * <p>
-	 * @returns stored normalization energy value if supported, and 0.0 otherwise.
-	 * <p>
-	 * @since 0.08
-	 */
-	public double getNormalizationEnergy()
-	{
-		return 0.0;
-	}
-
-	/**
-	 * Sets the stored normalization energy for the message, if supported.
-	 * <p>
-	 * This is an optional feature and is only supported by subclasses for which
-	 * {@link #storesNormalizationEnergy()} is true.
-	 * <p>
-	 * @throws UnsupportedOperationException if not supported by this implementation.
-	 * @since 0.08
-	 * @see #getNormalizationEnergy()
-	 */
-	public void setNormalizationEnergy(double normalizationEnergy)
-	{
-		throw new UnsupportedOperationException(String.format("%s does not store normalization energy",
-			getClass().getSimpleName()));
-	}
-	
-	/**
-	 * True if implementation stores normalization energy values.
-	 * <p>
-	 * The default implementation returns false.
-	 * @since 0.08
-	 * @see #getNormalizationEnergy()
-	 * @see #setNormalizationEnergy(double)
-	 */
-	public boolean storesNormalizationEnergy()
-	{
-		return false;
-	}
-	
 	public abstract double getWeight(int i);
 	public abstract void setWeight(int i, double weight);
 	
@@ -318,7 +275,7 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 			setEnergies(otherRep);
 		}
 		
-		setNormalizationEnergyIfSupported(other.getNormalizationEnergy());
+		_normalizationEnergy = other._normalizationEnergy;
 	}
 	
 	/**
@@ -359,24 +316,9 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 		return sum;
 	}
 
-	/**
-	 * Set {@linkplain #getNormalizationEnergy() normalization energy} to specified value, if supported.
-	 * <p>
-	 * Unlike {@link #setNormalizationEnergy(double)} this will not throw an exception if not supported.
-	 * @param normalizationEnergy TODO
-	 * @since 0.08
-	 */
-	protected void setNormalizationEnergyIfSupported(double normalizationEnergy)
+	@Override
+	protected final double computeNormalizationEnergy()
 	{
-	}
-
-	/**
-	 * Adds to {@linkplain #getNormalizationEnergy() normalization energy}, if supported.
-	 * <p>
-	 * Unlike {@link #setNormalizationEnergy(double)} this will simply do nothing if not supported.
-	 * @since 0.08
-	 */
-	protected void incrementNormalizationEnergy(double additionalNormalizationEnergy)
-	{
+		return weightToEnergy(sumOfWeights());
 	}
 }

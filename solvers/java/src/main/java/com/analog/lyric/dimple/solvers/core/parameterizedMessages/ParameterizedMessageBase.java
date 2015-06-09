@@ -11,6 +11,8 @@ package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
 import java.io.PrintStream;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.data.DataRepresentationType;
 import com.analog.lyric.util.misc.IPrintable;
 
@@ -22,8 +24,33 @@ import com.analog.lyric.util.misc.IPrintable;
  */
 public abstract class ParameterizedMessageBase implements IParameterizedMessage
 {
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
+	/*-------
+	 * State
+	 */
+	
+	/**
+	 * Cached value of {@link #getNormalizationEnergy()}, valid if not {@code NaN}.
+	 */
+	protected double _normalizationEnergy = Double.NaN;
+	
+	/*--------------
+	 * Construction
+	 */
+	
+	protected ParameterizedMessageBase()
+	{
+	}
+
+	protected ParameterizedMessageBase(ParameterizedMessageBase other)
+	{
+		_normalizationEnergy = other._normalizationEnergy;
+	}
+	
+	@Override
+	public abstract ParameterizedMessageBase clone();
+	
 	/*----------------
 	 * Object methods
 	 */
@@ -32,6 +59,23 @@ public abstract class ParameterizedMessageBase implements IParameterizedMessage
 	public String toString()
 	{
 		return toString(0);
+	}
+	
+	/*---------
+	 * IEquals
+	 */
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (other instanceof ParameterizedMessageBase)
+		{
+			ParameterizedMessageBase that = (ParameterizedMessageBase)other;
+			// Unlike regular ==, this is true if both values are NaN:
+			return Double.doubleToLongBits(_normalizationEnergy) == Double.doubleToLongBits(that._normalizationEnergy);
+		}
+		
+		return false;
 	}
 	
 	/*--------------------
@@ -70,11 +114,67 @@ public abstract class ParameterizedMessageBase implements IParameterizedMessage
 	 */
 	
 	@Override
-	public abstract ParameterizedMessageBase clone();
+	public double addNormalizationEnergy(double additionalEnergy)
+	{
+		final double energy = getNormalizationEnergy() + additionalEnergy;
+		_normalizationEnergy = energy;
+		return energy;
+	}
+	
+	@Override
+	public final double getNormalizationEnergy()
+	{
+		double energy = _normalizationEnergy;
+		
+		if (energy != energy) // NaN
+		{
+			_normalizationEnergy = energy = computeNormalizationEnergy();
+		}
+		
+		return energy;
+	}
+	
+	@Override
+	public void setNormalizationEnergy(double energy)
+	{
+		_normalizationEnergy = energy;
+	}
 	
 	@Override
 	public void setNull()
 	{
 		setUniform();
+	}
+	
+	/*-------------------
+	 * Protected methods
+	 */
+	
+	/**
+	 * Invoked by {@link #getNormalizationEnergy()} to compute the energy based on parameters.
+	 * <p>
+	 * Must not return {@link Double#NaN}.
+	 * @since 0.08
+	 */
+	protected abstract double computeNormalizationEnergy();
+	
+	/**
+	 * Copies normalization energy value from {@code other} message.
+	 * @since 0.08
+	 */
+	protected void copyNormalizationEnergy(ParameterizedMessageBase other)
+	{
+		_normalizationEnergy = other._normalizationEnergy;
+	}
+	
+	/**
+	 * Forget current normalization energy setting, forcing it to be recomputed by {@link #getNormalizationEnergy()}.
+	 * <p>
+	 * Simply sets the stored energy to {@link Double#NaN}.
+	 * @since 0.08
+	 */
+	protected void forgetNormalizationEnergy()
+	{
+		_normalizationEnergy = Double.NaN;
 	}
 }

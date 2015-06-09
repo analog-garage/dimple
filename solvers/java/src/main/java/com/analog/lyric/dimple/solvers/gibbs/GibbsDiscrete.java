@@ -596,10 +596,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 				throw new DimpleException("Prior size must match domain length");
 			
 			// Convert to energy values
-			for (int i = 0; i < vals.length; i++)
-			{
-				_input.setWeight(i,  vals[i]);
-			}
+			_input.setWeights(vals);
 		}
 		
 		if (fixedValue != null)

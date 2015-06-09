@@ -169,5 +169,22 @@ public class TestMultivariateNormalParameters extends TestParameterizedMessage
 				assertEquals(infoMatrix[row][col], infoMatrix[col][row], 1e-14);
 			}
 		}
+		
+		// FIXME
+//		if (n > 0)
+//		{
+//			MultivariateNormal function = new MultivariateNormal(msg.clone());
+//			Value value = Value.create(RealJointDomain.create(n));
+//			final double[] array = value.getDoubleArray();
+//			for (int i = 0; i < 10; ++i)
+//			{
+//				for (int j = 0; j < n; ++j)
+//				{
+//					array[j] = testRand.nextDouble();
+//				}
+//
+//				assertEquals(function.evalEnergy(value), msg.evalEnergy(value) - msg.getNormalizationEnergy(), 1e-12);
+//			}
+//		}
 	}
 }

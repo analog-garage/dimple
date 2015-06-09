@@ -21,6 +21,7 @@ import java.io.PrintStream;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.data.DataRepresentationType;
+import com.analog.lyric.dimple.model.values.Value;
 
 /**
  * A singleton empty message with no parameters.
@@ -36,20 +37,12 @@ public class NullMessage implements IParameterizedMessage, Cloneable
 
 	public static final NullMessage INSTANCE = new NullMessage();
 	
+	/*--------------
+	 * Construction
+	 */
+	
 	private NullMessage()
 	{
-	}
-	
-	@Override
-	public boolean objectEquals(@Nullable Object other)
-	{
-		return other instanceof NullMessage;
-	}
-	
-	@Override
-	public DataRepresentationType representationType()
-	{
-		return DataRepresentationType.MESSAGE;
 	}
 	
 	@Override
@@ -57,6 +50,31 @@ public class NullMessage implements IParameterizedMessage, Cloneable
 	{
 		return this;
 	}
+	
+	/*---------
+	 * IEquals
+	 */
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		return other instanceof NullMessage;
+	}
+	
+	/*--------
+	 * IDatum
+	 */
+	
+	@Override
+	public DataRepresentationType representationType()
+	{
+		return DataRepresentationType.MESSAGE;
+	}
+	
+	
+	/*------------
+	 * IPrintable
+	 */
 	
 	@Override
 	public void print(PrintStream out, int verbosity)
@@ -76,10 +94,47 @@ public class NullMessage implements IParameterizedMessage, Cloneable
 		return toString();
 	}
 
+	/*----------------------
+	 * IUnaryFactorFunction
+	 */
+	
+	@Override
+	public double evalEnergy(Value value)
+	{
+		return 0;
+	}
+	
+	/*-----------------------
+	 * IParameterizedMessage
+	 */
+	
 	@Override
 	public double computeKLDivergence(IParameterizedMessage that)
 	{
 		return 0;
+	}
+	
+	@Override
+	public double addNormalizationEnergy(double additionalEnergy)
+	{
+		return 0;
+	}
+	
+	@Override
+	public double getNormalizationEnergy()
+	{
+		return 0;
+	}
+
+	@Override
+	public void setNormalizationEnergy(double energy)
+	{
+	}
+
+	@Override
+	public boolean isNull()
+	{
+		return true;
 	}
 	
 	@Override

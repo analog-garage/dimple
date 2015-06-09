@@ -20,6 +20,8 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import com.analog.lyric.dimple.factorfunctions.Beta;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
 import com.analog.lyric.util.test.SerializationTester;
 
@@ -53,10 +55,18 @@ public class TestBetaParameters extends TestParameterizedMessage
 		msg.setNull();
 		assertEquals(0.0, msg.getAlphaMinusOne(), 0.0);
 		assertEquals(0.0, msg.getBetaMinusOne(), 0.0);
+		assertInvariants(msg);
 		
 		msg.setUniform();
 		assertEquals(0.0, msg.getAlphaMinusOne(), 0.0);
 		assertEquals(0.0, msg.getBetaMinusOne(), 0.0);
+		
+		msg.setBeta(2.0);
+		assertInvariants(msg);
+		
+		msg.setAlpha(2.0);
+		msg.setBeta(1.0);
+		assertInvariants(msg);
 		
 		//
 		// KL divergence tests
@@ -99,6 +109,7 @@ public class TestBetaParameters extends TestParameterizedMessage
 		
 		assertEquals(msg.getAlpha() - 1, msg.getAlphaMinusOne(), 0.0);
 		assertEquals(msg.getBeta() - 1, msg.getBetaMinusOne(), 0.0);
+		assertEquals(msg.getAlpha() == 1.0 && msg.getBeta() == 1.0, msg.isNull());
 
 		BetaParameters msg2 = msg.clone();
 		assertNotSame(msg, msg2);
@@ -108,5 +119,19 @@ public class TestBetaParameters extends TestParameterizedMessage
 		BetaParameters msg3 = SerializationTester.clone(msg);
 		assertEquals(msg.getAlpha(), msg3.getAlpha(), 0.0);
 		assertEquals(msg.getBeta(), msg3.getBeta(), 0.0);
+		
+		// TODO - test against Beta factor function
+		Beta function = new Beta(msg.getAlpha(), msg.getBeta());
+		Value value = Value.createReal(1.5);
+		
+		assertEquals(Double.POSITIVE_INFINITY, msg.evalEnergy(value), 0.0); // outside range [0,1]
+		value.setDouble(-1e-15);
+		assertEquals(Double.POSITIVE_INFINITY, msg.evalEnergy(value), 0.0); // outside range [0,1]
+		
+		for (int i = 0; i < 10; ++i)
+		{
+			value.setDouble(testRand.nextDouble());
+			assertEquals(function.evalEnergy(value), msg.evalEnergy(value) - msg.getNormalizationEnergy(), 1e-15);
+		}
 	}
 }

@@ -20,6 +20,8 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import com.analog.lyric.dimple.factorfunctions.Gamma;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.util.test.SerializationTester;
 
@@ -51,6 +53,12 @@ public class TestGammaParameters extends TestParameterizedMessage
 		msg.setNull();
 		assertEquals(0.0, msg.getAlphaMinusOne(), 0.0);
 		assertEquals(0.0, msg.getBeta(), 0.0);
+		Value value = Value.createReal(0.0);
+		for (int i = 0; i < 10; ++i)
+		{
+			value.setDouble(testRand.nextDouble());
+			assertEquals(0.0, msg.evalEnergy(value), 0.0);
+		}
 		
 		msg.setUniform();
 		assertEquals(0.0, msg.getAlphaMinusOne(), 0.0);
@@ -62,6 +70,7 @@ public class TestGammaParameters extends TestParameterizedMessage
 		assertInvariants(msg);
 		
 		GammaParameters msg2 = new GammaParameters(4.0, 4.0);
+		assertFalse(msg.objectEquals(msg2));
 		
 		// Values computed by hand in MATLAB
 		assertEquals(.02509966, msg.computeKLDivergence(msg2), 1e-7);
@@ -82,6 +91,20 @@ public class TestGammaParameters extends TestParameterizedMessage
 		GammaParameters msg3 = SerializationTester.clone(msg);
 		assertEquals(msg.getAlpha(), msg3.getAlpha(), 0.0);
 		assertEquals(msg.getBeta(), msg3.getBeta(), 0.0);
+		
+		if (msg.getBeta() > 0 )
+		{
+			Gamma function = new Gamma(msg.getAlpha(), msg.getBeta());
+			Value value = Value.createReal(-1);
+			
+			assertEquals(Double.POSITIVE_INFINITY, msg.evalEnergy(value), 0.0);
+			
+			for (int i = 0; i < 10; ++i)
+			{
+				value.setDouble(testRand.nextDouble());
+				assertEquals(function.evalEnergy(value), msg.evalEnergy(value) - msg.getNormalizationEnergy(), 1e-15);
+			}
+		}
 	}
 
 }

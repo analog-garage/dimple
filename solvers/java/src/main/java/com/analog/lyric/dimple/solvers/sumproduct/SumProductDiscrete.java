@@ -149,9 +149,14 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 			final double[] savedOutMsgArray = DimpleEnvironment.doubleArrayCache.allocateAtLeast(M);
 			System.arraycopy(outMsgs,  0, savedOutMsgArray, 0, M);
  
+			// We do not assume that the prior is normalized
+			double priorSum = 0.0;
+			for (double p : priors)
+				priorSum += p;
+			
 			for (int m = M; --m>=0;)
 			{
-				double prior = priors[m];
+				double prior = priors[m] / priorSum;
 				double out = (prior == 0) ? minLog : Math.log(prior);
 
 				int d = D;
@@ -177,7 +182,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 				outMsgs[m] = out;
 				sum += out;
 			}
-
+			
 			// normalize
 			for (int m = M; --m>=0;)
 			{
@@ -198,7 +203,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 			// won't be useful in that case.
 			
 			final DiscreteMessage outMsg = getSiblingEdgeState(outPortNum).varToFactorMsg;
-			final boolean setNormalizationEnergy = outMsg.storesNormalizationEnergy();
+			final boolean setNormalizationEnergy = true; // make this optional?
 			double normalizationEnergy = 0.0;
 			if (setNormalizationEnergy)
 			{
@@ -261,9 +266,15 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         final double[][] inMsgs = _inMsgs;
         final double[] logInPortMsgs = DimpleEnvironment.doubleArrayCache.allocateAtLeast(M*D);
         final double[] alphas = DimpleEnvironment.doubleArrayCache.allocateAtLeast(M);
+        
+		// We do not assume that the prior is normalized
+		double priorSum = 0.0;
+		for (double p : priors)
+			priorSum += p;
+		
         for (int m = M; --m>=0;)
         {
-        	double prior = priors[m];
+        	double prior = priors[m] / priorSum;
         	double alpha = (prior == 0) ? minLog : Math.log(prior);
 
         	for (int d = 0, i = m; d < D; d++, i += M)
@@ -405,9 +416,14 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         
         double[] outBelief = new double[M];
 
+		// We do not assume that the prior is normalized
+		double priorSum = 0.0;
+		for (double p : priors)
+			priorSum += p;
+		
         for (int m = 0; m < M; m++)
         {
-        	double prior = priors[m];
+        	double prior = priors[m] / priorSum;
         	double out = (prior == 0) ? minLog : Math.log(prior);
         	
 	        for (int d = 0; d < D; d++)
@@ -747,7 +763,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	protected double[] createDefaultMessage()
 	{
     	final double [] retval = super.createDefaultMessage();
-    	Arrays.fill(retval, 1.0 / retval.length);
+    	Arrays.fill(retval, 1.0);
     	return retval;
 	}
 

@@ -46,15 +46,29 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 		setNull();
 	}
 	
+	public DiscreteEnergyMessage(DiscreteEnergyMessage other)
+	{
+		super(other);
+	}
+	
 	@Override
 	public DiscreteEnergyMessage clone()
 	{
-		return new DiscreteEnergyMessage(_message);
+		return new DiscreteEnergyMessage(this);
 	}
 
 	/*-------------------------------
 	 * IParameterizedMessage methods
 	 */
+	
+	@Override
+	public boolean isNull()
+	{
+		for (double e : _message)
+			if (e != 0.0)
+				return false;
+		return true;
+	}
 	
 	/**
 	 * {@inheritDoc}
@@ -65,7 +79,7 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 	public void setUniform()
 	{
 		Arrays.fill(_message, 0.0);
-		setNormalizationEnergyIfSupported(0.0);
+		_normalizationEnergy = weightToEnergy(_message.length);
 	}
 
 	/*-------------------------
@@ -82,6 +96,7 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 	public final void setWeight(int i, double weight)
 	{
 		_message[i] = Utilities.weightToEnergy(weight);
+		forgetNormalizationEnergy();
 	}
 	
 	@Override
@@ -94,7 +109,7 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 		{
 			_message[i] = weightToEnergy(weights[i]);
 		}
-		setNormalizationEnergyIfSupported(0.0);
+		forgetNormalizationEnergy();
 	}
 
 	@Override
@@ -107,6 +122,7 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 	public final void setEnergy(int i, double energy)
 	{
 		_message[i] = energy;
+		forgetNormalizationEnergy();
 	}
 
 	@Override
@@ -116,8 +132,8 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 		assertSameSize(length);
 		
 		System.arraycopy(energies, 0, _message, 0, length);
-		
-		setNormalizationEnergyIfSupported(0.0);
+	
+		forgetNormalizationEnergy();
 	}
 	
 	@Override
@@ -135,14 +151,22 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 		double normalizer = Utilities.weightToEnergy(assertNonZeroSumOfWeights());
 		for (int i = _message.length; --i >=0;)
 			_message[i] += normalizer;
-		incrementNormalizationEnergy(normalizer);
+		
+		if (_normalizationEnergy != _normalizationEnergy) // NaN
+		{
+			_normalizationEnergy = 0.0;
+		}
+		else
+		{
+			_normalizationEnergy += normalizer;
+		}
 	}
 	
 	@Override
 	public void setWeightsToZero()
 	{
 		Arrays.fill(_message, Double.POSITIVE_INFINITY);
-		setNormalizationEnergyIfSupported(0.0);
+		forgetNormalizationEnergy();
 	}
 	
 	@Override
@@ -185,7 +209,11 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 			{
 				_message[i] -= min;
 			}
-			incrementNormalizationEnergy(-min);
+			
+			if (_normalizationEnergy == _normalizationEnergy) // not NaN
+			{
+				_normalizationEnergy += min * _message.length;
+			}
 		}
 	}
 }

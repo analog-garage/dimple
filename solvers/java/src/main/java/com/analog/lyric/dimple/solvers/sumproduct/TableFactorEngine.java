@@ -104,7 +104,7 @@ public class TableFactorEngine
 
     		final DiscreteMessage outMsg = _tableFactor.getSiblingEdgeState(outPortNum).factorToVarMsg;
 
-        	if (outMsg.storesNormalizationEnergy())
+        	if (true) // make this optional?
         	{
         		double normalizationEnergy = 0.0;
         		for (int i = numPorts; --i > outPortNum;)

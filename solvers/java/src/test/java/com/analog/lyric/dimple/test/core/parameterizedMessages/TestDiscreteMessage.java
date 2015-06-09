@@ -25,10 +25,10 @@ import java.util.Random;
 
 import org.junit.Test;
 
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergyMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
-import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteNormalizedEnergyMessage;
-import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteNormalizedWeightMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
@@ -45,21 +45,22 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 	@Test
 	public void test()
 	{
-		DiscreteMessage msg = new DiscreteNormalizedWeightMessage(10);
+		DiscreteMessage msg = new DiscreteWeightMessage(10);
 		assertInvariants(msg);
 		
 		for (int i = msg.size(); --i>=0;)
 		{
-			assertEquals(.1, msg.getWeight(i), 1e-14);
+			assertEquals(1.0, msg.getWeight(i), 1e-14);
 			msg.setWeight(i,i);
 			assertEquals(i, msg.getWeight(i), 0.0);
 			assertEquals(weightToEnergy(i), msg.getEnergy(i), 1e-14);
 			msg.setEnergy(i,i);
 			assertEquals(i, msg.getEnergy(i), 0.0);
 		}
-		assertEquals(0.0, msg.getNormalizationEnergy(), 0.0);
-		
+		assertEquals(weightToEnergy(msg.sumOfWeights()), msg.getNormalizationEnergy(), 0.0);
+
 		double sum = msg.sumOfWeights();
+		msg.setNormalizationEnergy(0.0);
 		msg.normalize();
 		assertEquals(1.0, msg.sumOfWeights(), 1e-10);
 		assertInvariants(msg);
@@ -69,14 +70,14 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 		msg.setNull();
 		for (int i=  msg.size(); --i>= 0;)
 		{
-			assertEquals(.1, msg.getWeight(i), 1e-14);
+			assertEquals(0.0, msg.getEnergy(i), 0.0);
 		}
 
 		Arrays.fill(msg.representation(), 23);
 		msg.setUniform();
-		for (int i=  msg.size(); --i>= 0;)
+		for (int i = msg.size(); --i>= 0;)
 		{
-			assertEquals(.1, msg.getWeight(i), 1e-14);
+			assertEquals(1.0 / msg.size(), msg.getWeight(i), 1e-14);
 		}
 		
 		msg = new DiscreteWeightMessage(new double[] { 4, 5, 6 });
@@ -112,18 +113,19 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 			assertEquals(0, msg.getEnergy(i), 0.0);
 		}
 		
-		msg = new DiscreteNormalizedEnergyMessage(new double[] { 4, 5, 6 });
+		msg = new DiscreteEnergyMessage(new double[] { 4, 5, 6 });
 		assertInvariants(msg);
 		assertEquals(4, msg.getEnergy(0), 0.0);
 		assertEquals(5, msg.getEnergy(1), 0.0);
 		assertEquals(6, msg.getEnergy(2), 0.0);
 		
 		sum = msg.sumOfWeights();
+		msg.setNormalizationEnergy(0.0);
 		msg.normalize();
 		assertEquals(sum, energyToWeight(msg.getNormalizationEnergy()), 1e-10);
 		
 		msg = new DiscreteWeightMessage(10);
-		DiscreteMessage msg2 = new DiscreteEnergyMessage(10);
+		DiscreteEnergyMessage msg2 = new DiscreteEnergyMessage(10);
 		Random rand = new Random(42);
 		for (int i = 0; i < msg.size(); ++i)
 		{
@@ -134,6 +136,10 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 		assertEquals(expectedKL(msg, msg2), msg.computeKLDivergence(msg2), 1e-14);
 		assertInvariants(msg);
 		assertInvariants(msg2);
+		
+		msg2.normalizeEnergy();
+		assertInvariants(msg2);
+		assertEquals(0.0, Doubles.min(msg2.representation()), 0.0);
 		
 		expectThrow(IllegalArgumentException.class, msg, "computeKLDivergence", new DiscreteEnergyMessage(3));
 	}
@@ -170,9 +176,15 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 		assertTrue(message.objectEquals(message));
 		
 		final int size = message.size();
+		final Value objValue = Value.create("");
+		final Value discreteValue = Value.create(DiscreteDomain.range(1, size));
 		for (int i = 0; i < size; ++i)
 		{
 			assertEquals(message.getWeight(i), energyToWeight(message.getEnergy(i)), 1e-15);
+			objValue.setObject(i);
+			assertEquals(message.getEnergy(i), message.evalEnergy(objValue), 0.0);
+			discreteValue.setIndex(i);
+			assertEquals(message.getEnergy(i), message.evalEnergy(discreteValue), 0.0);
 		}
 		
 		if (message.storesWeights())
@@ -193,12 +205,6 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 			{
 				assertEquals(Doubles.min(message.representation()), ((DiscreteEnergyMessage)message).minEnergy(), 0.0);
 			}
-		}
-		
-		if (!message.storesNormalizationEnergy())
-		{
-			assertEquals(0.0, message.getNormalizationEnergy(), 0.0);
-			expectThrow(UnsupportedOperationException.class, message, "setNormalizationEnergy", 0.0);
 		}
 		
 		expectThrow(ArrayIndexOutOfBoundsException.class, message, "getWeight", -1);
@@ -223,15 +229,8 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 			assertFalse(message.objectEquals(message2));
 		}
 		
-		if (message2.storesNormalizationEnergy())
-		{
-			message2.setNormalizationEnergy(42);
-			assertEquals(42, message2.getNormalizationEnergy(), 0.0);
-		}
-		else
-		{
-			expectThrow(UnsupportedOperationException.class, message2, "setNormalizationEnergy", 42.0);
-		}
+		message2.setNormalizationEnergy(42);
+		assertEquals(42, message2.getNormalizationEnergy(), 0.0);
 		
 		DiscreteMessage message3 = SerializationTester.clone(message);
 		assertTrue(message.objectEquals(message));
@@ -249,16 +248,21 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 			assertEquals(0.0, message3.getWeight(i), 0.0);
 			assertEquals(Double.POSITIVE_INFINITY, message3.getEnergy(i), 0.0);
 		}
-		assertEquals(0.0, message3.getNormalizationEnergy(), 0.0);
+		assertEquals(Double.POSITIVE_INFINITY, message3.getNormalizationEnergy(), 0.0);
 		
 		message3.setFrom(message);
 		assertTrue(message.objectEquals(message3));
 		
-		message3.setUniform();
-		assertEquals(0.0, message3.getNormalizationEnergy(), 0.0);
+		message3.setNull();
+		assertEquals(weightToEnergy(size), message3.getNormalizationEnergy(), 0.0);
+		for (int i = 0; i < size; ++i)
+		{
+			discreteValue.setIndex(i);
+			message3.evalEnergy(discreteValue);
+		}
 		if (message3.storesWeights())
 		{
-			assertEquals(1.0, message3.sumOfWeights(), 1e-10);
+			assertEquals(size, message3.sumOfWeights(), 0.0);
 			message3.setWeights(message.representation());
 		}
 		else
@@ -266,34 +270,34 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 			assertEquals(size, message3.sumOfWeights(), 0.0);
 			message3.setEnergies(message.representation());
 		}
-		assertEquals(0.0, message3.getNormalizationEnergy(), 0.0);
 		
-		if (message3.storesNormalizationEnergy())
-		{
-			message3.setNormalizationEnergy(message.getNormalizationEnergy());
-			assertTrue(message3.objectEquals(message));
-			
-			message3.setNormalizationEnergy(message3.getNormalizationEnergy() + 1.0);
-			assertFalse(message.objectEquals(message3));
-			assertEquals(message.getNormalizationEnergy() + 1.0, message3.getNormalizationEnergy(), 0.0);
-			
-			message3.setWeight(0, message3.getWeight(0) + 1.0);
-			assertFalse(message.objectEquals(message3));
-			message3.setNormalizationEnergy(message.getNormalizationEnergy());
-			assertFalse(message.objectEquals(message3));
-			
-			message3.setFrom((IParameterizedMessage)message);
-			assertTrue(message.objectEquals(message3));
-		}
+		message3.setNormalizationEnergy(message.getNormalizationEnergy());
+		assertTrue(message3.objectEquals(message));
+
+		message3.setNormalizationEnergy(message3.getNormalizationEnergy() + 1.0);
+		assertFalse(message.objectEquals(message3));
+		assertEquals(message.getNormalizationEnergy() + 1.0, message3.getNormalizationEnergy(), 0.0);
+
+		message3.setWeight(0, message3.getWeight(0) + 1.0);
+		assertFalse(message.objectEquals(message3));
+		message3.setNormalizationEnergy(message.getNormalizationEnergy());
+		assertFalse(message.objectEquals(message3));
+
+		message3.setFrom((IParameterizedMessage)message);
+		assertTrue(message.objectEquals(message3));
 		
 		message3.addWeightsFrom(message);
 		for (int i = size; --i>=0;)
 		{
 			assertEquals(message.getWeight(i) * 2, message3.getWeight(i), 1e-10);
 		}
-
-		DiscreteMessage message4 = message.storesWeights() ? new DiscreteNormalizedEnergyMessage(size) :
-			new DiscreteNormalizedWeightMessage(size);
+		
+		message3.setNormalizationEnergy(Double.NaN); // unset normalization energy
+		message3.normalize();
+		assertEquals(0.0, message3.getNormalizationEnergy(), 0.0);
+		
+		DiscreteMessage message4 = message.storesWeights() ? new DiscreteEnergyMessage(size) :
+			new DiscreteWeightMessage(size);
 		assertFalse(message.objectEquals(message4));
 		message4.setFrom(message);
 		assertFalse(message.objectEquals(message4));

@@ -22,12 +22,15 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 public class NormalParameters extends ParameterizedMessageBase
 {
 	private static final long serialVersionUID = 1L;
 
+	private static final double LOG_SQRT_2_PI = Math.log(2*Math.PI) * .5;
+	
 	private double _mean = 0;
 	private double _precision = 0;
 	
@@ -41,9 +44,12 @@ public class NormalParameters extends ParameterizedMessageBase
 		_mean = mean;
 		_precision = precision;
 	}
+	
 	public NormalParameters(NormalParameters other)		// Copy constructor
 	{
-		this(other._mean, other._precision);
+		super(other);
+		_mean = other._mean;
+		_precision = other._precision;
 	}
 
 	/**
@@ -103,10 +109,25 @@ public class NormalParameters extends ParameterizedMessageBase
 		if (other instanceof NormalParameters)
 		{
 			NormalParameters that = (NormalParameters)other;
-			return _mean == that._mean && _precision == that._precision;
+			return _mean == that._mean && _precision == that._precision && super.objectEquals(other);
 		}
 
 		return false;
+	}
+	
+	/*----------------------
+	 * IUnaryFactorFunction
+	 */
+	
+	@Override
+	public double evalEnergy(Value value)
+	{
+		final double precision = _precision;
+		if (precision == 0.0)
+			return 0.0;
+		
+		final double x = value.getDouble() - _mean;
+		return x * x * precision * .5;
 	}
 	
 	/*--------------------
@@ -173,11 +194,15 @@ public class NormalParameters extends ParameterizedMessageBase
 	}
 	
 	@Override
+	public boolean isNull()
+	{
+		return _precision == 0.0;
+	}
+	
+	@Override
 	public void setFrom(IParameterizedMessage other)
 	{
-		NormalParameters that = (NormalParameters)other;
-		_mean = that._mean;
-		_precision = that._precision;
+		set((NormalParameters)other);
 	}
 
 	/**
@@ -190,6 +215,7 @@ public class NormalParameters extends ParameterizedMessageBase
 	{
 		_mean = 0;
 		_precision = 0;
+		forgetNormalizationEnergy();
 	}
 
 	/*---------------
@@ -202,13 +228,36 @@ public class NormalParameters extends ParameterizedMessageBase
 	public final double getStandardDeviation() {return 1/Math.sqrt(_precision);}
 	
 	public final void setMean(double mean) {_mean = mean;}
-	public final void setPrecision(double precision) {_precision = precision;}
-	public final void setVariance(double variance) {_precision = 1/variance;}
-	public final void setStandardDeviation(double standardDeviation) {_precision = 1/(standardDeviation*standardDeviation);}
+	public final void setPrecision(double precision)
+	{
+		_precision = precision;
+		forgetNormalizationEnergy();
+	}
+
+	public final void setVariance(double variance)
+	{
+		setPrecision(1/variance);
+	}
+	
+	public final void setStandardDeviation(double standardDeviation)
+	{
+		setPrecision(1/(standardDeviation*standardDeviation));
+	}
 
 	public final void set(NormalParameters other)	// Set from copy
 	{
 		_mean = other._mean;
 		_precision = other._precision;
+		forgetNormalizationEnergy();
+	}
+
+	/*-------------------
+	 * Protected methods
+	 */
+	
+	@Override
+	protected double computeNormalizationEnergy()
+	{
+		return  _precision == 0.0 ? 0.0 : Math.log(_precision) * .5 - LOG_SQRT_2_PI;
 	}
 }

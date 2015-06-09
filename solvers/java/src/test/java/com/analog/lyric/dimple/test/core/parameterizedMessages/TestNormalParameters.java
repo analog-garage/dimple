@@ -20,6 +20,8 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import com.analog.lyric.dimple.factorfunctions.Normal;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.util.test.SerializationTester;
 
@@ -95,5 +97,26 @@ public class TestNormalParameters extends TestParameterizedMessage
 		NormalParameters message3 = SerializationTester.clone(message);
 		assertEquals(message.getPrecision(), message3.getPrecision(), 0.0);
 		assertEquals(message.getMean(), message3.getMean(), 0.0);
+		
+		assertEquals(message.getPrecision() == 0.0, message.isNull());
+		
+		Value value = Value.createReal(0.0);
+		
+		if (message.getPrecision() == 0.0)
+		{
+			assertEquals(0.0, message.evalEnergy(value), 0.0);
+			value.setDouble(testRand.nextDouble());
+			assertEquals(0.0, message.evalEnergy(value), 0.0);
+		}
+		else
+		{
+			Normal normal = new Normal(message.getMean(), message.getPrecision());
+			for (int i = 0; i < 10; ++i)
+			{
+				value.setDouble(testRand.nextDouble());
+				assertEquals(normal.evalEnergy(value), message.evalEnergy(value) - message.getNormalizationEnergy(),
+					1e-15);
+			}
+		}
 	}
 }

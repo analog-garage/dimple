@@ -22,6 +22,8 @@ import java.io.PrintStream;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.model.values.Value;
+
 public class GammaParameters extends ParameterizedMessageBase
 {
 	private static final long serialVersionUID = 1L;
@@ -29,15 +31,25 @@ public class GammaParameters extends ParameterizedMessageBase
 	private double _alphaMinusOne = 0;
 	private double _beta = 0;
 	
+	/*--------------
+	 * Construction
+	 */
+	
 	public GammaParameters() {}
+	
 	public GammaParameters(double alphaMinusOne, double beta)
 	{
+		// FIXME - it seems that really this constructor should take alpha, not alpha - 1
+		
 		_alphaMinusOne = alphaMinusOne;
 		_beta = beta;
 	}
+	
 	public GammaParameters(GammaParameters other)		// Copy constructor
 	{
-		this(other._alphaMinusOne, other._beta);
+		super(other);
+		_alphaMinusOne = other._alphaMinusOne;
+		_beta = other._beta;
 	}
 	
 	@Override
@@ -46,6 +58,10 @@ public class GammaParameters extends ParameterizedMessageBase
 		return new GammaParameters(this);
 	}
 
+	/*---------
+	 * IEquals
+	 */
+	
 	@Override
 	public boolean objectEquals(@Nullable Object other)
 	{
@@ -57,22 +73,61 @@ public class GammaParameters extends ParameterizedMessageBase
 		if (other instanceof GammaParameters)
 		{
 			GammaParameters that = (GammaParameters)other;
-			return _alphaMinusOne == that._alphaMinusOne && _beta == that._beta;
+			return _alphaMinusOne == that._alphaMinusOne && _beta == that._beta && super.objectEquals(other);
 		}
 
 		return false;
 	}
 
+	/*-----------------------
+	 * IUnaryFactorFunctions
+	 */
+	
+	@Override
+	public double evalEnergy(Value value)
+	{
+		final double x = value.getDouble();
+		if (x < 0)
+		{
+			return Double.POSITIVE_INFINITY;
+		}
+		
+		if (_alphaMinusOne == 0.0)
+		{
+			return x * _beta;
+		}
+		else
+		{
+			return x * _beta - Math.log(x) * _alphaMinusOne;
+		}
+	}
+	
+	/*---------------
+	 * Local methods
+	 */
+
 	// Natural parameters are alpha-1 and beta
 	public final double getAlphaMinusOne() {return _alphaMinusOne;}
 	public final double getBeta() {return _beta;}
 
-	public final void setAlphaMinusOne(double alphaMinusOne) {_alphaMinusOne = alphaMinusOne;}
-	public final void setBeta(double beta) {_beta = beta;}
+	public final void setAlphaMinusOne(double alphaMinusOne)
+	{
+		_alphaMinusOne = alphaMinusOne;
+		forgetNormalizationEnergy();
+	}
+	
+	public final void setBeta(double beta)
+	{
+		_beta = beta;
+		forgetNormalizationEnergy();
+	}
 	
 	// Ordinary alpha parameter
 	public final double getAlpha() {return _alphaMinusOne + 1;}
-	public final void setAlpha(double alpha) {_alphaMinusOne = alpha - 1;}
+	public final void setAlpha(double alpha)
+	{
+		setAlphaMinusOne(alpha - 1.0);
+	}
 
 	/*--------------------
 	 * IPrintable methods
@@ -145,6 +200,12 @@ public class GammaParameters extends ParameterizedMessageBase
 		
 		throw new IllegalArgumentException(String.format("Expected '%s' but got '%s'", getClass(), that.getClass()));
 	}
+	@Override
+	public boolean isNull()
+	{
+		return _beta == 0.0 && _alphaMinusOne == 0.0;
+	}
+	
 	
 	@Override
 	public void setFrom(IParameterizedMessage other)
@@ -152,6 +213,7 @@ public class GammaParameters extends ParameterizedMessageBase
 		GammaParameters that = (GammaParameters)other;
 		_alphaMinusOne = that._alphaMinusOne;
 		_beta = that._beta;
+		copyNormalizationEnergy(that);
 	}
 	/**
 	 * {@inheritDoc}
@@ -163,5 +225,19 @@ public class GammaParameters extends ParameterizedMessageBase
 	{
 		_alphaMinusOne = 0;
 		_beta = 0;
+		_normalizationEnergy = 0.0;
+	}
+	
+	/*-------------------
+	 * Protected methods
+	 */
+	
+	@Override
+	protected double computeNormalizationEnergy()
+	{
+		final double alpha = _alphaMinusOne + 1;
+		final double logBeta = _beta != 0 ? Math.log(_beta) : 0.0;
+
+		return -(org.apache.commons.math3.special.Gamma.logGamma(alpha) - alpha * logBeta);
 	}
 }

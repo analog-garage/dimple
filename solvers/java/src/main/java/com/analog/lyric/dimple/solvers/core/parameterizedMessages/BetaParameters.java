@@ -23,19 +23,29 @@ import java.io.PrintStream;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.model.values.Value;
+
 public class BetaParameters extends ParameterizedMessageBase
 {
+	/*-------
+	 * State
+	 */
+	
 	private static final long serialVersionUID = 1L;
 
 	// The parameters used are the natural additive parameters, (alpha-1) and (beta-1)
-	private double _alphaMinusOne = 0;
-	private double _betaMinusOne = 0;
+	private double _alphaMinusOne;
+	private double _betaMinusOne;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	public BetaParameters() {}
+	public BetaParameters()
+	{
+		
+	}
+	
 	public BetaParameters(double alphaMinusOne, double betaMinusOne)
 	{
 		_alphaMinusOne = alphaMinusOne;
@@ -43,7 +53,9 @@ public class BetaParameters extends ParameterizedMessageBase
 	}
 	public BetaParameters(BetaParameters other)		// Copy constructor
 	{
-		this(other._alphaMinusOne, other._betaMinusOne);
+		super(other);
+		_alphaMinusOne = other._alphaMinusOne;
+		_betaMinusOne = other._betaMinusOne;
 	}
 	
 	@Override
@@ -62,8 +74,8 @@ public class BetaParameters extends ParameterizedMessageBase
 		return String.format("Beta(%g,%g)", getAlpha(), getBeta());
 	}
 	
-	/*----------------
-	 * IDatum methods
+	/*-----------------
+	 * IEquals methods
 	 */
 	
 	@Override
@@ -77,10 +89,50 @@ public class BetaParameters extends ParameterizedMessageBase
 		if (other instanceof BetaParameters)
 		{
 			BetaParameters that = (BetaParameters)other;
-			return _alphaMinusOne == that._alphaMinusOne && _betaMinusOne == that._betaMinusOne;
+			return _alphaMinusOne == that._alphaMinusOne && _betaMinusOne == that._betaMinusOne &&
+				super.objectEquals(other);
 		}
 		
 		return false;
+	}
+
+	/*----------------------
+	 * IUnaryFactorFunction
+	 */
+	
+	@Override
+	public double evalEnergy(Value value)
+	{
+		final double x = value.getDouble();
+		
+		if (x < 0 | x > 1)
+		{
+			return Double.POSITIVE_INFINITY;
+		}
+		
+		double y;
+		
+		if (_alphaMinusOne == 0.0)
+		{
+			if (_betaMinusOne == 0.0)
+			{
+				return 0.0;
+			}
+			else
+			{
+				y = Math.log(1 - x) * _betaMinusOne;
+			}
+		}
+		else if (_betaMinusOne == 0.0)
+		{
+			y = Math.log(x) * _alphaMinusOne;
+		}
+		else
+		{
+			y = _alphaMinusOne * Math.log(x) + _betaMinusOne * Math.log(1 - x);
+		}
+		
+		return -y;
 	}
 	
 	/*--------------------
@@ -175,11 +227,18 @@ public class BetaParameters extends ParameterizedMessageBase
 	}
 	
 	@Override
+	public boolean isNull()
+	{
+		return _alphaMinusOne == 0 && _betaMinusOne == 0;
+	}
+	
+	@Override
 	public void setFrom(IParameterizedMessage other)
 	{
 		BetaParameters that = (BetaParameters)other;
 		_alphaMinusOne = that._alphaMinusOne;
 		_betaMinusOne = that._betaMinusOne;
+		copyNormalizationEnergy(that);
 	}
 	
 	/**
@@ -192,6 +251,7 @@ public class BetaParameters extends ParameterizedMessageBase
 	{
 		_alphaMinusOne = 0;
 		_betaMinusOne = 0;
+		_normalizationEnergy = 0.0;
 	}
 	
 	/*---------------
@@ -202,14 +262,39 @@ public class BetaParameters extends ParameterizedMessageBase
 	public final double getAlphaMinusOne() {return _alphaMinusOne;}
 	public final double getBetaMinusOne() {return _betaMinusOne;}
 
-	public final void setAlphaMinusOne(double alphaMinusOne) {_alphaMinusOne = alphaMinusOne;}
-	public final void setBetaMinusOne(double betaMinusOne) {_betaMinusOne = betaMinusOne;}
+	public final void setAlphaMinusOne(double alphaMinusOne)
+	{
+		_alphaMinusOne = alphaMinusOne;
+		forgetNormalizationEnergy();
+	}
+	
+	public final void setBetaMinusOne(double betaMinusOne)
+	{
+		_betaMinusOne = betaMinusOne;
+		forgetNormalizationEnergy();
+	}
 	
 	// Ordinary parameters, alpha and beta
 	public final double getAlpha() {return _alphaMinusOne + 1;}
 	public final double getBeta() {return _betaMinusOne + 1;}
 
-	public final void setAlpha(double alpha) {_alphaMinusOne = alpha - 1;}
-	public final void setBeta(double beta) {_betaMinusOne = beta - 1;}
+	public final void setAlpha(double alpha)
+	{
+		setAlphaMinusOne(alpha - 1);
+	}
 	
+	public final void setBeta(double beta)
+	{
+		setBetaMinusOne(beta - 1);
+	}
+	
+	/*-------------------
+	 * Protected methods
+	 */
+	
+	@Override
+	protected double computeNormalizationEnergy()
+	{
+		return -org.apache.commons.math3.special.Beta.logBeta(_alphaMinusOne + 1, _betaMinusOne + 1);
+	}
 }

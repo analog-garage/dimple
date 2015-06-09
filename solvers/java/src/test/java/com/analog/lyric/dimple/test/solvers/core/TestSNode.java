@@ -44,6 +44,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.SNode;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
@@ -236,6 +237,18 @@ public class TestSNode extends DimpleTestBase
 		}
 
 		@Override
+		public double evalEnergy(Value value)
+		{
+			return _counter * value.getDouble();
+		}
+		
+		@Override
+		public boolean isNull()
+		{
+			return _counter == 0;
+		}
+		
+		@Override
 		public void setFrom(IParameterizedMessage other)
 		{
 			_counter = ((TestMessage)other)._counter;
@@ -245,6 +258,12 @@ public class TestSNode extends DimpleTestBase
 		public void setUniform()
 		{
 			_counter = 0;
+		}
+
+		@Override
+		protected double computeNormalizationEnergy()
+		{
+			return 0;
 		}
 	}
 	
