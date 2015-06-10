@@ -21,6 +21,9 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import com.analog.lyric.dimple.factorfunctions.MultivariateNormal;
+import com.analog.lyric.dimple.model.domains.RealJointDomain;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.util.test.SerializationTester;
 
@@ -46,38 +49,68 @@ public class TestMultivariateNormalParameters extends TestParameterizedMessage
 		double[] means = new double[2];
 		double[][] covariance = new double[2][2];
 
-		//   mean     covariance                  inverse
-		// | 5.0 |   | 1.0  2.0 |   det == -3  | -1/3  2/3 |
-		// | 6.0 |   | 2.0  1.0 |              |  2/3 -1/3 |
+		//   mean     covariance
+		// | 5.0 |   | 1.0  2.0 |   Not positive definite
+		// | 6.0 |   | 2.0  1.0 |
 		//
 		means[0] = 5.0;
 		means[1] = 6.0;
-		covariance[0][0] = 1.0;
-		covariance[1][1] = 1.0;
-		covariance[0][1] = 2.0;
-		covariance[1][0] = 2.0;
+//		covariance[0][0] = 1.0;
+//		covariance[1][1] = 1.0;
+//		covariance[0][1] = 2.0;
+//		covariance[1][0] = 2.0;
+//		expectThrow(DimpleException.class, "Matrix is not positive definite", msg, "setMeanAndCovariance",
+//			means, covariance);
+//		// Message not changed due to exception
+//		assertFalse(msg.isInInformationForm());
+//		assertTrue(msg.isNull());
+//		assertInvariants(msg);
+		
+		//   mean     covariance                inverse
+		// | 5.0 |   | 2.0  1.0 |  det = 3     | 2/3  -1/3 |
+		// | 6.0 |   | 1.0  2.0 |              | -1/3  2/3 |
+		//
+		covariance[0][0] = 2.0;
+		covariance[1][1] = 2.0;
+		covariance[0][1] = 1.0;
+		covariance[1][0] = 1.0;
 		msg.setMeanAndCovariance(means, covariance);
 		assertFalse(msg.isInInformationForm());
-		assertInvariants(msg);
-		assertNotSame(means, msg.getMean());
 		assertArrayEquals(means, msg.getMean(), 0.0);
+		assertArrayEquals(covariance[0], msg.getCovariance()[0], 0.0);
+		
+		double[][] infoMatrix = msg.getInformationMatrix();
+		assertTrue(msg.isInInformationForm());
+		assertEquals(2.0/3.0, infoMatrix[0][0], 1e-10);
+		assertEquals(2.0/3.0, infoMatrix[1][1], 1e-10);
+		assertEquals(-1.0/3.0, infoMatrix[0][1], 1e-10);
+		assertEquals(-1.0/3.0, infoMatrix[1][0], 1e-10);
+		double[] infoVector = msg.getInformationVector();
+		assertArrayEquals(new double[] { 4.0/3.0, 7.0/3.0 }, infoVector, 1e-10);
+		assertArrayEquals(means, msg.getMean(), 0.0);
+		assertTrue(msg.isInInformationForm());
+		assertInvariants(msg);
+		
+		double[][] covariance2 = msg.getCovariance();
+		assertArrayEquals(covariance[0], covariance2[0], 1e-10);
+		assertArrayEquals(covariance[1], covariance2[1], 1e-10);
 		
 		//   mean     covariance                  inverse
-		// | 7.0 |   | 2.0  4.0 |   det == -10  | -3/10  2/5 |
-		// | 8.0 |   | 4.0  3.0 |               |  2/5  -1/5 |
+		// | 7.0 |   | 4.0  2.0 |  det = 8      |  3/8  -1/4 |
+		// | 8.0 |   | 2.0  3.0 |               | -1/3   1/2 |
 		//
 		means[0] = 7.0;
 		means[1] = 8.0;
-		covariance[0][0] = 2.0;
+		covariance[0][0] = 4.0;
 		covariance[1][1] = 3.0;
-		covariance[0][1] = 4.0;
-		covariance[1][0] = 4.0;
+		covariance[0][1] = 2.0;
+		covariance[1][0] = 2.0;
 		MultivariateNormalParameters msg2 = new MultivariateNormalParameters(means, covariance);
 		assertInvariants(msg2);
 		
 		// Computed these by hand in MATLAB
-		assertEquals(.75198640216297, msg.computeKLDivergence(msg2), 1e-10);
-		assertEquals(1.5646802645036, msg2.computeKLDivergence(msg), 1e-10);
+		assertEquals(.865414626505863, msg.computeKLDivergence(msg2), 1e-10);
+		assertEquals(1.50958537349414, msg2.computeKLDivergence(msg), 1e-10);
 		
 		msg2.setUniform();
 		assertFalse(msg2.isNull());
@@ -97,7 +130,6 @@ public class TestMultivariateNormalParameters extends TestParameterizedMessage
 		assertTrue(msg2.isInInformationForm());
 		assertInvariants(msg2);
 		
-		// TODO: test correctness of covariance/information transformation
 	}
 	
 	private void assertInvariants(MultivariateNormalParameters msg)
@@ -170,21 +202,23 @@ public class TestMultivariateNormalParameters extends TestParameterizedMessage
 			}
 		}
 		
-		// FIXME
-//		if (n > 0)
-//		{
-//			MultivariateNormal function = new MultivariateNormal(msg.clone());
-//			Value value = Value.create(RealJointDomain.create(n));
-//			final double[] array = value.getDoubleArray();
-//			for (int i = 0; i < 10; ++i)
-//			{
-//				for (int j = 0; j < n; ++j)
-//				{
-//					array[j] = testRand.nextDouble();
-//				}
-//
-//				assertEquals(function.evalEnergy(value), msg.evalEnergy(value) - msg.getNormalizationEnergy(), 1e-12);
-//			}
-//		}
+		if (n > 0)
+		{
+			final double normalizer = msg.getNormalizationEnergy();
+			MultivariateNormal function = new MultivariateNormal(msg.clone());
+			Value value = Value.create(RealJointDomain.create(n));
+			final double[] array = value.getDoubleArray();
+			for (int i = 0; i < 10; ++i)
+			{
+				for (int j = 0; j < n; ++j)
+				{
+					array[j] = testRand.nextDouble();
+				}
+
+				final double expectedEnergy = function.evalEnergy(value);
+				final double unnormalizedEnergy = msg.evalEnergy(value);
+				assertEquals(1.0, expectedEnergy / (unnormalizedEnergy - normalizer), 1e-12);
+			}
+		}
 	}
 }

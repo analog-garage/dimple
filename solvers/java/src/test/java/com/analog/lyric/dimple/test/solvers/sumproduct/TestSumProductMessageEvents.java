@@ -34,8 +34,8 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.FiniteFieldVariable;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
-import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolver;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.dimple.test.solvers.core.TestMessageUpdateEventHandler;
 
@@ -205,7 +205,7 @@ public class TestSumProductMessageEvents extends DimpleTestBase
 			int j = (i + 1) % n;
 			RealJoint v1 = vars[i], v2 = vars[j];
 			double[] means = new double[] { 1.0, 2.0 };
-			double[][] covariance = new double[][]{new double [] {1.0, 2.0}, new double [] {2.0, 1.0}};
+			double[][] covariance = new double[][]{new double [] {2.0, 1.0}, new double [] {1.0, 2.0}};
 			Factor factor = factors[i] = model.addFactor(new MultivariateNormal(means, covariance), v1, v2);
 			factor.setName(String.format("factor%d-%d",i,j));
 		}

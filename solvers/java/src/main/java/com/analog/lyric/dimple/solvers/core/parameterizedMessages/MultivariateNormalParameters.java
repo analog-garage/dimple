@@ -16,16 +16,16 @@
 
 package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
-import static java.util.Objects.*;
-
 import java.io.PrintStream;
 import java.util.Arrays;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
 
 import com.analog.lyric.collect.ArrayUtil;
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.math.LyricEigenvalueDecomposition;
@@ -41,14 +41,12 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 	private static final double EPS = 0.0000001; //minimum value for small eigenvalues or 1/(max value)
 	protected static final double LOG_SQRT_2PI = Math.log(2*Math.PI)*0.5;
 
-	// TODO - instead of toggling between covariance and information forms, perhaps we should instead
-	// store the eigendecomposition of the matrix and use that for computation, only constructing the
-	// actual matrix if requested.
+	private double [] _infoVector = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+
+	private double [] _mean = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	
-	private double [] _vector = ArrayUtil.EMPTY_DOUBLE_ARRAY;
-	// Cache means to avoid having to recompute
-	private @Nullable double [] _mean = null;
 	private double [][] _matrix = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+
 	private boolean _isInInformationForm;
 	
 	/*--------------
@@ -115,15 +113,18 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 	
 	public final void setMeanAndCovariance(double[] mean, double[][] covariance)
 	{
-		_vector = _mean = mean.clone();
+//		validateMatrix(covariance);
+		_infoVector = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+		_mean = mean.clone();
 		_matrix = cloneMatrix(covariance);
 		_isInInformationForm = false;
 	}
 	
 	public final void setInformation(double[] informationVector, double[][] informationMatrix)
 	{
-		_vector = informationVector.clone();
-		_mean = null;
+//		validateMatrix(informationMatrix);
+		_infoVector = informationVector.clone();
+		_mean = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 		_matrix = cloneMatrix(informationMatrix);
 		_isInInformationForm = true;
 		forgetNormalizationEnergy();
@@ -132,9 +133,8 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 	// Set from another parameter set without first extracting the components or determining which form
 	public final void set(MultivariateNormalParameters other)
 	{
-		double[] mean = other._mean;
-		_mean = mean != null ? mean.clone() : null;
-		_vector = other._vector.clone();
+		_mean = other._mean.length == 0 ? other._mean : other._mean.clone();
+		_infoVector = other._infoVector.length == 0 ? other._infoVector : other._infoVector.clone();
 		_matrix = cloneMatrix(other._matrix);
 		_isInInformationForm = other._isInInformationForm;
 		copyNormalizationEnergy(other);
@@ -156,7 +156,7 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 		{
 			MultivariateNormalParameters that = (MultivariateNormalParameters)other;
 			if (_isInInformationForm == that._isInInformationForm &&
-				Arrays.equals(_vector,that._vector) && Arrays.equals(_mean, that._mean))
+				Arrays.equals(_infoVector,that._infoVector) && Arrays.equals(_mean, that._mean))
 			{
 				final double[][] thisMatrix = _matrix;
 				final double[][] thatMatrix = that._matrix;
@@ -222,16 +222,14 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 		
 		double[] mean = _mean;
 
-		if (mean == null)
+		if (mean.length == 0 && !isNull())
 		{
 			assert(_isInInformationForm);
-			double[] vector = _vector;
 			double[][] matrix = _matrix;
 			// switch to covariance form to compute the mean
 			toCovarianceFormat();
-			mean = requireNonNull(_mean);
+			mean = _mean;
 			// switch back to original values.
-			_vector = vector;
 			_matrix = matrix;
 			_isInInformationForm = true;
 		}
@@ -344,11 +342,12 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 			assertSameSize(Q.getVectorLength());
 			
 			P.toCovarianceFormat();
+			Q.toCovarianceFormat();
 			
 			final double[] udiff = Q.getMean();
 			for (int i = 0; i < K; ++i)
 			{
-				udiff[i] -= P._vector[i];
+				udiff[i] -= P._mean[i];
 			}
 
 			final Matrix Ut = new Matrix(udiff, 1);
@@ -379,9 +378,9 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 	@Override
 	public final void setNull()
 	{
-		_vector = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+		_infoVector = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+		_mean = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 		_matrix = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
-		_mean = null;
 		_isInInformationForm = true;
 		_normalizationEnergy = 0.0;
 	}
@@ -396,8 +395,8 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 	{
 		if (_isInInformationForm)
 		{
-			// Implement for information form rather than toggling.
-			_mean = _vector;
+			// TODO: Implement for information form rather than toggling.
+			_infoVector = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 			_isInInformationForm = false;
 		}
 		Arrays.fill(_mean, 0.0);
@@ -411,11 +410,11 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 	public final double[] getMeans() {return getMean();}	// For backward compatibility
 	public final double[] getMean()
 	{
-		if (_mean == null)
+		if (_mean.length == 0)
 		{
 			toCovarianceFormat();
 		}
-		return _vector.clone();
+		return _mean.clone();
 	}
 
 	public final double [][] getCovariance()
@@ -426,8 +425,11 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 	
 	public final double [] getInformationVector()
 	{
-		toInformationFormat();
-		return _vector.clone();
+		if (_infoVector.length == 0)
+		{
+			toInformationFormat();
+		}
+		return _infoVector.clone();
 	}
 
 	public final double [][] getInformationMatrix()
@@ -439,7 +441,7 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 	
 	public final int getVectorLength()
 	{
-		return _vector.length;
+		return _matrix.length;
 	}
 	
 	public final boolean isInInformationForm()
@@ -450,7 +452,7 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 	@Override
 	public final boolean isNull()
 	{
-		return _vector.length == 0;
+		return _matrix.length == 0;
 	}
 	
 	/*---------
@@ -482,7 +484,7 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 	{
 		final double[][] informationMatrix = getInformationMatrix();
 		final int n = informationMatrix.length;
-		return n == 0 ? 0.0 : (n * LOG_SQRT_2PI - Math.log(new Jama.Matrix(informationMatrix).det()) * .5);
+		return n == 0 ? 0.0 : -(n * LOG_SQRT_2PI - Math.log(new Jama.Matrix(informationMatrix).det()) * .5);
 	}
 	
 	private final void toCovarianceFormat()
@@ -501,6 +503,84 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 		}
 	}
 	
+	public void validate()
+	{
+		validateMatrix(_matrix);
+	}
+	
+	private void validateMatrix(double[][] m)
+	{
+		final int n = m.length;
+		
+		boolean allZero = true;
+		
+		for (double[] row : m )
+		{
+			for (double value : row)
+			{
+				if (value != value)
+				{
+					throw new DimpleException("Matrix contains a NaN value");
+				}
+
+				if (value != 0.0)
+				{
+					allZero = false;
+				}
+			}
+		}
+		
+		if (allZero)
+		{
+			return;
+		}
+
+		boolean infiniteDiagonal = true;
+		
+		for (int i = 0; i < n; ++i)
+		{
+			final double[] row = m[i];
+			if (row.length != n)
+			{
+				throw new DimpleException("Matrix is not square");
+			}
+			
+			for (int j = 0; j < n; ++j)
+			{
+				final double vij = row[j];
+				if (j == i)
+				{
+					infiniteDiagonal &= (vij == Double.POSITIVE_INFINITY);
+				}
+				else
+				{
+					final double vji = m[j][i];
+					if (Math.abs(vji - vij) > 1e-10)
+					{
+						throw new DimpleException("Matrix is not symmetric at entry (%d,%d)", i, j);
+					}
+				}
+			}
+		}
+		
+		if (infiniteDiagonal)
+		{
+			return;
+		}
+
+		if (n > 0)
+		{
+			EigenvalueDecomposition eig = new EigenvalueDecomposition(new Matrix(m));
+			for (double value : eig.getRealEigenvalues())
+			{
+				if (value <= 0)
+				{
+					throw new DimpleException("Matrix is not positive definite");
+				}
+			}
+		}
+	}
+	
 	/**
 	 * Toggles between mean/covariance format and information format, which uses the matrix
 	 * inverse of the covariance matrix (this is also known as the precision or concentration matrix)
@@ -511,7 +591,7 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 	{
 		if (!isNull())
 		{
-			// TODO: consider using EJML library instead of Jama
+			// TODO: consider using EJML or MTJ library instead of Jama
 			
 			Jama.Matrix mat = new Jama.Matrix(_matrix);
 
@@ -537,7 +617,7 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 					//Compute inverse of eigenvalues except for those less than eps we set to large constant.
 
 					double d = D.get(i,i);
-					d = (d>EPS) ? (1/d) : 1/EPS;
+					d = Math.min(1/EPS, 1/d);
 					D.set(i,i,d);
 
 					assert(d > 0); // Eigenvalues should always be positive for positive definite matrices
@@ -546,20 +626,24 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 				inv = V.times(D.times(V.transpose()));
 
 
-				vec = new Matrix(new double [][] {_vector}).transpose();
+				vec = new Matrix(new double [][] {_isInInformationForm ? _infoVector : _mean}).transpose();
 
 				vec = inv.times(vec);
 			}
 
 			_matrix = inv.getArray();
-			_vector = vec.transpose().getArray()[0];
+			final double[] newVector = vec.transpose().getArray()[0];
+			if (_isInInformationForm)
+			{
+				_mean = newVector;
+			}
+			else
+			{
+				_infoVector = newVector;
+			}
 		}
 		
 		_isInInformationForm = !_isInInformationForm;
-		if (!_isInInformationForm)
-		{
-			_mean = _vector;
-		}
 	}
 
 	protected void assertSameSize(int otherSize)
