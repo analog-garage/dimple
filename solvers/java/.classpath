@@ -21,19 +21,9 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="build/external-libs/jcip-annotations-1.0.jar"/>
-	<classpathentry kind="lib" path="build/external-libs/guava-14.0.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="http://docs.guava-libraries.googlecode.com/git-history/v14.0/javadoc/"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="lib" path="build/external-libs/javailp-1.2a.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="http://javailp.sourceforge.net/javadoc/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="build/external-libs/commons-math3-3.2.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="http://commons.apache.org/proper/commons-math/javadocs/api-3.2/"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="build/external-libs/jama-1.0.2.jar">
@@ -41,10 +31,24 @@
 			<attribute name="javadoc_location" value="http://math.nist.gov/javanumerics/jama/doc/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="build/external-libs/jtransforms-2.3.jar"/>
 	<classpathentry kind="lib" path="build/external-libs/plugin.jar"/>
 	<classpathentry kind="con" path="GROOVY_SUPPORT"/>
 	<classpathentry kind="con" path="GROOVY_DSL_SUPPORT"/>
 	<classpathentry kind="lib" path="build/external-libs/org.eclipse.jdt.annotation-1.1.0.jar"/>
+	<classpathentry kind="lib" path="build/external-libs/commons-math3-3.5.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://commons.apache.org/proper/commons-math/javadocs/api-3.5/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="build/external-libs/guava-18.0.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://docs.guava-libraries.googlecode.com/git-history/v18.0/javadoc/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="build/external-libs/JTransforms-3.0.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://wendykierp.github.io/JTransforms/apidocs/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="build/classes/main"/>
 </classpath>

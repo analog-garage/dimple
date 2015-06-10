@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.schedulers.schedule;
 
+import java.util.Collections;
 import java.util.Iterator;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -25,7 +26,6 @@ import com.analog.lyric.dimple.schedulers.EmptyScheduler;
 import com.analog.lyric.dimple.schedulers.IScheduler;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.google.common.collect.Iterators;
 
 /**
  * A canonical schedule with no entries.
@@ -44,7 +44,7 @@ public enum EmptySchedule implements ISchedule
 	@Override
 	public Iterator<IScheduleEntry> iterator()
 	{
-		return Iterators.emptyIterator();
+		return Collections.emptyIterator();
 	}
 	
 	/*----------------------

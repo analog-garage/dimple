@@ -831,7 +831,7 @@ public class TestFactorTable extends DimpleTestBase
 			array[i] = rand.nextInt();
 		}
 		
-		Stopwatch timer = new Stopwatch();
+		Stopwatch timer = Stopwatch.createUnstarted();
 		
 		timer.start();
 		for (int i = iterations; --i>=0;)

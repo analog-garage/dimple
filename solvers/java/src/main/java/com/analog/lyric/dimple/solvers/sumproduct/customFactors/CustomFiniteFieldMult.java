@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import static java.util.Objects.*;
 
+import org.jtransforms.fft.DoubleFFT_1D;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
@@ -26,9 +28,6 @@ import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldVariable;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductFiniteFieldVariable;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductFiniteFieldVariable.LookupTables;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
-
-//import edu.emory.mathcs.jtransforms.fft.DoubleFFT_1D;
-import edu.emory.mathcs.jtransforms.fft.DoubleFFT_1D;
 
 @SuppressWarnings("deprecation") // TODO remove when SFiniteFieldFactor removed
 public class CustomFiniteFieldMult extends SFiniteFieldFactor

@@ -33,7 +33,6 @@ import net.jcip.annotations.ThreadSafe;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.ObjectArrays;
 
 /**
@@ -126,7 +125,7 @@ public class OptionRegistry implements Iterable<IOptionKey<?>>
 		private OptionIterator()
 		{
 			_keysIterator = _canonicalMap.values().iterator();
-			_keyIterator = Iterators.emptyIterator();
+			_keyIterator = Collections.emptyIterator();
 		}
 		
 		@Override

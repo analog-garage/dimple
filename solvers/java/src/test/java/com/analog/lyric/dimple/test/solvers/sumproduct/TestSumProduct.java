@@ -27,7 +27,6 @@ import com.analog.lyric.dimple.model.sugar.ModelSyntacticSugar.CurrentModel;
 import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolver;
-import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
 /**
@@ -66,7 +65,7 @@ public class TestSumProduct extends DimpleTestBase
 					fg.setOption(BPOptions.damping, dampingVal);
 				}
 				
-				SumProductSolverGraph sfg = fg.setSolverFactory(new SumProductSolver());
+				fg.setSolverFactory(new SumProductSolver());
 				
 				fg.solve();
 				

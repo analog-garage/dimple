@@ -274,7 +274,7 @@ public class TestParameters extends DimpleTestBase
 		double[] d100 = new double[100];
 		double[] out100 = new double[100];
 		
-		Stopwatch stopwatch = new Stopwatch();
+		Stopwatch stopwatch = Stopwatch.createUnstarted();
 		
 		final int n = 1000;
 		

@@ -20,6 +20,7 @@ import static java.util.Objects.*;
 
 import java.util.AbstractMap;
 import java.util.AbstractSet;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -63,7 +64,7 @@ public class DataLayer<D extends IDatum> extends AbstractMap<Variable, D> implem
 	private class VarIter extends UnmodifiableIterator<Variable>
 	{
 		private Iterator<FactorGraphData<D>> _dataIter = Iterators.filter(_data.iterator(), Predicates.notNull());
-		private Iterator<Variable> _iter = Iterators.emptyIterator();
+		private Iterator<Variable> _iter = Collections.emptyIterator();
 
 		@Override
 		public boolean hasNext()
@@ -127,7 +128,7 @@ public class DataLayer<D extends IDatum> extends AbstractMap<Variable, D> implem
 	private class EntryIter extends UnmodifiableIterator<Map.Entry<Variable,D>>
 	{
 		private Iterator<FactorGraphData<D>> _dataIter = Iterators.filter(_data.iterator(), Predicates.notNull());
-		private Iterator<Map.Entry<Variable,D>> _iter = Iterators.emptyIterator();
+		private Iterator<Map.Entry<Variable,D>> _iter = Collections.emptyIterator();
 		
 		@Override
 		public boolean hasNext()

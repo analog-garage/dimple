@@ -1,7 +1,6 @@
 
 project.description = 'LaTeX documentation'
-
-ext {
+ ext {
 	dimpleVersion = file('../VERSION').text.trim()
 
 	tmpFilePatterns = ['**.aux', '**.log', '**.out', '**.toc', '**.pdf', '**.dvi']

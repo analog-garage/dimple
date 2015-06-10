@@ -15,6 +15,11 @@ Significant Changes Since v0.07
 * New API for specifying custom schedules. Custom schedules are now validated at graph initialization time
   instead of when first assigned.
 
+* Updated version dependencies of third party libraries:
+    - Guava 14 -> 18
+    - Apache commons math 3.2 -> 3.5
+    - JTransforms 2.3 -> 3.0
+
 Significant Bug Fixes Since v0.07
 ---------------------------------
 * Gibbs solver now supports large discrete factors.

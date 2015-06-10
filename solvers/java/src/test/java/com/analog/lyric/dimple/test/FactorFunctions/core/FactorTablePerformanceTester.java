@@ -22,10 +22,11 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.base.Stopwatch;
 
 public class FactorTablePerformanceTester
@@ -45,7 +46,7 @@ public class FactorTablePerformanceTester
 		_table = table;
 		_iterations = iterations;
 		_random = new Random(42);
-		_timer = new Stopwatch();
+		_timer = Stopwatch.createUnstarted();
 	}
 	
 	/*------------
