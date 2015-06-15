@@ -1064,7 +1064,7 @@ public class FactorTable extends SparseFactorTableBase
 		{
 			if (isDirected())
 			{
-				normalizeDirected(true);
+				normalizeDirected(true, false);
 			}
 			if ((_computedMask & CONDITIONAL) == 0)
 			{
@@ -2417,7 +2417,7 @@ public class FactorTable extends SparseFactorTableBase
 	}
 	
 	@Override
-	boolean normalizeDirected(boolean justCheck)
+	int normalizeDirected(boolean justCheck, boolean ignoreZeroWeightInputs)
 	{
 		final JointDomainIndexer domains = getDomainIndexer();
 		final int inputSize = domains.getInputCardinality();
@@ -2427,6 +2427,7 @@ public class FactorTable extends SparseFactorTableBase
 		boolean computeNormalizedTotal = justCheck;
 		double normalizedTotal = 1.0;
 		double totalForInput = 0.0;
+		int nNotNormalized = 0;
 		
 		final double[] normalizers = justCheck ? null : new double[inputSize];
 		
@@ -2462,7 +2463,10 @@ public class FactorTable extends SparseFactorTableBase
 				
 				if (totalForInput == 0.0)
 				{
-					return normalizeDirectedHandleZeroForInput(justCheck);
+					if (ignoreZeroWeightInputs)
+						++nNotNormalized;
+					else
+						return normalizeDirectedHandleZeroForInput(justCheck);
 				}
 				
 				if (computeNormalizedTotal)
@@ -2474,7 +2478,7 @@ public class FactorTable extends SparseFactorTableBase
 				{
 					if (justCheck)
 					{
-						return false;
+						return 1;
 					}
 				}
 				if (normalizers != null)
@@ -2488,7 +2492,11 @@ public class FactorTable extends SparseFactorTableBase
 				{
 					final int ji = hasSparseToJoint ? _sparseIndexToJointIndex[si] : si;
 					final int ii = domains.inputIndexFromJointIndex(ji);
-					setWeightForSparseIndex(_sparseWeights[si] / normalizers[ii], si);
+					final double normalizer = normalizers[ii];
+					if (normalizer != 0.0)
+					{
+						setWeightForSparseIndex(_sparseWeights[si] / normalizers[ii], si);
+					}
 				}
 			}
 			break;
@@ -2510,7 +2518,10 @@ public class FactorTable extends SparseFactorTableBase
 				
 				if (totalForInput == 0.0)
 				{
-					return normalizeDirectedHandleZeroForInput(justCheck);
+					if (ignoreZeroWeightInputs)
+						++nNotNormalized;
+					else
+						return normalizeDirectedHandleZeroForInput(justCheck);
 				}
 
 				if (computeNormalizedTotal)
@@ -2522,7 +2533,7 @@ public class FactorTable extends SparseFactorTableBase
 				{
 					if (justCheck)
 					{
-						return false;
+						return 1;
 					}
 				}
 				if (normalizers != null)
@@ -2536,7 +2547,11 @@ public class FactorTable extends SparseFactorTableBase
 				{
 					final int ji = hasSparseToJoint ? _sparseIndexToJointIndex[si] : si;
 					final int ii = domains.inputIndexFromJointIndex(ji);
-					setEnergyForSparseIndex(_sparseEnergies[si] + normalizers[ii], si);
+					final double normalizer = normalizers[ii];
+					if (normalizer != Double.NEGATIVE_INFINITY)
+					{
+						setEnergyForSparseIndex(_sparseEnergies[si] + normalizers[ii], si);
+					}
 				}
 			}
 			break;
@@ -2553,7 +2568,10 @@ public class FactorTable extends SparseFactorTableBase
 				}
 				if (totalForInput == 0.0)
 				{
-					return normalizeDirectedHandleZeroForInput(justCheck);
+					if (ignoreZeroWeightInputs)
+						++nNotNormalized;
+					else
+						return normalizeDirectedHandleZeroForInput(justCheck);
 				}
 				if (computeNormalizedTotal)
 				{
@@ -2564,7 +2582,7 @@ public class FactorTable extends SparseFactorTableBase
 				{
 					if (justCheck)
 					{
-						return false;
+						return 1;
 					}
 				}
 				if (normalizers != null)
@@ -2577,10 +2595,13 @@ public class FactorTable extends SparseFactorTableBase
 				for (int jointIndex = 0, inputIndex = 0; inputIndex < inputSize; ++inputIndex, jointIndex += outputSize)
 				{
 					totalForInput = normalizers[inputIndex];
-					for (int outputIndex = 0; outputIndex < outputSize; ++outputIndex)
+					if (totalForInput != 0.0)
 					{
-						int ji = jointIndex + outputIndex;
-						setWeightForJointIndex(_denseWeights[ji] / totalForInput, ji);
+						for (int outputIndex = 0; outputIndex < outputSize; ++outputIndex)
+						{
+							int ji = jointIndex + outputIndex;
+							setWeightForJointIndex(_denseWeights[ji] / totalForInput, ji);
+						}
 					}
 				}
 			}
@@ -2596,7 +2617,10 @@ public class FactorTable extends SparseFactorTableBase
 				}
 				if (totalForInput == 0.0)
 				{
-					return normalizeDirectedHandleZeroForInput(justCheck);
+					if (ignoreZeroWeightInputs)
+						++nNotNormalized;
+					else
+						return normalizeDirectedHandleZeroForInput(justCheck);
 				}
 
 				if (computeNormalizedTotal)
@@ -2608,7 +2632,7 @@ public class FactorTable extends SparseFactorTableBase
 				{
 					if (justCheck)
 					{
-						return false;
+						return 1;
 					}
 				}
 				if (normalizers != null)
@@ -2620,18 +2644,29 @@ public class FactorTable extends SparseFactorTableBase
 			{
 				for (int jointIndex = 0, inputIndex = 0; inputIndex < inputSize; ++inputIndex, jointIndex += outputSize)
 				{
-					for (int outputIndex = 0; outputIndex < outputSize; ++outputIndex)
+					final double normalizer = normalizers[inputIndex];
+					if (normalizer != Double.NEGATIVE_INFINITY)
 					{
-						int ji = jointIndex + outputIndex;
-						setEnergyForJointIndex(_denseEnergies[ji] + normalizers[inputIndex], ji);
+						for (int outputIndex = 0; outputIndex < outputSize; ++outputIndex)
+						{
+							int ji = jointIndex + outputIndex;
+							setEnergyForJointIndex(_denseEnergies[ji] + normalizer, ji);
+						}
 					}
 				}
 			}
 			break;
 		}
 		
-		_computedMask |= CONDITIONAL|CONDITIONAL_COMPUTED;
-		return true;
+		if (nNotNormalized == 0)
+		{
+			_computedMask |= CONDITIONAL|CONDITIONAL_COMPUTED;
+		}
+		else
+		{
+			_computedMask |= CONDITIONAL_COMPUTED;
+		}
+		return nNotNormalized;
 	}
 	
 	@Override

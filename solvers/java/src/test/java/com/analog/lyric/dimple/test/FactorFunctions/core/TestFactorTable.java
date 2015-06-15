@@ -948,6 +948,7 @@ public class TestFactorTable extends DimpleTestBase
 				break;
 				
 			case 3:
+			{
 				// Normalize
 				try
 				{
@@ -965,6 +966,7 @@ public class TestFactorTable extends DimpleTestBase
 					assertThat(ex.getMessage(), containsString("Cannot normalize undirected factor table with zero"));
 					assertFalse(table.isNormalized());
 				}
+				boolean expectZeros = false;
 				try
 				{
 					table.normalizeConditional();
@@ -979,8 +981,30 @@ public class TestFactorTable extends DimpleTestBase
 				{
 					assertThat(ex.getMessage(), containsString("Cannot normalize directed factor table with zero"));
 					assertFalse(table.isConditional());
+					expectZeros = true;
 				}
+				try
+				{
+					int nNotNormalized = table.normalizeConditional(true);
+					if (expectZeros)
+					{
+						assertTrue(nNotNormalized > 0);
+						assertFalse(table.isConditional());
+						assertTrue(table.isDirected());
+					}
+					else
+					{
+						assertEquals(0, nNotNormalized);
+					}
+				}
+				catch (UnsupportedOperationException ex)
+				{
+					assertFalse(table.isConditional());
+					assertFalse(table.isDirected());
+				}
+				
 				break;
+			}
 				
 			case 4:
 				// Compact

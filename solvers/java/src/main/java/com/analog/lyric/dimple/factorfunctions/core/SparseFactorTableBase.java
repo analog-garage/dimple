@@ -19,13 +19,14 @@ package com.analog.lyric.dimple.factorfunctions.core;
 import java.util.BitSet;
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.values.Value;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * @since 0.05
@@ -181,13 +182,19 @@ public abstract class SparseFactorTableBase extends FactorTableBase implements I
 	@Override
 	public final void normalizeConditional()
 	{
+		normalizeConditional(false);
+	}
+	
+	@Override
+	public final int normalizeConditional(boolean ignoreZeroWeightInputs)
+	{
 		if (!isDirected())
 		{
 			throw new UnsupportedOperationException(
 				"normalizeConditional() not supported for undirected factor table. Use normalize() instead");
 		}
 
-		normalizeDirected(false);
+		return normalizeDirected(false, ignoreZeroWeightInputs);
 	}
 	
 	@Override
@@ -317,22 +324,22 @@ public abstract class SparseFactorTableBase extends FactorTableBase implements I
 		 }
 	}
 	
-	abstract boolean normalizeDirected(boolean justCheck);
+	abstract int normalizeDirected(boolean justCheck, boolean ignoreZeroWeightInputs);
 
 	/**
 	 * Throws exception with message indicating an attempt to normalize a directed table whose weights
 	 * for some input adds up to zero.
 	 * 
-	 * @return false if {@code justCheck} is true, otherwise throws an exception.
+	 * @return 1 if {@code justCheck} is true, otherwise throws an exception.
 	 * @throws DimpleException if {@code justCheck} is false.
 	 */
-	final boolean normalizeDirectedHandleZeroForInput(boolean justCheck)
+	final int normalizeDirectedHandleZeroForInput(boolean justCheck)
 	{
 		if (!justCheck)
 		{
 			throw new DimpleException("Cannot normalize directed factor table with zero total weight for some input");
 		}
-		return false;
+		return 1;
 	}
 
 	/**

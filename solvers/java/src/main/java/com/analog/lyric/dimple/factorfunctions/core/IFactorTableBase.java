@@ -420,8 +420,21 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	 * @throws UnsupportedOperationException if not {@link #isDirected()}, use {@link #normalize()} instead.
 	 * <p>
 	 * @see #isConditional()
+	 * @see #normalizeConditional()
 	 */
 	public abstract void normalizeConditional();
+	
+	/**
+	 * Normalizes the weights/energies of directed table to ensure that weights applicable to any
+	 * combination of input elements add up to one.
+	 * <p>
+	 * @param ignoreZeroWeightInputs if true, then any input whose entries adds up to zero will not
+	 * be normalized, if false a {@link DimpleException} will be thrown.
+	 * @return number of inputs that were not normalized (always zero if {@code ignoreZeroWeightInputs} is false.
+	 * @since 0.08
+	 * @see #normalizeConditional()
+	 */
+	public abstract int normalizeConditional(boolean ignoreZeroWeightInputs);
 
 	/**
 	 * Sets the table value indexed by the specified {@code elements} to the given {@code energy} value.

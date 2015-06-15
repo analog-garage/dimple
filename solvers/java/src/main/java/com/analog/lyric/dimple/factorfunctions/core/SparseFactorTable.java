@@ -433,7 +433,7 @@ public class SparseFactorTable extends SparseFactorTableBase implements IFactorT
 		{
 			if (isDirected())
 			{
-				normalizeDirected(true);
+				normalizeDirected(true, false);
 			}
 			_computedMask |= CONDITIONAL_COMPUTED;
 		}
@@ -989,12 +989,13 @@ public class SparseFactorTable extends SparseFactorTableBase implements IFactorT
 	}
 	
 	@Override
-	boolean normalizeDirected(boolean justCheck)
+	int normalizeDirected(boolean justCheck, boolean ignoreZeroWeightInputs)
 	{
 		final JointDomainIndexer domains = getDomainIndexer();
 		
 		boolean computeNormalizedTotal = justCheck;
 		double normalizedTotal = 1.0;
+		int nNotNormalized = 0;
 		
 		// We represent the joint index such that the outputs for the same
 		// input are stored consecutively, so we only need to walk through
@@ -1027,7 +1028,10 @@ public class SparseFactorTable extends SparseFactorTableBase implements IFactorT
 				}
 				if (totalForInput == 0.0)
 				{
-					return normalizeDirectedHandleZeroForInput(justCheck);
+					if (ignoreZeroWeightInputs)
+						++nNotNormalized;
+					else
+						return normalizeDirectedHandleZeroForInput(justCheck);
 				}
 				if (computeNormalizedTotal)
 				{
@@ -1038,24 +1042,27 @@ public class SparseFactorTable extends SparseFactorTableBase implements IFactorT
 				{
 					if (justCheck)
 					{
-						return false;
+						return 1;
 					}
 				}
 				if (!justCheck)
 				{
-					if (hasSparseWeights())
+					if (totalForInput != 0.0)
 					{
-						for (int i = start; i < nextsi; ++i)
+						if (hasSparseWeights())
 						{
-							_sparseWeights[i] /= totalForInput;
+							for (int i = start; i < nextsi; ++i)
+							{
+								_sparseWeights[i] /= totalForInput;
+							}
 						}
-					}
-					if (hasSparseEnergies())
-					{
-						double logTotalForInput = Math.log(totalForInput);
-						for (int i = start; i < nextsi; ++i)
+						if (hasSparseEnergies())
 						{
-							_sparseEnergies[i] += logTotalForInput;
+							double logTotalForInput = Math.log(totalForInput);
+							for (int i = start; i < nextsi; ++i)
+							{
+								_sparseEnergies[i] += logTotalForInput;
+							}
 						}
 					}
 				}
@@ -1063,8 +1070,15 @@ public class SparseFactorTable extends SparseFactorTableBase implements IFactorT
 			}
 		}
 		
-		_computedMask |= CONDITIONAL|CONDITIONAL_COMPUTED;
-		return true;
+		if (nNotNormalized == 0)
+		{
+			_computedMask |= CONDITIONAL|CONDITIONAL_COMPUTED;
+		}
+		else
+		{
+			_computedMask |= CONDITIONAL_COMPUTED;
+		}
+		return nNotNormalized;
 	}
 	
 	@Override
