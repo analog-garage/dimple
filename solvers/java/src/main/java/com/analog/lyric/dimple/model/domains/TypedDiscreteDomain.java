@@ -96,4 +96,7 @@ public abstract class TypedDiscreteDomain<Element> extends DiscreteDomain implem
 	{
 		return (TypedDiscreteDomain<T>) (elementClass.isAssignableFrom(getElementClass()) ? this : null) ;
 	}
+	
+	@Override
+	public abstract Class<? extends Element> getElementClass();
 }

@@ -16,11 +16,11 @@
 
 package com.analog.lyric.dimple.model.domains;
 
-import net.jcip.annotations.Immutable;
-
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.math.Utilities;
+
+import net.jcip.annotations.Immutable;
 
 /**
  * A finite field of characteristic 2 (GF(2^N)).  The domain is determined by the length, N,
@@ -113,7 +113,7 @@ public class FiniteFieldDomain extends TypedDiscreteDomain<FiniteFieldNumber>
 	}
 
 	@Override
-	public final Class<?> getElementClass()
+	public final Class<FiniteFieldNumber> getElementClass()
 	{
 		return FiniteFieldNumber.class;
 	}
