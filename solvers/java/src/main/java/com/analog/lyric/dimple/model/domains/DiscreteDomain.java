@@ -382,6 +382,12 @@ public abstract class DiscreteDomain extends Domain
 	 */
 	
 	/**
+	 * Returns a view of the domain as an immutable list.
+	 * @since 0.08
+	 */
+	public abstract List<? extends Object> asList();
+	
+	/**
 	 * If this is a {@link TypedDiscreteDomain} with element type that extends {@code elementClass}
 	 * returns this object, otherwise null.
 	 */

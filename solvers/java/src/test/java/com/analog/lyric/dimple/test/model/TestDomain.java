@@ -23,6 +23,7 @@ import java.lang.reflect.Array;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -466,6 +467,9 @@ public class TestDomain extends DimpleTestBase
 				iter = ((Iterable<?>)discrete).iterator();
 			}
 			
+			List<?> list = discrete.asList();
+			assertEquals(size, list.size());
+			
 			boolean allInt = true;
 			for (int i = 0; i < size; ++i)
 			{
@@ -476,6 +480,7 @@ public class TestDomain extends DimpleTestBase
 				assertElementEquals(element, discrete.getElement(i));
 				assertEquals(i, discrete.getIndex(element));
 				assertEquals(i, discrete.getIndexOrThrow(element));
+				assertElementEquals(element, list.get(i));
 				allInt &= Domain.isIntCompatibleValue(element);
 				
 				if (iter != null)

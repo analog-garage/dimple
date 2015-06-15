@@ -16,7 +16,9 @@
 
 package com.analog.lyric.dimple.model.domains;
 
+import java.util.AbstractList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -67,6 +69,24 @@ public abstract class TypedDiscreteDomain<Element> extends DiscreteDomain implem
 	/*------------------------
 	 * DiscreteDomain methods
 	 */
+	
+	@Override
+	public List<Element> asList()
+	{
+		return new AbstractList<Element>() {
+			@Override
+			public Element get(int index)
+			{
+				return getElement(index);
+			}
+
+			@Override
+			public int size()
+			{
+				return TypedDiscreteDomain.this.size();
+			}
+		};
+	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
