@@ -20,6 +20,7 @@ import java.util.AbstractList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 // REFACTOR: I think this should eventually be folded up into DiscreteDomain.
@@ -32,6 +33,7 @@ public abstract class TypedDiscreteDomain<Element> extends DiscreteDomain implem
 		super(hashCode);
 	}
 	
+	@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
 	@Override
 	public abstract Element getElement(int i);
 

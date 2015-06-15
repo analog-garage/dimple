@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import com.analog.lyric.dimple.events.SolverEventSource;
 import com.analog.lyric.dimple.model.core.FactorGraphChild;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
@@ -58,6 +60,7 @@ public abstract class SChild<MChild extends FactorGraphChild> extends SolverEven
 	 * ISolverNode methods
 	 */
 	
+	@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
 	@Override
 	public MChild getModelObject()
     {

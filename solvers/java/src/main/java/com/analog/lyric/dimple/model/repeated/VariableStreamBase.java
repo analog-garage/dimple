@@ -22,6 +22,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -195,12 +196,14 @@ public abstract class VariableStreamBase<V extends Variable> implements IVariabl
 	}
 	
 	
+	@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
 	@Override
 	public V get(int index)
 	{
 		return get(index,false);
 	}
 	
+	@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
 	@Override
 	public V get(int index,boolean createIfDoesntExist)
 	{

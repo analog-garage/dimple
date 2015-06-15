@@ -18,6 +18,8 @@ package com.analog.lyric.options;
 
 import java.io.Serializable;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import net.jcip.annotations.Immutable;
 
 /**
@@ -67,6 +69,7 @@ public class GenericOptionKey<T extends Serializable> extends OptionKey<T>
 		return _type;
 	}
 
+	@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
 	@Override
 	public T defaultValue()
 	{

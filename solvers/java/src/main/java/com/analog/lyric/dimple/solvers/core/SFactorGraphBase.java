@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ExtendedArrayList;
@@ -327,9 +328,11 @@ public abstract class SFactorGraphBase
 		return null;
 	}
 	
+	@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
 	@Override
 	public abstract SFactor createFactor(Factor factor);
 	
+	@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
 	@Override
 	public abstract SVariable createVariable(Variable variable);
 	
@@ -1142,6 +1145,7 @@ public abstract class SFactorGraphBase
 			_factors.growSize(iterable.size());
 		}
 		
+		@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
 		@Override
 		public SFactor map(Factor factor)
 		{
@@ -1171,6 +1175,7 @@ public abstract class SFactorGraphBase
 			_variables.growSize(iterable.size());
 		}
 		
+		@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
 		@Override
 		public SVariable map(Variable variable)
 		{

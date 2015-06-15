@@ -20,11 +20,12 @@ import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 
-import net.jcip.annotations.Immutable;
-
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
+
+import net.jcip.annotations.Immutable;
 
 /**
  * Base implementation of {@link IOptionKey} interface.
@@ -151,6 +152,7 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 	 * IOptionKey methods
 	 */
 	
+	@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
 	@Override
 	public T convertToValue(@Nullable Object value)
 	{
@@ -187,6 +189,7 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 		return _name;
 	}
 	
+	@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
 	@Override
 	public T getOrDefault(IOptionHolder holder)
 	{
@@ -217,6 +220,7 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 		return true;
 	}
 	
+	@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
 	@Override
 	public T validate(T value, @Nullable IOptionHolder optionHolder)
 	{

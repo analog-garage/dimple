@@ -23,6 +23,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import com.analog.lyric.benchmarking.utils.functional.BinaryOp;
 import com.analog.lyric.benchmarking.utils.functional.FoldFunction;
 import com.analog.lyric.benchmarking.utils.functional.Functions;
@@ -126,6 +128,7 @@ public abstract class AbstractDoubleSpace implements DoubleSpace
 		return _entrySet;
 	}
 
+	@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
 	@Override
 	public <T> T fold(T init, FoldFunction<T> fn)
 	{

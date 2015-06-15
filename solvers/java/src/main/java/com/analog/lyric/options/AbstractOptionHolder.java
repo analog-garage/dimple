@@ -18,6 +18,7 @@ package com.analog.lyric.options;
 
 import java.io.Serializable;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ReleasableIterator;
@@ -44,6 +45,7 @@ public abstract class AbstractOptionHolder implements IOptionHolder
 		return null;
 	}
 
+	@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
 	@Override
 	public <T extends Serializable> T getOptionOrDefault(IOptionKey<T> key)
 	{

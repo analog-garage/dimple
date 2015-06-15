@@ -56,6 +56,7 @@ public interface ISolverNode extends ISolverFactorGraphChild, IOptionHolder, ISo
 	 * <p>
 	 * This method is called before solve.
 	 */
+	@Override
 	public void initialize() ;
 	
 	/**
@@ -90,7 +91,7 @@ public interface ISolverNode extends ISolverFactorGraphChild, IOptionHolder, ISo
     /**
      * Return the model object associated with this solver node.
      */
-    @Override
+	@Override
 	public INode getModelObject();
 
     /*--------------------

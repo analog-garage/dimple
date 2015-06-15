@@ -23,14 +23,14 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import net.jcip.annotations.NotThreadSafe;
-
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import cern.colt.map.OpenLongObjectHashMap;
-
 import com.google.common.collect.Iterators;
+
+import cern.colt.map.OpenLongObjectHashMap;
+import net.jcip.annotations.NotThreadSafe;
 
 /*
  * MapList is a collection that stores data in both a HashMap and
@@ -302,6 +302,7 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	 * @return element at given {@code index} which depends on the order in which the element
 	 * was added to the list.
 	 */
+	@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
 	@Override
 	public T getByIndex(int index)
 	{

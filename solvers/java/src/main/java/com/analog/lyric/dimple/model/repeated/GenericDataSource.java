@@ -18,13 +18,13 @@ package com.analog.lyric.dimple.model.repeated;
 
 import java.util.LinkedList;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
+import org.eclipse.jdt.annotation.NonNull;
 
-public class GenericDataSource<Type> implements IDataSource 
+public class GenericDataSource<Type> implements IDataSource
 {
 	protected LinkedList<Type> _data = new LinkedList<Type>();
 	
-	public void add(Type data) 
+	public void add(Type data)
 	{
 		_data.add(data);
 	}
@@ -35,14 +35,14 @@ public class GenericDataSource<Type> implements IDataSource
 			_data.add(data[i]);
 	}
 	
+	@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
+	@Override
 	public Type getNext()
 	{
-		if (_data.size() <= 0)
-			throw new DimpleException("ACK!");
-		
-		return _data.pollFirst();
+		return _data.removeFirst();
 	}
 
+	@Override
 	public boolean hasNext()
 	{
 		return _data.size() > 0;

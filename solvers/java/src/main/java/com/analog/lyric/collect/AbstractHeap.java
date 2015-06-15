@@ -19,6 +19,7 @@ package com.analog.lyric.collect;
 import java.util.AbstractCollection;
 import java.util.Iterator;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 /**
@@ -56,6 +57,7 @@ public abstract class AbstractHeap<E>
 		@Override
 		public abstract AbstractEntry<E> clone();
 		
+		@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
 		@Override
 		public final E getElement()
 		{

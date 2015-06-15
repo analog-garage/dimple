@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.model.domains;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 public final class EnumDomain<E extends Enum<E>> extends TypedDiscreteDomain<E>
@@ -92,6 +93,7 @@ public final class EnumDomain<E extends Enum<E>> extends TypedDiscreteDomain<E>
 		return _enumClass;
 	}
 	
+	@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
 	@Override
 	public final E getElement(int i)
 	{

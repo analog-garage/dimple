@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.repeated;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import com.analog.lyric.dimple.model.variables.Variable;
 
 
@@ -39,11 +41,13 @@ public class VariableStreamSlice<V extends Variable> implements IVariableStreamS
 	{
 		return _stream;
 	}
+	@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
 	@Override
 	public V get(int i)
 	{
 		return getStream().get(_start+i);
 	}
+	@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
 	@Override
 	public V get(int i,boolean createVar)
 	{

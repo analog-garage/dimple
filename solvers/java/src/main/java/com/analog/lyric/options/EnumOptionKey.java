@@ -16,9 +16,10 @@
 
 package com.analog.lyric.options;
 
-import net.jcip.annotations.Immutable;
-
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
+
+import net.jcip.annotations.Immutable;
 
 
 /**
@@ -76,6 +77,7 @@ public class EnumOptionKey<E extends Enum<E>> extends OptionKey<E>
 		return _enumClass;
 	}
 
+	@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
 	@Override
 	public E defaultValue()
 	{
@@ -95,6 +97,7 @@ public class EnumOptionKey<E extends Enum<E>> extends OptionKey<E>
 	 * enum classes constants.
 	 * @throws ClassCastException if value is not a string or an instance of {@code E}.
 	 */
+	@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
 	@Override
 	public E convertToValue(@Nullable Object value)
 	{

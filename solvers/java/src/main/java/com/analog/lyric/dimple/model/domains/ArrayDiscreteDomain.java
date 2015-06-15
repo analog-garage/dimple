@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.Objects;
 
 import com.analog.lyric.collect.Supers;
+
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 public class ArrayDiscreteDomain<Element> extends TypedDiscreteDomain<Element>
@@ -147,6 +149,7 @@ public class ArrayDiscreteDomain<Element> extends TypedDiscreteDomain<Element>
 		return elementClass;
 	}
 	
+	@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
 	@Override
 	public Element getElement(int i)
 	{

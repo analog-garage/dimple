@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -52,6 +53,7 @@ public abstract class SolverBase<SolverGraph extends ISolverFactorGraph>
 		return superclass != null ? superclass.hashCode() : super.hashCode();
 	}
 	
+	@NonNull // FIXME - workaround for Eclipse JDT bug (467610?)
 	@Override
 	public SolverGraph createFactorGraph(FactorGraph graph)
 	{
