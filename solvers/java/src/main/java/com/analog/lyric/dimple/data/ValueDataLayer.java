@@ -19,9 +19,10 @@ package com.analog.lyric.dimple.data;
 import com.analog.lyric.dimple.data.FactorGraphData.Constructor;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 /**
- * A dense {@link DataLayer} that can only contain {@link Value} objects.
+ * A dense {@link DataLayerBase} that can only contain {@link Value} objects.
  * <p>
  * Can be used to represent samples, MAP assignments, conditioning, and for computing
  * likelihood of given assignment.
@@ -31,14 +32,19 @@ import com.analog.lyric.dimple.model.values.Value;
  */
 public class ValueDataLayer extends DataLayer<Value>
 {
-	public ValueDataLayer(FactorGraph graph, Constructor<Value> constructor)
+	public ValueDataLayer(FactorGraph graph, Constructor<Variable,Value> constructor)
 	{
 		super(graph, constructor);
 	}
 
+	public ValueDataLayer(FactorGraph graph, DataDensity density)
+	{
+		super(graph, density, Value.class);
+	}
+	
 	public ValueDataLayer(FactorGraph graph)
 	{
-		this(graph, DenseFactorGraphData.constructorForType(Value.class));
+		this(graph, DataDensity.DENSE);
 	}
 	
 	protected ValueDataLayer(ValueDataLayer other)
@@ -50,5 +56,15 @@ public class ValueDataLayer extends DataLayer<Value>
 	public ValueDataLayer clone()
 	{
 		return new ValueDataLayer(this);
+	}
+	
+	public static ValueDataLayer dense(FactorGraph graph)
+	{
+		return new ValueDataLayer(graph, DenseFactorGraphData.constructorForType(Variable.class, Value.class));
+	}
+
+	public static ValueDataLayer sparse(FactorGraph graph)
+	{
+		return new ValueDataLayer(graph, SparseFactorGraphData.constructorForType(Variable.class, Value.class));
 	}
 }

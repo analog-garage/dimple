@@ -25,8 +25,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import net.jcip.annotations.NotThreadSafe;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -34,43 +32,49 @@ import com.analog.lyric.collect.IEquals;
 import com.analog.lyric.collect.PrimitiveIterable;
 import com.analog.lyric.collect.PrimitiveIterator;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.IFactorGraphChild;
 import com.analog.lyric.dimple.model.core.Ids;
-import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.util.misc.Internal;
 import com.google.common.collect.UnmodifiableIterator;
 
+import net.jcip.annotations.NotThreadSafe;
+
 /**
- * Holds data for variables directly owned by a single {@link FactorGraph}.
+ * Holds data for children directly owned by a single {@link FactorGraph}.
  * <p>
  * Most users will not need to use this interface and will instead interact with the
- * containing {@link DataLayer} object.
+ * containing {@link DataLayerBase} object.
  * <p>
  * @since 0.08
  * @author Christopher Barber
  */
 @NotThreadSafe
-public abstract class FactorGraphData<D extends IDatum> extends AbstractMap<Variable, D> implements IEquals
+public abstract class FactorGraphData<K extends IFactorGraphChild, D extends IDatum>
+	extends AbstractMap<K, D> implements IEquals
 {
 	/*-------
 	 * State
 	 */
 	
+	protected final Class<K> _keyType;
 	protected final Class<D> _baseType;
-	protected final DataLayer<? super D> _layer;
+	protected final DataLayerBase<K, ? super D> _layer;
 	protected final FactorGraph _graph;
+	protected final int _keyTypeIndex;
 	
 	/*---------
 	 * Classes
 	 */
 	
-	public interface Constructor<D extends IDatum> // JAVA8: extends BiFunction<DataLayer,FactorGraph,FactorGraphData>
+	public interface Constructor<K extends IFactorGraphChild, D extends IDatum> // JAVA8: extends BiFunction<DataLayer,FactorGraph,FactorGraphData>
 	{
-		public FactorGraphData<D> apply(DataLayer<? super D> layer, FactorGraph graph);
+		public FactorGraphData<K,D> apply(DataLayerBase<K, ? super D> layer, FactorGraph graph);
 		
+		public Class<K> keyType();
 		public Class<D> baseType();
 	}
 	
-	private class VarIter extends UnmodifiableIterator<Variable>
+	private class KeyIter extends UnmodifiableIterator<K>
 	{
 		private final PrimitiveIterator.OfInt _indicesIter = getLocalIndices().iterator();
 		
@@ -81,14 +85,14 @@ public abstract class FactorGraphData<D extends IDatum> extends AbstractMap<Vari
 		}
 
 		@Override
-		public @Nullable Variable next()
+		public @Nullable K next()
 		{
 			int index = _indicesIter.nextInt();
-			return _graph.getVariableByLocalId(Ids.localIdFromParts(Ids.VARIABLE_TYPE, index));
+			return _keyType.cast(_graph.getChildByLocalId(Ids.localIdFromParts(_keyTypeIndex, index)));
 		}
 	}
 	
-	private class VarSet extends AbstractSet<Variable>
+	private class KeySet extends AbstractSet<K>
 	{
 		@Override
 		public void clear()
@@ -104,9 +108,9 @@ public abstract class FactorGraphData<D extends IDatum> extends AbstractMap<Vari
 		}
 		
 		@Override
-		public Iterator<Variable> iterator()
+		public Iterator<K> iterator()
 		{
-			return new VarIter();
+			return new KeyIter();
 		}
 		
 		@NonNullByDefault(false)
@@ -123,12 +127,7 @@ public abstract class FactorGraphData<D extends IDatum> extends AbstractMap<Vari
 		}
 	}
 	
-	/**
-	 * @param <E> must either be Map.Entry<Variable,D> or DataEntry<D>
-	 * @since 0.08
-	 * @author Christopher Barber
-	 */
-	private class EntrySetIter<E extends Map.Entry<Variable, D>> extends UnmodifiableIterator<E>
+	private class EntrySetIter<E extends Map.Entry<K, D>> extends UnmodifiableIterator<E>
 	{
 		private final PrimitiveIterator.OfInt _indicesIter = getLocalIndices().iterator();
 		
@@ -143,20 +142,20 @@ public abstract class FactorGraphData<D extends IDatum> extends AbstractMap<Vari
 		public E next()
 		{
 			int index = _indicesIter.nextInt();
-			Variable var = _graph.getVariableByLocalId(Ids.localIdFromParts(Ids.VARIABLE_TYPE, index));
-			return (E)new DataEntry<D>(requireNonNull(var), getByLocalIndex(index));
+			K var = (K)_graph.getChildByLocalId(Ids.localIdFromParts(_keyTypeIndex, index));
+			return (E)new DataEntry<K,D>(requireNonNull(var), getByLocalIndex(index));
 		}
 	}
 	
-	private class EntrySet<E extends Map.Entry<Variable,D>> extends AbstractSet<E>
+	private class EntrySet<E extends Map.Entry<K,D>> extends AbstractSet<E>
 	{
 		@NonNullByDefault(false)
 		@Override
 		public boolean add(E entry)
 		{
-			final Variable var = entry.getKey();
+			final K key = entry.getKey();
 			final D value = entry.getValue();
-			return !Objects.equals(value, FactorGraphData.this.put(var, value));
+			return !Objects.equals(value, FactorGraphData.this.put(key, value));
 		}
 		
 		@Override
@@ -213,19 +212,34 @@ public abstract class FactorGraphData<D extends IDatum> extends AbstractMap<Vari
 	 * Construction
 	 */
 	
-	protected FactorGraphData(DataLayer<? super D> layer, FactorGraph graph, Class<D> baseType)
+	protected FactorGraphData(DataLayerBase<K, ? super D> layer, FactorGraph graph, Class<K> keyType, Class<D> baseType)
 	{
 		layer.assertSharesRoot(graph);
 		_baseType = baseType;
 		_graph = graph;
 		_layer = layer;
+		_keyType = keyType;
+		_keyTypeIndex = layer._keyTypeIndex;
+	}
+	
+	public static <K extends IFactorGraphChild, D extends IDatum> Constructor<K,D> constructorForType(
+		DataDensity density, final Class<K> keyType, final Class<D> baseType)
+	{
+		switch (density)
+		{
+		case SPARSE:
+			return SparseFactorGraphData.constructorForType(keyType, baseType);
+		case DENSE:
+		default:
+			return DenseFactorGraphData.constructorForType(keyType, baseType);
+		}
 	}
 	
 	/**
 	 * @category internal
 	 */
 	@Internal
-	public abstract FactorGraphData<D> clone(DataLayer<? super D> newLayer);
+	public abstract FactorGraphData<K,D> clone(DataLayerBase<K, ? super D> newLayer);
 	
 	/*-----------------
 	 * IEquals methods
@@ -241,7 +255,7 @@ public abstract class FactorGraphData<D extends IDatum> extends AbstractMap<Vari
 		
 		if (obj instanceof FactorGraphData)
 		{
-			final FactorGraphData<?> other = (FactorGraphData<?>)obj;
+			final FactorGraphData<?,?> other = (FactorGraphData<?,?>)obj;
 			if (other._graph == _graph && size() == other.size())
 			{
 				for (int index : getLocalIndices())
@@ -272,21 +286,21 @@ public abstract class FactorGraphData<D extends IDatum> extends AbstractMap<Vari
 	@Override
 	public @Nullable D get(@Nullable Object obj)
 	{
-		return obj instanceof Variable ? get((Variable)obj) : null;
+		return _keyType.isInstance(obj) ? get(_keyType.cast(obj)) : null;
 	}
 
-	public @Nullable D get(Variable var)
+	public @Nullable D get(K key)
 	{
-		return getByLocalIndex(localIndex(var));
+		return getByLocalIndex(localIndex(key));
 	}
 
 	@NonNullByDefault(false)
 	@Override
 	public boolean containsKey(Object key)
 	{
-		if (key instanceof Variable)
+		if (key instanceof IFactorGraphChild)
 		{
-			return containsLocalIndex(localIndex((Variable)key));
+			return containsLocalIndex(localIndex((IFactorGraphChild)key));
 		}
 
 		return false;
@@ -302,33 +316,33 @@ public abstract class FactorGraphData<D extends IDatum> extends AbstractMap<Vari
 	 * @see #entries()
 	 */
 	@Override
-	public Set<Map.Entry<Variable, D>> entrySet()
+	public Set<Map.Entry<K, D>> entrySet()
 	{
-		return new EntrySet<Map.Entry<Variable,D>>();
+		return new EntrySet<Map.Entry<K,D>>();
 	}
 	
 	/**
-	 * Modifiable view of variable keys.
+	 * Modifiable view of keys.
 	 * <p>
-	 * Removing variables from the returned set will remove the corresponding entries from this object.
-	 * Adding variables is not supported.
+	 * Removing keys from the returned set will remove the corresponding entries from this object.
+	 * Adding keysis not supported.
 	 * <p>
 	 * The returned set's iterator does not support the {@linkplain Iterator#remove} operation.
 	 */
 	@Override
-	public Set<Variable> keySet()
+	public Set<K> keySet()
 	{
-		return new VarSet();
+		return new KeySet();
 	}
 	
 	@NonNullByDefault(false)
 	@Override
-	public @Nullable D put(Variable var, D datum)
+	public @Nullable D put(K key, D datum)
 	{
-		int index = localIndex(var);
+		int index = localIndex(key);
 		if (index < 0)
 		{
-			throw new IllegalArgumentException(String.format("%s does not belong to %s", var, _graph));
+			throw new IllegalArgumentException(String.format("%s does not belong to %s", key, _graph));
 		}
 		return setByLocalIndex(index, datum);
 	}
@@ -336,9 +350,9 @@ public abstract class FactorGraphData<D extends IDatum> extends AbstractMap<Vari
 	@Override
 	public @Nullable D remove(@Nullable Object key)
 	{
-		if (key instanceof Variable)
+		if (key instanceof IFactorGraphChild)
 		{
-			int index = localIndex((Variable)key);
+			int index = localIndex((IFactorGraphChild)key);
 			if (index >= 0)
 			{
 				return setByLocalIndex(index, null);
@@ -365,9 +379,9 @@ public abstract class FactorGraphData<D extends IDatum> extends AbstractMap<Vari
 	 * This is the same as {@link #entrySet()} but with a more precise return type.
 	 * @since 0.08
 	 */
-	public Set<? extends DataEntry<D>> entries()
+	public Set<? extends DataEntry<K,D>> entries()
 	{
-		return new EntrySet<DataEntry<D>>();
+		return new EntrySet<DataEntry<K,D>>();
 	}
 	
 	/**
@@ -379,24 +393,29 @@ public abstract class FactorGraphData<D extends IDatum> extends AbstractMap<Vari
 		return _graph;
 	}
 	
+	public Class<K> keyType()
+	{
+		return _keyType;
+	}
+	
 	/**
-	 * The {@link DataLayer} that contains this object.
+	 * The {@link DataLayerBase} that contains this object.
 	 * @since 0.08
 	 */
-	public final DataLayer<? super D> layer()
+	public final DataLayerBase<K, ? super D> layer()
 	{
 		return _layer;
 	}
 	
 	public @Nullable D getByLocalId(int id)
 	{
-		return Ids.typeIndexFromLocalId(id) == Ids.VARIABLE_TYPE ? getByLocalIndex(Ids.indexFromLocalId(id)) : null;
+		return Ids.typeIndexFromLocalId(id) == _keyTypeIndex ? getByLocalIndex(Ids.indexFromLocalId(id)) : null;
 	}
 	
 	public abstract @Nullable D getByLocalIndex(int index);
 	
 	/**
-	 * Return iterable over the local variable indices for which there are entries.
+	 * Return iterable over the local indices for which there are entries.
 	 * <p>
 	 * The indices may be returned in any order but must not repeat. If this object has
 	 * not been modified since the indices were returned then each index will produce a
@@ -405,26 +424,17 @@ public abstract class FactorGraphData<D extends IDatum> extends AbstractMap<Vari
 	 */
 	public abstract PrimitiveIterable.OfInt getLocalIndices();
 	
-	/**
-	 * True if this contains data for every owned variable in the graph.
-	 * @since 0.08
-	 */
-	public boolean isFull()
-	{
-		return size() == _graph.getOwnedVariableCount();
-	}
-	
 	public abstract @Nullable D setByLocalIndex(int index, @Nullable D datum);
 	
 	/*-----------------
 	 * Private methods
 	 */
 	
-	private int localIndex(Variable var)
+	private int localIndex(IFactorGraphChild child)
 	{
-		if (var.getParentGraph() == _graph)
+		if (Ids.typeIndexFromLocalId(child.getLocalId()) == _keyTypeIndex && child.getParentGraph() == _graph)
 		{
-			return Ids.indexFromLocalId(var.getLocalId());
+			return Ids.indexFromLocalId(child.getLocalId());
 		}
 		
 		return -1;

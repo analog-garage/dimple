@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.test.model.core;
 
 import static com.analog.lyric.dimple.model.core.Ids.*;
+import static com.analog.lyric.util.test.ExceptionTester.*;
 import static org.junit.Assert.*;
 
 import java.util.UUID;
@@ -24,7 +25,11 @@ import java.util.UUID;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
+import com.analog.lyric.dimple.model.core.IFactorGraphChild;
+import com.analog.lyric.dimple.model.core.Ids;
 import com.analog.lyric.dimple.model.core.Ids.Type;
+import com.analog.lyric.dimple.model.core.Node;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
 /**
@@ -85,16 +90,34 @@ public class TestNodeId extends DimpleTestBase
 		assertFalse(isUUIDString("0g000000-0000-D000-8000-000000000000"));
 		assertFalse(isUUIDString("00G00000-0000-D000-8000-000000000000"));
 		assertFalse(isUUIDString("000@0000-0000-D000-8000-000000000000"));
+
+		// Test exceptions
+		expectThrow(IllegalArgumentException.class, Ids.Type.class, "forInstanceClass", Node.class);
+		abstract class BogusChildClass implements IFactorGraphChild {}
+		expectThrow(IllegalArgumentException.class, Ids.Type.class, "forInstanceClass", BogusChildClass.class);
 	}
 	
 	private void testForIndex(int index)
 	{
-		for (int type = TYPE_MIN; type <= TYPE_MAX; ++type)
+		for (int typeIndex = TYPE_MIN; typeIndex <= TYPE_MAX; ++typeIndex)
 		{
-			int localId = localIdFromParts(type, index);
+			Ids.Type type = Ids.Type.valueOf(typeIndex);
+			assertEquals(typeIndex, type.ordinal());
+			assertEquals(typeIndex, type.typeIndex());
+			Class<? extends IFactorGraphChild> instanceClass = type.instanceClass();
+			if (type == Ids.Type.BOUNDARY_VARIABLE)
+			{
+				assertSame(Variable.class, instanceClass);
+			}
+			else
+			{
+				assertEquals(type, Ids.Type.forInstanceClass(instanceClass));
+			}
+			
+			int localId = localIdFromParts(typeIndex, index);
 			assertEquals(index, indexFromLocalId(localId));
-			assertEquals(type, typeIndexFromLocalId(localId));
-			assertEquals(Type.valueOf(type), typeFromLocalId(localId));
+			assertEquals(typeIndex, typeIndexFromLocalId(localId));
+			assertEquals(Type.valueOf(typeIndex), typeFromLocalId(localId));
 			
 			String name = defaultNameForLocalId(localId);
 			assertFalse(isUUIDString(name));
@@ -102,7 +125,7 @@ public class TestNodeId extends DimpleTestBase
 			
 			int graphId = GRAPH_ID_MIN + testRand.nextInt(1 + GRAPH_ID_MAX - GRAPH_ID_MIN);
 			long globalId = globalIdFromParts(graphId, localId);
-			long globalId2 = globalIdFromParts(graphId, type, localId);
+			long globalId2 = globalIdFromParts(graphId, typeIndex, localId);
 			assertEquals(globalId, globalId2);
 			assertTrue(GLOBAL_ID_MIN <= globalId);
 			assertTrue(GLOBAL_ID_MAX >= globalId);

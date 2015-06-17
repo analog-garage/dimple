@@ -25,9 +25,11 @@ import org.junit.Test;
 
 import com.analog.lyric.dimple.data.DataEntry;
 import com.analog.lyric.dimple.data.IDatum;
+import com.analog.lyric.dimple.model.core.IFactorGraphChild;
 import com.analog.lyric.dimple.model.values.RealValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Real;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
 /**
@@ -42,30 +44,27 @@ public class TestDataEntry extends DimpleTestBase
 	{
 		Real a = new Real();
 		
-		DataEntry<Value> entry = new DataEntry<>(a, null);
+		DataEntry<Variable,Value> entry = new DataEntry<Variable,Value>(a, null);
 		assertInvariants(entry);
-		assertSame(a, entry.variable());
+		assertSame(a, entry.getKey());
 		assertNull(entry.getValue());
 		
 		Value val = RealValue.create(2);
-		DataEntry<? extends IDatum> entry2 = new DataEntry<>(a, val);
+		DataEntry<Variable, ? extends IDatum> entry2 = new DataEntry<Variable,Value>(a, val);
 		assertInvariants(entry2);
 		assertNotEquals(entry, entry2);
 	}
 	
-	private <D extends IDatum> void assertInvariants(DataEntry<D> entry)
+	private <K extends IFactorGraphChild, D extends IDatum> void assertInvariants(DataEntry<K,D> entry)
 	{
-		assertSame(entry.variable(), entry.getKey());
-		
 		assertTrue(entry.equals(entry));
 		assertFalse(entry.equals("foo"));
 		
-		assertTrue(entry.equals(new AbstractMap.SimpleEntry<>(entry.variable(), entry.getValue())));
+		assertTrue(entry.equals(new AbstractMap.SimpleEntry<>(entry.getKey(), entry.getValue())));
 		assertFalse(entry.equals(new AbstractMap.SimpleEntry<>(new Real(), entry.getValue())));
-		assertFalse(entry.equals(new AbstractMap.SimpleEntry<>(entry.variable(), RealValue.create(Double.NaN))));
+		assertFalse(entry.equals(new AbstractMap.SimpleEntry<>(entry.getKey(), RealValue.create(Double.NaN))));
 		
-		assertEquals(entry.hashCode(), new AbstractMap.SimpleEntry<>(entry.variable(), entry.getValue()).hashCode());
-		assertNotEquals(entry.hashCode(), new DataEntry<D>(new Real(), entry.getValue()));
+		assertEquals(entry.hashCode(), new AbstractMap.SimpleEntry<>(entry.getKey(), entry.getValue()).hashCode());
 		
 		expectThrow(UnsupportedOperationException.class, entry, "setValue", RealValue.create());
 	}

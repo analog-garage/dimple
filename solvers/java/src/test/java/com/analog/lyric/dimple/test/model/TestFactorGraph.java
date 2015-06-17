@@ -102,8 +102,8 @@ public class TestFactorGraph extends DimpleTestBase
 		assertFactorGraphInvariants(fg);
 		
 		// Test getNode
-		assertNull(fg.getNode(null));
-		expectThrow(IllegalArgumentException.class, fg, "getNode", fg.getClass());
+		assertNull(fg.getChild(null));
+		expectThrow(IllegalArgumentException.class, fg, "getChild", fg.getClass());
 	}
 	
 	public static void assertFactorGraphInvariants(FactorGraph fg)
@@ -122,12 +122,12 @@ public class TestFactorGraph extends DimpleTestBase
 		for (Variable var : vars)
 		{
 			assertSame(var, fg.getVariableByUUID(var.getUUID()));
-			assertSame(var, fg.getNode(var));
-			assertSame(var, fg.getNode(var.getGlobalId()));
-			assertSame(var, fg.getNode(var.getGraphTreeId()));
-			assertSame(var, fg.getNode(var.getUUID()));
-			assertSame(var, fg.getNode(var.getQualifiedName()));
-			assertSame(var, var.requireParentGraph().getNode(var.getLocalId()));
+			assertSame(var, fg.getChild(var));
+			assertSame(var, fg.getChild(var.getGlobalId()));
+			assertSame(var, fg.getChild(var.getGraphTreeId()));
+			assertSame(var, fg.getChild(var.getUUID()));
+			assertSame(var, fg.getChild(var.getQualifiedName()));
+			assertSame(var, var.requireParentGraph().getChild(var.getLocalId()));
 		}
 	}
 }

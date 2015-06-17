@@ -17,17 +17,18 @@
 package com.analog.lyric.dimple.data;
 
 import static java.util.Objects.*;
-import net.jcip.annotations.NotThreadSafe;
 
 import org.eclipse.jdt.annotation.Nullable;
-
-import cern.colt.list.IntArrayList;
-import cern.colt.map.OpenIntObjectHashMap;
 
 import com.analog.lyric.collect.IntArrayIterable;
 import com.analog.lyric.collect.PrimitiveIterable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.IFactorGraphChild;
 import com.analog.lyric.util.misc.Internal;
+
+import cern.colt.list.IntArrayList;
+import cern.colt.map.OpenIntObjectHashMap;
+import net.jcip.annotations.NotThreadSafe;
 
 /**
  * 
@@ -35,7 +36,7 @@ import com.analog.lyric.util.misc.Internal;
  * @author Christopher Barber
  */
 @NotThreadSafe
-public class SparseFactorGraphData<D extends IDatum> extends FactorGraphData<D>
+public class SparseFactorGraphData<K extends IFactorGraphChild, D extends IDatum> extends FactorGraphData<K,D>
 {
 	/*-------
 	 * State
@@ -47,15 +48,15 @@ public class SparseFactorGraphData<D extends IDatum> extends FactorGraphData<D>
 	 * Construction
 	 */
 	
-	public SparseFactorGraphData(DataLayer<? super D> layer, FactorGraph graph, Class<D> baseType)
+	public SparseFactorGraphData(DataLayerBase<K, ? super D> layer, FactorGraph graph, Class<K> keyType, Class<D> baseType)
 	{
-		super(layer, graph, baseType);
+		super(layer, graph, keyType, baseType);
 		_data = new OpenIntObjectHashMap();
 	}
 	
-	protected SparseFactorGraphData(DataLayer<? super D> layer, FactorGraphData<D> other)
+	protected SparseFactorGraphData(DataLayerBase<K, ? super D> layer, FactorGraphData<K,D> other)
 	{
-		this(layer, other._graph, other._baseType);
+		this(layer, other._graph, other._keyType, other._baseType);
 		for (int i : other.getLocalIndices())
 		{
 			setByLocalIndex(i, _baseType.cast(requireNonNull(other.getByLocalIndex(i)).clone()));
@@ -67,18 +68,25 @@ public class SparseFactorGraphData<D extends IDatum> extends FactorGraphData<D>
 	 */
 	@Internal
 	@Override
-	public SparseFactorGraphData<D> clone(DataLayer<? super D> newLayer)
+	public SparseFactorGraphData<K,D> clone(DataLayerBase<K, ? super D> newLayer)
 	{
 		return new SparseFactorGraphData<>(newLayer, this);
 	}
 	
-	public static <D extends IDatum> Constructor<D> constructorForType(final Class<D> baseType)
+	public static <K extends IFactorGraphChild, D extends IDatum> Constructor<K,D> constructorForType(
+		final Class<K> keyType, final Class<D> baseType)
 	{
-		return new Constructor<D> () {
+		return new Constructor<K,D> () {
 			@Override
-			public FactorGraphData<D> apply(DataLayer<? super D> layer, FactorGraph graph)
+			public FactorGraphData<K,D> apply(DataLayerBase<K, ? super D> layer, FactorGraph graph)
 			{
-				return new SparseFactorGraphData<>(layer, graph, baseType);
+				return new SparseFactorGraphData<>(layer, graph, keyType, baseType);
+			}
+			
+			@Override
+			public Class<K> keyType()
+			{
+				return keyType;
 			}
 			
 			@Override

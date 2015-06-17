@@ -19,11 +19,11 @@ package com.analog.lyric.dimple.data;
 import java.util.Map;
 import java.util.Objects;
 
-import net.jcip.annotations.Immutable;
-
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.core.IFactorGraphChild;
+
+import net.jcip.annotations.Immutable;
 
 /**
  * 
@@ -31,22 +31,22 @@ import com.analog.lyric.dimple.model.variables.Variable;
  * @author Christopher Barber
  */
 @Immutable
-public class DataEntry<T extends IDatum> implements Map.Entry<Variable, T>
+public class DataEntry<K extends IFactorGraphChild, T extends IDatum> implements Map.Entry<K, T>
 {
 	/*-------
 	 * State
 	 */
 	
-	private final Variable _var;
+	private final K _key;
 	private final @Nullable T _value;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	public DataEntry(Variable var, @Nullable T value)
+	public DataEntry(K key, @Nullable T value)
 	{
-		_var = var;
+		_key = key;
 		_value = value;
 	}
 	
@@ -65,7 +65,7 @@ public class DataEntry<T extends IDatum> implements Map.Entry<Variable, T>
 		if (obj instanceof Map.Entry)
 		{
 			final Map.Entry<?, ?> entry = (Map.Entry<?,?>)obj;
-			return _var == entry.getKey() && Objects.equals(_value, entry.getValue());
+			return _key == entry.getKey() && Objects.equals(_value, entry.getValue());
 		}
 		
 		return false;
@@ -74,7 +74,7 @@ public class DataEntry<T extends IDatum> implements Map.Entry<Variable, T>
 	@Override
 	public int hashCode()
 	{
-		return _var.hashCode() ^ Objects.hashCode(_value);
+		return _key.hashCode() ^ Objects.hashCode(_value);
 	}
 	
 	/*---------------
@@ -82,9 +82,9 @@ public class DataEntry<T extends IDatum> implements Map.Entry<Variable, T>
 	 */
 	
 	@Override
-	public Variable getKey()
+	public K getKey()
 	{
-		return _var;
+		return _key;
 	}
 
 	@Override
@@ -97,14 +97,5 @@ public class DataEntry<T extends IDatum> implements Map.Entry<Variable, T>
 	public T setValue(@Nullable T value) throws UnsupportedOperationException
 	{
 		throw new UnsupportedOperationException("setValue");
-	}
-	
-	/*-------------------
-	 * DataEntry methods
-	 */
-	
-	public final Variable variable()
-	{
-		return getKey();
 	}
 }

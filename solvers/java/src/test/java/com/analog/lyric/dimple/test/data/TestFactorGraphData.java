@@ -30,13 +30,15 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.analog.lyric.collect.PrimitiveIterator;
+import com.analog.lyric.dimple.data.DataDensity;
 import com.analog.lyric.dimple.data.DataEntry;
-import com.analog.lyric.dimple.data.DataLayer;
+import com.analog.lyric.dimple.data.DataLayerBase;
 import com.analog.lyric.dimple.data.DenseFactorGraphData;
 import com.analog.lyric.dimple.data.FactorGraphData;
 import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.data.SparseFactorGraphData;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.IFactorGraphChild;
 import com.analog.lyric.dimple.model.core.Ids;
 import com.analog.lyric.dimple.model.sugar.ModelSyntacticSugar.CurrentModel;
 import com.analog.lyric.dimple.model.values.RealValue;
@@ -57,11 +59,11 @@ public class TestFactorGraphData extends DimpleTestBase
 	@Test
 	public void test()
 	{
-		test(DenseFactorGraphData.constructorForType(IDatum.class));
-		test(SparseFactorGraphData.constructorForType(IDatum.class));
+		test(DenseFactorGraphData.constructorForType(Variable.class, IDatum.class));
+		test(SparseFactorGraphData.constructorForType(Variable.class, IDatum.class));
 	}
 	
-	public <D extends IDatum> void test(FactorGraphData.Constructor<D> dataConstructor)
+	public <D extends IDatum> void test(FactorGraphData.Constructor<Variable,D> dataConstructor)
 	{
 		Class<D> type = dataConstructor.baseType();
 		
@@ -70,9 +72,9 @@ public class TestFactorGraphData extends DimpleTestBase
 		{
 			Real[] r = reals("r", 100);
 			
-			DataLayer<D> layer = new DataLayer<D>(root, dataConstructor);
+			DataLayerBase<Variable,D> layer = new DataLayerBase<>(root, dataConstructor);
 			
-			FactorGraphData<D> data = dataConstructor.apply(layer, root);
+			FactorGraphData<Variable,D> data = dataConstructor.apply(layer, root);
 			assertInvariants(data);
 			assertEquals(0, data.size());
 			
@@ -135,10 +137,13 @@ public class TestFactorGraphData extends DimpleTestBase
 	}
 	
 	
-	public static <D extends IDatum> void assertInvariants(FactorGraphData<D> data)
+	public static <K extends IFactorGraphChild, D extends IDatum> void assertInvariants(FactorGraphData<K,D> data)
 	{
 		final FactorGraph graph = data.graph();
 		assertTrue(data.layer().sharesRoot(graph));
+		
+		final Class<K> keyType = data.keyType();
+		assertTrue(IFactorGraphChild.class.isAssignableFrom(keyType));
 		
 		final Class<D> baseType = data.baseType();
 		assertTrue(IDatum.class.isAssignableFrom(baseType));
@@ -148,7 +153,7 @@ public class TestFactorGraphData extends DimpleTestBase
 		assertFalse(data.objectEquals("bogus"));
 		
 		FactorGraph otherGraph = new FactorGraph();
-		DataLayer<IDatum> otherLayer = DataLayer.createSparse(otherGraph);
+		DataLayerBase<K,IDatum> otherLayer = new DataLayerBase<>(otherGraph, DataDensity.SPARSE, keyType, IDatum.class);
 		assertFalse(data.objectEquals(otherLayer.createDataForGraph(otherGraph)));
 			
 		assertFalse(data.containsKey("not a variable"));
@@ -159,55 +164,55 @@ public class TestFactorGraphData extends DimpleTestBase
 		assertNull(data.remove(new Real()));
 		
 		final int size = data.size();
-		final Set<Variable> vars = data.keySet();
-		final Set<Map.Entry<Variable,D>> entries = data.entrySet();
-		final Collection<? extends DataEntry<D>> entries2 = data.entries();
+		final Set<K> keys = data.keySet();
+		final Set<Map.Entry<K,D>> entries = data.entrySet();
+		final Collection<? extends DataEntry<K,D>> entries2 = data.entries();
 		final Collection<D> values = data.values();
 		
-		assertEquals(size, vars.size());
+		assertEquals(size, keys.size());
 		assertEquals(size, entries.size());
 		assertEquals(size, entries2.size());
 		assertEquals(size, values.size());
 		assertEquals(size == 0, data.isEmpty());
 		
-		assertFalse(vars.contains("not a variable"));
-		assertFalse(vars.remove("not a variable"));
+		assertFalse(keys.contains("not a variable"));
+		assertFalse(keys.remove("not a variable"));
 		assertFalse(entries.contains("not an entry"));
 		assertFalse(entries.remove("not an entry"));
 
 		PrimitiveIterator.OfInt indexIter = data.getLocalIndices().iterator();
-		Iterator<Variable> varIter = vars.iterator();
+		Iterator<K> keyIter = keys.iterator();
 		Iterator<D> valueIter = values.iterator();
-		Iterator<Map.Entry<Variable,D>> entryIter = entries.iterator();
-		Iterator<? extends DataEntry<D>> entryIter2 = entries2.iterator();
+		Iterator<Map.Entry<K,D>> entryIter = entries.iterator();
+		Iterator<? extends DataEntry<K,D>> entryIter2 = entries2.iterator();
 		
 		int count = 0;
 		while (entryIter.hasNext())
 		{
 			++count;
-			assertTrue(varIter.hasNext());
+			assertTrue(keyIter.hasNext());
 			assertTrue(valueIter.hasNext());
 			assertTrue(entryIter2.hasNext());
 			
-			Map.Entry<Variable,D> entry = entryIter.next();
-			DataEntry<D> entry2 = entryIter2.next();
+			Map.Entry<K,D> entry = entryIter.next();
+			DataEntry<K,D> entry2 = entryIter2.next();
 			assertEquals(entry2, entry);
-			Variable var = entry.getKey();
+			K key = entry.getKey();
 			D datum = entry.getValue();
-			final int localId = var.getLocalId();
+			final int localId = key.getLocalId();
 			final int localIndex = Ids.indexFromLocalId(localId);
 			
 			assertEquals(localIndex, indexIter.nextInt());
 			assertNotNull(entry);
-			assertSame(var, varIter.next());
+			assertSame(key, keyIter.next());
 			assertSame(datum, valueIter.next());
 			
-			assertTrue(data.containsKey(var));
-			assertTrue(vars.contains(var));
+			assertTrue(data.containsKey(key));
+			assertTrue(keys.contains(key));
 			assertTrue(entries.contains(entry));
-			assertTrue(entries.contains(new AbstractMap.SimpleEntry<>(var,datum)));
-			assertFalse(entries.contains(new AbstractMap.SimpleEntry<>(var,RealValue.create(Double.NaN))));
-			assertFalse(entries.remove(new AbstractMap.SimpleEntry<>(var,RealValue.create(Double.NaN))));
+			assertTrue(entries.contains(new AbstractMap.SimpleEntry<>(key,datum)));
+			assertFalse(entries.contains(new AbstractMap.SimpleEntry<>(key,RealValue.create(Double.NaN))));
+			assertFalse(entries.remove(new AbstractMap.SimpleEntry<>(key,RealValue.create(Double.NaN))));
 			assertFalse(entries.add(entry));
 			assertTrue(values.contains(datum));
 			
@@ -216,16 +221,16 @@ public class TestFactorGraphData extends DimpleTestBase
 			assertSame(datum, data.getByLocalId(localId));
 			assertNull(data.getByLocalId(Ids.localIdFromParts(Ids.BOUNDARY_VARIABLE_TYPE, localIndex)));
 			
-			assertSame(datum, data.put(var, datum));
+			assertSame(datum, data.put(key, datum));
 			assertSame(datum, data.setByLocalIndex(localIndex, datum));
 		}
 		
 		assertEquals(size, count);
 		
-		DataLayer<?> oldLayer = data.layer();
-		DataLayer<D> newLayer =
-			new DataLayer<>(oldLayer.rootGraph(), DenseFactorGraphData.constructorForType(baseType));
-		FactorGraphData<D> copy = data.clone(newLayer);
+		DataLayerBase<?,?> oldLayer = data.layer();
+		DataLayerBase<K,D> newLayer =
+			new DataLayerBase<>(oldLayer.rootGraph(), DenseFactorGraphData.constructorForType(keyType, baseType));
+		FactorGraphData<K,D> copy = data.clone(newLayer);
 		assertNotSame(copy, data);
 		assertTrue(data.objectEquals(copy));
 		
@@ -237,15 +242,18 @@ public class TestFactorGraphData extends DimpleTestBase
 		{
 			assertNotEquals(copy, data);
 			
-			Set<? extends DataEntry<D>> copiedEntries = copy.entries();
-			DataEntry<D> firstEntry = Iterables.getFirst(copiedEntries, null);
+			Set<? extends DataEntry<K,D>> copiedEntries = copy.entries();
+			DataEntry<K,D> firstEntry = Iterables.getFirst(copiedEntries, null);
 			assertTrue(copiedEntries.remove(firstEntry));
 			assertFalse(copiedEntries.remove(firstEntry));
 			
 			assertFalse(data.objectEquals(copy));
 			
-			copy.put(firstEntry.variable(), baseType.cast(RealValue.create(4444)));
-			assertFalse(data.objectEquals(copy));
+			if (baseType.isAssignableFrom(RealValue.class))
+			{
+				copy.put(firstEntry.getKey(), baseType.cast(RealValue.create(4444)));
+				assertFalse(data.objectEquals(copy));
+			}
 		}
 	}
 }

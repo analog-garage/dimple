@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.data;
 
 import com.analog.lyric.dimple.data.FactorGraphData.Constructor;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.variables.Variable;
 
 /**
  * 
@@ -26,14 +27,19 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
  */
 public class GenericDataLayer extends DataLayer<IDatum>
 {
-	public GenericDataLayer(FactorGraph graph, Constructor<IDatum> constructor)
+	public GenericDataLayer(FactorGraph graph, Constructor<Variable, IDatum> constructor)
 	{
 		super(graph, constructor);
 	}
 	
+	public GenericDataLayer(FactorGraph graph, DataDensity density)
+	{
+		super(graph, density, IDatum.class);
+	}
+	
 	public GenericDataLayer(FactorGraph graph)
 	{
-		this(graph, SparseFactorGraphData.constructorForType(IDatum.class));
+		this(graph, SparseFactorGraphData.constructorForType(Variable.class, IDatum.class));
 	}
 	
 	protected GenericDataLayer(GenericDataLayer other)
@@ -45,5 +51,15 @@ public class GenericDataLayer extends DataLayer<IDatum>
 	public GenericDataLayer clone()
 	{
 		return new GenericDataLayer(this);
+	}
+	
+	public static GenericDataLayer dense(FactorGraph graph)
+	{
+		return new GenericDataLayer(graph, DenseFactorGraphData.constructorForType(Variable.class, IDatum.class));
+	}
+
+	public static GenericDataLayer sparse(FactorGraph graph)
+	{
+		return new GenericDataLayer(graph, SparseFactorGraphData.constructorForType(Variable.class, IDatum.class));
 	}
 }

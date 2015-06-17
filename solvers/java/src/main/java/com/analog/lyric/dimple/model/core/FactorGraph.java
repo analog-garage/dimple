@@ -35,13 +35,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 
-import net.jcip.annotations.Immutable;
-import net.jcip.annotations.NotThreadSafe;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-
-import cern.colt.list.IntArrayList;
 
 import com.analog.lyric.collect.ExtendedArrayList;
 import com.analog.lyric.collect.IndexedArrayList;
@@ -95,6 +90,10 @@ import com.analog.lyric.util.test.Helpers;
 import com.google.common.base.Predicate;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Iterators;
+
+import cern.colt.list.IntArrayList;
+import net.jcip.annotations.Immutable;
+import net.jcip.annotations.NotThreadSafe;
 
 
 @NotThreadSafe
@@ -2940,12 +2939,25 @@ public class FactorGraph extends FactorBase
 		return _boundaryVariables.get(i);
 	}
 
+	/**
+	 * Returns child from graphs and subgraphs with given global id.
+	 * @param globalId is the child's {@linkplain IFactorGraphChild#getGlobalId() global id}.
+	 * @return child or null if no such child belongs to this graph or any of its direct or indirect
+	 * subgraphs.
+	 * @since 0.08
+	 */
 	public @Nullable IFactorGraphChild getChildByGlobalId(long globalId)
 	{
 		final FactorGraph fg = getSubgraphForGlobalId(globalId);
 		return fg != null ? fg.getChildByLocalId(Ids.localIdFromGlobalId(globalId)) : null;
 	}
 	
+	/**
+	 * Returns child from same graph tree with given graph tree id.
+	 * @param graphTreeId is the child's {@linkplain IFactorGraphChild#getGraphTreeId() graph tree id}.
+	 * @return child or null if no such child belongs to this graph's graph tree.
+	 * @since 0.08
+	 */
 	public @Nullable IFactorGraphChild getChildByGraphTreeId(long graphTreeId)
 	{
 		final FactorGraph fg = getGraphByTreeIndex(Ids.graphTreeIndexFromGraphTreeId(graphTreeId));
@@ -3390,20 +3402,43 @@ public class FactorGraph extends FactorBase
 		}
 	}
 
-	@SuppressWarnings("null")
 	public @Nullable Node getObjectByName(@Nullable String name)
 	{
-		Node obj = null;
-		
-		if (name != null && !name.isEmpty())
+		IFactorGraphChild child = getChildByName(name);
+		if (child instanceof Node)
 		{
+			return (Node)child;
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Looks up child object by string representation of its name or identifier.
+	 * @param nameOrNull may be in one of the folling formats:
+	 * <ul>
+	 * <li>string representation of child's {@linkplain IFactorGraphChild#getUUID UUID}
+	 * <li>dot-qualified name where components are either local names or {@linkplain Ids#defaultNameForLocalId(int)
+	 * string version of local identifier}.
+	 * </ul>
+	 * @return child or null if not found.
+	 * @since 0.08
+	 */
+	public @Nullable IFactorGraphChild getChildByName(final @Nullable String nameOrNull)
+	{
+		IFactorGraphChild obj = null;
+		
+		if (nameOrNull != null && !nameOrNull.isEmpty())
+		{
+			String name = nameOrNull;
+			
 			if (Ids.isUUIDString(name))
 			{
-				obj = getObjectByUUID(UUID.fromString(name));
+				obj = getChildByUUID(UUID.fromString(name));
 			}
 			else
 			{
-				String remainder = null;
+				String remainder = "";
 		
 				int dotOffset = name.indexOf('.');
 				if (dotOffset >= 0)
@@ -3415,7 +3450,7 @@ public class FactorGraph extends FactorBase
 					if (name.equals(_name) || _graphId == Ids.graphIdFromDefaultName(name))
 					{
 						name = remainder;
-						remainder = null;
+						remainder = "";
 
 						dotOffset = name.indexOf('.');
 						if (dotOffset >= 0)
@@ -3429,13 +3464,13 @@ public class FactorGraph extends FactorBase
 				obj = _name2object.get(name);
 				if (obj == null)
 				{
-					obj = getNodeByLocalId(Ids.localIdFromDefaultName(name));
+					obj = getChildByLocalId(Ids.localIdFromDefaultName(name));
 				}
 		
-				if (remainder != null && obj instanceof FactorGraph)
+				if (!remainder.isEmpty() && obj instanceof FactorGraph)
 				{
 					FactorGraph subgraph = (FactorGraph)obj;
-					obj = subgraph.getObjectByName(remainder);
+					obj = subgraph.getChildByName(remainder);
 				}
 			}
 		}
@@ -3449,9 +3484,19 @@ public class FactorGraph extends FactorBase
 	}
 	
 	/**
-	 * Looks up node in graph tree using given key.
+	 * Looks up child in this graph by its UUID.
+	 * @return null if no such child is a member of this graph or its direct or indirect subgraphs.
+	 * @since 0.08
+	 */
+	public @Nullable IFactorGraphChild getChildByUUID(UUID uuid)
+	{
+		return getChildByGlobalId(Ids.globalIdFromUUID(uuid));
+	}
+	
+	/**
+	 * Looks up child in graph tree using given key.
 	 * <p>
-	 * Supports flexible lookup of nodes by a variety of different key types.
+	 * Supports flexible lookup of children by a variety of different key types.
 	 * <p>
 	 * @param key must be one of the following:
 	 * <p>
@@ -3473,11 +3518,11 @@ public class FactorGraph extends FactorBase
 	 * @throws IllegalArgumentException if {@code key} is not one of the above types.
 	 * @since 0.08
 	 */
-	public @Nullable Node getNode(@Nullable Object key)
+	public @Nullable IFactorGraphChild getChild(@Nullable Object key)
 	{
-		if (key == null || key instanceof Node)
+		if (key == null || key instanceof IFactorGraphChild)
 		{
-			return (Node)key;
+			return (IFactorGraphChild)key;
 		}
 
 		if (key instanceof Long)
@@ -3485,28 +3530,28 @@ public class FactorGraph extends FactorBase
 			final long id = (Long)key;
 			if (Ids.isGlobalId(id))
 			{
-				return getNodeByGlobalId(id);
+				return getChildByGlobalId(id);
 			}
 			else
 			{
-				return getNodeByGraphTreeId(id);
+				return getChildByGraphTreeId(id);
 			}
 		}
 		if (key instanceof String)
 		{
-			return getObjectByName((String)key);
+			return getChildByName((String)key);
 		}
 		if (key instanceof UUID)
 		{
-			return getObjectByUUID((UUID)key);
+			return getChildByUUID((UUID)key);
 		}
 		if (key instanceof Integer)
 		{
-			return getNodeByLocalId((Integer)key);
+			return getChildByLocalId((Integer)key);
 		}
 		
 		throw new IllegalArgumentException(String.format(
-			"Key %s is not one of Node, String, UUID, Long, or Integer", key));
+			"Key %s is not one of IFactorGraphChild, String, UUID, Long, or Integer", key));
 	}
 	
 	/**

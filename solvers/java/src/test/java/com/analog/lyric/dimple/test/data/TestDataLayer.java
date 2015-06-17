@@ -32,15 +32,19 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import com.analog.lyric.dimple.data.DataLayer;
+import com.analog.lyric.dimple.data.DataDensity;
+import com.analog.lyric.dimple.data.DataLayerBase;
 import com.analog.lyric.dimple.data.DenseFactorGraphData;
 import com.analog.lyric.dimple.data.FactorGraphData;
 import com.analog.lyric.dimple.data.GenericDataLayer;
 import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.data.SparseFactorGraphData;
 import com.analog.lyric.dimple.data.ValueDataLayer;
+import com.analog.lyric.dimple.data.DataLayer;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.IFactorGraphChild;
 import com.analog.lyric.dimple.model.core.Ids;
+import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.sugar.ModelSyntacticSugar.CurrentModel;
 import com.analog.lyric.dimple.model.values.RealValue;
 import com.analog.lyric.dimple.model.values.Value;
@@ -50,7 +54,7 @@ import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.google.common.collect.Iterables;
 
 /**
- * Unit tests for {@link DataLayer}.
+ * Unit tests for {@link DataLayerBase}.
  * <p>
  * @since 0.08
  * @author Christopher Barber
@@ -86,37 +90,37 @@ public class TestDataLayer extends DimpleTestBase
 			}
 		}
 		
-		test(root, DenseFactorGraphData.constructorForType(IDatum.class));
-		test(root, DenseFactorGraphData.constructorForType(Value.class));
-		test(root, SparseFactorGraphData.constructorForType(IDatum.class));
+		test(root, DenseFactorGraphData.constructorForType(Variable.class, IDatum.class));
+		test(root, DenseFactorGraphData.constructorForType(Variable.class, Value.class));
+		test(root, SparseFactorGraphData.constructorForType(Variable.class, IDatum.class));
 		
-		ValueDataLayer sampleLayer = new ValueDataLayer(root);
+		ValueDataLayer sampleLayer = ValueDataLayer.dense(root);
 		assertSame(Value.class, sampleLayer.baseType());
 		test(sampleLayer);
 
-		ValueDataLayer sampleLayer2 = DataLayer.createDenseValue(nested3);
+		ValueDataLayer sampleLayer2 = new ValueDataLayer(nested3);
 		assertSame(root, sampleLayer2.rootGraph());
 		
-		DataLayer<RealValue> sampleLayer3 = DataLayer.createDense(root, RealValue.class);
+		DataLayer<RealValue> sampleLayer3 = new DataLayer<>(root, DataDensity.DENSE, RealValue.class);
 		assertSame(RealValue.class, sampleLayer3.baseType());
 		assertSame(DenseFactorGraphData.class, sampleLayer3.createDataForGraph(root).getClass());
 		test(sampleLayer3);
 		
-		DataLayer<?> sparse = DataLayer.createSparse(root, Value.class);
+		DataLayerBase<?,?> sparse = new DataLayerBase<>(root, DataDensity.SPARSE, Variable.class, Value.class);
 		assertSame(Value.class, sparse.baseType());
 		assertSame(SparseFactorGraphData.class, sparse.createDataForGraph(root).getClass());
 
 		test(new GenericDataLayer(root));
 	}
 	
-	<D extends IDatum> void test(FactorGraph graph, FactorGraphData.Constructor<D> constructor)
+	<D extends IDatum> void test(FactorGraph graph, FactorGraphData.Constructor<Variable,D> constructor)
 	{
-		DataLayer<D> layer = new DataLayer<D>(graph, constructor);
+		DataLayerBase<Variable,D> layer = new DataLayer<D>(graph, constructor);
 		assertSame(constructor, layer.dataConstructor());
 		test(layer);
 	}
 	
-	<D extends IDatum> void test(DataLayer<D> layer)
+	<D extends IDatum> void test(DataLayerBase<Variable, D> layer)
 	{
 		FactorGraph root = layer.rootGraph();
 		
@@ -217,7 +221,7 @@ public class TestDataLayer extends DimpleTestBase
 		}
 		assertEquals(copy, layer);
 		
-		FactorGraphData<D> oldData = requireNonNull(layer.getDataForGraph(root));
+		FactorGraphData<Variable,D> oldData = requireNonNull(layer.getDataForGraph(root));
 		assertSame(oldData, layer.removeDataForGraph(root));
 		assertNull(layer.removeDataForGraph(root));
 		
@@ -238,8 +242,9 @@ public class TestDataLayer extends DimpleTestBase
 //		expectThrow(IllegalArgumentException.class, layer2, "setDataForGraph", layer.getDataForGraph(root));
 	}
 	
-	public <D extends IDatum> void assertInvariants(DataLayer<D> layer)
+	public <K extends IFactorGraphChild, D extends IDatum> void assertInvariants(DataLayerBase<K,D> layer)
 	{
+		final Class<K> keyType = layer.keyType();
 		final Class<D> baseType = layer.baseType();
 		final FactorGraph root = layer.rootGraph();
 		assertTrue(layer.sharesRoot(root));
@@ -251,7 +256,7 @@ public class TestDataLayer extends DimpleTestBase
 		assertNull(layer.remove("not a variable"));
 		
 		int sizeFromData = 0;
-		for (FactorGraphData<?> data : layer.getData())
+		for (FactorGraphData<?,?> data : layer.getData())
 		{
 			assertSame(data, layer.getDataForGraph(data.graph()));
 			TestFactorGraphData.assertInvariants(data);
@@ -262,53 +267,56 @@ public class TestDataLayer extends DimpleTestBase
 		assertEquals(sizeFromData, size);
 		assertEquals(size == 0, layer.isEmpty());
 		
-		Set<Variable> vars = layer.keySet();
-		Set<Map.Entry<Variable, D>> entries = layer.entrySet();
+		Set<K> keys = layer.keySet();
+		Set<Map.Entry<K, D>> entries = layer.entrySet();
 		Collection<D> values = layer.values();
 		
-		assertEquals(size, vars.size());
+		assertEquals(size, keys.size());
 		assertEquals(size, entries.size());
 		assertEquals(size, values.size());
 		
-		assertFalse(vars.contains("not a variable"));
-		assertFalse(vars.contains(new Real()));
+		assertFalse(keys.contains("not a key"));
+		assertFalse(keys.contains(new Real()));
 		assertFalse(entries.contains("not an entry"));
-		assertFalse(vars.remove("not a variable"));
-		assertFalse(vars.remove(new Real()));
+		assertFalse(keys.remove("not a key"));
+		assertFalse(keys.remove(new Real()));
 		assertFalse(entries.remove("not an entry"));
 		
 		int count = 0;
-		Iterator<Variable> varIter = vars.iterator();
-		Iterator<Map.Entry<Variable,D>> entryIter = entries.iterator();
+		Iterator<K> keyIter = keys.iterator();
+		Iterator<Map.Entry<K,D>> entryIter = entries.iterator();
 		Iterator<D> valueIter = values.iterator();
 		
 		while (entryIter.hasNext())
 		{
 			++count;
-			assertTrue(varIter.hasNext());
+			assertTrue(keyIter.hasNext());
 			assertTrue(valueIter.hasNext());
 			
-			Map.Entry<Variable,D> entry = entryIter.next();
-			Variable var = entry.getKey();
+			Map.Entry<K,D> entry = entryIter.next();
+			K key = entry.getKey();
 			IDatum datum = entry.getValue();
 			
-			assertSame(var, varIter.next());
+			assertSame(key, keyIter.next());
 			assertSame(datum, valueIter.next());
 			
-			assertTrue(layer.containsKey(var));
-			assertTrue(layer.containsDataFor(var));
-			assertTrue(vars.contains(var));
+			assertTrue(layer.containsKey(key));
+			assertTrue(layer.containsDataFor(key));
+			assertTrue(keys.contains(key));
 			assertTrue(entries.contains(entry));
-			assertTrue(entries.contains(new AbstractMap.SimpleEntry<>(var, datum)));
-			assertFalse(entries.contains(new AbstractMap.SimpleEntry<>(var, RealValue.create(Double.NaN))));
-			assertFalse(entries.remove(new AbstractMap.SimpleEntry<>(var, RealValue.create(Double.NaN))));
+			assertTrue(entries.contains(new AbstractMap.SimpleEntry<>(key, datum)));
+			assertFalse(entries.contains(new AbstractMap.SimpleEntry<>(key, RealValue.create(Double.NaN))));
+			assertFalse(entries.remove(new AbstractMap.SimpleEntry<>(key, RealValue.create(Double.NaN))));
 			assertFalse(entries.add(entry));
 			
-			long graphTreeId = var.getGraphTreeId();
+			long graphTreeId = key.getGraphTreeId();
 			assertSame(datum, layer.getByGraphTreeId(graphTreeId));
 			assertSame(datum, layer.get(graphTreeId));
-			assertSame(datum, layer.get(var.getGlobalId()));
-			assertSame(datum, layer.get(var.getQualifiedName()));
+			assertSame(datum, layer.get(key.getGlobalId()));
+			if (Node.class.isAssignableFrom(keyType))
+			{
+				assertSame(datum, layer.get(((Node)key).getQualifiedName()));
+			}
 			
 			int graphTreeIndex = Ids.graphTreeIndexFromGraphTreeId(graphTreeId);
 			int localId = Ids.localIdFromGraphTreeId(graphTreeId);
@@ -317,7 +325,7 @@ public class TestDataLayer extends DimpleTestBase
 			int bogusLocalId = Ids.localIdFromParts(Ids.BOUNDARY_VARIABLE_TYPE, localIndex);
 			assertNull(layer.getByGraphTreeId(Ids.graphTreeIdFromParts(graphTreeIndex, bogusLocalId)));
 		}
-		assertFalse(varIter.hasNext());
+		assertFalse(keyIter.hasNext());
 		assertFalse(valueIter.hasNext());
 		
 		assertEquals(size, count);
@@ -325,32 +333,38 @@ public class TestDataLayer extends DimpleTestBase
 		assertTrue(layer.objectEquals(layer));
 		assertFalse(layer.objectEquals(null));
 		assertFalse(layer.objectEquals("bogus"));
-		assertFalse(layer.objectEquals(DataLayer.createDense(new FactorGraph())));
+		assertFalse(layer.objectEquals(new GenericDataLayer(new FactorGraph(), DataDensity.DENSE)));
 		
-		DataLayer<D> copy = layer.clone();
+		DataLayerBase<K,D> copy = layer.clone();
 		assertTrue(layer.objectEquals(copy));
 		
 		if (layer.isEmpty())
 		{
 			assertEquals(copy, layer);
-			FactorGraphData<D> data = copy.createDataForGraph(root);
+			FactorGraphData<K,D> data = copy.createDataForGraph(root);
 			expectThrow(IllegalArgumentException.class, layer, "setDataForGraph", data);
 			assertTrue(layer.objectEquals(copy));
 			assertTrue(copy.objectEquals(layer));
 			
-			Variable var = root.getOwnedVariables().iterator().next();
-			copy.put(var, baseType.cast(RealValue.create(234.234)));
-			assertFalse(layer.objectEquals(copy));
-			assertFalse(copy.objectEquals(layer));
+			if (Variable.class.isAssignableFrom(keyType))
+			{
+				Variable var = root.getOwnedVariables().iterator().next();
+				copy.put(keyType.cast(var), baseType.cast(RealValue.create(234.234)));
+				assertFalse(layer.objectEquals(copy));
+				assertFalse(copy.objectEquals(layer));
+			}
 		}
 		else
 		{
 			assertNotEquals(copy, layer);
 			
-			Variable var = layer.keySet().iterator().next();
-			assertNotNull(copy.put(var, baseType.cast(RealValue.create(234.234))));
-			assertFalse(layer.objectEquals(copy));
-			assertFalse(copy.objectEquals(layer));
+			if (Variable.class.isAssignableFrom(keyType))
+			{
+				Variable var = (Variable)layer.keySet().iterator().next();
+				assertNotNull(copy.put(keyType.cast(var), baseType.cast(RealValue.create(234.234))));
+				assertFalse(layer.objectEquals(copy));
+				assertFalse(copy.objectEquals(layer));
+			}
 		}
 	}
 	

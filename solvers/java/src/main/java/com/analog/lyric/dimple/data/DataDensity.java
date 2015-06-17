@@ -16,42 +16,30 @@
 
 package com.analog.lyric.dimple.data;
 
-import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.variables.Variable;
-
 /**
- * DataLayer holds variable data for {@link FactorGraph}s in a graph tree.
+ * Specifies density of representation for {@link DataLayer} classes.
  * <p>
- * @param <D> is subclass of the {@link IDatum} interface.
+ * Used in constructors of {@link DataLayer} and {@link FactorGraphData} classes.
+ * <p>
  * @since 0.08
  * @author Christopher Barber
- * @see ValueDataLayer
- * @see GenericDataLayer
  */
-public class DataLayer<D extends IDatum> extends DataLayerBase<Variable, D>
+public enum DataDensity
 {
-	/*--------------
-	 * Construction
+	/**
+	 * Specifies a sparse hash-table based representation.
+	 * <p>
+	 * This holds all data values in a hash table for each factor graph. Getting/setting is constant time
+	 * but slower than the DENSE representation. It requires O(V) memory where V are the number of data
+	 * values actually stored in the layer.
 	 */
+	SPARSE,
 	
-	public DataLayer(FactorGraph graph, FactorGraphData.Constructor<Variable, D> constructor)
-	{
-		super(graph, constructor);
-	}
-	
-	public DataLayer(FactorGraph graph, DataDensity density, Class<D> baseType)
-	{
-		super(graph, density, Variable.class, baseType);
-	}
-	
-	protected DataLayer(DataLayer<D> other)
-	{
-		super(other);
-	}
-	
-	@Override
-	public DataLayer<D> clone()
-	{
-		return new DataLayer<>(this);
-	}
+	/**
+	 * Specifies a dense array-based representation.
+	 * <p>
+	 * This holds all data values in an array for each factor graph, so getting/setting only costs
+	 * a couple of array accesses. It requires O(K) memory where K is the number of keys.
+	 */
+	DENSE;
 }

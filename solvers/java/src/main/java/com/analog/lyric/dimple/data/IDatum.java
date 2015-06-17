@@ -29,7 +29,7 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterized
  * Abstract interface for different representations of data associated with a Dimple {@link Variable}
  * <p>
  * Every {@code IDatum} object is typically associated with a particular {@link Variable} instance, through
- * a {@link DataLayer} mapping. {@code IDatum} objects typically do not contain any direct references to
+ * a {@link DataLayerBase} mapping. {@code IDatum} objects typically do not contain any direct references to
  * their variable.
  * <p>
  * There are three main classes of data (which are enumerated by {@link DataRepresentationType}):

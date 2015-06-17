@@ -22,6 +22,9 @@ import java.util.UUID;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
+import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.VariableBlock;
 import com.analog.lyric.util.misc.IGetId;
 import com.analog.lyric.util.misc.Internal;
 
@@ -242,14 +245,14 @@ public abstract class Ids
 	 */
 	public enum Type
 	{
-		FACTOR,
-		GRAPH,
-		VARIABLE,
-		BOUNDARY_VARIABLE,
-		EDGE,
-		FACTOR_PORT,
-		VARIABLE_PORT,
-		VARIABLE_BLOCK;
+		FACTOR(Factor.class),
+		GRAPH(FactorGraph.class),
+		VARIABLE(Variable.class),
+		BOUNDARY_VARIABLE(Variable.class),
+		EDGE(Edge.class),
+		FACTOR_PORT(FactorPort.class),
+		VARIABLE_PORT(VariablePort.class),
+		VARIABLE_BLOCK(VariableBlock.class);
 		
 		// Future types:
 		//   CONSTANT
@@ -257,9 +260,48 @@ public abstract class Ids
 		//   COST VARIABLE
 		//   ACTION FACTOR
 		
+		private final Class<? extends IFactorGraphChild> _instanceType;
+		
 		private static final Type[] _values = Type.values();
 		
 		private static final String DEFAULT_NAME_PREFIX = "FGVBEPQK";
+
+		/*--------------
+		 * Construction
+		 */
+		
+		private Type(Class<? extends IFactorGraphChild> instanceType)
+		{
+			_instanceType = instanceType;
+		}
+		
+		/*----------------
+		 * Static methods
+		 */
+		
+		/**
+		 * Returns type whose {@link #instanceClass()} matches argument.
+		 * <p>
+		 * @param instanceClass is a {@link IFactorGraphChild} is a subclass of the {@link #instanceClass()}
+		 * of one of the enumerated types.
+		 * @throws IllegalArgumentException if {@code instanceClass} does not match any of the types. This can
+		 * only happen if someone has created a new implementation of {@link IFactorGraphChild} that is not
+		 * registered by this class or {@code instanceClass} is too general (e.g. {@link Node}).
+		 * @since 0.08
+		 */
+		public static Type forInstanceClass(Class<? extends IFactorGraphChild> instanceClass)
+		{
+			for (Type type : _values)
+			{
+				if (type._instanceType.isAssignableFrom(instanceClass))
+				{
+					return type;
+				}
+			}
+			
+			throw new IllegalArgumentException(String.format("%s does not have an identifier type",
+				instanceClass.getSimpleName()));
+		}
 		
 		/**
 		 * Returns {@code Type} value with given ordinal value
@@ -268,6 +310,39 @@ public abstract class Ids
 		public static Type valueOf(int ordinal)
 		{
 			return _values[ordinal];
+		}
+		
+		/*-----------------
+		 * Regular methods
+		 */
+		
+		/**
+		 * {@link IFactorGraphChild} class used to represent instances of this type.
+		 * @since 0.08
+		 */
+		public Class<? extends IFactorGraphChild> instanceClass()
+		{
+			return _instanceType;
+		}
+		
+		/**
+		 * Prefix character used to identify type in names produced by {@link Ids#defaultNameForLocalId(int)}.
+		 * @since 0.08
+		 */
+		public char namePrefix()
+		{
+			return DEFAULT_NAME_PREFIX.charAt(ordinal());
+		}
+		
+		/**
+		 * Returns type index for this type.
+		 * <p>
+		 * This is the same as {@link #ordinal()}.
+		 * @since 0.08
+		 */
+		public int typeIndex()
+		{
+			return ordinal();
 		}
 	}
 
@@ -373,6 +448,8 @@ public abstract class Ids
 	
 	/**
 	 * Constructs default name for a node with given local identifier.
+	 * <p>
+	 * The name will have the format "$" + "<i>type-prefix-character</i>" + "<i>index</i>"
 	 * <p>
 	 * @since 0.08
 	 * @see #localIdFromDefaultName(String)
@@ -643,6 +720,20 @@ public abstract class Ids
 	public static int typeIndexFromLocalId(int localId)
 	{
 		return localId >>> LOCAL_ID_TYPE_OFFSET;
+	}
+	
+	/**
+	 * Returns index of type encoded in local identifiers of instances of given class.
+	 * 
+	 * @param instanceClass is a {@link IFactorGraphChild} that is specific to one id type.
+	 * @throws IllegalArgumentException if {@code instanceClass} does not match any of the types. This can
+	 * only happen if someone has created a new implementation of {@link IFactorGraphChild} that is not
+	 * registered by this class or {@code instanceClass} is too general (e.g. {@link Node}).
+	 * @since 0.08
+	 */
+	public static int typeIndexForInstanceClass(Class<? extends IFactorGraphChild> instanceClass)
+	{
+		return Type.forInstanceClass(instanceClass).typeIndex();
 	}
 	
 	private static final Type[] _localIdTypes = Arrays.copyOf(Type.values(), 16);
