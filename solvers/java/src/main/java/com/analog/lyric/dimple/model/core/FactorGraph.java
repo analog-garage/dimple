@@ -793,6 +793,9 @@ public class FactorGraph extends FactorBase
 	 * IDimpleEventSource
 	 */
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public FactorGraph getContainingGraph()
 	{
@@ -1692,52 +1695,6 @@ public class FactorGraph extends FactorBase
 	//==============
 
 	/**
-	 * Sets schedule on current solver.
-	 * <p>
-	 * If {@code schedule} is a {@link FixedSchedule}, then this will create a new
-	 * {@link CustomScheduler} containing the specified schedule entries, otherwise
-	 * this will set the schedule on the {@linkplain #getSolver current solver graph}.
-	 * <p>
-	 * @deprecated instead use {@linkplain ISolverFactorGraph#setSchedule setSchedule} on {@linkplain #getSolver()
-	 * solver graph}.
-	 */
-	@Deprecated
-	public void setSchedule(@Nullable ISchedule schedule)
-	{
-		if (schedule instanceof FixedSchedule)
-		{
-			CustomScheduler scheduler = new CustomScheduler(this);
-			scheduler.addAll(schedule);
-			setScheduler(scheduler);
-		}
-		else if (schedule != null)
-		{
-			requireSolver("setSchedule").setSchedule(schedule);
-		}
-		else
-		{
-			// Don't throw exception if solver is not set when schedule is null
-			ISolverFactorGraph solver = getSolver();
-			if (solver != null)
-			{
-				solver.setSchedule(schedule);
-			}
-		}
-	}
-	
-	/**
-	 * Gets schedule on current solver
-	 * @deprecated instead use {@linkplain ISolverFactorGraph #getSchedule getSchedule} on {@linkplain #getSolver()
-	 * solver graph}.
-	 */
-	@Deprecated
-	public ISchedule getSchedule()
-	{
-		final ISolverFactorGraph sgraph = getSolver();
-		return sgraph != null ? sgraph.getSchedule() : EmptySchedule.INSTANCE;
-	}
-
-	/**
 	 * Sets scheduler options applicable to input scheduler.
 	 * 
 	 * @param scheduler if non-null, will be set as an option value for all of the option keys
@@ -1769,20 +1726,7 @@ public class FactorGraph extends FactorBase
 		}
 	}
 
-	/**
-	 * Returns the scheduler associated with the current solver, if any.
-	 * <p>
-	 * @deprecated instead either use {@linkplain ISolverFactorGraph#getScheduler() corresponding method on solver}
-	 * or look up the corresponding option value (e.g.
-	 * {@linkplain com.analog.lyric.dimple.options.BPOptions#scheduler BPOptions.scheduler}
-	 * or {@link com.analog.lyric.dimple.solvers.gibbs.GibbsOptions#scheduler GibbsOptions.scheduler}).
-	 */
-	@Deprecated
-	public @Nullable IScheduler getScheduler()
-	{
-		ISolverFactorGraph sfg = getSolver();
-		return sfg != null ? sfg.getScheduler() : null;
-	}
+	
 	
 	//============================
 	//
@@ -2719,6 +2663,12 @@ public class FactorGraph extends FactorBase
 		return getAdjacencyMatrixFlat();
 	}
 
+	//==============
+	//
+	// Scheduling
+	//
+	//==============
+	
 	public int [][] getAdjacencyMatrix(int relativeNestingDepth)
 	{
 		IMapList<INode> nodes = getNodes(relativeNestingDepth);
@@ -3341,16 +3291,7 @@ public class FactorGraph extends FactorBase
 		++_graphTreeState._globalStructureVersion;
 	}
 
-	/**
-	 * @deprecated instead get {@linkplain ISchedule#scheduleVersion() scheduleVersion} from
-	 * {@linkplain #getSolver() solver graph's} {@linkplain ISolverFactorGraph#getSchedule() schedule}.
-	 */
-	@Deprecated
-	public long getScheduleVersionId()
-	{
-		final ISolverFactorGraph sgraph = getSolver();
-		return sgraph != null ? sgraph.getSchedule().scheduleVersion() : -1L;
-	}
+	
 
 
 	//=========
@@ -3668,6 +3609,12 @@ public class FactorGraph extends FactorBase
 		}
 		return fg;
 	}
+	//==============
+	//
+	// Scheduling
+	//
+	//==============
+	
 	public @Nullable Variable getVariableByUUID(UUID uuid)
 	{
 		Variable v = null;
@@ -3733,24 +3680,7 @@ public class FactorGraph extends FactorBase
 		return requireSolver("getBetheFreeEnergy").getBetheFreeEnergy();
 	}
 
-	/**
-	 * @deprecated use {@link #addVariableBlock(Collection)} instead.
-	 */
-	@Deprecated
-	public int defineVariableGroup(ArrayList<Variable> variableList)
-	{
-		VariableBlock block = addVariableBlock(variableList);
-		return block.getLocalId();
-	}
-
-	/**
-	 * @deprecated use {@link #getVariableBlockByLocalId(int)} instead
-	 */
-	@Deprecated
-	public @Nullable List<Variable> getVariableGroup(int variableGroupID)
-	{
-		return getVariableBlockByLocalId(variableGroupID);
-	}
+	
 
 	//==================
 	// FactorGraphDiffs
@@ -3998,6 +3928,15 @@ public class FactorGraph extends FactorBase
 		Helpers.clearNames(this);
 	}
 	
+	/**
+	 * @deprecated use {@link #addVariableBlock(Collection)} instead.
+	 */
+	@Deprecated
+	public int defineVariableGroup(ArrayList<Variable> variableList)
+	{
+		VariableBlock block = addVariableBlock(variableList);
+		return block.getLocalId();
+	}
 	@Matlab
 	@Deprecated
 	public String getAdjacencyString()
@@ -4083,6 +4022,41 @@ public class FactorGraph extends FactorBase
 		return _ownedVariables.getNth(i);
 	}
 	
+	/**
+	 * Gets schedule on current solver
+	 * @deprecated instead use {@linkplain ISolverFactorGraph #getSchedule getSchedule} on {@linkplain #getSolver()
+	 * solver graph}.
+	 */
+	@Deprecated
+	public ISchedule getSchedule()
+	{
+		final ISolverFactorGraph sgraph = getSolver();
+		return sgraph != null ? sgraph.getSchedule() : EmptySchedule.INSTANCE;
+	}
+	/**
+	 * Returns the scheduler associated with the current solver, if any.
+	 * <p>
+	 * @deprecated instead either use {@linkplain ISolverFactorGraph#getScheduler() corresponding method on solver}
+	 * or look up the corresponding option value (e.g.
+	 * {@linkplain com.analog.lyric.dimple.options.BPOptions#scheduler BPOptions.scheduler}
+	 * or {@link com.analog.lyric.dimple.solvers.gibbs.GibbsOptions#scheduler GibbsOptions.scheduler}).
+	 */
+	@Deprecated
+	public @Nullable IScheduler getScheduler()
+	{
+		ISolverFactorGraph sfg = getSolver();
+		return sfg != null ? sfg.getScheduler() : null;
+	}
+	/**
+	 * @deprecated instead get {@linkplain ISchedule#scheduleVersion() scheduleVersion} from
+	 * {@linkplain #getSolver() solver graph's} {@linkplain ISolverFactorGraph#getSchedule() schedule}.
+	 */
+	@Deprecated
+	public long getScheduleVersionId()
+	{
+		final ISolverFactorGraph sgraph = getSolver();
+		return sgraph != null ? sgraph.getSchedule().scheduleVersion() : -1L;
+	}
 	@Deprecated
 	public HashMap<Integer, ArrayList<INode>> getVariablesByDegree()
 	{
@@ -4095,6 +4069,14 @@ public class FactorGraph extends FactorBase
 		return Helpers.getVariablesByDomainSize(this);
 	}
 
+	/**
+	 * @deprecated use {@link #getVariableBlockByLocalId(int)} instead
+	 */
+	@Deprecated
+	public @Nullable List<Variable> getVariableGroup(int variableGroupID)
+	{
+		return getVariableBlockByLocalId(variableGroupID);
+	}
 	/**
 	 * @deprecated Use {@link #structureVersion() instead}.
 	 */
@@ -4152,6 +4134,45 @@ public class FactorGraph extends FactorBase
 	 * Private methods
 	 */
 	
+	//==============
+	//
+	// Scheduling
+	//
+	//==============
+	
+	/**
+	 * Sets schedule on current solver.
+	 * <p>
+	 * If {@code schedule} is a {@link FixedSchedule}, then this will create a new
+	 * {@link CustomScheduler} containing the specified schedule entries, otherwise
+	 * this will set the schedule on the {@linkplain #getSolver current solver graph}.
+	 * <p>
+	 * @deprecated instead use {@linkplain ISolverFactorGraph#setSchedule setSchedule} on {@linkplain #getSolver()
+	 * solver graph}.
+	 */
+	@Deprecated
+	public void setSchedule(@Nullable ISchedule schedule)
+	{
+		if (schedule instanceof FixedSchedule)
+		{
+			CustomScheduler scheduler = new CustomScheduler(this);
+			scheduler.addAll(schedule);
+			setScheduler(scheduler);
+		}
+		else if (schedule != null)
+		{
+			requireSolver("setSchedule").setSchedule(schedule);
+		}
+		else
+		{
+			// Don't throw exception if solver is not set when schedule is null
+			ISolverFactorGraph solver = getSolver();
+			if (solver != null)
+			{
+				solver.setSchedule(schedule);
+			}
+		}
+	}
 	/**
 	 * Returns subgraph identified by global id
 	 * @param globalId
