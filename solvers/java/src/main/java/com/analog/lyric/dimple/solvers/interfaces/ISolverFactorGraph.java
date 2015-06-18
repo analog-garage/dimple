@@ -52,14 +52,47 @@ public interface ISolverFactorGraph	extends ISolverNode
 	 * ISolverFactorGraph methods
 	 */
 	
+	public void baumWelch(IFactorTable[] tables,int numRestarts,int numSteps);
+
+	// For solver to indicate whether or not schedules must include all edges in the graph
+	// TODO: This could be replaced by function that actually does the checking, which could be solver specific
+	public boolean checkAllEdgesAreIncludedInSchedule();
+
+	public void continueSolve();
+
+	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor factor);
+	
+	/**
+	 * Indicates whether or not the specified factor is available only as a custom factor.
+	 * @param factorName
+	 * @return True only for custom factors that do not have a corresponding FactorFunction of the same name
+	 */
+	@Matlab
+	public boolean customFactorExists(String factorName);
+
+	public void estimateParameters(IFactorTable [] tables,int numRestarts,int numSteps, double stepScaleFactor);
+
+	public double getBetheFreeEnergy();
+	
+	/**
+	 * Returns the name of a solver-specific MATLAB wrapper function that should be invoked from
+	 * MATLAB to do the solve. The value or existence of the function is allowed to change depending
+	 * on the parameters to the solver. The MATLAB function should take two positional arguments:
+	 * the MATLAB FactorGraph object and the instance of this interface.
+	 * 
+	 * @return name of MATLAB function used to do actual solve in MATLAB interface or null if there is none.
+	 */
+	@Matlab
+	public @Nullable String getMatlabSolveWrapper();
+	
+	public int getNumIterations();
+	
 	/**
 	 * Returns schedule used by this solver, creating a new one if necessary.
 	 * @since 0.08
 	 */
 	public ISchedule getSchedule();
-
-	public void setSchedule(@Nullable ISchedule schedule);
-
+	
 	/**
 	 * Returns scheduler for this solver graph.
 	 * <p>
@@ -79,9 +112,7 @@ public interface ISolverFactorGraph	extends ISolverNode
 	 * @since 0.08
 	 */
 	public @Nullable SchedulerOptionKey getSchedulerKey();
-
-	public void setScheduler(@Nullable IScheduler scheduler);
-
+	
 	/**
 	 * Get solver edge state for corresponding edge state if any, creating if necessary.
 	 * <p>
@@ -100,8 +131,6 @@ public interface ISolverFactorGraph	extends ISolverNode
 	 * @return solver-specific factor representing the given model factor or else null.
 	 */
 	public @Nullable ISolverFactor getSolverFactor(Factor factor);
-
-	public Collection<? extends ISolverFactor> getSolverFactors();
 	
 	/**
 	 * Get solver factor for given factor.
@@ -125,6 +154,8 @@ public interface ISolverFactorGraph	extends ISolverNode
 	
 	public ISolverFactor getSolverFactorForEdge(EdgeState edge);
 	
+	public Collection<? extends ISolverFactor> getSolverFactors();
+
 	public Collection<? extends ISolverFactor> getSolverFactorsRecursive();
 	
 	/**
@@ -177,7 +208,7 @@ public interface ISolverFactorGraph	extends ISolverNode
 	 * @since 0.08
 	 */
 	public Collection<? extends ISolverFactorGraph> getSolverSubgraphsRecursive();
-
+	
 	/**
 	 * @return solver-specific variable representing the given model variable or else null.
 	 */
@@ -193,27 +224,12 @@ public interface ISolverFactorGraph	extends ISolverNode
 	public @Nullable ISolverVariable getSolverVariable(Variable variable, boolean create);
 	
 	/**
-	 * Get solver variable with given local index in this solver graph, if it exists.
-	 * <p>
-	 * This method does not force instantiation of the solver variable.
-	 * <p>
-	 * @param index is the local index of the variable within its graph, i.e. the index portion of the variable's
-	 * local id.
-	 * @since 0.08
-	 */
-	public @Nullable ISolverVariable getSolverVariableByIndex(int index);
-	
-	public Collection<? extends ISolverVariable> getSolverVariables();
-	
-	public Collection<? extends ISolverVariable> getSolverVariablesRecursive();
-	
-	/**
 	 * Get solver variable block if any for corresponding model variable block
 	 * <p>
 	 * @since 0.08
 	 */
 	public @Nullable ISolverVariableBlock getSolverVariableBlock(VariableBlock block);
-	
+
 	/**
 	 * Get solver variable block for given model block
 	 * <p>
@@ -240,8 +256,53 @@ public interface ISolverFactorGraph	extends ISolverNode
 	 */
 	public Collection<? extends ISolverVariableBlock> getSolverVariableBlocks();
 	
-	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor factor);
-
+	/**
+	 * Get solver variable with given local index in this solver graph, if it exists.
+	 * <p>
+	 * This method does not force instantiation of the solver variable.
+	 * <p>
+	 * @param index is the local index of the variable within its graph, i.e. the index portion of the variable's
+	 * local id.
+	 * @since 0.08
+	 */
+	public @Nullable ISolverVariable getSolverVariableByIndex(int index);
+	
+	public Collection<? extends ISolverVariable> getSolverVariables();
+	
+	public Collection<? extends ISolverVariable> getSolverVariablesRecursive();
+	
+	public void interruptSolver();
+	
+	public boolean isSolverRunning();
+	
+	@Matlab
+	public void iterate();
+	
+	@Matlab
+	public void iterate(int numIters);
+	
+	public void moveMessages(ISolverNode other);
+	
+	public void postAddFactor(Factor f);
+	
+	public void postAdvance();
+	
+	public void postSetSolverFactory();
+	/**
+	 * @category internal
+	 */
+	@Internal
+	public void recordDefaultSubgraphSolver(FactorGraph subgraph);
+	
+	/**
+	 * Removes solver state object for given edge in its solver graph(s).
+	 * <p>
+	 * @since 0.08
+	 * @category internal
+	 */
+	@Internal
+	public void removeSolverEdge(EdgeState edge);
+	
 	/**
 	 * Removes solver state object with given edge index from this graph.
 	 * <p>
@@ -255,16 +316,6 @@ public interface ISolverFactorGraph	extends ISolverNode
 	 */
 	@Internal
 	public void removeSolverEdge(int edgeIndex);
-	
-	/**
-	 * Removes solver state object for given edge in its solver graph(s).
-	 * <p>
-	 * @since 0.08
-	 * @category internal
-	 */
-	@Internal
-	public void removeSolverEdge(EdgeState edge);
-	
 	/**
 	 * Removes solver factor from its parent graph.
 	 * <p>
@@ -274,7 +325,6 @@ public interface ISolverFactorGraph	extends ISolverNode
 	 */
 	@Internal
 	public void removeSolverFactor(ISolverFactor factor);
-	
 	/**
 	 * Removes solver graph from its parent graph.
 	 * <p>
@@ -297,61 +347,7 @@ public interface ISolverFactorGraph	extends ISolverNode
 	
 	public void runScheduleEntry(IScheduleEntry entry);
 	
-	/**
-	 * Indicates whether or not the specified factor is available only as a custom factor.
-	 * @param factorName
-	 * @return True only for custom factors that do not have a corresponding FactorFunction of the same name
-	 */
-	@Matlab
-	public boolean customFactorExists(String factorName);
-	public void solve();
-	public void solveOneStep();
-	public void continueSolve();
-	public void startSolveOneStep();
-	public void startContinueSolve();
-	
-	@Matlab
-	public void iterate();
-	
-	@Matlab
-	public void iterate(int numIters);
-	public boolean isSolverRunning();
-	public void interruptSolver();
-	public void startSolver();
 	public void setNumIterations(int numIterations);
-	public int getNumIterations();
-	public double getBetheFreeEnergy();
-	public void estimateParameters(IFactorTable [] tables,int numRestarts,int numSteps, double stepScaleFactor);
-	public void baumWelch(IFactorTable[] tables,int numRestarts,int numSteps);
-	public void moveMessages(ISolverNode other);
-	public void postAdvance();
-	public void postAddFactor(Factor f);
-	public void postSetSolverFactory();
-
-	/**
-	 * Returns the name of a solver-specific MATLAB wrapper function that should be invoked from
-	 * MATLAB to do the solve. The value or existence of the function is allowed to change depending
-	 * on the parameters to the solver. The MATLAB function should take two positional arguments:
-	 * the MATLAB FactorGraph object and the instance of this interface.
-	 * 
-	 * @return name of MATLAB function used to do actual solve in MATLAB interface or null if there is none.
-	 */
-	@Matlab
-	public @Nullable String getMatlabSolveWrapper();
-	
-	/**
-	 * @category internal
-	 */
-	@Internal
-	public void recordDefaultSubgraphSolver(FactorGraph subgraph);
-	
-	public void useMultithreading(boolean use);
-	public boolean useMultithreading();
-	
-	
-	// For solver to indicate whether or not schedules must include all edges in the graph
-	// TODO: This could be replaced by function that actually does the checking, which could be solver specific
-	public boolean checkAllEdgesAreIncludedInSchedule();
 	
 	/**
 	 * @category internal
@@ -359,4 +355,22 @@ public interface ISolverFactorGraph	extends ISolverNode
 	 */
 	@Internal
 	public void setParent(ISolverFactorGraph parent);
+	
+	public void setSchedule(@Nullable ISchedule schedule);
+	
+	public void setScheduler(@Nullable IScheduler scheduler);
+	
+	public void solve();
+
+	public void solveOneStep();
+	
+	public void startContinueSolve();
+	
+	public void startSolveOneStep();
+	
+	public void startSolver();
+	
+	public boolean useMultithreading();
+	
+	public void useMultithreading(boolean use);
 }
