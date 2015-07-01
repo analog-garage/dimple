@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Copyright 2012 Analog Devices, Inc.
+%   Copyright 2012-2015 Analog Devices, Inc.
 %
 %   Licensed under the Apache License, Version 2.0 (the "License");
 %   you may not use this file except in compliance with the License.
@@ -28,7 +28,20 @@ function result = wrapProxyObject(proxyObject, varargin)
     if isempty(proxyObject)
         return;
     end
-        
+       
+    if iscell(proxyObject)
+        result = cellfun(@wrapProxyObject, proxyObject, 'UniformOutput', false);
+        return;
+    end
+    
+    if isjava(proxyObject)
+        wrapperName = char(com.analog.lyric.util.misc.MatlabUtil.wrapper(proxyObject));
+        if (~isempty(wrapperName))
+            result = feval(wrapperName, proxyObject);
+            return;
+        end
+    end
+    
     if isjava(proxyObject) || isobject(proxyObject)
         if proxyObject.isGraph()
             result = FactorGraph('VectorObject',proxyObject);

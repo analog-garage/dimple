@@ -27,11 +27,20 @@ import java.lang.annotation.Target;
  * directly from MATLAB. Such members cannot be removed or refactored without taking its
  * potential MATLAB use into account. When applied to a class, the assumption should be that
  * all or most of its public members may be accessed from MATLAB.
+ * <p>
+ * @see #wrapper()
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.CONSTRUCTOR, ElementType.FIELD, ElementType.METHOD, ElementType.TYPE})
 public @interface Matlab
 {
-
+	/**
+	 * If non-empty, specifies the name of the MATLAB wrapper function to be used to convert
+	 * instances of the annotated type.
+	 * <p>
+	 * This attribute is only applicable for annotations on classes.
+	 * @since 0.08
+	 */
+	public String wrapper() default "";
 }
