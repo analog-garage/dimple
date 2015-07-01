@@ -75,6 +75,8 @@ public class TestArrayUtil
 		double[] d2 = ArrayUtil.cloneArray(d);
 		assertNotSame(d, d2);
 		assertArrayEquals(d, d2, 0.0);
+		assertSame(ArrayUtil.EMPTY_DOUBLE_ARRAY, ArrayUtil.cloneNonNullArray(new double[0]));
+		assertArrayEquals(d, ArrayUtil.cloneNonNullArray(d), 0.0);
 
 		assertNull(ArrayUtil.cloneArray((int[])null));
 		assertSame(ArrayUtil.EMPTY_INT_ARRAY, ArrayUtil.cloneArray(new int[0]));
@@ -104,6 +106,7 @@ public class TestArrayUtil
 		assertNotSame(dd[0], dd3[0]);
 		assertArrayEquals(dd[0], dd3[0], 0.0);
 		assertArrayEquals(dd[1], dd3[1], 0.0);
+		
 	}
 
 	@Test
@@ -198,6 +201,14 @@ public class TestArrayUtil
 		assertEquals(3, ArrayUtil.linearSearch(array,  5));
 		assertEquals(2, ArrayUtil.linearSearch(array, 1, 1, array.length));
 		assertEquals(-1, ArrayUtil.linearSearch(array, 1, 1, 1));
+	}
+	
+	@Test
+	public void onlyContains()
+	{
+		assertTrue(ArrayUtil.onlyContains(new double[] { 1.0, 1.0, 1.0 }, 1.0));
+		assertFalse(ArrayUtil.onlyContains(new double[] { 1.0, 1.0, 2.0 }, 1.0));
+		assertFalse(ArrayUtil.onlyContains(new double[0], 1.0));
 	}
 	
 	@Test

@@ -23,10 +23,10 @@ import java.util.Comparator;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-import cern.colt.list.IntArrayList;
-
 import com.analog.lyric.util.misc.Internal;
 import com.google.common.math.DoubleMath;
+
+import cern.colt.list.IntArrayList;
 
 /**
  * Contains static utility methods pertaining to arrays.
@@ -296,7 +296,7 @@ public abstract class ArrayUtil
 	{
 		return linearSearch(array, key, 0, array.length);
 	}
-
+	
 	/**
 	 * Determines if array is ordered according to provided comparator.
 	 * @since 0.05
@@ -345,6 +345,18 @@ public abstract class ArrayUtil
 		}
 		
 		return true;
+	}
+	
+	/**
+	 * True if array is non-empty and contains only the specified element.
+	 * @since 0.08
+	 */
+	public static boolean onlyContains(double[] array, double element)
+	{
+		for (double x : array)
+			if (x != element)
+				return false;
+		return array.length > 0;
 	}
 	
 	/**
@@ -397,6 +409,15 @@ public abstract class ArrayUtil
 		{
 			return array.clone();
 		}
+	}
+
+	/**
+	 * Returns a copy of {@code array} or {@link #EMPTY_DOUBLE_ARRAY} if empty.
+	 * @since 0.08
+	 */
+	public static double[] cloneNonNullArray(double[] array)
+	{
+		return array.length == 0 ? EMPTY_DOUBLE_ARRAY : array.clone();
 	}
 
 	/**
