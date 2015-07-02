@@ -64,13 +64,13 @@ function testKalman()
     %new acceleration is a function of velocity, friction, and force. 
 
     F = [1  0   dt          0           dt^2/2  0       0       0;
-        0  1   0           dt          0       dt^2/2  0       0;
-        0  0   1           0           dt/2    0       0       0;
-        0  0   0           1           0       dt/2    0       0;
-        0  0   -gamma/m    0           0       0       Fw(1)   0;
-        0  0   0           -gamma/m    0       0       0       Fw(2);
-        0  0   0           0           0       0       1       0
-        0  0   0           0           0       0       0       1
+         0  1   0           dt          0       dt^2/2  0       0;
+         0  0   1           0           dt/2    0       0       0;
+         0  0   0           1           0       dt/2    0       0;
+         0  0   -gamma/m    0           0       0       Fw(1)   0;
+         0  0   0           -gamma/m    0       0       0       Fw(2);
+         0  0   0           0           0       0       1       0
+         0  0   0           0           0       0       0       1
         ];
 
 

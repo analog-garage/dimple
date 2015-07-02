@@ -16,11 +16,14 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
+import static com.analog.lyric.math.MoreMatrixUtils.*;
+
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.SingularValueDecomposition;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
-import com.analog.lyric.math.LyricSingularValueDecomposition;
 
 public class MutlivariateGaussianMatrixProduct
 {
@@ -43,58 +46,31 @@ public class MutlivariateGaussianMatrixProduct
 		 * First, compute an SVD of the matrix A using EigenDecompositions of A*A^T and A^T*A
 		 * This way, we get nullspaces for free along with regularized inverse.
 		 */
-		//EigenDecomposition LeftSingular = new EigenDecomposition(M);
-		//EigenDecomposition RightSingular = new EigenDecomposition(N);
 
-		Jama.Matrix Amat = new Jama.Matrix(A);
+		RealMatrix Amat = wrapRealMatrix(A);
 		
-		boolean matrixIsFat = Amat.getColumnDimension() > Amat.getRowDimension();
+		SingularValueDecomposition svd = new SingularValueDecomposition(Amat);
 		
-		//TODO: Because Jama is lame and doesn't handle fat matrices, we have
-		//to deal with the transpose.
-		if (matrixIsFat)
-		{
-			Amat = Amat.transpose();
-		}
+		RealMatrix tmp = svd.getVT();
+		tmp = svd.getS().multiply(tmp);
+		tmp = svd.getU().multiply(tmp);
 		
-		LyricSingularValueDecomposition svd = new LyricSingularValueDecomposition(Amat);
-		Jama.Matrix U = svd.getU();
-		Jama.Matrix S = svd.getS();
-		Jama.Matrix V = svd.getV();
-
-		if (matrixIsFat)
-		{
-			S = S.transpose();
-			Jama.Matrix tmp = U;
-			U = V.transpose();
-			V = tmp;
-		}
+		A_clean = matrixGetDataRef(tmp);
 		
-		//printVector(svd.getSingularValues());
+		RealMatrix ST = svd.getS().transpose();
 		
-		Jama.Matrix tmp = V.transpose();
-		tmp = S.times(tmp);
-		tmp = U.times(tmp);
-		A_clean = tmp.getArray();
-		
-		Jama.Matrix Sinv = S.transpose();
-		
-		//int M = A.length;
-		//int N = A[0].length;
-		
-		int numS = Math.min(Sinv.getColumnDimension(),Sinv.getRowDimension());
+		int numS = Math.min(ST.getColumnDimension(),ST.getRowDimension());
 		for (i = 0; i < numS; i++)
 		{
-			double d = Sinv.get(i,i);
+			double d = ST.getEntry(i,i);
 			if (d < eps)
 				d = eps;
 			else if (d > 1/eps)
 				d = 1/eps;
-			Sinv.set(i,i, 1.0/d);
+			ST.setEntry(i,i, 1.0/d);
 		}
 		
-		A_pinv = V.times(Sinv.times(U.transpose())).getArray();
-		
+		A_pinv = matrixGetDataRef(svd.getV().multiply(ST.multiply(svd.getUT())));
 	}
 
 	

@@ -91,8 +91,8 @@ function testDemos()
     cd('../16_KalmanFilter');
     run;
     close;
-    assertTrue(norm(fgxs-gxs) / norm(gxs) < 0.01);
-    assertTrue(norm(fgys-gys) / norm(gys) < 0.01);
+    assertTrue(norm(fgxs-gxs) / norm(gxs) < 0.02);
+    assertTrue(norm(fgys-gys) / norm(gys) < 0.02);
     runUnivariate;
     close;
     assertTrue(norm(results-realZ) < 70);

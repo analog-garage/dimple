@@ -16,10 +16,13 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
-import org.apache.commons.math3.complex.Complex;
+import static com.analog.lyric.math.MoreMatrixUtils.*;
+import static org.apache.commons.math3.linear.MatrixUtils.*;
 
-import Jama.CholeskyDecomposition;
-import Jama.Matrix;
+import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math3.linear.CholeskyDecomposition;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -186,10 +189,9 @@ public class CustomComplexGaussianPolynomial extends MultivariateGaussianFactorB
 		mean_array[1] = mean.getImaginary();
 		double [][] samples = new double[covar.length*2][];
 
+		CholeskyDecomposition cd = new CholeskyDecomposition(wrapRealMatrix(covar));
 		
-		CholeskyDecomposition cd = new CholeskyDecomposition(new Matrix(covar));
-		
-		double [][] chol = cd.getL().transpose().getArray();
+		double [][] chol = matrixGetDataRef(cd.getLT());
 		
 		for (int i = 0; i < chol.length; i++)
 		{
@@ -223,20 +225,19 @@ public class CustomComplexGaussianPolynomial extends MultivariateGaussianFactorB
 		means[0] /= in.length;
 		means[1] /= in.length;
 		
-		
-		Matrix cm = new Matrix(2,2);
-		Matrix mm = new Matrix(means,1);
+		RealMatrix cm = createRealMatrix(2, 2);
+		RealVector mm = wrapRealVector(means);
 		
 		for (int i = 0; i < in.length; i++)
 		{
-			Jama.Matrix m = new Matrix(new double [] {in[i].getReal(),in[i].getImaginary()},1);
-			Matrix m2 = m.minus(mm);
-			cm = cm.plus(m2.transpose().times(m2));
+			RealVector m = createRealVector(new double [] {in[i].getReal(),in[i].getImaginary()});
+			RealVector m2 = m.subtract(mm);
+			cm = cm.add(m2.outerProduct(m2));
 		}
 		
-		cm = cm.times(1.0/in.length);
+		cm = cm.scalarMultiply(1.0/in.length);
 		
-		return new Object[]{new Complex(means[0],means[1]),cm.getArray()};
+		return new Object[]{new Complex(means[0],means[1]),matrixGetDataRef(cm)};
 		
 	}
 	

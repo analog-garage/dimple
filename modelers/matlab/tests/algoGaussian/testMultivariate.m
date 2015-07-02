@@ -501,7 +501,7 @@ function testMultivariate()
 
     xbelief = x.Belief.Mean;
 
-    diff = sum(abs(mean-A*xbelief))
+    diff = sum(abs(mean-A*xbelief));
     assertTrue(diff<1e-6);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
