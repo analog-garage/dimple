@@ -977,11 +977,11 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 		}
 	}
 
-	private final boolean isInfiniteIdentity(Matrix m)
+	private final boolean isInfiniteIdentity(double[][] m)
 	{
-		for (int i = 0; i < m.getColumnDimension(); i++)
+		for (int i = 0; i < m.length; i++)
 		{
-			if (!Double.isInfinite(m.get(i,i)))
+			if (!Double.isInfinite(m[i][i]))
 				return false;
 		}
 		return true;
@@ -1150,20 +1150,17 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 			
 			// TODO: consider using EJML or MTJ library instead of Jama
 			
-			Jama.Matrix mat = new Jama.Matrix(_matrix);
+			double[] newVector;
 
-			Matrix inv;
-			Matrix vec;
-
-			if (isInfiniteIdentity(mat))
+			if (isInfiniteIdentity(_matrix))
 			{
 				//Handle the special case where variances are infinite
-				inv = new Matrix(mat.getRowDimension(),mat.getColumnDimension());
-				vec = new Matrix(mat.getRowDimension(),1);
+				_matrix = new double[_size][_size];
+				newVector = new double[_size];
 			}
 			else
 			{
-				LyricEigenvalueDecomposition eig = new LyricEigenvalueDecomposition(mat);
+				LyricEigenvalueDecomposition eig = new LyricEigenvalueDecomposition(new Jama.Matrix(_matrix));
 
 				Matrix D = eig.getD();
 				Matrix V = eig.getV();
@@ -1180,16 +1177,20 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 					assert(d > 0); // Eigenvalues should always be positive for positive definite matrices
 				}
 
+				Matrix inv;
+				Matrix vec;
+				
 				inv = V.times(D.times(V.transpose()));
 
 
 				vec = new Matrix(new double [][] {_isInInformationForm ? _infoVector : _mean}).transpose();
 
 				vec = inv.times(vec);
+
+				_matrix = inv.getArray();
+				 newVector = vec.transpose().getArray()[0];
 			}
 
-			_matrix = inv.getArray();
-			final double[] newVector = vec.transpose().getArray()[0];
 			if (_isInInformationForm)
 			{
 				_mean = newVector;
