@@ -57,6 +57,14 @@ public class TestSupers
 		assertEquals(A.class, a.getClass().getComponentType());
 		A[] a2 = Supers.narrowArrayOf(A.class, 0, a);
 		assertSame(a, a2);
+		
+		A[] a3 = new A[] { new A(), new B(), new C() };
+		assertSame(a3, Supers.narrowArrayOf(A.class, a3));
+		assertNull(Supers.narrowArrayOf(B.class, a3));
+		Object[] o3 = new Object[] { a3[0], a3[1], a3[2] };
+		A[] a4 = Supers.narrowArrayOf(A.class, o3);
+		assertArrayEquals(a3, a4);
+		assertEquals(A.class, requireNonNull(a4).getClass().getComponentType());
 	}
 	
 	private <T> void narrowArrayOfTestCase(Class<?> expectedComponentType, T[] elements)

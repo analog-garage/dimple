@@ -337,6 +337,39 @@ public abstract class Supers
 			objClass.getSimpleName(), sb.toString());
 		throw new NoSuchMethodException(msg);
 	}
+
+	/**
+	 * Returns array containing {@code elements} with {@linkplain Class#getComponentType() component type}
+	 * set to specified type.
+	 * <p>
+	 * This will return the {@code elements} array itself if its {@linkplain Class#getComponentType() component type}
+	 * is already a subclass of {@code type}. It will return null if any of the elements is not a
+	 * subclass of {@code type}.
+	 * <p>
+	 * @since 0.08
+	 */
+	@SuppressWarnings("unchecked")
+	public static @Nullable <T> T[] narrowArrayOf(Class<T> type, Object[] elements)
+	{
+		if (type.isAssignableFrom(elements.getClass().getComponentType()))
+		{
+			return (T[])elements;
+		}
+		
+		for (Object obj : elements)
+		{
+			if (!type.isInstance(obj))
+				return null;
+		}
+
+		final int n = elements.length;
+		T[] array = (T[])Array.newInstance(type, n);
+		for (int i = 0; i < n; ++i)
+		{
+			array[i] = type.cast(elements[i]);
+		}
+		return array;
+	}
 	
 	/**
 	 * Returns a new array containing {@code elements} with component type set to the nearest common superclass
