@@ -93,18 +93,32 @@ public class RealJointValue extends Value
 		_value = (double[])Objects.requireNonNull(value);
 	}
 	
-	public final double[] getValue() {return _value;}
-	public void setValue(double[] value) {_value = value;}
-
-	
-	// Get/set a specific element of the sample
-	public double getValue(int index) {return _value[index];}
-	public void setValue(int index, double value) {_value[index] = value;}
-	
 	@Override
 	public boolean valueEquals(Value other)
 	{
 		Object otherObj = other.getObject();
 		return otherObj instanceof double[] && Arrays.equals(_value, (double[])otherObj);
 	}
+	
+	/*------------------------
+	 * RealJointValue methods
+	 */
+
+	/**
+	 * The number of scalar real components in the value.
+	 * <p>
+	 * This is the length of the array returned by {@link #getDoubleArray()}/{@link #getObject}/{@link #getValue()}.
+	 * @since 0.08
+	 */
+	public int size()
+	{
+		return _value.length;
+	}
+	
+	public final double[] getValue() {return _value;}
+	public void setValue(double[] value) {_value = value;}
+
+	// Get/set a specific element of the sample
+	public double getValue(int index) {return _value[index];}
+	public void setValue(int index, double value) {_value[index] = value;}
 }

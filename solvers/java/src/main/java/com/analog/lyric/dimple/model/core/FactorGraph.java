@@ -41,6 +41,9 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.collect.ExtendedArrayList;
 import com.analog.lyric.collect.IndexedArrayList;
 import com.analog.lyric.collect.Tuple2;
+import com.analog.lyric.dimple.data.DataLayer;
+import com.analog.lyric.dimple.data.GenericDataLayer;
+import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.events.DimpleEventListener;
 import com.analog.lyric.dimple.events.IDimpleEventListener;
@@ -158,6 +161,8 @@ public class FactorGraph extends FactorBase
 	 */
 	private static class GraphTreeState
 	{
+		private @Nullable DataLayer<? extends IDatum> _defaultConditioningLayer = null;
+		
 		/**
 		 * Counter that is modified whenever a structural change is made anywhere in the graph tree.
 		 */
@@ -905,6 +910,71 @@ public class FactorGraph extends FactorBase
 	}
 	
 	/*==============
+	 * Data methods
+	 */
+	
+	/**
+	 * The default conditioning layer to be used with this model, if any.
+	 * <p>
+	 * The same object is returned for all factor graphs in the graph tree.
+	 * 
+	 * @since 0.08
+	 * @see #createDefaultConditioningLayer()
+	 * @see #setDefaultConditioningLayer(DataLayer)
+	 */
+	public @Nullable DataLayer<? extends IDatum> getDefaultConditioningLayer()
+	{
+		return _graphTreeState._defaultConditioningLayer;
+	}
+	
+	/**
+	 * Returns the default conditioning layer to be used with this model, creating a new one if necessary.
+	 * <p>
+	 * This is similar to {@link #getDefaultConditioningLayer()}, but instead of returning null
+	 * if there is no layer, this will  create a new sparse {@link GenericDataLayer}
+	 * and set it on the {@linkplain #getRootGraph() root graph} using {@link #setDefaultConditioningLayer(DataLayer)}.
+	 * 
+	 * @since 0.08
+	 */
+	public DataLayer<? extends IDatum> createDefaultConditioningLayer()
+	{
+		DataLayer<? extends IDatum> layer = getDefaultConditioningLayer();
+		if (layer == null)
+		{
+			setDefaultConditioningLayer(layer = new GenericDataLayer(getRootGraph()));
+		}
+		return layer;
+	}
+
+	/**
+	 * Sets the {@linkplain #getDefaultConditioningLayer() default conditioning layer} for this model.
+	 * <p>
+	 * This may only be set on the root graph for the graph tree and will be shared by all subgraphs.
+	 * <p>
+	 * If the graph has a designated solver graph ({@link #getSolver()}), this will be set as the
+	 * conditioning layer for that solver.
+	 * <p>
+	 * @throws IllegalStateException if this is not the root graph.
+	 * @since 0.08
+	 * @see #createDefaultConditioningLayer()
+	 */
+	public void setDefaultConditioningLayer(@Nullable DataLayer<? extends IDatum> layer)
+	{
+		if (this != getRootGraph())
+		{
+			throw new IllegalStateException("The default conditioning layer may only be set on the root graph.");
+		}
+		
+		_graphTreeState._defaultConditioningLayer = layer;
+		
+		ISolverFactorGraph sfg = getSolver();
+		if (sfg != null)
+		{
+			sfg.setConditioningLayer(layer);
+		}
+	}
+	
+	/*==============
 	 * Solver stuff
 	 */
 	
@@ -1330,13 +1400,14 @@ public class FactorGraph extends FactorBase
 		if (v.getSiblingCount() != 0)
 			throw new DimpleException("can only remove a variable if it is no longer connected to a factor");
 
-		if (!_ownedVariables.removeNode(v))
+		if (!_ownedVariables.containsNode(v))
 		{
 			throw new DimpleException("can only currently remove variables that are owned");
 		}
 		
 		v.createSolverObject(null);
-		v.setParentGraph(null);
+		((Node)v).setParentGraph(null);
+		_ownedVariables.removeNode(v);
 		removeNode(v);
 		
 		ISolverVariable svar = v.getSolver();
@@ -1816,7 +1887,7 @@ public class FactorGraph extends FactorBase
 				if(v.getParentGraph() == this)
 				{
 					_ownedVariables.removeNode(v);
-					v.setParentGraph(null);
+					((Node)v).setParentGraph(null);
 				}
 			}
 		}
@@ -2260,10 +2331,10 @@ public class FactorGraph extends FactorBase
 		//Only insert if not already there.
 		if (!_ownedVariables.containsNode(variable))
 		{
-			//Tell variable about us...
-			variable.setParentGraph(this);
-			//...and us about the variable
+			// Tell us about the variable
 			_ownedVariables.add(variable);
+			// And the variable about us...
+			((Node)variable).setParentGraph(this);
 			
 			if ((_flags & VARIABLE_ADD_EVENT) != 0)
 			{

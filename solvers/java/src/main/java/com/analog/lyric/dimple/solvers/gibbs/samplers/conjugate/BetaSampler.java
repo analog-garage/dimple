@@ -21,7 +21,7 @@ import static java.util.Objects.*;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.Beta;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
@@ -34,7 +34,7 @@ public class BetaSampler implements IRealConjugateSampler
 	private final BetaParameters _parameters = new BetaParameters();
 
 	@Override
-	public final double nextSample(ISolverEdgeState[] edges, @Nullable FactorFunction input)
+	public final double nextSample(ISolverEdgeState[] edges, @Nullable IUnaryFactorFunction input)
 	{
 		aggregateParameters(_parameters, edges, input);
 		return nextSample(_parameters);
@@ -42,15 +42,25 @@ public class BetaSampler implements IRealConjugateSampler
 	
 	@Override
 	public final void aggregateParameters(IParameterizedMessage aggregateParameters, ISolverEdgeState[] edges,
-		@Nullable FactorFunction input)
+		@Nullable IUnaryFactorFunction input)
 	{
 		double alphaMinusOne = 0;
 		double betaMinusOne = 0;
 		
 		if (input != null)
 		{
-			alphaMinusOne += ((Beta)input).getAlphaMinusOne();
-			betaMinusOne += ((Beta)input).getBetaMinusOne();
+			if (input instanceof BetaParameters)
+			{
+				BetaParameters betaInput = (BetaParameters)input;
+				alphaMinusOne += betaInput.getAlphaMinusOne();
+				betaMinusOne += betaInput.getBetaMinusOne();
+			}
+			else
+			{
+				Beta betaInput = (Beta)input;
+				alphaMinusOne += betaInput.getAlphaMinusOne();
+				betaMinusOne += betaInput.getBetaMinusOne();
+			}
 		}
 		
 		final int numEdges = edges.length;
@@ -89,11 +99,11 @@ public class BetaSampler implements IRealConjugateSampler
 		public IRealConjugateSampler create() {return new BetaSampler();}
 		
 		@Override
-		public boolean isCompatible(@Nullable FactorFunction factorFunction)
+		public boolean isCompatible(@Nullable IUnaryFactorFunction factorFunction)
 		{
 			if (factorFunction == null)
 				return true;
-			else if (factorFunction instanceof Beta)
+			else if (factorFunction instanceof Beta || factorFunction instanceof BetaParameters)
 				return true;
 			else
 				return false;

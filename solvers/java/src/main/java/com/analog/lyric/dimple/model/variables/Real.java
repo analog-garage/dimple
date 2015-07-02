@@ -21,6 +21,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.domains.RealDomain;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 
 
 @SuppressWarnings("deprecation")
@@ -103,16 +104,24 @@ public class Real extends VariableBase
 	}
 
 	@Override
-	public final void setFixedValueFromObject(@Nullable Object value)
+	public void setInputObject(@Nullable Object value)
 	{
-		if (value != null)
+		if (value instanceof double[])
 		{
-			setFixedValue((double)value);
+			// Array containing [mean, std]
+			double[] array = (double[])value;
+			if (array.length != 2)
+			{
+				throw new IllegalArgumentException("Expected array of length 2");
+			}
+			final double mean = array[0];
+			final double std = array[1];
+			NormalParameters normal = new NormalParameters();
+			normal.setMean(mean);
+			normal.setStandardDeviation(std);
+			value = normal;
 		}
-		else if (hasFixedValue())
-		{
-			setInputOrFixedValue(null, _input);
-		}
+		super.setInputObject(value);
 	}
 	
 	public void setInput(@Nullable FactorFunction input)

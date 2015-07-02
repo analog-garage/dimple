@@ -21,7 +21,9 @@ import java.io.PrintStream;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.data.DataRepresentationType;
+import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.misc.Matlab;
 
 /**
  * A singleton empty message with no parameters.
@@ -104,9 +106,21 @@ public class NullMessage implements IParameterizedMessage, Cloneable
 		return 0;
 	}
 	
+	@Override
+	@Matlab
+	public double evalEnergy(Object value)
+	{
+		return 0;
+	}
+
 	/*-----------------------
 	 * IParameterizedMessage
 	 */
+	
+	@Override
+	public void addFrom(IParameterizedMessage other)
+	{
+	}
 	
 	@Override
 	public double computeKLDivergence(IParameterizedMessage that)
@@ -132,9 +146,21 @@ public class NullMessage implements IParameterizedMessage, Cloneable
 	}
 
 	@Override
+	public boolean hasDeterministicValue()
+	{
+		return false;
+	}
+	
+	@Override
 	public boolean isNull()
 	{
 		return true;
+	}
+	
+	@Override
+	public void setDeterministic(Value value)
+	{
+		throw new UnsupportedOperationException();
 	}
 	
 	@Override
@@ -152,4 +178,9 @@ public class NullMessage implements IParameterizedMessage, Cloneable
 	{
 	}
 
+	@Override
+	public @Nullable Value toDeterministicValue(Domain domain)
+	{
+		return null;
+	}
 }

@@ -22,9 +22,12 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.misc.Matlab;
+import com.google.common.math.DoubleMath;
 
-
+@Matlab(wrapper="NormalParameters")
 public class NormalParameters extends ParameterizedMessageBase
 {
 	private static final long serialVersionUID = 1L;
@@ -158,6 +161,68 @@ public class NormalParameters extends ParameterizedMessageBase
 	 * IParameterizedMessage
 	 */
 	
+	@Override
+	public void addFrom(IParameterizedMessage other)
+	{
+		addFrom((NormalParameters)other);
+	}
+	
+	public void addFrom(NormalParameters other)
+	{
+		// That natural parameters are: mean*precision and precision
+		//
+		// Special cases:
+		//  - both precisions infinite: average means if close enough, otherwise NaN
+		//  - one precision infinite: use corresponding mean
+		//  - one precision is zero: use other mean
+		
+		final double otherPrecision = other._precision;
+		
+		if (otherPrecision == 0.0)
+		{
+			// Other message doesn't add any information.
+			return;
+		}
+		
+		final double precision = _precision;
+		
+		if (precision == 0.0)
+		{
+			// This message doesn't contribute any information
+			_mean = other._mean;
+			_precision = otherPrecision;
+			return;
+		}
+		
+		if (precision == Double.POSITIVE_INFINITY)
+		{
+			if (otherPrecision == Double.POSITIVE_INFINITY)
+			{
+				if (!DoubleMath.fuzzyEquals(_mean, other._mean, Math.abs(_mean) / 1e12))
+				{
+					_mean = Double.NaN;
+				}
+			}
+			else
+			{
+				// Infinite precision overrides other message
+			}
+			return;
+		}
+		
+		if (otherPrecision == Double.POSITIVE_INFINITY)
+		{
+			// Infinite precision in other message overrides this one
+			_mean = other._mean;
+			_precision = otherPrecision;
+			return;
+		}
+		
+		// Regular case
+		_precision += otherPrecision;
+		_mean = _mean * precision + other._mean * otherPrecision / _precision;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * <p>
@@ -174,23 +239,39 @@ public class NormalParameters extends ParameterizedMessageBase
 		{
 			final NormalParameters P = this, Q = (NormalParameters)that;
 			
-			if (Q._precision == P._precision && Q._mean == P._mean)
-			{
-				return 0.0;
-			}
-			
-			final double QP_precision = Q._precision / P._precision;
-			final double QP_mean_difference = Q._mean - P._mean;
-			
-			double divergence = -1.0;
-			divergence -= Math.log(QP_precision);
-			divergence += QP_precision;
-			divergence += QP_mean_difference * QP_mean_difference * Q._precision;
-			return Math.abs(divergence * .5); // protect against going negative due to precision error when close to 0.
+			return computeKLDiverence(P._mean, P._precision, Q._mean, Q._precision);
 		}
 		
 		throw new IllegalArgumentException(String.format("Expected '%s' but got '%s'", getClass(), that.getClass()));
 		
+	}
+	
+	static double computeKLDiverence(double Pmean, double Pprecision, double Qmean, double Qprecision)
+	{
+		if (Qprecision == Pprecision && Qmean == Pmean)
+		{
+			return 0.0;
+		}
+		
+		final double QP_precision = Qprecision / Pprecision;
+		final double QP_mean_difference = Qmean - Pmean;
+		
+		double divergence = -1.0;
+		divergence -= Math.log(QP_precision);
+		divergence += QP_precision;
+		divergence += QP_mean_difference * QP_mean_difference * Qprecision;
+		return Math.abs(divergence * .5); // protect against going negative due to precision error when close to 0.
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * True if {@linkplain #getPrecision() precision} is infinite (or {@linkplain #getVariance() variance} is zero).
+	 */
+	@Override
+	public boolean hasDeterministicValue()
+	{
+		return _precision == Double.POSITIVE_INFINITY;
 	}
 	
 	@Override
@@ -218,14 +299,49 @@ public class NormalParameters extends ParameterizedMessageBase
 		forgetNormalizationEnergy();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Specificially, this will return Value containing the {@linkplain #getMean() mean} if
+	 * {@linkplain #getVariance() variance} is zero and otherwise will return null.
+	 */
+	@Override
+	public @Nullable Value toDeterministicValue(Domain domain)
+	{
+		final double value = toDeterministicValue();
+		return value != value ? null : Value.create(domain, value);
+	}
+	
 	/*---------------
 	 * Local methods
 	 */
 	
+	@Matlab
 	public final double getMean() {return _mean;}
+	
+	@Matlab
 	public final double getPrecision() {return _precision;}
+	
+	@Matlab
 	public final double getVariance() {return 1/_precision;}
+	
+	@Matlab
 	public final double getStandardDeviation() {return 1/Math.sqrt(_precision);}
+	
+	/**
+	 * Sets parameters to represent given deterministic value.
+	 * <p>
+	 * This will set the {@linkplain #getMean() mean} to the specified {@code value} and the
+	 * {@linkplain #getVariance() variance} to zero.
+	 * <p>
+	 * @param value
+	 * @since 0.08
+	 */
+	public void setDeterministic(double value)
+	{
+		_mean = value;
+		_precision = Double.POSITIVE_INFINITY;
+	}
 	
 	public final void setMean(double mean) {_mean = mean;}
 	public final void setPrecision(double precision)
@@ -241,6 +357,8 @@ public class NormalParameters extends ParameterizedMessageBase
 	
 	public final void setStandardDeviation(double standardDeviation)
 	{
+		if (standardDeviation < 0)
+			throw new IllegalArgumentException("Expect standard deviation to be >= 0");
 		setPrecision(1/(standardDeviation*standardDeviation));
 	}
 
@@ -251,6 +369,21 @@ public class NormalParameters extends ParameterizedMessageBase
 		forgetNormalizationEnergy();
 	}
 
+	/**
+	 * Returns unique non-zero probability value, else NaN.
+	 * <p>
+	 * If there is a unique value that has non-zero probability given the parameters returns that.
+	 * Specifically, if the {@linkplain #getVariance() variance} is zero, this will return the
+	 * {@linkplain #getMean() mean} and otherwise will return {@linkplain Double#NaN NaN}.
+	 * <p>
+	 * @since 0.08
+	 * @see #toDeterministicValue(Domain)
+	 */
+	public double toDeterministicValue()
+	{
+		return _precision == Double.POSITIVE_INFINITY ? _mean : Double.NaN;
+	}
+	
 	/*-------------------
 	 * Protected methods
 	 */

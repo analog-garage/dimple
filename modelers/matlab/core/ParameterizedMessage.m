@@ -18,4 +18,16 @@ classdef ParameterizedMessage < handle
     properties
         IParameters;
     end
+    
+    methods
+        % For backward compatibility
+        function weight = eval(obj, value)
+            weight = exp(-obj.evalEnergy(value));
+        end
+        
+        % For backward compatibility
+        function energy = evalEnergy(obj, value)
+            energy = obj.IParameters.evalEnergy(value);
+        end
+    end
 end

@@ -139,7 +139,7 @@ classdef RealJoint < VariableBase
         
         function retval = getInput(obj)
             varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
-            b = cell(obj.VectorObject.getInput(varids));
+            b = wrapProxyObject(cell(obj.VectorObject.getInput(varids)));
             
             v = obj.VectorIndices;
             

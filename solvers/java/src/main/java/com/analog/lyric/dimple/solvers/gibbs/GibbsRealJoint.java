@@ -34,8 +34,9 @@ import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.UnaryJointRealFactorFunction;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.RealDomain;
@@ -47,6 +48,7 @@ import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.solvers.core.SRealJointVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.IRealJointConjugateFactor;
@@ -175,8 +177,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	private @Nullable Object[] _inputMsg = null;
 	private double[] _initialSampleValue;
 	private boolean _initialSampleValueSet = false;
-	private @Nullable FactorFunction[] _inputArray;
-	private @Nullable FactorFunction _inputJoint;
+	private @Nullable IUnaryFactorFunction _inputJoint;
 	private RealJointDomain _domain;
 	private @Nullable IMCMCSampler _sampler = null;
 	private @Nullable IRealJointConjugateSampler _conjugateSampler = null;
@@ -371,28 +372,13 @@ public class GibbsRealJoint extends SRealJointVariableBase
 			double potential = 0;
 
 			// Sum up the potentials from the input and all connected factors
-			final FactorFunction inputJoint = _inputJoint;
+			final IUnaryFactorFunction inputJoint = _inputJoint;
 			if (inputJoint != null)
 			{
 				potential += inputJoint.evalEnergy(_currentSample);
 				if (!Doubles.isFinite(potential))
 				{
 					break computeScore;
-				}
-			}
-			else
-			{
-				final FactorFunction[] inputArray = _inputArray;
-				if (inputArray != null)
-				{
-					for (int i = 0; i < _numRealVars; i++)
-					{
-						potential += inputArray[i].evalEnergy(_currentSample.getValue(i));
-						if (!Doubles.isFinite(potential))
-						{
-							break computeScore;
-						}
-					}
 				}
 			}
 
@@ -518,9 +504,53 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		}
 
 		// If the variable has an input, sample from that (bounded by the domain)
-		final FactorFunction inputJoint = _inputJoint;
-		final FactorFunction[] inputArray = _inputArray;
-		if (inputJoint != null)		// Input is a joint input
+		final IUnaryFactorFunction inputJoint = _inputJoint;
+		
+		List<? extends IUnaryFactorFunction> inputArray = null;
+		if (inputJoint instanceof UnaryJointRealFactorFunction)
+		{
+			inputArray = ((UnaryJointRealFactorFunction)inputJoint).realFunctions();
+		}
+		else if (inputJoint instanceof MultivariateNormalParameters)
+		{
+			inputArray = ((MultivariateNormalParameters)inputJoint).getDiagonalNormals();
+		}
+
+		if (inputArray != null)
+		{
+			for (int i = 0; i < _numRealVars; i++)
+			{
+				RealDomain realDomain = _domain.getRealDomain(i);
+				IUnaryFactorFunction input = inputArray.get(i);
+
+				// If there are inputs, see if there's an available conjugate sampler
+				IRealConjugateSampler inputConjugateSampler = null;		// Don't use the global conjugate sampler since other factors might not be conjugate
+				if (input != null)
+					inputConjugateSampler = RealConjugateSamplerRegistry.findCompatibleSampler(input);
+
+				// Determine if there are bounds
+				double hi = realDomain.getUpperBound();
+				double lo = realDomain.getLowerBound();
+
+				if (inputConjugateSampler != null)
+				{
+					// Sample from the input if there's an available sampler
+					double sampleValue = inputConjugateSampler.nextSample(new ISolverEdgeState[0], input);
+
+					// If there are also bounds, clip at the bounds
+					if (sampleValue > hi) sampleValue = hi;
+					if (sampleValue < lo) sampleValue = lo;
+					setCurrentSample(i, sampleValue);
+				}
+				else
+				{
+					// No available sampler, so if bounded, sample uniformly from the bounds
+					if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
+						setCurrentSample(i, DimpleRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
+				}
+			}
+		}
+		else if (inputJoint != null)		// Input is a joint input
 		{
 			// Don't use the global conjugate sampler since other factors might not be conjugate
 			IRealJointConjugateSampler inputConjugateSampler =
@@ -559,40 +589,6 @@ public class GibbsRealJoint extends SRealJointVariableBase
 						setCurrentSample(i, hi);
 					else if (lo > _currentSample.getValue(i))
 						setCurrentSample(i, lo);
-				}
-			}
-		}
-		else if (inputArray != null)	// Input is an array of separate inputs
-		{
-			for (int i = 0; i < _numRealVars; i++)
-			{
-				RealDomain realDomain = _domain.getRealDomain(i);
-				FactorFunction input = (_inputArray != null) ? inputArray[i] : null;
-
-				// If there are inputs, see if there's an available conjugate sampler
-				IRealConjugateSampler inputConjugateSampler = null;		// Don't use the global conjugate sampler since other factors might not be conjugate
-				if (input != null)
-					inputConjugateSampler = RealConjugateSamplerRegistry.findCompatibleSampler(input);
-
-				// Determine if there are bounds
-				double hi = realDomain.getUpperBound();
-				double lo = realDomain.getLowerBound();
-
-				if (inputConjugateSampler != null)
-				{
-					// Sample from the input if there's an available sampler
-					double sampleValue = inputConjugateSampler.nextSample(new ISolverEdgeState[0], input);
-
-					// If there are also bounds, clip at the bounds
-					if (sampleValue > hi) sampleValue = hi;
-					if (sampleValue < lo) sampleValue = lo;
-					setCurrentSample(i, sampleValue);
-				}
-				else
-				{
-					// No available sampler, so if bounded, sample uniformly from the bounds
-					if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
-						setCurrentSample(i, DimpleRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
 				}
 			}
 		}
@@ -691,23 +687,14 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	{
 		if (input == null)
 		{
-			_inputArray = null;
 			_inputJoint = null;
 		}
-		else if (input instanceof FactorFunction)
+		else if (input instanceof IUnaryFactorFunction)
 		{
-			_inputArray = null;
-			_inputJoint = (FactorFunction)input;
-		}
-		else if (input instanceof Object[])
-		{
-			_inputJoint = null;
-			final FactorFunction[] inputArray = _inputArray = new FactorFunction[_numRealVars];
-			for (int i = 0; i < _numRealVars; i++)
-				inputArray[i] = (FactorFunction)((Object[])input)[i];
+			_inputJoint = (IUnaryFactorFunction)input;
 		}
 		else
-			throw new DimpleException("Invalid input type");
+			throw new DimpleException("Invalid input type %s", input.getClass().getSimpleName());
 
 		if (fixedValue != null)
 			setCurrentSampleForce((double[])fixedValue);
@@ -728,27 +715,18 @@ public class GibbsRealJoint extends SRealJointVariableBase
 			return 0;
 		
 		// Which value to score
-		double[] value;
+		RealJointValue value;
 		if (_guessWasSet)
-			value = (double[])getGuess();
+			value = Value.createRealJoint((double[])getGuess());
 		else
-			value = _currentSample.getValue();
+			value = _currentSample;
 		
 		// Get the score
-		final FactorFunction inputJoint = _inputJoint;
+		final IUnaryFactorFunction inputJoint = _inputJoint;
 		if (inputJoint != null)
 			return inputJoint.evalEnergy(value);
 		
-		final FactorFunction[] inputArray = _inputArray;
-		if (inputArray != null)
-		{
-			double score = 0;
-			for (int i = 0; i < _numRealVars; i++)
-				score += inputArray[i].evalEnergy(value[i]);
-			return score;
-		}
-		else
-			return 0;
+		return 0;
 	}
 	
 	@Override
@@ -810,26 +788,17 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		if (!_domain.inDomain(sampleValue))
 			return Double.POSITIVE_INFINITY;
 		
-		final FactorFunction inputJoint = _inputJoint;
+		final IUnaryFactorFunction inputJoint = _inputJoint;
 		if (inputJoint != null)
 			return inputJoint.evalEnergy(_currentSample);
 		
-		final FactorFunction[] inputArray = _inputArray;
-		if (inputArray != null)
-		{
-			double potential = 0;
-			for (int i = 0; i < _numRealVars; i++)
-				potential += inputArray[i].evalEnergy(sampleValue[i]);
-			return potential;
-		}
-		else
-			return 0;
+		return 0;
 	}
 	
 	@Override
 	public final boolean hasPotential()
 	{
-		return !_model.hasFixedValue() && (_inputJoint != null || _inputArray != null || _domain.isBounded());
+		return !_model.hasFixedValue() && (_inputJoint != null || _domain.isBounded());
 	}
 
 	@Override

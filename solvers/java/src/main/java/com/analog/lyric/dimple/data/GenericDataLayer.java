@@ -21,22 +21,34 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.variables.Variable;
 
 /**
- * 
+ * A generic variable data layer that may contain both fixed values and distributions/potentials.
  * @since 0.08
  * @author Christopher Barber
  */
 public class GenericDataLayer extends DataLayer<IDatum>
 {
+	/*--------------
+	 * Construction
+	 */
+	
 	public GenericDataLayer(FactorGraph graph, Constructor<Variable, IDatum> constructor)
 	{
 		super(graph, constructor);
 	}
 	
+	/**
+	 * Constructs new sparse generic layer for graph with given representation density.
+	 * @since 0.08
+	 */
 	public GenericDataLayer(FactorGraph graph, DataDensity density)
 	{
 		super(graph, density, IDatum.class);
 	}
 	
+	/**
+	 * Constructs new sparse generic layer for graph
+	 * @since 0.08
+	 */
 	public GenericDataLayer(FactorGraph graph)
 	{
 		this(graph, SparseFactorGraphData.constructorForType(Variable.class, IDatum.class));
@@ -61,5 +73,15 @@ public class GenericDataLayer extends DataLayer<IDatum>
 	public static GenericDataLayer sparse(FactorGraph graph)
 	{
 		return new GenericDataLayer(graph, SparseFactorGraphData.constructorForType(Variable.class, IDatum.class));
+	}
+	
+	/*-------------------
+	 * DataLayer methods
+	 */
+	
+	@Override
+	public final boolean allowsValues()
+	{
+		return true;
 	}
 }

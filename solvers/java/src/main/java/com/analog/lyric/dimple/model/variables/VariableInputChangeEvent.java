@@ -18,9 +18,10 @@ package com.analog.lyric.dimple.model.variables;
 
 import java.io.PrintStream;
 
-import net.jcip.annotations.Immutable;
-
 import org.eclipse.jdt.annotation.Nullable;
+
+import cern.colt.Arrays;
+import net.jcip.annotations.Immutable;
 
 
 /**
@@ -71,22 +72,34 @@ public class VariableInputChangeEvent extends VariableChangeEvent
 		switch (getType())
 		{
 		case ADDED:
-			out.format("input on '%s' set to '%s'", getSourceName(), getNewInput());
+			out.format("input on '%s' set to '%s'", getSourceName(), inputToString(getNewInput()));
 			break;
 		case CHANGED:
-			out.format("input on '%s' set to '%s'", getSourceName(), getNewInput());
+			out.format("input on '%s' set to '%s'", getSourceName(), inputToString(getNewInput()));
 			if (verbosity > 0)
 			{
-				out.format(" (was %s)", getOldInput());
+				out.format(" (was %s)", inputToString(getOldInput()));
 			}
 			break;
 		case REMOVED:
 			out.format("input removed from '%s'", getSourceName());
 			if (verbosity > 0)
 			{
-				out.format(" (was %s)", getOldInput());
+				out.format(" (was %s)", inputToString(getOldInput()));
 			}
 			break;
+		}
+	}
+	
+	private String inputToString(@Nullable Object input)
+	{
+		if (input instanceof double[])
+		{
+			return Arrays.toString((double[])input);
+		}
+		else
+		{
+			return input + "";
 		}
 	}
 	

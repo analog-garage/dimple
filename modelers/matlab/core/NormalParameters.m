@@ -119,6 +119,25 @@ classdef NormalParameters < ParameterizedMessage
             s = [2 1];
         end
 
+        % For backward compatibility
+        function m = getMean(obj)
+            m = obj.Mean;
+        end
+        
+        % For backward compatibility
+        function m = getPrecision(obj)
+            m = obj.Precision;
+        end
+        
+        % For backward compatibility
+        function m = getVariance(obj)
+            m = obj.Variance;
+        end
+        
+        % For backward compatibility
+        function m = getStandardDeviation(obj)
+            m = obj.StandardDeviation;
+        end
     end
     
     methods (Access=private)

@@ -18,7 +18,10 @@ package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
 import java.io.Serializable;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
+import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.util.misc.IPrintable;
 
@@ -47,6 +50,16 @@ public interface IParameterizedMessage extends IUnaryFactorFunction, Cloneable, 
 	/*-------------------------------
 	 * IParameterizedMessage methods
 	 */
+	
+	/**
+	 * Adds natural parameters from another message.
+	 * <p>
+	 * @param other unless otherwise documented must be the same type as this object.
+	 * @throws UnsupportedOperationException if message does not support additive parameters
+	 * @throws ClassCastException if {@code other} is not the same class type.
+	 * @since 0.08
+	 */
+	public void addFrom(IParameterizedMessage other);
 	
 	/**
 	 * Adds additional energy to the normalization constant returned by {@link #getNormalizationEnergy()}.
@@ -106,11 +119,37 @@ public interface IParameterizedMessage extends IUnaryFactorFunction, Cloneable, 
 	public void setNormalizationEnergy(double energy);
 	
 	/**
+	 * True if message corresponds to a single deterministic value with non-zero probability.
+	 * <p>
+	 * When true, {@link #toDeterministicValue(Domain)} will return a non-null value. Not all
+	 * messages support parameter settings that will produce such a value. Ones that do include:
+	 * <ul>
+	 * <li>{@link DiscreteMessage}
+	 * <li>{@link NormalParameters}
+	 * <li>{@link MultivariateNormalParameters}
+	 * </ul>
+	 * <p>
+	 * @since 0.08
+	 */
+	public boolean hasDeterministicValue();
+	
+	/**
 	 * True if parameters set to their "null" setting.
 	 * @since 0.08
 	 * @see #setNull()
 	 */
 	public boolean isNull();
+	
+	
+	/**
+	 * Set parameters to value that will produce given deterministic value.
+	 * <p>
+	 * @param value
+	 * @throws UnsupportedOperationException if message does not support deterministic parameter settings.
+	 * @throws IllegalArgumentException if {@code value} is not supported data type
+	 * @since 0.08
+	 */
+	public void setDeterministic(Value value);
 	
 	/**
 	 * Sets parameter values from another message.
@@ -143,4 +182,19 @@ public interface IParameterizedMessage extends IUnaryFactorFunction, Cloneable, 
 	 * @since 0.08
 	 */
 	public void setUniform();
+
+	/**
+	 * Produces unique deterministic {@link Value} for message, if there is one.
+	 * <p>
+	 * If there is only one value with non-zero probability for the message parameters,
+	 * this will return it, else null. This will only return non-null if {@link #hasDeterministicValue()}
+	 * is true. The value it returns is the only one for which {@link #evalEnergy(Value)} returns
+	 * finite energy.
+	 * <p>
+	 * <p>
+	 * @param domain is the domain of the value.
+	 * @since 0.08
+	 */
+	public @Nullable Value toDeterministicValue(Domain domain);
+	
 }

@@ -37,10 +37,15 @@ public class CustomMultivariateGaussianNegate extends MultivariateGaussianFactor
 		MultivariateNormalParameters inputMsg = getSiblingEdgeState(inPortNum).varToFactorMsg;
 		MultivariateNormalParameters outMsg = getSiblingEdgeState(outPortNum).factorToVarMsg;
 
-		double[] mean = inputMsg.getMean();
-		for (int i = 0; i < mean.length; i++)
-			mean[i] = -mean[i];		// Negate the mean vector
-		outMsg.setMeanAndCovariance(mean, inputMsg.getCovariance());
+		if (inputMsg.isNull())
+		{
+			outMsg.setNull();
+		}
+		else
+		{
+			outMsg.set(inputMsg);
+			outMsg.negateMean();
+		}
 	}
 	
 	

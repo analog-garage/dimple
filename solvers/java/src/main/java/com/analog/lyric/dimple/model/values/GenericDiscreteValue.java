@@ -18,9 +18,10 @@ package com.analog.lyric.dimple.model.values;
 
 import java.util.Objects;
 
-import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 
 public class GenericDiscreteValue extends DiscreteValue
 {
@@ -110,8 +111,8 @@ public class GenericDiscreteValue extends DiscreteValue
 	@Override
 	public final void setIndex(int index)
 	{
-		_index = index;
 		_value = _domain.getElement(index);
+		_index = index;
 	}
 	
 	@Override

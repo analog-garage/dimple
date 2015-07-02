@@ -29,8 +29,8 @@ function testPolynomial()
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %test no inputs
-    y.Input = MultivariateNormalParameters([3 4],eye(2)*Inf);
-    x.Input = MultivariateNormalParameters([1 2],eye(2)*Inf);
+    y.Input = [];
+    x.Input = [];
     
     factor = fg.addFactor(@polynomial,y,x,0,1);
     fg.solve();
@@ -97,7 +97,7 @@ function testPolynomial()
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %test backward real
-    x.Input = MultivariateNormalParameters([0 0],eye(2)*Inf);
+    x.Input = [];
     factor.Solver.setNumIterations(100);
 
     expectedX = 4;
@@ -112,7 +112,7 @@ function testPolynomial()
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %test backward imag
-    x.Input = MultivariateNormalParameters([0 0],eye(2)*Inf);
+    x.Input = [];
 
     factor.Solver.setNumIterations(100);
 
@@ -128,7 +128,7 @@ function testPolynomial()
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %test backward complex
-    x.Input = MultivariateNormalParameters([0 0],eye(2)*Inf);
+    x.Input = [];
 
     expectedX = 4+sqrt(-1)*5;
     yval = 2*expectedX + 3*abs(expectedX)^2*expectedX;
@@ -146,7 +146,7 @@ function testPolynomial()
     xval = 4+5*sqrt(-1);
     yval = polyeval(coeffs,xval);
     x.Input = MultivariateNormalParameters([real(xval) imag(xval)],eye(2)*1e-9);
-    y.Input = MultivariateNormalParameters([0 0],eye(2)*Inf);
+    y.Input = [];
    
     fg.solve();
     
@@ -155,7 +155,7 @@ function testPolynomial()
         
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %Test complex coefficients backwards
-    x.Input = MultivariateNormalParameters([0 0],eye(2)*Inf);
+    x.Input = [];
     y.Input = MultivariateNormalParameters([real(yval) imag(yval)],eye(2)*1e-15);
    
     factor.Solver.setNumIterations(100);

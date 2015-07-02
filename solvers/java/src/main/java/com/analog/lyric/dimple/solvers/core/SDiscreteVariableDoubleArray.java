@@ -64,7 +64,7 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 		}
 		else
 		{
-	    	double[] vals = (double[])input;
+	    	double[] vals = input instanceof DiscreteMessage ? ((DiscreteMessage)input).getWeights() : (double[])input;
 	    	if (vals.length != _model.asDiscreteVariable().getDiscreteDomain().size())
 	    		throw new DimpleException("length of priors does not match domain");
 	    	

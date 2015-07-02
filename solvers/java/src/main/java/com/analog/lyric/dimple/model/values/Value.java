@@ -26,7 +26,6 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.data.DataRepresentationType;
 import com.analog.lyric.dimple.data.IDatum;
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
@@ -189,6 +188,7 @@ public abstract class Value implements IDatum, Cloneable, Serializable
 	 * Creates a {@link DiscreteValue} instance for given {@code domain} with specified initial {@code value}.
 	 * <p>
 	 * Simply calls {@link Value#setObject(Object)} on instance returned by {@link #create(DiscreteDomain)}.
+	 * @see #createWithIndex(DiscreteDomain, int)
 	 */
 	public static DiscreteValue create(DiscreteDomain domain, Object value)
 	{
@@ -231,6 +231,20 @@ public abstract class Value implements IDatum, Cloneable, Serializable
 	public static RealJointValue createRealJoint(double ... value)
 	{
 		return new RealJointValue(value);
+	}
+	
+	/**
+	 * Creates a new {@link DiscreteValue} instance for given {@code domain} with value specified by {@code index}.
+	 * @param domain is the domain of the new value.
+	 * @param index is an index into the domain specifying the value's initial value.
+	 * @throws IndexOutOfBoundsException if {@code index} is not in range.
+	 * @since 0.08
+	 */
+	public static DiscreteValue createWithIndex(DiscreteDomain domain, int index)
+	{
+		DiscreteValue discrete = create(domain);
+		discrete.setIndex(index);
+		return discrete;
 	}
 	
 	/**
@@ -311,6 +325,17 @@ public abstract class Value implements IDatum, Cloneable, Serializable
 	/*---------------
 	 * Value methods
 	 */
+	
+	/**
+	 * True if the value may be changed after construction.
+	 * <p>
+	 * The default implementation returns true.
+	 * @since 0.08
+	 */
+	public boolean isMutable()
+	{
+		return true;
+	}
 	
 	/**
 	 * Domain for valid contents of value object.
@@ -425,10 +450,12 @@ public abstract class Value implements IDatum, Cloneable, Serializable
 	/**
 	 * If value is known to be a member of a {@link DiscreteDomain}, sets value to element with
 	 * given index within the domain.
+	 * @throws UnsupportedOperationException if not a {@link DiscreteValue}
+	 * @throws IndexOutOfBoundsException if index is negative or greater than or equal to the domain size.
 	 */
 	public void setIndex(int index)
 	{
-		throw DimpleException.unsupportedMethod(getClass(), "setIndex");
+		throw new UnsupportedOperationException("setIndex only supported on DiscreteValue");
 	}
 	
 	/**

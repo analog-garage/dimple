@@ -18,8 +18,12 @@ package com.analog.lyric.dimple.model.variables;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.collect.Supers;
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.UnaryJointRealFactorFunction;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 
@@ -99,19 +103,6 @@ public class RealJoint extends VariableBase
 		setFixedValueObject(fixedValue);
 	}
 
-	@Override
-	public void setFixedValueFromObject(@Nullable Object value)
-	{
-		if (value != null)
-		{
-			setFixedValue((double[])value);
-		}
-		else if (hasFixedValue())
-		{
-			setInputOrFixedValue(null, _input);
-		}
-	}
-	
 	public void setInput(@Nullable FactorFunction[] input)
 	{
 		setInputObject(input);
@@ -125,6 +116,42 @@ public class RealJoint extends VariableBase
 	public void setInput(@Nullable MultivariateNormalParameters msg)
 	{
 		setInputObject(msg);
+	}
+
+	@Override
+	public void setInputObject(@Nullable Object value)
+	{
+		if (value instanceof Object[])
+		{
+			final Object[] inputArray = (Object[])value;
+			final int n = getDomain().getDimensions();
+			if (inputArray.length != n)
+				throw new DimpleException("Number of Inputs must equal the variable dimension");
+			
+			Normal[] normals = Supers.narrowArrayOf(Normal.class, inputArray);
+			
+			if (normals != null)
+			{
+				double[] mean = new double[n];
+				double[] variance = new double[n];
+				for (int i = 0; i < n; i++)
+				{
+					mean[i] = normals[i].getMean();
+					variance[i] = normals[i].getVariance();
+				}
+				value = new MultivariateNormalParameters(mean, variance);
+			}
+			else
+			{
+				IUnaryFactorFunction[] functions = Supers.narrowArrayOf(IUnaryFactorFunction.class, inputArray);
+				if (functions != null)
+				{
+					value = new UnaryJointRealFactorFunction(functions);
+				}
+			}
+		}
+		
+		super.setInputObject(value);
 	}
 	
 	public @Nullable MultivariateNormalParameters getBelief()

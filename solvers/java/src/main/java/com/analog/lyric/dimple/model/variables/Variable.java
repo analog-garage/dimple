@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.variables;
 
+import static java.lang.String.*;
+
 import java.util.Comparator;
 import java.util.List;
 
@@ -23,10 +25,12 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.events.IDataEventSource;
 import com.analog.lyric.dimple.events.IDimpleEventListener;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Equality;
+import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Ids;
@@ -36,7 +40,9 @@ import com.analog.lyric.dimple.model.core.VariablePort;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorBase;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.SNode;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Internal;
@@ -76,8 +82,8 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	 * State
 	 */
 	
-	protected @Nullable Object _input = null;
-	protected @Nullable Object _fixedValue = null;
+    protected @Nullable IDatum _prior = null;
+    
 	protected String _modelerClassName;
 	private final Domain _domain;
     
@@ -112,9 +118,8 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		super(that);
 		_modelerClassName = that._modelerClassName;
 		_domain = that._domain;
-		// FIXME
-		_input = that._input;
-		_fixedValue = that._fixedValue;
+		IDatum prior = that._prior;
+		_prior = prior != null ? prior.clone() : null;
 	}
 	
 	/*----------------
@@ -214,8 +219,8 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		return super.getEventMask() | EVENT_MASK;
 	}
 	
-	/*----------------------
-	 * VariableBase methods
+	/*------------------
+	 * Variable methods
 	 */
 	
 	/**
@@ -226,7 +231,109 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	{
 		return (Discrete)this;
 	}
+
+	/**
+	 * Get prior value associated with variable, if any.
+	 * <p>
+	 * This may either be a {@link Value} object specifying a fixed value (i.e. making
+	 * the variable a named constant) or a {@link IUnaryFactorFunction} or {@link IParameterizedMessage}
+	 * representing a prior distribution.
+	 * <p>
+	 * Note: this attribute replaces the various "fixed value" and "input" methods that
+	 * will eventually be phased out.
+	 * <p>
+	 * @since 0.08
+	 * @see #getInputObject()
+	 * @see #getFixedValueObject()
+	 */
+	public @Nullable IDatum getPrior()
+	{
+		return _prior;
+	}
 	
+	/**
+	 * Associates a prior with the variable.
+	 * <p>
+	 * Sets the value of the {@linkplain #getPrior prior}.
+	 * <p>
+	 * @param prior may be one of the following:
+	 * <ul>
+	 * <li>{@code null} to remove any existing prior
+	 * <li>a {@link Value} object specifying fixed value for variable
+	 * <li>a value of the variable's {@linkplain #getDomain domain} specifying a fixed value
+	 * <li>a {@link IParameterizedMessage} appropriate to the variable's type
+	 * <li>any {@link IUnaryFactorFunction} appropriate to the variables domain. However, note that
+	 * not all solvers currently support such priors. They may be safely used with the Gibbs solver.
+	 * </ul>
+	 * @since 0.08
+	 */
+	public @Nullable IDatum setPrior(@Nullable Object prior)
+	{
+		final IDatum priorPrior = _prior;
+		
+		if (prior == null || prior instanceof IDatum)
+		{
+			_prior = (IDatum)prior;
+		}
+		else if (_domain.inDomain(prior))
+		{
+			_prior = Value.create(_domain, prior);
+		}
+		else
+		{
+			throw new ClassCastException(format("'%s' is neither an %s nor a member of variable's domain",
+				prior,
+				// Use Class instead of hard-coding name so that we can rename it easily
+				IDatum.class.getSimpleName()));
+		}
+		
+		final IDatum newPrior = _prior;
+		
+    	final ISolverVariable svar = getSolver();
+    	if (svar != null)
+    	{
+			svar.setInputOrFixedValue(priorToInput(newPrior), priorToFixedValue(newPrior));
+    	}
+    	
+    	priorChanged(priorPrior, newPrior);
+    
+    	return priorPrior;
+	}
+	
+	protected @Nullable Object priorToFixedValue(@Nullable IDatum prior)
+	{
+		return prior instanceof Value ? ((Value)prior).getObject() : null;
+	}
+	
+	protected @Nullable Object priorToInput(@Nullable IDatum prior)
+	{
+		return prior instanceof Value ? null : prior;
+	}
+	
+	private void priorChanged(@Nullable IDatum priorPrior, @Nullable IDatum newPrior)
+	{
+    	final int eventFlags = getChangeEventFlags();
+    	
+    	if (eventFlags != NO_CHANGE_EVENT)
+    	{
+    		if ((eventFlags & FIXED_VALUE_CHANGE_EVENT) != 0 &&
+    			(newPrior instanceof Value || priorPrior instanceof Value))
+    		{
+    			raiseEvent(new VariableFixedValueChangeEvent(this, priorToFixedValue(priorPrior),
+    				priorToFixedValue(newPrior)));
+    		}
+    		if ((eventFlags & INPUT_CHANGE_EVENT) != 0)
+    		{
+    			final Object prevInput = priorPrior instanceof Value ? null : priorToInput(priorPrior);
+    			final Object newInput = newPrior instanceof Value ? null : priorToInput(newPrior);
+    			if (prevInput != newInput)
+    			{
+    				raiseEvent(new VariableInputChangeEvent(this, prevInput, newInput));
+    			}
+    		}
+    	}
+	}
+
 	public Domain getDomain()
 	{
 		return _domain;
@@ -234,7 +341,8 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	
     public @Nullable Object getInputObject()
     {
-    	return _input;
+    	IDatum datum = getPrior();
+    	return datum instanceof Value ? null : datum;
     }
 
     /**
@@ -315,9 +423,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
     
 	public void moveInputs(Variable other)
 	{
-		_input = other._input;
-		_fixedValue = other._fixedValue;
-		requireSolver("moveInputs").setInputOrFixedValue(_input,_fixedValue);
+		setPrior(other.getPrior());
 	}
 
 	/**
@@ -333,16 +439,6 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	}
 	
 	/**
-	 * @category internal
-	 */
-	@Deprecated
-	@Internal
-	public void setSolver(@Nullable ISolverVariable svar)
-	{
-		throw new UnsupportedOperationException("Variable.setSolver no longer supported");
-	}
-	
-	/**
 	 * Returns fixed value of variable or null if not fixed.
 	 * @since 0.07
 	 */
@@ -352,30 +448,39 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	 * Sets variable to a fixed value.
 	 * @since 0.07
 	 */
-	public abstract void setFixedValueFromObject(@Nullable Object value);
+	public final void setFixedValueFromObject(@Nullable Object value)
+	{
+		setPrior(value);
+	}
 	
 	// REFACTOR: this is not a good name - has different semantics for discrete and non-discrete
 	// For Discrete this returns the index of the fixed value, for non-discrete it returns the actual fixed
 	// value.
 	public @Nullable Object getFixedValueObject()
 	{
-		return _fixedValue;
+		IDatum datum = getPrior();
+    	if (datum instanceof Value)
+    	{
+    		return ((Value) datum).getObject();
+    	}
+    	
+    	return null;
 	}
 	
 	public void setFixedValueObject(@Nullable Object value)
 	{
-		setInputOrFixedValue(value, null);
+		setPrior(value != null ? Value.create(_domain, value) : null);
 	}
 	
     public void setInputObject(@Nullable Object value)
     {
-    	setInputOrFixedValue(null, value);
+    	setPrior(value);
     }
     
     // For setting the variable to a fixed value in lieu of an input
 	public final boolean hasFixedValue()
 	{
-		return _fixedValue != null;
+		return _prior instanceof Value;
 	}
 	
     public String getModelerClassName()
@@ -468,11 +573,25 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
     	return mycopy;
     }
     
+	/*--------------------
+	 * Deprecated methods
+	 */
+	
+    /**
+	 * @category internal
+	 */
+	@Deprecated
+	@Internal
+	public void setSolver(@Nullable ISolverVariable svar)
+	{
+		throw new UnsupportedOperationException("Variable.setSolver no longer supported");
+	}
+
     /*-------------------
      * Internal methods
      */
     
-    /**
+	/**
      * Creates a new variable that combines the domains of this variable with additional {@code variables}.
      * <p>
      * For use by {@link FactorGraph#join(Variable...)}. Currently only supported for {@link Discrete}
@@ -537,36 +656,6 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
     /*-----------------
      * Private methods
      */
-    
-    protected final void setInputOrFixedValue(@Nullable Object newFixedValue, @Nullable Object newInput)
-    {
-    	final Object prevInput = _input;
-    	final Object prevFixedValue = _fixedValue;
-    	
-    	_fixedValue = newFixedValue;
-    	_input = newInput;
-    	
-    	final ISolverVariable svar = getSolver();
-    	if (svar != null)
-    	{
-			svar.setInputOrFixedValue(_input,_fixedValue);
-    	}
-    
-    	final int eventFlags = getChangeEventFlags();
-    	
-    	if (eventFlags != NO_CHANGE_EVENT)
-    	{
-    		if ((eventFlags & FIXED_VALUE_CHANGE_EVENT) != 0 &&
-    			(newFixedValue != null || prevFixedValue != null))
-    		{
-    			raiseEvent(new VariableFixedValueChangeEvent(this, prevFixedValue, _fixedValue));
-    		}
-    		if ((eventFlags & INPUT_CHANGE_EVENT) != 0 && prevInput != _input)
-    		{
-    			raiseEvent(new VariableInputChangeEvent(this, prevInput, _input));
-    		}
-    	}
-    }
     
     private int getChangeEventFlags()
     {

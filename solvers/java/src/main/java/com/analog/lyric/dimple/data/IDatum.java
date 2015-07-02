@@ -35,10 +35,10 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterized
  * There are three main classes of data (which are enumerated by {@link DataRepresentationType}):
  * <ul>
  * <li>{@link Value} instances representing observed or sampled values.
- * <li>{@link IParameterizedMessage} objects representing a probability distribution used for input
+ * <li>{@link IParameterizedMessage} objects representing a probability distribution or potential used for input
  * distributions or output beliefs.
  * <li>{@link IUnaryFactorFunction} objects that can take a single argument of the variable's type, used to
- * represent input distribution.
+ * represent input potential/distribution.
  * </ul>
  * <p>
  * @since 0.08

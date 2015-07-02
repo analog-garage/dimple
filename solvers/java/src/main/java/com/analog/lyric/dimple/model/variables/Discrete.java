@@ -23,9 +23,13 @@ import java.util.Arrays;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
+import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.dimple.solvers.interfaces.IDiscreteSolverVariable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Internal;
@@ -111,34 +115,28 @@ public class Discrete extends VariableBase
     @Override
     public @Nullable Integer getFixedValueObject()
     {
-    	return (Integer)super.getFixedValueObject();
+    	IDatum datum = getPrior();
+    	if (datum instanceof Value)
+    	{
+    		return ((Value)datum).getIndex();
+    	}
+    	return null;
     }
     
     @Override
     public Object getInputObject()
     {
-    	Object tmp = super.getInputObject();
+    	Object input = priorToInput(getPrior());
     	
-    	if (tmp == null)
-    		return getDefaultPriors(getDiscreteDomain());
-    	else
-    		return tmp;
+    	if (input == null)
+    	{
+    		input = getDefaultPriors(getDiscreteDomain());
+    	}
+    	
+    	return input;
     }
     
     
-    @Override
-    public void setFixedValueFromObject(@Nullable Object value)
-    {
-    	if (value != null)
-    	{
-    		setFixedValue(value);
-    	}
-    	else if (hasFixedValue())
-    	{
-    		setInputOrFixedValue(null, _input);
-    	}
-    }
-
     /*------------------
      * Discrete methods
      */
@@ -230,6 +228,11 @@ public class Discrete extends VariableBase
 		setInputObject(value);
 	}
 	
+	@Override
+	public void setInputObject(@Nullable Object value)
+	{
+		super.setInputObject(value instanceof double[] ? new DiscreteWeightMessage((double[])value) : value);
+	}
 	
 	// Fix the variable to a specific value
 	public final int getFixedValueIndex()
@@ -252,18 +255,46 @@ public class Discrete extends VariableBase
 	
 	public void setFixedValueIndex(int fixedValueIndex)
 	{
-		// In case the solver doesn't directly support fixed-values, convert the fixed-value to an input
-		double[] input = new double[getDiscreteDomain().size()];
-		input[fixedValueIndex] = 1;
-		setInputOrFixedValue(fixedValueIndex, input);
+		setPrior(Value.createWithIndex(getDomain(), fixedValueIndex));
 		
 	}
 	public void setFixedValue(Object fixedValue)
 	{
-		int index = getDomain().getIndex(fixedValue);
-		if (index < 0)
-			throw new DimpleException("Attempt to set variable to a fixed value that is not an element of the variable's domain.");
-		setFixedValueIndex(index);
+		setPrior(Value.create(getDomain(), fixedValue));
+	}
+	
+	@Override
+	public void setFixedValueObject(@Nullable Object value)
+	{
+		setPrior(value != null ? Value.createWithIndex(getDomain(), (Integer)value) : null);
+	}
+	
+	/*----------------------------
+	 * Protected/internal methods
+	 */
+	
+	@Override
+	protected @Nullable Object priorToFixedValue(@Nullable IDatum prior)
+	{
+		return prior instanceof Value ? ((Value)prior).getIndex() : null;
+	}
+
+	@Override
+	protected @Nullable Object priorToInput(@Nullable IDatum prior)
+	{
+		if (prior instanceof Value)
+		{
+			final int index = ((Value)prior).getIndex();
+			final double[] input = new double[getDomain().size()];
+			input[index] = 1.0;
+			return input;
+		}
+		else if (prior instanceof DiscreteMessage)
+		{
+			return ((DiscreteMessage)prior).getWeights();
+		}
+		
+		return prior;
 	}
 	
 	/*-----------------

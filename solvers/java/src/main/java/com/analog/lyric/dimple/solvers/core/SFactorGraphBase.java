@@ -30,6 +30,8 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ExtendedArrayList;
 import com.analog.lyric.collect.ReleasableIterator;
+import com.analog.lyric.dimple.data.DataLayer;
+import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.environment.DimpleThread;
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -344,6 +346,12 @@ public abstract class SFactorGraphBase
 	}
 	
 	@Override
+	public @Nullable DataLayer<? extends IDatum> getConditioningLayer()
+	{
+		return _solverNodeMapping.getConditioningLayer();
+	}
+	
+	@Override
 	public @Nullable SEdge getSolverEdge(EdgeState edge)
 	{
 		return getSolverEdge(edge, true);
@@ -596,7 +604,12 @@ public abstract class SFactorGraphBase
 		return false;
 	}
 
-
+	@Override
+	public void setConditioningLayer(@Nullable DataLayer<? extends IDatum> layer)
+	{
+		_solverNodeMapping.setConditioningLayer(layer);
+	}
+	
 	/**
 	 * Sets number of solver iterations.
 	 * <p>

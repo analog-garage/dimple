@@ -16,9 +16,11 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -37,8 +39,10 @@ import com.analog.lyric.dimple.model.values.Value;
  * In this case, they are not included in the list of arguments.
  * 
  */
-public class NegativeExpGamma extends FactorFunction
+public class NegativeExpGamma extends UnaryFactorFunction
 {
+	private static final long serialVersionUID = 1L;
+
 	protected double _alpha;
 	protected double _beta;
 	protected double _alphaMinusOne;
@@ -46,7 +50,11 @@ public class NegativeExpGamma extends FactorFunction
 	protected boolean _parametersConstant = false;
 	protected int _firstDirectedToIndex = 2;
 
-	public NegativeExpGamma() {super();}
+	/*--------------
+	 * Construction
+	 */
+	
+	public NegativeExpGamma() {super((String)null);}
 	public NegativeExpGamma(double alpha, double beta)
 	{
 		this();
@@ -75,6 +83,26 @@ public class NegativeExpGamma extends FactorFunction
 	public NegativeExpGamma clone()
 	{
 		return new NegativeExpGamma(this);
+	}
+	
+	@Override
+	public boolean objectEquals(@Nullable Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other instanceof NegativeExpGamma)
+		{
+			NegativeExpGamma that = (NegativeExpGamma)other;
+			return _parametersConstant == that._parametersConstant &&
+				_alpha == that._alpha &&
+				_beta == that._beta &&
+				_firstDirectedToIndex == that._firstDirectedToIndex;
+		}
+		
+		return false;
 	}
 	
     @Override

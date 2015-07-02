@@ -149,6 +149,11 @@ public class DirichletParameters extends ParameterizedMessageBase
 		return alphas;
 	}
 	
+	public final double[] getAlphaMinusOneArray()
+	{
+		return _alphaMinusOne.clone();
+	}
+	
 	public final double getAlphaMinusOne(int index) {return _alphaMinusOne[index];}
 	
 	public final void setAlphaMinusOne(double[] alphaMinusOne)
@@ -234,6 +239,28 @@ public class DirichletParameters extends ParameterizedMessageBase
 	/*-------------------------------
 	 * IParameterizedMessage methods
 	 */
+	
+	@Override
+	public void addFrom(IParameterizedMessage other)
+	{
+		addFrom((DirichletParameters)other);
+	}
+	
+	public void addFrom(DirichletParameters other)
+	{
+		double[] params = _alphaMinusOne;
+		double[] otherParams = other._alphaMinusOne;
+		
+		if (params.length != otherParams.length)
+		{
+			throw new IllegalArgumentException("Cannot add from DirichletParameters with different size");
+		}
+		
+		for (int i = params.length; --i>=0;)
+		{
+			params[i] += otherParams[i];
+		}
+	}
 	
 	/**
 	 * {@inheritDoc}

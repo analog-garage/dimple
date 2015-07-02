@@ -16,9 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
-import java.util.Arrays;
-import java.util.Objects;
-
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -91,7 +88,7 @@ public class SumProductRealJoint extends SRealJointVariableBase
 	@Override
 	public Object getBelief()
 	{
-		MultivariateNormalParameters m = new MultivariateNormalParameters();
+		MultivariateNormalParameters m = new MultivariateNormalParameters(getDomain().getDimensions());
 		doUpdate(m,-1);
 		return m;
 	}
@@ -125,45 +122,27 @@ public class SumProductRealJoint extends SRealJointVariableBase
 		final MultivariateNormalParameters input = _input;
 		
     	// If fixed value, just return the input, which has been set to a zero-variance message
-		if (_model.hasFixedValue())
+		if (input != null)
 		{
-			outMsg.set(Objects.requireNonNull(_input));
-			return;
-		}
-
-		double[] vector;
-		double[][] matrix;
-		if (input == null)
-		{
-			vector = new double[_numVars];
-			matrix = new double[_numVars][_numVars];
+			outMsg.set(input);
+			if (input.hasDeterministicValue())
+			{
+				return;
+			}
 		}
 		else
 		{
-			vector = input.getInformationVector();
-			matrix = input.getInformationMatrix();
+			outMsg.setNull();
 		}
-		
+
 		for (int i = 0, n = getSiblingCount(); i < n; i++ )
 		{
 			if (i != outPortNum)
 			{
 				final MultivariateNormalParameters inMsg = getSiblingEdgeState(i).factorToVarMsg;
-				
-				double [] inMsgVector = inMsg.getInformationVector();
-				
-				for (int j = 0; j < vector.length; j++)
-					vector[j] += inMsgVector[j];
-				
-				double [][] inMsgMatrix = inMsg.getInformationMatrix();
-				
-				for (int j = 0; j < inMsgMatrix.length; j++)
-					for (int k = 0; k < inMsgMatrix[j].length; k++)
-						matrix[j][k] += inMsgMatrix[j][k];
+				outMsg.addFrom(inMsg);
 			}
 		}
-		
-		outMsg.setInformation(vector, matrix);
 	}
 
 	public MultivariateNormalParameters createDefaultMessage()
@@ -181,10 +160,8 @@ public class SumProductRealJoint extends SRealJointVariableBase
 
 	public MultivariateNormalParameters createFixedValueMessage(double[] fixedValue)
 	{
-		double[][] covariance = new double[_numVars][_numVars];
-		for (int i = 0; i < _numVars; i++)
-			Arrays.fill(covariance[i], 0);
-		MultivariateNormalParameters message = new MultivariateNormalParameters(fixedValue, covariance);
+		double[] variance = new double[_numVars];
+		MultivariateNormalParameters message = new MultivariateNormalParameters(fixedValue, variance);
 		return message;
 	}
 

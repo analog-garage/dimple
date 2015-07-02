@@ -25,8 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 
-import net.jcip.annotations.ThreadSafe;
-
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -39,6 +37,8 @@ import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.RealValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.util.misc.Matlab;
+
+import net.jcip.annotations.ThreadSafe;
 
 @ThreadSafe
 public abstract class FactorFunction implements IFactorFunction
@@ -115,6 +115,13 @@ public abstract class FactorFunction implements IFactorFunction
 		if (energy != energy)	// Faster isNaN
 			return Double.POSITIVE_INFINITY;
 		return energy;
+	}
+	
+	@Matlab
+	public double evalEnergy(Object value)
+	{
+		final double energy = evalEnergy(Value.create(value));
+		return energy == energy ? energy : Double.POSITIVE_INFINITY;
 	}
 
 	// Evaluate the factor and return a weight rather than an energy value

@@ -20,6 +20,8 @@ import java.util.Collection;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.data.DataLayer;
+import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -73,6 +75,13 @@ public interface ISolverFactorGraph	extends ISolverNode
 	public void estimateParameters(IFactorTable [] tables,int numRestarts,int numSteps, double stepScaleFactor);
 
 	public double getBetheFreeEnergy();
+	
+	/**
+	 * Layer containing conditioning information for solver.
+	 * @since 0.08
+	 * @see #setConditioningLayer
+	 */
+	public @Nullable DataLayer<? extends IDatum> getConditioningLayer();
 	
 	/**
 	 * Returns the name of a solver-specific MATLAB wrapper function that should be invoked from
@@ -346,6 +355,12 @@ public interface ISolverFactorGraph	extends ISolverNode
 	public void removeSolverVariable(ISolverVariable variable);
 	
 	public void runScheduleEntry(IScheduleEntry entry);
+	
+	/**
+	 * Sets {@linkplain #getConditioningLayer() conditioning layer}.
+	 * @since 0.08
+	 */
+	public void setConditioningLayer(@Nullable DataLayer<? extends IDatum> layer);
 	
 	public void setNumIterations(int numIterations);
 	

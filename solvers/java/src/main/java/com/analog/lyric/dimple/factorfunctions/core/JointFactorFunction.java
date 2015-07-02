@@ -26,8 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 
-import net.jcip.annotations.Immutable;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -42,6 +40,16 @@ import com.google.common.cache.AbstractLoadingCache;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
+import net.jcip.annotations.Immutable;
+
+/**
+ * Represents the product of multiple factor functions over subsets of the variables.
+ * <p>
+ * Used for joining factors.
+ * <p>
+ * @since 0.05
+ * @author Christopher Barber
+ */
 @Internal
 public class JointFactorFunction extends FactorFunction
 {

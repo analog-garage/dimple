@@ -26,8 +26,6 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import cern.colt.list.IntArrayList;
-
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
@@ -49,6 +47,8 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.util.misc.Internal;
 import com.google.common.collect.Sets;
+
+import cern.colt.list.IntArrayList;
 
 public class Factor extends FactorBase implements Cloneable
 {
@@ -271,7 +271,7 @@ public class Factor extends FactorBase implements Cloneable
 			}
 		}
 		
-		final int nRemoved = nEdges - constantIndices.size();
+		final int nRemoved = constantIndices.size();
 		
 		if (nRemoved > 0)
 		{

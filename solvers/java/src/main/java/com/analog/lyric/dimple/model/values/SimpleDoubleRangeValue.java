@@ -70,6 +70,7 @@ public class SimpleDoubleRangeValue extends DoubleDiscreteValue
 	@Override
 	public void setIndex(int index)
 	{
+		assertIndexInBounds(index);
 		_value = index;
 	}
 

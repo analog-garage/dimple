@@ -16,16 +16,13 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
-import static java.util.Objects.*;
-
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.collect.ArrayUtil;
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
+import com.analog.lyric.util.misc.Matlab;
 
 
 /**
@@ -43,18 +40,14 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNo
  * 
  * @since 0.05
  */
+@Matlab(wrapper="MultivariateNormalParameters")
 public class MultivariateNormal extends UnaryFactorFunction
 {
 	private static final long serialVersionUID = 1L;
 
 	private MultivariateNormalParameters _parameters;
-	private double[][] _informationMatrix;
-	private double[] _mean;
-	private double[] _diff;
-	private boolean _parametersConstant;
+	private boolean _parametersConstant = true; // TODO: support variable parameters
 	private int _firstDirectedToIndex;
-	private int _dimension;
-	private double _normalizationConstant;
 	protected static final double _logSqrt2pi = Math.log(2*Math.PI)*0.5;
 
 
@@ -73,9 +66,6 @@ public class MultivariateNormal extends UnaryFactorFunction
 	{
 		super((String)null);
 		_parameters = parameters;
-		_informationMatrix = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
-		_mean = ArrayUtil.EMPTY_DOUBLE_ARRAY;
-		_diff = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 		initializeConstantParameters(parameters);
 	}
 	
@@ -83,13 +73,8 @@ public class MultivariateNormal extends UnaryFactorFunction
 	{
 		super(other);
 		_parameters = other._parameters.clone();
-		_informationMatrix = requireNonNull(ArrayUtil.deepCloneArray(other._informationMatrix));
-		_mean = requireNonNull(ArrayUtil.cloneArray(other._mean));
-		_diff = requireNonNull(ArrayUtil.cloneArray(other._diff));
 		_parametersConstant = other._parametersConstant;
 		_firstDirectedToIndex = other._firstDirectedToIndex;
-		_dimension = other._dimension;
-		_normalizationConstant = other._normalizationConstant;
 	}
 	
 	@Override
@@ -104,21 +89,6 @@ public class MultivariateNormal extends UnaryFactorFunction
 		_parameters = parameters;
 		_parametersConstant = true;
 		_firstDirectedToIndex = 0;
-		_dimension = parameters.getVectorLength();
-		_diff = new double[_dimension];
-		if (parameters.isInInformationForm())
-		{
-			_informationMatrix = parameters.getInformationMatrix();
-			_mean = parameters.getMean();	// Requires conversion, do this last
-		}
-		else	// Mean and covariance form
-		{
-			_mean = parameters.getMean();
-			_informationMatrix = parameters.getInformationMatrix();	// Requires conversion, do this last
-		}
-		Jama.Matrix informationMatrix = new Jama.Matrix(_informationMatrix);
-		double determinant = informationMatrix.det();
-		_normalizationConstant = (_dimension * _logSqrt2pi) - (Math.log(determinant) * 0.5);
 	}
 	
 	/*----------------
@@ -148,29 +118,19 @@ public class MultivariateNormal extends UnaryFactorFunction
     @Override
 	public final double evalEnergy(Value[] arguments)
 	{
-    	int index = 0;
+    	final MultivariateNormalParameters params = _parameters;
     	final int length = arguments.length;
+    	int index = 0;
     	final int N = length - index;			// Number of non-parameter variables
+
     	double sum = 0;
+    	
     	for (; index < length; index++)
     	{
-    		final double[] x = arguments[index].getDoubleArray();	// Remaining inputs are multivariate Normal random variable vectors
-    		if (x.length != _dimension)
-	    		throw new DimpleException("Dimension of variable does not equal to the dimension of the parameter vector.");
-    		for (int i = 0; i < _dimension; i++)
-    			_diff[i] = x[i] - _mean[i];
-    		double colSum = 0;
-    		for (int row = 0; row < _dimension; row++)
-    		{
-    			double rowSum = 0;
-    			final double[] informationMatrixRow = _informationMatrix[row];
-    			for (int col = 0; col < _dimension; col++)
-    				rowSum += informationMatrixRow[col] * _diff[col];	// Matrix * vector
-    			colSum += rowSum * _diff[row];	// Vector * vector
-    		}
-    		sum += colSum;
+    		sum += params.evalEnergy(arguments[index]);
     	}
-    	return sum * 0.5 + N * _normalizationConstant;
+
+    	return sum - N * params.getNormalizationEnergy();
 	}
     
     

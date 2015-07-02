@@ -492,10 +492,8 @@ function testMultivariate()
 
     fg.addFactor(@constmult,y,A,x);
 
-    mean = [1;
-            2];
-    covar = [1 0;
-        0 1];
+    mean = [1 2]';
+    covar = eye(2);
 
     y.Input = MultivariateNormalParameters(mean,covar);
 
@@ -503,7 +501,7 @@ function testMultivariate()
 
     xbelief = x.Belief.Mean;
 
-    diff = sum(abs(mean-A*xbelief));
+    diff = sum(abs(mean-A*xbelief))
     assertTrue(diff<1e-6);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

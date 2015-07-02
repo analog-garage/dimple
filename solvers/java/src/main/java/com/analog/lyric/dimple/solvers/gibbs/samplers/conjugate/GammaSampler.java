@@ -21,7 +21,7 @@ import static java.util.Objects.*;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.Gamma;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
@@ -34,7 +34,7 @@ public class GammaSampler implements IRealConjugateSampler
 	private final GammaParameters _parameters = new GammaParameters();
 
 	@Override
-	public final double nextSample(ISolverEdgeState[] edges, @Nullable FactorFunction input)
+	public final double nextSample(ISolverEdgeState[] edges, @Nullable IUnaryFactorFunction input)
 	{
 		aggregateParameters(_parameters, edges, input);
 		return nextSample(_parameters);
@@ -42,15 +42,25 @@ public class GammaSampler implements IRealConjugateSampler
 	
 	@Override
 	public final void aggregateParameters(IParameterizedMessage aggregateParameters, ISolverEdgeState[] edges,
-		@Nullable FactorFunction input)
+		@Nullable IUnaryFactorFunction input)
 	{
 		double alphaMinusOne = 0;
 		double beta = 0;
 		
 		if (input != null)
 		{
-			alphaMinusOne += ((Gamma)input).getAlphaMinusOne();
-			beta += ((Gamma)input).getBeta();
+			if (input instanceof GammaParameters)
+			{
+				GammaParameters gammaInput = (GammaParameters)input;
+				alphaMinusOne += gammaInput.getAlphaMinusOne();
+				beta += gammaInput.getBeta();
+			}
+			else
+			{
+				Gamma gammaInput = (Gamma)input;
+				alphaMinusOne += gammaInput.getAlphaMinusOne();
+				beta += gammaInput.getBeta();
+			}
 		}
 		
 		final int numEdges = edges.length;
@@ -89,11 +99,11 @@ public class GammaSampler implements IRealConjugateSampler
 		public IRealConjugateSampler create() {return new GammaSampler();}
 		
 		@Override
-		public boolean isCompatible(@Nullable FactorFunction factorFunction)
+		public boolean isCompatible(@Nullable IUnaryFactorFunction factorFunction)
 		{
 			if (factorFunction == null)
 				return true;
-			else if (factorFunction instanceof Gamma)
+			else if (factorFunction instanceof Gamma || factorFunction instanceof GammaParameters)
 				return true;
 			else
 				return false;

@@ -109,6 +109,7 @@ public class FiniteFieldDomain extends TypedDiscreteDomain<FiniteFieldNumber>
 	@Override
 	public final FiniteFieldNumber getElement(int i)
 	{
+		assertIndexInBounds(i, _size);
 		return new FiniteFieldNumber(i, this);
 	}
 

@@ -23,7 +23,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Dirichlet;
 import com.analog.lyric.dimple.factorfunctions.ExchangeableDirichlet;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
@@ -38,7 +38,7 @@ public class DirichletSampler implements IRealJointConjugateSampler
 	private int _dimension = -1;
 	
 	@Override
-	public final double[] nextSample(ISolverEdgeState[] edges, @Nullable FactorFunction input)
+	public final double[] nextSample(ISolverEdgeState[] edges, @Nullable IUnaryFactorFunction input)
 	{
 		aggregateParameters(_parameters, edges, input);
 		return nextSample(_parameters);
@@ -46,7 +46,7 @@ public class DirichletSampler implements IRealJointConjugateSampler
 	
 	@Override
 	public final void aggregateParameters(IParameterizedMessage aggregateParameters, ISolverEdgeState[] edges,
-		@Nullable FactorFunction input)
+		@Nullable IUnaryFactorFunction input)
 	{
 		if (_dimension < 0)	// Just do this once
 			setDimension(edges, input);
@@ -60,7 +60,9 @@ public class DirichletSampler implements IRealJointConjugateSampler
 		if (input != null)
 		{
 			double[] inputParameters;
-			if (input instanceof Dirichlet)
+			if (input instanceof DirichletParameters)
+				inputParameters = ((DirichletParameters)input).getAlphaMinusOneArray();
+			else if (input instanceof Dirichlet)
 				inputParameters = ((Dirichlet)input).getAlphaMinusOneArray();
 			else // ExchangeableDirichlet
 				inputParameters = ((ExchangeableDirichlet)input).getAlphaMinusOneArray();
@@ -141,7 +143,7 @@ public class DirichletSampler implements IRealJointConjugateSampler
 	}
 	
 	@SuppressWarnings("null")
-	private void setDimension(ISolverEdgeState[] sedges, @Nullable FactorFunction input)
+	private void setDimension(ISolverEdgeState[] sedges, @Nullable IUnaryFactorFunction input)
 	{
 		int numEdges = sedges.length;
 		int dimension = 0;
@@ -166,11 +168,11 @@ public class DirichletSampler implements IRealJointConjugateSampler
 		public IRealJointConjugateSampler create() {return new DirichletSampler();}
 		
 		@Override
-		public boolean isCompatible(@Nullable FactorFunction factorFunction)
+		public boolean isCompatible(@Nullable IUnaryFactorFunction factorFunction)
 		{
 			if (factorFunction == null)
 				return true;
-			else if (factorFunction instanceof Dirichlet)
+			else if (factorFunction instanceof Dirichlet || factorFunction instanceof DirichletParameters)
 				return true;
 			else if (factorFunction instanceof ExchangeableDirichlet)
 				return true;

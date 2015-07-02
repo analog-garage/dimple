@@ -162,6 +162,18 @@ public class BetaParameters extends ParameterizedMessageBase
 	 * IParameterizedMessage methods
 	 */
 	
+	@Override
+	public void addFrom(IParameterizedMessage other)
+	{
+		addFrom((BetaParameters)other);
+	}
+
+	public void addFrom(BetaParameters other)
+	{
+		_alphaMinusOne += other._alphaMinusOne;
+		_betaMinusOne += other._betaMinusOne;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * <p>

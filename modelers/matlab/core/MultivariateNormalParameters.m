@@ -32,6 +32,20 @@ classdef MultivariateNormalParameters < ParameterizedMessage
             end
         end
         
+        function result = subsref(obj, S)
+            S1 = S(1);
+            if (S1.type ~= '()')
+                result = builtin('subsref', obj, S);
+                return;
+            end
+            validateattributes(S1.subs, {'cell'}, {'scalar'});
+            result = wrapProxyObject(obj.IParameters.getDiagonalNormal(S1.subs{1}-1));
+            Srest = S(2:end);
+            if (~isempty(Srest))
+                result = builtin('subsref', result, Srest);
+            end
+        end
+        
         function mean = get.Mean(obj)
            mean = obj.IParameters.getMean(); 
         end
@@ -50,6 +64,26 @@ classdef MultivariateNormalParameters < ParameterizedMessage
         
         function informationMatrix = get.InformationMatrix(obj)
            informationMatrix = obj.IParameters.getInformationMatrix(); 
+        end
+        
+        % For backward compability
+        function mean = getMean(obj)
+            mean = obj.Mean;
+        end
+        
+        % For backward compability
+        function covariance = getCovariance(obj)
+            covariance = obj.Covariance;
+        end
+        
+        % For backward compability
+        function informationVector = getInformationVector(obj)
+           informationVector = obj.InformationVector; 
+        end
+        
+        % For backward compability
+        function informationMatrix = getInformationMatrix(obj)
+           informationMatrix = obj.InformationMatrix;
         end
 
     end

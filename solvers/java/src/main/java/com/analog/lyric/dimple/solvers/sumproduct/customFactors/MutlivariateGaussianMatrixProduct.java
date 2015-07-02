@@ -16,26 +16,30 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.math.LyricSingularValueDecomposition;
 
-public class MutlivariateGaussianMatrixProduct 
+public class MutlivariateGaussianMatrixProduct
 {
-
+	// TODO: use Apache math Matrix implementation
+	
 	private int M, N;
 	private double [/*M*/][/*N*/] A_clean;  //a form of A with zero singular values set to eps
 	private double [/*M*/][/*N*/] A_pinv;   //a (left or right or both) inverse of A where zero singular values are inverted to 1/eps
 
-	private double eps = 0.0000001; //minimum value for small eigenvalues or 1/(max value)
+	 //minimum value for small eigenvalues or 1/(max value)
+	private static final double eps = 1e-7;
 
 
 	//Initializer
-	public  MutlivariateGaussianMatrixProduct(double[][] A) 
+	public  MutlivariateGaussianMatrixProduct(double[][] A)
 	{
-		int i; //,m;		
+		int i; //,m;
 		M = A.length; N = A[0].length;
-		/* Here we precompute and store matrices for future message computations. 
+		/* Here we precompute and store matrices for future message computations.
 		 * First, compute an SVD of the matrix A using EigenDecompositions of A*A^T and A^T*A
 		 * This way, we get nullspaces for free along with regularized inverse.
 		 */
@@ -44,7 +48,7 @@ public class MutlivariateGaussianMatrixProduct
 
 		Jama.Matrix Amat = new Jama.Matrix(A);
 		
-		boolean matrixIsFat = Amat.getColumnDimension() > Amat.getRowDimension(); 
+		boolean matrixIsFat = Amat.getColumnDimension() > Amat.getRowDimension();
 		
 		//TODO: Because Jama is lame and doesn't handle fat matrices, we have
 		//to deal with the transpose.
@@ -84,6 +88,8 @@ public class MutlivariateGaussianMatrixProduct
 			double d = Sinv.get(i,i);
 			if (d < eps)
 				d = eps;
+			else if (d > 1/eps)
+				d = 1/eps;
 			Sinv.set(i,i, 1.0/d);
 		}
 		
@@ -93,19 +99,38 @@ public class MutlivariateGaussianMatrixProduct
 
 	
 	
-	public void ComputeMsg(MultivariateNormalParameters inMsg, MultivariateNormalParameters outMsg, char direction /* F for Forward, R for Reverse */) 
+	public void ComputeMsg(MultivariateNormalParameters inMsg, MultivariateNormalParameters outMsg, char direction /* F for Forward, R for Reverse */)
 	{
+		// TODO: clean this code up!
+		assert (direction == 'F' || direction == 'R'); //only two directions possible
+
+		// Special case for deterministic input
+		final double[] deterministicInput = inMsg.toDeterministicValueUnsafe();
+		if (deterministicInput != null)
+		{
+			final double[] output = direction == 'F' ?
+				new Array2DRowRealMatrix(A_clean, false).operate(deterministicInput) :
+					new Array2DRowRealMatrix(A_pinv, false).preMultiply(deterministicInput);
+			outMsg.setDeterministic(output);
+			return;
+		}
+		
+		// Special case for null input
+		if (inMsg.isNull())
+		{
+			outMsg.setNull();
+			return;
+		}
+		
 		int m,n;
 		//multiGaBPMsg outMsg;
-
-		assert (direction == 'F' || direction == 'R'); //only two directions possible
 
 		//TODO: this is really hacky!  the conversion to and from the inverse makes sure the matrix doesn't
 		//grow too large.
 		inMsg.getCovariance();
 		inMsg.getInformationMatrix();
 		
-
+		
 		if(direction == 'F') //Forward matrix multiply
 		{
 			//outMsg =  new multiGaBPMsg(M); //Output matrix is MxM
@@ -114,20 +139,6 @@ public class MutlivariateGaussianMatrixProduct
 
 			if(!inMsg.isInInformationForm()) //We were given a covariance form inMsg
 			{
-				//outMsg.Type = 0; //We give the same output form (covariance)
-				//Calculate A * V * A^T
-				double [][] covar = inMsg.getCovariance();
-				double [][] tmpMat = MatrixMult(A_clean, MatrixMult(covar, Transpose(A_clean)));
-				//Incorporate left nullspace term: C*C^T*eps
-				
-				for (int i = 0; i < tmpMat.length; i++)
-					tmpMat[i][i] += eps;
-				
-//				if(LeftNullTerm != null)
-//					for(m=0;m<M;m++)
-//						for(n=0;n<M;n++)
-//							tmpMat[m][n] += LeftNullTerm[m][n] * eps;
-				
 				double [] tmpVector = new double[M];
 				double [] inMsgVector = inMsg.getMean();
 				//Compute mean vector output: m_y = A*m_x
@@ -138,7 +149,27 @@ public class MutlivariateGaussianMatrixProduct
 						tmpVector[m] += A_clean[m][n] * inMsgVector[n];
 				}
 
-				outMsg.setMeanAndCovariance(tmpVector,tmpMat);
+				if (inMsg.hasDeterministicValue())
+				{
+				}
+				else
+				{
+					//outMsg.Type = 0; //We give the same output form (covariance)
+					//Calculate A * V * A^T
+					double [][] covar = inMsg.getCovariance();
+					double [][] tmpMat = MatrixMult(A_clean, MatrixMult(covar, Transpose(A_clean)));
+					//Incorporate left nullspace term: C*C^T*eps
+
+					for (int i = 0; i < tmpMat.length; i++)
+						tmpMat[i][i] += eps;
+
+					//				if(LeftNullTerm != null)
+					//					for(m=0;m<M;m++)
+					//						for(n=0;n<M;n++)
+					//							tmpMat[m][n] += LeftNullTerm[m][n] * eps;
+
+					outMsg.setMeanAndCovariance(tmpVector,tmpMat);
+				}
 				
 //				System.out.println("calculated info vector");
 //				outMsg.getInformationVector();
@@ -271,33 +302,12 @@ public class MutlivariateGaussianMatrixProduct
 	//Does an actual multiplication of Matrix A * Matrix B
 	public double[][] MatrixMult(double[][] A, double[][] B)
 	{
-		int m, n, mm;
-		double [][] C = new double [A.length][B[0].length];
-
-		assert(B.length == A[0].length); //for valid matrix multiply
-
-		for(m=0;m<A.length;m++)
-			for(n=0;n<B[0].length;n++)
-			{
-				C[m][n] = 0;
-				for(mm=0;mm<B.length;mm++)
-					C[m][n] += A[m][mm] * B[mm][n];
-			}
-
-		return C;
+		return new Array2DRowRealMatrix(A, false).multiply(new Array2DRowRealMatrix(B, false)).getDataRef();
 	}
 
 	public double[][] Transpose(double[][] A)
 	{
-		int m,n;
-		double [][] C = new double [A[0].length][A.length];
-
-		for(m=0;m<A[0].length;m++)
-			for(n=0;n<A.length;n++)
-				C[m][n] = A[n][m];
-
-		return C;
-
+		return ((Array2DRowRealMatrix)new Array2DRowRealMatrix(A, false).transpose()).getDataRef();
 	}
 
 

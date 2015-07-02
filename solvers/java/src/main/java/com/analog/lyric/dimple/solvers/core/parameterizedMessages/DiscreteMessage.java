@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
 import static com.analog.lyric.math.Utilities.*;
+import static java.lang.String.*;
 
 import java.io.PrintStream;
 import java.util.Arrays;
@@ -24,6 +25,8 @@ import java.util.Arrays;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.NormalizationException;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -135,6 +138,12 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	@Override
 	public abstract DiscreteMessage clone();
 	
+	@Override
+	public void addFrom(IParameterizedMessage other)
+	{
+		addEnergiesFrom((DiscreteMessage)other);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * <p>
@@ -195,9 +204,33 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	}
 	
 	@Override
+	public final boolean hasDeterministicValue()
+	{
+		return toDeterministicValueIndex() >= 0;
+	}
+	
+	@Override
+	public void setDeterministic(Value value)
+	{
+		int index = value.getIndex();
+		if (index < 0)
+		{
+			throw new IllegalArgumentException(format("%s is not discrete", value));
+		}
+		setDeterministicIndex(index);
+	}
+	
+	@Override
 	public void setFrom(IParameterizedMessage other)
 	{
 		setFrom((DiscreteMessage)other);
+	}
+	
+	@Override
+	public final @Nullable Value toDeterministicValue(Domain domain)
+	{
+		int index = toDeterministicValueIndex();
+		return index >= 0 ? Value.createWithIndex((DiscreteDomain) domain, index) : null;
 	}
 	
 	/*-------------------------
@@ -214,6 +247,20 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 		return _message.length;
 	}
 	
+	/**
+	 * Add energies from other message.
+	 * @since 0.08
+	 */
+	public void addEnergiesFrom(DiscreteMessage other)
+	{
+		assertSameSize(other.size());
+		
+		for (int i = _message.length; --i>=0;)
+		{
+			setEnergy(i, getEnergy(i) + other.getEnergy(i));
+		}
+	}
+	
 	public void addWeightsFrom(DiscreteMessage other)
 	{
 		assertSameSize(other.size());
@@ -223,6 +270,18 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 			setWeight(i, getWeight(i) + other.getWeight(i));
 		}
 	}
+	
+	/**
+	 * Returns copy of all of the energy values in the message.
+	 * @since 0.08
+	 */
+	public abstract double[] getEnergies();
+
+	/**
+	 * Returns copy of all of the weight values in the message.
+	 * @since 0.08
+	 */
+	public abstract double[] getWeights();
 	
 	public abstract double getWeight(int i);
 	public abstract void setWeight(int i, double weight);
@@ -250,6 +309,18 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	 * @throws NormalizationException if {@link #sumOfWeights()} is zero.
 	 */
 	public abstract void normalize();
+	
+	/**
+	 * Sets parameters to produce weight of 1.0 for given index and zero elsewhere.
+	 * 
+	 * @param index must be non-negative and less than {@link #size()}.
+	 * @since 0.08
+	 */
+	public void setDeterministicIndex(int index)
+	{
+		setWeightsToZero();
+		setWeight(index, 1.0);
+	}
 	
 	/**
 	 * Sets values from another message of the same size.
@@ -289,6 +360,14 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	 * @since 0.06
 	 */
 	public abstract boolean storesWeights();
+	
+	/**
+	 * Returns the only index with non-zero probability (non-infinite energy) if there is one.
+	 * <p>
+	 * @return index or -1 if there is not a unique index.
+	 * @since 0.08
+	 */
+	public abstract int toDeterministicValueIndex();
 	
 	/*-------------------
 	 * Protected methods

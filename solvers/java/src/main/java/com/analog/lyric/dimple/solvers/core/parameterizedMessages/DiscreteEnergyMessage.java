@@ -87,6 +87,47 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 	 */
 
 	@Override
+	public void addEnergiesFrom(DiscreteMessage other)
+	{
+		assertSameSize(other.size());
+		
+		final double[] message = _message;
+		
+		if (other.storesWeights())
+		{
+			for (int i = _message.length; --i >= 0; )
+			{
+				message[i] += other.getEnergy(i);
+			}
+		}
+		else
+		{
+			final double[] otherMessage = other._message;
+			for (int i = _message.length; --i >= 0; )
+			{
+				message[i] += otherMessage[i];
+			}
+		}
+		
+		forgetNormalizationEnergy();
+	}
+	
+	@Override
+	public double[] getEnergies()
+	{
+		return _message.clone();
+	}
+	
+	@Override
+	public double[] getWeights()
+	{
+		double[] weights = new double[_message.length];
+		for (int i = weights.length; --i>=0;)
+			weights[i] = energyToWeight(_message[i]);
+		return weights;
+	}
+	
+	@Override
 	public final double getWeight(int i)
 	{
 		return Utilities.energyToWeight(_message[i]);
@@ -215,5 +256,24 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 				_normalizationEnergy += min * _message.length;
 			}
 		}
+	}
+	
+	@Override
+	public int toDeterministicValueIndex()
+	{
+		int index = -1;
+		for (int i = _message.length; --i>=0;)
+		{
+			if (_message[i] != Double.POSITIVE_INFINITY)
+			{
+				if (index >= 0)
+				{
+					index = -1;
+					break;
+				}
+				index = i;
+			}
+		}
+		return index;
 	}
 }

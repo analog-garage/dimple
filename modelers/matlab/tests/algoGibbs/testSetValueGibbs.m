@@ -70,7 +70,7 @@ function testSetValueGibbs()
     fg.Solver = 'Gibbs';
     fg.addFactor('Equality', a, b);
     a.Input = {'Normal',1,1};
-    assert(isa(a.Input, 'com.analog.lyric.dimple.factorfunctions.Normal'));
+    assert(isa(a.Input, 'NormalParameters'));
     value = rand();
     assert(~a.hasFixedValue);
     a.FixedValue = value;

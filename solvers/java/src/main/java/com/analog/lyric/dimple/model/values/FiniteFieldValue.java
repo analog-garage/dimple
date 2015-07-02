@@ -94,6 +94,7 @@ public class FiniteFieldValue extends DiscreteValue
 	@Override
 	public void setIndex(int index)
 	{
+		assertIndexInBounds(index);
 		_value = _value.cloneWithNewValue(index);
 	}
 	

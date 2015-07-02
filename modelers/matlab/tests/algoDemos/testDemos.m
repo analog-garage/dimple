@@ -87,11 +87,12 @@ function testDemos()
     assertTrue(valid == 1);
     close;
 
+    %% 16_KalmanFilter
     cd('../16_KalmanFilter');
     run;
     close;
-    assertTrue(norm(fgxs-gxs) < 6.5);
-    assertTrue(norm(fgys-gys) < 6);
+    assertTrue(norm(fgxs-gxs) / norm(gxs) < 0.01);
+    assertTrue(norm(fgys-gys) / norm(gys) < 0.01);
     runUnivariate;
     close;
     assertTrue(norm(results-realZ) < 70);

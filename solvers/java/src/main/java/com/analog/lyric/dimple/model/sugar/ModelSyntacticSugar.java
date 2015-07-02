@@ -580,6 +580,11 @@ public class ModelSyntacticSugar
 		return addFactorWithRealFirst(new ConstantProduct(x), y);
 	}
 	
+	public static Complex product(Complex x, Complex y)
+	{
+		return addFactorWithComplexFirst(new ComplexProduct(), x, y);
+	}
+	
 	public static Complex product(Complex x, Variable y)
 	{
 		return addFactorWithComplexFirst(new ComplexProduct(), x, y);

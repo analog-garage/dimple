@@ -18,16 +18,17 @@ package com.analog.lyric.dimple.model.domains;
 
 import java.util.List;
 
-import net.jcip.annotations.Immutable;
-
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.WeakInterner;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.variables.Bit;
+import com.analog.lyric.util.misc.Internal;
 import com.google.common.collect.Interner;
 import com.google.common.math.DoubleMath;
+
+import net.jcip.annotations.Immutable;
 
 /**
  * Domain for discrete variables that can take on a values from a predefined finite set
@@ -401,6 +402,7 @@ public abstract class DiscreteDomain extends Domain
 	/**
 	 * Returns the value of the ith element in the domain.
 	 * @param i must be in the range [0,{@link #size()}-1].
+	 * @throws IndexOutOfBoundsException if {@code i} is not in required range.
 	 */
 	public abstract Object getElement(int i);
 	
@@ -499,6 +501,21 @@ public abstract class DiscreteDomain extends Domain
 	public boolean isElementOf(Object value)
 	{
 		return (getIndex(value) >= 0);
+	}
+
+	/*------------------
+	 * Internal methods
+	 */
+	
+	/**
+	 * Verifies that {@code index} is in the range [0,{@link #size}-1].
+	 * @throws IndexOutOfBoundsException if index is not in range.
+	 * @category internal
+	 */
+	@Internal
+	public void assertIndexInBounds(int index)
+	{
+		assertIndexInBounds(index, size());
 	}
 	
 	/*-------------------

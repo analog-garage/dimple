@@ -18,13 +18,12 @@ package com.analog.lyric.math;
 
 import java.util.Random;
 
-import net.jcip.annotations.NotThreadSafe;
-
 import org.apache.commons.math3.random.RandomAdaptor;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import cern.jet.random.engine.RandomEngine;
+import net.jcip.annotations.NotThreadSafe;
 
 /**
  * Extended implementation of {@link Random} for use in Dimple
@@ -214,6 +213,5 @@ public class DimpleRandom extends RandomAdaptor
 	{
 		return _randGamma.nextDouble(alpha, beta);
 	}
-	
 	
 }

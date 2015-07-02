@@ -98,15 +98,15 @@ public class TestVariableChangeEvent extends DimpleTestBase
 		inputHandler.assertEvent(d, VariableInputChangeEvent.Type.REMOVED, d46, null);
 		
 		d.setInput(d37);
-		assertSame(d37, d.getInputObject());
+		assertInputsEqual(d37, d.getInputObject());
 		inputHandler.assertEvent(d, VariableInputChangeEvent.Type.ADDED, null, d37);
 		d.setFixedValueIndex(0);
 		double[] d10 = d.getInput();
 		assertArrayEquals(new double[] { 1, 0}, d10, 0.0);
 		fixedHandler.assertEvent(d, VariableFixedValueChangeEvent.Type.ADDED, null, 0);
-		inputHandler.assertEvent(d, VariableInputChangeEvent.Type.CHANGED, d37, d10);
+		inputHandler.assertEvent(d, VariableInputChangeEvent.Type.REMOVED, d37, null);
 		d.setInput(d37);
-		inputHandler.assertEvent(d, VariableInputChangeEvent.Type.CHANGED, d10, d37);
+		inputHandler.assertEvent(d, VariableInputChangeEvent.Type.ADDED, null, d37);
 		fixedHandler.assertEvent(d, VariableFixedValueChangeEvent.Type.REMOVED, 0, null);
 		
 		Normal normal = new Normal(1.0, 1.0);
@@ -141,7 +141,7 @@ public class TestVariableChangeEvent extends DimpleTestBase
 		double[] d01 = d.getInput();
 		assertArrayEquals(new double[] { 0, 1 }, d01, 0.0);
 		fixedHandler.assertEvent(d, VariableFixedValueChangeEvent.Type.ADDED, null, 1);
-		inputHandler.assertEvent(d, VariableInputChangeEvent.Type.CHANGED, d37, d01);
+		inputHandler.assertEvent(d, VariableInputChangeEvent.Type.REMOVED, d37, null);
 			
 		listener.unblock(VariableFixedValueChangeEvent.class, r);
 		r.notifyListenerChanged();
@@ -211,7 +211,7 @@ public class TestVariableChangeEvent extends DimpleTestBase
 			Variable var = event.getModelObject();
 			if (event.getNewInput() != null)
 			{
-				assertEquals(var.getInputObject(), event.getNewInput());
+				assertInputsEqual(var.getInputObject(), event.getNewInput());
 			}
 			switch (event.getType())
 			{
@@ -237,13 +237,25 @@ public class TestVariableChangeEvent extends DimpleTestBase
 			assertNotNull(event);
 			assertSame(var, event.getModelObject());
 			assertEquals(type, event.getType());
-			assertEquals(oldInput, event.getOldInput());
-			assertSame(newInput, event.getNewInput());
+			assertInputsEqual(oldInput, event.getOldInput());
+			assertInputsEqual(newInput, event.getNewInput());
 		}
 
 		void assertNoEvent()
 		{
 			assertTrue(_events.isEmpty());
+		}
+	}
+	
+	static void assertInputsEqual(@Nullable Object input1, @Nullable Object input2)
+	{
+		if (input1 instanceof double[])
+		{
+			assertArrayEquals((double[])input1, (double[])input2, 1e-15);
+		}
+		else
+		{
+			assertEquals(input1, input2);
 		}
 	}
 	

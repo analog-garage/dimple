@@ -55,6 +55,10 @@ public class SumProductReal extends SRealVariableBase
 			_input = createFixedValueMessage((Double)fixedValue);
 		else if (input == null)
     		_input = null;
+    	else if (input instanceof NormalParameters)
+    	{
+    		_input = (NormalParameters)input;
+    	}
     	else
     	{
     		if (input instanceof Normal)	// Input is a Normal factor function with fixed parameters
@@ -71,9 +75,6 @@ public class SumProductReal extends SRealVariableBase
     			double[] vals = (double[])input;
     			if (vals.length != 2)
     				throw new DimpleException("Expect a two-element vector of mean and standard deviation");
-
-    			if (vals[1] < 0)
-    				throw new DimpleException("Expect standard deviation to be >= 0");
 
     			final NormalParameters newInput = _input = new NormalParameters();
     			newInput.setMean(vals[0]);

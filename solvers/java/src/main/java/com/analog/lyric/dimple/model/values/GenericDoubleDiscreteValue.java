@@ -63,15 +63,15 @@ public class GenericDoubleDiscreteValue extends DoubleDiscreteValue
 	@Override
 	public void setIndex(int index)
 	{
-		_index = index;
 		_value = getDomain().getElement(index);
+		_index = index;
 	}
 
 	@Override
 	public void setDouble(double value)
 	{
-		_value = value;
 		_index = getDomain().getIndex(value);
+		_value = value;
 	}
 	
 	@Override

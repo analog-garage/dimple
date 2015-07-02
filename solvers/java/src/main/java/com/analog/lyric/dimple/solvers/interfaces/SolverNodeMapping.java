@@ -20,6 +20,8 @@ import static java.util.Objects.*;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.data.DataLayer;
+import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Node;
@@ -38,18 +40,15 @@ import com.analog.lyric.util.misc.Internal;
  */
 public abstract class SolverNodeMapping
 {
+	/*-------
+	 * State
+	 */
+	
+	private @Nullable DataLayer<? extends IDatum> _conditioningLayer = null;
+	
 	/*-------------------
 	 * Abstract methods
 	 */
-	
-	/**
-	 * Returns the root solver graph in the tree.
-	 * <p>
-	 * This will be the solver that is associated with the root graph in the model graph tree.
-	 * <p>
-	 * @since 0.08
-	 */
-	public abstract ISolverFactorGraph getRootSolverGraph();
 	
 	/**
 	 * Add a new subgraph to the mapping..
@@ -65,6 +64,19 @@ public abstract class SolverNodeMapping
 	@Internal
 	public abstract void addSolverGraph(ISolverFactorGraph sgraph);
 	
+	/*-------------------
+	 * Abstract methods
+	 */
+	
+	/**
+	 * Returns the root solver graph in the tree.
+	 * <p>
+	 * This will be the solver that is associated with the root graph in the model graph tree.
+	 * <p>
+	 * @since 0.08
+	 */
+	public abstract ISolverFactorGraph getRootSolverGraph();
+
 	/**
 	 * Get solver graph for given model graph.
 	 * <p>
@@ -98,6 +110,16 @@ public abstract class SolverNodeMapping
 	/*------------------
 	 * Concrete methods
 	 */
+	
+	/**
+	 * Layer containing conditioning information for solver.
+	 * @since 0.08
+	 * @see #setConditioningLayer
+	 */
+	public final @Nullable DataLayer<? extends IDatum> getConditioningLayer()
+	{
+		return _conditioningLayer;
+	}
 	
 	/**
 	 * The root of the {@link FactorGraph} tree associated with this state.
@@ -181,6 +203,11 @@ public abstract class SolverNodeMapping
 		return getSolverGraph(factor.getParentGraph()).getSolverFactor(factor, true);
 	}
 	
+	/**
+	 * Return solver node for given model node, creating if necessary.
+	 * @throws NullPointerException if there is no such
+	 * @since 0.08
+	 */
 	public ISolverNode getSolverNode(INode node)
 	{
 		ISolverNode snode = null;
@@ -269,6 +296,15 @@ public abstract class SolverNodeMapping
 	public boolean inGraphTree(Node node)
 	{
 		return node.getRootGraph() == getRootGraph();
+	}
+	
+	/**
+	 * Sets {@linkplain #getConditioningLayer() conditioning layer}.
+	 * @since 0.08
+	 */
+	public final void setConditioningLayer(@Nullable DataLayer<? extends IDatum> layer)
+	{
+		_conditioningLayer = layer;
 	}
 	
 	/*-------------------

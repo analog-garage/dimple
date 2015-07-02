@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
+import com.analog.lyric.util.misc.Matlab;
 
 
 /**
@@ -42,6 +43,7 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParamete
  * In this case, the mean and precision are not included in the list of arguments.
  * 
  */
+@Matlab(wrapper="NormalParameters")
 public class Normal extends UnaryFactorFunction implements IParametricFactorFunction
 {
 	private static final long serialVersionUID = 1L;
@@ -231,24 +233,32 @@ public class Normal extends UnaryFactorFunction implements IParametricFactorFunc
     {
     	return new NormalParameters(_mean, _precision);
     }
+    
+    @Matlab
     public final double getMean()
     {
     	return _mean;
     }
+    
+    @Matlab
     public final double getPrecision()
     {
     	return _precision;
     }
+    
 	/**
 	 * @since 0.05
 	 */
+    @Matlab
 	public final double getVariance()
 	{
 		return 1/_precision;
 	}
+    
 	/**
 	 * @since 0.05
 	 */
+    @Matlab
 	public final double getStandardDeviation()
 	{
 		return 1/Math.sqrt(_precision);

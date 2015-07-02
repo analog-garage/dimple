@@ -87,7 +87,7 @@ function testVariable()
     end
 
 
-    assertEqual(exFound,true);
+    assertTrue(exFound);
     assertTrue(findstr(message,'Expect standard deviation to be >= 0')>0);
 
     %Test variable with multiple edges

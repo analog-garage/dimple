@@ -65,21 +65,34 @@ public class CustomMultivariateGaussianSum extends MultivariateGaussianFactorBas
 			{
 				MultivariateNormalParameters inMsg = getSiblingEdgeState(i).varToFactorMsg;
 				
+				if (inMsg.isNull())
+				{
+					// If any input is null, then no information is provided to the other variables.
+					outMsg.setNull();
+					return;
+				}
+				
 				double [] inMsgMean = inMsg.getMean();
 				
-				for (int j = 0; j < mean.length; j++)
+				if (outPortNum != _sumPort && i != _sumPort)
 				{
-					if (outPortNum != _sumPort && i != _sumPort)
+					for (int j = size; --j>=0;)
 						mean[j] -= inMsgMean[j];
-					else
+				}
+				else
+				{
+					for (int j = size; --j>=0;)
 						mean[j] += inMsgMean[j];
 				}
 				
 				double [][] inMsgCovariance = inMsg.getCovariance();
 				
-				for (int j = 0; j < inMsgCovariance.length; j++)
-					for (int k = 0; k < inMsgCovariance[j].length; k++)
-						covariance[j][k] += inMsgCovariance[j][k];
+				for (int j = inMsgCovariance.length; --j>=0;)
+				{
+					final double[] row = covariance[j], inrow = inMsgCovariance[j];
+					for (int k = row.length; --k>=0;)
+						row[k] += inrow[k];
+				}
 			}
 		}
 		

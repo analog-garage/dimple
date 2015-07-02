@@ -209,7 +209,7 @@ public class TestValue extends DimpleTestBase
 		assertEquals(42, value.getInt());
 		assertEquals(-1, value.getIndex());
 		value.setInt(23);
-		expectThrow(DimpleException.class, value, "setIndex", 0);
+		expectThrow(UnsupportedOperationException.class, value, "setIndex", 0);
 		assertEquals(23, value.getInt());
 		value.setDouble(1.6);
 		assertEquals(2, value.getInt());

@@ -16,8 +16,9 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 
 public class RealConjugateSamplerRegistry
 {
@@ -33,7 +34,7 @@ public class RealConjugateSamplerRegistry
 	
 
 	// Find a sampler compatible with the specified factor function as an input
-	public static @Nullable IRealConjugateSampler findCompatibleSampler(FactorFunction ff)
+	public static @Nullable IRealConjugateSampler findCompatibleSampler(IUnaryFactorFunction ff)
 	{
 
 		for (IRealConjugateSamplerFactory sampler : availableConjugateSamplers)

@@ -14,33 +14,30 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.factorfunctions.core;
+package com.analog.lyric.dimple.data;
 
-import com.analog.lyric.dimple.data.IDatum;
-import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.util.misc.Matlab;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 
 /**
- * A factor function that can be called with a single argument.
+ * {@link DataLayer} implementation for {@link com.analog.lyric.dimple.model.variables.Variable#getPrior()
+ * variable priors}.
+ * <p>
+ * Priors are stored directly in Variable instances, so this class simply maps to those
+ * and has no variable-specific local state.
  * <p>
  * @since 0.08
  * @author Christopher Barber
  */
-public interface IUnaryFactorFunction extends IDatum
+public class PriorDataLayer extends GenericDataLayer
 {
-	@Override
-	IUnaryFactorFunction clone();
-	
 	/**
-	 * Computes the energy produced by the function for the given value.
+	 * Construct prior data layer for given graph.
 	 * <p>
-	 * The energy may be thought of either as a cost or as an unnormalized log probability.
-	 * <p>
-	 * @param value must have a type compatible with the function.
+	 * @param graph
 	 * @since 0.08
 	 */
-	public double evalEnergy(Value value);
-	
-	@Matlab
-	public double evalEnergy(Object value);
+	public PriorDataLayer(FactorGraph graph)
+	{
+		super(graph, PriorFactorGraphData.constructor());
+	}
 }

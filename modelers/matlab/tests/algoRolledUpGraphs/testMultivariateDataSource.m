@@ -39,6 +39,9 @@ function testMultivariateDataSource()
 
     fg.solve();
 
+    data1 = cell2mat(cellfun(@(x) {x.Mean}, x.Belief'));
+    assertTrue(norm(data-data1) < 1e-6);
+    
     for i = 1:N
        assertTrue(max(abs(x(i).Belief.Mean-data(:,i))) < .01);
     end
@@ -53,7 +56,7 @@ function testMultivariateDataSource()
     fg.addFactor(ng,x,x.getSlice(2));
     x.get(1).Input = MultivariateNormalParameters(A,eye(2));
     x.DataSink = dsink;
-    fg.NumSteps = 10;
+    fg.NumSteps = N;
     fg.solve();
     i = 1;
     while (dsink.hasNext())

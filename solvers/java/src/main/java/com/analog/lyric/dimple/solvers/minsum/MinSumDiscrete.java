@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 
 /**
  * Solver variable for Discrete variables under Min-Sum solver.
@@ -297,7 +298,10 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 			_input = MessageConverter.initialValue(_model.getDomain().size());
 		else
 			// Convert from probabilities since that's what the interface provides
-			_input = MessageConverter.fromProb((double[])input);
+			if (input instanceof DiscreteMessage)
+				_input = ((DiscreteMessage)input).getEnergies();
+			else
+				_input = MessageConverter.fromProb((double[])input);
 	}
 	
 	@Override

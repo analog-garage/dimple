@@ -47,4 +47,9 @@ public abstract class DiscreteValue extends Value
 	
 	@Override
 	public abstract void setIndex(int index);
+
+	protected void assertIndexInBounds(int index)
+	{
+		getDomain().asDiscrete().assertIndexInBounds(index);
+	}
 }

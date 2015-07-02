@@ -63,14 +63,14 @@ public class GenericIntDiscreteValue extends IntDiscreteValue
 	@Override
 	public void setIndex(int index)
 	{
-		_index = index;
 		_value = getDomain().getElement(index);
+		_index = index;
 	}
 	
 	@Override
 	public void setInt(int value)
 	{
-		_value = value;
 		_index = getDomain().getIndex(value);
+		_value = value;
 	}
 }

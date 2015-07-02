@@ -35,7 +35,7 @@ dtrace(debugPrint, '--testMiscFactorFunctions');
 
 end
 
-% Test RealJoint and Complex to Real vector conversaion factor functions
+% Test RealJoint and Complex to Real vector conversion factor functions
 function test1(debugPrint, repeatable)
 
 if ~hasStatisticsToolbox('testMiscFactorFunctions:test1')

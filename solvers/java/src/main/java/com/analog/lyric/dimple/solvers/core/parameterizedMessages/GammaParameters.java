@@ -156,6 +156,18 @@ public class GammaParameters extends ParameterizedMessageBase
 	 * IParameterizedMessage methods
 	 */
 	
+	@Override
+	public void addFrom(IParameterizedMessage other)
+	{
+		addFrom((GammaParameters)other);
+	}
+	
+	public void addFrom(GammaParameters other)
+	{
+		_alphaMinusOne += other._alphaMinusOne;
+		_beta += other._beta;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * <p>

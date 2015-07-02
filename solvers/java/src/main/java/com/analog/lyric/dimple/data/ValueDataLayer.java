@@ -32,6 +32,10 @@ import com.analog.lyric.dimple.model.variables.Variable;
  */
 public class ValueDataLayer extends DataLayer<Value>
 {
+	/*--------------
+	 * Construction
+	 */
+	
 	public ValueDataLayer(FactorGraph graph, Constructor<Variable,Value> constructor)
 	{
 		super(graph, constructor);
@@ -66,5 +70,15 @@ public class ValueDataLayer extends DataLayer<Value>
 	public static ValueDataLayer sparse(FactorGraph graph)
 	{
 		return new ValueDataLayer(graph, SparseFactorGraphData.constructorForType(Variable.class, Value.class));
+	}
+	
+	/*-------------------
+	 * DataLayer methods
+	 */
+	
+	@Override
+	public final boolean allowsValues()
+	{
+		return true;
 	}
 }

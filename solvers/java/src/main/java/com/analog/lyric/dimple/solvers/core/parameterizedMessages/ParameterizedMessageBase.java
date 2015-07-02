@@ -9,12 +9,17 @@
 
 package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
+import static java.lang.String.*;
+
 import java.io.PrintStream;
 
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.data.DataRepresentationType;
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.util.misc.IPrintable;
+import com.analog.lyric.util.misc.Matlab;
 
 /**
  * Base implementation of {@link IParameterizedMessage}
@@ -108,10 +113,29 @@ public abstract class ParameterizedMessageBase implements IParameterizedMessage
 	{
 		return DataRepresentationType.MESSAGE;
 	}
+
+	/*------------------------------
+	 * IUnaryFactorFunction methods
+	 */
 	
+	@Override
+	@Matlab
+	public double evalEnergy(Object value)
+	{
+		final double energy = evalEnergy(Value.create(value));
+		return energy == energy ? energy : Double.POSITIVE_INFINITY;
+	}
+
 	/*-------------------------------
 	 * IParameterizedMessage methods
 	 */
+	
+	@Override
+	public void addFrom(IParameterizedMessage other)
+	{
+		throw new UnsupportedOperationException(format("%s does not support addFrom method",
+			getClass().getSimpleName()));
+	}
 	
 	@Override
 	public double addNormalizationEnergy(double additionalEnergy)
@@ -135,6 +159,19 @@ public abstract class ParameterizedMessageBase implements IParameterizedMessage
 	}
 	
 	@Override
+	public boolean hasDeterministicValue()
+	{
+		return false;
+	}
+	
+	@Override
+	public void setDeterministic(Value value)
+	{
+		throw new UnsupportedOperationException(format("%s does not support deterministic parameterization",
+			getClass().getSimpleName()));
+	}
+
+	@Override
 	public void setNormalizationEnergy(double energy)
 	{
 		_normalizationEnergy = energy;
@@ -144,6 +181,12 @@ public abstract class ParameterizedMessageBase implements IParameterizedMessage
 	public void setNull()
 	{
 		setUniform();
+	}
+
+	@Override
+	public @Nullable Value toDeterministicValue(Domain domain)
+	{
+		return null;
 	}
 	
 	/*-------------------

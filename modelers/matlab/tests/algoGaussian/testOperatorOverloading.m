@@ -252,22 +252,21 @@ binCo = diag(rand(dim,1)) + eye(dim)*0.1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Operator overloaded graph
 fg = FactorGraph();
-
-a = RealJoint(dim);
-b = RealJoint(dim);
+a = RealJoint(dim); a.Name = 'a';
+b = RealJoint(dim); b.Name = 'b';
 
 % Can overload +/- operators with Gaussian custom factors
-aa = a + b;
-bb = a - b;
-cc = -a;
-dd = a + K;
-ee = K + b;
-ff = a - K;
-gg = K - b;
-hh = a + k;
-ii = k + b;
-jj = a - k;
-kk = k - b;
+aa = a + b; aa.Name = 'aa';
+bb = a - b; bb.Name = 'bb';
+cc = -a; cc.Name = 'cc';
+dd = a + K; dd.Name = 'dd';
+ee = K + b; ee.Name = 'ee';
+ff = a - K; ff.Name = 'ff';
+gg = K - b; gg.Name = 'gg';
+hh = a + k; hh.Name = 'hh';
+ii = k + b; ii.Name = 'ii';
+jj = a - k; jj.Name = 'jj';
+kk = k - b; kk.Name = 'kk';
 
 assert(~isempty(strfind(aa.Factors{1}.Solver.toString, 'CustomMultivariateGaussianSum')));
 assert(~isempty(strfind(bb.Factors{1}.Solver.toString, 'CustomMultivariateGaussianSubtract')));
@@ -283,7 +282,6 @@ assert(~isempty(strfind(kk.Factors{1}.Solver.toString, 'CustomMultivariateGaussi
 
 a.Input = {'MultivariateNormal', ainMu, ainCo};
 b.Input = {'MultivariateNormal', binMu, binCo};
-
 fg.solve();
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

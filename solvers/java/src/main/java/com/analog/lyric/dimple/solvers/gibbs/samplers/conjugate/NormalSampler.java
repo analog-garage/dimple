@@ -21,7 +21,7 @@ import static java.util.Objects.*;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.Normal;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
@@ -34,7 +34,7 @@ public class NormalSampler implements IRealConjugateSampler
 	private final NormalParameters _parameters = new NormalParameters();
 	
 	@Override
-	public final double nextSample(ISolverEdgeState[] edges, @Nullable FactorFunction input)
+	public final double nextSample(ISolverEdgeState[] edges, @Nullable IUnaryFactorFunction input)
 	{
 		aggregateParameters(_parameters, edges, input);
 		return nextSample(_parameters);
@@ -42,16 +42,28 @@ public class NormalSampler implements IRealConjugateSampler
 	
 	@Override
 	public final void aggregateParameters(IParameterizedMessage aggregateParameters, ISolverEdgeState[] edges,
-		@Nullable FactorFunction input)
+		@Nullable IUnaryFactorFunction input)
 	{
 		double totalPrecision = 0;
 		double totalMeanPrecisionProduct = 0;
 		
 		if (input != null)
 		{
-			double mean = ((Normal)input).getMean();
-			double precision = ((Normal)input).getPrecision();
+			double mean, precision;
 			
+			if (input instanceof NormalParameters)
+			{
+				NormalParameters normalInput = (NormalParameters)input;
+				mean = normalInput.getMean();
+				precision = normalInput.getPrecision();
+			}
+			else
+			{
+				Normal normalInput = (Normal)input;
+				mean = normalInput.getMean();
+				precision = normalInput.getPrecision();
+			}
+				
 			totalMeanPrecisionProduct += mean * precision;
 			totalPrecision += precision;
 		}
@@ -100,11 +112,11 @@ public class NormalSampler implements IRealConjugateSampler
 		public IRealConjugateSampler create() {return new NormalSampler();}
 		
 		@Override
-		public boolean isCompatible(@Nullable FactorFunction factorFunction)
+		public boolean isCompatible(@Nullable IUnaryFactorFunction factorFunction)
 		{
 			if (factorFunction == null)
 				return true;
-			else if (factorFunction instanceof Normal)
+			else if (factorFunction instanceof Normal || factorFunction instanceof NormalParameters)
 				return true;
 			else
 				return false;

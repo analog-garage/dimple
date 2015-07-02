@@ -118,6 +118,21 @@ public class DiscreteWeightMessage extends DiscreteMessage
 		
 		forgetNormalizationEnergy();
 	}
+
+	@Override
+	public double[] getEnergies()
+	{
+		double[] energies = new double[_message.length];
+		for (int i = energies.length; --i>=0;)
+			energies[i] = weightToEnergy(_message[i]);
+		return energies;
+	}
+	
+	@Override
+	public double[] getWeights()
+	{
+		return _message.clone();
+	}
 	
 	@Override
 	public double getWeight(int i)
@@ -209,4 +224,22 @@ public class DiscreteWeightMessage extends DiscreteMessage
 		return true;
 	}
 	
+	@Override
+	public int toDeterministicValueIndex()
+	{
+		int index = -1;
+		for (int i = _message.length; --i>=0;)
+		{
+			if (_message[i] != 0)
+			{
+				if (index >= 0)
+				{
+					index = -1;
+					break;
+				}
+				index = i;
+			}
+		}
+		return index;
+	}
 }

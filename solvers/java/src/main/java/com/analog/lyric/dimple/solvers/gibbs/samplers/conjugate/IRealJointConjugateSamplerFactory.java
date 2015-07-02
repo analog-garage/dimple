@@ -16,13 +16,14 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
+import com.analog.lyric.dimple.model.domains.RealJointDomain;
 
 public interface IRealJointConjugateSamplerFactory
 {
 	public IRealJointConjugateSampler create();
-	public boolean isCompatible(@Nullable FactorFunction factorFunction);
+	public boolean isCompatible(@Nullable IUnaryFactorFunction factorFunction);
 	public boolean isCompatible(RealJointDomain domain);
 }

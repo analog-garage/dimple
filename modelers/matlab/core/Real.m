@@ -85,6 +85,8 @@ classdef Real < VariableBase
         function setInput(obj,input)
             if (isa(input, 'FactorFunction'))
                 input = input.get();
+            elseif (isa(input, 'ParameterizedMessage'))
+                input = input.IParameters;
             elseif (iscell(input))
                 input = FactorFunction(input{:}).get();
             end
@@ -96,7 +98,7 @@ classdef Real < VariableBase
         end
         function retval = getInput(obj)
             varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
-            b = cell(obj.VectorObject.getInput(varids));
+            b = wrapProxyObject(cell(obj.VectorObject.getInput(varids)));
             
             v = obj.VectorIndices;
             

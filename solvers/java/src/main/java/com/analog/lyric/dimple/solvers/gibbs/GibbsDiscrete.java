@@ -591,7 +591,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		}
 		else
 		{
-			double[] vals = (double[])input;
+			double[] vals = input instanceof DiscreteMessage ? ((DiscreteMessage)input).getWeights() : (double[])input;
 			if (vals.length != _model.getDiscreteDomain().size())
 				throw new DimpleException("Prior size must match domain length");
 			

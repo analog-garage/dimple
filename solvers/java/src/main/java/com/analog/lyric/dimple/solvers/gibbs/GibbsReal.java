@@ -28,14 +28,12 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import cern.colt.list.DoubleArrayList;
-
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.RealDomain;
@@ -65,6 +63,8 @@ import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.Matlab;
 import com.google.common.primitives.Doubles;
+
+import cern.colt.list.DoubleArrayList;
 
 /*
  * WARNING: Whenever editing this class, also make the corresponding edit to SRealJointVariable.
@@ -160,7 +160,7 @@ public class GibbsReal extends SRealVariableBase
 	private boolean _repeatedVariable;
 	private double _initialSampleValue = 0;
 	private boolean _initialSampleValueSet = false;
-	private @Nullable FactorFunction _input;
+	private @Nullable IUnaryFactorFunction _input;
 	private final RealDomain _domain;
 	private @Nullable IMCMCSampler _sampler = null;
 	private @Nullable IRealConjugateSampler _conjugateSampler = null;
@@ -341,7 +341,7 @@ public class GibbsReal extends SRealVariableBase
 			double potential = 0;
 
 			// Sum up the potentials from the input and all connected factors
-			final FactorFunction input = _input;
+			final IUnaryFactorFunction input = _input;
 			if (input != null)
 			{
 				potential = input.evalEnergy(_currentSample);
@@ -477,7 +477,7 @@ public class GibbsReal extends SRealVariableBase
 
 		// If there are inputs, see if there's an available conjugate sampler
 		IRealConjugateSampler inputConjugateSampler = null;		// Don't use the global conjugate sampler since other factors might not be conjugate
-		final FactorFunction input = _input;
+		final IUnaryFactorFunction input = _input;
 		if (input != null)
 			inputConjugateSampler = RealConjugateSamplerRegistry.findCompatibleSampler(input);
 
@@ -550,7 +550,7 @@ public class GibbsReal extends SRealVariableBase
 		if (input == null)
 			_input = null;
 		else
-			_input = (FactorFunction)input;
+			_input = (IUnaryFactorFunction)input;
 
 		if (fixedValue != null)
 			setCurrentSampleForce(FactorFunctionUtilities.toDouble(fixedValue));
@@ -568,11 +568,11 @@ public class GibbsReal extends SRealVariableBase
 		if (_model.hasFixedValue())
 			return 0;
 		
-		final FactorFunction input = _input;
+		final IUnaryFactorFunction input = _input;
 		if (input == null)
 			return 0;
 		else if (_guessWasSet)
-			return input.evalEnergy(_guessValue);
+			return input.evalEnergy(Value.create(getDomain(), _guessValue));
 		else
 			return input.evalEnergy(_currentSample);
 	}
@@ -634,7 +634,7 @@ public class GibbsReal extends SRealVariableBase
 		if (!_domain.inDomain(_currentSample.getDouble()))
 			return Double.POSITIVE_INFINITY;
 		
-		final FactorFunction input = _input;
+		final IUnaryFactorFunction input = _input;
 		if (input == null)
 			return 0;
 		else

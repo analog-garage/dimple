@@ -70,6 +70,7 @@ public class SimpleIntRangeValue extends IntDiscreteValue
 	@Override
 	public void setIndex(int index)
 	{
+		assertIndexInBounds(index);
 		_value = index;
 	}
 }

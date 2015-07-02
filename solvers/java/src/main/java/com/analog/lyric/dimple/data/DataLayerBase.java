@@ -371,14 +371,32 @@ public class DataLayerBase<K extends IFactorGraphChild, D extends IDatum>
 	{
 		assertSharesRoot(var);
 		final FactorGraph graph = requireNonNull(var.getParentGraph());
-		final FactorGraphData<K,D> data = createDataForGraph(graph);
-		return data.put(var, value);
+		if (value != null)
+		{
+			return createDataForGraph(graph).put(var, value);
+		}
+		else
+		{
+			final FactorGraphData<K,D> data = getDataForGraph(graph);
+			return data != null ? data.put(var, value) : null;
+		}
 	}
 	
 	@Override
 	public @Nullable D remove(@Nullable Object key)
 	{
-		final FactorGraphData<K,D> data = getDataForKey(key);
+		IFactorGraphChild child = _rootGraph.getChild(key);
+		if (_keyType.isInstance(child))
+		{
+			return remove(_keyType.cast(child));
+		}
+		
+		return null;
+	}
+	
+	public @Nullable D remove(K key)
+	{
+		final FactorGraphData<K,D> data = getDataForChild(key);
 		return data != null ? data.remove(key) : null;
 	}
 	
@@ -396,8 +414,8 @@ public class DataLayerBase<K extends IFactorGraphChild, D extends IDatum>
 		return n;
 	}
 	
-	/*-------------------
-	 * DataLayer methods
+	/*-----------------------
+	 * DataLayerBase methods
 	 */
 	
 	/**
@@ -551,16 +569,6 @@ public class DataLayerBase<K extends IFactorGraphChild, D extends IDatum>
 	/*-----------------
 	 * Private methods
 	 */
-	
-	private @Nullable FactorGraphData<K,D> getDataForKey(@Nullable Object obj)
-	{
-		if (obj instanceof IFactorGraphChild)
-		{
-			return getDataForChild((IFactorGraphChild)obj);
-		}
-		
-		return null;
-	}
 	
 	private @Nullable FactorGraphData<K,D> getDataForChild(IFactorGraphChild key)
 	{

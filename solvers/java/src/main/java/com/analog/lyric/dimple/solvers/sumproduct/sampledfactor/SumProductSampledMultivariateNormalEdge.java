@@ -62,7 +62,7 @@ class SumProductSampledMultivariateNormalEdge extends SumProductMultivariateNorm
 			MultivariateNormalParameters inputMessage = varToFactorMsg;
 			if (inputMessage.isNull())
 			{
-				var.setInputObject(null);		// If zero precision, then set the input to null to avoid numerical issues
+				var.setInputObject(null); // If zero precision, then set the input to null to avoid numerical issues
 			}
 			else
 			{

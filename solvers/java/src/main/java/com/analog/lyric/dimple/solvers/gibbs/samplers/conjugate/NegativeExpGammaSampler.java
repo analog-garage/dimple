@@ -21,7 +21,7 @@ import static java.util.Objects.*;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.NegativeExpGamma;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
@@ -34,7 +34,7 @@ public class NegativeExpGammaSampler implements IRealConjugateSampler
 	private final GammaParameters _parameters = new GammaParameters();
 	
 	@Override
-	public final double nextSample(ISolverEdgeState[] edges, @Nullable FactorFunction input)
+	public final double nextSample(ISolverEdgeState[] edges, @Nullable IUnaryFactorFunction input)
 	{
 		aggregateParameters(_parameters, edges, input);
 		return nextSample(_parameters);
@@ -42,7 +42,7 @@ public class NegativeExpGammaSampler implements IRealConjugateSampler
 	
 	@Override
 	public final void aggregateParameters(IParameterizedMessage aggregateParameters, ISolverEdgeState[] edges,
-		@Nullable FactorFunction input)
+		@Nullable IUnaryFactorFunction input)
 	{
 		double alphaMinusOne = 0;
 		double beta = 0;
@@ -89,7 +89,7 @@ public class NegativeExpGammaSampler implements IRealConjugateSampler
 		public IRealConjugateSampler create() {return new NegativeExpGammaSampler();}
 		
 		@Override
-		public boolean isCompatible(@Nullable FactorFunction factorFunction)
+		public boolean isCompatible(@Nullable IUnaryFactorFunction factorFunction)
 		{
 			if (factorFunction == null)
 				return true;
