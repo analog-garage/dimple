@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
+import static com.analog.lyric.math.MoreMatrixUtils.*;
 import static java.lang.String.*;
 import static java.util.Objects.*;
 
@@ -24,6 +25,9 @@ import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.math3.linear.EigenDecomposition;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
@@ -36,7 +40,6 @@ import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.math.LyricEigenvalueDecomposition;
 import com.analog.lyric.util.misc.Matlab;
 
-import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
 
 @Matlab(wrapper="MultivariateNormalParameters")
@@ -654,30 +657,32 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 				
 				return kl;
 			}
-			
-			P.toCovarianceFormat();
-			P.instantiateMatrix();
-			Q.toCovarianceFormat();
-			Q.instantiateMatrix();
-			
-			final double[] udiff = Q.getMean();
-			for (int i = 0; i < K; ++i)
-			{
-				udiff[i] -= P._mean[i];
-			}
 
-			final Matrix Ut = new Matrix(udiff, 1);
-			final Matrix U = Ut.transpose();
-			final Matrix CP = new Matrix(P._matrix, K, K);
-			final Matrix CQ = new Matrix(Q._matrix, K, K);
-			final Matrix CQinv = CQ.inverse();
+			// TODO - if we ever start storing the eigendecomposition in this object, we can simply use
+			// the eigenvalues to efficiently compute the trace and determinants. Perhaps it would be worthwhile
+			// to save the eigenvalues if nothing else.
 			
+			RealVector mP = wrapRealVector(P.getMean());
+			RealVector mQ = wrapRealVector(Q.getMean());
+			RealMatrix CP = wrapRealMatrix(P.getCovariance());
+			RealMatrix CQinv = wrapRealMatrix(Q.getInformationMatrix());
+
+			RealVector mdiff = mQ.subtract(mP);
+
 			// FIXME: do we need to worry about singular covariance matrices?
 			
 			double divergence = -K;
-			divergence += CQinv.times(CP).trace();
-			divergence += Ut.times(CQinv).times(U).get(0,0);
-			divergence -= Math.log(CP.det()/CQ.det());
+			
+			// trace of product of matrices is equivalent to the dot-product of the vectorized versions
+			// of the matrices - this is much faster than doing the actual matrix product
+			// divergence += CQinv.multiply(CP).trace();
+			for (int i = 0; i < K; ++i)
+				for (int j = 0; j < K; ++j)
+					divergence += CQinv.getEntry(i, j) * CP.getEntry(i, j);
+			
+			divergence += CQinv.preMultiply(mdiff).dotProduct(mdiff);
+			divergence -= Math.log(new EigenDecomposition(CP).getDeterminant() *
+				new EigenDecomposition(CQinv).getDeterminant());
 			return Math.abs(divergence/2); // use abs to guard against precision errors causing this to go negative.
 		}
 		
@@ -1109,7 +1114,7 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 
 		if (n > 0)
 		{
-			EigenvalueDecomposition eig = new EigenvalueDecomposition(new Matrix(m));
+			EigenDecomposition eig = new EigenDecomposition(wrapRealMatrix(m));
 			for (double value : eig.getRealEigenvalues())
 			{
 				if (value <= 0)
