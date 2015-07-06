@@ -1165,6 +1165,13 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 			}
 			else
 			{
+				// FIXME - replace with Apache version if possible
+				// Currently, attempting to replace with this the equivalent Apache commons implementation
+				// causes the MATLAB Kalman filter tests to fail. Using the colt implementation also breaks
+				// the Kalman tests although the error is not quite as great. I am not sure whether this is
+				// because the Jama implementation is better in some way or because it deals with degenerate
+				// covariance matrices in a more appropriate manner for the Kalman case. [cbarber 2015-07-06]
+				
 				LyricEigenvalueDecomposition eig = new LyricEigenvalueDecomposition(new Jama.Matrix(_matrix));
 
 				Matrix D = eig.getD();
