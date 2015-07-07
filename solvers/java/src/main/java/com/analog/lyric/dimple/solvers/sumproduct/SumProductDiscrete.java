@@ -589,16 +589,17 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	
 	public double calculateDerivativeOfBelief(int weightIndex, int domain)
 	{
+		final int n = getDomain().size();
 		double [] un = getUnormalizedBelief();
 		//Calculate unormalized belief
 		double f = un[domain];
 		double g = 0;
-		for (int i = 0; i < _input.length; i++)
+		for (int i = 0; i < n; i++)
 			g += un[i];
 		
 		double df = calculatedf(f,weightIndex,domain);
 		double dg = 0;
-		for (int i = 0; i < _input.length; i++)
+		for (int i = 0; i < n; i++)
 		{
 			double tmp = un[i];
 			dg += calculatedf(tmp,weightIndex,i);
@@ -610,13 +611,14 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	
 	public double calculateDerivativeOfInternalEnergyWithRespectToWeight(int weightIndex)
 	{
+		final int n = getDomain().size();
 		double sum = 0;
 
 		//double [] belief = (double[])getBelief();
 		double [] input = getNormalizedInputs();
 		
 		//for each domain
-		for (int d = 0; d < _input.length; d++)
+		for (int d = 0; d < n; d++)
 		{
 			//calculate belief(d)
 			//double beliefd = belief[d];
@@ -637,7 +639,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		
 		double [] belief = getBelief();
 		
-		for (int d = 0; d < _input.length; d++)
+		for (int d = belief.length; --d >=0;)
 		{
 			double beliefd = belief[d];
 			double dbelief = calculateDerivativeOfBelief(weightIndex, d);
@@ -669,7 +671,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     	
     	//calculate g
     	double g = 0;
-    	for (int i = 0; i < _input.length; i++)
+    	for (int i = getDomain().size(); --i>=0;)
     		g += calculateProdFactorMessagesForDomain(outPortNum, i);
     	
     	double derivative = 0;
@@ -690,7 +692,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     public double calculatedg(int outPortNum,int wn)
     {
     	double sum = 0;
-    	for (int d = 0; d < _input.length; d++)
+    	for (int d = getDomain().size(); --d>=0;)
     	{
     		double prod = calculateProdFactorMessagesForDomain(outPortNum, d);
     		sum += calculatedf(outPortNum,prod,d,wn);
@@ -701,7 +703,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 
 	public void initializeDerivativeMessages(int weights)
 	{
-		_outMessageDerivative = new double[weights][getSiblingCount()][_input.length];
+		_outMessageDerivative = new double[weights][getSiblingCount()][getDomain().size()];
 	}
     
 	/**
@@ -741,7 +743,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     
     public void updateDerivativeForWeightNum(int outPortNum, int weight)
     {
-    	for (int d = 0; d < _input.length; d++)
+    	for (int d = getDomain().size(); --d >=0; )
     	{
     		updateDerivativeForWeightNumAndDomainItem(outPortNum,weight,d);
     	}
