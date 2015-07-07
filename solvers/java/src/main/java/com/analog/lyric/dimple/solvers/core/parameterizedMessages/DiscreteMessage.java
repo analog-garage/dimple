@@ -25,8 +25,10 @@ import java.util.Arrays;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.NormalizationException;
+import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.Value;
 
 
@@ -275,13 +277,34 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	 * Returns copy of all of the energy values in the message.
 	 * @since 0.08
 	 */
-	public abstract double[] getEnergies();
+	public final double[] getEnergies()
+	{
+		return getEnergies(new double[_message.length]);
+	}
+	
 
+	/**
+	 * Copies energies into provided array and returns it.
+	 * @param array an array with length matching {@link #size}.
+	 * @since 0.08
+	 */
+	public abstract double[] getEnergies(double[] array);
+	
 	/**
 	 * Returns copy of all of the weight values in the message.
 	 * @since 0.08
 	 */
-	public abstract double[] getWeights();
+	public final double[] getWeights()
+	{
+		return getWeights(new double[_message.length]);
+	}
+	
+	/**
+	 * Copies weights into provided array and returns it.
+	 * @param array an array with length matching {@link #size}.
+	 * @since 0.08
+	 */
+	public abstract double[] getWeights(double[] array);
 	
 	public abstract double getWeight(int i);
 	public abstract void setWeight(int i, double weight);
@@ -344,6 +367,30 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 		}
 		
 		_normalizationEnergy = other._normalizationEnergy;
+	}
+	
+	/**
+	 * Sets values by evaluating factor function for each element in domain.
+	 * @param domain discrete domain with size matching {@link #size()}.
+	 * @param function function used to evaluate energy for each element of domain.
+	 * @since 0.08
+	 */
+	public void setFrom(DiscreteDomain domain, IUnaryFactorFunction function)
+	{
+		if (function instanceof DiscreteMessage)
+		{
+			setFrom((DiscreteMessage)function);
+		}
+		else
+		{
+			assertSameSize(domain.size());
+			DiscreteValue value = Value.create(domain);
+			for (int i = domain.size(); --i>=0;)
+			{
+				value.setIndex(i);
+				setEnergy(i, function.evalEnergy(value));
+			}
+		}
 	}
 	
 	/**

@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.particleBP;
 
+import static com.analog.lyric.math.Utilities.*;
 import static java.util.Objects.*;
 
 import java.util.Arrays;
@@ -25,7 +26,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.Domain;
@@ -66,9 +67,8 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 	 */
 	protected boolean _explicitProposalKernel;
 	protected RealDomain _initialParticleDomain;
-	protected @Nullable FactorFunction _input;
 	protected RealDomain _domain;
-	double [] _logWeight;
+	double [] _particleEnergy;
 	protected double _beta = 1;
 
 	/*--------------
@@ -88,7 +88,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 		{
 			_particleValues[i] = RealValue.create();
 		}
-		_logWeight = new double[_numParticles];
+		_particleEnergy = new double[_numParticles];
 	}
 
 	@Override
@@ -147,39 +147,42 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 	@Override
 	protected void doUpdateEdge(int outPortNum)
 	{
-		final double minLog = -100;
+		final double maxEnergy = 100;
 		int M = _numParticles;
 		int D = getSiblingCount();
-		double maxLog = Double.NEGATIVE_INFINITY;
+		double minEnergy = Double.POSITIVE_INFINITY;
 
 
 		final double[] outMsgs = getSiblingEdgeState(outPortNum).varToFactorMsg.representation();
 
-		final FactorFunction input = _input;
+		final IUnaryFactorFunction input = _model.getPriorFunction();
 		
 		for (int m = 0; m < M; m++)
 		{
-			double prior = 1;
+			double prior = 0;
 			if (input != null)
 			{
-				prior = input.eval(_particleValues[m]);
+				prior = input.evalEnergy(_particleValues[m]);
 			}
 			
-			double out = (prior == 0) ? minLog : Math.log(prior) * _beta;
+			// FIXME: why does infinity get turned into minLog but values between minLog
+			// and infinity not?
+			
+			double out = (prior == Double.POSITIVE_INFINITY) ? maxEnergy : prior * _beta;
 
 			for (int d = 0; d < D; d++)
 			{
 				if (d != outPortNum)		// For all ports except the output port
 				{
-					double tmp = getSiblingEdgeState(d).factorToVarMsg.getWeight(m);
-					out += (tmp == 0) ? minLog : Math.log(tmp);
+					double tmp = getSiblingEdgeState(d).factorToVarMsg.getEnergy(m);
+					out += (tmp == Double.POSITIVE_INFINITY) ? maxEnergy : tmp;
 				}
 			}
 
-			// Subtract the log weight
-			out -= _logWeight[m];
+			// Subtract particle energy
+			out -= _particleEnergy[m];
 
-			if (out > maxLog) maxLog = out;
+			if (out < minEnergy) minEnergy = out;
 			outMsgs[m] = out;
 		}
 
@@ -187,7 +190,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 		double sum = 0;
 		for (int m = 0; m < M; m++)
 		{
-			double out = Math.exp(outMsgs[m] - maxLog);
+			double out = energyToWeight(outMsgs[m] - minEnergy);
 			outMsgs[m] = out;
 			sum += out;
 		}
@@ -201,30 +204,32 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 	@Override
 	protected void doUpdate()
 	{
-		final double minLog = -100;
+		final double maxEnergy = 100;
 		final int M = _numParticles;
 		final int D = _model.getSiblingCount();
 
-		final FactorFunction input = _input;
+		final IUnaryFactorFunction input = _model.getPriorFunction();
 		
 		//Compute alphas
         final double[] logInPortMsgs = DimpleEnvironment.doubleArrayCache.allocateAtLeast(M*D);
         final double[] alphas = DimpleEnvironment.doubleArrayCache.allocateAtLeast(M);
 		for (int m = 0; m < M; m++)
 		{
-			double prior = 1;
+			double prior = 0;
 			if (input != null)
-				prior = input.eval(_particleValues[m]);
-				double alpha = (prior == 0) ? minLog : Math.log(prior) * _beta;
+			{
+				prior = input.evalEnergy(_particleValues[m]);
+			}
+			double alpha = (prior == Double.POSITIVE_INFINITY) ? maxEnergy : prior * _beta;
 
-				for (int d = 0, i = m; d < D; d++, i += M)
-				{
-					double tmp = getSiblingEdgeState(d).factorToVarMsg.getWeight(m);
-					double logtmp = (tmp == 0) ? minLog : Math.log(tmp);
-					logInPortMsgs[i] = logtmp;
-					alpha += logtmp;
-				}
-				alphas[m] = alpha;
+			for (int d = 0, i = m; d < D; d++, i += M)
+			{
+				double tmp = getSiblingEdgeState(d).factorToVarMsg.getEnergy(m);
+				double logtmp = (tmp == Double.POSITIVE_INFINITY) ? maxEnergy : tmp;
+				logInPortMsgs[i] = logtmp;
+				alpha += logtmp;
+			}
+			alphas[m] = alpha;
 		}
 
 		//Now compute output messages for each outgoing edge
@@ -233,7 +238,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 			final DiscreteMessage outMsg = getSiblingEdgeState(out_d).varToFactorMsg;
 			final double[] outWeights = outMsg.representation();
 
-			double maxLog = Double.NEGATIVE_INFINITY;
+			double minEnergy = Double.POSITIVE_INFINITY;
 
 			//set outMsgs to alpha - mu_d,m
 			//find max alpha
@@ -241,10 +246,10 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 			{
 				double out = alphas[m] - logInPortMsgs[dm + m];
 
-				// Subtract the log weight
-				out -= _logWeight[m];
+				// Subtract particle energy
+				out -= _particleEnergy[m];
 
-				if (out > maxLog) maxLog = out;
+				if (out < minEnergy) minEnergy = out;
 				outWeights[m] = out;
 			}
 
@@ -252,7 +257,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 			double sum = 0;
 			for (int m = 0; m < M; m++)
 			{
-				double out = Math.exp(outWeights[m] - maxLog);
+				double out = energyToWeight(outWeights[m] - minEnergy);
 				outWeights[m] = out;
 				sum += out;
 			}
@@ -278,7 +283,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 		double _upperBound = _domain.getUpperBound();
 		int M = _numParticles;
 
-		final FactorFunction input = _input;
+		final IUnaryFactorFunction input = _model.getPriorFunction();
 		
 		final IProposalKernel kernel = requireNonNull(_proposalKernel);
 
@@ -348,7 +353,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 				}
 			}
 
-			_logWeight[m] = -potential;			// Sum-product code uses log(p) instead of -log(p)
+			_particleEnergy[m] = potential;			// Sum-product code uses log(p) instead of -log(p)
 
 
 			// Update the incoming messages for the new particle value
@@ -374,33 +379,33 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 	@Override
 	public double[] getBelief()
 	{
-		final double minLog = -100;
+		final double maxEnergy = 100;
 		int M = _numParticles;
 		int D = _model.getSiblingCount();
-		double maxLog = Double.NEGATIVE_INFINITY;
+		double minEnergy = Double.POSITIVE_INFINITY;
 
-		final FactorFunction input = _input;
+		final IUnaryFactorFunction input = _model.getPriorFunction();
 		double[] outBelief = new double[M];
 		
 		for (int m = 0; m < M; m++)
 		{
-			double prior = 1;
+			double prior = 0;
 			if (input != null)
 			{
-				prior = input.eval(_particleValues[m]);
+				prior = input.evalEnergy(_particleValues[m]);
 			}
-			double out = (prior == 0) ? minLog : Math.log(prior) * _beta;
+			double out = (prior == Double.POSITIVE_INFINITY) ? maxEnergy : prior * _beta;
 
 			for (int d = 0; d < D; d++)
 			{
-				double tmp = getSiblingEdgeState(d).factorToVarMsg.getWeight(m);
-				out += (tmp == 0) ? minLog : Math.log(tmp);
+				double tmp = getSiblingEdgeState(d).factorToVarMsg.getEnergy(m);
+				out += (tmp == Double.POSITIVE_INFINITY) ? maxEnergy : tmp;
 			}
 
 			//	        // Subtract the log weight
 			//	        out -= _logWeight[m];
 
-			if (out > maxLog) maxLog = out;
+			if (out < minEnergy) minEnergy = out;
 			outBelief[m] = out;
 		}
 
@@ -408,7 +413,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 		double sum = 0;
 		for (int m = 0; m < M; m++)
 		{
-			double out = Math.exp(outBelief[m] - maxLog);
+			double out = energyToWeight(outBelief[m] - minEnergy);
 			outBelief[m] = out;
 			sum += out;
 		}
@@ -424,30 +429,30 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 	@Matlab
 	public double [] getBelief(double[] valueSet)
 	{
-		final double minLog = -100;
+		final double maxEnergy = 100;
 		int M = valueSet.length;
 		int D = _model.getSiblingCount();
-		double maxLog = Double.NEGATIVE_INFINITY;
+		double minEnergy = Double.POSITIVE_INFINITY;
 
-		final FactorFunction input = _input;
+		final IUnaryFactorFunction input = _model.getPriorFunction();
 		double[] outBelief = new double[M];
 
 		for (int m = 0; m < M; m++)
 		{
 			double value = valueSet[m];
-			double prior = 1;
+			double prior = 0;
 			if (input != null)
-				prior = input.eval(new Object[]{value});
-			double out = (prior == 0) ? minLog : Math.log(prior) * _beta;
+				prior = input.evalEnergy(value);
+			double out = (prior == Double.POSITIVE_INFINITY) ? maxEnergy : prior * _beta;
 
 			for (int d = 0; d < D; d++)
 			{
 				int factorPortNumber = _model.getReverseSiblingNumber(d);
 				ParticleBPRealFactor factor = (ParticleBPRealFactor)getSibling(d);
-				out -= factor.getMarginalPotential(value, factorPortNumber);	// Potential is -log(p)
+				out += factor.getMarginalPotential(value, factorPortNumber);	// Potential is -log(p)
 			}
 
-			if (out > maxLog) maxLog = out;
+			if (out < minEnergy) minEnergy = out;
 			outBelief[m] = out;
 		}
 
@@ -455,7 +460,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 		double sum = 0;
 		for (int m = 0; m < M; m++)
 		{
-			double out = Math.exp(outBelief[m] - maxLog);
+			double out = energyToWeight(outBelief[m] - minEnergy);
 			outBelief[m] = out;
 			sum += out;
 		}
@@ -500,7 +505,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 				_particleValues[i] = RealValue.create();
 			}
 			_numParticles = numParticles;
-			_logWeight = Arrays.copyOf(_logWeight, numParticles);
+			_particleEnergy = Arrays.copyOf(_particleEnergy, numParticles);
 			for (int i  = 0, n = getSiblingCount(); i < n; ++i)
 			{
 				getSiblingEdgeState(i).resize(numParticles);
@@ -592,19 +597,10 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 	}
 
 	@Override
-	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
-	{
-		if (input == null)
-			_input = null;
-		else
-			_input = (FactorFunction)input;
-	}
-
-	@Override
 	public double getScore()
 	{
 		if (_guessWasSet)
-			return Objects.requireNonNull(_input).evalEnergy(_guessValue);
+			return Objects.requireNonNull(_model.getPriorFunction()).evalEnergy(_guessValue);
 		else
 			throw new DimpleException("This solver doesn't provide a default value. Must set guesses for all variables.");
 	}

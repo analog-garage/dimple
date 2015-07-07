@@ -177,7 +177,6 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	private @Nullable Object[] _inputMsg = null;
 	private double[] _initialSampleValue;
 	private boolean _initialSampleValueSet = false;
-	private @Nullable IUnaryFactorFunction _inputJoint;
 	private RealJointDomain _domain;
 	private @Nullable IMCMCSampler _sampler = null;
 	private @Nullable IRealJointConjugateSampler _conjugateSampler = null;
@@ -308,7 +307,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 				sedges[portIndex] =  sedge;
 				factor.updateEdgeMessage(edge, sedge);	// Run updateEdgeMessage for each neighboring factor
 			}
-			setCurrentSample(conjugateSampler.nextSample(sedges, _inputJoint));
+			setCurrentSample(conjugateSampler.nextSample(sedges, _model.getPriorFunction()));
 			_updateCount++;
 		}
 
@@ -372,7 +371,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 			double potential = 0;
 
 			// Sum up the potentials from the input and all connected factors
-			final IUnaryFactorFunction inputJoint = _inputJoint;
+			final IUnaryFactorFunction inputJoint = _model.getPriorFunction();
 			if (inputJoint != null)
 			{
 				potential += inputJoint.evalEnergy(_currentSample);
@@ -444,7 +443,8 @@ public class GibbsRealJoint extends SRealJointVariableBase
 				factor.updateEdgeMessage(edgeState, sedge);	// Run updateEdgeMessage for each neighboring factor
 			}
 		}
-		((IRealJointConjugateSampler)conjugateSampler).aggregateParameters(outputMessage, sedges, _inputJoint);
+		((IRealJointConjugateSampler)conjugateSampler).aggregateParameters(outputMessage, sedges,
+			_model.getPriorFunction());
 	}
 
 	/*--------------------------
@@ -504,7 +504,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		}
 
 		// If the variable has an input, sample from that (bounded by the domain)
-		final IUnaryFactorFunction inputJoint = _inputJoint;
+		final IUnaryFactorFunction inputJoint = _model.getPriorFunction();
 		
 		List<? extends IUnaryFactorFunction> inputArray = null;
 		if (inputJoint instanceof UnaryJointRealFactorFunction)
@@ -629,6 +629,16 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	}
 
 	@Override
+	public void updatePrior()
+	{
+		Value value = _model.getPriorValue();
+		if (value != null)
+		{
+			setCurrentSampleForce(value.getDoubleArray());
+		}
+	}
+
+	@Override
 	public Object getBelief()
 	{
 		return 0d;
@@ -681,25 +691,6 @@ public class GibbsRealJoint extends SRealJointVariableBase
 
 	}
 
-
-	@Override
-	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
-	{
-		if (input == null)
-		{
-			_inputJoint = null;
-		}
-		else if (input instanceof IUnaryFactorFunction)
-		{
-			_inputJoint = (IUnaryFactorFunction)input;
-		}
-		else
-			throw new DimpleException("Invalid input type %s", input.getClass().getSimpleName());
-
-		if (fixedValue != null)
-			setCurrentSampleForce((double[])fixedValue);
-	}
-
 	@SuppressWarnings("null")
 	@Override
 	public void postAddFactor(@Nullable Factor f)
@@ -722,7 +713,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 			value = _currentSample;
 		
 		// Get the score
-		final IUnaryFactorFunction inputJoint = _inputJoint;
+		final IUnaryFactorFunction inputJoint = _model.getPriorFunction();
 		if (inputJoint != null)
 			return inputJoint.evalEnergy(value);
 		
@@ -788,7 +779,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		if (!_domain.inDomain(sampleValue))
 			return Double.POSITIVE_INFINITY;
 		
-		final IUnaryFactorFunction inputJoint = _inputJoint;
+		final IUnaryFactorFunction inputJoint = _model.getPriorFunction();
 		if (inputJoint != null)
 			return inputJoint.evalEnergy(_currentSample);
 		
@@ -798,7 +789,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	@Override
 	public final boolean hasPotential()
 	{
-		return !_model.hasFixedValue() && (_inputJoint != null || _domain.isBounded());
+		return !_model.hasFixedValue() && (_model.getPriorFunction() != null || _domain.isBounded());
 	}
 
 	@Override
@@ -1186,6 +1177,8 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		}
 		_sampleCount = 0;
 
+		updatePrior();
+		
 		//
 		// Determine which sampler to use
 		//
@@ -1262,7 +1255,11 @@ public class GibbsRealJoint extends SRealJointVariableBase
 				_prevSample.setFrom(_currentSample);
 			}
 		}
-		_currentSample.setFrom(ovar._currentSample);
+		Value fixedValue = _model.getPriorValue();
+		if (fixedValue != null)
+			_currentSample.setValueForce(fixedValue.getDoubleArray());
+		else
+			_currentSample.setFrom(ovar._currentSample);
 		_initialSampleValue = ovar._initialSampleValue;
 		_initialSampleValueSet = ovar._initialSampleValueSet;
 		_sampleArray = ovar._sampleArray;
@@ -1336,11 +1333,12 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		}
 		
 		// Next, check conjugate samplers are also compatible with the input and the domain of this variable
+		final IUnaryFactorFunction inputJoint = _model.getPriorFunction();
 		Iterator<IRealJointConjugateSamplerFactory> iter = commonSamplers.iterator();
 		while (iter.hasNext())
 		{
 			IRealJointConjugateSamplerFactory sampler = iter.next();
-			if (!sampler.isCompatible(_inputJoint) || !sampler.isCompatible(_domain))
+			if (!sampler.isCompatible(inputJoint) || !sampler.isCompatible(_domain))
 			{
 				iter.remove();
 			}

@@ -57,7 +57,9 @@ public interface ISolverVariable extends ISolverNode
 	 */
 	public Domain getDomain();
 	
+	@Deprecated
 	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue);
+	
 	public @Nullable Object getBelief();
 	
 	public Object getValue();
@@ -95,4 +97,10 @@ public interface ISolverVariable extends ISolverNode
     //Move global state from other node to this one
     public void moveNonEdgeSpecificState(ISolverNode other);
 
+    /**
+     * Tells solver variable to update any cached information about the model prior.
+     * <p>
+     * @since 0.08
+     */
+    public void updatePrior();
 }

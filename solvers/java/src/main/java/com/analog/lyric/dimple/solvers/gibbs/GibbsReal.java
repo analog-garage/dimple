@@ -160,7 +160,6 @@ public class GibbsReal extends SRealVariableBase
 	private boolean _repeatedVariable;
 	private double _initialSampleValue = 0;
 	private boolean _initialSampleValueSet = false;
-	private @Nullable IUnaryFactorFunction _input;
 	private final RealDomain _domain;
 	private @Nullable IMCMCSampler _sampler = null;
 	private @Nullable IRealConjugateSampler _conjugateSampler = null;
@@ -276,7 +275,7 @@ public class GibbsReal extends SRealVariableBase
 				sedges[portIndex] =  sedge;
 				factor.updateEdgeMessage(edge, sedge);	// Run updateEdgeMessage for each neighboring factor
 			}
-			double nextSampleValue = conjugateSampler.nextSample(sedges, _input);
+			double nextSampleValue = conjugateSampler.nextSample(sedges, _model.getPriorFunction());
 			if (nextSampleValue != _currentSample.getDouble())	// Would be exactly equal if not changed since last value tested
 				setCurrentSample(nextSampleValue);
 		}
@@ -341,7 +340,7 @@ public class GibbsReal extends SRealVariableBase
 			double potential = 0;
 
 			// Sum up the potentials from the input and all connected factors
-			final IUnaryFactorFunction input = _input;
+			final IUnaryFactorFunction input = _model.getPriorFunction();
 			if (input != null)
 			{
 				potential = input.evalEnergy(_currentSample);
@@ -388,6 +387,16 @@ public class GibbsReal extends SRealVariableBase
 		return _conjugateSampler;
 	}
 	
+	@Override
+	public void updatePrior()
+	{
+		Value value = _model.getPriorValue();
+		if (value != null)
+		{
+			setCurrentSampleForce(value.getDouble());
+		}
+	}
+	
 	/*----------------------------------
 	 * ISolverRealVariableGibbs methods
 	 * TODO: move below ISolverVariableGibbs methods
@@ -415,7 +424,7 @@ public class GibbsReal extends SRealVariableBase
 				factor.updateEdgeMessage(edgeState, sedge);	// Run updateEdgeMessage for each neighboring factor
 			}
 		}
-		((IRealConjugateSampler)conjugateSampler).aggregateParameters(outputMessage, sedges, _input);
+		((IRealConjugateSampler)conjugateSampler).aggregateParameters(outputMessage, sedges, _model.getPriorFunction());
 	}
 	
 	/*--------------------------
@@ -477,7 +486,7 @@ public class GibbsReal extends SRealVariableBase
 
 		// If there are inputs, see if there's an available conjugate sampler
 		IRealConjugateSampler inputConjugateSampler = null;		// Don't use the global conjugate sampler since other factors might not be conjugate
-		final IUnaryFactorFunction input = _input;
+		final IUnaryFactorFunction input = _model.getPriorFunction();
 		if (input != null)
 			inputConjugateSampler = RealConjugateSamplerRegistry.findCompatibleSampler(input);
 
@@ -544,18 +553,6 @@ public class GibbsReal extends SRealVariableBase
 		return (_sampleSumSquare - (_sampleSum * (_sampleSum / _sampleCount)) ) / (_sampleCount - 1);
 	}
 
-	@Override
-	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
-	{
-		if (input == null)
-			_input = null;
-		else
-			_input = (IUnaryFactorFunction)input;
-
-		if (fixedValue != null)
-			setCurrentSampleForce(FactorFunctionUtilities.toDouble(fixedValue));
-	}
-
 	@SuppressWarnings("null")
 	@Override
 	public void postAddFactor(@Nullable Factor f)
@@ -568,7 +565,7 @@ public class GibbsReal extends SRealVariableBase
 		if (_model.hasFixedValue())
 			return 0;
 		
-		final IUnaryFactorFunction input = _input;
+		final IUnaryFactorFunction input = _model.getPriorFunction();
 		if (input == null)
 			return 0;
 		else if (_guessWasSet)
@@ -634,7 +631,7 @@ public class GibbsReal extends SRealVariableBase
 		if (!_domain.inDomain(_currentSample.getDouble()))
 			return Double.POSITIVE_INFINITY;
 		
-		final IUnaryFactorFunction input = _input;
+		final IUnaryFactorFunction input = _model.getPriorFunction();
 		if (input == null)
 			return 0;
 		else
@@ -644,7 +641,7 @@ public class GibbsReal extends SRealVariableBase
 	@Override
 	public final boolean hasPotential()
 	{
-		return !_model.hasFixedValue() && (_input != null || _domain.isBounded());
+		return !_model.hasFixedValue() && (_model.getPriorFunction() != null || _domain.isBounded());
 	}
 
     @Override
@@ -989,6 +986,8 @@ public class GibbsReal extends SRealVariableBase
 		_sampleSumSquare = 0;
 		_sampleCount = 0;
 
+		updatePrior();
+		
 		//
 		// Determine which sampler to use
 		//
@@ -1065,7 +1064,11 @@ public class GibbsReal extends SRealVariableBase
 				_prevSample.setFrom(_currentSample);
 			}
 		}
-		_currentSample.setFrom(ovar._currentSample);
+		Value fixedValue = _model.getPriorValue();
+		if (fixedValue != null)
+			_currentSample.setDoubleForce(fixedValue.getDouble());
+		else
+			_currentSample.setFrom(ovar._currentSample);
 		_initialSampleValue = ovar._initialSampleValue;
 		_initialSampleValueSet = ovar._initialSampleValueSet;
 		_sampleArray = ovar._sampleArray;
@@ -1131,11 +1134,12 @@ public class GibbsReal extends SRealVariableBase
 		}
 		
 		// Next, check conjugate samplers are also compatible with the input and the domain of this variable
+		IUnaryFactorFunction input = _model.getPriorFunction();
 		Iterator<IRealConjugateSamplerFactory> iter = commonSamplers.iterator();
 		while (iter.hasNext())
 		{
 			IRealConjugateSamplerFactory sampler = iter.next();
-			if (!sampler.isCompatible(_input) || !sampler.isCompatible(_domain))
+			if (!sampler.isCompatible(input) || !sampler.isCompatible(_domain))
 			{
 				iter.remove();
 			}

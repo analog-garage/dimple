@@ -16,10 +16,10 @@
 
 package com.analog.lyric.dimple.model.repeated;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
-public class DoubleArrayDataSource extends GenericDataSource<double[]> 
+public class DoubleArrayDataSource extends GenericDataSource<double[]>
 {
 
 	public DoubleArrayDataSource()
@@ -34,7 +34,7 @@ public class DoubleArrayDataSource extends GenericDataSource<double[]>
 		add(arr);
 	}
 
-	public DoubleArrayDataSource(ArrayList<double[]> arr)
+	public DoubleArrayDataSource(List<double[]> arr)
 	{
 		_data = new LinkedList<double[]>();
 		
@@ -42,12 +42,14 @@ public class DoubleArrayDataSource extends GenericDataSource<double[]>
 			_data.add(data);
 	}
 
+	@Override
 	public  void add(double[][] data)
 	{
 		for (int i = 0; i < data.length; i++)
-			_data.add(data[i]);		
+			_data.add(data[i]);
 	}
 
+	@Override
 	public  void add(double[] data)
 	{
 		_data.add(data);

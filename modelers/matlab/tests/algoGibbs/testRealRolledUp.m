@@ -109,6 +109,7 @@ function testRealRolledUp()
         O.get(j).FixedValue = o(inputIndex);
         inputIndex = inputIndex+1;
     end
+    fg.initialize();
 
     for i = 1:hmmLength-bufferSize
         fg.solveOneStep();

@@ -164,6 +164,17 @@ public abstract class SVariableBase<MVariable extends Variable> extends SNode<MV
 		return _model.getDomain();
 	}
 	
+	@Deprecated
+	@Override
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
+	{
+	}
+	
+	@Override
+	public void updatePrior()
+	{
+	}
+	
 	/*---------------
 	 * SNode methods
 	 */

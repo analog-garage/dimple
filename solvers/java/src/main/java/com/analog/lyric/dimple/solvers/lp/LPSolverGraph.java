@@ -23,13 +23,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import net.jcip.annotations.NotThreadSafe;
-import net.sf.javailp.Linear;
-import net.sf.javailp.Operator;
-import net.sf.javailp.Problem;
-import net.sf.javailp.Result;
-import net.sf.javailp.SolverFactory;
-
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -47,6 +40,13 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.lp.IntegerEquation.TermIterator;
 import com.analog.lyric.util.misc.Matlab;
+
+import net.jcip.annotations.NotThreadSafe;
+import net.sf.javailp.Linear;
+import net.sf.javailp.Operator;
+import net.sf.javailp.Problem;
+import net.sf.javailp.Result;
+import net.sf.javailp.SolverFactory;
 
 /**
  * Solver-specific factor graph for LP solver.
@@ -187,12 +187,12 @@ public class LPSolverGraph extends SFactorGraphBase<LPTableFactor, LPDiscrete, N
 		LPDiscrete svar = _varMap.get(var);
 		
 		if (svar == null)
-	{
-		if (!(var instanceof Discrete))
 		{
-			throw new DimpleException("Variable '%s' is not discrete. LP solver only supports discrete variables.",
-				var.getName());
-		}
+			if (!(var instanceof Discrete))
+			{
+				throw new DimpleException("Variable '%s' is not discrete. LP solver only supports discrete variables.",
+					var.getName());
+			}
 
 			// Reuse svar already associated with var if applicable.
 			svar = var.getSolverIfTypeAndGraph(LPDiscrete.class, this);

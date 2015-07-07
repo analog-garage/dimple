@@ -284,7 +284,7 @@ public class RealVariableGibbsTest extends DimpleTestBase
 		
 		// Graph parameters
 		final boolean useSeed = true;
-		final long seed = 42L;
+		final long seed = 45L;
 		final int hmmLength = 20;
 		final int bufferSize = 10;
 		
@@ -299,6 +299,7 @@ public class RealVariableGibbsTest extends DimpleTestBase
 			testRand.setSeed(seed);
 			env.setOption(DimpleOptions.randomSeed, seed);
 		}
+		System.out.println(testRand.getSeed());
 		
 		// Model parameters
 		final double initialMean = 0.0;

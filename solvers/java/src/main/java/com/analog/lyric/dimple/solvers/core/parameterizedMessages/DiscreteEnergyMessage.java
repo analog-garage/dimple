@@ -20,6 +20,8 @@ import static com.analog.lyric.math.Utilities.*;
 
 import java.util.Arrays;
 
+import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.math.Utilities;
 
 /**
@@ -40,6 +42,12 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 		super(message);
 	}
 	
+	/**
+	 * Discrete energy message with given size and all energies initially set to zero.
+	 * <p>
+	 * @param size
+	 * @since 0.08
+	 */
 	public DiscreteEnergyMessage(int size)
 	{
 		this(new double[size]);
@@ -49,6 +57,12 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 	public DiscreteEnergyMessage(DiscreteEnergyMessage other)
 	{
 		super(other);
+	}
+	
+	public DiscreteEnergyMessage(DiscreteDomain domain, IUnaryFactorFunction function)
+	{
+		this(new double[domain.size()]);
+		setFrom(domain, function);
 	}
 	
 	@Override
@@ -113,15 +127,15 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 	}
 	
 	@Override
-	public double[] getEnergies()
+	public double[] getEnergies(double[] energies)
 	{
-		return _message.clone();
+		System.arraycopy(_message,  0,  energies,  0, _message.length);
+		return energies;
 	}
 	
 	@Override
-	public double[] getWeights()
+	public double[] getWeights(double[] weights)
 	{
-		double[] weights = new double[_message.length];
 		for (int i = weights.length; --i>=0;)
 			weights[i] = energyToWeight(_message[i]);
 		return weights;

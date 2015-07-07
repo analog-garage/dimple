@@ -86,6 +86,7 @@ function testSetValueGibbs()
     b.FixedValue = value + 1;
     assert(b.hasFixedValue);
     assertEqual(b.FixedValue,value+1);
+    fg.initialize();
     assertEqual(fg.Solver.getTotalPotential(), Inf);
     a.Input = {'Normal',1,1};
     assert(~a.hasFixedValue);

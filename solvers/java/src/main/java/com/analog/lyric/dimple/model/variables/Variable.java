@@ -252,6 +252,28 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	}
 	
 	/**
+	 * Get prior if it is a {@link IUnaryFactorFunction}, else null.
+	 * @since 0.08
+	 * @see #getPrior()
+	 */
+	public final @Nullable IUnaryFactorFunction getPriorFunction()
+	{
+		final IDatum prior = _prior;
+		return prior instanceof IUnaryFactorFunction ? (IUnaryFactorFunction)prior : null;
+	}
+	
+	/**
+	 * Get prior if it is a {@link Value}, else null.
+	 * @since 0.08
+	 * @see #getPrior()
+	 */
+	public final @Nullable Value getPriorValue()
+	{
+		final IDatum prior = _prior;
+		return prior instanceof Value ? (Value)prior : null;
+	}
+	
+	/**
 	 * Associates a prior with the variable.
 	 * <p>
 	 * Sets the value of the {@linkplain #getPrior prior}.

@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.model.repeated;
 
-import static java.util.Objects.*;
-
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -81,25 +79,27 @@ public abstract class VariableStreamBase<V extends Variable> implements IVariabl
 		
 		for (int i = 0; i < _variables.size()-1; i++)
 		{
-			_variables.get(i).moveInputs(_variables.get(i+1));
-			final ISolverVariable otherVar = requireNonNull(_variables.get(i+1).getSolver());
-			requireNonNull(_variables.get(i).getSolver()).moveNonEdgeSpecificState(otherVar);
+			Variable var = _variables.get(i), ovar = _variables.get(i+1);
+			var.moveInputs(ovar);
+			
+			final ISolverVariable svar = var.requireSolver("advanceState"), osvar = ovar.requireSolver("advanceState");
+			svar.moveNonEdgeSpecificState(osvar);
 		}
-		requireNonNull(_variables.get(_variables.size()-1).getSolver()).createNonEdgeSpecificState();
+		
+		Variable lastVar = _variables.get(_variables.size()-1);
+		lastVar.requireSolver("advanceState").createNonEdgeSpecificState();
 
 		final IDataSource dataSource = _dataSource;
 		if (dataSource != null)
 		{
 			Object input = dataSource.getNext();
-			_variables.get(_variables.size()-1).setInputObject(input);
+			lastVar.setInputObject(input);
+			lastVar.requireSolver("advanceState").updatePrior();
 		}
 		else
 		{
-			_variables.get(_variables.size()-1).setInputObject(null);
+			lastVar.setInputObject(null);
 		}
-		
-		
-	
 	}
 	
 	
