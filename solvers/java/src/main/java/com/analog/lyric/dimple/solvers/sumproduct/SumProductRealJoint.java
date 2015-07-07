@@ -16,11 +16,15 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
+import java.util.Arrays;
+
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.data.IDatum;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.factorfunctions.MultivariateNormal;
-import com.analog.lyric.dimple.factorfunctions.Normal;
+import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.solvers.core.SMultivariateNormalEdge;
 import com.analog.lyric.dimple.solvers.core.SRealJointVariableBase;
@@ -35,7 +39,6 @@ public class SumProductRealJoint extends SRealJointVariableBase
 {
 
 	private int _numVars;
-	private @Nullable MultivariateNormalParameters _input;
 
 	public SumProductRealJoint(RealJoint var, SumProductSolverGraph parent)
 	{
@@ -44,47 +47,6 @@ public class SumProductRealJoint extends SRealJointVariableBase
 		_numVars = _model.getDomain().getNumVars();
 	}
 	
-	@Override
-	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
-	{
-		if (fixedValue != null)
-			_input = createFixedValueMessage((double[])fixedValue);
-		else if (input == null)
-			_input = null;
-		else
-		{
-    		if (input instanceof MultivariateNormal)	// Input is a MultivariateNormal factor function with fixed parameters
-    		{
-    			MultivariateNormal multivariateNormalInput = (MultivariateNormal)input;
-    			if (!multivariateNormalInput.hasConstantParameters())
-    				throw new DimpleException("MultivariateNormal factor function used as Input must have constant parameters");
-    			_input = multivariateNormalInput.getParameters();
-    		}
-    		else if (input instanceof Normal[])			// Input is array of univariate Normal factor functions with fixed parameters
-    		{
-    			Normal[] inputArray = (Normal[])input;
-    			if (inputArray.length != _numVars)
-    				throw new DimpleException("Number of Inputs must equal the variable dimension");
-    			double[] mean = new double[_numVars];
-    			double[][] covariance = new double[_numVars][_numVars];
-    			for (int i = 0; i < _numVars; i++)
-    			{
-    				mean[i] = inputArray[i].getMean();
-    				covariance[i][i] = inputArray[i].getVariance();		// Diagonal covariance matrix
-    			}
-    			_input = new MultivariateNormalParameters(mean, covariance);
-    		}
-    		else if (input instanceof MultivariateNormalParameters)		// Input is a MultivariateNormalParameters object
-    		{
-    			_input = (MultivariateNormalParameters)input;
-    		}
-    		else
-    			throw new DimpleException("Invalid input type");
-
-		}
-	}
-	
-
 	@Override
 	public Object getBelief()
 	{
@@ -103,11 +65,17 @@ public class SumProductRealJoint extends SRealJointVariableBase
 	@Override
 	public double getScore()
 	{
-		final MultivariateNormalParameters input = _input;
-		if (input == null)
+		IDatum prior = _model.getPrior();
+		
+		if (prior == null)
 			return 0;
+		else if (prior instanceof Value)
+		{
+			double[] value = ((Value) prior).getDoubleArray();
+			return _guessValue.length == 0 || Arrays.equals(_guessValue,  value) ? 0 : Double.POSITIVE_INFINITY;
+		}
 		else
-			return (new MultivariateNormal(input)).evalEnergy(getGuess());
+			return ((IUnaryFactorFunction)prior).evalEnergy(getGuess());
 	}
 	
 
@@ -119,16 +87,20 @@ public class SumProductRealJoint extends SRealJointVariableBase
 
 	private void doUpdate(MultivariateNormalParameters outMsg, int outPortNum)
 	{
-		final MultivariateNormalParameters input = _input;
+		IDatum prior = _model.getPrior();
 		
-    	// If fixed value, just return the input, which has been set to a zero-variance message
+		if (prior instanceof Value)
+		{
+	    	// If fixed value, just return the input, which has been set to a zero-variance message
+			outMsg.setDeterministic(((Value)prior));
+			return;
+		}
+		
+		final MultivariateNormalParameters input = priorToNormal(prior);
+		
 		if (input != null)
 		{
 			outMsg.set(input);
-			if (input.hasDeterministicValue())
-			{
-				return;
-			}
 		}
 		else
 		{
@@ -187,4 +159,29 @@ public class SumProductRealJoint extends SRealJointVariableBase
 	{
 		return (SMultivariateNormalEdge)getSiblingEdgeState_(siblingIndex);
 	}
+	
+	/*-----------------
+	 * Private methods
+	 */
+	
+    private @Nullable MultivariateNormalParameters priorToNormal(@Nullable IDatum prior)
+    {
+    	if (prior instanceof MultivariateNormalParameters)
+    	{
+    		return (MultivariateNormalParameters)prior;
+    	}
+    	else if (prior instanceof MultivariateNormal)
+    	{
+    		return ((MultivariateNormal)prior).getParameters();
+    	}
+    	else if (prior != null)
+    	{
+    		DimpleEnvironment.logError(
+    			"Ignoring prior on %s: sum-product reals only supports MultivariateNormalParameters for priors but got %s",
+    			_model, prior);
+    	}
+    	
+    	return null;
+    }
+    
 }

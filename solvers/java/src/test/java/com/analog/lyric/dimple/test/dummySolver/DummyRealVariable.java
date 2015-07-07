@@ -31,11 +31,6 @@ public class DummyRealVariable extends SRealVariableBase
 	}
 
 	@Override
-	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
-	{
-	}
-
-	@Override
 	public @Nullable Object getBelief()
 	{
 		return null;

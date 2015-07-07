@@ -281,6 +281,12 @@ public class NormalParameters extends ParameterizedMessageBase
 	}
 	
 	@Override
+	public void setDeterministic(Value value)
+	{
+		setDeterministic(value.getDouble());
+	}
+	
+	@Override
 	public void setFrom(IParameterizedMessage other)
 	{
 		set((NormalParameters)other);

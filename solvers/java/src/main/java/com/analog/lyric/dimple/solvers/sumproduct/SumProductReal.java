@@ -16,14 +16,16 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
-import static java.util.Objects.*;
-
 import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.data.IDatum;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Normal;
+import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.core.SNormalEdge;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
@@ -36,67 +38,26 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParamete
  */
 public class SumProductReal extends SRealVariableBase
 {
-	/*
-	 * We cache all of the double arrays we use during the update.  This saves
-	 * time when performing the update.
-	 */
-	private @Nullable NormalParameters _input;
-    
 	public SumProductReal(Real var, SumProductSolverGraph parent)
     {
 		super(var, parent);
 	}
 
-
-	@Override
-	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
-	{
-		if (fixedValue != null)
-			_input = createFixedValueMessage((Double)fixedValue);
-		else if (input == null)
-    		_input = null;
-    	else if (input instanceof NormalParameters)
-    	{
-    		_input = (NormalParameters)input;
-    	}
-    	else
-    	{
-    		if (input instanceof Normal)	// Input is a Normal factor function with fixed parameters
-    		{
-    			Normal normalInput = (Normal)input;
-    			if (!normalInput.hasConstantParameters())
-    				throw new DimpleException("Normal factor function used as Input must have constant parameters");
-    			final NormalParameters newInput = _input = new NormalParameters();
-    			newInput.setMean(normalInput.getMean());
-    			newInput.setPrecision(normalInput.getPrecision());
-    		}
-    		else	// Input is array in the form [mean, standard deviation]
-    		{
-    			double[] vals = (double[])input;
-    			if (vals.length != 2)
-    				throw new DimpleException("Expect a two-element vector of mean and standard deviation");
-
-    			final NormalParameters newInput = _input = new NormalParameters();
-    			newInput.setMean(vals[0]);
-    			newInput.setStandardDeviation(vals[1]);
-    		}
-    	}
-    	
-    }
-	
     @Override
 	protected void doUpdateEdge(int outPortNum)
     {
-    	final NormalParameters input = _input;
     	final NormalParameters outMsg = getSiblingEdgeState(outPortNum).varToFactorMsg;
-   	
-    	// If fixed value, just return the input, which has been set to a zero-variance message
-    	if (_model.hasFixedValue())
+    	final IDatum prior = _model.getPrior();
+    	
+    	if (prior instanceof Value)
     	{
-    		outMsg.set(Objects.requireNonNull(input));
-        	return;
+    		outMsg.setDeterministic((Value)prior);
+    		return;
     	}
     	
+    	
+    	NormalParameters input = priorToNormal(prior);
+   	
     	final int nEdges = _model.getSiblingCount();
     	
     	double mu = 0;
@@ -168,15 +129,18 @@ public class SumProductReal extends SRealVariableBase
     }
     
 
-    
     @Override
 	public Object getBelief()
     {
-    	final NormalParameters input = _input;
-
-    	// If fixed value, just return the input, which has been set to a zero-variance message
-    	if (_model.hasFixedValue())
-    		return requireNonNull(input).clone();
+    	IDatum prior = _model.getPrior();
+    	
+    	if (prior instanceof Value)
+    	{
+        	// If fixed value, just return the input, which has been set to a zero-variance message
+    		return new NormalParameters(((Value)prior).getDouble(), Double.POSITIVE_INFINITY);
+    	}
+    	
+    	NormalParameters input = priorToNormal(prior);
     	
     	double mu = 0;
     	double tau = 0;
@@ -253,11 +217,14 @@ public class SumProductReal extends SRealVariableBase
 	@Override
 	public double getScore()
 	{
-		final NormalParameters input = _input;
-		if (input == null)
+		IDatum prior = _model.getPrior();
+		
+		if (prior == null)
 			return 0;
+		else if (prior instanceof Value)
+			return Objects.equals(getGuess(), ((Value)prior).getObject()) ? 0 : Double.POSITIVE_INFINITY;
 		else
-			return (new Normal(input)).evalEnergy(getGuess());
+			return ((IUnaryFactorFunction)prior).evalEnergy(getGuess());
 	}
 	
 	public NormalParameters createDefaultMessage()
@@ -302,4 +269,29 @@ public class SumProductReal extends SRealVariableBase
 	{
 		return (SNormalEdge)getSiblingEdgeState_(siblingIndex);
 	}
+	
+	/*-----------------
+	 * Private methods
+	 */
+	
+    private @Nullable NormalParameters priorToNormal(@Nullable IDatum prior)
+    {
+    	if (prior instanceof NormalParameters)
+    	{
+    		return (NormalParameters)prior;
+    	}
+    	else if (prior instanceof Normal)
+    	{
+    		return ((Normal)prior).getParameters();
+    	}
+    	else if (prior != null)
+    	{
+    		DimpleEnvironment.logError(
+    			"Ignoring prior on %s: sum-product reals only supports NormalParameters for priors but got %s",
+    			_model, prior);
+    	}
+    	
+    	return null;
+    }
+    
 }
