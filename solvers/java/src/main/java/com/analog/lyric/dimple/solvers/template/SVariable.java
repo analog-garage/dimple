@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2013 Analog Devices, Inc.
+*   Copyright 2013-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.template;
 
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
@@ -52,7 +53,20 @@ public class SVariable extends SDiscreteVariableDoubleArray
 	{
 		final DiscreteMessage output = getSiblingEdgeState(outPortNum).varToFactorMsg;
 		
-		output.setWeights(_input);
+		output.setWeightsToZero();
+		
+		Value fixedValue = _model.getPriorValue();
+		if (fixedValue != null)
+		{
+			output.setDeterministic(fixedValue);
+			return;
+		}
+		
+		DiscreteMessage prior = getPrior();
+		if (prior != null)
+		{
+			output.setFrom(prior);
+		}
 		
 		for (int i = 0, n = getSiblingCount(); i < n; i++)
 		{
@@ -72,11 +86,27 @@ public class SVariable extends SDiscreteVariableDoubleArray
 	@Override
 	public double[] getBelief()
 	{
-		DiscreteMessage output = new DiscreteWeightMessage(_input);
+		DiscreteMessage output = new DiscreteWeightMessage(getDomain().size());
+		output.setWeightsToZero();
 		
-		for (int i = 0, n = getSiblingCount(); i < n; i++)
+		Value fixedValue = _model.getPriorValue();
+		if (fixedValue != null)
 		{
-			output.addWeightsFrom(getSiblingEdgeState(i).factorToVarMsg);
+			output.setDeterministic(fixedValue);
+		}
+		else
+		{
+
+			DiscreteMessage prior = getPrior();
+			if (prior != null)
+			{
+				output.setFrom(prior);
+			}
+
+			for (int i = 0, n = getSiblingCount(); i < n; i++)
+			{
+				output.addWeightsFrom(getSiblingEdgeState(i).factorToVarMsg);
+			}
 		}
 		
 		return output.representation();

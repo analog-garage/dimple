@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2014 Analog Devices, Inc.
+*   Copyright 2014-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -285,7 +285,7 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 
 	/**
 	 * Copies energies into provided array and returns it.
-	 * @param array an array with length matching {@link #size}.
+	 * @param array an array with length >= {@link #size}.
 	 * @since 0.08
 	 */
 	public abstract double[] getEnergies(double[] array);
@@ -301,7 +301,7 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	
 	/**
 	 * Copies weights into provided array and returns it.
-	 * @param array an array with length matching {@link #size}.
+	 * @param array an array with length >= {@link #size}.
 	 * @since 0.08
 	 */
 	public abstract double[] getWeights(double[] array);

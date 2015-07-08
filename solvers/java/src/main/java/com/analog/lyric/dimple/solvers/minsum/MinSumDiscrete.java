@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -16,11 +16,14 @@
 
 package com.analog.lyric.dimple.solvers.minsum;
 
+import java.util.Arrays;
+
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.DoubleArrayCache;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
@@ -82,12 +85,19 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 	@Override
 	protected void doUpdateEdge(int outPortNum)
 	{
-
-		double[] priors = _input;
-		final int numPorts = _model.getSiblingCount();
-		final int numValue = priors.length;
-
 		final double[] outMsgs = _outMsgs[outPortNum];
+
+		final Value fixedValue = getFixedValue();
+		if (fixedValue != null)
+		{
+			Arrays.fill(outMsgs, MessageConverter.maxPotential);
+			outMsgs[fixedValue.getIndex()] = 0.0;
+			return;
+		}
+		
+		final int numPorts = _model.getSiblingCount();
+		final int numValue = getDomain().size();
+
 		final double[] dampingParams = _dampingParams;
 		final double damping = dampingParams != null ? dampingParams[outPortNum] : 0.0;
 		
@@ -97,7 +107,8 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 			final double[] savedOutMsgArray = DimpleEnvironment.doubleArrayCache.allocateAtLeast(numValue);
 			System.arraycopy(outMsgs, 0, savedOutMsgArray, 0, numValue);
 
-			System.arraycopy(priors, 0, outMsgs, 0, numValue);
+			copyPrior(outMsgs);
+
 			int port = numPorts;
 			while (--port > outPortNum)
 			{
@@ -128,7 +139,8 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		}
 		else
 		{
-			System.arraycopy(priors, 0, outMsgs, 0, numValue);
+			copyPrior(outMsgs);
+
 			int port = numPorts;
 			while (--port > outPortNum)
 			{
@@ -169,15 +181,26 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 	@Override
 	protected void doUpdate()
 	{
+		final Value fixedValue = getFixedValue();
+		if (fixedValue != null)
+		{
+			final int index = fixedValue.getIndex();
+			for (double[] outMsg : _outMsgs)
+			{
+				Arrays.fill(outMsg, MessageConverter.maxPotential);
+				outMsg[index] = 0.0;
+			}
+			return;
+		}
 
-		double[] priors = _input;
 		int numPorts = _model.getSiblingCount();
-		int numValue = priors.length;
+		int numValue = getDomain().size();
 
 		// Compute the sum of all messages
 		final DoubleArrayCache cache = DimpleEnvironment.doubleArrayCache;
 		final double[] beliefs = cache.allocateAtLeast(numValue);
-		System.arraycopy(priors, 0, beliefs, 0, numValue);
+		
+		copyPrior(beliefs);
 
 		for (int port = numPorts; --port>=0;)
 		{
@@ -269,16 +292,22 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 	@Override
 	public double[] getBelief()
 	{
+		final int numValue = getDomain().size();
+		final double[] outBelief = new double[numValue];
 
-		double[] priors = _input;
-		double[] outBelief = new double[priors.length];
-		int numValue = priors.length;
+		final Value fixedValue = getFixedValue();
+		if (fixedValue != null)
+		{
+			outBelief[fixedValue.getIndex()] = 1.0;
+			return outBelief;
+		}
+
+		copyPrior(outBelief);
 		int numPorts = _model.getSiblingCount();
-
 
 		for (int i = 0; i < numValue; i++)
 		{
-			double sum = priors[i];
+			double sum = outBelief[i];
 			for (int port = 0; port < numPorts; port++)
 			{
 				sum += getSiblingEdgeState(port).factorToVarMsg.getEnergy(i);
@@ -290,27 +319,17 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		return MessageConverter.toProb(outBelief);
 	}
 
-
-	@Override
-	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
-	{
-		if (input == null)
-			_input = MessageConverter.initialValue(_model.getDomain().size());
-		else
-			// Convert from probabilities since that's what the interface provides
-			if (input instanceof DiscreteMessage)
-				_input = ((DiscreteMessage)input).getEnergies();
-			else
-				_input = MessageConverter.fromProb((double[])input);
-	}
-	
 	@Override
 	public double getScore()
 	{
-		if (!_model.hasFixedValue())
-			return _input[getGuessIndex()];
-		else
-			return 0;	// If the value is fixed, ignore the guess
+		if (_model.hasFixedValue())
+			return 0;
+		
+		DiscreteMessage prior = getPrior();
+		if (prior != null)
+			return MessageConverter.clipEnergy(prior.getEnergy(getGuessIndex()));
+
+		return 0;
 	}
 
 
@@ -374,6 +393,20 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
     	}
     }
 
+    private void copyPrior(double[] out)
+    {
+    	final DiscreteMessage prior = getPrior();
+		if (prior != null)
+		{
+			prior.getEnergies(out);
+			MessageConverter.clipEnergies(out);
+		}
+		else
+		{
+			Arrays.fill(out, 0.0);
+		}
+    }
+    
     @Override
 	@SuppressWarnings("null")
 	public MinSumDiscreteEdge getSiblingEdgeState(int siblingIndex)

@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -28,11 +28,13 @@ import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.util.misc.Internal;
 
@@ -99,10 +101,15 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	@Override
 	public double getScore()
 	{
-		if (!_model.hasFixedValue())
-			return -Math.log(_input[getGuessIndex()]);
-		else
-			return 0;	// If the value is fixed, ignore the guess
+		if (_model.hasFixedValue())
+			return 0;
+		
+		DiscreteMessage prior = getPrior();
+		if (prior != null)
+			return prior.getEnergy(getGuessIndex());
+
+		// FIXME - if there is no input, the score should be zero
+		return -weightToEnergy(getDomain().size());
 	}
 	
 	@Deprecated
@@ -131,18 +138,29 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     @Override
 	protected void doUpdateEdge(int outPortNum)
     {
-    	
+		final double[] outMsgs = _outMsgs[outPortNum];
+
+		final Value fixedValue = getFixedValue();
+		if (fixedValue != null)
+		{
+			Arrays.fill(outMsgs, 0);
+			outMsgs[fixedValue.getIndex()] = 1.0;
+			return;
+		}
+		
         final double minLog = -100; // FIXME
-        double[] priors = _input;
-        final int M = priors.length;
+        DiscreteMessage priors = getPrior();
+        final int M = getDomain().size();
         final int D = _model.getSiblingCount();
         double maxLog = Double.NEGATIVE_INFINITY;
 
-		final double[] outMsgs = _outMsgs[outPortNum];
 		final double[][] inMsgs = _inMsgs;
 		final double[] dampingParams = _dampingParams;
 		final double damping = dampingParams != null ? dampingParams[outPortNum] : 0.0;
 
+		// FIXME - don't treat missing prior as the same as uniform
+		final double priorNormalizer = priors != null ? priors.getNormalizationEnergy() : weightToEnergy(M);
+		
 		if (damping != 0.0)
 		{
 			// Save previous output for damping
@@ -150,14 +168,10 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 			System.arraycopy(outMsgs,  0, savedOutMsgArray, 0, M);
  
 			// We do not assume that the prior is normalized
-			double priorSum = 0.0;
-			for (double p : priors)
-				priorSum += p;
-			
 			for (int m = M; --m>=0;)
 			{
-				double prior = priors[m] / priorSum;
-				double out = (prior == 0) ? minLog : Math.log(prior);
+				double prior = priors != null ? priors.getEnergy(m) : 0;
+				double out = (prior == Double.POSITIVE_INFINITY) ? minLog : priorNormalizer - prior;
 
 				int d = D;
 				while (--d > outPortNum)
@@ -215,8 +229,8 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 
 			for (int m = M; --m>=0;)
 			{
-				double prior = priors[m];
-				double out = (prior == 0) ? minLog : Math.log(prior);
+				double prior = priors != null ? priors.getEnergy(m) : 0;
+				double out = (prior == Double.POSITIVE_INFINITY) ? minLog : priorNormalizer - prior;
 
 				int d = D;
 				while (--d > outPortNum)
@@ -257,9 +271,21 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     @Override
 	protected void doUpdate()
     {
-        final double minLog = -100; // FIXME
-        final double[] priors = _input;
-        final int M = priors.length;
+		final Value fixedValue = getFixedValue();
+		if (fixedValue != null)
+		{
+			final int index = fixedValue.getIndex();
+			for (double[] outMsg : _outMsgs)
+			{
+				Arrays.fill(outMsg, 0);
+				outMsg[index] = 1.0;
+			}
+			return;
+		}
+		
+       final double minLog = -100; // FIXME
+        final DiscreteMessage priors = getPrior();
+        final int M = getDomain().size();
         final int D = _model.getSiblingCount();
         
         //Compute alphas
@@ -267,15 +293,13 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         final double[] logInPortMsgs = DimpleEnvironment.doubleArrayCache.allocateAtLeast(M*D);
         final double[] alphas = DimpleEnvironment.doubleArrayCache.allocateAtLeast(M);
         
-		// We do not assume that the prior is normalized
-		double priorSum = 0.0;
-		for (double p : priors)
-			priorSum += p;
+		// FIXME - don't treat missing prior as the same as uniform
+		final double priorNormalizer = priors != null ? priors.getNormalizationEnergy() : weightToEnergy(M);
 		
         for (int m = M; --m>=0;)
         {
-        	double prior = priors[m] / priorSum;
-        	double alpha = (prior == 0) ? minLog : Math.log(prior);
+			double prior = priors != null ? priors.getEnergy(m) : 0;
+			double alpha = (prior == Double.POSITIVE_INFINITY) ? minLog : priorNormalizer - prior;
 
         	for (int d = 0, i = m; d < D; d++, i += M)
 	        {
@@ -406,25 +430,29 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     @Override
 	public double[] getBelief()
     {
+        final int M = getDomain().size();
+        final double[] outBelief = new double[M];
+        
+        Value fixedValue = getFixedValue();
+        if (fixedValue != null)
+        {
+        	outBelief[fixedValue.getIndex()] = 1.0;
+        	return outBelief;
+        }
 
-        final double[] priors = _input;
-        final int M = priors.length;
+        final DiscreteMessage priors = getPrior();
         final int D = _model.getSiblingCount();
 
         final double minLog = -100;
         double maxLog = Double.NEGATIVE_INFINITY;
         
-        double[] outBelief = new double[M];
-
-		// We do not assume that the prior is normalized
-		double priorSum = 0.0;
-		for (double p : priors)
-			priorSum += p;
+		// FIXME - don't treat missing prior as the same as uniform
+		final double priorNormalizer = priors != null ? priors.getNormalizationEnergy() : weightToEnergy(M);
 		
         for (int m = 0; m < M; m++)
         {
-        	double prior = priors[m] / priorSum;
-        	double out = (prior == 0) ? minLog : Math.log(prior);
+			double prior = priors != null ? priors.getEnergy(m) : 0;
+			double out = (prior == Double.POSITIVE_INFINITY) ? minLog : priorNormalizer - prior;
         	
 	        for (int d = 0; d < D; d++)
 	        {
@@ -455,24 +483,42 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     
 	public double [] getNormalizedInputs()
 	{
-		double [] tmp = new double [_input.length];
-		double sum = 0;
-		for (int i = 0; i < _input.length; i++)
-			sum += _input[i];
-		for (int i = 0; i < tmp.length; i++)
-			tmp[i] = _input[i]/sum;
-		
-		return tmp;
+        Value fixedValue = getFixedValue();
+        if (fixedValue != null)
+        {
+        	final double[] belief = new double[getDomain().size()];
+        	belief[fixedValue.getIndex()] = 1.0;
+        	return belief;
+        }
+
+		DiscreteMessage prior = getPrior();
+		if (prior != null)
+		{
+			prior = new DiscreteWeightMessage(prior);
+			prior.normalize();
+			return prior.representation();
+		}
+
+		final int n = getDomain().size();
+		final double[] result = new double[n];
+		Arrays.fill(result, 1.0 / n);
+		return result;
 	}
 
 	public double [] getUnormalizedBelief()
 	{
+        Value fixedValue = getFixedValue();
+        if (fixedValue != null)
+        {
+        	final double[] belief = new double[getDomain().size()];
+        	belief[fixedValue.getIndex()] = 1.0;
+        	return belief;
+        }
+
 		//TODO: log regime
 		double [] input = getNormalizedInputs();
 		
-		double [] retval = new double[_input.length];
-		for (int i = 0; i <  retval.length ; i++)
-			retval[i] = input[i];
+		double [] retval = input.clone();
 		
 		for (int i = 0, n = getSiblingCount(); i < n; i++)
 		{
@@ -487,7 +533,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	}
 
 	/**
-	 * Computes the log partion function of the graph (under appropriate conditions)
+	 * Computes the log partition function of the graph (under appropriate conditions)
 	 * <p>
 	 * This returns the log of sum of the weights of the unnormalized variable belief, which
 	 * is the same as the log partition function of the graph as long as it is a tree (or forest)
@@ -500,7 +546,18 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	@Internal
 	public double computeLogPartitionFunction()
 	{
-		double [] retval = _input.clone();
+		double [] retval = new double[getDomain().size()];
+		
+		DiscreteMessage prior = getPrior();
+		if (prior != null)
+		{
+			prior.getWeights(retval);
+		}
+		else
+		{
+			Arrays.fill(retval, 1.0 / retval.length);
+		}
+		
 		double normalizationEnergy = 0.0;
 		
 		for (int i = 0, n = getSiblingCount(); i < n; i++)
@@ -537,18 +594,17 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		double sum = 0;
 		
 		double [] belief = getBelief();
-		double [] input = _input;
+
+		DiscreteMessage prior = getPrior();
+		// FIXME - don't treat missing prior as the same as uniform
+		final double priorNormalizer = prior != null ? prior.getNormalizationEnergy() : weightToEnergy(domainLength);
 		
 		//make sure input is normalized
-		double norm = 0;
-		for (int i = 0; i < input.length; i++)
-			norm += input[i];
-		
 		for (int i = 0; i < domainLength; i++)
 		{
-			double tmp = input[i]/norm;
-			if (tmp != 0)
-				sum += belief[i] * (- Math.log(tmp));
+			double tmp = prior != null ? prior.getEnergy(i) : 0;
+			if (tmp != Double.POSITIVE_INFINITY)
+				sum += belief[i] * (tmp - priorNormalizer);
 		}
 		
 		return sum;

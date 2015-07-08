@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2013 Analog Devices, Inc.
+*   Copyright 2013-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -18,7 +18,9 @@ package com.analog.lyric.dimple.solvers.core;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.data.IDatum;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
@@ -28,13 +30,6 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
  */
 public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 {
-	/*-------
-	 * State
-	 */
-	
-	// FIXME - turn this into a DiscreteMessage
-	protected double [] _input;
-	
 	/*--------------
 	 * Construction
 	 */
@@ -42,36 +37,12 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	public SDiscreteVariableDoubleArray(Discrete var, ISolverFactorGraph parent)
 	{
 		super(var, parent);
-		_input = createDefaultMessage();
 	}
 
 	/*-------------------------
 	 * ISolverVariable methods
 	 */
 	
-	/**
-	 * This method is called by the model object when the solver object is first created
-	 * or any time input or fixedValue changes.  The method can be ignored if the solver
-	 * wants to pull down the input object or fixedValue when it needs it, but, for  performance
-	 * reasons, it'soften good to cache the input.
-	 */
-	@Override
-	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
-	{
-		if (input == null)
-		{
-			_input = createDefaultMessage();
-		}
-		else
-		{
-	    	double[] vals = input instanceof DiscreteMessage ? ((DiscreteMessage)input).getWeights() : (double[])input;
-	    	if (vals.length != _model.asDiscreteVariable().getDiscreteDomain().size())
-	    		throw new DimpleException("length of priors does not match domain");
-	    	
-	    	_input = vals;
-		}
-	}
-
 	@Override
 	protected DiscreteMessage cloneMessage(int edge)
 	{
@@ -141,4 +112,33 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	{
 		return (SDiscreteEdge<?>)getSiblingEdgeState_(siblingIndex);
 	}
+	
+	/*-------------------
+	 * Protected methods
+	 */
+	
+	/**
+	 * Gets prior from model as a {@link DiscreteMessage}
+	 * <p>
+	 * Returns null if prior is not a {@link DiscreteMessage}. Logs error if prior
+	 * is not a {@link Value} or {@link DiscreteMessage}.
+	 * @since 0.08
+	 */
+	@Nullable
+	protected DiscreteMessage getPrior()
+	{
+		IDatum prior = _model.getPrior();
+		
+		if (prior instanceof DiscreteMessage || prior == null)
+			return (DiscreteMessage)prior;
+
+		if (!(prior instanceof Value))
+		{
+			DimpleEnvironment.logError("Prior %s ignored on %s: type not supported", prior, _model);
+		}
+		
+		return null;
+	}
+	
+
 }

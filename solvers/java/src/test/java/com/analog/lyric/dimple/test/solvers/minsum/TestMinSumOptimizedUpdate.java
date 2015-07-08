@@ -370,10 +370,18 @@ public class TestMinSumOptimizedUpdate extends DimpleTestBase
 		final double sparsityControl = 0.2;
 		final double damping = 0.0;
 		final boolean useMultithreading = false;
-		Random rnd = new Random();
-		rnd.setSeed(0); // Don't be random
-		doTest2(sparsityControl, damping, useMultithreading, rnd);
-		doTest2(sparsityControl, damping, useMultithreading, rnd);
-		doTest2(sparsityControl, damping, useMultithreading, rnd);
+		boolean printSeed = true;
+		try
+		{
+			for (int i = 0; i < 3; ++i)
+				doTest2(sparsityControl, damping, useMultithreading, testRand);
+			printSeed = false;
+		}
+		finally
+		{
+			// On failure print seed so that we can reproduce
+			if (printSeed)
+				System.err.println("seed="+testRand.getSeed());
+		}
 	}
 }

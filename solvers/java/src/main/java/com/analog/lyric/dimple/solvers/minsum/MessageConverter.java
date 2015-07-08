@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -19,14 +19,26 @@ package com.analog.lyric.dimple.solvers.minsum;
 public class MessageConverter
 {
 	
-	private static final double maxPotential = 1000;	// Clip the potential (-log(P)) to this value
+	public static final double maxPotential = 1000;	// Clip the potential (-log(P)) to this value
+	
+	public static double clipEnergy(double energy)
+	{
+		return Math.min(energy, maxPotential);
+	}
+	
+	public static void clipEnergies(double[] energies)
+	{
+		for (int i = energies.length; --i>=0;)
+			if (energies[i] > maxPotential)
+				energies[i] = maxPotential;
+	}
 	
     public static double[] fromProb(double[] in)
     {
     	int numValue = in.length;
     	double[] out = new double[numValue];
     	
-    	for (int i = 0; i < numValue; i++) 
+    	for (int i = 0; i < numValue; i++)
     		out[i] = Math.min(-Math.log(in[i]),maxPotential);
     	return out;
     }
@@ -50,9 +62,7 @@ public class MessageConverter
     
     public static double[] initialValue(int numValue)
     {
-    	double[] out = new double[numValue];
-    	for (int i = 0; i < numValue; i++) out[i] = 0;
-    	return out;
+    	return new double[numValue];
     }
     
 }

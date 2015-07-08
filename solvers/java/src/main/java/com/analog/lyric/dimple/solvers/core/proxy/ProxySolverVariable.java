@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2014 Analog Devices, Inc.
+*   Copyright 2014-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -151,14 +151,14 @@ public abstract class ProxySolverVariable<MVariable extends Variable, Delegate e
 	/*-------------------------
 	 * ISolverVariable methods
 	 */
-	
+
 	@Override
-	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
+	public void updatePrior()
 	{
 		ISolverVariable delegate = getDelegate();
 		if (delegate != null)
 		{
-			delegate.setInputOrFixedValue(input, fixedValue);
+			delegate.updatePrior();
 		}
 	}
 	

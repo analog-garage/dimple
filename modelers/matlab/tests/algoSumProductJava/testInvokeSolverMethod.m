@@ -31,12 +31,6 @@ function testInvokeSolverMethod
         assert(damping{i}==.4);
     end
     
-    
-    b.invokeSolverMethod('setInputOrFixedValue',[.3 .7],[]);
-    for i = 1:prod(size(b))
-        assert(b(i).Belief == .7);
-    end
-
     b.invokeSolverMethod('setDamping',uint32(0),0.676);
 end
 

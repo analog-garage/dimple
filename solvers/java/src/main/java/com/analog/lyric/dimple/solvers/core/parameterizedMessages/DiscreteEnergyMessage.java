@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2014 Analog Devices, Inc.
+*   Copyright 2014-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -57,6 +57,12 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 	public DiscreteEnergyMessage(DiscreteEnergyMessage other)
 	{
 		super(other);
+	}
+	
+	public DiscreteEnergyMessage(DiscreteMessage other)
+	{
+		this(other.size());
+		setFrom(other);
 	}
 	
 	public DiscreteEnergyMessage(DiscreteDomain domain, IUnaryFactorFunction function)
@@ -136,7 +142,7 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 	@Override
 	public double[] getWeights(double[] weights)
 	{
-		for (int i = weights.length; --i>=0;)
+		for (int i = _message.length; --i>=0;)
 			weights[i] = energyToWeight(_message[i]);
 		return weights;
 	}

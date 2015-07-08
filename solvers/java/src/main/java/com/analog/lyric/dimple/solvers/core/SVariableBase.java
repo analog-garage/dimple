@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import com.analog.lyric.dimple.events.SolverEvent;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
@@ -198,6 +199,21 @@ public abstract class SVariableBase<MVariable extends Variable> extends SNode<MV
 	protected Class<? extends SolverEvent> messageEventType()
 	{
 		return VariableToFactorMessageEvent.class;
+	}
+	
+	/*-------------------
+	 * Protected methods
+	 */
+	
+	/**
+	 * Gets fixed value of variable, if set.
+	 * <p>
+	 * @since 0.08
+	 */
+	protected @Nullable Value getFixedValue()
+	{
+		// TODO also look in conditioning layer
+		return _model.getPriorValue();
 	}
 	
 	/*--------------------
