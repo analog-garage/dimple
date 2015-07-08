@@ -16,12 +16,6 @@
 
 package com.analog.lyric.dimple.test.dummySolver;
 
-import static java.util.Objects.*;
-
-import org.eclipse.jdt.annotation.Nullable;
-
-import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
@@ -30,62 +24,18 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 public class DummyDiscreteVariable extends SDiscreteVariableBase
 {
-	private @Nullable double [] _input = new double[1];
 	protected Discrete _varDiscrete;
 
 	public DummyDiscreteVariable(Discrete var, ISolverFactorGraph parent)
 	{
 		super(var, parent);
 		_varDiscrete = var;
-		initializeInputs();
 	}
 
-	public void initializeInputs()
-	{
-		_input = (double[])getDefaultMessage(null);
-	}
-	
 	public Variable getVariable()
 	{
 		return _model;
 	}
-
-	public @Nullable Object getDefaultMessage(@Nullable Port port)
-	{
-		final double[] input = _input;
-		if (input != null)
-		{
-			double[] msg = new double[input.length];
-			java.util.Arrays.fill(msg, java.lang.Math.PI);
-	
-			return msg;
-		}
-		else
-			return null;
-	}
-
-
-	@Override
-	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
-	{
-		if (input == null)
-		{
-			_input = null;
-		}
-		else
-		{
-			double [] vals = (double[])input;
-	
-			int len = _varDiscrete.getDiscreteDomain().size();
-			
-			if (vals.length != len)
-				throw new DimpleException("length of priors does not match domain");
-	
-			_input = vals;
-		}
-
-	}
-
 
 	@Override
 	protected void doUpdateEdge(int outPortNum)
@@ -101,7 +51,7 @@ public class DummyDiscreteVariable extends SDiscreteVariableBase
 	@Override
 	public double[] getBelief()
 	{
-		return requireNonNull(_input);
+		return new double[getDomain().size()];
 	}
 
 }

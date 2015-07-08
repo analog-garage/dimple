@@ -309,15 +309,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 				IDatum.class.getSimpleName()));
 		}
 		
-		final IDatum newPrior = _prior;
-		
-    	final ISolverVariable svar = getSolver();
-    	if (svar != null)
-    	{
-			svar.setInputOrFixedValue(priorToInput(newPrior), priorToFixedValue(newPrior));
-    	}
-    	
-    	priorChanged(priorPrior, newPrior);
+    	priorChanged(priorPrior, _prior);
     
     	return priorPrior;
 	}

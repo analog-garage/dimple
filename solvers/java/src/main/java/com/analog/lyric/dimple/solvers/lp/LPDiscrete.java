@@ -21,14 +21,16 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 
-import net.jcip.annotations.NotThreadSafe;
-
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
+
+import net.jcip.annotations.NotThreadSafe;
 
 /**
  * Solver variable for Discrete variables under LP solver.
@@ -70,9 +72,6 @@ public class LPDiscrete extends SDiscreteVariableBase
 	 */
 	private int _nValidAssignments = -1;
 	
-	
-	private boolean _fixedValue;
-	private @Nullable double[] _inputs = null;
 	private @Nullable double[] _beliefs = null;
 	
 	/*--------------
@@ -114,62 +113,39 @@ public class LPDiscrete extends SDiscreteVariableBase
 	 */
 	
 	@Override
-	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
-	{
-		int fixedValueIndex = -1;
-		
-		if (fixedValue != null)
-		{
-			fixedValueIndex = (Integer)fixedValue;
-		}
-		else if (input != null)
-		{
-			double[] weights = (double[])input;
-			for (int i = weights.length; --i >=0;)
-			{
-				if (weights[i] != 0.0)
-				{
-					if (fixedValueIndex < 0)
-					{
-						fixedValueIndex = i;
-					}
-					else
-					{
-						fixedValueIndex = -1;
-						break;
-					}
-				}
-			}
-		}
-		
-		if (fixedValueIndex >= 0)
-		{
-			final double[] inputs = _inputs = new double[getModelObject().getDomain().size()];
-			inputs[fixedValueIndex] = 1.0;
-			_beliefs = _inputs;
-			_fixedValue = true;
-		}
-		else
-		{
-			_inputs = (double[])input;
-		}
-	}
-
-	@Override
 	public double[] getBelief()
 	{
 		double[] beliefs = _beliefs;
+		
 		if (beliefs == null)
 		{
 			final int size = getModelObject().getDomain().size();
 			beliefs = new double[size];
-			Arrays.fill(beliefs,1.0/size);
+			
+			Value fixedValue = getFixedValue();
+			if (fixedValue != null)
+			{
+				beliefs[fixedValue.getIndex()] = 1.0;
+			}
+			else
+			{
+				DiscreteMessage prior = getPrior();
+				if (prior != null)
+				{
+					prior.getWeights(beliefs);
+				}
+				else
+				{
+					Arrays.fill(beliefs,1.0/size);
+				}
+			}
 		}
+
 		return beliefs;
 	}
-
-	/*----------------------
-	 * LP SVariable methods
+	
+	/*--------------------
+	 * LPDiscrete methods
 	 */
 	
 	/**
@@ -243,16 +219,27 @@ public class LPDiscrete extends SDiscreteVariableBase
 	 */
 	int computeValidAssignments()
 	{
-		final double[] inputWeights = _inputs;
-
+		final int domlength = getDomain().size();
+		final Value fixedValue = getFixedValue();
+		
+		if (fixedValue != null)
+		{
+			_nValidAssignments = 1;
+			BitSet invalidAssignments = new BitSet(domlength);
+			invalidAssignments.set(fixedValue.getIndex());
+			invalidAssignments.flip(0, domlength);
+			_invalidAssignments = invalidAssignments;
+			return 0;
+		}
+		
+		DiscreteMessage prior = getPrior();
 
 		int cardinality = 0;
-		int domlength = getModelObject().getDomain().size();
-		if (inputWeights != null)
+		if (prior!= null)
 		{
-			for (int i = inputWeights.length; --i >=0 ;)
+			for (int i = domlength; --i >=0 ;)
 			{
-				double w = inputWeights[i];
+				double w = prior.getWeight(i);
 				if (w == 0.0)
 				{
 					BitSet invalidAssignments = _invalidAssignments;
@@ -373,12 +360,12 @@ public class LPDiscrete extends SDiscreteVariableBase
 	
 	void setBeliefsFromLPSolution(double[] solution)
 	{
-		int start = _lpVarIndex;
+		final int beliefSize = getModelObject().getDomain().size();
+		final double[] beliefs = new double[beliefSize];
+		final int start = _lpVarIndex;
 		
 		if (start >= 0)
 		{
-			final int beliefSize = getModelObject().getDomain().size();
-			final double[] beliefs = new double[beliefSize];
 			final BitSet invalidAssignments = _invalidAssignments;
 			
 			for (int i = 0, j = start; i < beliefSize; ++i, ++j)
@@ -396,7 +383,13 @@ public class LPDiscrete extends SDiscreteVariableBase
 		}
 		else
 		{
-			// Fixed value - _beliefs should already have been set to _inputs
+			// Fixed value
+			Value value = getFixedValue();
+			if (value != null)
+			{
+				beliefs[value.getIndex()] = 1.0;
+				_beliefs = beliefs;
+			}
 		}
 	}
 	
@@ -407,16 +400,6 @@ public class LPDiscrete extends SDiscreteVariableBase
 		_nValidAssignments = -1;
 	}
 	
-	@SuppressWarnings("null")
-	double getInput(int index)
-	{
-		return _inputs[index];
-	}
-	
-	@Nullable double[] getInputs()
-	{
-		return _inputs;
-	}
 	/**
 	 * Returns the index of the first LP variable associated with the values of this variable.
 	 * Returns negative value if not yet computed or if there are no associated LP variables
@@ -434,7 +417,7 @@ public class LPDiscrete extends SDiscreteVariableBase
 	
 	public boolean hasFixedValue()
 	{
-		return _fixedValue;
+		return getFixedValue() != null;
 	}
 	
 	/**
@@ -457,4 +440,24 @@ public class LPDiscrete extends SDiscreteVariableBase
 		return _lpVarIndex >= 0 && lpVar >= _lpVarIndex && lpVar < _lpVarIndex + _nValidAssignments;
 	}
 	
+	/**
+	 * True if variable cannot have given index given its priors/fixed value.
+	 * @since 0.08
+	 */
+	boolean hasZeroWeight(int index)
+	{
+		Value fixedValue = getFixedValue();
+		if (fixedValue != null)
+		{
+			return index != fixedValue.getIndex();
+		}
+		
+		DiscreteMessage prior = getPrior();
+		if (prior != null)
+		{
+			return prior.getWeight(index) == 0.0;
+		}
+		
+		return false;
+	}
 }

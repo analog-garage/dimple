@@ -31,6 +31,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
+import com.analog.lyric.util.misc.Internal;
 
 public abstract class SVariableBase<MVariable extends Variable> extends SNode<MVariable> implements ISolverVariable
 {
@@ -201,16 +202,18 @@ public abstract class SVariableBase<MVariable extends Variable> extends SNode<MV
 		return VariableToFactorMessageEvent.class;
 	}
 	
-	/*-------------------
-	 * Protected methods
+	/*----------------------------
+	 * Protected/internal methods
 	 */
 	
 	/**
 	 * Gets fixed value of variable, if set.
 	 * <p>
 	 * @since 0.08
+	 * @category internal
 	 */
-	protected @Nullable Value getFixedValue()
+	@Internal
+	public @Nullable Value getFixedValue()
 	{
 		// TODO also look in conditioning layer
 		return _model.getPriorValue();

@@ -175,14 +175,9 @@ public class LPSolverGraph extends SFactorGraphBase<LPTableFactor, LPDiscrete, N
 		return sfactor;
 	}
 
+	@SuppressWarnings("deprecation") // Remove when SVariable removed
 	@Override
 	public LPDiscrete createVariable(Variable var)
-	{
-		return createVariable(var, false);
-	}
-		
-	@SuppressWarnings("deprecation") // TODO remove when SVariable removed
-	private LPDiscrete createVariable(Variable var, boolean copyInputs)
 	{
 		LPDiscrete svar = _varMap.get(var);
 		
@@ -203,16 +198,8 @@ public class LPSolverGraph extends SFactorGraphBase<LPTableFactor, LPDiscrete, N
 			else
 			{
 				svar.clearLPState();
-				// If variable is already associated, we assume that the
-				// inputs are already up-to-date.
-				copyInputs = false;
 			}
 			_varMap.put(var, svar);
-			
-			if (copyInputs)
-			{
-				svar.setInputOrFixedValue(var.getInputObject(), var.getFixedValueObject());
-			}
 		}
 		
 		return svar;
@@ -545,7 +532,7 @@ public class LPSolverGraph extends SFactorGraphBase<LPTableFactor, LPDiscrete, N
 		for (Variable var : model.getVariables())
 		{
 
-			LPDiscrete svar = createVariable(var, true);
+			LPDiscrete svar = createVariable(var);
 			nLPVars += svar.computeValidAssignments();
 		}
 

@@ -18,11 +18,16 @@ package com.analog.lyric.dimple.solvers.core;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.data.IDatum;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.interfaces.IDiscreteSolverVariable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+import com.analog.lyric.util.misc.Internal;
 
 public abstract class SDiscreteVariableBase extends SVariableBase<Discrete> implements IDiscreteSolverVariable
 {
@@ -139,6 +144,31 @@ public abstract class SDiscreteVariableBase extends SVariableBase<Discrete> impl
 		_guessIndex = index;
 	}
 	
-
+	/*------------------
+	 * Internal methods
+	 */
 	
+	/**
+	 * Gets prior from model as a {@link DiscreteMessage}
+	 * <p>
+	 * Returns null if prior is not a {@link DiscreteMessage}. Logs error if prior
+	 * is not a {@link Value} or {@link DiscreteMessage}.
+	 * @since 0.08
+	 * @category internal
+	 */
+	@Internal
+	public @Nullable DiscreteMessage getPrior()
+	{
+		IDatum prior = _model.getPrior();
+		
+		if (prior instanceof DiscreteMessage || prior == null)
+			return (DiscreteMessage)prior;
+
+		if (!(prior instanceof Value))
+		{
+			DimpleEnvironment.logError("Prior %s ignored on %s: type not supported", prior, _model);
+		}
+		
+		return null;
+	}
 }

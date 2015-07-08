@@ -57,6 +57,10 @@ public interface ISolverVariable extends ISolverNode
 	 */
 	public Domain getDomain();
 	
+	/**
+	 * @deprecated as of relase 0.08 this method is no longer supported. Instead solvers should update cached state from
+	 * priors and fixed values in {@link #updatePrior()}.
+	 */
 	@Deprecated
 	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue);
 	
@@ -99,6 +103,9 @@ public interface ISolverVariable extends ISolverNode
 
     /**
      * Tells solver variable to update any cached information about the model prior.
+     * <p>
+     * Solvers that cache state that depends on fixed values or priors should implement this method
+     * to update the state and should invoke this method in {@link #initialize()}.
      * <p>
      * @since 0.08
      */

@@ -20,8 +20,6 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.SortedSet;
 
-import net.jcip.annotations.NotThreadSafe;
-
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableBase;
@@ -34,6 +32,8 @@ import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
 import com.google.common.collect.SortedSetMultimap;
 import com.google.common.collect.TreeMultimap;
+
+import net.jcip.annotations.NotThreadSafe;
 
 /**
  * Solver table factor under LP solver.
@@ -174,8 +174,7 @@ public class LPTableFactor extends STableFactorBase
 					for (int j = 0, endj = indices.length; j < endj; ++j)
 					{
 						LPDiscrete svar = svariables[j];
-						double[] allinputs = svar.getInputs();
-						if (allinputs != null && 0.0 == svar.getInput(indices[j]))
+						if (svar.hasZeroWeight(indices[j]))
 						{
 							skipEntry = true;
 							break;

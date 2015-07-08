@@ -34,6 +34,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.lp.IntegerEquation;
 import com.analog.lyric.dimple.solvers.lp.LPDiscrete;
 import com.analog.lyric.dimple.solvers.lp.LPFactorMarginalConstraint;
@@ -296,12 +297,16 @@ public class LPSolverTestCase extends DimpleTestBase
 			}
 			else
 			{
+				DiscreteMessage prior = svar.getPrior();
 				for (int i = svar.getModelObject().getDomain().size(); --i>=0;)
 				{
 					int lpVar = svar.domainIndexToLPVar(i);
 					if (lpVar < 0)
 					{
-						assertEquals(0, belief[i], 1e-6);
+						if (prior != null)
+							assertEquals(prior.getWeight(i), belief[i], 0.0);
+						else
+							assertEquals(0, belief[i], 1e-6);
 					}
 					else
 					{

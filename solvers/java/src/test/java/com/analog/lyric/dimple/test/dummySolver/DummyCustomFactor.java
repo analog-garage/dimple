@@ -16,11 +16,7 @@
 
 package com.analog.lyric.dimple.test.dummySolver;
 
-import org.eclipse.jdt.annotation.Nullable;
-
-import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
@@ -36,14 +32,6 @@ public class DummyCustomFactor extends SFactorBase
 	public void doUpdateEdge(int outPortNum)
 	{
 		
-	}
-
-	@SuppressWarnings("null")
-	public @Nullable Object getDefaultMessage(Port port)
-	{
-		Discrete var = (Discrete)port.getSiblingNode();
-		DummyDiscreteVariable v = (DummyDiscreteVariable)var.getSolver();
-		return v.getDefaultMessage(port);
 	}
 
 	@Override

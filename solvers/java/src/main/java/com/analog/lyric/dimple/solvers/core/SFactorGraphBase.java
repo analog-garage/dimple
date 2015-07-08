@@ -1591,7 +1591,6 @@ public abstract class SFactorGraphBase
 			{
 				svar = this.createVariable(variable);
 				svar.createNonEdgeSpecificState();
-				svar.setInputOrFixedValue(variable.getInputObject(), variable.getFixedValueObject());
 			}
 			else
 			{
