@@ -18,13 +18,18 @@ package com.analog.lyric.dimple.test.core.parameterizedMessages;
 
 import static com.analog.lyric.math.Utilities.*;
 import static com.analog.lyric.util.test.ExceptionTester.*;
+import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.Random;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
 
+import com.analog.lyric.dimple.data.DataRepresentationType;
+import com.analog.lyric.dimple.exceptions.NormalizationException;
+import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergyMessage;
@@ -86,6 +91,10 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 		assertEquals(5, msg.getWeight(1), 0.0);
 		assertEquals(6, msg.getWeight(2), 0.0);
 		
+		msg.setDeterministicIndex(1);
+		assertEquals(1, msg.toDeterministicValueIndex());
+		assertInvariants(msg);
+		
 		msg = new DiscreteEnergyMessage(10);
 		assertInvariants(msg);
 		
@@ -112,6 +121,10 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 		{
 			assertEquals(0, msg.getEnergy(i), 0.0);
 		}
+		
+		msg.setDeterministic(Value.create(DiscreteDomain.range(1,  msg.size()),2));
+		assertEquals(1, msg.toDeterministicValueIndex());
+		assertInvariants(msg);
 		
 		msg = new DiscreteEnergyMessage(new double[] { 4, 5, 6 });
 		assertInvariants(msg);
@@ -207,11 +220,42 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 			}
 		}
 		
+		int onlyNonZeroWeightIndex = -1;
+		for (int i = 0; i < size; ++i)
+		{
+			if (message.getWeight(i) != 0)
+			{
+				if (onlyNonZeroWeightIndex < 0)
+					onlyNonZeroWeightIndex = i;
+				else
+				{
+					onlyNonZeroWeightIndex = -1;
+					break;
+				}
+			}
+		}
+		if (onlyNonZeroWeightIndex >= 0)
+		{
+			assertTrue(message.hasDeterministicValue());
+			assertEquals(onlyNonZeroWeightIndex, message.toDeterministicValueIndex());
+			assertEquals(onlyNonZeroWeightIndex,
+				requireNonNull(message.toDeterministicValue(DiscreteDomain.range(1, size))).getIndex());
+		}
+		else
+		{
+			assertFalse(message.hasDeterministicValue());
+			assertNull(message.toDeterministicValue(DiscreteDomain.range(1, size)));
+			assertEquals(-1, message.toDeterministicValueIndex());
+		}
+		
+		
 		expectThrow(ArrayIndexOutOfBoundsException.class, message, "getWeight", -1);
 		expectThrow(ArrayIndexOutOfBoundsException.class, message, "getWeight", size);
 		expectThrow(ClassCastException.class, message, "setFrom", new NormalParameters());
 		expectThrow(IllegalArgumentException.class, message, "setWeights", new double[size+1]);
 		expectThrow(IllegalArgumentException.class, message, "setEnergies", new double[size+1]);
+		expectThrow(IllegalArgumentException.class, ".* is not discrete", message, "setDeterministic",
+			Value.create("hi"));
 		
 		DiscreteMessage message2 = message.clone();
 		assertTrue(message.objectEquals(message2));
@@ -249,6 +293,7 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 			assertEquals(Double.POSITIVE_INFINITY, message3.getEnergy(i), 0.0);
 		}
 		assertEquals(Double.POSITIVE_INFINITY, message3.getNormalizationEnergy(), 0.0);
+		expectThrow(NormalizationException.class, ".*weights add up to zero", message3, "normalize");
 		
 		message3.setFrom(message);
 		assertTrue(message.objectEquals(message3));
@@ -296,6 +341,15 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 		message3.normalize();
 		assertEquals(0.0, message3.getNormalizationEnergy(), 0.0);
 		
+		message3.setNull();
+		message3.addEnergiesFrom(message);
+		assertArrayEquals(message.getEnergies(), message3.getEnergies(), 0.0);
+		message3.addFrom(message);
+		for (int i = size; --i>=0;)
+		{
+			assertEquals(message.getEnergy(i) * 2, message3.getEnergy(i), 1e-10);
+		}
+	
 		DiscreteMessage message4 = message.storesWeights() ? new DiscreteEnergyMessage(size) :
 			new DiscreteWeightMessage(size);
 		assertFalse(message.objectEquals(message4));
@@ -308,6 +362,61 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 		for (int i = size; --i>=0;)
 		{
 			assertEquals(message.getWeight(i) * 2, message4.getWeight(i), 1e-10);
+		}
+		
+		message4.setNull();
+		message4.addEnergiesFrom(message);
+		assertArrayEquals(message.getEnergies(), message4.getEnergies(), 1e-15);
+		message4.addFrom(message);
+		for (int i = size; --i>=0;)
+		{
+			assertEquals(message.getEnergy(i) * 2, message4.getEnergy(i), 1e-10);
+		}
+		
+		DiscreteMessage message5 = new DiscreteEnergyMessage(message4);
+		assertArrayEquals(message4.getWeights(), message5.getWeights(), 1e-15);
+		message5 = new DiscreteWeightMessage(message4);
+		assertArrayEquals(message4.getWeights(), message5.getWeights(), 1e-15);
+		
+		message5.setFrom(DiscreteDomain.range(1, size), new IndexPlusOne());
+		for (int i = size; --i>=0;)
+		{
+			assertEquals(i + 1, message5.getEnergy(i), 0.0);
+		}
+	}
+	
+	private static class IndexPlusOne implements IUnaryFactorFunction
+	{
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public DataRepresentationType representationType()
+		{
+			return DataRepresentationType.FUNCTION;
+		}
+
+		@Override
+		public boolean objectEquals(@Nullable Object other)
+		{
+			return other instanceof IndexPlusOne;
+		}
+
+		@Override
+		public IUnaryFactorFunction clone()
+		{
+			return this;
+		}
+
+		@Override
+		public double evalEnergy(Value value)
+		{
+			return value.getIndex() + 1;
+		}
+
+		@Override
+		public double evalEnergy(Object value)
+		{
+			return Double.POSITIVE_INFINITY;
 		}
 	}
 }

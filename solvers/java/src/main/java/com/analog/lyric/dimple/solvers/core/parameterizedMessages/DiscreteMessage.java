@@ -188,6 +188,9 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 			for (int i = 0; i < size; ++i)
 			{
 				final double pw = P.getWeight(i);
+				if (pw == 0.0)
+					continue;
+				
 				final double qw = Q.getWeight(i);
 				
 				Ps += pw;

@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.test.core.parameterizedMessages;
 import static com.analog.lyric.util.test.ExceptionTester.*;
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -134,6 +135,10 @@ public class TestParameterizedMessage extends DimpleTestBase
 		expectThrow(IllegalArgumentException.class, message, "computeKLDivergence", new BogusParameters());
 		
 		assertEquals("", message.toString(-1));
+		
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		message.print(new PrintStream(bout),  -1);
+		assertEquals("", bout.toString());
 		for (int verbosity = 0, prevLength = 0; verbosity < 3; ++verbosity)
 		{
 			String desc = message.toString(verbosity);

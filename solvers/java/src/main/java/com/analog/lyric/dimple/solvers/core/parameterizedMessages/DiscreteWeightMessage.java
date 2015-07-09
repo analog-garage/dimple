@@ -37,28 +37,46 @@ public class DiscreteWeightMessage extends DiscreteMessage
 	 * Construction
 	 */
 	
-	public DiscreteWeightMessage(double[] message)
+	/**
+	 * Create message with specified initial weights.
+	 */
+	public DiscreteWeightMessage(double[] weights)
 	{
-		super(message);
+		super(weights);
 	}
 	
+	/**
+	 * Create message with specified size and all weights initially set to one (zero energy).
+	 */
 	public DiscreteWeightMessage(int size)
 	{
 		this(new double[size]);
 		setNull();
 	}
-	
+
+	/**
+	 * Copies values from another message.
+	 * @since 0.08
+	 */
 	public DiscreteWeightMessage(DiscreteWeightMessage other)
 	{
 		super(other);
 	}
 	
+	/**
+	 * Copies values from another message.
+	 * @since 0.08
+	 */
 	public DiscreteWeightMessage(DiscreteMessage other)
 	{
 		this(other.size());
 		setFrom(other);
 	}
 	
+	/**
+	 * Sets values by evaluating function for every member of domain.
+	 * @since 0.08
+	 */
 	public DiscreteWeightMessage(DiscreteDomain domain, IUnaryFactorFunction function)
 	{
 		this(new double[domain.size()]);

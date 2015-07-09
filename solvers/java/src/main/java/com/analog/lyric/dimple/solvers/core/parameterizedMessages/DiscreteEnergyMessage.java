@@ -37,16 +37,16 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 	 * Construction
 	 */
 	
-	public DiscreteEnergyMessage(double[] message)
+	/**
+	 * Creates message with specified initial energy values.
+	 */
+	public DiscreteEnergyMessage(double[] energies)
 	{
-		super(message);
+		super(energies);
 	}
 	
 	/**
 	 * Discrete energy message with given size and all energies initially set to zero.
-	 * <p>
-	 * @param size
-	 * @since 0.08
 	 */
 	public DiscreteEnergyMessage(int size)
 	{
@@ -54,17 +54,29 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 		setNull();
 	}
 	
+	/**
+	 * Copies values from another message.
+	 * @since 0.08
+	 */
 	public DiscreteEnergyMessage(DiscreteEnergyMessage other)
 	{
 		super(other);
 	}
 	
+	/**
+	 * Copies values from another message.
+	 * @since 0.08
+	 */
 	public DiscreteEnergyMessage(DiscreteMessage other)
 	{
 		this(other.size());
 		setFrom(other);
 	}
 	
+	/**
+	 * Sets values by evaluating function for every member of domain.
+	 * @since 0.08
+	 */
 	public DiscreteEnergyMessage(DiscreteDomain domain, IUnaryFactorFunction function)
 	{
 		this(new double[domain.size()]);
