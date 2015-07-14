@@ -287,6 +287,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	 * <li>any {@link IUnaryFactorFunction} appropriate to the variables domain. However, note that
 	 * not all solvers currently support such priors. They may be safely used with the Gibbs solver.
 	 * </ul>
+	 * @return previous value of prior
 	 * @since 0.08
 	 */
 	public @Nullable IDatum setPrior(@Nullable Object prior)

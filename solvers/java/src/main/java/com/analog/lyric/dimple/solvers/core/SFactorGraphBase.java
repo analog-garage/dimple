@@ -29,6 +29,8 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ExtendedArrayList;
+import com.analog.lyric.collect.NonNullListIndices;
+import com.analog.lyric.collect.PrimitiveIterable;
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.data.DataLayer;
 import com.analog.lyric.dimple.data.IDatum;
@@ -1602,6 +1604,11 @@ public abstract class SFactorGraphBase
 		return svar;
 	}
 
+	public PrimitiveIterable.OfInt getSolverVariableIndices()
+	{
+		return new NonNullListIndices(_variables);
+	}
+	
 	@Override
 	public @Nullable ISolverVariable getSolverVariableByIndex(int index)
 	{

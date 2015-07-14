@@ -88,6 +88,12 @@ public class DenseFactorGraphData<K extends IFactorGraphChild, D extends IDatum>
 			}
 			
 			@Override
+			public boolean createOnRead()
+			{
+				return false;
+			}
+			
+			@Override
 			public Class<D> baseType()
 			{
 				return baseType;
@@ -140,6 +146,12 @@ public class DenseFactorGraphData<K extends IFactorGraphChild, D extends IDatum>
 		return new NonNullListIndices(_data);
 	}
 	
+	@Override
+	public boolean isView()
+	{
+		return false;
+	}
+
 	@Override
 	public @Nullable D setByLocalIndex(int index, @Nullable D datum)
 	{

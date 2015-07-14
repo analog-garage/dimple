@@ -27,10 +27,9 @@ import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import cern.colt.list.DoubleArrayList;
-
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.KeyedPriorityQueue;
+import com.analog.lyric.dimple.data.ValueDataLayer;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Bernoulli;
 import com.analog.lyric.dimple.factorfunctions.Beta;
@@ -98,6 +97,8 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.util.misc.Matlab;
+
+import cern.colt.list.DoubleArrayList;
 
 /**
  * Solver-specific factor graph for Gibbs solver.
@@ -661,6 +662,15 @@ public class GibbsSolverGraph
 	public double getTotalPotential()
 	{
 		return getSampleScore();
+	}
+	
+	/**
+	 * Returns data layer view of sample values for graph tree.
+	 * @since 0.08
+	 */
+	public ValueDataLayer getSampleLayer()
+	{
+		return new GibbsSampleLayer(this);
 	}
 	
 	/**

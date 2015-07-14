@@ -174,7 +174,15 @@ public class FactorGraph extends FactorBase
 		 */
 		private final ExtendedArrayList<FactorGraph> _graphs;
 		
+		/**
+		 * Number of non-null graph entries in {@link #_graphs} list.
+		 */
 		private int _nGraphs = 0;
+		
+		/**
+		 * The highest numbered index of any non-null entry of {@links _graphs} list.
+		 */
+		private int _maxGraphTreeIndex = 0;
 		
 		private GraphTreeState(FactorGraph root)
 		{
@@ -184,7 +192,9 @@ public class FactorGraph extends FactorBase
 		
 		private GraphTreeState addGraph(FactorGraph graph)
 		{
-			graph._graphTreeIndex = _graphs.size();
+			final int index = _graphs.size();
+			graph._graphTreeIndex = index;
+			_maxGraphTreeIndex = index;
 			_graphs.add(graph);
 			++_nGraphs;
 			return this;
@@ -194,14 +204,17 @@ public class FactorGraph extends FactorBase
 		{
 			int index = graph._graphTreeIndex;
 			assert(graph == _graphs.get(index));
-			if (index == _graphs.size() - 1)
+			_graphs.set(index, null);
+			if (index == _maxGraphTreeIndex)
 			{
-				// If at end of list, we can reclaim that slot immediately without affecting other indexes.
-				_graphs.remove(index);
-			}
-			else
-			{
-				_graphs.set(index, null);
+				// If at end of list, we can reclaim slots at end immediately without affecting other indexes.
+				do
+				{
+					_graphs.remove(index);
+					// There always has to be a graph in this list, so this has to terminate.
+				} while (_graphs.get(--index) == null);
+				_maxGraphTreeIndex = index;
+				_graphs.setSize(index+1);
 			}
 			--_nGraphs;
 		}
@@ -3632,6 +3645,7 @@ public class FactorGraph extends FactorBase
 	 * sharing the same {@link #getRootGraph() root graph}.
 	 * @return graph with given index or else null.
 	 * @since 0.08
+	 * @see #getMaxGraphTreeIndex()
 	 */
 	public @Nullable FactorGraph getGraphByTreeIndex(int index)
 	{
@@ -3647,6 +3661,17 @@ public class FactorGraph extends FactorBase
 	public int getGraphHierarchySize()
 	{
 		return _graphTreeState._nGraphs;
+	}
+	
+	/**
+	 * The maximum graph tree index among all graphs in the same graph tree.
+	 * <p>
+	 * @since 0.08
+	 * @see #getGraphByTreeIndex(int)
+	 */
+	public int getMaxGraphTreeIndex()
+	{
+		return _graphTreeState._maxGraphTreeIndex;
 	}
 	
 	public @Nullable Variable 	getVariableByName(String name)

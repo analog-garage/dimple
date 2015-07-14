@@ -66,17 +66,6 @@ public class DataLayer<D extends IDatum> extends DataLayerBase<Variable, D>
 	 */
 	
 	/**
-	 * True if layer supports {@link Value} objects.
-	 * <p>
-	 * True if {@link Value} is a subclass of {@link #baseType()}.
-	 * @since 0.08
-	 */
-	public boolean allowsValues()
-	{
-		return (baseType().isAssignableFrom(Value.class));
-	}
-	
-	/**
 	 * Associate variable with specified value for this layer.
 	 * <p>
 	 * This is similar to {@linkplain #put put(var, value)} if layer {@link #allowsValues allows values}

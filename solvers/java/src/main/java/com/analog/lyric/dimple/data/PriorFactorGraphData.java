@@ -20,6 +20,7 @@ import static java.util.Objects.*;
 
 import java.util.Iterator;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.PrimitiveIterable;
@@ -28,6 +29,8 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.FactorGraphIterators;
 import com.analog.lyric.dimple.model.core.Ids;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterators;
 
 import net.jcip.annotations.NotThreadSafe;
 import net.jcip.annotations.ThreadSafe;
@@ -59,6 +62,12 @@ public class PriorFactorGraphData extends FactorGraphData<Variable, IDatum>
 		}
 
 		@Override
+		public boolean createOnRead()
+		{
+			return true;
+		}
+		
+		@Override
 		public Class<Variable> keyType()
 		{
 			return Variable.class;
@@ -87,10 +96,27 @@ public class PriorFactorGraphData extends FactorGraphData<Variable, IDatum>
 		return new PriorFactorGraphData(newLayer, _graph);
 	}
 	
-	/*-------------------------
-	 * FactorGraphData methods
+	/*----------------
+	 * Object methods
 	 */
-
+	
+	@Override
+	public boolean equals(@Nullable Object obj)
+	{
+		if (obj instanceof PriorFactorGraphData)
+		{
+			// Since this object doesn't directly hold any data, all we need to know is that
+			// they refer to the same graph.
+			return ((PriorFactorGraphData)obj).graph() == _graph;
+		}
+		
+		return super.equals(obj);
+	}
+	
+	/*-------------
+	 * Map methods
+	 */
+	
 	@Override
 	public void clear()
 	{
@@ -101,6 +127,24 @@ public class PriorFactorGraphData extends FactorGraphData<Variable, IDatum>
 	}
 
 	@Override
+	public int size()
+	{
+		int count = 0;
+		for (Variable var : _graph.getOwnedVariables())
+		{
+			if (var.getPrior() != null)
+			{
+				++count;
+			}
+		}
+		return count;
+	}
+	
+	/*-------------------------
+	 * FactorGraphData methods
+	 */
+
+	@Override
 	public boolean containsLocalIndex(int index)
 	{
 		return getByLocalIndex(index) != null;
@@ -109,13 +153,25 @@ public class PriorFactorGraphData extends FactorGraphData<Variable, IDatum>
 	@Override
 	public @Nullable IDatum getByLocalIndex(int index)
 	{
-		return requireNonNull(_graph.getVariableByLocalId(Ids.localIdFromParts(Ids.VARIABLE_TYPE, index))).getPrior();
+		Variable var = _graph.getVariableByLocalId(Ids.localIdFromParts(Ids.VARIABLE_TYPE, index));
+		return var != null ? var.getPrior() : null;
 	}
 
 	@Override
 	public PrimitiveIterable.OfInt getLocalIndices()
 	{
 		return new LocalIndexIterable();
+	}
+
+	/**
+	 * Returns true to indicate that this is a view of priors held directly in the {@link Variable} objects.
+	 * <p>
+	 * Because this is a view, cloning this object does not create a distinct copy of the values.
+	 */
+	@Override
+	public boolean isView()
+	{
+		return true;
 	}
 
 	@Override
@@ -138,11 +194,23 @@ public class PriorFactorGraphData extends FactorGraphData<Variable, IDatum>
 		}
 	}
 	
+	private enum HasPrior implements Predicate<Variable>
+	{
+		INSTANCE;
+
+		@NonNullByDefault(false)
+		@Override
+		public boolean apply(Variable var)
+		{
+			return var.getPrior() != null;
+		}
+	}
+	
 	@NotThreadSafe
 	private class LocalIndexIterator implements PrimitiveIterator.OfInt
 	{
-		private final Iterator<Variable> _varIter = FactorGraphIterators.ownedVariables(_graph);
-		private @Nullable Variable _lastVar = null;
+		private final Iterator<Variable> _varIter =
+			Iterators.filter(FactorGraphIterators.ownedVariables(_graph), HasPrior.INSTANCE);
 		
 		@Override
 		public boolean hasNext()
@@ -153,15 +221,7 @@ public class PriorFactorGraphData extends FactorGraphData<Variable, IDatum>
 		@Override
 		public void remove()
 		{
-			Variable var = _lastVar;
-			
-			if (var == null)
-			{
-				throw new IllegalStateException();
-			}
-			
-			var.setPrior(null);
-			_lastVar = null;
+			throw new UnsupportedOperationException("remove");
 		}
 
 		@Override
@@ -173,8 +233,8 @@ public class PriorFactorGraphData extends FactorGraphData<Variable, IDatum>
 		@Override
 		public int nextInt()
 		{
-			Variable var = _lastVar = _varIter.next();
-			return var != null ? Ids.indexFromLocalId(var.getLocalId()) : -1;
+			Variable var = requireNonNull(_varIter.next());
+			return Ids.indexFromLocalId(var.getLocalId());
 		}
 	}
 }

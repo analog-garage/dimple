@@ -24,17 +24,22 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.analog.lyric.dimple.data.DataStack;
+import com.analog.lyric.dimple.data.PriorDataLayer;
+import com.analog.lyric.dimple.data.ValueDataLayer;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.test.DimpleTestBase;
+import com.analog.lyric.dimple.test.data.TestDataLayer;
 
 /**
  * Test of Gibbs with large discrete factor based on "Subtle motif" finding problem from
@@ -166,6 +171,18 @@ public class TestDNAMotifFinder extends DimpleTestBase
 			{
 				gibbs.sample(20);
 			}
+			
+			double sampleScore1 = gibbs.getSampleScore();
+			
+			ValueDataLayer dataLayer = gibbs.getSampleLayer();
+			TestDataLayer.assertInvariants(dataLayer);
+			for (Variable var : fg.getVariables())
+			{
+				assertNotNull(dataLayer.get(var));
+			}
+			
+			DataStack dataStack = new DataStack(new PriorDataLayer(fg), dataLayer);
+			assertEquals(sampleScore1, dataStack.computeTotalEnergy(), 1e-15);
 			
 			if (gibbs.getBestSampleScore() <= cutoffScore)
 			{

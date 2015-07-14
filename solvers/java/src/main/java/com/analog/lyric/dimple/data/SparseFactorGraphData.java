@@ -84,6 +84,12 @@ public class SparseFactorGraphData<K extends IFactorGraphChild, D extends IDatum
 			}
 			
 			@Override
+			public boolean createOnRead()
+			{
+				return false;
+			}
+			
+			@Override
 			public Class<K> keyType()
 			{
 				return keyType;
@@ -137,6 +143,12 @@ public class SparseFactorGraphData<K extends IFactorGraphChild, D extends IDatum
 		return new IntArrayIterable(indices.elements(), 0, indices.size());
 	}
 	
+	@Override
+	public boolean isView()
+	{
+		return false;
+	}
+
 	@Override
 	public @Nullable D setByLocalIndex(int index, @Nullable D datum)
 	{

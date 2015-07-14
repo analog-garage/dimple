@@ -31,11 +31,10 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ExtendedArrayList;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraphIterables;
 import com.analog.lyric.dimple.model.core.IFactorGraphChild;
 import com.analog.lyric.dimple.model.core.Ids;
-import com.google.common.base.Predicates;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Iterators;
+import com.analog.lyric.dimple.model.values.Value;
 import com.google.common.collect.UnmodifiableIterator;
 
 /**
@@ -44,7 +43,7 @@ import com.google.common.collect.UnmodifiableIterator;
  * @since 0.08
  * @author Christopher Barber
  */
-public class DataLayerBase<K extends IFactorGraphChild, D extends IDatum>
+public abstract class DataLayerBase<K extends IFactorGraphChild, D extends IDatum>
 	extends AbstractMap<K, D> implements Cloneable
 {
 	/*-------
@@ -54,173 +53,23 @@ public class DataLayerBase<K extends IFactorGraphChild, D extends IDatum>
 	private final Class<K> _keyType;
 	private final Class<D> _baseType;
 	private final FactorGraph _rootGraph;
+	/**
+	 * Per-graph data indexed by graph tree index.
+	 */
 	private final ExtendedArrayList<FactorGraphData<K,D>> _data;
 	private final FactorGraphData.Constructor<K,D> _constructor;
 	protected final int _keyTypeIndex;
-	
-	/*---------
-	 * Classes
-	 */
-	
-	private class KeyIter extends UnmodifiableIterator<K>
-	{
-		private Iterator<FactorGraphData<K,D>> _dataIter = Iterators.filter(_data.iterator(), Predicates.notNull());
-		private Iterator<K> _iter = Collections.emptyIterator();
-
-		@Override
-		public boolean hasNext()
-		{
-			while (!_iter.hasNext())
-			{
-				if (_dataIter.hasNext())
-				{
-					_iter = _dataIter.next().keySet().iterator();
-				}
-				else
-				{
-					return false;
-				}
-			}
-			
-			return true;
-		}
-		
-		@Override
-		public @Nullable K next()
-		{
-			hasNext();
-			return _iter.next();
-		}
-	}
-	
-	private class KeySet extends AbstractSet<K>
-	{
-		@Override
-		public void clear()
-		{
-			DataLayerBase.this.clear();
-		}
-		
-		@Override
-		public boolean contains(@Nullable Object obj)
-		{
-			return DataLayerBase.this.containsKey(obj);
-		}
-		
-		@Override
-		public Iterator<K> iterator()
-		{
-			return new KeyIter();
-		}
-		
-		@Override
-		public boolean remove(@Nullable Object obj)
-		{
-			return DataLayerBase.this.remove(obj) != null;
-		}
-		
-		@Override
-		public int size()
-		{
-			return DataLayerBase.this.size();
-		}
-	}
-	
-	private class EntryIter extends UnmodifiableIterator<Map.Entry<K,D>>
-	{
-		private Iterator<FactorGraphData<K,D>> _dataIter = Iterators.filter(_data.iterator(), Predicates.notNull());
-		private Iterator<Map.Entry<K,D>> _iter = Collections.emptyIterator();
-		
-		@Override
-		public boolean hasNext()
-		{
-			while (!_iter.hasNext())
-			{
-				if (_dataIter.hasNext())
-				{
-					_iter = _dataIter.next().entrySet().iterator();
-				}
-				else
-				{
-					return false;
-				}
-			}
-			
-			return true;
-		}
-		
-		@Override
-		public @Nullable Map.Entry<K, D> next()
-		{
-			hasNext();
-			return _iter.next();
-		}
-	}
-	
-	private class EntrySet extends AbstractSet<Map.Entry<K, D>>
-	{
-		@NonNullByDefault(false)
-		@Override
-		public boolean add(Map.Entry<K, D> entry)
-		{
-			final K key = entry.getKey();
-			final D value = entry.getValue();
-			return !Objects.equals(value, DataLayerBase.this.put(key, value));
-		}
-		
-		@Override
-		public void clear()
-		{
-			DataLayerBase.this.clear();
-		}
-		
-		@Override
-		public boolean contains(@Nullable Object obj)
-		{
-			if (obj instanceof Map.Entry)
-			{
-				Map.Entry<?,?> entry = (Map.Entry<?,?>)obj;
-				return Objects.equals(DataLayerBase.this.get(entry.getKey()), entry.getValue());
-			}
-			
-			return false;
-		}
-		
-		@Override
-		public Iterator<Map.Entry<K, D>> iterator()
-		{
-			return new EntryIter();
-		}
-		
-		@Override
-		public boolean remove(@Nullable Object obj)
-		{
-			if (obj instanceof Map.Entry)
-			{
-				Map.Entry<?,?> entry = (Map.Entry<?,?>)obj;
-				IDatum value = DataLayerBase.this.get(entry.getKey());
-				if (Objects.equals(value, entry.getValue()))
-				{
-					DataLayerBase.this.remove(entry.getKey());
-					return true;
-				}
-			}
-			
-			return false;
-		}
-		
-		@Override
-		public int size()
-		{
-			return DataLayerBase.this.size();
-		}
-	}
+	private final boolean _createDataOnRead;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	protected DataLayerBase(FactorGraph graph, FactorGraphData.Constructor<K,D> constructor, Class<K> keyType, Class<D> baseType)
+	protected DataLayerBase(
+		FactorGraph graph,
+		FactorGraphData.Constructor<K,D> constructor,
+		Class<K> keyType,
+		Class<D> baseType)
 	{
 		_keyType = keyType;
 		_keyTypeIndex = Ids.typeIndexForInstanceClass(keyType);
@@ -228,14 +77,15 @@ public class DataLayerBase<K extends IFactorGraphChild, D extends IDatum>
 		_rootGraph = graph.getRootGraph();
 		_data = new ExtendedArrayList<>();
 		_constructor = constructor;
+		_createDataOnRead = constructor.createOnRead();
 	}
 	
-	public DataLayerBase(FactorGraph graph, FactorGraphData.Constructor<K,D> constructor)
+	protected DataLayerBase(FactorGraph graph, FactorGraphData.Constructor<K,D> constructor)
 	{
 		this(graph, constructor, constructor.keyType(), constructor.baseType());
 	}
 	
-	public DataLayerBase(FactorGraph graph, DataDensity density, Class<K> keyType, Class<D> baseType)
+	protected DataLayerBase(FactorGraph graph, DataDensity density, Class<K> keyType, Class<D> baseType)
 	{
 		this(graph, FactorGraphData.constructorForType(density, keyType, baseType));
 	}
@@ -254,16 +104,21 @@ public class DataLayerBase<K extends IFactorGraphChild, D extends IDatum>
 	}
 	
 	@Override
-	public DataLayerBase<K,D> clone()
-	{
-		return new DataLayerBase<>(this);
-	}
+	public abstract DataLayerBase<K,D> clone();
 
-	/*-----------------
-	 * IEquals methods
+	/*----------------
+	 * Object methods
 	 */
 	
-	public boolean objectEquals(@Nullable Object obj)
+	/**
+	 * Compares contents with another object.
+	 * <p>
+	 * This differs from the {@linkplain AbstractMap#equals default implementation} only in the
+	 * case when comparing two empty {@link FactorGraphData} objects, which will only be considered
+	 * equal if they both refer to the same {@link #rootGraph root graph}.
+	 */
+	@Override
+	public boolean equals(@Nullable Object obj)
 	{
 		if (this == obj)
 		{
@@ -279,43 +134,38 @@ public class DataLayerBase<K extends IFactorGraphChild, D extends IDatum>
 				return false;
 			}
 	
-			Iterator<? extends FactorGraphData<K,D>> iter1 = getData().iterator();
-			Iterator<? extends FactorGraphData<?,?>> iter2 = other.getData().iterator();
-	
-			while (iter1.hasNext())
+			for (FactorGraph graph : FactorGraphIterables.subgraphs(_rootGraph))
 			{
-				FactorGraphData<K,D> data1 = iter1.next();
-				if (!iter2.hasNext())
+				Map<K,D> data = getDataForGraph(graph);
+				if (data == null)
 				{
-					if (data1.isEmpty())
-					{
-						continue;
-					}
-					else
-					{
-						return false;
-					}
+					data = Collections.emptyMap();
 				}
-	
-				FactorGraphData<?,?> data2 = iter2.next();
-				if (!data1.objectEquals(data2))
+				Map<?,?> otherData = other.getDataForGraph(graph);
+				if (otherData == null)
+				{
+					otherData = Collections.emptyMap();
+				}
+				
+				if (!data.equals(otherData))
 				{
 					return false;
 				}
 			}
-	
-			while (iter2.hasNext())
-			{
-				if (!iter2.next().isEmpty())
-				{
-					return false;
-				}
-			}
-	
+
 			return true;
 		}
 		
-		return false;
+		return super.equals(obj);
+	}
+	
+	/*-----------------
+	 * IEquals methods
+	 */
+	
+	public boolean objectEquals(@Nullable Object obj)
+	{
+		return equals(obj);
 	}
 
 	/*-------------
@@ -371,15 +221,18 @@ public class DataLayerBase<K extends IFactorGraphChild, D extends IDatum>
 	{
 		assertSharesRoot(var);
 		final FactorGraph graph = requireNonNull(var.getParentGraph());
-		if (value != null)
+		FactorGraphData<K,D> data = _data.getOrNull(graph.getGraphTreeIndex());
+
+		if (data != null)
+		{
+			return data.put(var, value);
+		}
+		else if (value != null)
 		{
 			return createDataForGraph(graph).put(var, value);
 		}
-		else
-		{
-			final FactorGraphData<K,D> data = getDataForGraph(graph);
-			return data != null ? data.put(var, value) : null;
-		}
+		
+		return null;
 	}
 	
 	@Override
@@ -417,6 +270,17 @@ public class DataLayerBase<K extends IFactorGraphChild, D extends IDatum>
 	/*-----------------------
 	 * DataLayerBase methods
 	 */
+	
+	/**
+	 * True if layer supports {@link Value} objects.
+	 * <p>
+	 * True if {@link Value} is a subclass or superclass of {@link #baseType()}.
+	 * @since 0.08
+	 */
+	public boolean allowsValues()
+	{
+		return (_baseType.isAssignableFrom(Value.class)) || Value.class.isAssignableFrom(_baseType);
+	}
 	
 	/**
 	 * Base type instance for data held in this layer.
@@ -508,17 +372,49 @@ public class DataLayerBase<K extends IFactorGraphChild, D extends IDatum>
 	
 	public @Nullable FactorGraphData<K,D> getDataForGraph(FactorGraph graph)
 	{
-		return sharesRoot(graph) ? _data.getOrNull(graph.getGraphTreeIndex()) : null;
+		FactorGraphData<K,D> data = null;
+		
+		if (sharesRoot(graph))
+		{
+			data = _data.getOrNull(graph.getGraphTreeIndex());
+			if (data == null &&	_createDataOnRead)
+			{
+				FactorGraphData<K,D> newData = _constructor.apply(this, graph);
+				setDataForGraph(newData);
+				data = newData;
+			}
+		}
+		
+		return data;
 	}
 	
 	public Iterable<? extends FactorGraphData<K,D>> getData()
 	{
-		return Iterables.filter(_data, Predicates.notNull());
+		return new Iterable<FactorGraphData<K,D>>() {
+			@Override
+			public Iterator<FactorGraphData<K, D>> iterator()
+			{
+				return new DataIterator();
+			}
+		};
 	}
 	
 	public Class<K> keyType()
 	{
 		return _keyType;
+	}
+	
+	/**
+	 * If true, this is a view of data held in other objects.
+	 * <p>
+	 * When true, cloning this object will not result in a distinct copy of the data.
+	 * <p>
+	 * The default implementation returns false.
+	 * @since 0.08
+	 */
+	public boolean isView()
+	{
+		return false;
 	}
 	
 	public @Nullable FactorGraphData<K,D> removeDataForGraph(FactorGraph graph)
@@ -554,8 +450,227 @@ public class DataLayerBase<K extends IFactorGraphChild, D extends IDatum>
 		return child.getRootGraph() == _rootGraph;
 	}
 	
-	/*-----------------
-	 * Package methods
+	/*--------------------------
+	 * Non-public inner classes
+	 */
+
+	private class DataIterator extends UnmodifiableIterator<FactorGraphData<K,D>>
+	{
+		private int _graphTreeIndex;
+		private final int _maxGraphTreeIndex;
+		private @Nullable FactorGraphData<K,D> _next;
+		
+		DataIterator()
+		{
+			_graphTreeIndex = -1;
+			_maxGraphTreeIndex = _rootGraph.getMaxGraphTreeIndex();
+			if (_data.size() <= _maxGraphTreeIndex)
+			{
+				_data.setSize(_maxGraphTreeIndex + 1);
+			}
+		}
+		
+		@Override
+		public boolean hasNext()
+		{
+			return advance() != null;
+		}
+	
+		@Override
+		public @Nullable FactorGraphData<K, D> next()
+		{
+			FactorGraphData<K,D> data = advance();
+			_next = null;
+			return data;
+		}
+		
+		private @Nullable FactorGraphData<K,D> advance()
+		{
+			FactorGraphData<K,D> data = _next;
+			
+			if (data == null)
+			{
+				while (++_graphTreeIndex <= _maxGraphTreeIndex)
+				{
+					data = _data.get(_graphTreeIndex);
+					if (data != null)
+					{
+						break;
+					}
+	
+					if (_createDataOnRead)
+					{
+						FactorGraph graph = _rootGraph.getGraphByTreeIndex(_graphTreeIndex);
+						if (graph != null)
+						{
+							data = createDataForGraph(graph);
+							break;
+						}
+					}
+				}
+				_next = data;
+			}
+			
+			return data;
+		}
+	}
+
+	private class KeyIter extends UnmodifiableIterator<K>
+	{
+		private Iterator<FactorGraphData<K,D>> _dataIter = new DataIterator();
+		private Iterator<K> _iter = Collections.emptyIterator();
+	
+		@Override
+		public boolean hasNext()
+		{
+			while (!_iter.hasNext())
+			{
+				if (_dataIter.hasNext())
+				{
+					_iter = _dataIter.next().keySet().iterator();
+				}
+				else
+				{
+					return false;
+				}
+			}
+			
+			return true;
+		}
+		
+		@Override
+		public @Nullable K next()
+		{
+			hasNext();
+			return _iter.next();
+		}
+	}
+
+	private class KeySet extends AbstractSet<K>
+	{
+		@Override
+		public void clear()
+		{
+			DataLayerBase.this.clear();
+		}
+		
+		@Override
+		public boolean contains(@Nullable Object obj)
+		{
+			return DataLayerBase.this.containsKey(obj);
+		}
+		
+		@Override
+		public Iterator<K> iterator()
+		{
+			return new KeyIter();
+		}
+		
+		@Override
+		public boolean remove(@Nullable Object obj)
+		{
+			return DataLayerBase.this.remove(obj) != null;
+		}
+		
+		@Override
+		public int size()
+		{
+			return DataLayerBase.this.size();
+		}
+	}
+
+	private class EntryIter extends UnmodifiableIterator<Map.Entry<K,D>>
+	{
+		private Iterator<FactorGraphData<K,D>> _dataIter = new DataIterator();
+		private Iterator<Map.Entry<K,D>> _iter = Collections.emptyIterator();
+		
+		@Override
+		public boolean hasNext()
+		{
+			while (!_iter.hasNext())
+			{
+				if (_dataIter.hasNext())
+				{
+					_iter = _dataIter.next().entrySet().iterator();
+				}
+				else
+				{
+					return false;
+				}
+			}
+			
+			return true;
+		}
+		
+		@Override
+		public @Nullable Map.Entry<K, D> next()
+		{
+			hasNext();
+			return _iter.next();
+		}
+	}
+
+	private class EntrySet extends AbstractSet<Map.Entry<K, D>>
+	{
+		@NonNullByDefault(false)
+		@Override
+		public boolean add(Map.Entry<K, D> entry)
+		{
+			final K key = entry.getKey();
+			final D value = entry.getValue();
+			return !Objects.equals(value, DataLayerBase.this.put(key, value));
+		}
+		
+		@Override
+		public void clear()
+		{
+			DataLayerBase.this.clear();
+		}
+		
+		@Override
+		public boolean contains(@Nullable Object obj)
+		{
+			if (obj instanceof Map.Entry)
+			{
+				Map.Entry<?,?> entry = (Map.Entry<?,?>)obj;
+				return Objects.equals(DataLayerBase.this.get(entry.getKey()), entry.getValue());
+			}
+			
+			return false;
+		}
+		
+		@Override
+		public Iterator<Map.Entry<K, D>> iterator()
+		{
+			return new EntryIter();
+		}
+		
+		@Override
+		public boolean remove(@Nullable Object obj)
+		{
+			if (obj instanceof Map.Entry)
+			{
+				Map.Entry<?,?> entry = (Map.Entry<?,?>)obj;
+				IDatum value = DataLayerBase.this.get(entry.getKey());
+				if (Objects.equals(value, entry.getValue()))
+				{
+					DataLayerBase.this.remove(entry.getKey());
+					return true;
+				}
+			}
+			
+			return false;
+		}
+		
+		@Override
+		public int size()
+		{
+			return DataLayerBase.this.size();
+		}
+	}
+
+	/*--------------------
+	 * Non-public methods
 	 */
 	
 	void assertSharesRoot(IFactorGraphChild child)
@@ -566,13 +681,10 @@ public class DataLayerBase<K extends IFactorGraphChild, D extends IDatum>
 		}
 	}
 	
-	/*-----------------
-	 * Private methods
-	 */
-	
 	private @Nullable FactorGraphData<K,D> getDataForChild(IFactorGraphChild key)
 	{
 		FactorGraph graph = key.getParentGraph();
-		return graph != null && Ids.typeIndexFromLocalId(key.getLocalId()) == _keyTypeIndex ? getDataForGraph(graph) : null;
+		return graph != null ? getDataForGraph(graph) : null;
 	}
+	
 }

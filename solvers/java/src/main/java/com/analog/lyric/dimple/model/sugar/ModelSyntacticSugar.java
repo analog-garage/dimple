@@ -544,7 +544,6 @@ public class ModelSyntacticSugar
 			graph().addFactor(new Normal(toDouble(mean), toDouble(precision)), vars);
 		}
 		else
-			
 		{
 			graph().addFactor(new Normal(), mean, precision, vars);
 		}
