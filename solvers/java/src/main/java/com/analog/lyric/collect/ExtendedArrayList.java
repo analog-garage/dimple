@@ -119,7 +119,7 @@ public class ExtendedArrayList<T> extends ArrayList<T>
 	 * Sets {@link #size} of array to specified value.
 	 * <p>
 	 * @param newSize the new size of the array. If less than the current size, elements will be removed
-	 * from the end of the list; if greather than the current size, new elements with null values will
+	 * from the end of the list; if greater than the current size, new elements with null values will
 	 * be appended to the end of the list.
 	 * 
 	 * @since 0.08
