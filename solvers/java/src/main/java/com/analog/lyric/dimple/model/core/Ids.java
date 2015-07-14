@@ -41,6 +41,9 @@ import com.analog.lyric.util.misc.Internal;
  * {@link FactorGraph} provides methods for retrieving nodes by their local id, such as
  * {@linkplain FactorGraph#getNodeByLocalId(int) getNodeByLocalId}.
  * 
+ * <li><b>local index</b> - the index component of a local id that does not include its type tag (see internal layouts
+ * below). This typically is used as a direct index into arrays of data associated with child instances.
+ * 
  * <li><b>graph id</b> - uniquely identifies a {@link FactorGraph} within the
  * {@link DimpleEnvironment}'s (typically there is only one) {@linkplain DimpleEnvironment#factorGraphs() factor
  * graph registry}.
