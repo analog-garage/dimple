@@ -378,7 +378,42 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 		message5 = new DiscreteWeightMessage(message4);
 		assertArrayEquals(message4.getWeights(), message5.getWeights(), 1e-15);
 		
-		message5.setFrom(DiscreteDomain.range(1, size), new IndexPlusOne());
+		DiscreteDomain domain = DiscreteDomain.range(1, size);
+		message5.setFrom(domain, new IndexPlusOne());
+		for (int i = size; --i>=0;)
+		{
+			assertEquals(i + 1, message5.getEnergy(i), 0.0);
+		}
+		
+		message5.setFrom(domain, Value.createWithIndex(domain, 0));
+		assertEquals(1.0, message5.getWeight(0), 0.0);
+		for (int i = 1; i < size; ++i)
+		{
+			assertEquals(0.0, message5.getWeight(i), 0.0);
+		}
+
+		message5.setFrom(domain, Value.create(1));
+		assertEquals(1.0, message5.getWeight(0), 0.0);
+		for (int i = 1; i < size; ++i)
+		{
+			assertEquals(0.0, message5.getWeight(i), 0.0);
+		}
+		
+		message5.setFrom(domain, message);
+		assertArrayEquals(message.getWeights(), message5.getWeights(), 1e-15);
+		
+		message5 = new DiscreteWeightMessage(domain, null);
+		assertEquals(size, message5.size());
+		for (double w : message5.getWeights())
+			assertEquals(1.0/size, w, 1e-15);
+		
+		message5 = new DiscreteWeightMessage(domain, new IndexPlusOne());
+		for (int i = size; --i>=0;)
+		{
+			assertEquals(i + 1, message5.getEnergy(i), 0.0);
+		}
+
+		message5 = new DiscreteEnergyMessage(domain, new IndexPlusOne());
 		for (int i = size; --i>=0;)
 		{
 			assertEquals(i + 1, message5.getEnergy(i), 0.0);
