@@ -274,14 +274,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 				if (sourceVar != null)
 				{
 					final Variable targetVar = entry.getValue();
-					if (sourceVar.hasFixedValue())
-					{
-						targetVar.setFixedValueObject(sourceVar.getFixedValueObject());
-					}
-					else
-					{
-						targetVar.setInputObject(sourceVar.getInputObject());
-					}
+					targetVar.setPrior(sourceVar.getPrior());
 				}
 			}
 		}

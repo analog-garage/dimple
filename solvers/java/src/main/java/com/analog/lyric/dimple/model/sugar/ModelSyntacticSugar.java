@@ -280,7 +280,7 @@ public class ModelSyntacticSugar
 	public static Discrete fixed(String name, DiscreteDomain domain, Object value)
 	{
 		Discrete var = discrete(name, domain);
-		var.setFixedValue(value);
+		var.setPrior(value);
 		return var;
 	}
 	

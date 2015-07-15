@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.matlabproxy;
 
 import com.analog.lyric.dimple.model.core.Node;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.util.misc.Matlab;
@@ -91,14 +92,17 @@ public class PDiscreteVariableVector extends PVariableVector
 		for (int i = 0; i < indices.length; i++)
 		{
 			int index = indices[i];
-			getDiscreteVariable(index).setInput(inputs[i]);
+			getDiscreteVariable(index).setPrior(inputs[i]);
 		}
 	}
 	
 	public void setFixedValueIndices(int[] indices, int[] fixedValueIndices)
 	{
 		for (int i = 0; i < indices.length; i++)
-			getDiscreteVariable(indices[i]).setFixedValueIndex(fixedValueIndices[i]);
+		{
+			Discrete var = getDiscreteVariable(indices[i]);
+			var.setPrior(Value.createWithIndex(var.getDomain(), fixedValueIndices[i]));
+		}
 	}
 	public int[] getFixedValueIndices(int[] indices)
 	{

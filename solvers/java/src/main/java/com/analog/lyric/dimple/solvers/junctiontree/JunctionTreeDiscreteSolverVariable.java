@@ -20,6 +20,7 @@ import static java.util.Objects.*;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.proxy.ProxyDiscreteSolverVariable;
 import com.analog.lyric.dimple.solvers.interfaces.IDiscreteSolverVariable;
@@ -75,8 +76,9 @@ public class JunctionTreeDiscreteSolverVariable
 	@Override
 	public int getValueIndex()
 	{
-		if (getModelObject().hasFixedValue())	// If there's a fixed value set, use that instead of the belief
-			return getModelObject().getFixedValueIndex();
+		Value value = _model.getPriorValue();
+		if (value != null)	// If there's a fixed value set, use that instead of the belief
+			return value.getIndex();
 					
 		double[] belief = (double[])getBelief();
 		int numValues = requireNonNull(belief).length;

@@ -40,6 +40,7 @@ import com.analog.lyric.dimple.model.core.NodeType;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.DomainList;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.options.DimpleOptions;
@@ -319,16 +320,8 @@ public class Factor extends FactorBase implements Cloneable
 		for (int i = constantValues.length; --i>=0;)
 		{
 			final Variable variable = constantVariables.get(i);
-			if (variable.getDomain().isDiscrete())
-			{
-				// FIXME: clean up fixed value methods so there is a base class method for getting
-				// the actual fixed value as opposed to its representation.
-				constantValues[i] = variable.asDiscreteVariable().getFixedValue();
-			}
-			else
-			{
-				constantValues[i] = variable.getFixedValueObject();
-			}
+			final Value value = variable.getPriorValue();
+			constantValues[i] = value != null ? value.getObject() : null;
 		}
 		
 		return new FactorFunctionWithConstants(oldFunction,	constantValues,	constantIndices);

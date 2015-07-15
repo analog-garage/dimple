@@ -437,7 +437,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		}
 		else if (prior instanceof IUnaryFactorFunction)
 		{
-			_input = new DiscreteEnergyMessage(getDomain(), (IUnaryFactorFunction)prior);
+			_input = new DiscreteEnergyMessage(getDomain(), prior);
 		}
 		else
 		{
@@ -487,9 +487,10 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		if (_holdSampleValue) return;
 		
 		// If the variable has a fixed value, then set the current sample to that value and return
-		if (_model.hasFixedValue())
+		Value value = _model.getPriorValue();
+		if (value != null)
 		{
-			setCurrentSampleIndex(_model.getFixedValueIndex());
+			setCurrentSampleIndex(value.getIndex());
 			return;
 		}
 		
@@ -946,7 +947,8 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	public void createNonEdgeSpecificState()
 	{
 		// Normally zero, but use fixed value if one has been set
-		_currentSample.setIndex(_model.hasFixedValue() ? _model.getFixedValueIndex() : 0);
+		Value value = _model.getPriorValue();
+		_currentSample.setIndex(value != null ? value.getIndex() : 0);
 
 		if (_sampleIndexArray != null)
 			saveAllSamples();
@@ -1059,8 +1061,9 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		
 		updatePrior();
 		
-		if (_model.hasFixedValue())
-			setCurrentSampleIndexForce(requireNonNull(_model.getFixedValueObject()));
+		Value value = _model.getPriorValue();
+		if (value != null)
+			setCurrentSampleIndexForce(value.getIndex());
 		else
 			setCurrentSampleIndexForce(_currentSample.getIndex());
 		
