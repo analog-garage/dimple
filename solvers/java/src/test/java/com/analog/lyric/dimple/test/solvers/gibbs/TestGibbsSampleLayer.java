@@ -65,6 +65,7 @@ public class TestGibbsSampleLayer extends DimpleTestBase
 			assertNotEquals(rootData, layer2.getDataForGraph(root.graph));
 
 			Real a = real("a");
+			@SuppressWarnings("unused")
 			Bit b = bit("b");
 			sgraph.initialize();
 			assertInvariants(layer);
