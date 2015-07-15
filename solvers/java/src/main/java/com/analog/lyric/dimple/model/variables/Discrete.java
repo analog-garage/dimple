@@ -27,7 +27,9 @@ import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
+import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergyMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.dimple.solvers.interfaces.IDiscreteSolverVariable;
@@ -206,20 +208,20 @@ public class Discrete extends VariableBase
     	final boolean thisIsFirst = (variables[0] == this);
     	final int dimensions = thisIsFirst ? variables.length: variables.length + 1;
     	final DiscreteDomain[] domains = new DiscreteDomain[dimensions];
-    	final double[][] subdomainWeights = new double[dimensions][];
+    	final IDatum[] subdomainPriors = new IDatum[dimensions];
     	domains[0] = getDomain();
-    	subdomainWeights[0] = getInput();
+    	subdomainPriors[0] = getPrior();
     	
     	for (int i = thisIsFirst ? 1 : 0; i < dimensions; ++i)
     	{
     		final Discrete var = variables[i].asDiscreteVariable();
     		domains[i] = var.getDomain();
-    		subdomainWeights[i] = var.getInput();
+    		subdomainPriors[i] = var.getPrior();
     	}
 
     	final JointDiscreteDomain<?> jointDomain = DiscreteDomain.joint(domains);
     	final Discrete jointVar =  new Discrete(jointDomain);
-    	jointVar.setInput(joinWeights(subdomainWeights));
+    	jointVar.setPrior(joinPriors(jointDomain ,subdomainPriors));
     	return jointVar;
     }
 	
@@ -234,7 +236,16 @@ public class Discrete extends VariableBase
 		super.setInputObject(value instanceof double[] ? new DiscreteWeightMessage((double[])value) : value);
 	}
 	
-	// Fix the variable to a specific value
+	/**
+	 * Sets prior to new {@link DiscreteWeightMessage} with given weights.
+	 * @param weights must have same length as variable's domain.
+	 * @since 0.08
+	 */
+	public void setPrior(double ... weights)
+	{
+		setPrior(new DiscreteWeightMessage(weights));
+	}
+	
 	public final int getFixedValueIndex()
 	{
 		Integer index = getFixedValueObject();
@@ -243,7 +254,7 @@ public class Discrete extends VariableBase
 		
 		return index;
 	}
-	
+
 	public final Object getFixedValue()
 	{
 		Integer index = getFixedValueObject();
@@ -301,42 +312,93 @@ public class Discrete extends VariableBase
 	 * Private methods
 	 */
 
-	private double[] joinWeights(double[] ... subdomainWeights)
+	private @Nullable IDatum joinPriors(JointDiscreteDomain<?> jointDomain, IDatum[] subdomainPriors)
 	{
-		// Validate dimensions
-		//   This simply validates that the joint cardinality matches. It does not
-		//   actually compare against the subdomains. Ideally we should do that but
-		//   allowing for "drilling down" into subdomains that are joint domains.
-		int cardinality = 1;
-		for (double[] array : subdomainWeights)
+		final JointDomainIndexer domains = jointDomain.getDomainIndexer();
+		final int dimensions = jointDomain.getDimensions();
+		boolean hasPrior = false;
+		int[] fixedIndices = new int[dimensions];
+		Arrays.fill(fixedIndices, -1);
+		
+		for (int i = 0; i < dimensions; ++i)
 		{
-			cardinality *= array.length;
+			DiscreteDomain domain = domains.get(i);
+			IDatum prior = subdomainPriors[i];
+			if (prior != null)
+			{
+				hasPrior = true;
+				
+				if (prior instanceof Value)
+				{
+					Value value = (Value)prior;
+					fixedIndices[i] =
+						domain.equals(value.getDomain()) ? value.getIndex() : domain.getIndex(value.getObject());
+					subdomainPriors[i] = new DiscreteEnergyMessage(domain, value);
+				}
+				else
+				{
+					DiscreteMessage msg = prior instanceof DiscreteMessage ? (DiscreteMessage)prior :
+						new DiscreteWeightMessage(domain, prior);
+					subdomainPriors[i] = msg;
+					fixedIndices[i] = msg.toDeterministicValueIndex();
+				}
+			}
 		}
 		
-		double[] weights = new double[cardinality];
-		Arrays.fill(weights, 1.0);
+		if (!hasPrior)
+		{
+			// If none of the component variables has a prior, then neither will the joint variable.
+			return null;
+		}
+		
+		boolean hasAllFixedPriors = true;
+		for (int i : fixedIndices)
+		{
+			if (i < 0)
+			{
+				hasAllFixedPriors = false;
+				break;
+			}
+		}
+		
+		if (hasAllFixedPriors)
+		{
+			// Return fixed value with appropriate joint index.
+			return Value.createWithIndex(jointDomain, domains.jointIndexFromIndices(fixedIndices));
+		}
+		
+		int cardinality = jointDomain.size();
+		
+		double[] energies = new double[cardinality];
 		
 		int inner = 1, outer = cardinality;
-		for (double[] subweights : subdomainWeights)
+		for (int dim = 0; dim < dimensions; ++dim)
 		{
-			final int size = subweights.length;
+			final DiscreteDomain domain = domains.get(dim);
+			final DiscreteMessage prior = (DiscreteMessage)subdomainPriors[dim];
+			final int size = domain.size();
 			int i = 0;
 			
 			outer /= size;
-			for (int o = 0; o < outer; ++o)
+			
+			if (prior != null)
 			{
-				for (double weight : subweights)
+				for (int o = 0; o < outer; ++o)
 				{
-					for (int r = 0; r < inner; ++r)
+					for (double energy : prior.getEnergies())
 					{
-						weights[i++] *= weight;
+						for (int r = 0; r < inner; ++r)
+						{
+							energies[i++] += energy;
+						}
 					}
 				}
 			}
+			
 			inner *= size;
 		}
 		
-		return weights;
+		return new DiscreteEnergyMessage(energies);
 	}
 	
 

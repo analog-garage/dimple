@@ -24,6 +24,7 @@ import java.util.Arrays;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.exceptions.NormalizationException;
 import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
@@ -61,7 +62,7 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 		super(other);
 		_message = other._message.clone();
 	}
-
+	
 	/*----------------
 	 * IDatum methods
 	 */
@@ -373,19 +374,34 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	}
 	
 	/**
-	 * Sets values by evaluating factor function for each element in domain.
+	 * Sets values for domain from datum.
+	 * <p>
 	 * @param domain discrete domain with size matching {@link #size()}.
-	 * @param function function used to evaluate energy for each element of domain.
+	 * @param datum either an exact {@link Value}, another {@link DiscreteMessage} or other
+	 * {@link IUnaryFactorFunction} used to evaluate energies for all possible discrete values.
 	 * @since 0.08
 	 */
-	public void setFrom(DiscreteDomain domain, IUnaryFactorFunction function)
+	public void setFrom(DiscreteDomain domain, IDatum datum)
 	{
-		if (function instanceof DiscreteMessage)
+		if (datum instanceof DiscreteMessage)
 		{
-			setFrom((DiscreteMessage)function);
+			setFrom((DiscreteMessage)datum);
+		}
+		else if (datum instanceof Value)
+		{
+			Value value = (Value)datum;
+			if (domain.equals(value.getDomain()))
+			{
+				setDeterministicIndex(value.getIndex());
+			}
+			else
+			{
+				setDeterministicIndex(domain.getIndex(value.getObject()));
+			}
 		}
 		else
 		{
+			IUnaryFactorFunction function = (IUnaryFactorFunction)datum;
 			assertSameSize(domain.size());
 			DiscreteValue value = Value.create(domain);
 			for (int i = domain.size(); --i>=0;)

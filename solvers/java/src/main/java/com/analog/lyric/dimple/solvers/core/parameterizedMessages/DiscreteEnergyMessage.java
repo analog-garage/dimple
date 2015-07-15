@@ -20,7 +20,7 @@ import static com.analog.lyric.math.Utilities.*;
 
 import java.util.Arrays;
 
-import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
+import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.math.Utilities;
 
@@ -74,13 +74,14 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 	}
 	
 	/**
-	 * Sets values by evaluating function for every member of domain.
+	 * Sets values for domain from datum.
 	 * @since 0.08
+	 * @see #setFrom(DiscreteDomain, IDatum)
 	 */
-	public DiscreteEnergyMessage(DiscreteDomain domain, IUnaryFactorFunction function)
+	public DiscreteEnergyMessage(DiscreteDomain domain, IDatum datum)
 	{
 		this(new double[domain.size()]);
-		setFrom(domain, function);
+		setFrom(domain, datum);
 	}
 	
 	@Override

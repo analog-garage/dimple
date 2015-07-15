@@ -34,8 +34,8 @@ function testSolveMultipleTimes()
     fg.solve();
     fg.continueSolve();
     fg.continueSolve();
-    assertEqual(b.Variables(1).Belief,[.8 .2]');
+    assertElementsAlmostEqual(b.Variables(1).Belief,[.8 .2]');
     fg.solve();
-    assertEqual(b.Variables(1).Belief,[.5 .5]');
+    assertElementsAlmostEqual(b.Variables(1).Belief,[.5 .5]');
     %keep solving
 end

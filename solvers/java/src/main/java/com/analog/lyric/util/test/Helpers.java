@@ -22,6 +22,7 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -46,6 +47,7 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.util.misc.Internal;
 import com.google.common.base.Strings;
@@ -72,7 +74,7 @@ public class Helpers
 	
 	static public FactorGraph MakeSimpleGraph(String tag,
 											 @Nullable IFactorGraphFactory<?> graphFactory,
-											 boolean randomInput)
+											 boolean randomPrior)
 	{
 		Discrete vB1 = new Discrete(0.0, 1.0);
 		Discrete vO1 = new Discrete(0.0, 1.0);
@@ -86,14 +88,14 @@ public class Helpers
 		Factor f = fg.addFactor(new XorDelta(), vB1, vO1, vO2);
 		f.setName(String.format("f%s", tag));
 		
-		if(randomInput)
+		if (randomPrior)
 		{
 			VariableList variables = fg.getVariables();
 			double[][] trivialRandomCodeword =
 				trivialRandomCodeword(variables.size());
 			for(int variable = 0; variable < variables.size(); ++variable)
 			{
-				((Discrete)variables.getByIndex(variable)).setInput(trivialRandomCodeword[variable]);
+				((Discrete)variables.getByIndex(variable)).setPrior(trivialRandomCodeword[variable]);
 			}
 		}
 		return fg;
@@ -105,7 +107,7 @@ public class Helpers
 	static public FactorGraph MakeSimpleChainGraph(	String tag,
 												 	@Nullable IFactorGraphFactory<?> graphFactory,
 												 	int factors,
-												 	boolean randomInput)
+												 	boolean randomPrior)
 	{
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(graphFactory);
@@ -125,14 +127,14 @@ public class Helpers
 		
 		Helpers.setNamesByStructure(fg);
 		
-		if(randomInput)
+		if (randomPrior)
 		{
 			VariableList variables = fg.getVariables();
 			double[][] trivialRandomCodeword =
 				trivialRandomCodeword(variables.size());
 			for(int variable = 0; variable < variables.size(); ++variable)
 			{
-				((Discrete)variables.getByIndex(variable)).setInput(trivialRandomCodeword[variable]);
+				((Discrete)variables.getByIndex(variable)).setPrior(trivialRandomCodeword[variable]);
 			}
 		}
 		return fg;
@@ -177,7 +179,7 @@ public class Helpers
 				trivialRandomCodeword(variables.size());
 			for(int variable = 0; variable < variables.size(); ++variable)
 			{
-				((Discrete)variables.getByIndex(variable)).setInput(trivialRandomCodeword[variable]);
+				((Discrete)variables.getByIndex(variable)).setPrior(trivialRandomCodeword[variable]);
 			}
 		}
 
@@ -324,7 +326,7 @@ public class Helpers
 		for(int i = 0; i < vs.size(); ++i)
 		{
 			Discrete d = (Discrete) vs.getByIndex(i);
-			d.setInput(inputs[i]);
+			d.setPrior(inputs[i]);
 		}
 	}
 	static public double assertBeliefsDifferent(double[][] a, double[][] b)
@@ -350,25 +352,11 @@ public class Helpers
 	static public double[][] beliefsOrInputs(FactorGraph fg, boolean byName, boolean print, boolean byAddOrder, boolean getbeliefs)
 	{
 		VariableList vs = fg.getVariables();
-		ArrayList<Discrete> orderUsed= new ArrayList<Discrete>();
+		Collection<? extends Variable> vars = vs.values();
+		
 		double[][] ret = new double[vs.size()][];
-		if(byAddOrder)
-		{
-			for(int i = 0; i < vs.size(); ++i)
-			{
-				Discrete d = (Discrete) vs.getByIndex(i);
-				if(getbeliefs)
-				{
-					ret[i] = d.getBelief();
-				}
-				else
-				{
-					ret[i] = d.getInput();
-				}
-				orderUsed.add(d);
-			}
-		}
-		else
+		
+		if (!byAddOrder)
 		{
 			TreeMap<String, Discrete> vsSorted = new TreeMap<String, Discrete>();
 			for(int i = 0; i < vs.size(); ++i)
@@ -382,32 +370,29 @@ public class Helpers
 							 (Discrete)(vs.getByIndex(i)));
 			}
 			
-			int i = 0;
-			for(Discrete d : vsSorted.values())
-			{
-				if(getbeliefs)
-				{
-					ret[i] = d.getBelief();
-				}
-				else
-				{
-					ret[i] = d.getInput();
-				}
-				orderUsed.add(d);
-				i++;
-			}
+			vars = vsSorted.values();
 		}
-
-		if(print)
+		
+		int i = 0;
+		for(Variable var : vars)
 		{
-			for(int i = 0; i < orderUsed.size(); ++i)
+			Discrete d = (Discrete)var;
+			if (getbeliefs)
 			{
-				Discrete d = orderUsed.get(i);
+				ret[i] = d.getBelief();
+			}
+			else
+			{
+				ret[i] = new DiscreteWeightMessage(d.getDomain(), d.getPrior()).representation();
+			}
+
+			if (print)
+			{
 				StringBuilder sb = new StringBuilder();
 				sb.append("[");
 				sb.append(d.getLabel());
 				sb.append("]: {" );
-				double[] oneVariablesRet = requireNonNull(getbeliefs ? d.getBelief() : d.getInput());
+				double[] oneVariablesRet = requireNonNull(ret[i]);
 
 				for(int j = 0; j < oneVariablesRet.length; j++)
 				{
@@ -420,7 +405,10 @@ public class Helpers
 				sb.append("}");
 				System.out.println(sb.toString());
 			}
+
+			i++;
 		}
+		
 		return ret;
 	}
 	static public double compareBeliefs(FactorGraph fgA,
@@ -660,8 +648,8 @@ public class Helpers
 			} else {
 	        	thisVar = variables.getByIndex(i);
 	        }
-			((Discrete)thisVar).setInput(codewordWithErrors[i]);
-			//((Discrete)variables.getByIndex(i)).setInput(codewordWithErrors[i]);
+			((Discrete)thisVar).setPrior(codewordWithErrors[i]);
+			//((Discrete)variables.getByIndex(i)).setPrior(codewordWithErrors[i]);
 		}
 		fg.solve();
 

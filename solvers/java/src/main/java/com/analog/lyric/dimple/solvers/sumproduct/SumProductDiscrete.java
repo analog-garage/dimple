@@ -108,8 +108,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		if (prior != null)
 			return prior.getEnergy(getGuessIndex());
 
-		// FIXME - if there is no input, the score should be zero
-		return -weightToEnergy(getDomain().size());
+		return 0;
 	}
 	
 	@Deprecated
@@ -158,8 +157,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		final double[] dampingParams = _dampingParams;
 		final double damping = dampingParams != null ? dampingParams[outPortNum] : 0.0;
 
-		// FIXME - don't treat missing prior as the same as uniform
-		final double priorNormalizer = priors != null ? priors.getNormalizationEnergy() : weightToEnergy(M);
+		final double priorNormalizer = priors != null ? priors.getNormalizationEnergy() : 0;
 		
 		if (damping != 0.0)
 		{
@@ -293,8 +291,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         final double[] logInPortMsgs = DimpleEnvironment.doubleArrayCache.allocateAtLeast(M*D);
         final double[] alphas = DimpleEnvironment.doubleArrayCache.allocateAtLeast(M);
         
-		// FIXME - don't treat missing prior as the same as uniform
-		final double priorNormalizer = priors != null ? priors.getNormalizationEnergy() : weightToEnergy(M);
+		final double priorNormalizer = priors != null ? priors.getNormalizationEnergy() : 0;
 		
         for (int m = M; --m>=0;)
         {
@@ -446,8 +443,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         final double minLog = -100;
         double maxLog = Double.NEGATIVE_INFINITY;
         
-		// FIXME - don't treat missing prior as the same as uniform
-		final double priorNormalizer = priors != null ? priors.getNormalizationEnergy() : weightToEnergy(M);
+		final double priorNormalizer = priors != null ? priors.getNormalizationEnergy() : 0;
 		
         for (int m = 0; m < M; m++)
         {
@@ -472,10 +468,18 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         	sum += out;
         }
         
-        //calculate belief by dividing by sum
-        for (int m = 0; m < M; m++)
+        // Normalize
+        if (sum > 0)
         {
-        	outBelief[m] /= sum;
+        	for (int m = 0; m < M; m++)
+        	{
+        		outBelief[m] /= sum;
+        	}
+        }
+        else
+        {
+        	// If all zero, then return uniform
+        	Arrays.fill(outBelief, 1.0/M);
         }
         
         return outBelief;
@@ -546,16 +550,12 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	@Internal
 	public double computeLogPartitionFunction()
 	{
-		double [] retval = new double[getDomain().size()];
+		double [] energies = new double[getDomain().size()];
 		
 		DiscreteMessage prior = getPrior();
 		if (prior != null)
 		{
-			prior.getWeights(retval);
-		}
-		else
-		{
-			Arrays.fill(retval, 1.0 / retval.length);
+			prior.getEnergies(energies);
 		}
 		
 		double normalizationEnergy = 0.0;
@@ -563,23 +563,21 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		for (int i = 0, n = getSiblingCount(); i < n; i++)
 		{
 			DiscreteMessage inMsg = getSiblingEdgeState(i).factorToVarMsg;
-			for (int j =  0; j < retval.length; j++)
+			for (int j =  0; j < energies.length; j++)
 			{
-				retval[j] *= inMsg.getWeight(j);
+				energies[j] += inMsg.getEnergy(j);
 			}
 			normalizationEnergy += inMsg.getNormalizationEnergy();
 		}
 		
 		double sum = 0.0;
 		
-		for (int j = 0; j < retval.length; ++j)
+		for (int j = 0; j < energies.length; ++j)
 		{
-			sum += retval[j];
+			sum += energyToWeight(energies[j]);
 		}
 
-		double energy = weightToEnergy(sum);
-		
-		return energy + normalizationEnergy;
+		return weightToEnergy(sum) + normalizationEnergy;
 		
 	}
 	
@@ -596,8 +594,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		double [] belief = getBelief();
 
 		DiscreteMessage prior = getPrior();
-		// FIXME - don't treat missing prior as the same as uniform
-		final double priorNormalizer = prior != null ? prior.getNormalizationEnergy() : weightToEnergy(domainLength);
+		final double priorNormalizer = prior != null ? prior.getNormalizationEnergy() : 0;
 		
 		//make sure input is normalized
 		for (int i = 0; i < domainLength; i++)

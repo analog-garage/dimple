@@ -20,7 +20,9 @@ import static com.analog.lyric.math.Utilities.*;
 
 import java.util.Arrays;
 
-import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
+import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.math.Utilities;
 
@@ -74,13 +76,23 @@ public class DiscreteWeightMessage extends DiscreteMessage
 	}
 	
 	/**
-	 * Sets values by evaluating function for every member of domain.
+	 * Sets values for domain from datum.
+	 * @param domain is used to set the {@link #size} and used to evaluate {@code datum}
+	 * @param datum if not null is used to initialize the message via {@link #setFrom(DiscreteDomain, IDatum)},
+	 * otherwise the message will be {@link #setUniform() set to uniform} distribution.
 	 * @since 0.08
 	 */
-	public DiscreteWeightMessage(DiscreteDomain domain, IUnaryFactorFunction function)
+	public DiscreteWeightMessage(DiscreteDomain domain, @Nullable IDatum datum)
 	{
 		this(new double[domain.size()]);
-		setFrom(domain, function);
+		if (datum != null)
+		{
+			setFrom(domain, datum);
+		}
+		else
+		{
+			setUniform();
+		}
 	}
 	
 	@Override

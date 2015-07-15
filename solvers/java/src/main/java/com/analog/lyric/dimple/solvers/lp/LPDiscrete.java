@@ -235,7 +235,7 @@ public class LPDiscrete extends SDiscreteVariableBase
 		DiscreteMessage prior = getPrior();
 
 		int cardinality = 0;
-		if (prior!= null)
+		if (prior != null)
 		{
 			for (int i = domlength; --i >=0 ;)
 			{
@@ -287,12 +287,29 @@ public class LPDiscrete extends SDiscreteVariableBase
 		{
 			_lpVarIndex = start;
 
-
-			for (double weight : getModelObject().getInput())
+			Value value = getFixedValue();
+			if (value != null)
 			{
-				if (weight != 0.0)
+				objectiveFunction[start++] = 0;
+			}
+			else
+			{
+				DiscreteMessage prior = getPrior();
+				if (prior != null)
 				{
-					objectiveFunction[start++] = Math.log(weight);
+					for (double energy : prior.getEnergies())
+					{
+						if (energy < Double.POSITIVE_INFINITY)
+						{
+							objectiveFunction[start++] = -energy;
+						}
+					}
+				}
+				else
+				{
+					final int size = getDomain().size();
+					Arrays.fill(objectiveFunction, start, start + size, 0.0);
+					start += size;
 				}
 			}
 		}
