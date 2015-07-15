@@ -436,6 +436,10 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
     	return requireSolver("getGuess").getGuess();
     }
     
+    /**
+     * @category internal
+     */
+    @Internal
 	public void moveInputs(Variable other)
 	{
 		setPrior(other.getPrior());
@@ -487,12 +491,15 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		setPrior(value != null ? Value.create(_domain, value) : null);
 	}
 	
-    public void setInputObject(@Nullable Object value)
+	public void setInputObject(@Nullable Object value)
     {
     	setPrior(value);
     }
     
     // For setting the variable to a fixed value in lieu of an input
+    /**
+     * True if {@link #getPriorValue()} is non-null.
+     */
 	public final boolean hasFixedValue()
 	{
 		return _prior instanceof Value;

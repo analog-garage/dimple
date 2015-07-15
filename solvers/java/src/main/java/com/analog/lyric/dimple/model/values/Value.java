@@ -290,9 +290,9 @@ public abstract class Value implements IDatum, Cloneable, Serializable
 	{
 		return getObject() + "";
 	}
-	
-	/*----------------
-	 * IDatum methods
+
+	/*-----------------
+	 * IEquals methods
 	 */
 	
 	@Override
@@ -310,6 +310,10 @@ public abstract class Value implements IDatum, Cloneable, Serializable
 		
 		return false;
 	}
+
+	/*----------------
+	 * IDatum methods
+	 */
 	
 	/**
 	 * {@inheritDoc}

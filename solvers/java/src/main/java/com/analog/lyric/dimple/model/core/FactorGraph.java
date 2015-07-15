@@ -1678,7 +1678,7 @@ public class FactorGraph extends FactorBase
 		return parentGraph.addFactor(jointFunction, variables);
 	}
 
-	/*
+	/**
 	 * Joining variables creates one joint and discards the originals and modifies
 	 * factors to refer to the joints.
 	 */
