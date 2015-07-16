@@ -66,13 +66,7 @@ public class Discrete extends VariableBase
 		super(that);
 	}
 
-	@Deprecated
-    public double [] getInput()
-    {
-    	return (double[])getInputObject();
-    }
-    
-    @Override
+	@Override
     @NonNull
     public Discrete clone()
     {
@@ -121,19 +115,7 @@ public class Discrete extends VariableBase
     	return null;
     }
     
-    @Deprecated
-    @Override
-    public Object getInputObject()
-    {
-    	Object input = priorToInput(getPrior());
-    	
-    	if (input == null)
-    	{
-    		input = getDefaultPriors(getDiscreteDomain());
-    	}
-    	
-    	return input;
-    }
+    
     
     
     /*------------------
@@ -222,15 +204,6 @@ public class Discrete extends VariableBase
     	return jointVar;
     }
 	
-	/**
-	 * @deprecated use {@link #setPrior(double...)} instead
-	 */
-	@Deprecated
-	public void setInput(@Nullable double ... value)
-	{
-		setPrior(value);
-	}
-	
 	@Override
 	public @Nullable IDatum setPrior(@Nullable Object prior)
 	{
@@ -287,6 +260,39 @@ public class Discrete extends VariableBase
 		return value != null ? value.getIndex() : -1;
 	}
 	
+	/*--------------------
+	 * Deprecated methods
+	 */
+	
+	@Deprecated
+	public double [] getInput()
+	{
+		return (double[])getInputObject();
+	}
+
+	@Deprecated
+	@Override
+	public Object getInputObject()
+	{
+		Object input = priorToInput(getPrior());
+		
+		if (input == null)
+		{
+			input = getDefaultPriors(getDiscreteDomain());
+		}
+		
+		return input;
+	}
+
+	/**
+	 * @deprecated use {@link #setPrior(double...)} instead
+	 */
+	@Deprecated
+	public void setInput(@Nullable double ... value)
+	{
+		setPrior(value);
+	}
+
 	/**
 	 * @deprecated use {@link #getPriorIndex()} instead
 	 */
@@ -322,6 +328,11 @@ public class Discrete extends VariableBase
 		setPrior(Value.createWithIndex(getDomain(), fixedValueIndex));
 		
 	}
+	
+	/**
+	 * @deprecated use {@link #setPrior} instead.
+	 */
+	@Deprecated
 	public void setFixedValue(Object fixedValue)
 	{
 		setPrior(Value.create(getDomain(), fixedValue));

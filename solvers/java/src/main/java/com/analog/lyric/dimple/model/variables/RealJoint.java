@@ -66,17 +66,29 @@ public class RealJoint extends VariableBase
 		return getDomain();
 	}
 	
-	public @Nullable Object getInput()
-	{
-		return getInputObject();
-	}
-	
-	
 	public double[] getValue()
 	{
 		return (double[])requireSolver("getValue").getValue();
 	}
 
+	
+	public @Nullable MultivariateNormalParameters getBelief()
+	{
+		return (MultivariateNormalParameters)getBeliefObject();
+	}
+	
+	/*--------------------
+	 * Deprecated methods
+	 */
+	
+	/**
+	 * @deprecated use {@link #getPriorFunction()} instead
+	 */
+	@Deprecated
+	public @Nullable Object getInput()
+	{
+		return getInputObject();
+	}
 	
 	/**
 	 * @deprecated use {@link #getPriorValue()} instead
@@ -105,6 +117,7 @@ public class RealJoint extends VariableBase
 		setFixedValueObject(fixedValue);
 	}
 
+	// FIXME - replace and deprecate
 	public void setInput(@Nullable FactorFunction[] input)
 	{
 		setInputObject(input);
@@ -163,10 +176,5 @@ public class RealJoint extends VariableBase
 		}
 		
 		super.setInputObject(value);
-	}
-	
-	public @Nullable MultivariateNormalParameters getBelief()
-	{
-		return (MultivariateNormalParameters)getBeliefObject();
 	}
 }

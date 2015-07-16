@@ -80,7 +80,7 @@ public class PRealJointVariableVector extends PVariableVector
 	{
 		Object[] output = new Object[size()];
 		for (int i = 0; i < indices.length; i++)
-			output[i] = getRealJointVariable(indices[i]).getInput();
+			output[i] = getRealJointVariable(indices[i]).getPriorFunction();
 		
 		return output;
 	}

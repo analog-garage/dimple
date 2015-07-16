@@ -396,15 +396,6 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	}
 
 	/**
-	 * @deprecated use {@link #getPriorFunction()} instead.
-	 */
-	@Deprecated
-    public @Nullable Object getInputObject()
-    {
-    	return getPriorFunction();
-    }
-
-    /**
      * Returns the solver-specific variable instance associated with this model variable if it is
      * an instance of the specified {@code solverVariableClass}, otherwise returns null.
      */
@@ -501,61 +492,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		}
 	}
 	
-	/**
-	 * @deprecated use {@link #getPriorValue()} and {@link Value#getObject()} instead.
-	 */
-	@Deprecated
-	public @Nullable Object getFixedValueAsObject()
-	{
-		final Value value = getPriorValue();
-		return value != null ? value.getObject() : null;
-	}
-
-	/**
-	 * @deprecated use {@link #setPrior(Object)} instead.
-	 */
-	@Deprecated
-	public final void setFixedValueFromObject(@Nullable Object value)
-	{
-		setPrior(value);
-	}
-	
-	/**
-	 * @deprecated use {@link #getPriorValue()} instead
-	 * <p>
-	 * Note that for {@link Discrete} variables this will return the <b>index</b> of the value!
-	 */
-	@Deprecated
-	public @Nullable Object getFixedValueObject()
-	{
-		IDatum datum = getPrior();
-    	if (datum instanceof Value)
-    	{
-    		return ((Value) datum).getObject();
-    	}
-    	
-    	return null;
-	}
-	
-	/**
-	 * @deprecated use {@link #setPrior} or {@link Discrete#setPriorIndex} instead.
-	 */
-	@Deprecated
-	public void setFixedValueObject(@Nullable Object value)
-	{
-		setPrior(value != null ? Value.create(_domain, value) : null);
-	}
-	
-	/**
-	 * @deprecated use {@link #setPrior(Object)} instead
-	 */
-	@Deprecated
-	public void setInputObject(@Nullable Object value)
-    {
-    	setPrior(value);
-    }
-    
-    // For setting the variable to a fixed value in lieu of an input
+	// For setting the variable to a fixed value in lieu of an input
     /**
      * True if {@link #getPriorValue()} is non-null.
      */
@@ -659,6 +596,69 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	 */
 	
     /**
+	 * @deprecated use {@link #getPriorFunction()} instead.
+	 */
+	@Deprecated
+	public @Nullable Object getInputObject()
+	{
+		return getPriorFunction();
+	}
+
+	/**
+	 * @deprecated use {@link #getPriorValue()} and {@link Value#getObject()} instead.
+	 */
+	@Deprecated
+	public @Nullable Object getFixedValueAsObject()
+	{
+		final Value value = getPriorValue();
+		return value != null ? value.getObject() : null;
+	}
+
+	/**
+	 * @deprecated use {@link #setPrior(Object)} instead.
+	 */
+	@Deprecated
+	public final void setFixedValueFromObject(@Nullable Object value)
+	{
+		setPrior(value);
+	}
+
+	/**
+	 * @deprecated use {@link #getPriorValue()} instead
+	 * <p>
+	 * Note that for {@link Discrete} variables this will return the <b>index</b> of the value!
+	 */
+	@Deprecated
+	public @Nullable Object getFixedValueObject()
+	{
+		IDatum datum = getPrior();
+		if (datum instanceof Value)
+		{
+			return ((Value) datum).getObject();
+		}
+		
+		return null;
+	}
+
+	/**
+	 * @deprecated use {@link #setPrior} or {@link Discrete#setPriorIndex} instead.
+	 */
+	@Deprecated
+	public void setFixedValueObject(@Nullable Object value)
+	{
+		setPrior(value != null ? Value.create(_domain, value) : null);
+	}
+
+	/**
+	 * @deprecated use {@link #setPrior(Object)} instead
+	 */
+	@Deprecated
+	public void setInputObject(@Nullable Object value)
+	{
+		setPrior(value);
+	}
+
+	/**
 	 * @category internal
 	 */
 	@Deprecated

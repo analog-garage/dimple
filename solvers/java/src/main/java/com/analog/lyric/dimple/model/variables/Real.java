@@ -80,6 +80,10 @@ public class Real extends VariableBase
 		return (Double)requireSolver("getValue").getValue();
 	}
 	
+	/*--------------------
+	 * Deprecated methods
+	 */
+	
 	/**
 	 * @deprecated use {@link #getPriorValue()} instead
 	 */

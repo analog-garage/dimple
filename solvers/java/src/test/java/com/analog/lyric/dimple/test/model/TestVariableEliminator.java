@@ -202,7 +202,7 @@ public class TestVariableEliminator extends DimpleTestBase
 		// Test conditioning
 		//
 		
-		b.setFixedValue(2);
+		b.setPrior(2);
 		
 		testEliminator(model, VariableCost.MIN_NEIGHBORS,
 			expectedStats().addedEdges(1).addedEdgeWeight(15)
@@ -276,7 +276,7 @@ public class TestVariableEliminator extends DimpleTestBase
 		// Test conditioning
 		//
 		
-		c.setFixedValue(2);
+		c.setPrior(2);
 		
 		testEliminator(model, false, VariableCost.WEIGHTED_MIN_NEIGHBORS,
 			expectedStats().addedEdges(3).addedEdgeWeight(59)
