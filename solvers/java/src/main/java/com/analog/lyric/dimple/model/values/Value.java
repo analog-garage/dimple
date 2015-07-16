@@ -368,7 +368,7 @@ public abstract class Value implements IDatum, Cloneable, Serializable
 	}
 	
 	/**
-	 * Sets current value as a {@code double}.
+	 * Gets current value as a {@code double}.
 	 */
 	public double getDouble()
 	{
