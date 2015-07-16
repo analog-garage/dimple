@@ -197,7 +197,7 @@ public class FactorGraphStream
 		{
 			_otherVar = var;
 			_myVar = _otherVar.clone();
-			_myVar.setInputObject(null);
+			_myVar.setPrior(null);
 			_fg = fg;
 			_mainBlastFromThePast = originalPlastFromPast;
 			Port factorPort = originalPlastFromPast.getPort(0);

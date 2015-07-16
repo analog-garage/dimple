@@ -264,7 +264,7 @@ public class TestJunctionTreeTransform extends DimpleTestBase
 			if (variable instanceof Discrete)
 			{
 				Discrete discrete = (Discrete)variable;
-				discrete.setFixedValueIndex(rand.nextInt(discrete.getDomain().size()));
+				discrete.setPriorIndex(rand.nextInt(discrete.getDomain().size()));
 				break;
 			}
 		}

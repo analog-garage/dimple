@@ -68,6 +68,7 @@ public abstract class VariableStreamBase<V extends Variable> implements IVariabl
 		return _variables.contains(vb);
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void advanceState()
 	{
 		final IDataSink dataSink = _dataSink;
@@ -98,7 +99,7 @@ public abstract class VariableStreamBase<V extends Variable> implements IVariabl
 		}
 		else
 		{
-			lastVar.setInputObject(null);
+			lastVar.setPrior(null);
 		}
 	}
 	
@@ -124,6 +125,7 @@ public abstract class VariableStreamBase<V extends Variable> implements IVariabl
 		_dataSink = sink;
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void setDataSource(IDataSource source)
 	{
 		_dataSource = source;
@@ -150,6 +152,7 @@ public abstract class VariableStreamBase<V extends Variable> implements IVariabl
 	
 	abstract protected V instantiateVariable(Domain domain) ;
 	
+	@SuppressWarnings("deprecation")
 	protected V createVariable(int index)
 	{
 		V tmp;

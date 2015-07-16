@@ -62,11 +62,11 @@ class SumProductSampledMultivariateNormalEdge extends SumProductMultivariateNorm
 			MultivariateNormalParameters inputMessage = varToFactorMsg;
 			if (inputMessage.isNull())
 			{
-				var.setInputObject(null); // If zero precision, then set the input to null to avoid numerical issues
+				var.setPrior(null); // If zero precision, then set the input to null to avoid numerical issues
 			}
 			else
 			{
-				var.setInputObject(new MultivariateNormal(inputMessage));
+				var.setPrior(new MultivariateNormal(inputMessage));
 			}
 		}
 	}
@@ -126,7 +126,7 @@ class SumProductSampledMultivariateNormalEdge extends SumProductMultivariateNorm
 		RealJoint var = _svar.getModelObject();
 		if (!var.hasFixedValue())		// Only set the input if there isn't already a fixed value
 		{
-			var.setInputObject(null);
+			var.setPrior(null);
 		}
 	}
 

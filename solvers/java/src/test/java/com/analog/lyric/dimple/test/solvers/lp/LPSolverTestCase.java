@@ -35,6 +35,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.dimple.solvers.lp.IntegerEquation;
 import com.analog.lyric.dimple.solvers.lp.LPDiscrete;
 import com.analog.lyric.dimple.solvers.lp.LPFactorMarginalConstraint;
@@ -135,11 +136,11 @@ public class LPSolverTestCase extends DimpleTestBase
 				assertTrue(nValidAssignments <= 1);
 			}
 			
-		
+			DiscreteMessage prior = new DiscreteWeightMessage(mvar.getDomain(), mvar.getPrior());
 			
 			for (int i = 0, end = svar.getModelObject().getDomain().size(); i < end; ++i)
 			{
-				double w = mvar.getInput()[i];
+				double w = prior.getWeight(i);
 				int lpVarForValue = svar.domainIndexToLPVar(i);
 				int i2 = svar.lpVarToDomainIndex(lpVarForValue);
 				if (lpVarForValue >= 0)
@@ -147,7 +148,7 @@ public class LPSolverTestCase extends DimpleTestBase
 					assertEquals(i, i2);
 					assertEquals(Math.log(w), objective[lpVarForValue], 1e-6);
 				}
-				if (!svar.hasLPVariable() || mvar.getInput()[i] == 0.0)
+				if (!svar.hasLPVariable() || w == 0.0)
 				{
 					assertEquals(-1, lpVarForValue);
 				}

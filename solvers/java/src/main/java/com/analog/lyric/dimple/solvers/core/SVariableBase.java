@@ -18,11 +18,15 @@ package com.analog.lyric.dimple.solvers.core;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.data.DataLayer;
+import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.events.SolverEvent;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
@@ -31,9 +35,15 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
-import com.analog.lyric.util.misc.Internal;
 
-public abstract class SVariableBase<MVariable extends Variable> extends SNode<MVariable> implements ISolverVariable
+/**
+ * Base implementation solver variables.
+ * <p>
+ * @param <MVariable> is the base type of the corresponding model variable (e.g. {@link Real}, {@link Discrete}).
+ */
+public abstract class SVariableBase<MVariable extends Variable>
+	extends SNode<MVariable>
+	implements ISolverVariable
 {
 	/*-----------
 	 * Constants
@@ -160,15 +170,108 @@ public abstract class SVariableBase<MVariable extends Variable> extends SNode<MV
 	 * ISolverVariable methods
 	 */
 	
+	/**
+	 * Gets conditioning value associated with variable from conditioning layer, if any,
+	 * <p>
+	 * This looks up the {@linkplain ISolverFactorGraph#getConditioningLayer() conditioning layer}
+	 * from the {@linkplain #getParentGraph() parent solver graph}, and if it exists returns the
+	 * value associated with the associated {@link #getModelObject() model variable}.
+	 * <p>
+	 * @since 0.08
+	 */
+	public @Nullable IDatum getCondition()
+	{
+		// NOTE: this should be fast, but if we need to speed it up further, we could
+		// cache the FactorGraphData in the solver graph and do the lookup directly from there.
+		final DataLayer<?> layer = _parent.getConditioningLayer();
+		if (layer != null)
+		{
+			return layer.get(_model);
+		}
+		
+		return null;
+	}
+	
 	@Override
 	public Domain getDomain()
 	{
 		return _model.getDomain();
 	}
 	
-	@Deprecated
+	/**
+	 * Returns fixed value from a prior or from the conditioning layer, if any.
+	 * <p>
+	 * @since 0.08
+	 */
 	@Override
-	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
+	public @Nullable Value getKnownValue()
+	{
+		final IDatum prior = _model.getPrior();
+		if (prior instanceof Value)
+		{
+			return (Value)prior;
+		}
+		
+		final IDatum condition = getCondition();
+		if (condition instanceof Value)
+		{
+			return (Value)condition;
+		}
+		
+		return null;
+	}
+	
+	@Override
+	public final @Nullable Object getKnownValueObject()
+	{
+		final Value value = getKnownValue();
+		return value == null ? null : value.getObject();
+	}
+	
+	@Override
+	public final int getKnownDiscreteIndex()
+	{
+		int result = -1;
+		
+		final Value value = getKnownValue();
+		if (value != null)
+		{
+			result = value.getIndex();
+		}
+		
+		return result;
+	}
+	
+	@Override
+	public final double getKnownReal()
+	{
+		double result = Double.NaN;
+		
+		final Value value = getKnownValue();
+		if (value != null)
+		{
+			result = value.getDouble();
+		}
+		
+		return result;
+	}
+	
+	@Override
+	public final @Nullable double[] getKnownRealJoint()
+	{
+		double[] result = null;
+		
+		final Value value = getKnownValue();
+		if (value != null)
+		{
+			result = value.getDoubleArray();
+		}
+		
+		return result;
+	}
+
+	@Override
+	public void updateConditioning()
 	{
 	}
 	
@@ -202,23 +305,6 @@ public abstract class SVariableBase<MVariable extends Variable> extends SNode<MV
 		return VariableToFactorMessageEvent.class;
 	}
 	
-	/*----------------------------
-	 * Protected/internal methods
-	 */
-	
-	/**
-	 * Gets fixed value of variable, if set.
-	 * <p>
-	 * @since 0.08
-	 * @category internal
-	 */
-	@Internal
-	public @Nullable Value getFixedValue()
-	{
-		// TODO also look in conditioning layer
-		return _model.getPriorValue();
-	}
-	
 	/*--------------------
 	 * Deprecated methods
 	 */
@@ -237,5 +323,11 @@ public abstract class SVariableBase<MVariable extends Variable> extends SNode<MV
 	{
 		ISolverEdgeState sedge = getSiblingEdgeState(portIndex);
 		return sedge != null ? sedge.getVarToFactorMsg() : null;
+	}
+
+	@Deprecated
+	@Override
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue)
+	{
 	}
 }

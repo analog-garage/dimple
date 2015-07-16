@@ -73,7 +73,7 @@ public class ScheduleTest extends DimpleTestBase
 				.trivialRandomCodeword(variableList.size());
 		for(int variable = 0; variable < variableList.size(); ++variable)
 		{
-			((Discrete)variableList.getByIndex(variable)).setInput(trivialRandomCodeword[variable]);
+			((Discrete)variableList.getByIndex(variable)).setPrior(trivialRandomCodeword[variable]);
 		}
 
 		fg.solve();

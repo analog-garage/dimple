@@ -149,7 +149,8 @@ public class GibbsReal extends SRealVariableBase
 		
 		void reset()
 		{
-			_value = _model.hasFixedValue() ? _model.getFixedValue() : _initialSampleValue;
+			double knownValue = getKnownReal();
+			_value = knownValue == knownValue ? knownValue : _initialSampleValue;
 		}
 	}
 	
@@ -472,9 +473,10 @@ public class GibbsReal extends SRealVariableBase
 		if (getModelObject().isDeterministicOutput()) return;
 
 		// If the variable has a fixed value, then set the current sample to that value and return
-		if (_model.hasFixedValue())
+		double knownValue = getKnownReal();
+		if (knownValue == knownValue)
 		{
-			setCurrentSample(_model.getFixedValue());
+			setCurrentSample(knownValue);
 			return;
 		}
 		if (_initialSampleValueSet && restartCount == 0)
@@ -490,6 +492,8 @@ public class GibbsReal extends SRealVariableBase
 		if (input != null)
 			inputConjugateSampler = RealConjugateSamplerRegistry.findCompatibleSampler(input);
 
+		// FIXME - also check conditioning layer
+		
 		// Determine if there are bounds
 		double hi = _domain.getUpperBound();
 		double lo = _domain.getLowerBound();
@@ -579,8 +583,10 @@ public class GibbsReal extends SRealVariableBase
 	{
 		if (_guessWasSet)
 			return Double.valueOf(_guessValue);
-		else if (_model.hasFixedValue())
-			return Double.valueOf(_model.getFixedValue());
+		
+		double knownValue = getKnownReal();
+		if (knownValue == knownValue)
+			return Double.valueOf(knownValue);
 		else
 			return _currentSample.getObject();
 	}
@@ -959,7 +965,8 @@ public class GibbsReal extends SRealVariableBase
 		// Unless this is a dependent of a deterministic factor, then set the starting sample value
 		if (!getModelObject().isDeterministicOutput())
 		{
-			double initialSampleValue = _model.hasFixedValue() ? _model.getFixedValue() : _initialSampleValue;
+			final double knownValue = getKnownReal();
+			final double initialSampleValue = knownValue == knownValue ? knownValue : _initialSampleValue;
 			if (!_holdSampleValue)
 				setCurrentSampleForce(initialSampleValue);
 		}

@@ -76,7 +76,7 @@ public class TestGibbsConjugateSampling extends DimpleTestBase
 		try (CurrentModel currrent = using(fg))
 		{
 			mean = real("mean");
-			mean.setInput(new Normal(priorMean, priorPrecision));
+			mean.setPrior(new Normal(priorMean, priorPrecision));
 			x = fixed("x", data);
 			addFactor(new Normal(), mean, dataPrecision, x);
 		}

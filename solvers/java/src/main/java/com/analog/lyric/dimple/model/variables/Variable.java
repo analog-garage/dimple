@@ -42,6 +42,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorBase;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.SNode;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -70,12 +71,15 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
     
     protected static final int RESERVED_FLAGS         = 0xFFFF0000;
     
-    private static final int EVENT_MASK               = 0x00070000;
+    private static final int EVENT_MASK               = 0x000F0000;
     
     private static final int CHANGE_EVENT_KNOWN       = 0x00010000;
-    private static final int FIXED_VALUE_CHANGE_EVENT = 0x00020000;
-    private static final int INPUT_CHANGE_EVENT       = 0x00040000;
-    private static final int CHANGE_EVENT_MASK        = 0x00070000;
+    private static final int PRIOR_CHANGE_EVENT       = 0x00020000;
+    @Deprecated
+    private static final int FIXED_VALUE_CHANGE_EVENT = 0x00040000;
+    @Deprecated
+    private static final int INPUT_CHANGE_EVENT       = 0x00080000;
+    private static final int CHANGE_EVENT_MASK        = 0x000F0000;
     private static final int NO_CHANGE_EVENT          = 0x00010000;
     
     /*-------
@@ -274,6 +278,35 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	}
 	
 	/**
+	 * If prior is set to a {@link Value}, return its contents.
+	 * @since 0.08
+	 * @see #getPriorValue()
+	 */
+	public final @Nullable Object getPriorValueObject()
+	{
+		Value value = getPriorValue();
+		return value == null ? null : value.getObject();
+	}
+	
+	public final int getPriorDiscreteIndex()
+	{
+		final Value value = getPriorValue();
+		return value == null ? -1 : value.getIndex();
+	}
+	
+	public final double getPriorReal()
+	{
+		final Value value = getPriorValue();
+		return value == null ? Double.NaN : value.getDouble();
+	}
+
+	public final @Nullable double[] getPriorRealJoint()
+	{
+		final Value value = getPriorValue();
+		return value == null ? null : value.getDoubleArray();
+	}
+
+	/**
 	 * Associates a prior with the variable.
 	 * <p>
 	 * Sets the value of the {@linkplain #getPrior prior}.
@@ -286,6 +319,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	 * <li>a {@link IParameterizedMessage} appropriate to the variable's type
 	 * <li>any {@link IUnaryFactorFunction} appropriate to the variables domain. However, note that
 	 * not all solvers currently support such priors. They may be safely used with the Gibbs solver.
+	 * <li>({@link Discrete} only) an array of double used to implicitly create a {@link DiscreteWeightMessage}
 	 * </ul>
 	 * @return previous value of prior
 	 * @since 0.08
@@ -304,7 +338,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		}
 		else
 		{
-			throw new ClassCastException(format("'%s' is neither an %s nor a member of variable's domain",
+			throw new ClassCastException(format("'%s' is not a %s and is not a member of variable's domain",
 				prior,
 				// Use Class instead of hard-coding name so that we can rename it easily
 				IDatum.class.getSimpleName()));
@@ -325,12 +359,19 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		return prior instanceof Value ? null : prior;
 	}
 	
+	@SuppressWarnings("deprecation")
 	private void priorChanged(@Nullable IDatum priorPrior, @Nullable IDatum newPrior)
 	{
     	final int eventFlags = getChangeEventFlags();
     	
     	if (eventFlags != NO_CHANGE_EVENT)
     	{
+    		if ((eventFlags & PRIOR_CHANGE_EVENT) != 0)
+    		{
+    			raiseEvent(new VariablePriorChangeEvent(this, priorPrior, newPrior));
+    		}
+    		
+    		// Deprecated cases
     		if ((eventFlags & FIXED_VALUE_CHANGE_EVENT) != 0 &&
     			(newPrior instanceof Value || priorPrior instanceof Value))
     		{
@@ -353,11 +394,14 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	{
 		return _domain;
 	}
-	
+
+	/**
+	 * @deprecated use {@link #getPriorFunction()} instead.
+	 */
+	@Deprecated
     public @Nullable Object getInputObject()
     {
-    	IDatum datum = getPrior();
-    	return datum instanceof Value ? null : datum;
+    	return getPriorFunction();
     }
 
     /**
@@ -458,23 +502,30 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	}
 	
 	/**
-	 * Returns fixed value of variable or null if not fixed.
-	 * @since 0.07
+	 * @deprecated use {@link #getPriorValue()} and {@link Value#getObject()} instead.
 	 */
-	public abstract @Nullable Object getFixedValueAsObject();
+	@Deprecated
+	public @Nullable Object getFixedValueAsObject()
+	{
+		final Value value = getPriorValue();
+		return value != null ? value.getObject() : null;
+	}
 
 	/**
-	 * Sets variable to a fixed value.
-	 * @since 0.07
+	 * @deprecated use {@link #setPrior(Object)} instead.
 	 */
+	@Deprecated
 	public final void setFixedValueFromObject(@Nullable Object value)
 	{
 		setPrior(value);
 	}
 	
-	// REFACTOR: this is not a good name - has different semantics for discrete and non-discrete
-	// For Discrete this returns the index of the fixed value, for non-discrete it returns the actual fixed
-	// value.
+	/**
+	 * @deprecated use {@link #getPriorValue()} instead
+	 * <p>
+	 * Note that for {@link Discrete} variables this will return the <b>index</b> of the value!
+	 */
+	@Deprecated
 	public @Nullable Object getFixedValueObject()
 	{
 		IDatum datum = getPrior();
@@ -486,11 +537,19 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
     	return null;
 	}
 	
+	/**
+	 * @deprecated use {@link #setPrior} or {@link Discrete#setPriorIndex} instead.
+	 */
+	@Deprecated
 	public void setFixedValueObject(@Nullable Object value)
 	{
 		setPrior(value != null ? Value.create(_domain, value) : null);
 	}
 	
+	/**
+	 * @deprecated use {@link #setPrior(Object)} instead
+	 */
+	@Deprecated
 	public void setInputObject(@Nullable Object value)
     {
     	setPrior(value);
@@ -679,7 +738,8 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
      * Private methods
      */
     
-    private int getChangeEventFlags()
+    @SuppressWarnings("deprecation")
+	private int getChangeEventFlags()
     {
     	final int prevFlags = _flags & CHANGE_EVENT_MASK;
     	
@@ -693,6 +753,10 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
     	final IDimpleEventListener listener = getEventListener();
     	if (listener != null)
     	{
+    		if (listener.isListeningFor(VariablePriorChangeEvent.class, this))
+    		{
+    			flags |= PRIOR_CHANGE_EVENT;
+    		}
     		if (listener.isListeningFor(VariableInputChangeEvent.class, this))
     		{
     			flags |= INPUT_CHANGE_EVENT;

@@ -271,9 +271,9 @@ public class TestLPSolver extends DimpleTestBase
 		fg1.addFactor(OnlyOneTrue.INSTANCE, y, z);
 		fg1.addFactor(OnlyOneTrue.INSTANCE, x, z);
 		
-		x.setInput(.3, .7);
-		y.setInput(.2, .8);
-		z.setInput(.6, .3);
+		x.setPrior(.3, .7);
+		y.setPrior(.2, .8);
+		z.setPrior(.6, .3);
 
 		LPSolverGraph solver = new Solver().createFactorGraph(fg1);
 		solver.setLPSolverName("GLPK");

@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2014 Analog Devices, Inc.
+*   Copyright 2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -20,15 +20,18 @@ import java.io.PrintStream;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import cern.colt.Arrays;
+import com.analog.lyric.dimple.data.IDatum;
+
 import net.jcip.annotations.Immutable;
 
 /**
- * @deprecated replaced by {@link VariablePriorChangeEvent}
+ * Event triggered by change to a Variable's prior value.
+ * <p>
+ * @since 0.08
+ * @author Christopher Barber
  */
-@Deprecated
 @Immutable
-public class VariableInputChangeEvent extends VariableChangeEvent
+public class VariablePriorChangeEvent extends VariableChangeEvent
 {
 	private static final long serialVersionUID = 1L;
 
@@ -43,21 +46,18 @@ public class VariableInputChangeEvent extends VariableChangeEvent
 	 * State
 	 */
 	
-	private final @Nullable Object _oldInput;
-	private final @Nullable Object _newInput;
+	private final @Nullable IDatum _oldPrior;
+	private final @Nullable IDatum _newPrior;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	/**
-	 * @since 0.06
-	 */
-	VariableInputChangeEvent(Variable variable, @Nullable Object oldInput, @Nullable Object newInput)
+	VariablePriorChangeEvent(Variable variable, @Nullable IDatum oldPrior, @Nullable IDatum newPrior)
 	{
 		super(variable);
-		_oldInput = oldInput;
-		_newInput = newInput;
+		_oldPrior = oldPrior;
+		_newPrior = newPrior;
 	}
 	
 	/*--------------------
@@ -70,58 +70,46 @@ public class VariableInputChangeEvent extends VariableChangeEvent
 		switch (getType())
 		{
 		case ADDED:
-			out.format("input on '%s' set to '%s'", getSourceName(), inputToString(getNewInput()));
+			out.format("prior on '%s' set to '%s'", getSourceName(), getNewPrior());
 			break;
 		case CHANGED:
-			out.format("input on '%s' set to '%s'", getSourceName(), inputToString(getNewInput()));
+			out.format("prior on '%s' set to '%s'", getSourceName(), getNewPrior());
 			if (verbosity > 0)
 			{
-				out.format(" (was %s)", inputToString(getOldInput()));
+				out.format(" (was %s)", getOldPrior());
 			}
 			break;
 		case REMOVED:
-			out.format("input removed from '%s'", getSourceName());
+			out.format("prior removed from '%s'", getSourceName());
 			if (verbosity > 0)
 			{
-				out.format(" (was %s)", inputToString(getOldInput()));
+				out.format(" (was %s)", getOldPrior());
 			}
 			break;
 		}
 	}
-	
-	private String inputToString(@Nullable Object input)
-	{
-		if (input instanceof double[])
-		{
-			return Arrays.toString((double[])input);
-		}
-		else
-		{
-			return input + "";
-		}
-	}
-	
-	/*----------------------------------
-	 * VariableInputChangeEvent methods
+
+	/*---------------
+	 * Local methods
 	 */
 	
-	public @Nullable Object getNewInput()
+	public @Nullable IDatum getOldPrior()
 	{
-		return _newInput;
+		return _oldPrior;
 	}
 	
-	public @Nullable Object getOldInput()
+	public @Nullable IDatum getNewPrior()
 	{
-		return _oldInput;
+		return _newPrior;
 	}
 	
 	public Type getType()
 	{
-		if (_oldInput == null)
+		if (_oldPrior == null)
 		{
 			return Type.ADDED;
 		}
-		else if (_newInput == null)
+		else if (_newPrior == null)
 		{
 			return Type.REMOVED;
 		}
@@ -130,4 +118,5 @@ public class VariableInputChangeEvent extends VariableChangeEvent
 			return Type.CHANGED;
 		}
 	}
+
 }

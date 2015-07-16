@@ -70,10 +70,10 @@ public class RandomSchedulerTest extends DimpleTestBase
 		f3.setName("F3");
 		f4.setName("F4");
 
-		a.setInput(0.9, 0.1);
-		b.setInput(0.9, 0.1);
-		c.setInput(0.9, 0.1);
-		d.setInput(0.5, 0.5);
+		a.setPrior(0.9, 0.1);
+		b.setPrior(0.9, 0.1);
+		c.setPrior(0.9, 0.1);
+		d.setPrior(0.5, 0.5);
 
 		ISchedule schedule = scheduler.createSchedule(g);
 
@@ -125,10 +125,10 @@ public class RandomSchedulerTest extends DimpleTestBase
 		f3.setName("F3");
 		f4.setName("F4");
 
-		a.setInput(0.9, 0.1);
-		b.setInput(0.9, 0.1);
-		c.setInput(0.9, 0.1);
-		d.setInput(0.5, 0.5);
+		a.setPrior(0.9, 0.1);
+		b.setPrior(0.9, 0.1);
+		c.setPrior(0.9, 0.1);
+		d.setPrior(0.5, 0.5);
 
 		ISchedule schedule = scheduler.createSchedule(g);
 

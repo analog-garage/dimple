@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.interfaces;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Variable;
 
 /**
@@ -66,6 +67,12 @@ public interface ISolverVariable extends ISolverNode
 	
 	public @Nullable Object getBelief();
 	
+	public @Nullable Value getKnownValue();
+	public @Nullable Object getKnownValueObject();
+	public int getKnownDiscreteIndex();
+	public double getKnownReal();
+	public @Nullable double[] getKnownRealJoint();
+	
 	public Object getValue();
 	
 	/**
@@ -101,6 +108,17 @@ public interface ISolverVariable extends ISolverNode
     //Move global state from other node to this one
     public void moveNonEdgeSpecificState(ISolverNode other);
 
+    /**
+     * Tells solver variable to update any cached information about conditioning data.
+     * <p>
+     * Solvers that cache state that depends on the solver's
+     * {@linkplain ISolverFactorGraph#getConditioningLayer conditioning layer} should implement this method
+     * to update the state and should invoke this method in {@link #initialize()}.
+     * <p>
+     * @since 0.08
+     */
+    public void updateConditioning();
+    
     /**
      * Tells solver variable to update any cached information about the model prior.
      * <p>

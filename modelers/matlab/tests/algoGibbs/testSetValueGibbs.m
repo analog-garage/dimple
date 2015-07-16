@@ -95,13 +95,13 @@ function testSetValueGibbs()
     catch E
         msg1 = E.message;
     end
-    assert(~isempty(strfind(msg1,'Attempt to set fixed value outside of variable domain.')));
+    assert(~isempty(strfind(msg1,'not a member of variable''s domain')));
     try
         a.FixedValue = -20;   % Out of domain bounds
     catch E
         msg2 = E.message;
     end
-    assert(~isempty(strfind(msg2,'Attempt to set fixed value outside of variable domain.')));
+    assert(~isempty(strfind(msg2,'not a member of variable''s domain')));
 
     
     % No beliefs or values for reals at this point

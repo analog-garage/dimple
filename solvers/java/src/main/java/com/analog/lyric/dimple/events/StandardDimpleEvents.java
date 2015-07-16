@@ -21,6 +21,9 @@ import java.util.Iterator;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.core.BoundaryVariableAddEvent;
 import com.analog.lyric.dimple.model.core.BoundaryVariableRemoveEvent;
 import com.analog.lyric.dimple.model.core.FactorAddEvent;
@@ -30,15 +33,12 @@ import com.analog.lyric.dimple.model.core.SubgraphRemoveEvent;
 import com.analog.lyric.dimple.model.core.VariableAddEvent;
 import com.analog.lyric.dimple.model.core.VariableRemoveEvent;
 import com.analog.lyric.dimple.model.variables.VariableChangeEvent;
-import com.analog.lyric.dimple.model.variables.VariableFixedValueChangeEvent;
-import com.analog.lyric.dimple.model.variables.VariableInputChangeEvent;
+import com.analog.lyric.dimple.model.variables.VariablePriorChangeEvent;
 import com.analog.lyric.dimple.solvers.core.FactorToVariableMessageEvent;
 import com.analog.lyric.dimple.solvers.core.VariableToFactorMessageEvent;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsScoredVariableUpdateEvent;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverVariableEvent;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsVariableUpdateEvent;
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.Iterators;
 
 
@@ -79,6 +79,7 @@ public enum StandardDimpleEvents implements Iterable<Class<? extends DimpleEvent
 	{
 		_eventTypes = new TreeMap<String,Class<? extends DimpleEvent>>(Caseless.COMPARATOR);
 			
+		@SuppressWarnings("deprecation")
 		final Class<?>[] eventTypes = new Class<?>[] {
 			BoundaryVariableAddEvent.class,
 			BoundaryVariableRemoveEvent.class,
@@ -101,10 +102,11 @@ public enum StandardDimpleEvents implements Iterable<Class<? extends DimpleEvent
 			SubgraphAddEvent.class,
 			SubgraphRemoveEvent.class,
 			VariableAddEvent.class,
+			VariablePriorChangeEvent.class,
 			VariableRemoveEvent.class,
 			VariableChangeEvent.class,
-			VariableFixedValueChangeEvent.class,
-			VariableInputChangeEvent.class,
+			com.analog.lyric.dimple.model.variables.VariableFixedValueChangeEvent.class,
+			com.analog.lyric.dimple.model.variables.VariableInputChangeEvent.class,
 			VariableToFactorMessageEvent.class
 		};
 		

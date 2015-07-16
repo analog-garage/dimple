@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.sampledfactor;
 
-import cern.colt.list.DoubleArrayList;
-
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
@@ -25,6 +23,8 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductNormalEdge;
 import com.analog.lyric.util.misc.Internal;
+
+import cern.colt.list.DoubleArrayList;
 
 /**
  * 
@@ -62,11 +62,11 @@ class SumProductSampledNormalEdge extends SumProductNormalEdge
 			NormalParameters inputMessage = varToFactorMsg;
 			if (varToFactorMsg.getPrecision() == 0)
 			{
-				var.setInputObject(null);		// If zero precision, then set the input to null to avoid numerical issues
+				var.setPrior(null);		// If zero precision, then set the input to null to avoid numerical issues
 			}
 			else
 			{
-				var.setInputObject(new Normal(inputMessage));
+				var.setPrior(new Normal(inputMessage));
 			}
 		}
 	}
@@ -108,7 +108,7 @@ class SumProductSampledNormalEdge extends SumProductNormalEdge
 		Real var = _svar.getModelObject();
 		if (!var.hasFixedValue())		// Only set the input if there isn't already a fixed value
 		{
-			var.setInputObject(null);
+			var.setPrior(null);
 		}
 	}
 

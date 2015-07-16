@@ -69,6 +69,7 @@ public class PRealJointVariableVector extends PVariableVector
 		return (RealJoint)getModelerNode(index);
 	}
 	
+	@Deprecated
 	public void setInput(int [] indices, Object input)
 	{
 		for (int i = 0; i < indices.length; i++)
@@ -108,13 +109,13 @@ public class PRealJointVariableVector extends PVariableVector
 	public void setFixedValues(int[] indices, double[][] fixedValues)
 	{
 		for (int i = 0; i < indices.length; i++)
-			getRealJointVariable(indices[i]).setFixedValue(fixedValues[i]);
+			getRealJointVariable(indices[i]).setPrior(fixedValues[i]);
 	}
 	public double[][] getFixedValues(int[] indices)
 	{
 		double[][] output = new double[indices.length][];
 		for (int i = 0; i < indices.length; i++)
-			output[i] = getRealJointVariable(indices[i]).getFixedValue();
+			output[i] = getRealJointVariable(indices[i]).getPriorRealJoint();
 		
 		return output;
 	}
@@ -128,6 +129,7 @@ public class PRealJointVariableVector extends PVariableVector
 	}
 	
 	// Set guess when there's just one variable
+	@Override
 	public void setGuess(double[] guess)
 	{
 		getVariable(0).setGuess(guess);

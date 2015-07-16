@@ -28,6 +28,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergyMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
@@ -65,6 +66,7 @@ public class Discrete extends VariableBase
 		super(that);
 	}
 
+	@Deprecated
     public double [] getInput()
     {
     	return (double[])getInputObject();
@@ -108,12 +110,6 @@ public class Discrete extends VariableBase
     	return getDomain();
     }
     
-	@Override
-	public final @Nullable Object getFixedValueAsObject()
-	{
-		return hasFixedValue() ? getFixedValue() : null;
-	}
-	
     @Override
     public @Nullable Integer getFixedValueObject()
     {
@@ -125,6 +121,7 @@ public class Discrete extends VariableBase
     	return null;
     }
     
+    @Deprecated
     @Override
     public Object getInputObject()
     {
@@ -225,27 +222,75 @@ public class Discrete extends VariableBase
     	return jointVar;
     }
 	
+	/**
+	 * @deprecated use {@link #setPrior(double...)} instead
+	 */
+	@Deprecated
 	public void setInput(@Nullable double ... value)
 	{
-		setInputObject(value);
+		setPrior(value);
 	}
 	
 	@Override
-	public void setInputObject(@Nullable Object value)
+	public @Nullable IDatum setPrior(@Nullable Object prior)
 	{
-		super.setInputObject(value instanceof double[] ? new DiscreteWeightMessage((double[])value) : value);
+		if (prior instanceof double[])
+		{
+			return setPrior((double[])prior);
+		}
+		
+		if (prior instanceof Value)
+		{
+			Value value = (Value)prior;
+			final DiscreteDomain domain = getDomain();
+			
+			if (!domain.equals(value.getDomain()))
+			{
+				// If domain does not match, create a new value with the correct domain. This ensures
+				// that indexing operations can be assumed to be correct for this variable.
+				prior = Value.create(domain, requireNonNull(value.getObject()));
+			}
+		}
+		
+		return super.setPrior(prior);
 	}
 	
 	/**
 	 * Sets prior to new {@link DiscreteWeightMessage} with given weights.
 	 * @param weights must have same length as variable's domain.
+	 * @return previous value of prior
 	 * @since 0.08
 	 */
-	public void setPrior(double ... weights)
+	public @Nullable IDatum setPrior(@Nullable double ... weights)
 	{
-		setPrior(new DiscreteWeightMessage(weights));
+		return setPrior(weights == null ? null : new DiscreteWeightMessage(weights));
 	}
 	
+	/**
+	 * Sets prior to a fixed discrete value with given index.
+	 * @param index a valid index into the variable's {@linkplain #getDomain() domain}.
+	 * @return previous value of prior
+	 * @since 0.08
+	 */
+	public @Nullable IDatum setPriorIndex(int index)
+	{
+		return setPrior(Value.createWithIndex(getDomain(), index));
+	}
+	
+	/**
+	 * If prior is a {@link DiscreteValue}, returns its index, otherwise -1.
+	 * @since 0.08
+	 */
+	public final int getPriorIndex()
+	{
+		Value value = getPriorValue();
+		return value != null ? value.getIndex() : -1;
+	}
+	
+	/**
+	 * @deprecated use {@link #getPriorIndex()} instead
+	 */
+	@Deprecated
 	public final int getFixedValueIndex()
 	{
 		Integer index = getFixedValueObject();
@@ -255,6 +300,10 @@ public class Discrete extends VariableBase
 		return index;
 	}
 
+	/**
+	 * @deprecated use {@link #getPriorValue()} instead
+	 */
+	@Deprecated
 	public final Object getFixedValue()
 	{
 		Integer index = getFixedValueObject();
@@ -264,6 +313,10 @@ public class Discrete extends VariableBase
 		return getDomain().getElement(index);
 	}
 	
+	/**
+	 * @deprecated use {@link #setPriorIndex(int)} instead.
+	 */
+	@Deprecated
 	public void setFixedValueIndex(int fixedValueIndex)
 	{
 		setPrior(Value.createWithIndex(getDomain(), fixedValueIndex));
@@ -274,6 +327,7 @@ public class Discrete extends VariableBase
 		setPrior(Value.create(getDomain(), fixedValue));
 	}
 	
+	@Deprecated
 	@Override
 	public void setFixedValueObject(@Nullable Object value)
 	{

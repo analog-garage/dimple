@@ -26,10 +26,9 @@ import org.eclipse.jdt.annotation.Nullable;
 
 
 /**
- * 
- * @since 0.06
- * @author Christopher Barber
+ * @deprecated replaced by {@link VariablePriorChangeEvent}
  */
+@Deprecated
 public class VariableFixedValueChangeEvent extends VariableChangeEvent
 {
 	private static final long serialVersionUID = 1L;

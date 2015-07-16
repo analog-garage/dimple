@@ -139,7 +139,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     {
 		final double[] outMsgs = _outMsgs[outPortNum];
 
-		final Value fixedValue = getFixedValue();
+		final Value fixedValue = getKnownValue();
 		if (fixedValue != null)
 		{
 			Arrays.fill(outMsgs, 0);
@@ -269,7 +269,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     @Override
 	protected void doUpdate()
     {
-		final Value fixedValue = getFixedValue();
+		final Value fixedValue = getKnownValue();
 		if (fixedValue != null)
 		{
 			final int index = fixedValue.getIndex();
@@ -430,7 +430,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         final int M = getDomain().size();
         final double[] outBelief = new double[M];
         
-        Value fixedValue = getFixedValue();
+        Value fixedValue = getKnownValue();
         if (fixedValue != null)
         {
         	outBelief[fixedValue.getIndex()] = 1.0;
@@ -487,7 +487,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     
 	public double [] getNormalizedInputs()
 	{
-        Value fixedValue = getFixedValue();
+        Value fixedValue = getKnownValue();
         if (fixedValue != null)
         {
         	final double[] belief = new double[getDomain().size()];
@@ -511,7 +511,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 
 	public double [] getUnormalizedBelief()
 	{
-        Value fixedValue = getFixedValue();
+        Value fixedValue = getKnownValue();
         if (fixedValue != null)
         {
         	final double[] belief = new double[getDomain().size()];

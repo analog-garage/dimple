@@ -52,10 +52,10 @@ public class BadNBitXor
 		Discrete b3 = new Discrete(domain);
 		Discrete b4 = new Discrete(domain);
 		fourBitXor.addFactor(new BadNBitXorFactor(),b1,b2,b3,b4);
-		b1.setInput(0.2,0.8);
-		b2.setInput(0.2,0.8);
-		b3.setInput(0.2,0.8);
-		b4.setInput(0.5,0.5);
+		b1.setPrior(0.2,0.8);
+		b2.setPrior(0.2,0.8);
+		b3.setPrior(0.2,0.8);
+		b4.setPrior(0.5,0.5);
 		fourBitXor.solve();
 		System.out.println(b4.getValue());
 		System.out.println(Arrays.toString(b4.getBelief()));

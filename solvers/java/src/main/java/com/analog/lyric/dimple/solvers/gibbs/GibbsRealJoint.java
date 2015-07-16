@@ -167,7 +167,8 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		
 		private void reset()
 		{
-			_value = _model.hasFixedValue() ? _model.getFixedValue().clone() : _initialSampleValue.clone();
+			double[] knownValue = getKnownRealJoint();
+			_value = knownValue != null ? knownValue.clone() : _initialSampleValue.clone();
 		}
 	}
 	
@@ -492,9 +493,10 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		if (getModelObject().isDeterministicOutput()) return;
 
 		// If the variable has a fixed value, then set the current sample to that value and return
-		if (_model.hasFixedValue())
+		double[] knownValue = getKnownRealJoint();
+		if (knownValue != null)
 		{
-			setCurrentSample(_model.getFixedValue());
+			setCurrentSample(knownValue);
 			return;
 		}
 		if (_initialSampleValueSet && restartCount == 0)
@@ -725,8 +727,10 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	{
 		if (_guessWasSet)
 			return _guessValue;
-		else if (_model.hasFixedValue())
-			return _model.getFixedValue();
+		
+		final double[] knownValue = getKnownRealJoint();
+		if (knownValue != null)
+			return knownValue;
 		else
 			return _currentSample.getValue();
 	}
@@ -1095,7 +1099,8 @@ public class GibbsRealJoint extends SRealJointVariableBase
 
 	public void resetCurrentSample()
 	{
-		_currentSample.setValue(_model.hasFixedValue() ? _model.getFixedValue().clone() : _initialSampleValue.clone());
+		final double[] knownValue = getKnownRealJoint();
+		_currentSample.setValue(knownValue != null ? knownValue.clone() : _initialSampleValue.clone());
 	}
 
 	@Deprecated
@@ -1136,7 +1141,8 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		
 		if (!getModelObject().isDeterministicOutput())
 		{
-			double[] initialSampleValue = _model.hasFixedValue() ? _model.getFixedValue() : _initialSampleValue;
+			final double[] knownValue = getKnownRealJoint();
+			double[] initialSampleValue = knownValue != null ? knownValue : _initialSampleValue;
 			if (!_holdSampleValue)
 				setCurrentSampleForce(initialSampleValue);
 		}

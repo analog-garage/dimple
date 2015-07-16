@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.test;
 
 import static org.junit.Assert.*;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -29,7 +30,6 @@ import com.analog.lyric.dimple.model.core.Model;
 import com.analog.lyric.dimple.model.variables.FiniteFieldVariable;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
-import org.eclipse.jdt.annotation.Nullable;
 
 
 public class FiniteFieldTest extends DimpleTestBase
@@ -83,7 +83,7 @@ public class FiniteFieldTest extends DimpleTestBase
 		for (int i = 0; i < ffx.length; i++)
 		{
 			ffx[i] = new FiniteFieldVariable(primPoly);
-			ffx[i].setInput(priors);
+			ffx[i].setPrior(priors);
 		}
 		
 		fg.addFactor("finiteFieldAdd", ffx);

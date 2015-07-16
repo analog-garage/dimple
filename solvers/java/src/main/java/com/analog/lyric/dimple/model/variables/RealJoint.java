@@ -78,7 +78,11 @@ public class RealJoint extends VariableBase
 	}
 
 	
+	/**
+	 * @deprecated use {@link #getPriorValue()} instead
+	 */
 	// Fix the variable to a specific value
+	@Deprecated
 	public final double[] getFixedValue()
 	{
 		Object tmp = getFixedValueObject();
@@ -88,12 +92,10 @@ public class RealJoint extends VariableBase
 			return (double[])tmp;
 	}
 	
-	@Override
-	public @Nullable Object getFixedValueAsObject()
-	{
-		return hasFixedValue() ? getFixedValue() : null;
-	}
-	
+	/**
+	 * @deprecated instead use {@link #setPrior(Object)}
+	 */
+	@Deprecated
 	public void setFixedValue(double[] fixedValue)
 	{
 		// Verify that the fixed value is in the domain of the variable
@@ -108,16 +110,25 @@ public class RealJoint extends VariableBase
 		setInputObject(input);
 	}
 	
+	/**
+	 * @deprecated instead {@link #setPrior(Object)} to {@link MultivariateNormalParameters} instance.
+	 */
+	@Deprecated
 	public void setInput(double [] means, double [][] covar)
 	{
 		setInputObject(new MultivariateNormalParameters(means,covar));
 	}
 
+	/**
+	 * @deprecated instead use {@link #setPrior(Object)}
+	 */
+	@Deprecated
 	public void setInput(@Nullable MultivariateNormalParameters msg)
 	{
 		setInputObject(msg);
 	}
 
+	@Deprecated
 	@Override
 	public void setInputObject(@Nullable Object value)
 	{

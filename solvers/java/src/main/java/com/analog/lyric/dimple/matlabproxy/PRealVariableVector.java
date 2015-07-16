@@ -112,7 +112,7 @@ public class PRealVariableVector extends PVariableVector
 		return values;
 	}
 
-	
+	@Deprecated
 	public void setInput(int [] indices, Object factorFunction)
 	{
 		for (int i = 0; i < indices.length; i++)
@@ -123,13 +123,13 @@ public class PRealVariableVector extends PVariableVector
 	public void setFixedValues(int[] indices, double[] fixedValues)
 	{
 		for (int i = 0; i < indices.length; i++)
-			getRealVariable(indices[i]).setFixedValue(fixedValues[i]);
+			getRealVariable(indices[i]).setPrior(fixedValues[i]);
 	}
 	public double[] getFixedValues(int[] indices)
 	{
 		double[] output = new double[indices.length];
 		for (int i = 0; i < indices.length; i++)
-			output[i] = getRealVariable(indices[i]).getFixedValue();
+			output[i] = getRealVariable(indices[i]).getPriorReal();
 		
 		return output;
 	}

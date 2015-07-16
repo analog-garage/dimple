@@ -88,10 +88,7 @@ public class TestJSFactorGraph extends JSTestBase
 		assertEquals(b, fg.getVariable("b"));
 		assertFalse(b.hasFixedValue());
 		assertNull(b.getFixedValue());
-		double[] inputs = new double[6];
-		Arrays.fill(inputs, 1/6.0);
-		assertArrayEquals(inputs, (double[])b.getBelief(), 1e-10);
-		assertArrayEquals(inputs.clone(), (double[])b.getInput(), 1e-10);
+		assertNull(b.getInput());
 		
 		JSVariable c = fg.addVariable(PairD6,  "c");
 		
@@ -129,6 +126,7 @@ public class TestJSFactorGraph extends JSTestBase
 		beliefs = (double[])c.getBelief();
 		assertArrayEquals(expectedBeliefs, beliefs, 1e-10);
 		
+		double[] inputs = new double[6];
 		for (int i = 0; i < inputs.length; ++i)
 		{
 			inputs[i] = i + 1.0;

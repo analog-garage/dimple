@@ -18,14 +18,14 @@ package com.analog.lyric.dimple.examples;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import cern.colt.Arrays;
-
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.options.BPOptions;
+
+import cern.colt.Arrays;
 
 public class HMM
 {
@@ -126,7 +126,7 @@ public class HMM
 		HMM.addFactor(obs,SundayWeather,"book");
 		
 		
-		MondayWeather.setInput(0.7,0.3);
+		MondayWeather.setPrior(0.7,0.3);
 		
 		HMM.setOption(BPOptions.iterations, 20);
 		HMM.solve();

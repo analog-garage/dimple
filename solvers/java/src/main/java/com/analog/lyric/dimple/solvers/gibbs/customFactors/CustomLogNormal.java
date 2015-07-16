@@ -27,7 +27,6 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
@@ -40,7 +39,6 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NormalSampler;
-import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 
 public class CustomLogNormal extends GibbsRealFactor implements IRealConjugateFactor
 {
@@ -261,8 +259,6 @@ public class CustomLogNormal extends GibbsRealFactor implements IRealConjugateFa
 			_hasConstantOutputs = true;
 		}
 	
-		final SolverNodeMapping solvers = getSolverMapping();
-		
 		// Save output variables and add to the statistics any output variables that have fixed values
 		int numVariableOutputs = 0;		// First, determine how many output variables are not fixed
 		final int nEdges = getSiblingCount();
@@ -272,17 +268,19 @@ public class CustomLogNormal extends GibbsRealFactor implements IRealConjugateFa
 		final GibbsReal[] outputVariables = _outputVariables = new GibbsReal[numVariableOutputs];
 		for (int edge = _numParameterEdges, index = 0; edge < nEdges; edge++)
 		{
-			Real outputVariable = (Real)siblings.get(edge);
-			if (outputVariable.hasFixedValue())
+			final GibbsReal outputVariable = (GibbsReal)getSibling(edge);
+			final double knownValue = outputVariable.getKnownReal();
+			
+			if (knownValue == knownValue) // !NaN
 			{
-				double outputValue = Math.log(outputVariable.getFixedValue());
+				double outputValue = Math.log(knownValue);
 				_constantOutputSum += outputValue;
 				_constantOutputSumOfSquares += outputValue*outputValue;
 				_constantOutputCount++;
 				_hasConstantOutputs = true;
 			}
 			else
-				outputVariables[index++] = (GibbsReal)solvers.getSolverVariable(outputVariable);
+				outputVariables[index++] = outputVariable;
 		}
 		
 		if (_meanParameterPort != prevMeanParameterPort ||

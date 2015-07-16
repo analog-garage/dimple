@@ -696,7 +696,7 @@ public class TestSumProductOptimizedUpdate extends DimpleTestBase
 									{
 										inputValues[i] = _rnd.nextDouble();
 									}
-									discreteVariable.setInput(inputValues);
+									discreteVariable.setPrior(inputValues);
 								}
 							}
 							else

@@ -25,8 +25,9 @@ Dimple Events are organized hierarchically, and the current version of the full 
   \end{itemize}
 \item DataEvent: includes changes to data including changes to fixed values and inputs. The concrete data event types are:
   \begin{itemize}
-  \item VariableFixedValueChangeEvent: raised when a fixed value is set or unset on a variable.
-  \item VariableInputChangeEvent: raised when an input distribution is set or unset on a variable.
+  \item VariablePriorChangeEvent: raised when a prior is changed on a variable.
+  \item VariableFixedValueChangeEvent (deprecated): raised when a fixed value prior is set or unset on a variable. This event type has been subsumed by VariablePriorChangeEvent and will eventually be discontinued.
+  \item VariableInputChangeEvent (deprecated): raised when a prior distribution is set or unset on a variable. This event type has been subsumed by VariablePriorChangeEvent and will eventually be discontinued.
   \end{itemize}
 \item SolverEvent: includes solver-specific events of interest that occur while running inference. The concrete event types are:
   \begin{itemize}

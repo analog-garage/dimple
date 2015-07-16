@@ -20,7 +20,9 @@ import static java.util.Objects.*;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -138,7 +140,8 @@ public class JSVariable extends JSNode<Variable>
 	 */
 	public @Nullable Object getFixedValue()
 	{
-		return _delegate.getFixedValueAsObject();
+		Value value = _delegate.getPriorValue();
+		return value != null ? value.getObject() : null;
 	}
 	
 	/**
@@ -151,7 +154,13 @@ public class JSVariable extends JSNode<Variable>
 	 */
 	public @Nullable Object getInput()
 	{
-		return _delegate.getInputObject();
+		Object prior = _delegate.getPriorFunction();
+		if (prior instanceof DiscreteMessage)
+		{
+			return ((DiscreteMessage)prior).getWeights();
+		}
+		
+		return prior;
 	}
 	
 	/**
@@ -202,14 +211,7 @@ public class JSVariable extends JSNode<Variable>
 	 */
 	public void setFixedValue(@Nullable Object value)
 	{
-		if (value == null)
-		{
-			_delegate.setInputObject(null);
-		}
-		else
-		{
-			_delegate.setFixedValueFromObject(value);
-		}
+		_delegate.setPrior(value);
 	}
 	
 	/**
@@ -223,7 +225,7 @@ public class JSVariable extends JSNode<Variable>
 	 */
 	public void setInput(JSFactorFunction input)
 	{
-		_delegate.setInputObject(input._delegate);
+		_delegate.setPrior(input._delegate);
 	}
 	
 	/**
@@ -235,6 +237,6 @@ public class JSVariable extends JSNode<Variable>
 	 */
 	public void setInput(@Nullable double[] input)
 	{
-		_delegate.setInputObject(input);
+		_delegate.setPrior(input);
 	}
 }

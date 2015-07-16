@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
+import static com.analog.lyric.math.Utilities.*;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,7 +29,6 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsGammaEdge;
@@ -38,7 +39,6 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
-import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 
 public class CustomNegativeExpGamma extends GibbsRealFactor implements IRealConjugateFactor
 {
@@ -225,8 +225,6 @@ public class CustomNegativeExpGamma extends GibbsRealFactor implements IRealConj
 			_hasConstantOutputs = true;
 		}
 		
-		final SolverNodeMapping solvers = getSolverMapping();
-
 		// Save output variables and add to the statistics any output variables that have fixed values
 		int numVariableOutputs = 0;		// First, determine how many output variables are not fixed
 		final int nEdges = getSiblingCount();
@@ -236,14 +234,16 @@ public class CustomNegativeExpGamma extends GibbsRealFactor implements IRealConj
 		final GibbsReal[] outputVariables = _outputVariables = new GibbsReal[numVariableOutputs];
 		for (int edge = _numParameterEdges, index = 0; edge < nEdges; edge++)
 		{
-			Real outputVariable = (Real)siblings.get(edge);
-			if (outputVariable.hasFixedValue())
+			final GibbsReal outputVariable = (GibbsReal)getSibling(edge);
+			final double knownValue = outputVariable.getKnownReal();
+			
+			if (knownValue == knownValue) // !NaN
 			{
-				_constantOutputSum += Math.exp(-outputVariable.getFixedValue());
+				_constantOutputSum += energyToWeight(knownValue);
 				_hasConstantOutputs = true;
 			}
 			else
-				outputVariables[index++] = (GibbsReal)solvers.getSolverVariable(outputVariable);
+				outputVariables[index++] = outputVariable;
 		}
 		
 		if (_numParameterEdges != prevNumParameterEdges ||

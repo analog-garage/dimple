@@ -91,7 +91,7 @@ public class TestGibbsNeighborList extends DimpleTestBase
 		
 		for (Real var : cVars)
 		{
-			var.setInput(new Normal());
+			var.setPrior(new Normal());
 		}
 		
 		fg.initialize();
@@ -132,7 +132,7 @@ public class TestGibbsNeighborList extends DimpleTestBase
 			for (int row = 0, rows = cMatrix.length; row < rows; ++row)
 			{
 				Real cVar = cMatrix[row][col];
-				cVar.setInput((FactorFunction)null);
+				cVar.setPrior(null);
 				Factor factor = fg.addFactor(new Normal(), cVar, 1, new Real(RealDomain.nonNegative()));
 				cNormalMatrix[row][col] = factor;
 				cNormals[i++] = factor;

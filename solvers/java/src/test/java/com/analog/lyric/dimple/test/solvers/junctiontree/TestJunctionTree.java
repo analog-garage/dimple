@@ -152,14 +152,14 @@ public class TestJunctionTree extends DimpleTestBase
 		final int varIndex = _rand.nextInt(variables.size());
 		final Discrete variable = variables.getByIndex(varIndex).asDiscreteVariable();
 		final int valueIndex = _rand.nextInt(variable.getDomain().size());
-		variable.asDiscreteVariable().setFixedValueIndex(valueIndex);
+		variable.asDiscreteVariable().setPriorIndex(valueIndex);
 		
 		testGraphImpl(model, useMap, false);
 		
 		testGraphImpl(model, useMap, true);
 		
 		// Clear fixed value
-		variable.setInputObject(null);
+		variable.setPrior(null);
 	}
 	
 	private void testGraphImpl(FactorGraph model, boolean useMap, boolean useConditioning)

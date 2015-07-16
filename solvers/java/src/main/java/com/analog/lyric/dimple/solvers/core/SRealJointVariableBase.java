@@ -66,12 +66,19 @@ public abstract class SRealJointVariableBase extends SVariableBase<RealJoint>
 	{
 		if (_guessWasSet)
 			return _guessValue;
-		else if (_model.hasFixedValue())		// If there's a fixed value set, use that
-			return _model.getFixedValue();
-		else
-			return getValue();
+		
+		Object value = _model.getPriorValueObject();
+		if (value != null)
+		{
+			// If there's a fixed value set, use that
+			// Note: we could also look at value from default conditioning layer, but
+			// since we intend to deprecate the guess mechanism, it is probably not worth it.
+			return value;
+		}
+
+		return getValue();
 	}
-	
+		
 	@Override
 	public void setGuess(@Nullable Object guess)
 	{

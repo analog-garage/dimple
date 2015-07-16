@@ -108,7 +108,7 @@ public class PDiscreteVariableVector extends PVariableVector
 	{
 		int[] output = new int[indices.length];
 		for (int i = 0; i < indices.length; i++)
-			output[i] = getDiscreteVariable(indices[i]).getFixedValueIndex();
+			output[i] = getDiscreteVariable(indices[i]).getPriorIndex();
 		
 		return output;
 	}
@@ -153,6 +153,7 @@ public class PDiscreteVariableVector extends PVariableVector
 		return valueIndices;
 	}
 	
+	@Deprecated
 	public double [][] getInput(int [] indices)
 	{
 		double [][] output = new double[size()][];

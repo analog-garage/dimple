@@ -27,7 +27,6 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsGammaEdge;
@@ -37,7 +36,6 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
-import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 
 public class CustomGamma extends GibbsRealFactor implements IRealConjugateFactor
 {
@@ -216,8 +214,6 @@ public class CustomGamma extends GibbsRealFactor implements IRealConjugateFactor
 			_hasConstantOutputs = true;
 		}
 	
-		final SolverNodeMapping solvers = getSolverMapping();
-		
 		// Save output variables and add to the statistics any output variables that have fixed values
 		int numVariableOutputs = 0;		// First, determine how many output variables are not fixed
 		final int nEdges = getSiblingCount();
@@ -227,15 +223,17 @@ public class CustomGamma extends GibbsRealFactor implements IRealConjugateFactor
 		final GibbsReal[] outputVariables = _outputVariables = new GibbsReal[numVariableOutputs];
 		for (int edge = _numParameterEdges, index = 0; edge < nEdges; edge++)
 		{
-			Real outputVariable = (Real)siblings.get(edge);
-			if (outputVariable.hasFixedValue())
+			final GibbsReal outputVariable = (GibbsReal)getSibling(edge);
+			final double knownValue = outputVariable.getKnownReal();
+			
+			if (knownValue == knownValue) // !NaN
 			{
-				_constantOutputSum += outputVariable.getFixedValue();
+				_constantOutputSum += knownValue;
 				_constantOutputCount++;
 				_hasConstantOutputs = true;
 			}
 			else
-				outputVariables[index++] = (GibbsReal)solvers.getSolverVariable(outputVariable);
+				outputVariables[index++] = outputVariable;
 		}
 		
 		if (_alphaParameterPort != prevAlphaParameterPort)

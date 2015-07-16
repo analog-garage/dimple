@@ -70,8 +70,10 @@ public abstract class SDiscreteVariableBase extends SVariableBase<Discrete> impl
 	@Override
 	public int getValueIndex()
 	{
-		if (_model.hasFixedValue())	// If there's a fixed value set, use that instead of the belief
-			return _model.getFixedValueIndex();
+		// TODO - look in conditioning layer as well...
+		int fixedIndex = _model.getPriorIndex();
+		if (fixedIndex >= 0)
+			return fixedIndex;
 					
 		double[] belief = getBelief();
 		int numValues = belief.length;

@@ -437,7 +437,7 @@ public class TestVariableEliminator extends DimpleTestBase
 		expectThrow(DimpleException.class, ".*cannot handle non-discrete variable.*",
 			eliminator, "orderIterator", VariableCost.MIN_FILL);
 		
-		r.setFixedValue(1.0);
+		r.setPrior(1.0);
 		eliminator = new VariableEliminator(model, false);
 		expectThrow(DimpleException.class, ".*cannot handle non-discrete variable.*",
 			eliminator, "orderIterator", VariableCost.MIN_FILL);

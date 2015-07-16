@@ -44,9 +44,9 @@ public class Demo {
 		Discrete v3 = new Discrete((Object[])new Double[]{0.0, 1.0});
 
 		
-		v1.setInput(.8, .2);
-		v2.setInput(.8, .2);
-		v3.setInput(.4, .6);
+		v1.setPrior(.8, .2);
+		v2.setPrior(.8, .2);
+		v3.setPrior(.4, .6);
 
 
 		FactorGraph fg = new FactorGraph();

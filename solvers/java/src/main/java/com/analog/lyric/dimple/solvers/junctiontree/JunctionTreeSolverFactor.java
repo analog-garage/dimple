@@ -26,8 +26,6 @@ import java.util.Map.Entry;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-import cern.colt.list.IntArrayList;
-
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
@@ -42,6 +40,8 @@ import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+
+import cern.colt.list.IntArrayList;
 
 /**
  * @since 0.05
@@ -280,7 +280,7 @@ public class JunctionTreeSolverFactor extends SFactorBase
 					final int sourceIndex = entry.getValue();
 
 					targetToSourceIndex.add(sourceIndex);
-					conditionedValues[i + fromSize] = variable.getFixedValueIndex();
+					conditionedValues[i + fromSize] = variable.getPriorIndex();
 					conditionedDomains[i] = variable.getDomain();
 					++i;
 				}

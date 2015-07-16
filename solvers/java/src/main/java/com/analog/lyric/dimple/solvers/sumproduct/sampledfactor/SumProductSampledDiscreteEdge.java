@@ -52,7 +52,7 @@ class SumProductSampledDiscreteEdge extends SumProductDiscreteEdge
 	{
 		Discrete var = _svar.getModelObject();
 		if (!var.hasFixedValue())		// Only set the input if there isn't already a fixed value
-			var.setInputObject(varToFactorMsg.representation());
+			var.setPrior(varToFactorMsg);
 	}
 	
 	@Override
@@ -66,7 +66,7 @@ class SumProductSampledDiscreteEdge extends SumProductDiscreteEdge
 		Discrete var = _svar.getModelObject();
 		if (!var.hasFixedValue())		// Only set the input if there isn't already a fixed value
 		{
-			var.setInputObject(null);
+			var.setPrior(null);
 		}
 	}
 }

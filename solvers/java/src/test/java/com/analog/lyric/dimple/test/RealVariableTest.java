@@ -29,14 +29,10 @@ import com.analog.lyric.dimple.model.variables.Real;
 
 public class RealVariableTest extends DimpleTestBase
 {
-	protected static boolean debugPrint = false;
-	
 	@SuppressWarnings("null")
 	@Test
 	public void test1()
 	{
-		if (debugPrint) System.out.println("== test1 ==");
-
 		FactorGraph graph = new FactorGraph();
 		graph.setSolverFactory(new com.analog.lyric.dimple.solvers.gibbs.Solver());
 		
@@ -45,8 +41,8 @@ public class RealVariableTest extends DimpleTestBase
 		Real c = new Real();
 		Real d = new Real(new RealDomain(-1,1));
 		Real e = new Real(new RealDomain(0,Double.POSITIVE_INFINITY));
-		c.setInputObject(new Normal(0,1));
-		d.setInputObject(new Normal(0,1));
+		c.setPrior(new Normal(0,1));
+		d.setPrior(new Normal(0,1));
 
 		a.setName("a");
 		b.setName("b");
@@ -67,16 +63,13 @@ public class RealVariableTest extends DimpleTestBase
 
 		final double oneOverSqrtTwoPi = 1/Math.sqrt(2*Math.PI);
 		
-		if (debugPrint) System.out.println("c.Input(0): " + ((FactorFunction)c.getInput()).eval(new Object[]{0d}));
 		assertTrue(nearlyEquals(((FactorFunction)c.getInput()).eval(new Object[]{0d}), oneOverSqrtTwoPi));
 		
-		if (debugPrint) System.out.println("d.Input(1): " + ((FactorFunction)d.getInput()).eval(new Object[]{1d}));
 		assertTrue(nearlyEquals(((FactorFunction)d.getInput()).eval(new Object[]{1d}), Math.exp(-0.5)*oneOverSqrtTwoPi));
 
-		assertTrue(a.getInputObject() == null);
-		a.setInputObject(new Normal(0,1));
-		if (debugPrint) System.out.println("a.Input(0): " + ((FactorFunction)a.getInput()).eval(new Object[]{0d}));
-		assertTrue(nearlyEquals(((FactorFunction)a.getInput()).eval(new Object[]{0d}), oneOverSqrtTwoPi));
+		assertNull(a.getPrior());
+		a.setPrior(new Normal(0,1));
+		assertTrue(nearlyEquals(((FactorFunction)a.getPrior()).eval(new Object[]{0d}), oneOverSqrtTwoPi));
 	}
 	
 	

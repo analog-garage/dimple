@@ -29,7 +29,6 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsBetaEdge;
@@ -191,10 +190,11 @@ public class CustomBernoulli extends GibbsRealFactor implements IRealConjugateFa
 		final GibbsDiscrete[] outputVariables = _outputVariables = new GibbsDiscrete[numVariableOutputs];
 		for (int edge = _numParameterEdges, index = 0; edge < nEdges; edge++)
 		{
-			Discrete outputVariable = (Discrete)siblings.get(edge);
-			if (outputVariable.hasFixedValue())
+			final GibbsDiscrete outputVariable = (GibbsDiscrete)getSibling(edge);
+			final int outputValue = outputVariable.getKnownDiscreteIndex();
+			
+			if (outputValue >= 0)
 			{
-				int outputValue = outputVariable.getFixedValueIndex();
 				if (outputValue == 0)
 					_constantOutputZeroCount++;
 				else
@@ -202,7 +202,7 @@ public class CustomBernoulli extends GibbsRealFactor implements IRealConjugateFa
 				_hasConstantOutputs = true;
 			}
 			else
-				outputVariables[index++] = (GibbsDiscrete)outputVariable.getSolver();
+				outputVariables[index++] = outputVariable;
 		}
 		
 		if (_numParameterEdges != prevNumParameterEdges)

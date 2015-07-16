@@ -87,7 +87,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 	{
 		final double[] outMsgs = _outMsgs[outPortNum];
 
-		final Value fixedValue = getFixedValue();
+		final Value fixedValue = getKnownValue();
 		if (fixedValue != null)
 		{
 			Arrays.fill(outMsgs, MessageConverter.maxPotential);
@@ -181,7 +181,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 	@Override
 	protected void doUpdate()
 	{
-		final Value fixedValue = getFixedValue();
+		final Value fixedValue = getKnownValue();
 		if (fixedValue != null)
 		{
 			final int index = fixedValue.getIndex();
@@ -295,7 +295,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		final int numValue = getDomain().size();
 		final double[] outBelief = new double[numValue];
 
-		final Value fixedValue = getFixedValue();
+		final Value fixedValue = getKnownValue();
 		if (fixedValue != null)
 		{
 			outBelief[fixedValue.getIndex()] = 1.0;

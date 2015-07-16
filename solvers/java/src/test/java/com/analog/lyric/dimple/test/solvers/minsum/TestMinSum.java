@@ -162,7 +162,7 @@ public class TestMinSum extends DimpleTestBase
 				{
 					var.setGuess(null);
 					// Add a random input to avoid ambiguous result - see BUG 408
-					var.setInputObject(randomPrior());
+					var.setPrior(randomPrior());
 				}
 			}
 			
@@ -172,7 +172,7 @@ public class TestMinSum extends DimpleTestBase
 				for (Variable var : block)
 				{
 					Discrete d = (Discrete)var;
-					d.setFixedValueIndex(d.getGuessIndex());
+					d.setPriorIndex(d.getGuessIndex());
 				}
 			}
 			

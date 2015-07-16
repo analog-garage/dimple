@@ -122,7 +122,7 @@ public class LPDiscrete extends SDiscreteVariableBase
 			final int size = getModelObject().getDomain().size();
 			beliefs = new double[size];
 			
-			Value fixedValue = getFixedValue();
+			Value fixedValue = getKnownValue();
 			if (fixedValue != null)
 			{
 				beliefs[fixedValue.getIndex()] = 1.0;
@@ -220,7 +220,7 @@ public class LPDiscrete extends SDiscreteVariableBase
 	int computeValidAssignments()
 	{
 		final int domlength = getDomain().size();
-		final Value fixedValue = getFixedValue();
+		final Value fixedValue = getKnownValue();
 		
 		if (fixedValue != null)
 		{
@@ -287,7 +287,7 @@ public class LPDiscrete extends SDiscreteVariableBase
 		{
 			_lpVarIndex = start;
 
-			Value value = getFixedValue();
+			Value value = getKnownValue();
 			if (value != null)
 			{
 				objectiveFunction[start++] = 0;
@@ -401,7 +401,7 @@ public class LPDiscrete extends SDiscreteVariableBase
 		else
 		{
 			// Fixed value
-			Value value = getFixedValue();
+			Value value = getKnownValue();
 			if (value != null)
 			{
 				beliefs[value.getIndex()] = 1.0;
@@ -434,7 +434,7 @@ public class LPDiscrete extends SDiscreteVariableBase
 	
 	public boolean hasFixedValue()
 	{
-		return getFixedValue() != null;
+		return getKnownValue() != null;
 	}
 	
 	/**
@@ -463,7 +463,7 @@ public class LPDiscrete extends SDiscreteVariableBase
 	 */
 	boolean hasZeroWeight(int index)
 	{
-		Value fixedValue = getFixedValue();
+		Value fixedValue = getKnownValue();
 		if (fixedValue != null)
 		{
 			return index != fixedValue.getIndex();

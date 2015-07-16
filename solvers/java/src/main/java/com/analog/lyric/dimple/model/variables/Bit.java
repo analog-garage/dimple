@@ -32,7 +32,7 @@ public class Bit extends Discrete
 
 	public void setInput(double p1)
 	{
-		setInput(1 - p1, p1);
+		setPrior(1 - p1, p1);
 	}
 	
 }

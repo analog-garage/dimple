@@ -23,8 +23,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 
-
-@SuppressWarnings("deprecation")
+@SuppressWarnings("deprecation") // FIXME - remove suppression when VariableBase is removed
 public class Real extends VariableBase
 {
 	// Constructors...
@@ -40,11 +39,14 @@ public class Real extends VariableBase
 	{
 		this(domain, "Real");
 	}
+
 	public Real(RealDomain domain, String modelerClassName)
 	{
 		super(domain, modelerClassName);
 	}
 	
+
+	@SuppressWarnings("deprecation")
 	protected Real(Real that)
 	{
 		super(that);
@@ -78,7 +80,10 @@ public class Real extends VariableBase
 		return (Double)requireSolver("getValue").getValue();
 	}
 	
-	// Fix the variable to a specific value
+	/**
+	 * @deprecated use {@link #getPriorValue()} instead
+	 */
+	@Deprecated
 	public double getFixedValue()
 	{
 		Object tmp = getFixedValueObject();
@@ -88,12 +93,10 @@ public class Real extends VariableBase
 			return (Double)tmp;
 	}
 	
-	@Override
-	public final @Nullable Object getFixedValueAsObject()
-	{
-		return getFixedValueObject();
-	}
-	
+	/**
+	 * @deprecated use {@link #setPrior(Object)} instead
+	 */
+	@Deprecated
 	public void setFixedValue(double fixedValue)
 	{
 		// Verify that the fixed value is in the domain of the variable
@@ -103,12 +106,13 @@ public class Real extends VariableBase
 		setFixedValueObject(fixedValue);
 	}
 
+	@Deprecated
 	@Override
 	public void setInputObject(@Nullable Object value)
 	{
 		if (value instanceof double[])
 		{
-			// Array containing [mean, std]
+			// HACK: Array containing [mean, std]
 			double[] array = (double[])value;
 			if (array.length != 2)
 			{
@@ -124,11 +128,19 @@ public class Real extends VariableBase
 		super.setInputObject(value);
 	}
 	
+	/**
+	 * @deprecated instead use {@link #setPrior(Object)}
+	 */
+	@Deprecated
 	public void setInput(@Nullable FactorFunction input)
 	{
 		setInputObject(input);
 	}
 	
+	/**
+	 * @deprecated instead use {@link #setPrior(Object)} with a {@link NormalParameters} instance.
+	 */
+	@Deprecated
 	public void setInput(@Nullable double[] input)
 	{
 		setInputObject(input);

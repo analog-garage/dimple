@@ -52,7 +52,7 @@ public class StereoVisionGraph
 			for (int x = 0; x < _width; x++)
 			{
 				Discrete variable = new Discrete(depthDomain);
-				variable.setInput(rho_d(x, y, depthRange, imageL, imageR));
+				variable.setPrior(rho_d(x, y, depthRange, imageL, imageR));
 				_variables[y][x] = variable;
 			}
 		}

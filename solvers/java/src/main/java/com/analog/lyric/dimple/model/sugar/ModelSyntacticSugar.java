@@ -255,7 +255,7 @@ public class ModelSyntacticSugar
 	public static Real fixed(String name, double value)
 	{
 		Real var = nameAndAdd(name, new Real());
-		var.setFixedValue(value);
+		var.setPrior(value);
 		return var;
 	}
 	
@@ -273,7 +273,7 @@ public class ModelSyntacticSugar
 	public static RealJoint fixedJoint(String name, double ... value)
 	{
 		RealJoint var = realjoint(name, value.length);
-		var.setFixedValue(value);
+		var.setPrior(value);
 		return var;
 	}
 	

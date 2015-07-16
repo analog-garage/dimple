@@ -141,7 +141,7 @@ public class DiscreteFactor extends Factor
 		for (int i = 0; i < nRemoved; ++i)
 		{
 			final Discrete variable = (Discrete) constantVariables.get(i);
-			valueIndices[constantIndices[i]] = variable.getFixedValueIndex();
+			valueIndices[constantIndices[i]] = variable.getPriorIndex();
 		}
 		
 		return new TableFactorFunction(oldFunction.getName(), oldFactorTable.createTableConditionedOn(valueIndices));

@@ -222,7 +222,7 @@ public class RealVariableGibbsTest extends DimpleTestBase
 		}
 			
 		// Set data
-		y.setFixedValue(5);
+		y.setPrior(5);
 		
 		// Configure Gibbs options
 		// TODO: test is sensitive to choice of seed! Perhaps we should increase numSamples or something...
@@ -267,7 +267,7 @@ public class RealVariableGibbsTest extends DimpleTestBase
 		assertEquals(xVariance, StatUtils.variance(xSamples), 1e-13);
 		assertEquals(yVariance, StatUtils.variance(ySamples), 1e-13);
 		
-		assertEquals(y.getFixedValue(), yMean, 0.0);
+		assertEquals(y.getPriorReal(), yMean, 0.0);
 		assertEquals(0.0, yVariance, 0.0);
 		
 		// Make sure moments are the same the next time
@@ -349,7 +349,7 @@ public class RealVariableGibbsTest extends DimpleTestBase
 		
 		for (int j = 0, end = O.size(); j < end; ++j)
 		{
-			O.get(j).setFixedValue(o[inputIndex++]);
+			O.get(j).setPrior(o[inputIndex++]);
 		}
 		
 		fg.initialize();
@@ -458,8 +458,8 @@ public class RealVariableGibbsTest extends DimpleTestBase
 		fg.setNumSteps(0);
 		for (int i = 0; fg.hasNext(); fg.advance(), ++i)
 		{
-			r[i].setInput(new Normal(1, dataPrecision));
-			r[i+1].setInput(new Normal(1, dataPrecision));
+			r[i].setPrior(new Normal(1, dataPrecision));
+			r[i+1].setPrior(new Normal(1, dataPrecision));
 
 			fg.solveOneStep();
 			fg2.solve();
