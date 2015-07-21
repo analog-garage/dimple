@@ -1034,8 +1034,11 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	@Deprecated
 	public final void setSampler(String samplerName)
 	{
-		_sampler = (IMCMCSampler)GibbsOptions.realSampler.instantiate(this);
+		GibbsOptions.realSampler.convertAndSet(this, samplerName);
+		IMCMCSampler sampler = (IMCMCSampler) GibbsOptions.realSampler.instantiateIfDifferent(this, _sampler);
+		_sampler = sampler;
 		_samplerSpecificallySpecified = true;
+		sampler.initializeFromVariable(this);
 	}
 	
 	@Matlab
