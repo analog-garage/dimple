@@ -21,7 +21,7 @@ import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.util.misc.Matlab;
 
-@Matlab
+@Matlab(wrapper="RealJoint")
 public class PRealJointVariableVector extends PVariableVector
 {
 	/*--------------
@@ -33,18 +33,27 @@ public class PRealJointVariableVector extends PVariableVector
 		super(nodes);
 	}
 	
+	/**
+	 * @deprecated as of release 0.08
+	 */
+	@Deprecated
 	public PRealJointVariableVector(String varType, PRealJointDomain domain, int numElements)
+	{
+		this(domain, numElements);
+	}
+	
+	public PRealJointVariableVector(PRealJointDomain domain, int numElements)
 	{
 		Node [] nodes = new Node[numElements];
 		
 		for (int i = 0; i < numElements; i++)
 		{
-			RealJoint v = new RealJoint(domain.getModelerObject(), varType);
+			RealJoint v = new RealJoint(domain.getModelerObject());
 			nodes[i] = v;
 		}
 		setNodes(nodes);
 	}
-	
+
 	public PRealJointVariableVector(Variable [] variables)
 	{
 		super(variables);

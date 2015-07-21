@@ -24,8 +24,17 @@ classdef MatrixObject < handle
     end
     methods
         function obj = MatrixObject(vectorObject,VectorIndices)
-            obj.VectorIndices = VectorIndices;
+            if isempty(VectorIndices) && ismethod(vectorObject,'size')
+                % Compute indices from vectorObject's size if not provided.
+                obj.VectorIndices = 0:vectorObject.size()-1;
+            else
+                obj.VectorIndices = VectorIndices;
+            end
             obj.VectorObject = vectorObject;
+        end
+        
+        function proxy = getProxyObject()
+            proxy = VectorObject;
         end
         
         function varargout = subsref(obj,S)

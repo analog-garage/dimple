@@ -23,7 +23,7 @@ import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.util.misc.Matlab;
 
 @Immutable
-@Matlab
+@Matlab(wrapper="RealJointDomain")
 public class PRealJointDomain extends PDomain
 {
 	/*---------------

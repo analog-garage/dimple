@@ -37,6 +37,9 @@ import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.schedulers.SchedulerOptionKey;
 import com.analog.lyric.dimple.solvers.core.multithreading.ThreadPool;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergyMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
@@ -99,16 +102,40 @@ public class ModelFactory
 		return new NormalParameters(mean, precision);
 	}
 
+	@Deprecated
 	public PRealJointVariableVector createRealJointVariableVector(String className, PRealJointDomain domain, int numEls)
 	{
 		return new PRealJointVariableVector(className, domain, numEls);
 	}
 
+	public PRealJointVariableVector createRealJointVariableVector(PRealJointDomain domain, int numEls)
+	{
+		return new PRealJointVariableVector(domain, numEls);
+	}
+
+	public DiscreteMessage createDiscreteMessage(String type, int size, @Nullable double[] values)
+	{
+		DiscreteMessage msg = type.equals("energy") ? new DiscreteEnergyMessage(size) : new DiscreteWeightMessage(size);
+		if (values != null)
+		{
+			System.arraycopy(values, 0, msg.representation(), 0, size);
+		}
+		return msg;
+	}
+	
+	@Deprecated
 	public PDiscreteVariableVector createDiscreteVariableVector(String className, PDiscreteDomain domain, int numEls)
 	{
 		return new PDiscreteVariableVector(className,domain,numEls);
 	}
+	
+	public PDiscreteVariableVector createDiscreteVariableVector(PDiscreteDomain domain, int numEls)
+	{
+		return new PDiscreteVariableVector(domain,numEls);
+	}
+
 	// For backwards compatibility with MATLAB
+	@Deprecated
 	public PDiscreteVariableVector createVariableVector(String className, PDiscreteDomain domain, int numEls)
 	{
 		return new PDiscreteVariableVector(className,domain,numEls);
@@ -203,10 +230,16 @@ public class ModelFactory
 	}
 
 
-
+	@Deprecated
 	public PRealVariableVector createRealVariableVector(String className, PRealDomain domain, int numEls)
 	{
 		return new PRealVariableVector(className, domain, numEls);
+	}
+
+	@Deprecated
+	public PRealVariableVector createRealVariableVector(PRealDomain domain, int numEls)
+	{
+		return new PRealVariableVector(domain, numEls);
 	}
 
 

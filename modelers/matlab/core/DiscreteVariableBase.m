@@ -17,50 +17,49 @@
 classdef DiscreteVariableBase < VariableBase
     methods
         function obj = DiscreteVariableBase(domain,varargin)
-            obj = obj@VariableBase([],[]);
-            
-            if ~isa(domain,'Domain')
-                domain = DiscreteDomain(domain);
-            end
-            
-            
-            
-            if length(varargin) == 3 && strcmp('existing',varargin{1})
-                
-                VectorIndices = varargin{3};
-                varMat = varargin{2};
-                
-                
+            if isa(domain,'com.analog.lyric.dimple.matlabproxy.PDiscreteVariableVector')
+                vectorObject = domain;
+                vectorIndices = [];
+                domain = [];
             else
-                modeler = getModeler();
-                dims = [varargin{:}];
-                if size(dims) == 1
-                    varargin = {varargin{1}, varargin{1}};
-                    dims = [varargin{:}];
+                
+                if ~isa(domain,'Domain')
+                    domain = DiscreteDomain(domain);
                 end
                 
-                numEls = prod(dims);
-                
-                if (~isa(domain, 'FiniteFieldDomain'))
-                    varMat = modeler.createVariableVector(class(obj),domain.IDomain,numEls);
+                if nargin == 4 && strcmp('existing',varargin{1})
+                    vectorIndices = varargin{3};
+                    vectorObject = varargin{2};
+                    
                 else
-                    varMat = modeler.createFiniteFieldVariableVector(domain.IDomain,numEls);
+                    modeler = getModeler();
+                    dims = [varargin{:}];
+                    if size(dims) == 1
+                        varargin = {varargin{1}, varargin{1}};
+                        dims = [varargin{:}];
+                    end
+                    
+                    numEls = prod(dims);
+                    
+                    if (~isa(domain, 'FiniteFieldDomain'))
+                        vectorObject = modeler.createDiscreteVariableVector(domain.IDomain,numEls);
+                    else
+                        vectorObject = modeler.createFiniteFieldVariableVector(domain.IDomain,numEls);
+                    end
+                    
+                    vectorIndices = 0:(numEls-1);
+                    
+                    if (length(varargin) > 1)
+                        vectorIndices = reshape(vectorIndices,varargin{:});
+                    end
+                    
+                    
                 end
-                
-                VectorIndices = 0:(numEls-1);
-                
-                if (length(varargin) > 1)
-                    VectorIndices = reshape(VectorIndices,varargin{:});
-                end
-                
-                
             end
             
-            obj.Domain = domain;
-            obj.VectorObject = varMat;
-            obj.VectorIndices = VectorIndices;
-        end
-            
+            obj = obj@VariableBase(vectorObject,vectorIndices,domain);
+         end
+           
     end
     
     methods(Access=protected)

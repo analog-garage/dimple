@@ -45,7 +45,9 @@ classdef Bit < DiscreteVariableBase
                 error('Inputs must be between 0 and 1, inclusive');
             end
             
-            if length(obj.VectorIndices) == numel(obj.VectorIndices)
+            if (isa(priors,'DiscreteMessage'))
+                % keep priors
+            elseif length(obj.VectorIndices) == numel(obj.VectorIndices)
                 priors = reshape(priors,numel(priors),1);
                 priors = [1-priors priors];
             elseif numel(priors) > 1

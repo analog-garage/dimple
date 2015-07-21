@@ -1,3 +1,5 @@
+% Scheduler Interface for Dimple inference scheduler.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   Copyright 2014-2015 Analog Devices, Inc.
 %
@@ -43,7 +45,7 @@ classdef Scheduler < handle
             if (nargin == 2)
                 validateattributes(arg1, {'FactorGraph'}, {'scalar'});
                 obj.Graph = arg1;
-                arg2 = varargin{2};
+                arg2 = varargin{1};
                 validateattributes(arg2, {'char', 'com.analog.lyric.dimple.matlabproxy.PScheduler'}, {});
                 if (ischar(arg2))
                     modeler = getModeler;
@@ -127,6 +129,12 @@ classdef Scheduler < handle
             end
         end
 
+        function setOptionHolder(obj,holder)
+            if isa(holder,'FactorGraph')
+                obj.Graph = holder;
+            end
+        end
+        
     end
 
     

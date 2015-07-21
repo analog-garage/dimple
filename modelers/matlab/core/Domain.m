@@ -1,5 +1,9 @@
+% Domain is the base Dimple domain class
+%
+% The actual implementation is provided by an underlying Java object.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Copyright 2012 Analog Devices, Inc.
+%   Copyright 2012-2015 Analog Devices, Inc.
 %
 %   Licensed under the Apache License, Version 2.0 (the "License");
 %   you may not use this file except in compliance with the License.
@@ -17,7 +21,20 @@
 classdef Domain < handle
     
     properties
+        % Underlying Java proxy object that provides the actual implementation.
         IDomain;
+    end
+    
+    methods
+
+        function proxy = getProxyObject(obj)
+            % Returns underlying Java proxy object.
+            % 
+            % This returns the value of the IDomain property.
+            %
+            % See also unwrapProxyObject, IDomain
+            proxy = obj.IDomain;
+        end
     end
     
     methods (Abstract)

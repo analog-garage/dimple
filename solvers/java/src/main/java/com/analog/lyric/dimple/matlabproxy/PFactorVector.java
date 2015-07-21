@@ -26,7 +26,7 @@ import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.util.misc.Matlab;
 
-@Matlab
+@Matlab(wrapper="Factor")
 public class PFactorVector extends PFactorBaseVector
 {
 	/*--------------

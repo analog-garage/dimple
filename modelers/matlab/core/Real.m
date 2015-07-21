@@ -1,3 +1,5 @@
+% Real holds real-valued Dimple model variable
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   Copyright 2012 Analog Devices, Inc.
 %
@@ -17,12 +19,21 @@
 classdef Real < VariableBase
     methods
         function obj = Real(varargin)
-            obj@VariableBase([],[]);
-            
-            if length(varargin) == 4 && strcmp('existing',varargin{2})
-                obj.Domain = varargin{1};
-                obj.VectorObject = varargin{3};
-                obj.VectorIndices = varargin{4};
+            % Constructs a Real instance
+            %
+            %     Real()
+            %     Real(domain,dimensions...)
+            %     Real(vectorObject)
+            %     Real(domain,'existing',vectorObject,vectorIndices)
+            %
+            if nargin == 4 && strcmp('existing',varargin{2})
+                domain = varargin{1};
+                vectorObject = varargin{3};
+                vectorIndices = varargin{4};
+            elseif nargin == 1 && isa(varargin{1},'com.analog.lyric.dimple.matlabproxy.PRealVariableVector')
+                vectorObject = varargin{1};
+                vectorIndices = [];
+                domain = [];
             else
                 
                 % Default arguments (unbounded domain, dimension 1x1)
@@ -42,7 +53,6 @@ classdef Real < VariableBase
                 else
                     domain = RealDomain(-Inf,Inf);
                 end
-                obj.Domain = domain;
                 if (varargIndex > length(varargin))
                     varargin = [varargin {1}];
                 end
@@ -57,18 +67,17 @@ classdef Real < VariableBase
                 numEls = prod(dims);
                 
                 modeler = getModeler();
-                VectorObject = modeler.createRealVariableVector(class(obj),domain.IDomain,numEls);
+                vectorObject = modeler.createRealVariableVector(domain.IDomain,numEls);
                 
-                obj.VectorObject = VectorObject;
-                
-                obj.VectorIndices = 0:(numEls-1);
+                vectorIndices = 0:(numEls-1);
                 
                 if (length(dimArgs) > 1)
-                    obj.VectorIndices = reshape(obj.VectorIndices,dimArgs{:});
+                    vectorIndices = reshape(vectorIndices,dimArgs{:});
                 end                
-                
+               
             end
             
+            obj = obj@VariableBase(vectorObject,vectorIndices,domain);
         end
         
         

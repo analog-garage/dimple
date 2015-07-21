@@ -17,8 +17,8 @@
 classdef Discrete < DiscreteVariableBase
     
     methods
-        function obj = Discrete(domain,varargin)
-            obj@DiscreteVariableBase(domain,varargin{:});
+        function obj = Discrete(varargin)
+            obj@DiscreteVariableBase(varargin{:});
         end
         
     end

@@ -37,7 +37,7 @@ public @interface Matlab
 {
 	/**
 	 * If non-empty, specifies the name of the MATLAB wrapper function to be used to convert
-	 * instances of the annotated type.
+	 * instances of the annotated type or its subclasses.
 	 * <p>
 	 * This attribute is only applicable for annotations on classes.
 	 * @since 0.08

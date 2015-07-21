@@ -18,10 +18,10 @@ package com.analog.lyric.dimple.model.variables;
 
 import com.analog.lyric.dimple.model.domains.ComplexDomain;
 
-public class Complex extends RealJoint 
+public class Complex extends RealJoint
 {
 	// Constructors...
-	public Complex() 
+	public Complex()
 	{
 		this(ComplexDomain.create());
 	}
@@ -29,7 +29,12 @@ public class Complex extends RealJoint
 	{
 		this(domain, "Complex");
 	}
-	public Complex(ComplexDomain domain, String modelerClassName) 
+	
+	/**
+	 * @deprecated as of release 0.08 use {@link #Complex(ComplexDomain)} instead
+	 */
+	@Deprecated
+	public Complex(ComplexDomain domain, String modelerClassName)
 	{
 		super(domain, modelerClassName);
 	}

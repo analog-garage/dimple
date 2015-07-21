@@ -38,7 +38,7 @@ public class SolverNamesTest extends DimpleTestBase
 	@Test
 	public void test_simpleNameStuff()
 	{
-		Discrete variable = new Discrete(DiscreteDomain.bit(), "Variable");
+		Discrete variable = new Discrete(DiscreteDomain.bit());
 		
 		assertTrue(variable.getParentGraph() == null);
 		assertEquals(Ids.defaultNameForLocalId(variable.getLocalId()), variable.getName());

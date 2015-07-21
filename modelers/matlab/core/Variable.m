@@ -1,3 +1,5 @@
+% DEPRECATED - use Discrete instead of this
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   Copyright 2012 Analog Devices, Inc.
 %

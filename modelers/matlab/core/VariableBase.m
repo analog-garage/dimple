@@ -20,18 +20,24 @@ classdef VariableBase < Node
         Factors;
         FactorsTop;
         FactorsFlat;
+
         Guess;
-        
         Input;
         FixedValue;
+        
+        Prior;
         Belief;
         Value;
     end
     
     methods
         
-        function obj = VariableBase(vectorObject,indices)
+        function obj = VariableBase(vectorObject,indices,domain)
             obj@Node(vectorObject,indices);
+            if (nargin < 3 || isempty(domain)) && ismethod(vectorObject,'getDomain')
+                domain = wrapProxyObject(vectorObject.getDomain());
+            end
+            obj.Domain = domain;
         end
         
         % FIXME: Mod should use a java function too, but need version that
@@ -275,7 +281,14 @@ classdef VariableBase < Node
                 factors{i} = wrapProxyObject(tmp.getSlice(i-1));
             end
         end
+
+        function prior = get.Prior(obj)
+            prior = obj.getPrior();
+        end
         
+        function set.Prior(obj,value)
+            obj.setPrior(value);
+        end
         
         function set.Input(obj,value)
             obj.setInput(value);
@@ -329,6 +342,21 @@ classdef VariableBase < Node
     end
     
     methods (Access = protected)
+        
+        function prior = getPrior(obj)
+            prior = wrapProxyObject(cell(obj.VectorObject.getPrior()));
+            prior = obj.unpack(prior, obj.VectorIndices);
+        end
+        
+        function setPrior(obj,priors)
+            input = obj.pack(priors, obj.VectorIndices);
+            if ~iscell(input) && ~isfloat(input)
+                input = num2cell(input);
+            else
+                input = unwrapProxyObject(input);
+            end
+            obj.VectorObject.setPrior(input);
+        end
         
         function guess = getGuess(obj)
             tmp = cell(obj.VectorObject.getGuess());

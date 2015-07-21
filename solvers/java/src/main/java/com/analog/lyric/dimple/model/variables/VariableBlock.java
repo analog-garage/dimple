@@ -24,18 +24,17 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.RandomAccess;
 
-import net.jcip.annotations.Immutable;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-
-import cern.colt.map.OpenLongObjectHashMap;
 
 import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.FactorGraphChild;
 import com.analog.lyric.util.misc.Internal;
 import com.google.common.primitives.Longs;
+
+import cern.colt.map.OpenLongObjectHashMap;
+import net.jcip.annotations.Immutable;
 
 /**
  * Represents a block of {@link Variable}s in a {@link FactorGraph}.

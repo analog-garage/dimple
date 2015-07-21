@@ -1,3 +1,12 @@
+% wrapProxyObject Wraps Dimple Java proxy object with appropriate MATLAB class.
+%
+%    wrapProxyObject(objects)
+%
+% This is for use internally in the Dimple MATLAB implementation for
+% communicating with the Java layer.
+%
+% See also unwrapProxyObject
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   Copyright 2012-2015 Analog Devices, Inc.
 %
@@ -14,88 +23,26 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function result = wrapProxyObject(proxyObject, varargin)
-    narginchk(1,2);
-    
-    optionHolder = [];
-    if (nargin == 2)
-        optionHolder = varargin{2};
-        validateattributes(optionHolder, {'FactorGraphChild'}, {'scalar'});
-    end
-    
-    result = [];
-    
+function result = wrapProxyObject(proxyObject)
+
     if isempty(proxyObject)
-        return;
-    end
-       
-    if iscell(proxyObject)
+        result = [];
+        
+    elseif iscell(proxyObject)
         result = cellfun(@wrapProxyObject, proxyObject, 'UniformOutput', false);
-        return;
-    end
     
-    if isjava(proxyObject)
+    elseif isjava(proxyObject)
+        % Look for @Matlab(wrapper="") annotation for object's class and
+        % use that if found.
         wrapperName = char(com.analog.lyric.util.misc.MatlabUtil.wrapper(proxyObject));
-        if (~isempty(wrapperName))
-            result = feval(wrapperName, proxyObject);
-            return;
-        end
-    end
-    
-    if isjava(proxyObject) || isobject(proxyObject)
-        if proxyObject.isGraph()
-            result = FactorGraph('VectorObject',proxyObject);
-        elseif proxyObject.isFactor()
-            if proxyObject.isDiscrete()
-                result = DiscreteFactor(proxyObject,0:(proxyObject.size()-1));
-            else
-                result = Factor(proxyObject,0:(proxyObject.size()-1));
-            end
-            
-        elseif proxyObject.isVariable()
-            if proxyObject.getDomain().isDiscrete()
-                domain = cell(proxyObject.getDomain().getElements());
-                indices = 0:(proxyObject.size()-1);
-                result = Discrete(domain,'existing',proxyObject,indices:(proxyObject.size()-1));
-            elseif proxyObject.getDomain().isJoint()
-                domain = RealJointDomain(proxyObject.getDomain().getNumVars());
-                indices = 0:(proxyObject.size()-1);
-                result = RealJoint(domain,'existing',proxyObject,indices);
-            elseif proxyObject.getDomain().isReal()
-                domain = RealDomain(proxyObject.getDomain().getLowerBound(),proxyObject.getDomain().getUpperBound);
-                indices = 0:(proxyObject.size()-1);
-                result = Real(domain,'existing',proxyObject,indices);
-            else
-                error('Invalid variable type');
-            end
-            
-        elseif proxyObject.isDomain()
-            if proxyObject.isDiscrete()
-                result = DiscreteDomain(proxyObject);
-            elseif proxyObject.isReal()
-                result = RealDomain(proxyObject);
-            elseif proxyObject.isJoint()
-                result = RealJointDomain(proxyObject);
-            end
-            
-        elseif proxyObject.isScheduler()
-            if isa(optionHolder, 'FactorGraph')
-                result = Scheduler(optionHolder, proxyObject);
-            else
-                result = Scheduler(proxyObject);
-            end
-            
-        elseif proxyObject.isVariableBlock()
-            result = VariableBlock(proxyObject);
-        end
-        
-        if isempty(result) && ~isempty(proxyObject)
+        if (isempty(wrapperName))
             error('not supported');
+        else
+            result = feval(wrapperName, proxyObject);
         end
-        
+    
     else
         % Pass regular MATLAB objects through
         result = proxyObject;
     end
-    
 end

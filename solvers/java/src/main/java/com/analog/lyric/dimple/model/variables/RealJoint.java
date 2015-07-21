@@ -39,6 +39,11 @@ public class RealJoint extends VariableBase
 	{
 		this(domain, "RealJoint");
 	}
+	
+	/**
+	 * @deprecated as of release 0.08 use {@link #RealJoint(RealJointDomain)} instead.
+	 */
+	@Deprecated
 	public RealJoint(RealJointDomain domain, String modelerClassName)
 	{
 		super(domain, modelerClassName);

@@ -25,12 +25,12 @@ public class FiniteFieldVariable extends Discrete
 {
 	public FiniteFieldVariable(int primitivePolynomial)
 	{
-		super(DiscreteDomain.finiteField(primitivePolynomial), "FiniteFieldVariable");
+		this(DiscreteDomain.finiteField(primitivePolynomial));
 	}
 	
 	public FiniteFieldVariable(FiniteFieldDomain domain)
 	{
-		super(domain, "FiniteFieldVariable");
+		super(domain);
 	}
 	
 	public FiniteFieldDomain getFiniteFieldDomain()

@@ -56,6 +56,10 @@ public class Discrete extends VariableBase
 			throw new DimpleException(String.format("ERROR Variable domain length %d must be at least 2", domain.length));
 	}
 	
+	/**
+	 * @deprecated as of release 0.08 use {@link #Discrete(DiscreteDomain)} instead.
+	 */
+	@Deprecated
 	public Discrete(DiscreteDomain domain, String modelerClassName)
 	{
 		super(domain, modelerClassName);

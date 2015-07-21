@@ -42,7 +42,7 @@ import com.analog.lyric.util.misc.Matlab;
  * @since 0.08
  * @author Christopher Barber
  */
-@Matlab
+@Matlab(wrapper="Scheduler")
 public class PScheduler extends PObject
 {
 	/*-------

@@ -1,5 +1,7 @@
+% RealJoint holds multidimensional real-valued Dimple model variable
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Copyright 2012 Analog Devices, Inc.
+%   Copyright 2012-2015 Analog Devices, Inc.
 %
 %   Licensed under the Apache License, Version 2.0 (the "License");
 %   you may not use this file except in compliance with the License.
@@ -19,16 +21,21 @@ classdef RealJoint < VariableBase
     
     methods
         function obj = RealJoint(varargin)
-            obj@VariableBase([],[]);
-            %first arg can be a number
-            %or it can be a domain
-            %for now, only take one argument
+            % Constructs RealJoint instance
+            %
+            %    RealJoint(domain)
+            %    RealJoint(domain,dimensions...)
+            %    RealJoint(vectorObject)
+            %    RealJoint(domain,'existing',vectorObject,vectorIndices)
             
-            
-            if length(varargin) == 4 && strcmp('existing',varargin{2})
-                obj.Domain = varargin{1};
-                obj.VectorObject = varargin{3};
-                obj.VectorIndices = varargin{4};
+            if nargin == 4 && strcmp('existing',varargin{2})
+                domain = varargin{1};
+                vectorObject = varargin{3};
+                vectorIndices = varargin{4};
+            elseif nargin == 1 && isa(varargin{1},'com.analog.lyric.dimple.matlabproxy.PRealJointVariableVector')
+                domain = [];
+                vectorObject = varargin{1};
+                vectorIndices = [];
             else
                 
                 % First argument can be either a RealJointDomain or
@@ -39,7 +46,6 @@ classdef RealJoint < VariableBase
                     domain = RealJointDomain(varargin{1});
                 end
                 nextArg = 2;
-                obj.Domain = domain;
                
                 % Determine the size of the array of RealJoint variables
                 if nargin < nextArg
@@ -55,12 +61,13 @@ classdef RealJoint < VariableBase
                 
                 numEls = prod(dims);
                 modeler = getModeler();
-                varMat = modeler.createRealJointVariableVector(class(obj),domain.IDomain,numEls);
-                obj.VectorObject = varMat;
-                obj.VectorIndices = 0:(numEls-1);
-                obj.VectorIndices = reshape(obj.VectorIndices,dims);
+                varMat = modeler.createRealJointVariableVector(domain.IDomain,numEls);
+                vectorObject = varMat;
+                vectorIndices = 0:(numEls-1);
+                vectorIndices = reshape(vectorIndices,dims);
             end
-            
+           
+            obj = obj@VariableBase(vectorObject,vectorIndices,domain);
         end
         
     end

@@ -222,6 +222,9 @@ end
 
 function wrappedVal = wrapOptionValue(val, optionHolder)
     wrappedVal = wrapProxyObject(val);
+    if ismethod(wrappedVal, 'setOptionHolder')
+        wrappedVal.setOptionHolder(optionHolder);
+    end
 end
 
 function unwrappedVal = unwrapOptionValue(val)

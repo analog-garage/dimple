@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.matlabproxy;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.util.misc.Matlab;
 
-@Matlab
+@Matlab(wrapper="RealDomain")
 public class PRealDomain extends PDomain
 {
 	public PRealDomain(RealDomain domain)

@@ -88,7 +88,9 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	
     protected @Nullable IDatum _prior = null;
     
+    @Deprecated
 	protected String _modelerClassName;
+    
 	private final Domain _domain;
     
     public static Comparator<Variable> orderById = new Comparator<Variable>() {
@@ -109,6 +111,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		this(domain, "Variable");
 	}
 	
+	@Deprecated
 	public Variable(Domain domain, String modelerClassName)
 	{
 		super(Ids.INITIAL_VARIABLE_ID);
@@ -501,6 +504,10 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		return _prior instanceof Value;
 	}
 	
+	/**
+	 * @deprecated as of release 0.08
+	 */
+	@Deprecated
     public String getModelerClassName()
     {
     	return _modelerClassName;

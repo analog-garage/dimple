@@ -29,7 +29,7 @@ import com.analog.lyric.util.misc.Matlab;
  * simultaneously.  This is important for performance reasons.  (MATLAB is slow to
  * manipulate lots of objects)
  */
-@Matlab
+@Matlab(wrapper="Discrete")
 public class PDiscreteVariableVector extends PVariableVector
 {
 	/*---------------
@@ -50,13 +50,22 @@ public class PDiscreteVariableVector extends PVariableVector
 		super(nodes);
 	}
 	
+	/**
+	 * @deprecated as of release 0.08
+	 */
+	@Deprecated
 	public PDiscreteVariableVector(String varType, PDiscreteDomain domain, int numElements)
+	{
+		this(domain, numElements);
+	}
+	
+	public PDiscreteVariableVector(PDiscreteDomain domain, int numElements)
 	{
 		Node [] nodes  = new Node[numElements];
 		
 		for (int i = 0; i < numElements; i++)
 		{
-			Discrete v = new Discrete(domain.getModelerObject(), varType);
+			Discrete v = new Discrete(domain.getModelerObject());
 			nodes[i] = v;
 		}
 		

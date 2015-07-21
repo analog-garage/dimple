@@ -16,13 +16,13 @@
 
 package com.analog.lyric.dimple.matlabproxy;
 
-import net.jcip.annotations.Immutable;
-
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.util.misc.Matlab;
 
+import net.jcip.annotations.Immutable;
+
 @Immutable
-@Matlab
+@Matlab(wrapper="DiscreteDomain")
 public class PDiscreteDomain extends PDomain
 {
 	public PDiscreteDomain(DiscreteDomain domain)

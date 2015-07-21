@@ -31,6 +31,7 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.misc.Matlab;
 
 
 /**
@@ -38,6 +39,7 @@ import com.analog.lyric.dimple.model.values.Value;
  * @since 0.06
  * @author Christopher Barber
  */
+@Matlab(wrapper="DiscreteMessage")
 public abstract class DiscreteMessage extends ParameterizedMessageBase
 {
 	private static final long serialVersionUID = 1L;

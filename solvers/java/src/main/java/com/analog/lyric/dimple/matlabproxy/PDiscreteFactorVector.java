@@ -20,7 +20,7 @@ import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.DiscreteFactor;
 import com.analog.lyric.util.misc.Matlab;
 
-@Matlab
+@Matlab(wrapper="DiscreteFactor")
 public class PDiscreteFactorVector extends PFactorVector
 {
 	public PDiscreteFactorVector(Node [] nodes)

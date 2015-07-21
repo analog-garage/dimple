@@ -40,6 +40,10 @@ public class Real extends VariableBase
 		this(domain, "Real");
 	}
 
+	/**
+	 * @deprecated as of release 0.08 use {@link #Real(RealDomain)} instead.
+	 */
+	@Deprecated
 	public Real(RealDomain domain, String modelerClassName)
 	{
 		super(domain, modelerClassName);

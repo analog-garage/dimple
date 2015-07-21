@@ -18,15 +18,17 @@ package com.analog.lyric.dimple.matlabproxy;
 
 import java.util.UUID;
 
-import com.analog.lyric.dimple.model.core.Node;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableBlock;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
+import com.analog.lyric.util.misc.Matlab;
 
 /**
  * MATLAB proxy object for {@link VariableBlock}s.
  * @since 0.08
  * @author Christopher Barber
  */
+@Matlab(wrapper="VariableBlock")
 public class PVariableBlock extends POptionHolder
 {
 	/*-------
@@ -131,6 +133,6 @@ public class PVariableBlock extends POptionHolder
 	 */
 	public PVariableVector getVariables()
 	{
-		return new PVariableVector(_block.toArray(new Node[_block.size()]));
+		return PHelpers.convertToVariableVector(_block.toArray(new Variable[_block.size()]));
 	}
 }

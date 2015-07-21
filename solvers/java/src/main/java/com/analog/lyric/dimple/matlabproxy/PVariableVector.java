@@ -19,9 +19,11 @@ package com.analog.lyric.dimple.matlabproxy;
 import java.util.ArrayList;
 
 import com.analog.lyric.collect.Supers;
+import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.FactorBase;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.util.misc.Matlab;
 
@@ -72,7 +74,8 @@ public class PVariableVector extends PNodeVector
 	@Override
 	public PNodeVector createNodeVector(Node[] nodes)
 	{
-		return new PVariableVector(nodes);
+		// Convert to narrower type if possible.
+		return PHelpers.convertToVariableVector(new PVariableVector(nodes).getVariableArray());
 	}
 	
 	/*-------------------------
@@ -89,6 +92,7 @@ public class PVariableVector extends PNodeVector
 		return (Variable[]) Supers.narrowArrayOf(Variable.class, 1, getModelerNodes());
 	}
 	
+	@Deprecated
 	public String getModelerClassName()
 	{
 		if (size() > 0)
@@ -156,6 +160,30 @@ public class PVariableVector extends PNodeVector
 		for (int i = 0; i < retval.length; i++)
 			retval[i] = (Variable)nodes[i];
 		return retval;
+	}
+	
+	public Object[] getPrior()
+	{
+		final int n = size();
+		Object[] priors = new Object[n];
+		final Variable [] vars = getVariableArray();
+		for (int i = 0; i < vars.length; i++)
+		{
+			final IDatum prior = vars[i].getPrior();
+			priors[i] = prior instanceof Value ? ((Value)prior).getObject() : prior;
+		}
+		return priors;
+	}
+	
+	public void setPrior(Object[] priors)
+	{
+		final int n = size();
+		final Variable [] vars = getVariableArray();
+		for (int i = 0; i < n; i++)
+		{
+			vars[i].setPrior(priors[i]);
+		}
+		
 	}
 
 }

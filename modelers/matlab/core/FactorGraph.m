@@ -82,6 +82,10 @@ classdef FactorGraph < Node
                 obj.VectorObject = varargin{2};
                 obj.TableFactory = FactorTableFactory();
                 obj.VectorIndices = varargin{3};
+            elseif numel(varargin) == 1 && isa(varargin{1},'com.analog.lyric.dimple.matlabproxy.PFactorGraphVector')
+                obj.VectorObject = varargin{1};
+                obj.TableFactory = FactorTableFactory();
+                obj.VectorIndices = 0:(obj.VectorObject.size()-1);
             else
                 % Set the default graph (only in this case where the graph
                 % is created explicitly by the user rather than as a side effect)

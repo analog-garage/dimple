@@ -38,6 +38,15 @@ classdef VariableBlock < FactorGraphChild
         function vars = get.Variables(obj)
             vars = wrapProxyObject(obj.VectorObject.getVariables());
         end
+        
+        function proxy = getProxyObject(obj)
+            % Returns underlying Java proxy object.
+            % 
+            % This returns the value of the VectorObject property.
+            %
+            % See also unwrapProxyObject, VectorObject
+            proxy = obj.Variables;
+        end
     end
     
     methods(Access=protected)

@@ -16,12 +16,13 @@
 
 package com.analog.lyric.dimple.model.domains;
 
-import net.jcip.annotations.Immutable;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.WeakInterner;
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.Interner;
+
+import net.jcip.annotations.Immutable;
 
 @Immutable
 public class RealDomain extends Domain

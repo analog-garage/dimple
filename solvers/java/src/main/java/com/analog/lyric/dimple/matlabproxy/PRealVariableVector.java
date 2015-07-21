@@ -28,7 +28,7 @@ import com.analog.lyric.util.misc.Matlab;
  * simultaneously.  This is important for performance reasons.  (MATLAB is slow to
  * manipulate lots of objects)
  */
-@Matlab
+@Matlab(wrapper="Real")
 public class PRealVariableVector extends PVariableVector
 {
 	/*--------------
@@ -45,18 +45,27 @@ public class PRealVariableVector extends PVariableVector
 		super(nodes);
 	}
 	
+	/**
+	 * @deprecated as of release 0.08
+	 */
+	@Deprecated
 	public PRealVariableVector(String varType, PRealDomain domain, int numElements)
+	{
+		this(domain, numElements);
+	}
+	
+	public PRealVariableVector(PRealDomain domain, int numElements)
 	{
 		Node [] nodes = new Node[numElements];
 		
 		for (int i = 0; i < numElements; i++)
 		{
-			Real v = new Real(domain.getModelerObject(), varType);
+			Real v = new Real(domain.getModelerObject());
 			nodes[i] = v;
 		}
 		setNodes(nodes);
 	}
-	
+
 	public PRealVariableVector(Variable [] variables)
 	{
 		super(variables);

@@ -49,7 +49,7 @@ import com.analog.lyric.util.misc.FactorGraphDiffs;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Matlab;
 
-@Matlab
+@Matlab(wrapper="FactorGraph")
 public class PFactorGraphVector extends PFactorBaseVector
 {
 	/*--------------
