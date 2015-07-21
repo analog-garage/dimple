@@ -30,17 +30,32 @@ public abstract class MatlabUtil
 
 	/**
 	 * Returns name of Matlab wrapper function/class for given object, if any.
+	 * <p>
+	 * This looks through the superclass chain starting with {@code obj}'s class and
+	 * returns the first non-null {@link Matlab#wrapper() wrapper} attribute from {@link Matlab}
+	 * annotations on those classes. Returns null if no {@code Matlab} annotation is found or if the wrapper
+	 * attribute has not been set.
+	 * <p>
+	 * This is used by the MATLAB {@code wrapProxyObject} function.
+	 * <p>
 	 * @since 0.08
 	 */
 	public static @Nullable String wrapper(Object obj)
 	{
-		Matlab matlabAnnotation = obj.getClass().getAnnotation(Matlab.class);
+		Class<?> cl = obj.getClass();
 		
-		if (matlabAnnotation != null)
+		while (cl != null)
 		{
-			String wrapper = matlabAnnotation.wrapper();
-			if (!wrapper.isEmpty())
-				return wrapper;
+			Matlab matlabAnnotation = cl.getAnnotation(Matlab.class);
+			
+			if (matlabAnnotation != null)
+			{
+				String wrapper = matlabAnnotation.wrapper();
+				if (!wrapper.isEmpty())
+					return wrapper;
+			}
+			
+			cl = cl.getSuperclass();
 		}
 		
 		return null;
