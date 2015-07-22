@@ -14,6 +14,10 @@ Significant Changes Since v0.07
   
 * New API for specifying custom schedules. Custom schedules are now validated at graph initialization time
   instead of when first assigned.
+  
+* Input/FixedValue APIs have been deprecated and replaced by Priors
+
+* DataLayers represent data settings and distributions over entire graph.
 
 * Updated version dependencies of third party libraries:
     - Guava 14 -> 18
