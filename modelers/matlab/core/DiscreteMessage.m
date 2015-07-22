@@ -21,7 +21,8 @@ classdef DiscreteMessage < ParameterizedMessage
     end
     methods
         function obj = DiscreteMessage(values,weightOrEnergy)
-            if (nargin < 2)
+            narginchk(1,2);
+            if (nargin == 1)
                 if isjava(values) && isa(values, 'com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage')
                     obj.IParameters = values;
                     return;
@@ -61,6 +62,10 @@ classdef DiscreteMessage < ParameterizedMessage
         
         function set.Weight(obj,weights)
             obj.IParameters.setWeights(weights);
+        end
+        
+        function ind = end(obj,~,~)
+            ind = obj.IParameters.size();
         end
         
         function varargout = subsref(obj,S)
