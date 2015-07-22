@@ -32,6 +32,7 @@ function test1(debugPrint, repeatable)
 b = Bit;
 ba = Bit(2,3);
 bq = Bit(2);
+assertDiscreteDomainInvariants(b.Domain);
 assert(isa(b.Domain, 'DiscreteDomain'));
 assert(isa(bq.Domain, 'DiscreteDomain'));
 assert(isa(ba.Domain, 'DiscreteDomain'));
@@ -41,9 +42,13 @@ assertEqual(cell2mat(bq.Domain.Elements), [0 1]);
 assertEqual(size(b), [1 1]);
 assertEqual(size(ba), [2 3]);
 assertEqual(size(bq), [2 2]);
+assertEqual(b.Domain, DiscreteDomain([0 1]));
+assertTrue(b.Domain ~= DiscreteDomain([1 2]));
+assertFalse(b.Domain ~= DiscreteDomain([0 1]));
 
 dRange = 1:10;
 dDomain = DiscreteDomain(dRange);
+assertDiscreteDomainInvariants(dDomain);
 d = Discrete(dRange);
 dd = Discrete(dDomain);
 da = Discrete(dRange,2,3);
@@ -75,6 +80,7 @@ rInf = [-Inf Inf];
 rInfDomain = RealDomain(-Inf, Inf);
 rRange = [L U];
 rDomain = RealDomain(L, U);
+assertRealDomainInvariants(rDomain);
 r = Real();
 ri = Real(rInf);
 rid = Real(rInfDomain);
@@ -149,12 +155,19 @@ assertEqual(size(riq), [2 2]);
 assertEqual(size(ridq), [2 2]);
 assertEqual(size(rrq), [2 2]);
 assertEqual(size(rrdq), [2 2]);
+nonNegativeDomain = RealDomain(0);
+assertRealDomainInvariants(nonNegativeDomain);
+assertEqual(0, nonNegativeDomain.LB);
+assertEqual(Inf, nonNegativeDomain.UB);
 
 L2 = 7.2;
 U2 = 27;
 rDomain2 = RealDomain(L2, U2);
+assertRealDomainInvariants(rDomain2);
 cDomain = ComplexDomain(rDomain, rDomain2);
+assertRealJointDomainInvariants(cDomain);
 ccDomain = ComplexDomain(rDomain);
+assertRealJointDomainInvariants(ccDomain);
 c = Complex();
 cd = Complex(cDomain);
 ca = Complex(2,3);
@@ -216,7 +229,9 @@ L3 = -Inf;
 U3 = 0;
 rDomain3 = RealDomain(L3, U3);
 jDomain = RealJointDomain(rDomain, rDomain2, rDomain3);
+assertRealJointDomainInvariants(jDomain);
 jjDomain = RealJointDomain(3, rDomain);
+assertRealJointDomainInvariants(jjDomain);
 j = RealJoint(3);
 jd = RealJoint(jDomain);
 ja = RealJoint(3,4,5);
@@ -288,5 +303,46 @@ assertEqual(jj.Domain.RealDomains{2}.UB, U);
 assertEqual(jj.Domain.RealDomains{3}.LB, L);
 assertEqual(jj.Domain.RealDomains{3}.UB, U);
 
+assertExceptionThrown(@() RealJointDomain(), '', 'Constructor is missing arguments');
+assertExceptionThrown(@() RealJointDomain(2,RealDomain(),RealDomain(),RealDomain()), '', ...
+    'Number of domain elements must match the number of joint variable elements');
+
 end			
 		
+function assertDomainInvariants(domain)
+    assertEqual(domain, domain);
+    assertTrue(domain == domain);
+    assertFalse(domain ~= domain);
+    assertEqual(domain.IDomain, domain.getProxyObject());
+    assertEqual(domain.IDomain, unwrapProxyObject(domain));
+    assertTrue(isa(domain.IDomain, 'com.analog.lyric.dimple.matlabproxy.PDomain'));
+end
+
+function assertDiscreteDomainInvariants(domain)
+    assertDomainInvariants(domain);
+    
+    assertTrue(isa(domain, 'DiscreteDomain'));
+    assertTrue(domain.isDiscrete());
+    assertEqual(domain, DiscreteDomain(domain.IDomain));
+    assertEqual(domain, DiscreteDomain(domain.Elements));
+end
+
+function assertRealDomainInvariants(domain)
+    assertDomainInvariants(domain);
+    
+    assertTrue(isa(domain, 'RealDomain'));
+    assertFalse(domain.isDiscrete());
+    assertEqual(domain, RealDomain(domain.IDomain));
+    assertEqual(domain, RealDomain(domain.LB,domain.UB));
+end
+
+function assertRealJointDomainInvariants(domain)
+    assertDomainInvariants(domain);
+    
+    assertTrue(isa(domain, 'RealJointDomain'));
+    assertFalse(domain.isDiscrete());
+    assertTrue(domain == RealJointDomain(domain.IDomain));
+    assertTrue(domain == RealJointDomain(domain.RealDomains));
+    assertEqual(domain.IDomain.getNumVars(), domain.NumElements);
+    assertEqual(domain.IDomain.getDelegate().getDimensions(), domain.NumElements);
+end

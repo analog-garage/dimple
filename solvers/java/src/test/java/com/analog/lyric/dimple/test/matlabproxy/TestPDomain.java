@@ -63,6 +63,12 @@ public class TestPDomain extends DimpleTestBase
 		RealDomain r3 = new RealDomain(0.0, 1.0);
 		Object pr3 = new PRealDomain(r3);
 		assertInvariants((PDomain)pr3);
+		assertEquals(pr3, new PRealDomain(r3));
+		assertEquals(pr3, new PRealDomain(new RealDomain(0.0, 1.0)));
+		assertNotEquals(pr3, new PRealDomain(new RealDomain(0.0, 2.0)));
+		assertNotEquals(pr3, pabc2);
+		assertNotEquals(pr3, r3);
+		assertEquals(pr3.hashCode(), new PRealDomain(r3).hashCode());
 		
 		RealJointDomain rj = RealJointDomain.create(r, r2, r3);
 		PRealJointDomain prj = new PRealJointDomain(rj);
@@ -90,6 +96,8 @@ public class TestPDomain extends DimpleTestBase
 	{
 		TestPObject.assertInvariants(pdomain);
 		Domain mdomain = pdomain.getModelerObject();
+		assertSame(mdomain, pdomain.getDelegate());
+		assertEquals(pdomain,pdomain);
 		assertNotNull(mdomain);
 		assertEquals(pdomain.isDiscrete(), mdomain.isDiscrete());
 		assertEquals(pdomain.isJoint(), mdomain.isRealJoint());

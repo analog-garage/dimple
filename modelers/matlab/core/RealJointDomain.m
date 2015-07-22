@@ -31,6 +31,7 @@ classdef RealJointDomain < Domain
                 arg = varargin{1};
                 if isa(arg, 'com.analog.lyric.dimple.matlabproxy.PRealJointDomain')
                     obj.IDomain = arg;
+                    obj.RealDomains = wrapProxyObject(arg.getRealDomains());
                     return;
                 elseif isnumeric(arg)
                     domains = cell(arg,1);
@@ -57,6 +58,7 @@ classdef RealJointDomain < Domain
                 end
             end
             
+            domains = domains(:);
             idomains = cell(size(domains));
             for i = 1:length(idomains)
                 idomains{i} = domains{i}.IDomain;

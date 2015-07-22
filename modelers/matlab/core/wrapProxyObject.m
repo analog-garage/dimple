@@ -25,6 +25,10 @@
 
 function result = wrapProxyObject(proxyObject)
 
+    if isjava(proxyObject) && numel(proxyObject) > 1
+        proxyObject = cell(proxyObject);
+    end
+    
     if isempty(proxyObject)
         result = [];
         

@@ -5,7 +5,7 @@
 % objects will only be processed if it is a single MATLAB object or a cell array of
 % MATLAB objects, otherwise its value will simply be passed through.
 %
-% Each object is unwrapped by invoking its 'getProxyObject'. If it has
+% Each object is unwrapped by invoking its 'getProxyObject' method. If it has
 % no such method, it will simply be passed through.
 %
 % This is for use internally in the Dimple MATLAB implementation for

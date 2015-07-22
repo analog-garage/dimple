@@ -16,10 +16,12 @@
 
 package com.analog.lyric.dimple.matlabproxy;
 
-import net.jcip.annotations.Immutable;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.util.misc.Matlab;
+
+import net.jcip.annotations.Immutable;
 
 @Immutable
 @Matlab
@@ -30,6 +32,32 @@ public class PDomain extends PObject
 	PDomain(Domain domain)
 	{
 		_domain = domain;
+	}
+	
+	/*----------------
+	 * Object methods
+	 */
+	
+	@Override
+	public boolean equals(@Nullable Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+		
+		if (obj instanceof PDomain)
+		{
+			return _domain.equals(((PDomain)obj)._domain);
+		}
+		
+		return false;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return _domain.hashCode();
 	}
 	
 	/*-----------------

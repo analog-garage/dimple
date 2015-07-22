@@ -19,6 +19,9 @@ classdef DiscreteDomain < Domain
         Elements;
     end
     
+    % TODO - instead of copying all elements from underlying Java object,
+    % we should defer it to avoid extra work for large range domains.
+    
     methods
         function obj = DiscreteDomain(elements)
             if ~iscell(elements)
@@ -39,6 +42,7 @@ classdef DiscreteDomain < Domain
             try
                 obj.IDomain = modeler.createDiscreteDomain(elements);
             catch exception
+                % FIXME - this is a bit of a hack! See bug 415
                 newdomain = cell(size(elements));
                 
                 for i = 1:length(newdomain)

@@ -18,18 +18,27 @@ function testProxyWrapping()
 %TESTPROXYWRAPPING Tests for wrapping of Dimple objects with proxy objects
 
 assert(isempty(wrapProxyObject([])));
+assert(isempty(unwrapProxyObject([])));
 
 assert(42 == wrapProxyObject(42));
+assert(42 == unwrapProxyObject(42));
 
 domain = DiscreteDomain(1:2);
 domain2 = wrapProxyObject(domain.IDomain);
 assert(isa(domain2,'DiscreteDomain'));
 assert(domain.IDomain == domain2.IDomain);
+assert(domain.IDomain == unwrapProxyObject(domain));
 
 domain = RealDomain(0,10);
 domain2 = wrapProxyObject(domain.IDomain);
 assert(isa(domain2,'RealDomain'));
 assert(domain.IDomain == domain2.IDomain);
+assert(domain.IDomain == unwrapProxyObject(domain));
+assertEqual(domain, domain2);
+
+reals = Real([0,1], 2,2);
+assertEqual(reals.VectorObject, unwrapProxyObject(reals));
+reals2 = wrapProxyObject(reals.VectorObject);
 
 % TODO: more test cases...
 

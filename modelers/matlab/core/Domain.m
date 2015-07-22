@@ -26,7 +26,14 @@ classdef Domain < handle
     end
     
     methods
-
+        function result = eq(obj,other)
+            result = isa(other,'Domain') && obj.IDomain == other.IDomain;
+        end
+        
+        function result = ne(obj,other)
+            result = ~obj.eq(other);
+        end
+        
         function proxy = getProxyObject(obj)
             % Returns underlying Java proxy object.
             % 

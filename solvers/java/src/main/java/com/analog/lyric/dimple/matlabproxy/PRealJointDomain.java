@@ -16,11 +16,11 @@
 
 package com.analog.lyric.dimple.matlabproxy;
 
-import net.jcip.annotations.Immutable;
-
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.util.misc.Matlab;
+
+import net.jcip.annotations.Immutable;
 
 @Immutable
 @Matlab(wrapper="RealJointDomain")
@@ -81,5 +81,22 @@ public class PRealJointDomain extends PDomain
 	public int getNumVars()
 	{
 		return getModelerObject().getNumVars();
+	}
+	
+	/**
+	 * Array of {@link PRealDomain} wrapping the subdomains
+	 * @since 0.08
+	 */
+	public PRealDomain[] getRealDomains()
+	{
+		RealJointDomain domain = getDelegate();
+		final int n = domain.getDimensions();
+		
+		PRealDomain[] subdomains = new PRealDomain[n];
+		for (int i = 0; i <n; ++i)
+		{
+			subdomains[i] = new PRealDomain(domain.getRealDomain(i));
+		}
+		return subdomains;
 	}
 }

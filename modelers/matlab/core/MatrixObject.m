@@ -33,8 +33,13 @@ classdef MatrixObject < handle
             obj.VectorObject = vectorObject;
         end
         
-        function proxy = getProxyObject()
-            proxy = VectorObject;
+        function proxy = getProxyObject(obj)
+            % Returns underlying Java proxy object.
+            % 
+            % This returns the value of the VectorObject property.
+            %
+            % See also unwrapProxyObject, VectorObject
+            proxy = obj.VectorObject;
         end
         
         function varargout = subsref(obj,S)
