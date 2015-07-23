@@ -92,5 +92,9 @@ classdef DiscreteMessage < ParameterizedMessage
             end
             result = builtin('subsasgn',obj,S,value);
         end
+        
+        function disp(obj)
+            fprintf('DiscreteMessage(%s)\n', mat2str(obj.Weight'));
+        end
     end
 end
