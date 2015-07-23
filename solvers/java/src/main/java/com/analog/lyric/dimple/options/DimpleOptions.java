@@ -36,8 +36,13 @@ import com.analog.lyric.options.StringOptionKey;
 public class DimpleOptions extends OptionKeyDeclarer
 {
 	/**
-	 * Optional label for nodes.
+	 * Optional human-readable label for nodes.
 	 * <p>
+	 * This option, if defined, is used by {@link com.analog.lyric.dimple.model.core.Node#getLabel Node.getLabel}
+	 * and indirectly by {@link com.analog.lyric.dimple.model.core.Node#toString Node.toString}.
+	 * <p>
+	 * Label options are only looked up locally on the object on which they are set
+	 * (e.g. a label defined on a parent graph will not be seen by child nodes).
 	 * @since 0.08
 	 */
 	public static final StringOptionKey label =
