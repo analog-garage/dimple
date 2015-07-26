@@ -31,7 +31,6 @@
 			<attribute name="javadoc_location" value="http://math.nist.gov/javanumerics/jama/doc/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="build/external-libs/plugin.jar"/>
 	<classpathentry kind="con" path="GROOVY_SUPPORT"/>
 	<classpathentry kind="con" path="GROOVY_DSL_SUPPORT"/>
 	<classpathentry kind="lib" path="build/external-libs/org.eclipse.jdt.annotation-1.1.0.jar"/>
