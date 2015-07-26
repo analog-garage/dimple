@@ -143,6 +143,14 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	@Override
 	public abstract DiscreteMessage clone();
 	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * @param other is {@link DiscreteMessage} with matching {@link #size()}.
+	 * @throws ClassCastException if {@code other} is not a {@link DiscreteMessage}.
+	 * @throws IllegalArgumentException if {@code other} does not have matching size.
+	 * @since 0.08
+	 */
 	@Override
 	public void addFrom(IParameterizedMessage other)
 	{
@@ -322,6 +330,18 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	public abstract void setEnergies(double ... energies);
 	
 	public abstract void setWeightsToZero();
+
+	/**
+	 * True if weight at given index is zero.
+	 * <p>
+	 * This is the same as:
+	 * <blockquote><tt>
+	 * {@link #getWeight}(i) == 0.0
+	 * </tt></blockquote>
+	 * but may be faster if underlying representation uses energies.
+	 * @since 0.08
+	 */
+	public abstract boolean hasZeroWeight(int i);
 	
 	/**
 	 * Compute sum of all weights in message.

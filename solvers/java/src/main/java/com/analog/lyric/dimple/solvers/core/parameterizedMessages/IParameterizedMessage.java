@@ -56,7 +56,7 @@ public interface IParameterizedMessage extends IUnaryFactorFunction, Cloneable, 
 	 * <p>
 	 * @param other unless otherwise documented must be the same type as this object.
 	 * @throws UnsupportedOperationException if message does not support additive parameters
-	 * @throws ClassCastException if {@code other} is not the same class type.
+	 * @throws ClassCastException if {@code other} is not the same or compatible class type.
 	 * @since 0.08
 	 */
 	public void addFrom(IParameterizedMessage other);

@@ -136,6 +136,7 @@ public abstract class SVariableBase<MVariable extends Variable>
 		throw new DimpleException("not supported");
 	}
 
+	@Deprecated
 	@Override
 	public double getScore()
 	{
@@ -196,6 +197,20 @@ public abstract class SVariableBase<MVariable extends Variable>
 	public Domain getDomain()
 	{
 		return _model.getDomain();
+	}
+	
+	/**
+	 * Returns object holding prior and condition values for this variable.
+	 * <p>
+	 * In the common case where the object is only used within one function call
+	 * use {@link PriorAndCondition#release} to return the instance for reuse.
+	 * @since 0.08
+	 * @see Variable#getPrior()
+	 * @see #getCondition()
+	 */
+	public PriorAndCondition getPriorAndCondition()
+	{
+		return PriorAndCondition.create(_model.getPrior(), getCondition());
 	}
 	
 	/**

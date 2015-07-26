@@ -122,6 +122,7 @@ public abstract class SFactorBase extends SNode<Factor> implements ISolverFactor
 		return _parent;
 	}
 	
+	@Deprecated
 	@Override
     public double getScore()
     {

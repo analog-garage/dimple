@@ -563,6 +563,7 @@ public class GibbsReal extends SRealVariableBase
 	{
 	}
 
+	@Deprecated
 	@Override
 	public final double getScore()
 	{

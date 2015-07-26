@@ -757,6 +757,7 @@ public abstract class SFactorGraphBase
 		return sum;
 	}
 
+	@Deprecated
 	@Override
 	public double getScore()
 	{

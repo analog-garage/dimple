@@ -214,6 +214,7 @@ public class SumProductReal extends SRealVariableBase
 		return new Double(belief.getMean());
 	}
 	
+	@Deprecated
 	@Override
 	public double getScore()
 	{

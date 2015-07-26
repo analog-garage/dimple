@@ -138,6 +138,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	@Override
 	public abstract @Nullable JunctionTreeSolverGraphBase<Delegate> getParentGraph();
 	
+	@Deprecated
 	@Override
 	public double getScore()
 	{

@@ -32,6 +32,7 @@ import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.BPOptions;
+import com.analog.lyric.dimple.solvers.core.PriorAndCondition;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
@@ -97,7 +98,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 
 
 	
-	
+	@Deprecated
 	@Override
 	public double getScore()
 	{
@@ -139,16 +140,20 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     {
 		final double[] outMsgs = _outMsgs[outPortNum];
 
-		final Value fixedValue = getKnownValue();
+		PriorAndCondition known = getPriorAndCondition();
+		final Value fixedValue = known.value();
 		if (fixedValue != null)
 		{
 			Arrays.fill(outMsgs, 0);
 			outMsgs[fixedValue.getIndex()] = 1.0;
+			known.release();
 			return;
 		}
 		
         final double minLog = -100; // FIXME
-        DiscreteMessage priors = getPrior();
+        DiscreteMessage priors = toEnergyMessage(known);
+        known = known.release();
+        
         final int M = getDomain().size();
         final int D = _model.getSiblingCount();
         double maxLog = Double.NEGATIVE_INFINITY;
@@ -269,7 +274,8 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     @Override
 	protected void doUpdate()
     {
-		final Value fixedValue = getKnownValue();
+		PriorAndCondition known = getPriorAndCondition();
+		final Value fixedValue = known.value();
 		if (fixedValue != null)
 		{
 			final int index = fixedValue.getIndex();
@@ -278,11 +284,13 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 				Arrays.fill(outMsg, 0);
 				outMsg[index] = 1.0;
 			}
+			known.release();
 			return;
 		}
 		
-       final double minLog = -100; // FIXME
-        final DiscreteMessage priors = getPrior();
+		final double minLog = -100; // FIXME
+        final DiscreteMessage priors = toEnergyMessage(known);
+        known = known.release();
         final int M = getDomain().size();
         final int D = _model.getSiblingCount();
         
@@ -430,14 +438,18 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
         final int M = getDomain().size();
         final double[] outBelief = new double[M];
         
-        Value fixedValue = getKnownValue();
+        PriorAndCondition known = getPriorAndCondition();
+		final Value fixedValue = known.value();
         if (fixedValue != null)
         {
         	outBelief[fixedValue.getIndex()] = 1.0;
+        	known.release();
         	return outBelief;
         }
 
-        final DiscreteMessage priors = getPrior();
+        final DiscreteMessage priors = toEnergyMessage(known);
+        known = known.release();
+        
         final int D = _model.getSiblingCount();
 
         final double minLog = -100;
@@ -487,15 +499,18 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
     
 	public double [] getNormalizedInputs()
 	{
-        Value fixedValue = getKnownValue();
+		PriorAndCondition known = getPriorAndCondition();
+		final Value fixedValue = known.value();
         if (fixedValue != null)
         {
         	final double[] belief = new double[getDomain().size()];
         	belief[fixedValue.getIndex()] = 1.0;
+        	known.release();
         	return belief;
         }
 
-		DiscreteMessage prior = getPrior();
+		DiscreteMessage prior = toEnergyMessage(known);
+		known.release();
 		if (prior != null)
 		{
 			prior = new DiscreteWeightMessage(prior);
@@ -552,7 +567,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 	{
 		double [] energies = new double[getDomain().size()];
 		
-		DiscreteMessage prior = getPrior();
+		DiscreteMessage prior = knownEnergyMessage();
 		if (prior != null)
 		{
 			prior.getEnergies(energies);
@@ -593,7 +608,7 @@ public class SumProductDiscrete extends SDiscreteVariableDoubleArray
 		
 		double [] belief = getBelief();
 
-		DiscreteMessage prior = getPrior();
+		DiscreteMessage prior = knownEnergyMessage();
 		final double priorNormalizer = prior != null ? prior.getNormalizationEnergy() : 0;
 		
 		//make sure input is normalized

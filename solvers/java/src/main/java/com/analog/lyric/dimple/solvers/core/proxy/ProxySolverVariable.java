@@ -62,6 +62,7 @@ public abstract class ProxySolverVariable<MVariable extends Variable, Delegate e
 		return requireDelegate("getInternalEnergy").getInternalEnergy();
 	}
 
+	@Deprecated
 	@Override
 	public double getScore()
 	{

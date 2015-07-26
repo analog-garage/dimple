@@ -164,6 +164,7 @@ public class TestDiscreteLikelihood extends DimpleTestBase
 				}
 			}
 			
+			@SuppressWarnings("deprecation")
 			final double ll = sfg.getScore() - logZ;
 			final double likelihood = energyToWeight(ll);
 			

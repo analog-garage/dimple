@@ -95,13 +95,62 @@ public class Utilities
 		return Math.log(x)/LOG2;
 	}
 
-
+	/**
+	 * Normalizes weights to sum to one.
+	 * <p>
+	 * Modifies the weights in the array by dividing by their sum.
+	 * Does nothing if the sum of the weights is zero.
+	 * <p>
+	 * @param weights a non-empty array of positive weights.
+	 * @return {@code weights} array that was passed in
+	 * @since 0.08
+	 */
+	public static double[] normalize(double[] weights)
+	{
+		final int n = weights.length;
+		double sum = 0.0;
+		
+		for (int i = n; --i>=0;)
+			sum += weights[i];
+		if (sum != 0.0)
+		{
+			for (int i = n; --i>=0;)
+				weights[i] /= sum;
+		}
+		
+		return weights;
+	}
+	
+	/**
+	 * Convert value from energy domain to weight/probability domain.
+	 * <p>
+	 * This simply returns:
+	 * <blockquote>
+	 * <big>
+	 * e<sup>-energy</sup>
+	 * </big>
+	 * </blockquote>
+	 * <p>
+	 * @param energy is any value. Positive infinity corresponds to a zero weight,
+	 * and zero corresponds to a weight of one.
+	 * @see #weightToEnergy(double)
+	 */
 	public static double energyToWeight(double energy)
 	{
 		return Math.exp(-energy);
 	}
 
-
+	/**
+	 * Convert value from weight/probability domain to energy domain.
+	 * <p>
+	 * This is simply the negative natural log of the weight:
+	 * <blockquote>
+	 * -ln(weight)
+	 * </blockquote>
+	 * <p>
+	 * @param weight is a non-negative value.
+	 * @since 0.08
+	 */
 	public static double weightToEnergy(double weight)
 	{
 		return -Math.log(weight);

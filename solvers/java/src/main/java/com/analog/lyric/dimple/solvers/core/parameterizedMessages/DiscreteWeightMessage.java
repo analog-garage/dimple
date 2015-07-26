@@ -228,6 +228,12 @@ public class DiscreteWeightMessage extends DiscreteMessage
 	}
 	
 	@Override
+	public final boolean hasZeroWeight(int i)
+	{
+		return _message[i] == 0.0;
+	}
+	
+	@Override
 	public double sumOfWeights()
 	{
 		double sum = 0.0;

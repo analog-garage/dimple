@@ -89,6 +89,7 @@ public class TestSNode extends DimpleTestBase
 			return _parent;
 		}
 		
+		@Deprecated
 		@Override
 		public double getScore()
 		{

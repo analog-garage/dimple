@@ -94,6 +94,7 @@ public class JunctionTreeSolverFactor extends SFactorBase
 		return _root;
 	}
 	
+	@Deprecated
 	@Override
 	public double getScore()
 	{

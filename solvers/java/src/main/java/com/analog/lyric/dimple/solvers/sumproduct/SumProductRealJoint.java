@@ -62,6 +62,7 @@ public class SumProductRealJoint extends SRealJointVariableBase
 		return m.getMean();
 	}
 	
+	@Deprecated
 	@Override
 	public double getScore()
 	{

@@ -700,6 +700,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		// Set the default sampler
 	}
 
+	@Deprecated
 	@Override
 	public final double getScore()
 	{

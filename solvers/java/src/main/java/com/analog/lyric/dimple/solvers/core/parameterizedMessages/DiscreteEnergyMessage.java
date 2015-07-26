@@ -19,8 +19,12 @@ package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 import static com.analog.lyric.math.Utilities.*;
 
 import java.util.Arrays;
+import java.util.List;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.data.IDatum;
+import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.math.Utilities;
 
@@ -82,6 +86,55 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 	{
 		this(new double[domain.size()]);
 		setFrom(domain, datum);
+	}
+	
+	/**
+	 * Converts data list into a single {@link DiscreteEnergyMessage}
+	 * <p>
+	 * @param domain is the domain of the variable used for evaluating {@link IUnaryFactorFunction} data.
+	 * @param data is a list of data that is compatible with specified {@code domain}.
+	 * @return if {@code data} contains a single element that is already a {@link DiscreteEnergyMessage} it
+	 * will be returned, otherwise this is the same as {@link #createFrom(DiscreteDomain, List)}.
+	 * @since 0.08
+	 */
+	public static @Nullable DiscreteEnergyMessage convertFrom(DiscreteDomain domain, List<IDatum> data)
+	{
+		if (data.size() == 1)
+		{
+			IDatum datum = data.get(0);
+			if (datum instanceof DiscreteEnergyMessage)
+			{
+				return (DiscreteEnergyMessage)datum;
+			}
+		}
+		
+		return createFrom(domain, data);
+	}
+
+	/**
+	 * Creates new {@link DiscreteEnergyMessage} from data.
+	 * <p>
+	 * @param domain is the domain of the variable used for evaluating {@link IUnaryFactorFunction} data.
+	 * @param data is a list of data that is compatible with specified {@code domain}.
+	 * @return null if {@code data} is empty, otherwise creates a new {@link DiscreteEnergyMessage} that
+	 * contains the added energy values from all of the elements.
+	 * @since 0.08
+	 */
+	public static @Nullable DiscreteEnergyMessage createFrom(DiscreteDomain domain, List<IDatum> data)
+	{
+		DiscreteEnergyMessage msg = null;
+		
+		final int n = data.size();
+		if (n > 0)
+		{
+			msg = new DiscreteEnergyMessage(domain, data.get(0));
+			for (int i = 1; i < n; ++i)
+			{
+				msg.addFrom(new DiscreteEnergyMessage(domain, data.get(i)));
+			}
+		}
+		
+		return msg;
 	}
 	
 	@Override
@@ -208,6 +261,12 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 		System.arraycopy(energies, 0, _message, 0, length);
 	
 		forgetNormalizationEnergy();
+	}
+
+	@Override
+	public final boolean hasZeroWeight(int i)
+	{
+		return _message[i] == Double.POSITIVE_INFINITY;
 	}
 	
 	@Override

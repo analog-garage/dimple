@@ -61,6 +61,7 @@ public abstract class ProxySolverFactor<Delegate extends ISolverFactor>
 		return requireDelegate("getInternalEnergy").getInternalEnergy();
 	}
 
+	@Deprecated
 	@Override
 	public double getScore()
 	{

@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.lp;
 
+import static com.analog.lyric.math.Utilities.*;
+
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -26,6 +28,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.solvers.core.PriorAndCondition;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
@@ -121,24 +124,27 @@ public class LPDiscrete extends SDiscreteVariableBase
 		{
 			final int size = getModelObject().getDomain().size();
 			beliefs = new double[size];
-			
-			Value fixedValue = getKnownValue();
+	
+			PriorAndCondition known = getPriorAndCondition();
+			Value fixedValue = known.value();
 			if (fixedValue != null)
 			{
 				beliefs[fixedValue.getIndex()] = 1.0;
 			}
 			else
 			{
-				DiscreteMessage prior = getPrior();
+				DiscreteMessage prior = toEnergyMessage(known);
 				if (prior != null)
 				{
 					prior.getWeights(beliefs);
+					normalize(beliefs);
 				}
 				else
 				{
 					Arrays.fill(beliefs,1.0/size);
 				}
 			}
+			known.release();
 		}
 
 		return beliefs;
@@ -220,7 +226,9 @@ public class LPDiscrete extends SDiscreteVariableBase
 	int computeValidAssignments()
 	{
 		final int domlength = getDomain().size();
-		final Value fixedValue = getKnownValue();
+		
+		PriorAndCondition known = getPriorAndCondition();
+		final Value fixedValue = known.value();
 		
 		if (fixedValue != null)
 		{
@@ -229,18 +237,19 @@ public class LPDiscrete extends SDiscreteVariableBase
 			invalidAssignments.set(fixedValue.getIndex());
 			invalidAssignments.flip(0, domlength);
 			_invalidAssignments = invalidAssignments;
+			known.release();
 			return 0;
 		}
 		
-		DiscreteMessage prior = getPrior();
-
+		DiscreteMessage prior = toEnergyMessage(known);
+		known = known.release();
+		
 		int cardinality = 0;
 		if (prior != null)
 		{
 			for (int i = domlength; --i >=0 ;)
 			{
-				double w = prior.getWeight(i);
-				if (w == 0.0)
+				if (prior.hasZeroWeight(i))
 				{
 					BitSet invalidAssignments = _invalidAssignments;
 					if (invalidAssignments == null)
@@ -287,14 +296,15 @@ public class LPDiscrete extends SDiscreteVariableBase
 		{
 			_lpVarIndex = start;
 
-			Value value = getKnownValue();
+			PriorAndCondition known = getPriorAndCondition();
+			final Value value = known.value();
 			if (value != null)
 			{
 				objectiveFunction[start++] = 0;
 			}
 			else
 			{
-				DiscreteMessage prior = getPrior();
+				DiscreteMessage prior = toEnergyMessage(known);
 				if (prior != null)
 				{
 					for (double energy : prior.getEnergies())
@@ -312,6 +322,7 @@ public class LPDiscrete extends SDiscreteVariableBase
 					start += size;
 				}
 			}
+			known = known.release();
 		}
 		else
 		{
@@ -463,18 +474,26 @@ public class LPDiscrete extends SDiscreteVariableBase
 	 */
 	boolean hasZeroWeight(int index)
 	{
-		Value fixedValue = getKnownValue();
+		PriorAndCondition known = getPriorAndCondition();
+		Value fixedValue = known.value();
+		
+		boolean result = false;
+		
 		if (fixedValue != null)
 		{
-			return index != fixedValue.getIndex();
+			result = index != fixedValue.getIndex();
 		}
-		
-		DiscreteMessage prior = getPrior();
-		if (prior != null)
+		else
 		{
-			return prior.getWeight(index) == 0.0;
+			DiscreteMessage prior = toEnergyMessage(known);
+			if (prior != null)
+			{
+				result = prior.hasZeroWeight(index);
+			}
 		}
 		
-		return false;
+		known.release();
+		
+		return result;
 	}
 }

@@ -684,6 +684,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		return _model.getPriorFunction() != null;
 	}
 	
+	@Deprecated
 	@Override
 	public final double getScore()
 	{

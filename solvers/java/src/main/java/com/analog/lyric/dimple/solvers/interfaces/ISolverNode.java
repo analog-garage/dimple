@@ -84,7 +84,9 @@ public interface ISolverNode extends ISolverFactorGraphChild, IOptionHolder, ISo
 	 */
 	public int getSiblingCount();
 	
+	@Deprecated
 	public double getScore() ;
+	
     public double getInternalEnergy() ;
     public double getBetheEntropy() ;
     

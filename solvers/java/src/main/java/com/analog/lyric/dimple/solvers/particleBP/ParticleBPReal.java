@@ -596,6 +596,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 		_beta = beta;
 	}
 
+	@Deprecated
 	@Override
 	public double getScore()
 	{

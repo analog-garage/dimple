@@ -30,8 +30,6 @@ import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import cern.colt.list.IntArrayList;
-
 import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.events.DimpleEvent;
 import com.analog.lyric.dimple.events.IDimpleEventListener;
@@ -45,6 +43,8 @@ import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.MapList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.UnmodifiableIterator;
+
+import cern.colt.list.IntArrayList;
 
 public abstract class Node extends FactorGraphChild implements INode
 {
@@ -319,6 +319,7 @@ public abstract class Node extends FactorGraphChild implements INode
 		return requireSolver("getInternalEnergy").getInternalEnergy();
 	}
 	
+	@SuppressWarnings("deprecation") // FIXME - deprecated this method as well
 	@Override
 	public final double getScore()
 	{

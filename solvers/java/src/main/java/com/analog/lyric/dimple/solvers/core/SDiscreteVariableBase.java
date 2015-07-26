@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import java.util.List;
+
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.data.IDatum;
@@ -24,6 +26,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergyMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.interfaces.IDiscreteSolverVariable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
@@ -70,10 +73,14 @@ public abstract class SDiscreteVariableBase extends SVariableBase<Discrete> impl
 	@Override
 	public int getValueIndex()
 	{
-		// TODO - look in conditioning layer as well...
-		int fixedIndex = _model.getPriorIndex();
-		if (fixedIndex >= 0)
-			return fixedIndex;
+		PriorAndCondition known = getPriorAndCondition();
+		final Value value = known.value();
+		known = known.release();
+		
+		if (value != null)
+		{
+			return value.getIndex();
+		}
 					
 		double[] belief = getBelief();
 		int numValues = belief.length;
@@ -158,6 +165,7 @@ public abstract class SDiscreteVariableBase extends SVariableBase<Discrete> impl
 	 * @since 0.08
 	 * @category internal
 	 */
+	@Deprecated
 	@Internal
 	public @Nullable DiscreteMessage getPrior()
 	{
@@ -172,5 +180,29 @@ public abstract class SDiscreteVariableBase extends SVariableBase<Discrete> impl
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Converts data for variable to a single {@link DiscreteEnergyMessage}
+	 * <p>
+	 * Simply calls {@link DiscreteEnergyMessage#convertFrom(DiscreteDomain, List)} with
+	 * this variable's {@linkplain #getDomain domain}.
+	 * <p>
+	 * @param data is any list of data compatible with this variable, but is typically expected to be
+	 * a {@link PriorAndCondition} instance.
+	 * @since 0.08
+	 * @see #getPriorAndCondition()
+	 */
+	protected @Nullable DiscreteEnergyMessage toEnergyMessage(List<IDatum> data)
+	{
+		return DiscreteEnergyMessage.convertFrom(getDomain(),data);
+	}
+	
+	protected @Nullable DiscreteEnergyMessage knownEnergyMessage()
+	{
+		final PriorAndCondition known = getPriorAndCondition();
+		final DiscreteEnergyMessage msg = toEnergyMessage(known);
+		known.release();
+		return msg;
 	}
 }

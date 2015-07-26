@@ -32,8 +32,11 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.solvers.core.PriorAndCondition;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergyMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.dimple.solvers.lp.IntegerEquation;
@@ -281,9 +284,11 @@ public class LPSolverTestCase extends DimpleTestBase
 		{
 			LPDiscrete svar = requireNonNull(solver.getSolverVariable(var));
 			double[] belief = svar.getBelief();
-			if (svar.hasFixedValue())
+			final PriorAndCondition known = svar.getPriorAndCondition();
+			Value fixedValue = known.value();
+			if (fixedValue != null)
 			{
-				int vali = svar.getValueIndex();
+				int vali = fixedValue.getIndex();
 				for (int i = belief.length; --i>=0;)
 				{
 					if (i == vali)
@@ -298,7 +303,7 @@ public class LPSolverTestCase extends DimpleTestBase
 			}
 			else
 			{
-				DiscreteMessage prior = svar.getPrior();
+				DiscreteMessage prior = DiscreteEnergyMessage.convertFrom(svar.getDomain(), known);
 				for (int i = svar.getModelObject().getDomain().size(); --i>=0;)
 				{
 					int lpVar = svar.domainIndexToLPVar(i);
@@ -315,6 +320,7 @@ public class LPSolverTestCase extends DimpleTestBase
 					}
 				}
 			}
+			known.release();
 		}
 		
 		solver.clearLPState();

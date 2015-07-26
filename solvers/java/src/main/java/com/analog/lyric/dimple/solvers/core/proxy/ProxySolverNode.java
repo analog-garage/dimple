@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.core.proxy;
 
-import net.jcip.annotations.NotThreadSafe;
-
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.events.SolverEventSource;
@@ -25,6 +23,8 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+
+import net.jcip.annotations.NotThreadSafe;
 
 /**
  * @since 0.05
@@ -114,6 +114,7 @@ public abstract class ProxySolverNode<Delegate extends ISolverNode>
 		return getModelObject().getSiblingCount();
 	}
 	
+	@Deprecated
 	@Override
 	public double getScore()
 	{

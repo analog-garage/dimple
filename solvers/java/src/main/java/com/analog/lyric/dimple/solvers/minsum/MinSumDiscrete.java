@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.options.BPOptions;
+import com.analog.lyric.dimple.solvers.core.PriorAndCondition;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 
@@ -87,11 +88,13 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 	{
 		final double[] outMsgs = _outMsgs[outPortNum];
 
-		final Value fixedValue = getKnownValue();
+		PriorAndCondition known = getPriorAndCondition();
+		final Value fixedValue = known.value();
 		if (fixedValue != null)
 		{
 			Arrays.fill(outMsgs, MessageConverter.maxPotential);
 			outMsgs[fixedValue.getIndex()] = 0.0;
+			known.release();
 			return;
 		}
 		
@@ -107,8 +110,8 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 			final double[] savedOutMsgArray = DimpleEnvironment.doubleArrayCache.allocateAtLeast(numValue);
 			System.arraycopy(outMsgs, 0, savedOutMsgArray, 0, numValue);
 
-			copyPrior(outMsgs);
-
+			copyPrior(known, outMsgs);
+			
 			int port = numPorts;
 			while (--port > outPortNum)
 			{
@@ -139,8 +142,8 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		}
 		else
 		{
-			copyPrior(outMsgs);
-
+			copyPrior(known, outMsgs);
+			
 			int port = numPorts;
 			while (--port > outPortNum)
 			{
@@ -159,6 +162,8 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 				}
 			}
 		}
+
+		known = known.release();
 
 		// Normalize the min
 		double minPotential = outMsgs[0];
@@ -181,7 +186,8 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 	@Override
 	protected void doUpdate()
 	{
-		final Value fixedValue = getKnownValue();
+		PriorAndCondition known = getPriorAndCondition();
+		final Value fixedValue = known.value();
 		if (fixedValue != null)
 		{
 			final int index = fixedValue.getIndex();
@@ -190,6 +196,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 				Arrays.fill(outMsg, MessageConverter.maxPotential);
 				outMsg[index] = 0.0;
 			}
+			known.release();
 			return;
 		}
 
@@ -200,8 +207,9 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		final DoubleArrayCache cache = DimpleEnvironment.doubleArrayCache;
 		final double[] beliefs = cache.allocateAtLeast(numValue);
 		
-		copyPrior(beliefs);
-
+		copyPrior(known, beliefs);
+		known = known.release();
+		
 		for (int port = numPorts; --port>=0;)
 		{
 			final double[] inMsgs = _inMsgs[port];
@@ -295,14 +303,17 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		final int numValue = getDomain().size();
 		final double[] outBelief = new double[numValue];
 
-		final Value fixedValue = getKnownValue();
+		PriorAndCondition known = getPriorAndCondition();
+		final Value fixedValue = known.value();
 		if (fixedValue != null)
 		{
 			outBelief[fixedValue.getIndex()] = 1.0;
+			known.release();
 			return outBelief;
 		}
 
-		copyPrior(outBelief);
+		copyPrior(known, outBelief);
+		known = known.release();
 		int numPorts = _model.getSiblingCount();
 
 		for (int i = 0; i < numValue; i++)
@@ -319,6 +330,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		return MessageConverter.toProb(outBelief);
 	}
 
+	@Deprecated
 	@Override
 	public double getScore()
 	{
@@ -328,7 +340,7 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		DiscreteMessage prior = getPrior();
 		if (prior != null)
 			return MessageConverter.clipEnergy(prior.getEnergy(getGuessIndex()));
-
+		
 		return 0;
 	}
 
@@ -393,9 +405,9 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
     	}
     }
 
-    private void copyPrior(double[] out)
+    private void copyPrior(PriorAndCondition known, double[] out)
     {
-    	final DiscreteMessage prior = getPrior();
+    	final DiscreteMessage prior = toEnergyMessage(known);
 		if (prior != null)
 		{
 			prior.getEnergies(out);
