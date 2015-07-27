@@ -22,7 +22,10 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.DoubleArrayCache;
+import com.analog.lyric.dimple.data.DataStack;
+import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
+import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.options.BPOptions;
@@ -330,18 +333,39 @@ public class MinSumDiscrete extends SDiscreteVariableDoubleArray
 		return MessageConverter.toProb(outBelief);
 	}
 
+	/**
+	 * @deprecated as of release 0.08 scoring should be done via {@link DataStack#computeTotalEnergy}.
+	 */
 	@Deprecated
 	@Override
 	public double getScore()
 	{
-		if (_model.hasFixedValue())
+		PriorAndCondition known = getPriorAndCondition();
+		IDatum prior = known.prior();
+		IDatum condition = known.condition();
+		known.release();
+
+		if (prior instanceof Value)
+		{
+			// There are no layers before the prior, so there is nothing to evaluate.
 			return 0;
+		}
 		
-		DiscreteMessage prior = getPrior();
-		if (prior != null)
-			return MessageConverter.clipEnergy(prior.getEnergy(getGuessIndex()));
+		double score = 0;
 		
-		return 0;
+		Value value =
+			condition instanceof Value ? (Value)condition : Value.createWithIndex(getDomain(), getGuessIndex());
+		
+		if (prior instanceof IUnaryFactorFunction)
+		{
+			score += MessageConverter.clipEnergy(((IUnaryFactorFunction)prior).evalEnergy(value));
+		}
+		if (condition instanceof IUnaryFactorFunction)
+		{
+			score += MessageConverter.clipEnergy(((IUnaryFactorFunction)condition).evalEnergy(value));
+		}
+		
+		return score;
 	}
 
 

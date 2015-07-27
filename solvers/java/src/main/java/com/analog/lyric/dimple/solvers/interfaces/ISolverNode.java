@@ -84,6 +84,10 @@ public interface ISolverNode extends ISolverFactorGraphChild, IOptionHolder, ISo
 	 */
 	public int getSiblingCount();
 	
+	/**
+	 * @deprecated as of release 0.08, scoring should be done via
+	 * {@link com.analog.lyric.dimple.data.DataStack#computeTotalEnergy() DataStack.computeTotalEnergy()}
+	 */
 	@Deprecated
 	public double getScore() ;
 	
