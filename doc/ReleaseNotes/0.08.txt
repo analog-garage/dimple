@@ -23,6 +23,8 @@ Significant Changes Since v0.07
     - Guava 14 -> 18
     - Apache commons math 3.2 -> 3.5
     - JTransforms 2.3 -> 3.0
+    
+* Removed experimental javascript API that was introduced in 0.07 and moved to an external project 'dimplejs'.
 
 Significant Bug Fixes Since v0.07
 ---------------------------------
