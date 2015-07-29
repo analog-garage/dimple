@@ -17,16 +17,16 @@
 package com.analog.lyric.dimple.exceptions;
 
 /**
- * Exception indicating inability to normalize parameters of a distribution.
+ * Exception indicating an invalid parameterization of a probability distribution.
  * <p>
  * @since 0.08
  * @author Christopher Barber
  */
-public class NormalizationException extends InvalidDistributionException
+public class InvalidDistributionException extends DimpleException
 {
 	private static final long serialVersionUID = 1L;
 
-	public NormalizationException(String format, Object ... args)
+	public InvalidDistributionException(String format, Object ... args)
 	{
 		super(format, args);
 	}
