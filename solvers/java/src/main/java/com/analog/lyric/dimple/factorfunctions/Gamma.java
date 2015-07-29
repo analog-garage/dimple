@@ -42,6 +42,8 @@ public class Gamma extends UnaryFactorFunction implements IParametricFactorFunct
 {
 	private static final long serialVersionUID = 1L;
 
+	// TODO replace fields with GammaParameters
+	
 	protected double _alpha;
 	protected double _beta;
 	protected double _alphaMinusOne;

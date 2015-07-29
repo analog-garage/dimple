@@ -22,6 +22,7 @@ import static java.util.Objects.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -309,7 +310,9 @@ public class GibbsRealJoint extends SRealJointVariableBase
 				sedges[portIndex] =  sedge;
 				factor.updateEdgeMessage(edge, sedge);	// Run updateEdgeMessage for each neighboring factor
 			}
-			setCurrentSample(conjugateSampler.nextSample(sedges, _model.getPriorFunction()));
+			PriorAndCondition inputs = getPriorAndCondition();
+			setCurrentSample(conjugateSampler.nextSample(sedges, inputs));
+			inputs.release();
 			_updateCount++;
 		}
 
@@ -443,8 +446,9 @@ public class GibbsRealJoint extends SRealJointVariableBase
 				factor.updateEdgeMessage(edgeState, sedge);	// Run updateEdgeMessage for each neighboring factor
 			}
 		}
-		((IRealJointConjugateSampler)conjugateSampler).aggregateParameters(outputMessage, sedges,
-			_model.getPriorFunction());
+		PriorAndCondition inputs = getPriorAndCondition();
+		((IRealJointConjugateSampler)conjugateSampler).aggregateParameters(outputMessage, sedges, inputs);
+		inputs.release();
 	}
 
 	/*--------------------------
@@ -504,30 +508,30 @@ public class GibbsRealJoint extends SRealJointVariableBase
 			return;
 		}
 
-		// If the variable has an input, sample from that (bounded by the domain)
-		final IUnaryFactorFunction inputJoint = _model.getPriorFunction();
+		// If the variable has a prior, sample from that (bounded by the domain)
+		final IUnaryFactorFunction priorJoint = _model.getPriorFunction();
 		
-		List<? extends IUnaryFactorFunction> inputArray = null;
-		if (inputJoint instanceof UnaryJointRealFactorFunction)
+		List<? extends IUnaryFactorFunction> priorArray = null;
+		if (priorJoint instanceof UnaryJointRealFactorFunction)
 		{
-			inputArray = ((UnaryJointRealFactorFunction)inputJoint).realFunctions();
+			priorArray = ((UnaryJointRealFactorFunction)priorJoint).realFunctions();
 		}
-		else if (inputJoint instanceof MultivariateNormalParameters)
+		else if (priorJoint instanceof MultivariateNormalParameters)
 		{
-			inputArray = ((MultivariateNormalParameters)inputJoint).getDiagonalNormals();
+			priorArray = ((MultivariateNormalParameters)priorJoint).getDiagonalNormals();
 		}
 
-		if (inputArray != null)
+		if (priorArray != null)
 		{
 			for (int i = 0; i < _numRealVars; i++)
 			{
 				RealDomain realDomain = _domain.getRealDomain(i);
-				IUnaryFactorFunction input = inputArray.get(i);
+				IUnaryFactorFunction prior = priorArray.get(i);
 
 				// If there are inputs, see if there's an available conjugate sampler
 				IRealConjugateSampler inputConjugateSampler = null;		// Don't use the global conjugate sampler since other factors might not be conjugate
-				if (input != null)
-					inputConjugateSampler = RealConjugateSamplerRegistry.findCompatibleSampler(input);
+				if (prior != null)
+					inputConjugateSampler = RealConjugateSamplerRegistry.findCompatibleSampler(prior);
 
 				// Determine if there are bounds
 				double hi = realDomain.getUpperBound();
@@ -536,7 +540,8 @@ public class GibbsRealJoint extends SRealJointVariableBase
 				if (inputConjugateSampler != null)
 				{
 					// Sample from the input if there's an available sampler
-					double sampleValue = inputConjugateSampler.nextSample(new ISolverEdgeState[0], input);
+					double sampleValue = inputConjugateSampler.nextSample(new ISolverEdgeState[0],
+						Collections.singletonList(prior));
 
 					// If there are also bounds, clip at the bounds
 					if (sampleValue > hi) sampleValue = hi;
@@ -551,14 +556,15 @@ public class GibbsRealJoint extends SRealJointVariableBase
 				}
 			}
 		}
-		else if (inputJoint != null)		// Input is a joint input
+		else if (priorJoint != null)		// Input is a joint input
 		{
 			// Don't use the global conjugate sampler since other factors might not be conjugate
 			IRealJointConjugateSampler inputConjugateSampler =
-				RealJointConjugateSamplerRegistry.findCompatibleSampler(inputJoint);
+				RealJointConjugateSamplerRegistry.findCompatibleSampler(priorJoint);
 			if (inputConjugateSampler != null)
 			{
-				double[] sampleValue = inputConjugateSampler.nextSample(new ISolverEdgeState[0], inputJoint);
+				double[] sampleValue =
+					inputConjugateSampler.nextSample(new ISolverEdgeState[0], Collections.singletonList(priorJoint));
 				
 				// Clip if necessary
 				for (int i = 0; i < _numRealVars; i++)

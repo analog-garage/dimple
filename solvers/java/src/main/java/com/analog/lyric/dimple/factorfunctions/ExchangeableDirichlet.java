@@ -48,6 +48,8 @@ public class ExchangeableDirichlet extends UnaryFactorFunction
 {
 	private static final long serialVersionUID = 1L;
 
+	// TODO - replace fields with DirichletParameters object
+	
 	private int _dimension;
 	private double _alpha;
 	private double _logBetaAlpha;

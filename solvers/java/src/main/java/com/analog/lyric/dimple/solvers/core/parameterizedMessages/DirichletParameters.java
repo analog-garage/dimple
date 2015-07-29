@@ -25,7 +25,9 @@ import org.apache.commons.math3.special.Gamma;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
+import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.factorfunctions.Dirichlet;
 import com.analog.lyric.dimple.model.values.Value;
 import com.google.common.math.DoubleMath;
 
@@ -67,6 +69,20 @@ public class DirichletParameters extends ParameterizedMessageBase
 		return new DirichletParameters(this);
 	}
 	
+	public static @Nullable DirichletParameters fromDatum(IDatum datum)
+	{
+		if (datum instanceof DirichletParameters)
+		{
+			return (DirichletParameters)datum;
+		}
+		else if (datum instanceof Dirichlet)
+		{
+			return new DirichletParameters(((Dirichlet)datum).getAlphaMinusOneArray());
+		}
+		
+		return null;
+	}
+	
 	/*---------
 	 * IEquals
 	 */
@@ -95,6 +111,8 @@ public class DirichletParameters extends ParameterizedMessageBase
 	@Override
 	public double evalEnergy(Value value)
 	{
+		// TODO optimize exchangeable case where alphas are the same
+		
 		final double[] x = value.getDoubleArray();
 
 		final int n = _alphaMinusOne.length;

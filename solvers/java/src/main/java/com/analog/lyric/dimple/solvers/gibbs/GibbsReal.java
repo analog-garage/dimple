@@ -21,8 +21,10 @@ import static java.util.Objects.*;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -30,6 +32,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.ReleasableIterator;
+import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
@@ -48,6 +51,7 @@ import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.IRealConjugateFactor;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.RealConjugateSamplerRegistry;
@@ -277,7 +281,9 @@ public class GibbsReal extends SRealVariableBase
 				sedges[portIndex] =  sedge;
 				factor.updateEdgeMessage(edge, sedge);	// Run updateEdgeMessage for each neighboring factor
 			}
-			double nextSampleValue = conjugateSampler.nextSample(sedges, _model.getPriorFunction());
+			PriorAndCondition inputs = getPriorAndCondition();
+			double nextSampleValue = conjugateSampler.nextSample(sedges, inputs);
+			inputs.release();
 			if (nextSampleValue != _currentSample.getDouble())	// Would be exactly equal if not changed since last value tested
 				setCurrentSample(nextSampleValue);
 		}
@@ -423,7 +429,9 @@ public class GibbsReal extends SRealVariableBase
 				factor.updateEdgeMessage(edgeState, sedge);	// Run updateEdgeMessage for each neighboring factor
 			}
 		}
-		((IRealConjugateSampler)conjugateSampler).aggregateParameters(outputMessage, sedges, _model.getPriorFunction());
+		PriorAndCondition known = getPriorAndCondition();
+		((IConjugateSampler)conjugateSampler).aggregateParameters(outputMessage, sedges, known);
+		known.release();
 	}
 	
 	/*--------------------------
@@ -486,9 +494,11 @@ public class GibbsReal extends SRealVariableBase
 
 		// If there are inputs, see if there's an available conjugate sampler
 		IRealConjugateSampler inputConjugateSampler = null;		// Don't use the global conjugate sampler since other factors might not be conjugate
-		final IUnaryFactorFunction input = _model.getPriorFunction();
-		if (input != null)
-			inputConjugateSampler = RealConjugateSamplerRegistry.findCompatibleSampler(input);
+		final IUnaryFactorFunction prior = _model.getPriorFunction();
+		if (prior != null)
+		{
+			inputConjugateSampler = RealConjugateSamplerRegistry.findCompatibleSampler(prior);
+		}
 
 		// FIXME - also check conditioning layer
 		
@@ -499,7 +509,12 @@ public class GibbsReal extends SRealVariableBase
 		if (inputConjugateSampler != null)
 		{
 			// Sample from the input if there's an available sampler
-			double sampleValue = inputConjugateSampler.nextSample(new ISolverEdgeState[0], input);
+			List<? extends IDatum> priorList;
+			if (prior == null)
+				priorList = Collections.emptyList();
+			else
+				priorList = Collections.singletonList(prior);
+			double sampleValue = inputConjugateSampler.nextSample(new ISolverEdgeState[0], priorList);
 			
 			// If there are also bounds, clip at the bounds
 			if (sampleValue > hi) sampleValue = hi;

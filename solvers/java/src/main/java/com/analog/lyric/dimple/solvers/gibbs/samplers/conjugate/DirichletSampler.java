@@ -18,14 +18,18 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
 import static java.util.Objects.*;
 
+import java.util.List;
+
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Dirichlet;
 import com.analog.lyric.dimple.factorfunctions.ExchangeableDirichlet;
 import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
@@ -38,26 +42,28 @@ public class DirichletSampler implements IRealJointConjugateSampler
 	private int _dimension = -1;
 	
 	@Override
-	public final double[] nextSample(ISolverEdgeState[] edges, @Nullable IUnaryFactorFunction input)
+	public final double[] nextSample(ISolverEdgeState[] edges, List<? extends IDatum> inputs)
 	{
-		aggregateParameters(_parameters, edges, input);
+		aggregateParameters(_parameters, edges, inputs);
 		return nextSample(_parameters);
 	}
 	
 	@Override
 	public final void aggregateParameters(IParameterizedMessage aggregateParameters, ISolverEdgeState[] edges,
-		@Nullable IUnaryFactorFunction input)
+		List<? extends IDatum> inputs)
 	{
 		if (_dimension < 0)	// Just do this once
-			setDimension(edges, input);
-		int dimension = _dimension;
+			setDimension(edges, inputs);
+		final int dimension = _dimension;
 
 		DirichletParameters parameters = (DirichletParameters)aggregateParameters;
 		if (parameters.getSize() != dimension)
 			parameters.setSize(dimension);
 		parameters.setNull();
 		
-		if (input != null)
+		// TODO use add from
+		
+		for (IDatum input : inputs)
 		{
 			double[] inputParameters;
 			if (input instanceof DirichletParameters)
@@ -143,19 +149,30 @@ public class DirichletSampler implements IRealJointConjugateSampler
 	}
 	
 	@SuppressWarnings("null")
-	private void setDimension(ISolverEdgeState[] sedges, @Nullable IUnaryFactorFunction input)
+	private void setDimension(ISolverEdgeState[] sedges, List<? extends IDatum> inputs)
 	{
 		int numEdges = sedges.length;
 		int dimension = 0;
 		if (numEdges > 0)
 			dimension = ((DirichletParameters)sedges[0].getFactorToVarMsg()).getSize();
-		else if (input != null)
-			if (input instanceof Dirichlet)
+		else if (inputs.size() > 0)
+		{
+			IDatum input = inputs.get(0);
+			if (input instanceof DirichletParameters)
+				dimension = ((DirichletParameters)input).getSize();
+			else if (input instanceof Value)
+				dimension = ((Value)input).getDoubleArray().length;
+			else if (input instanceof Dirichlet)
 				dimension = ((Dirichlet)input).getDimension();
-			else // ExchangeableDirichlet
+			else if (input instanceof ExchangeableDirichlet)
 				dimension = ((ExchangeableDirichlet)input).getDimension();
-		else
-			throw new DimpleException("Both port and input arguments are empty");
+		}
+		
+		if (dimension == 0)
+		{
+			throw new DimpleException("Cannot determine Dirichlet dimension from edges or inputs.");
+		}
+		
 		_parameters.setSize(dimension);
 		_dimension = dimension;
 	}

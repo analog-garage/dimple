@@ -18,8 +18,11 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
 import static java.util.Objects.*;
 
+import java.util.List;
+
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.factorfunctions.Beta;
 import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.domains.RealDomain;
@@ -34,20 +37,22 @@ public class BetaSampler implements IRealConjugateSampler
 	private final BetaParameters _parameters = new BetaParameters();
 
 	@Override
-	public final double nextSample(ISolverEdgeState[] edges, @Nullable IUnaryFactorFunction input)
+	public final double nextSample(ISolverEdgeState[] edges, List<? extends IDatum> inputs)
 	{
-		aggregateParameters(_parameters, edges, input);
+		aggregateParameters(_parameters, edges, inputs);
 		return nextSample(_parameters);
 	}
 	
 	@Override
 	public final void aggregateParameters(IParameterizedMessage aggregateParameters, ISolverEdgeState[] edges,
-		@Nullable IUnaryFactorFunction input)
+		List<? extends IDatum> inputs)
 	{
+		// TODO use addFrom
+		
 		double alphaMinusOne = 0;
 		double betaMinusOne = 0;
 		
-		if (input != null)
+		for (IDatum input : inputs)
 		{
 			if (input instanceof BetaParameters)
 			{

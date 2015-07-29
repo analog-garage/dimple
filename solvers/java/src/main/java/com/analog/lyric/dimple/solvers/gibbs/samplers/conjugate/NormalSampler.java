@@ -18,8 +18,11 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
 import static java.util.Objects.*;
 
+import java.util.List;
+
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.domains.RealDomain;
@@ -34,20 +37,20 @@ public class NormalSampler implements IRealConjugateSampler
 	private final NormalParameters _parameters = new NormalParameters();
 	
 	@Override
-	public final double nextSample(ISolverEdgeState[] edges, @Nullable IUnaryFactorFunction input)
+	public final double nextSample(ISolverEdgeState[] edges, List<? extends IDatum> inputs)
 	{
-		aggregateParameters(_parameters, edges, input);
+		aggregateParameters(_parameters, edges, inputs);
 		return nextSample(_parameters);
 	}
 	
 	@Override
 	public final void aggregateParameters(IParameterizedMessage aggregateParameters, ISolverEdgeState[] edges,
-		@Nullable IUnaryFactorFunction input)
+		List<? extends IDatum> inputs)
 	{
 		double totalPrecision = 0;
 		double totalMeanPrecisionProduct = 0;
 		
-		if (input != null)
+		for (IDatum input : inputs)
 		{
 			double mean, precision;
 			

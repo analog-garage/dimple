@@ -20,7 +20,6 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
-import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.core.PriorAndCondition;
@@ -147,22 +146,21 @@ public class SumProductReal extends SRealVariableBase
 
     private @Nullable NormalParameters priorToNormal(@Nullable IDatum prior)
     {
-    	if (prior instanceof NormalParameters)
+    	NormalParameters result = null;
+    	
+    	if (prior != null)
     	{
-    		return (NormalParameters)prior;
-    	}
-    	else if (prior instanceof Normal)
-    	{
-    		return ((Normal)prior).getParameters();
-    	}
-    	else if (prior != null)
-    	{
-    		DimpleEnvironment.logError(
-    			"Ignoring prior on %s: sum-product reals only supports NormalParameters for priors but got %s",
-    			_model, prior);
+    		result = NormalParameters.fromDatum(prior);
+
+    		if (result == null)
+    		{
+    			DimpleEnvironment.logError(
+    				"Ignoring prior on %s: sum-product reals only supports NormalParameters for priors but got %s",
+    				_model, prior);
+    		}
     	}
     	
-    	return null;
+    	return result;
     }
     
 }

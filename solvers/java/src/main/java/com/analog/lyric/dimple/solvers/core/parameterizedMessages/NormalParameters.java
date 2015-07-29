@@ -21,7 +21,9 @@ import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.exceptions.InvalidDistributionException;
+import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
@@ -98,6 +100,33 @@ public class NormalParameters extends ParameterizedMessageBase
 		return new NormalParameters(this);
 	}
 
+	/**
+	 * Converts input to a {@link NormalParameters} or return null.
+	 * <p>
+	 * If {@code datum} is a {@link NormalParameters} or {@link Normal}, this returns
+	 * the parameters. If it is a {@link Value} this returns a new instance with mean
+	 * set from value and infinite precision. Otherwise returns null.
+	 * <p>
+	 * @since 0.08
+	 */
+	public static @Nullable NormalParameters fromDatum(IDatum datum)
+	{
+		if (datum instanceof NormalParameters)
+		{
+			return (NormalParameters)datum;
+		}
+		else if (datum instanceof Normal)
+		{
+			return ((Normal)datum).getParameters();
+		}
+		else if (datum instanceof Value)
+		{
+			return new NormalParameters(((Value)datum).getDouble(), Double.POSITIVE_INFINITY);
+		}
+		
+		return null;
+	}
+	
 	/*----------------
 	 * IDatum methods
 	 */

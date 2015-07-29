@@ -16,14 +16,18 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
+import java.util.List;
+
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 
+// TODO - Make this a ConstructorRegistry implementation...
 public class RealConjugateSamplerRegistry
 {
 	// LIST	ALL RealConjugateSamplerFactory CLASSES HERE
-	// TODO: Is there a way to do this with reflection?
+	// TODO: Is there a way to do this with reflection? [Yes, see above]
 	public static final IRealConjugateSamplerFactory[] availableConjugateSamplers =
 	{
 		NormalSampler.factory,
@@ -43,14 +47,39 @@ public class RealConjugateSamplerRegistry
 		return null;
 	}
 
+	public static @Nullable IRealConjugateSampler findCompatibleSampler(List<IDatum> inputs)
+	{
+		final int n = availableConjugateSamplers.length;
+
+		outer:
+		for (int i = 0; i < n; ++i)
+		{
+			final IRealConjugateSamplerFactory factory = availableConjugateSamplers[i];
+			
+			for (IDatum input : inputs)
+			{
+				if (input instanceof IUnaryFactorFunction)
+				{
+					if (!factory.isCompatible(((IUnaryFactorFunction)input)))
+					{
+						continue outer;
+					}
+				}
+			}
+			
+			return factory.create();
+		}
+
+		return null;
+	}
 	
 	// Get a sampler by name; assumes it is located in this package
-	public static @Nullable IRealConjugateSampler get(String samplerName)
+	public static @Nullable IConjugateSampler get(String samplerName)
 	{
 		String fullQualifiedName = RealConjugateSamplerRegistry.class.getPackage().getName() + "." + samplerName;
 		try
 		{
-			IRealConjugateSampler sampler = (IRealConjugateSampler)(Class.forName(fullQualifiedName).getConstructor().newInstance());
+			IConjugateSampler sampler = (IConjugateSampler)(Class.forName(fullQualifiedName).getConstructor().newInstance());
 			return sampler;
 		}
 		catch (Exception e)

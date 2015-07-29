@@ -42,6 +42,8 @@ public class Beta extends UnaryFactorFunction implements IParametricFactorFuncti
 {
 	private static final long serialVersionUID = 1L;
 
+	// TODO replace fields with BetaParameters instance
+	
 	protected double _alpha;
 	protected double _beta;
 	protected double _alphaMinusOne;

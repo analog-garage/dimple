@@ -46,6 +46,8 @@ public class Dirichlet extends UnaryFactorFunction implements IParametricFactorF
 {
 	private static final long serialVersionUID = 1L;
 
+	// TODO replace fields with DirichletParameters
+	
 	private int _dimension;
 	private double[] _alphaMinusOne;
 	private double _logBetaAlpha;

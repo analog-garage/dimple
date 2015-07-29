@@ -43,7 +43,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverEdge;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverRealVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
@@ -198,7 +198,7 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 				{
 					// Create message and tell the variable to use it
 					IParameterizedMessage msg =
-						((IRealConjugateSampler)conjugateSampler[edgeNumber]).createParameterMessage();
+						((IConjugateSampler)conjugateSampler[edgeNumber]).createParameterMessage();
 					getSiblingEdgeState(edgeNumber).factorToVarMsg = msg;
 				}
 			}

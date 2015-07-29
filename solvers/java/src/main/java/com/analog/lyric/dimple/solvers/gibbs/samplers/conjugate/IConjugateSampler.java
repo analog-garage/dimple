@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2013 Analog Devices, Inc.
+*   Copyright 2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -19,13 +19,27 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 import java.util.List;
 
 import com.analog.lyric.dimple.data.IDatum;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 
-public interface IRealJointConjugateSampler extends IConjugateSampler
+/**
+ * Base interface for conjugate samplers
+ * <p>
+ * @since 0.08
+ * @author Christopher Barber
+ */
+public interface IConjugateSampler extends ISampler
 {
+
+	IParameterizedMessage createParameterMessage();
+
+	// FIXME add condition
 	/**
-	 * Note: previous version of this method had Ports instead of edges.
+	 * Note: previous version of this method used Ports instead of edges and a single input object.
 	 * @since 0.08
 	 */
-	public double[] nextSample(ISolverEdgeState[] edges, List<? extends IDatum> inuts);
+	void aggregateParameters(IParameterizedMessage aggregateParameters,
+		ISolverEdgeState[] edges,
+		List<? extends IDatum> inputs);
 }
