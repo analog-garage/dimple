@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.matlabproxy;
 
 import com.analog.lyric.dimple.model.core.Node;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.util.misc.Matlab;
@@ -124,8 +125,10 @@ public class PRealJointVariableVector extends PVariableVector
 	{
 		double[][] output = new double[indices.length][];
 		for (int i = 0; i < indices.length; i++)
-			output[i] = getRealJointVariable(indices[i]).getPriorRealJoint();
-		
+		{
+			Value value = getRealJointVariable(indices[i]).getPriorValue();
+			output[i] = value == null ? null : value.getDoubleArray();
+		}
 		return output;
 	}
 	public boolean[] hasFixedValue(int[] indices)

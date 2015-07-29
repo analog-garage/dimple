@@ -173,7 +173,8 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 		DiscreteDomain domain = DiscreteDomain.range(1,3);
 		DiscreteEnergyMessage msg123 = new DiscreteEnergyMessage(new double[] {1,2,3});
 		
-		assertNull(DiscreteEnergyMessage.convertFrom(domain, (List<? extends IDatum>) Collections.emptyList()));
+		List<? extends IDatum> empty = Collections.emptyList();
+		assertNull(DiscreteEnergyMessage.convertFrom(domain, empty));
 		
 		assertSame(msg123, DiscreteEnergyMessage.convertFrom(domain, Arrays.asList(msg123)));
 		DiscreteEnergyMessage msg = DiscreteEnergyMessage.createFrom(domain,  Arrays.asList(msg123));

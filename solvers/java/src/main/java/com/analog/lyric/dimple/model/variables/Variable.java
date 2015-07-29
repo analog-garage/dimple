@@ -281,29 +281,6 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	}
 	
 	/**
-	 * If prior is set to a {@link Value}, return its contents.
-	 * @since 0.08
-	 * @see #getPriorValue()
-	 */
-	public final @Nullable Object getPriorValueObject()
-	{
-		Value value = getPriorValue();
-		return value == null ? null : value.getObject();
-	}
-	
-	public final double getPriorReal()
-	{
-		final Value value = getPriorValue();
-		return value == null ? Double.NaN : value.getDouble();
-	}
-
-	public final @Nullable double[] getPriorRealJoint()
-	{
-		final Value value = getPriorValue();
-		return value == null ? null : value.getDoubleArray();
-	}
-
-	/**
 	 * Associates a prior with the variable.
 	 * <p>
 	 * Sets the value of the {@linkplain #getPrior prior}.

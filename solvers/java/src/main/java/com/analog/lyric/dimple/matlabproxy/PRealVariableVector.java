@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.matlabproxy;
 
 import com.analog.lyric.dimple.model.core.Node;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.util.misc.Matlab;
@@ -138,7 +139,10 @@ public class PRealVariableVector extends PVariableVector
 	{
 		double[] output = new double[indices.length];
 		for (int i = 0; i < indices.length; i++)
-			output[i] = getRealVariable(indices[i]).getPriorReal();
+		{
+			Value prior = getRealVariable(indices[i]).getPriorValue();
+			output[i] = prior != null ? prior.getDouble() : Double.NaN;
+		}
 		
 		return output;
 	}

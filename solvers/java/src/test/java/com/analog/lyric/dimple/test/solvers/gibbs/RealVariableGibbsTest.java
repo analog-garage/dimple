@@ -267,7 +267,7 @@ public class RealVariableGibbsTest extends DimpleTestBase
 		assertEquals(xVariance, StatUtils.variance(xSamples), 1e-13);
 		assertEquals(yVariance, StatUtils.variance(ySamples), 1e-13);
 		
-		assertEquals(y.getPriorReal(), yMean, 0.0);
+		assertEquals(5.0, yMean, 0.0);
 		assertEquals(0.0, yVariance, 0.0);
 		
 		// Make sure moments are the same the next time
