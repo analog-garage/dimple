@@ -16,9 +16,11 @@
 
 package com.analog.lyric.dimple.model.domains;
 
-import net.jcip.annotations.Immutable;
-
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.model.values.Value;
+
+import net.jcip.annotations.Immutable;
 
 /**
  * Domain of all Java objects.
@@ -96,5 +98,11 @@ public final class ObjectDomain extends Domain
 	public boolean isScalar()
 	{
 		return false;
+	}
+	
+	@Override
+	public boolean valueInDomain(Value value)
+	{
+		return true;
 	}
 }

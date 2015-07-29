@@ -19,11 +19,13 @@ package com.analog.lyric.dimple.model.domains;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 
-import net.jcip.annotations.Immutable;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.WeakInterner;
-import org.eclipse.jdt.annotation.Nullable;
+import com.analog.lyric.dimple.model.values.Value;
 import com.google.common.collect.Interner;
+
+import net.jcip.annotations.Immutable;
 
 @Immutable
 public class RealJointDomain extends Domain
@@ -242,6 +244,12 @@ public class RealJointDomain extends Domain
 	public final boolean isScalar()
 	{
 		return false;
+	}
+	
+	@Override
+	public boolean valueInDomain(Value value)
+	{
+		return inDomain(value.getDoubleArray());
 	}
 	
 	/*-------------------------

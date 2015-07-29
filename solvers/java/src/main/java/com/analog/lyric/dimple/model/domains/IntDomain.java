@@ -16,9 +16,11 @@
 
 package com.analog.lyric.dimple.model.domains;
 
-import net.jcip.annotations.Immutable;
-
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.model.values.Value;
+
+import net.jcip.annotations.Immutable;
 
 /**
  * Non-discrete integral domain.
@@ -96,5 +98,11 @@ public class IntDomain extends Domain
 		}
 		
 		return false;
+	}
+	
+	@Override
+	public boolean valueInDomain(Value value)
+	{
+		return value.getDomain().isIntegral() || inDomain(value.getObject());
 	}
 }

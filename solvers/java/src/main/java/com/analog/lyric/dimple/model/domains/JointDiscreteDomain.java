@@ -18,11 +18,12 @@ package com.analog.lyric.dimple.model.domains;
 
 import java.lang.reflect.Array;
 
-import net.jcip.annotations.Immutable;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
-import com.analog.lyric.dimple.exceptions.DimpleException;
-import org.eclipse.jdt.annotation.Nullable;
+import com.analog.lyric.dimple.exceptions.DomainException;
+
+import net.jcip.annotations.Immutable;
 
 /**
  * A discrete domain representing the Cartesian product of other discrete domains.
@@ -191,7 +192,7 @@ public class JointDiscreteDomain<Element> extends TypedDiscreteDomain<Element[]>
 		{
 			return getIndexOrThrow(value);
 		}
-		catch (DimpleException ex)
+		catch (DomainException ex)
 		{
 			return -1;
 		}

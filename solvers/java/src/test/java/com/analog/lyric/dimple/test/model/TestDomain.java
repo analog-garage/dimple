@@ -27,7 +27,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.exceptions.DomainException;
 import com.analog.lyric.dimple.model.domains.ComplexDomain;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
@@ -40,6 +40,7 @@ import com.analog.lyric.dimple.model.domains.ObjectDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.util.test.SerializationTester;
 
@@ -303,6 +304,9 @@ public class TestDomain extends DimpleTestBase
 		assertNotEquals(unitCube, realPlane);
 		assertFalse(unitCube.inDomain(.5, 0.0, 1.5));
 		assertFalse(unitCube.inDomain(new Object[] { .5, 0.0, 1.5}));
+		assertFalse(unitCube.valueInDomain(Value.createRealJoint(.5, 0.0, 1.5)));
+		assertFalse(unitCube.valueInDomain(Value.createReal(.5)));
+		assertTrue(unitCube.valueInDomain(Value.createRealJoint(.5, 0.0, .5)));
 		
 		//
 		// Test IntDomain
@@ -317,6 +321,9 @@ public class TestDomain extends DimpleTestBase
 		assertTrue(intDomain.inDomain((short)23));
 		assertTrue(intDomain.inDomain(-23.0));
 		assertFalse(intDomain.inDomain(1.5));
+		assertTrue(intDomain.valueInDomain(Value.createReal(1.0)));
+		assertFalse(intDomain.valueInDomain(Value.createReal(1.0000001)));
+		assertTrue(intDomain.valueInDomain(Value.create(DiscreteDomain.range(1, 10))));
 		
 		//
 		// Test ObjectDomain
@@ -328,6 +335,7 @@ public class TestDomain extends DimpleTestBase
 		assertTrue(objDomain.inDomain(42));
 		assertTrue(objDomain.inDomain("foo"));
 		assertTrue(objDomain.inDomain(null));
+		assertTrue(objDomain.valueInDomain(Value.create("foo")));
 		
 		//
 		// Test static helper methods
@@ -457,7 +465,7 @@ public class TestDomain extends DimpleTestBase
 				discrete.getIndexOrThrow(Bogus.X);
 				fail("should not get here");
 			}
-			catch (DimpleException ex)
+			catch (DomainException ex)
 			{
 			}
 			
@@ -475,6 +483,8 @@ public class TestDomain extends DimpleTestBase
 			{
 				Object element = elements[i];
 				assertTrue(discrete.inDomain(element));
+				assertTrue(discrete.valueInDomain(Value.createWithIndex(discrete, i)));
+				assertTrue(discrete.valueInDomain(Value.create(ObjectDomain.instance(), element)));
 				assertTrue(discrete.containsValueWithRepresentation(i));
 				assertTrue(discrete.isElementOf(element));
 				assertElementEquals(element, discrete.getElement(i));

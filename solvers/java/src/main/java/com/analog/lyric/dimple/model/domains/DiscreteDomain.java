@@ -22,7 +22,8 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.WeakInterner;
-import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.exceptions.DomainException;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.util.misc.Internal;
 import com.google.common.collect.Interner;
@@ -378,6 +379,20 @@ public abstract class DiscreteDomain extends Domain
 		return true;
 	}
 	
+	@Override
+	public boolean valueInDomain(Value value)
+	{
+		if (this.equals(value.getDomain()))
+		{
+			final int index = value.getIndex();
+			return index >= 0 && index < size();
+		}
+		else
+		{
+			return inDomain(value.getObject());
+		}
+	}
+	
 	/*------------------------
 	 * DiscreteDomain methods
 	 */
@@ -481,7 +496,7 @@ public abstract class DiscreteDomain extends Domain
 	public abstract int getIndex(@Nullable Object value);
 	
 	/**
-	 * Like {@link #getIndex(Object)} but throws a {@link DimpleException} instead of returning
+	 * Like {@link #getIndex(Object)} but throws a {@link DomainException} instead of returning
 	 * -1 on failure.
 	 */
 	public int getIndexOrThrow(@Nullable Object value)

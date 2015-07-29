@@ -25,8 +25,6 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.Random;
 
-import net.jcip.annotations.Immutable;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -35,8 +33,11 @@ import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.collect.Comparators;
 import com.analog.lyric.collect.Supers;
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.exceptions.DomainException;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.Value;
+
+import net.jcip.annotations.Immutable;
 
 /**
  * Provides a representation and canonical indexing operations for an ordered list of
@@ -392,11 +393,29 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		return indices;
 	}
 	
+	/**
+	 * Convert elements to corresponding domain indices.
+	 * <p>
+	 * @param elements array of domain elements. Each element must be a member of
+	 * the correspondingly numbered domain.
+	 * @return individual domain indices
+	 * @throws DomainException if any element is not a member of the corresponding domain.
+	 */
 	public final int[] elementsToIndices(Object[] elements)
 	{
 		return elementsToIndices(elements, null);
 	}
 	
+	/**
+	 * Convert elements to corresponding domain indices.
+	 * <p>
+	 * @param elements array of domain elements. Each element must be a member of
+	 * the correspondingly numbered domain.
+	 * @param indices is the array into which indices will be written. Will only be used
+	 * if adequately large (see {@link #allocateIndices(int[])}).
+	 * @return individual domain indices
+	 * @throws DomainException if any element is not a member of the corresponding domain.
+	 */
 	public final int[] elementsToIndices(Object[] elements, @Nullable int indices[])
 	{
 		indices = allocateIndices(indices);
@@ -645,6 +664,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * <p>
 	 * Returns 0 if not {@link #isDirected()}.
 	 * <p>
+	 * @throw DomainException if an element is not a member of the corresponding domain
 	 * @see #inputIndexFromIndices(int...)
 	 * @see #outputIndexFromElements(Object...)
 	 */
@@ -900,6 +920,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * <p>
 	 * Same as {@link #jointIndexFromElements(Object...)} if not {@link #isDirected()}.
 	 * <p>
+	 * @throw DomainException if an element is not a member of the corresponding domain
 	 * @see #outputIndexFromIndices(int...)
 	 * @see #inputIndexFromElements(Object...)
 	 */

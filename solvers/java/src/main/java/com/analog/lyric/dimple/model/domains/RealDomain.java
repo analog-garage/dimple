@@ -20,6 +20,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.WeakInterner;
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.values.Value;
 import com.google.common.collect.Interner;
 
 import net.jcip.annotations.Immutable;
@@ -168,6 +169,12 @@ public class RealDomain extends Domain
 	public final boolean isReal()
 	{
 		return true;
+	}
+	
+	@Override
+	public boolean valueInDomain(Value value)
+	{
+		return inDomain(value.getDouble());
 	}
 	
 	/*--------------------

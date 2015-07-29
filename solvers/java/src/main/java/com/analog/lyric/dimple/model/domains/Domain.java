@@ -18,11 +18,13 @@ package com.analog.lyric.dimple.model.domains;
 
 import java.io.Serializable;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
+import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.exceptions.DomainException;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Complex;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.RealJoint;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.math.DoubleMath;
 
 /**
@@ -189,9 +191,10 @@ public abstract class Domain implements Serializable
 	/**
 	 * @return true if {@code value} is a valid member of the domain. Implementors
 	 * should not throw a cast exception.
+	 * @see #valueInDomain(Value)
 	 */
 	public abstract boolean inDomain(@Nullable Object value);
-	
+
 	/**
 	 * @return true if {@code representation} corresponds to a valid member of the domain for
 	 * domains that can represent values using an alternate representation, such as the index
@@ -207,10 +210,23 @@ public abstract class Domain implements Serializable
 	/**
 	 * @return an exception stating that {@code value} is not a member of this domain.
 	 */
-	public DimpleException domainError(@Nullable Object value)
+	public DomainException domainError(@Nullable Object value)
 	{
-		return new DimpleException("'%s' is not a member of domain '%s'", value, this);
+		return new DomainException("'%s' is not a member of domain '%s'", value, this);
 	}
+	
+	/**
+	 * Indicate whether {@code value} is a valid member of the domain.
+	 * <p>
+	 * Semantically equivalent to
+	 * <blockquote><tt>
+	 * {@link #inDomain(Object) inDomain}(value.{@link Value#getObject getObject}());
+	 * </tt></blockquote>
+	 * @param value holds the value to be checked.
+	 * @since 0.08
+	 * @see #inDomain(Object)
+	 */
+	public abstract boolean valueInDomain(Value value);
 	
 	/*----------------
 	 * Static methods
