@@ -318,6 +318,17 @@ public abstract class Value implements IDatum, Cloneable, Serializable
 	/**
 	 * {@inheritDoc}
 	 * <p>
+	 * Simply returns 0.0 if passed in {@code value} {@link #valueEquals} this value, and infinity otherwise.
+	 */
+	@Override
+	public double evalEnergy(Value value)
+	{
+		return valueEquals(value) ? 0.0 : Double.POSITIVE_INFINITY;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
 	 * Returns {@link DataRepresentationType#VALUE}.
 	 */
 	@Override

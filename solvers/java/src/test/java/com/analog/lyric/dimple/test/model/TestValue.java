@@ -218,6 +218,7 @@ public class TestValue extends DimpleTestBase
 		assertEquals(-40, value.getInt());
 		assertTrue(value.valueEquals(Value.create(-40.0)));
 		assertFalse(value.valueEquals(Value.create(39)));
+		assertEquals(Double.POSITIVE_INFINITY, value.evalEnergy(Value.create(39)), 0.0);
 		assertInvariants(value);
 		
 		Domain digit = DiscreteDomain.range(0,9);
@@ -423,6 +424,9 @@ public class TestValue extends DimpleTestBase
 		assertSame(value.getClass(), value2.getClass());
 		assertEquals(value.getIndex(), value2.getIndex());
 		assertTrue(value.valueEquals(value2));
+		
+		assertEquals(0.0, value.evalEnergy(value), 0.0);
+		assertEquals(0.0, value.evalEnergy(value2), 0.0);
 		
 		Value value3 = Value.create(domain);
 		assertEquals(value.getClass(), value3.getClass());
