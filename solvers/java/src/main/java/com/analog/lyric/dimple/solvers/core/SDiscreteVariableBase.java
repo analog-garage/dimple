@@ -122,11 +122,7 @@ public abstract class SDiscreteVariableBase extends SVariableBase<Discrete> impl
 		else
 		{
 			DiscreteDomain domain = _model.getDomain();
-			int guessIndex = domain.getIndex(guess);
-			if (guessIndex == -1)
-				throw new DimpleException("Guess is not a valid value");
-
-			setGuessIndex(guessIndex);
+			setGuessIndex(domain.getIndexOrThrow(guess));
 		}
 	}
 	
