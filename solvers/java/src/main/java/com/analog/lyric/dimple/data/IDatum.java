@@ -47,6 +47,16 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterized
 public interface IDatum extends IEquals, Cloneable, Serializable
 {
 	public IDatum clone();
+
+	/**
+	 * Computes the energy produced by the function for the given value.
+	 * <p>
+	 * The energy may be thought of either as a cost or as an unnormalized log probability.
+	 * <p>
+	 * @param value must have a type compatible with the function.
+	 * @since 0.08
+	 */
+	public double evalEnergy(Value value);
 	
 	/**
 	 * Identifies representation used by this object.
