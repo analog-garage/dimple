@@ -73,7 +73,7 @@ function testVariable()
             message = E.message;
         end
         assertEqual(exFound,true);
-        assertTrue(findstr(message,'Real variable failed because two incoming messages were certain of conflicting things.')>0);
+        assertTrue(findstr(message,'InvalidDistributionException')>0);
     end
 
     %Test a negative sigmas
@@ -158,7 +158,7 @@ function testVariable()
     end
 
     assertTrue(exFound);
-    result = findstr(message,'Real variable failed because two incoming messages were certain of conflicting things.');
+    result = findstr(message,'InvalidDistributionException');
     result = result(1);
     assertTrue(result>0);
 

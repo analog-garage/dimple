@@ -16,12 +16,17 @@
 
 package com.analog.lyric.dimple.test.core.parameterizedMessages;
 
+import static com.analog.lyric.util.test.ExceptionTester.*;
+import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import com.analog.lyric.dimple.exceptions.InvalidDistributionException;
 import com.analog.lyric.dimple.factorfunctions.Normal;
+import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.util.test.SerializationTester;
 
@@ -82,6 +87,48 @@ public class TestNormalParameters extends TestParameterizedMessage
 		assertEquals(0.0, msg2.getMean(), 0.0);
 		assertEquals(0.0, msg2.getPrecision(), 0.0);
 		
+		//
+		// Test addFrom
+		//
+		
+		// Adding null message doesn't change anything
+		msg.addFrom(msg2);
+		assertEquals(0.0, msg.getMean(), 0.0);
+		assertEquals(0.0, msg.getPrecision(), 0.0);
+		
+		msg2.setMean(1.0);
+		msg2.setPrecision(2.0);
+		msg.addFrom((IParameterizedMessage)msg2);
+		assertEquals(1.0, msg.getMean(), 0.0);
+		assertEquals(2.0, msg.getPrecision(), 0.0);
+		
+		msg.addFrom(msg2);
+		assertEquals(1.0, msg.getMean(), 0.0);
+		assertEquals(4.0, msg.getPrecision(), 0.0);
+		
+		msg2.setMean(2.0);
+		msg2.setPrecision(.5);
+		msg.addFrom(msg2);
+		assertEquals(4.5, msg.getPrecision(), 0.0);
+		assertEquals(5/4.5, msg.getMean(), 1e-15);
+		
+		msg2.setDeterministic(45);
+		msg.addFrom(msg2);
+		msg.addFrom(msg2);
+		msg2.setMean(-3);
+		msg2.setPrecision(100);
+		msg.addFrom(msg2); // has no effect
+		assertEquals(45, msg.getMean(), 0.0);
+		assertEquals(Double.POSITIVE_INFINITY, msg.getPrecision(), 0.0);
+		
+		msg2.setDeterministic(Value.createReal(44));
+		expectThrow(InvalidDistributionException.class, msg, "addFrom", msg2);
+		
+		//
+		// Other errors
+		//
+		
+		expectThrow(IllegalArgumentException.class, msg, "setStandardDeviation", -1.0);
 	}
 	
 	private void assertInvariants(NormalParameters message)
@@ -117,6 +164,20 @@ public class TestNormalParameters extends TestParameterizedMessage
 				assertEquals(normal.evalEnergy(value), message.evalEnergy(value) - message.getNormalizationEnergy(),
 					1e-15);
 			}
+		}
+		
+		if (message.getPrecision() == Double.POSITIVE_INFINITY)
+		{
+			assertTrue(message.hasDeterministicValue());
+			assertEquals(message.getMean(), message.toDeterministicValue(), 0.0);
+			assertEquals(message.getMean(),
+				requireNonNull(message.toDeterministicValue(RealDomain.unbounded())).getDouble(), 0.0);
+		}
+		else
+		{
+			assertFalse(message.hasDeterministicValue());
+			assertTrue(Double.isNaN(message.toDeterministicValue()));
+			assertNull(message.toDeterministicValue(RealDomain.unbounded()));
 		}
 	}
 }

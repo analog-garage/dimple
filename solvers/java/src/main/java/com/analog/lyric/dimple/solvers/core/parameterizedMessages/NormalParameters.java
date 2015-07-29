@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.exceptions.InvalidDistributionException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
@@ -160,13 +161,20 @@ public class NormalParameters extends ParameterizedMessageBase
 	/*-----------------------
 	 * IParameterizedMessage
 	 */
-	
+
 	@Override
 	public void addFrom(IParameterizedMessage other)
 	{
 		addFrom((NormalParameters)other);
 	}
 	
+	/**
+	 * Adds natural parameters from another {@link NormalParameters} object
+	 * <p>
+	 * @throws InvalidDistributionException if both objects have infinite {@linkplain #getPrecision() precision}
+	 * with different {@linkplain #getMean() means}.
+	 * @since 0.08
+	 */
 	public void addFrom(NormalParameters other)
 	{
 		// That natural parameters are: mean*precision and precision
@@ -200,7 +208,9 @@ public class NormalParameters extends ParameterizedMessageBase
 			{
 				if (!DoubleMath.fuzzyEquals(_mean, other._mean, Math.abs(_mean) / 1e12))
 				{
-					_mean = Double.NaN;
+					throw new InvalidDistributionException(
+						"Cannot combine NormalParameters with infinite precision and different means (%g and %g",
+						_mean, other._mean);
 				}
 			}
 			else
@@ -220,7 +230,7 @@ public class NormalParameters extends ParameterizedMessageBase
 		
 		// Regular case
 		_precision += otherPrecision;
-		_mean = _mean * precision + other._mean * otherPrecision / _precision;
+		_mean = (_mean * precision + other._mean * otherPrecision) / _precision;
 	}
 	
 	/**
