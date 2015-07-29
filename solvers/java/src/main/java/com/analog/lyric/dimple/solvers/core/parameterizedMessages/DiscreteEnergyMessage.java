@@ -26,6 +26,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.math.Utilities;
 
 /**
@@ -97,7 +98,7 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 	 * will be returned, otherwise this is the same as {@link #createFrom(DiscreteDomain, List)}.
 	 * @since 0.08
 	 */
-	public static @Nullable DiscreteEnergyMessage convertFrom(DiscreteDomain domain, List<IDatum> data)
+	public static @Nullable DiscreteEnergyMessage convertFrom(DiscreteDomain domain, List<? extends IDatum> data)
 	{
 		if (data.size() == 1)
 		{
@@ -114,27 +115,37 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 	/**
 	 * Creates new {@link DiscreteEnergyMessage} from data.
 	 * <p>
+	 * For each element in {@code data} in order, this creates a {@link DiscreteEnergyMessage}.
+	 * If there is more than one, they are combined using the {@link #addFrom(IParameterizedMessage)} method.
+	 * If a {@link Value} object is encountered in the list, then all further elements will be ignored.
+	 * <p>
 	 * @param domain is the domain of the variable used for evaluating {@link IUnaryFactorFunction} data.
 	 * @param data is a list of data that is compatible with specified {@code domain}.
 	 * @return null if {@code data} is empty, otherwise creates a new {@link DiscreteEnergyMessage} that
 	 * contains the added energy values from all of the elements.
 	 * @since 0.08
 	 */
-	public static @Nullable DiscreteEnergyMessage createFrom(DiscreteDomain domain, List<IDatum> data)
+	public static @Nullable DiscreteEnergyMessage createFrom(DiscreteDomain domain, List<? extends IDatum> data)
 	{
-		DiscreteEnergyMessage msg = null;
+		DiscreteEnergyMessage result = null;
 		
-		final int n = data.size();
-		if (n > 0)
+		for (IDatum datum : data)
 		{
-			msg = new DiscreteEnergyMessage(domain, data.get(0));
-			for (int i = 1; i < n; ++i)
+			DiscreteEnergyMessage msg = new DiscreteEnergyMessage(domain, datum);
+			if (result == null)
 			{
-				msg.addFrom(new DiscreteEnergyMessage(domain, data.get(i)));
+				result = msg;
 			}
+			else
+			{
+				result.addFrom(msg);
+			}
+			
+			if (datum instanceof Value)
+				break;
 		}
 		
-		return msg;
+		return result;
 	}
 	
 	@Override

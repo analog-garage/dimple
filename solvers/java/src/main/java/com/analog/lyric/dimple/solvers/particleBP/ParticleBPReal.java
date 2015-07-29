@@ -20,20 +20,20 @@ import static com.analog.lyric.math.Utilities.*;
 import static java.util.Objects.*;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.RealValue;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Real;
+import com.analog.lyric.dimple.solvers.core.PriorAndCondition;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
@@ -155,15 +155,11 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 
 		final double[] outMsgs = getSiblingEdgeState(outPortNum).varToFactorMsg.representation();
 
-		final IUnaryFactorFunction input = _model.getPriorFunction();
+		PriorAndCondition known = getPriorAndCondition();
 		
 		for (int m = 0; m < M; m++)
 		{
-			double prior = 0;
-			if (input != null)
-			{
-				prior = input.evalEnergy(_particleValues[m]);
-			}
+			double prior = known.evalEnergy(_particleValues[m]);
 			
 			// FIXME: why does infinity get turned into minLog but values between minLog
 			// and infinity not?
@@ -186,6 +182,8 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 			outMsgs[m] = out;
 		}
 
+		known = known.release();
+		
 		//create sum
 		double sum = 0;
 		for (int m = 0; m < M; m++)
@@ -208,18 +206,16 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 		final int M = _numParticles;
 		final int D = _model.getSiblingCount();
 
-		final IUnaryFactorFunction input = _model.getPriorFunction();
+		PriorAndCondition known = getPriorAndCondition();
+
+		// FIXME - handle fixed values
 		
 		//Compute alphas
         final double[] logInPortMsgs = DimpleEnvironment.doubleArrayCache.allocateAtLeast(M*D);
         final double[] alphas = DimpleEnvironment.doubleArrayCache.allocateAtLeast(M);
 		for (int m = 0; m < M; m++)
 		{
-			double prior = 0;
-			if (input != null)
-			{
-				prior = input.evalEnergy(_particleValues[m]);
-			}
+			double prior = known.evalEnergy(_particleValues[m]);
 			double alpha = (prior == Double.POSITIVE_INFINITY) ? maxEnergy : prior * _beta;
 
 			for (int d = 0, i = m; d < D; d++, i += M)
@@ -231,7 +227,8 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 			}
 			alphas[m] = alpha;
 		}
-
+		known = known.release();
+		
 		//Now compute output messages for each outgoing edge
 		for (int out_d = 0, dm = 0; out_d < D; out_d++, dm += M )
 		{
@@ -283,7 +280,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 		double _upperBound = _domain.getUpperBound();
 		int M = _numParticles;
 
-		final IUnaryFactorFunction input = _model.getPriorFunction();
+		PriorAndCondition known = getPriorAndCondition();
 		
 		final IProposalKernel kernel = requireNonNull(_proposalKernel);
 
@@ -291,15 +288,9 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 		for (int m = 0; m < M; m++)
 		{
 			final RealValue sampleValue = _particleValues[m];
-			double potential = 0;
-			double potentialProposed = 0;
-
-
 			// Start with the potential for the current particle value
-			if (input != null)
-			{
-				potential = input.evalEnergy(sampleValue) * _beta;
-			}
+			double potential = known.evalEnergy(sampleValue) * _beta;
+			double potentialProposed = 0;
 
 			for (int portIndex = 0; portIndex < numPorts; portIndex++)
 			{
@@ -322,11 +313,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 				if (proposalValue > _upperBound) continue;
 
 				// Sum up the potentials from the input and all connected factors
-				potentialProposed = 0;
-				if (input != null)
-				{
-					potentialProposed = input.evalEnergy(proposal.value) * _beta;
-				}
+				potentialProposed = known.evalEnergy(proposal.value) * _beta;
 				
 				for (int portIndex = 0; portIndex < numPorts; portIndex++)
 				{
@@ -367,10 +354,10 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 				getSiblingEdgeState(d).factorToVarMsg.setWeight(m,
 					Math.exp(factor.getMarginalPotential(sampleValue.getDouble(), factorPortNumber)));
 			}
-
-
 		}
 
+		known.release();
+		
 		// Update the outgoing messages associated with the new particle locations
 		doUpdate();
 	}
@@ -384,16 +371,12 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 		int D = _model.getSiblingCount();
 		double minEnergy = Double.POSITIVE_INFINITY;
 
-		final IUnaryFactorFunction input = _model.getPriorFunction();
+		PriorAndCondition known = getPriorAndCondition();
 		double[] outBelief = new double[M];
 		
 		for (int m = 0; m < M; m++)
 		{
-			double prior = 0;
-			if (input != null)
-			{
-				prior = input.evalEnergy(_particleValues[m]);
-			}
+			double prior = known.evalEnergy(_particleValues[m]);
 			double out = (prior == Double.POSITIVE_INFINITY) ? maxEnergy : prior * _beta;
 
 			for (int d = 0; d < D; d++)
@@ -409,6 +392,8 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 			outBelief[m] = out;
 		}
 
+		known.release();
+		
 		//create sum
 		double sum = 0;
 		for (int m = 0; m < M; m++)
@@ -434,28 +419,31 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 		int D = _model.getSiblingCount();
 		double minEnergy = Double.POSITIVE_INFINITY;
 
-		final IUnaryFactorFunction input = _model.getPriorFunction();
+		PriorAndCondition known = getPriorAndCondition();
 		double[] outBelief = new double[M];
 
+		Value value = Value.create(getDomain());
+		
 		for (int m = 0; m < M; m++)
 		{
-			double value = valueSet[m];
-			double prior = 0;
-			if (input != null)
-				prior = input.evalEnergy(value);
+			double real = valueSet[m];
+			value.setDouble(real);
+			double prior = known.evalEnergy(value);
 			double out = (prior == Double.POSITIVE_INFINITY) ? maxEnergy : prior * _beta;
 
 			for (int d = 0; d < D; d++)
 			{
 				int factorPortNumber = _model.getReverseSiblingNumber(d);
 				ParticleBPRealFactor factor = (ParticleBPRealFactor)getSibling(d);
-				out += factor.getMarginalPotential(value, factorPortNumber);	// Potential is -log(p)
+				out += factor.getMarginalPotential(real, factorPortNumber);	// Potential is -log(p)
 			}
 
 			if (out < minEnergy) minEnergy = out;
 			outBelief[m] = out;
 		}
 
+		known.release();
+		
 		//create sum
 		double sum = 0;
 		for (int m = 0; m < M; m++)
@@ -601,7 +589,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 	public double getScore()
 	{
 		if (_guessWasSet)
-			return Objects.requireNonNull(_model.getPriorFunction()).evalEnergy(_guessValue);
+			return super.getScore();
 		else
 			throw new DimpleException("This solver doesn't provide a default value. Must set guesses for all variables.");
 	}

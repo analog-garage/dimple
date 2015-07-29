@@ -291,12 +291,6 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		return value == null ? null : value.getObject();
 	}
 	
-	public final int getPriorDiscreteIndex()
-	{
-		final Value value = getPriorValue();
-		return value == null ? -1 : value.getIndex();
-	}
-	
 	public final double getPriorReal()
 	{
 		final Value value = getPriorValue();

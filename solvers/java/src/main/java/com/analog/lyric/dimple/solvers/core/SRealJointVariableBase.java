@@ -67,7 +67,7 @@ public abstract class SRealJointVariableBase extends SVariableBase<RealJoint>
 		if (_guessWasSet)
 			return _guessValue;
 		
-		Object value = _model.getPriorValueObject();
+		Object value = getKnownValueObject();
 		if (value != null)
 		{
 			// If there's a fixed value set, use that

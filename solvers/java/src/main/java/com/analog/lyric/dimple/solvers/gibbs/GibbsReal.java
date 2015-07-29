@@ -41,6 +41,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.RealValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Real;
+import com.analog.lyric.dimple.solvers.core.PriorAndCondition;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
@@ -338,17 +339,14 @@ public class GibbsReal extends SRealVariableBase
 			if (!_domain.inDomain(_currentSample.getDouble()))
 				break computeScore; // outside the domain
 
-			double potential = 0;
-
-			// Sum up the potentials from the input and all connected factors
-			final IUnaryFactorFunction input = _model.getPriorFunction();
-			if (input != null)
+			// Sum up the potentials from the prior, condition and all connected factors
+			PriorAndCondition known = getPriorAndCondition();
+			double potential = known.evalEnergy(_currentSample);
+			known = known.release();
+			
+			if (!Doubles.isFinite(potential))
 			{
-				potential = input.evalEnergy(_currentSample);
-				if (!Doubles.isFinite(potential))
-				{
-					break computeScore;
-				}
+				break computeScore;
 			}
 
 			ReleasableIterator<ISolverNodeGibbs> scoreNodes = getSampleScoreNodes();
@@ -389,9 +387,9 @@ public class GibbsReal extends SRealVariableBase
 	}
 	
 	@Override
-	public void updatePrior()
+	public void updatePriorAndCondition()
 	{
-		Value value = _model.getPriorValue();
+		Value value = getKnownValue();
 		if (value != null)
 		{
 			setCurrentSampleForce(value.getDouble());
@@ -563,22 +561,6 @@ public class GibbsReal extends SRealVariableBase
 	{
 	}
 
-	@Deprecated
-	@Override
-	public final double getScore()
-	{
-		if (_model.hasFixedValue())
-			return 0;
-		
-		final IUnaryFactorFunction input = _model.getPriorFunction();
-		if (input == null)
-			return 0;
-		else if (_guessWasSet)
-			return input.evalEnergy(Value.create(getDomain(), _guessValue));
-		else
-			return input.evalEnergy(_currentSample);
-	}
-	
 	@Override
 	public Object getGuess()
 	{
@@ -628,27 +610,16 @@ public class GibbsReal extends SRealVariableBase
 		_bestSampleValue = _currentSample.getDouble();
 	}
 	
-	// TODO move to ISolverNodeGibbs
 	@Override
 	public final double getPotential()
 	{
-		if (_model.hasFixedValue())
-			return 0;
-		
-		if (!_domain.inDomain(_currentSample.getDouble()))
-			return Double.POSITIVE_INFINITY;
-		
-		final IUnaryFactorFunction input = _model.getPriorFunction();
-		if (input == null)
-			return 0;
-		else
-			return input.evalEnergy(_currentSample);
+		return evalPriorAndConditionEnergy(_currentSample);
 	}
 	
 	@Override
 	public final boolean hasPotential()
 	{
-		return !_model.hasFixedValue() && (_model.getPriorFunction() != null || _domain.isBounded());
+		return canHavePriorAndConditionEnergy();
 	}
 
     @Override
@@ -994,7 +965,7 @@ public class GibbsReal extends SRealVariableBase
 		_sampleSumSquare = 0;
 		_sampleCount = 0;
 
-		updatePrior();
+		updatePriorAndCondition();
 		
 		//
 		// Determine which sampler to use
@@ -1143,11 +1114,12 @@ public class GibbsReal extends SRealVariableBase
 		
 		// Next, check conjugate samplers are also compatible with the input and the domain of this variable
 		IUnaryFactorFunction input = _model.getPriorFunction();
+		IUnaryFactorFunction condition = getConditionFunction();
 		Iterator<IRealConjugateSamplerFactory> iter = commonSamplers.iterator();
 		while (iter.hasNext())
 		{
 			IRealConjugateSamplerFactory sampler = iter.next();
-			if (!sampler.isCompatible(input) || !sampler.isCompatible(_domain))
+			if (!sampler.isCompatible(input) || !sampler.isCompatible(condition) || !sampler.isCompatible(_domain))
 			{
 				iter.remove();
 			}

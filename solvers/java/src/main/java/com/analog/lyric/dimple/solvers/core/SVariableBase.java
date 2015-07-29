@@ -22,6 +22,7 @@ import com.analog.lyric.dimple.data.DataLayer;
 import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.events.SolverEvent;
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
@@ -140,9 +141,9 @@ public abstract class SVariableBase<MVariable extends Variable>
 	@Override
 	public double getScore()
 	{
-		throw new DimpleException("not supported");
+		return evalPriorAndConditionEnergy(Value.create(getDomain(), getGuess()));
 	}
-
+	
 	@Override
 	public double getInternalEnergy()
 	{
@@ -193,24 +194,25 @@ public abstract class SVariableBase<MVariable extends Variable>
 		return null;
 	}
 	
+	/**
+	 * Gets conditioning value if it is a {@link IUnaryFactorFunction}, else null.
+	 * @since 0.08
+	 * @see #getCondition()
+	 */
+	public @Nullable IUnaryFactorFunction getConditionFunction()
+	{
+		IDatum datum = getCondition();
+		if (datum instanceof IUnaryFactorFunction)
+		{
+			return (IUnaryFactorFunction)datum;
+		}
+		return null;
+	}
+	
 	@Override
 	public Domain getDomain()
 	{
 		return _model.getDomain();
-	}
-	
-	/**
-	 * Returns object holding prior and condition values for this variable.
-	 * <p>
-	 * In the common case where the object is only used within one function call
-	 * use {@link PriorAndCondition#release} to return the instance for reuse.
-	 * @since 0.08
-	 * @see Variable#getPrior()
-	 * @see #getCondition()
-	 */
-	public PriorAndCondition getPriorAndCondition()
-	{
-		return PriorAndCondition.create(_model.getPrior(), getCondition());
 	}
 	
 	/**
@@ -286,12 +288,7 @@ public abstract class SVariableBase<MVariable extends Variable>
 	}
 
 	@Override
-	public void updateConditioning()
-	{
-	}
-	
-	@Override
-	public void updatePrior()
+	public void updatePriorAndCondition()
 	{
 	}
 	
@@ -318,6 +315,55 @@ public abstract class SVariableBase<MVariable extends Variable>
 	protected Class<? extends SolverEvent> messageEventType()
 	{
 		return VariableToFactorMessageEvent.class;
+	}
+	
+	/*---------------
+	 * Local methods
+	 */
+	
+	public final double evalPriorAndConditionEnergy(Value value)
+	{
+		if (!getDomain().valueInDomain(value))
+		{
+			return Double.POSITIVE_INFINITY;
+		}
+		
+		PriorAndCondition known = getPriorAndCondition();
+		double energy = known.evalEnergy(value);
+		known.release();
+		return energy;
+	}
+	
+	public final boolean canHavePriorAndConditionEnergy()
+	{
+		boolean canHaveEnergy = false;
+			
+		if (getDomain().isBounded())
+		{
+			canHaveEnergy = true;
+		}
+		else
+		{
+			PriorAndCondition known = getPriorAndCondition();
+			canHaveEnergy = known.size() > 0 && known.get(0) instanceof IUnaryFactorFunction;
+			known.release();
+		}
+		
+		return canHaveEnergy;
+	}
+	
+	/**
+	 * Returns object holding prior and condition values for this variable.
+	 * <p>
+	 * In the common case where the object is only used within one function call
+	 * use {@link PriorAndCondition#release} to return the instance for reuse.
+	 * @since 0.08
+	 * @see Variable#getPrior()
+	 * @see #getCondition()
+	 */
+	public PriorAndCondition getPriorAndCondition()
+	{
+		return PriorAndCondition.create(_model.getPrior(), getCondition());
 	}
 	
 	/*--------------------

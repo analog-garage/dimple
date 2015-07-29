@@ -16,16 +16,14 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
-import java.util.Arrays;
-
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.factorfunctions.MultivariateNormal;
-import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.RealJoint;
+import com.analog.lyric.dimple.solvers.core.PriorAndCondition;
 import com.analog.lyric.dimple.solvers.core.SMultivariateNormalEdge;
 import com.analog.lyric.dimple.solvers.core.SRealJointVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
@@ -62,24 +60,6 @@ public class SumProductRealJoint extends SRealJointVariableBase
 		return m.getMean();
 	}
 	
-	@Deprecated
-	@Override
-	public double getScore()
-	{
-		IDatum prior = _model.getPrior();
-		
-		if (prior == null)
-			return 0;
-		else if (prior instanceof Value)
-		{
-			double[] value = ((Value) prior).getDoubleArray();
-			return _guessValue.length == 0 || Arrays.equals(_guessValue,  value) ? 0 : Double.POSITIVE_INFINITY;
-		}
-		else
-			return ((IUnaryFactorFunction)prior).evalEnergy(getGuess());
-	}
-	
-
 	@Override
 	protected void doUpdateEdge(int outPortNum)
 	{
@@ -88,34 +68,38 @@ public class SumProductRealJoint extends SRealJointVariableBase
 
 	private void doUpdate(MultivariateNormalParameters outMsg, int outPortNum)
 	{
-		IDatum prior = _model.getPrior();
+		PriorAndCondition known = getPriorAndCondition();
 		
-		if (prior instanceof Value)
+		Value fixedValue = known.value();
+		if (fixedValue != null)
 		{
 	    	// If fixed value, just return the input, which has been set to a zero-variance message
-			outMsg.setDeterministic(((Value)prior));
-			return;
-		}
-		
-		final MultivariateNormalParameters input = priorToNormal(prior);
-		
-		if (input != null)
-		{
-			outMsg.set(input);
+			outMsg.setDeterministic(fixedValue);
 		}
 		else
 		{
 			outMsg.setNull();
-		}
-
-		for (int i = 0, n = getSiblingCount(); i < n; i++ )
-		{
-			if (i != outPortNum)
+			
+			for (IDatum datum : known)
 			{
-				final MultivariateNormalParameters inMsg = getSiblingEdgeState(i).factorToVarMsg;
-				outMsg.addFrom(inMsg);
+				final MultivariateNormalParameters input = datumToNormal(datum);
+				if (input != null)
+				{
+					outMsg.addFrom(input);
+				}
+			}
+
+			for (int i = 0, n = getSiblingCount(); i < n; i++ )
+			{
+				if (i != outPortNum)
+				{
+					final MultivariateNormalParameters inMsg = getSiblingEdgeState(i).factorToVarMsg;
+					outMsg.addFrom(inMsg);
+				}
 			}
 		}
+		
+		known.release();
 	}
 
 	public MultivariateNormalParameters createDefaultMessage()
@@ -165,7 +149,7 @@ public class SumProductRealJoint extends SRealJointVariableBase
 	 * Private methods
 	 */
 	
-    private @Nullable MultivariateNormalParameters priorToNormal(@Nullable IDatum prior)
+    private @Nullable MultivariateNormalParameters datumToNormal(@Nullable IDatum prior)
     {
     	if (prior instanceof MultivariateNormalParameters)
     	{

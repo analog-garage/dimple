@@ -46,6 +46,7 @@ import com.analog.lyric.dimple.model.values.RealJointValue;
 import com.analog.lyric.dimple.model.values.RealValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.RealJoint;
+import com.analog.lyric.dimple.solvers.core.PriorAndCondition;
 import com.analog.lyric.dimple.solvers.core.SRealJointVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
@@ -369,17 +370,15 @@ public class GibbsRealJoint extends SRealJointVariableBase
 			if (!_domain.inDomain(_currentSample.getValue()))
 				break computeScore; // outside the domain
 
-			double potential = 0;
+			// Sum up the potentials from the prior, condition and all connected factors
+			
+			PriorAndCondition known = getPriorAndCondition();
+			double potential = known.evalEnergy(_currentSample);
+			known = known.release();
 
-			// Sum up the potentials from the input and all connected factors
-			final IUnaryFactorFunction inputJoint = _model.getPriorFunction();
-			if (inputJoint != null)
+			if (!Doubles.isFinite(potential))
 			{
-				potential += inputJoint.evalEnergy(_currentSample);
-				if (!Doubles.isFinite(potential))
-				{
-					break computeScore;
-				}
+				break computeScore;
 			}
 
 			ReleasableIterator<ISolverNodeGibbs> scoreNodes = getSampleScoreNodes();
@@ -631,9 +630,9 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	}
 
 	@Override
-	public void updatePrior()
+	public void updatePriorAndCondition()
 	{
-		Value value = _model.getPriorValue();
+		Value value = getKnownValue();
 		if (value != null)
 		{
 			setCurrentSampleForce(value.getDoubleArray());
@@ -700,31 +699,8 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		// Set the default sampler
 	}
 
-	@Deprecated
 	@Override
-	public final double getScore()
-	{
-		// If fixed value there's no input
-		if (_model.hasFixedValue())
-			return 0;
-		
-		// Which value to score
-		RealJointValue value;
-		if (_guessWasSet)
-			value = Value.createRealJoint((double[])getGuess());
-		else
-			value = _currentSample;
-		
-		// Get the score
-		final IUnaryFactorFunction inputJoint = _model.getPriorFunction();
-		if (inputJoint != null)
-			return inputJoint.evalEnergy(value);
-		
-		return 0;
-	}
-	
-	@Override
-	public Object getGuess()
+	public double[] getGuess()
 	{
 		if (_guessWasSet)
 			return _guessValue;
@@ -772,29 +748,16 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		_bestSampleValue = _currentSample.getValue().clone();
 	}
 	
-	// TODO move to ISolverNodeGibbs
 	@Override
 	public final double getPotential()
 	{
-		if (_model.hasFixedValue())
-			return 0;
-		
-		final double[] sampleValue = _currentSample.getValue();
-		
-		if (!_domain.inDomain(sampleValue))
-			return Double.POSITIVE_INFINITY;
-		
-		final IUnaryFactorFunction inputJoint = _model.getPriorFunction();
-		if (inputJoint != null)
-			return inputJoint.evalEnergy(_currentSample);
-		
-		return 0;
+		return evalPriorAndConditionEnergy(_currentSample);
 	}
 	
 	@Override
 	public final boolean hasPotential()
 	{
-		return !_model.hasFixedValue() && (_model.getPriorFunction() != null || _domain.isBounded());
+		return canHavePriorAndConditionEnergy();
 	}
 
 	@Override
@@ -1187,7 +1150,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		}
 		_sampleCount = 0;
 
-		updatePrior();
+		updatePriorAndCondition();
 		
 		//
 		// Determine which sampler to use
@@ -1344,11 +1307,12 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		
 		// Next, check conjugate samplers are also compatible with the input and the domain of this variable
 		final IUnaryFactorFunction inputJoint = _model.getPriorFunction();
+		IUnaryFactorFunction condition = getConditionFunction();
 		Iterator<IRealJointConjugateSamplerFactory> iter = commonSamplers.iterator();
 		while (iter.hasNext())
 		{
 			IRealJointConjugateSamplerFactory sampler = iter.next();
-			if (!sampler.isCompatible(inputJoint) || !sampler.isCompatible(_domain))
+			if (!sampler.isCompatible(inputJoint) || !sampler.isCompatible(condition) || !sampler.isCompatible(_domain))
 			{
 				iter.remove();
 			}

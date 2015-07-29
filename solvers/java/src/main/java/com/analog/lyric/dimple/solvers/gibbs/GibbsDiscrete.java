@@ -20,6 +20,7 @@ import static com.analog.lyric.dimple.solvers.gibbs.GibbsSolverVariableEvent.*;
 import static java.util.Objects.*;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Objects;
 
 import org.eclipse.jdt.annotation.NonNull;
@@ -30,7 +31,6 @@ import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
@@ -212,7 +212,9 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	private DiscreteValue _prevSample;
 	private boolean _repeatedVariable;
 	private @Nullable long[] _beliefHistogram;
+	
 	private @Nullable DiscreteEnergyMessage _input = null;
+	
 	private @Nullable IntArrayList _sampleIndexArray;
 	private int _bestSampleIndex;
 	private @Nullable DiscreteValue _initialSampleValue = null;
@@ -427,22 +429,9 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	 */
 	
 	@Override
-	public void updatePrior()
+	public void updatePriorAndCondition()
 	{
-		IDatum prior = _model.getPrior();
-		if (prior instanceof DiscreteEnergyMessage)
-		{
-			// Use prior directly if it is of the right form.
-			_input = (DiscreteEnergyMessage)prior;
-		}
-		else if (prior instanceof IUnaryFactorFunction)
-		{
-			_input = new DiscreteEnergyMessage(getDomain(), prior);
-		}
-		else
-		{
-			_input = null;
-		}
+		_input = knownEnergyMessage();
 	}
 
 	/*--------------------------
@@ -487,10 +476,10 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		if (_holdSampleValue) return;
 		
 		// If the variable has a fixed value, then set the current sample to that value and return
-		Value value = _model.getPriorValue();
-		if (value != null)
+		int fixedIndex = getKnownDiscreteIndex();
+		if (fixedIndex >= 0)
 		{
-			setCurrentSampleIndex(value.getIndex());
+			setCurrentSampleIndex(fixedIndex);
 			return;
 		}
 		
@@ -502,12 +491,14 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		}
 
 		// Convert the prior back to probabilities to sample from the prior
-		DiscreteEnergyMessage input = _input;
+		IDatum prior = _model.getPrior();
 		double[] inputEnergy;
 		double minEnergy;
-		if (input != null)
+		if (prior != null)
 		{
-			inputEnergy = input.representation();
+			DiscreteEnergyMessage input =
+				DiscreteEnergyMessage.convertFrom(getDomain(), Collections.singletonList(prior));
+			inputEnergy = requireNonNull(input).representation();
 			minEnergy = input.minEnergy();
 		}
 		else
@@ -597,7 +588,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		final int domainLength = getDomain().size();
 		double[] outBelief = new double[domainLength];
 
-		final IDatum prior = _model.getPrior();
+		final IDatum prior = getKnownValue();
 		
 		if (prior instanceof Value)	// If there's a fixed value set, use that to generate the belief
 		{
@@ -674,22 +665,13 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	@Override
 	public final double getPotential()
 	{
-		IUnaryFactorFunction prior = _model.getPriorFunction();
-		return prior != null ? prior.evalEnergy(_currentSample) : 0;
+		return evalPriorAndConditionEnergy(_currentSample);
 	}
 	
 	@Override
 	public final boolean hasPotential()
 	{
-		return _model.getPriorFunction() != null;
-	}
-	
-	@Deprecated
-	@Override
-	public final double getScore()
-	{
-		DiscreteEnergyMessage input = _input;
-		return input != null ? input.getEnergy(getGuessIndex()) : 0;
+		return canHavePriorAndConditionEnergy();
 	}
 	
 	@Override
@@ -1060,7 +1042,7 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		
 		Arrays.fill(_beliefHistogram, 0);
 		
-		updatePrior();
+		updatePriorAndCondition();
 		
 		Value value = _model.getPriorValue();
 		if (value != null)

@@ -154,12 +154,12 @@ public abstract class ProxySolverVariable<MVariable extends Variable, Delegate e
 	 */
 
 	@Override
-	public void updatePrior()
+	public void updatePriorAndCondition()
 	{
 		ISolverVariable delegate = getDelegate();
 		if (delegate != null)
 		{
-			delegate.updatePrior();
+			delegate.updatePriorAndCondition();
 		}
 	}
 	

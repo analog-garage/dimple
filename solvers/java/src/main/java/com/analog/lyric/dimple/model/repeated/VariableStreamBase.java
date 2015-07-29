@@ -95,7 +95,7 @@ public abstract class VariableStreamBase<V extends Variable> implements IVariabl
 		{
 			Object input = dataSource.getNext();
 			lastVar.setInputObject(input);
-			lastVar.requireSolver("advanceState").updatePrior();
+			lastVar.requireSolver("advanceState").updatePriorAndCondition();
 		}
 		else
 		{

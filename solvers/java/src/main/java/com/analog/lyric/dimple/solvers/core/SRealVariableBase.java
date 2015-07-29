@@ -80,7 +80,7 @@ public abstract class SRealVariableBase extends SVariableBase<Real>
 		if (_guessWasSet)
 			return Double.valueOf(_guessValue);
 		
-		Object value = _model.getPriorValueObject();
+		Object value = getKnownValueObject();
 		if (value != null)
 		{
 			// If there's a fixed value set, use that

@@ -22,12 +22,15 @@ import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.data.DataRepresentationType;
+import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.exceptions.NormalizationException;
 import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
@@ -155,6 +158,47 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 		assertEquals(0.0, Doubles.min(msg2.representation()), 0.0);
 		
 		expectThrow(IllegalArgumentException.class, msg, "computeKLDivergence", new DiscreteEnergyMessage(3));
+	}
+	
+
+	/**
+	 * Test {@link DiscreteEnergyMessage#createFrom}/{@linkplain DiscreteEnergyMessage#convertFrom convertFrom}.
+	 * 
+	 * @since 0.08
+	 */
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testCreateFrom()
+	{
+		DiscreteDomain domain = DiscreteDomain.range(1,3);
+		DiscreteEnergyMessage msg123 = new DiscreteEnergyMessage(new double[] {1,2,3});
+		
+		assertNull(DiscreteEnergyMessage.convertFrom(domain, (List<? extends IDatum>) Collections.emptyList()));
+		
+		assertSame(msg123, DiscreteEnergyMessage.convertFrom(domain, Arrays.asList(msg123)));
+		DiscreteEnergyMessage msg = DiscreteEnergyMessage.createFrom(domain,  Arrays.asList(msg123));
+		assertNotSame(msg123, msg);
+		assertTrue(msg123.objectEquals(msg));
+		
+		Value value = Value.createWithIndex(domain, 1);
+		msg = DiscreteEnergyMessage.convertFrom(domain, Arrays.asList(value));
+		assertEquals(1, requireNonNull(msg).toDeterministicValueIndex());
+		assertEquals(0.0, msg.evalEnergy(value), 0.0);
+		
+		msg = DiscreteEnergyMessage.createFrom(domain, Arrays.asList(msg123, value));
+		assertEquals(1, requireNonNull(msg).toDeterministicValueIndex());
+		// Still deterministic, but incorporates energy from msg123
+		assertEquals(2.0, msg.evalEnergy(value), 0.0);
+		
+		msg = DiscreteEnergyMessage.createFrom(domain, Arrays.asList(value, msg123));
+		assertEquals(1, requireNonNull(msg).toDeterministicValueIndex());
+		// Elements after value are ignored:
+		assertEquals(0.0, msg.evalEnergy(value), 0.0);
+		
+		
+		DiscreteEnergyMessage msg456 = new DiscreteEnergyMessage(new double[] {4, 5, 6});
+		msg = DiscreteEnergyMessage.createFrom(domain, Arrays.asList(msg456, msg123));
+		assertArrayEquals(new double[] { 5, 7, 9 }, requireNonNull(msg).getEnergies(), 0.0);
 	}
 	
 	private double expectedKL(DiscreteMessage msg1, DiscreteMessage msg2)

@@ -126,6 +126,33 @@ public final class PriorAndCondition extends AbstractList<IDatum>
 	 * Local methods
 	 */
 	
+	/**
+	 * Evaluates energy of prior and condition for given value.
+	 * <p>
+	 * This is the sum of the energies for the passed in {@code value} for the
+	 * {@link #prior()} and {@link #condition()}, except that if the prior is a
+	 * {@link Value} instance, the condition will not be used (this mimics the behavior
+	 * of {@link com.analog.lyric.dimple.data.DataStack#computeTotalEnergy() DataStack.computeTotalEnergy})
+	 * <p>
+	 * @since 0.08
+	 */
+	public double evalEnergy(Value value)
+	{
+		double energy = 0.0;
+		for (IDatum datum : _data)
+		{
+			if (datum != null)
+			{
+				energy += datum.evalEnergy(value);
+				if (datum instanceof Value)
+				{
+					break;
+				}
+			}
+		}
+		return energy;
+	}
+	
 	public @Nullable IDatum prior()
 	{
 		return _data[0];

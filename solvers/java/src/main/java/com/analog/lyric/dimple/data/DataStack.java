@@ -130,12 +130,20 @@ public class DataStack extends AbstractList<DataLayer<?>>
 				if (datum instanceof Value)
 				{
 					Value value = (Value)datum;
+					if (!var.getDomain().valueInDomain(value))
+					{
+						return Double.POSITIVE_INFINITY;
+					}
 					while (--i >= 0)
 					{
 						IUnaryFactorFunction function = functions[i];
 						if (function != null)
 						{
 							energy += function.evalEnergy(value);
+							if (energy == Double.POSITIVE_INFINITY)
+							{
+								return energy;
+							}
 						}
 					}
 					break;
@@ -168,6 +176,10 @@ public class DataStack extends AbstractList<DataLayer<?>>
 			}
 			
 			energy += factor.getFactorFunction().evalEnergy(values);
+			if (energy == Double.POSITIVE_INFINITY)
+			{
+				return energy;
+			}
 		}
 		
 		return energy;
