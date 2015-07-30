@@ -25,9 +25,6 @@ import com.analog.lyric.util.misc.Internal;
 @Internal
 public interface IRealConjugateSampler extends IConjugateSampler
 {
-	// FIXME add condition
-	//  - PriorAndCondition
-	//  - List<IDatum>
 	/**
 	 * Note: previous version of this method had Ports instead of edges.
 	 * @since 0.08
