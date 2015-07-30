@@ -36,6 +36,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.RealValue;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.util.misc.Matlab;
 
 import net.jcip.annotations.ThreadSafe;
@@ -43,6 +44,14 @@ import net.jcip.annotations.ThreadSafe;
 @ThreadSafe
 public abstract class FactorFunction implements IFactorFunction
 {
+	// FIXME remove default FactorFunction.getParameterizedMessage implementation
+	// This is only here to shut up errors until I get around to implementing this on
+	// implementors of IParametricFactorFunction
+	public @Nullable IParameterizedMessage getParameterizedMessage()
+	{
+		return null;
+	}
+	
 	/*-------
 	 * State
 	 */

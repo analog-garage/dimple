@@ -20,6 +20,8 @@ import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
+
 /**
  * Parametric factor function supporting generic parameter lookup.
  * <p>
@@ -54,6 +56,12 @@ public interface IParametricFactorFunction extends IFactorFunction
 	 * @since 0.07
 	 */
 	public @Nullable Object getParameter(String parameterName);
+	
+	/**
+	 * Returns parameter object, if any.
+	 * @since 0.08
+	 */
+	public @Nullable IParameterizedMessage getParameterizedMessage();
 	
 	/**
 	 * Indicates that the function's parameters are stored as constants within the factor function
