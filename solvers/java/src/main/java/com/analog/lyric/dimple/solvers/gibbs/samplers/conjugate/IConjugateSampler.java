@@ -34,7 +34,6 @@ public interface IConjugateSampler extends ISampler
 
 	IParameterizedMessage createParameterMessage();
 
-	// FIXME add condition
 	/**
 	 * Note: previous version of this method used Ports instead of edges and a single input object.
 	 * @since 0.08
