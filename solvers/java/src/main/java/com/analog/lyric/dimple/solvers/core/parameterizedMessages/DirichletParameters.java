@@ -39,6 +39,7 @@ public class DirichletParameters extends ParameterizedMessageBase
 
 	// The parameters used are the natural additive parameters, (alpha-1)
 	private double[] _alphaMinusOne;
+	private transient byte _symmetric; // <0 not computed, 0 false, > 0 true
 	
 	/*--------------
 	 * Construction
@@ -48,10 +49,20 @@ public class DirichletParameters extends ParameterizedMessageBase
 	{
 		_alphaMinusOne = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	}
+	
 	public DirichletParameters(int length)
 	{
 		_alphaMinusOne = new double[length];
+		_symmetric = -1;
 	}
+	
+	public DirichletParameters(int length, double alphaMinusOne)
+	{
+		_alphaMinusOne = new double[length];
+		Arrays.fill(_alphaMinusOne, alphaMinusOne);
+		_symmetric = 1;
+	}
+	
 	public DirichletParameters(double[] alphaMinusOne)
 	{
 		_alphaMinusOne = alphaMinusOne.clone();
@@ -61,6 +72,7 @@ public class DirichletParameters extends ParameterizedMessageBase
 	{
 		super(other);
 		_alphaMinusOne = other._alphaMinusOne.clone();
+		_symmetric = other._symmetric;
 	}
 	
 	@Override
@@ -111,8 +123,6 @@ public class DirichletParameters extends ParameterizedMessageBase
 	@Override
 	public double evalEnergy(Value value)
 	{
-		// TODO optimize exchangeable case where alphas are the same
-		
 		final double[] x = value.getDoubleArray();
 
 		final int n = _alphaMinusOne.length;
@@ -122,16 +132,36 @@ public class DirichletParameters extends ParameterizedMessageBase
 		}
 		
 		double sum = 0.0, xSum = 0.0;
-		for (int i = n; --i>=0;)
+		
+		if (isSymmetric())
 		{
-			final double xi = x[i];
-			if (xi <= 0)
+			for (int i = n; --i>=0;)
 			{
-				return Double.POSITIVE_INFINITY;
+				final double xi = x[i];
+				if (xi <= 0)
+				{
+					return Double.POSITIVE_INFINITY;
+				}
+
+				sum -= Math.log(xi);
+				xSum += xi;
 			}
 			
-			sum -= (_alphaMinusOne[i]) * Math.log(xi);	// -log(x_i ^ (a_i-1))
-			xSum += xi;
+			sum *= _alphaMinusOne[0];
+		}
+		else
+		{
+			for (int i = n; --i>=0;)
+			{
+				final double xi = x[i];
+				if (xi <= 0)
+				{
+					return Double.POSITIVE_INFINITY;
+				}
+
+				sum -= (_alphaMinusOne[i]) * Math.log(xi);	// -log(x_i ^ (a_i-1))
+				xSum += xi;
+			}
 		}
 		
 		if (!DoubleMath.fuzzyEquals(xSum, 1, SIMPLEX_THRESHOLD * n))	// Values must be on the probability simplex
@@ -188,10 +218,18 @@ public class DirichletParameters extends ParameterizedMessageBase
 		forgetNormalizationEnergy();
 	}
 	
+	public final void setAlpha(double [] alpha)
+	{
+		setAlphaMinusOne(alpha);
+		for (int i = _alphaMinusOne.length; --i>=0;)
+			_alphaMinusOne[i] -= 1.0;
+	}
+	
 	public final void fillAlphaMinusOne(double alphaMinusOne)
 	{
 		Arrays.fill(_alphaMinusOne, alphaMinusOne);	// Replicate a single value into all entries
 		forgetNormalizationEnergy();
+		_symmetric = 1;
 	}
 
 	// Operations on the parameters
@@ -219,9 +257,42 @@ public class DirichletParameters extends ParameterizedMessageBase
 			_alphaMinusOne[i] += values[i];
 		forgetNormalizationEnergy();
 	}
+	
 	public final void add(DirichletParameters parameters)
 	{
-		add(parameters._alphaMinusOne);
+		addFrom(parameters);
+	}
+	
+	/**
+	 * True if all the parameters are the same.
+	 * @since 0.08
+	 */
+	public final boolean isSymmetric()
+	{
+		int symmetric = _symmetric;
+		
+		if (symmetric < 0)
+		{
+			final double[] params = _alphaMinusOne;
+			final int n = params.length;
+			
+			symmetric = 1;
+			
+			if (n > 1)
+			{
+				final double a = params[0];
+				for (int i = 1; i < n; ++i)
+				{
+					if (params[i] != a)
+					{
+						symmetric = 0;
+						break;
+					}
+				}
+			}
+		}
+		
+		return symmetric > 0;
 	}
 
 	/*--------------------
@@ -274,10 +345,20 @@ public class DirichletParameters extends ParameterizedMessageBase
 			throw new IllegalArgumentException("Cannot add from DirichletParameters with different size");
 		}
 		
-		for (int i = params.length; --i>=0;)
+		if (_symmetric > 0 && other._symmetric > 0)
 		{
-			params[i] += otherParams[i];
+			double a = params[0] + otherParams[0];
+			Arrays.fill(params, a);
 		}
+		else
+		{
+			for (int i = params.length; --i>=0;)
+			{
+				params[i] += otherParams[i];
+			}
+		}
+		
+		forgetNormalizationEnergy();
 	}
 	
 	/**
@@ -321,6 +402,8 @@ public class DirichletParameters extends ParameterizedMessageBase
 			double divergence = 0.0;
 			if (size > 0)
 			{
+				// TODO optimize for symmetric case
+				
 				double alphaSumP = size, alphaSumQ = size;
 				for (int i = 0; i < size; ++i)
 				{
@@ -356,9 +439,14 @@ public class DirichletParameters extends ParameterizedMessageBase
 	@Override
 	public boolean isNull()
 	{
+		if (_symmetric > 0)
+			return _alphaMinusOne.length == 0 || _alphaMinusOne[0] == 0.0;
+		
 		for (double alpha : _alphaMinusOne)
 			if (alpha != 0.0)
 				return false;
+		
+		_symmetric = 1;
 		return true;
 	}
 	
@@ -381,8 +469,9 @@ public class DirichletParameters extends ParameterizedMessageBase
 	@Override
 	public final void setUniform()
 	{
-		Arrays.fill(_alphaMinusOne, 0);
+		fillAlphaMinusOne(0);
 	}
+	
 	public final void setNull(int size)
 	{
 		setSize(size);	// Create the array if it isn't already there, or change the size
@@ -407,17 +496,36 @@ public class DirichletParameters extends ParameterizedMessageBase
 	@Override
 	protected final double computeNormalizationEnergy()
 	{
+		final double[] alphaMinusOne = _alphaMinusOne;
+		final int n = alphaMinusOne.length;
+		final boolean symmetric = isSymmetric() & n > 1;
+
 		double sumAlpha = 0;
 		double sumLogGamma = 0;
 
-		for (double alphaMinusOne : _alphaMinusOne)
+		final int end = symmetric ? 1 : n;
+		
+		for (int i = 0; i < end; ++i)
 		{
-			final double alpha = alphaMinusOne + 1;
+			final double alpha = alphaMinusOne[i] + 1;
 			sumAlpha += alpha;
 			sumLogGamma += Gamma.logGamma(alpha);
+		}
+		
+		if (symmetric)
+		{
+
+			sumAlpha *= n;
+			sumLogGamma *= n;
 		}
 
 		return -(sumLogGamma - Gamma.logGamma(sumAlpha));
 	}
 	
+	@Override
+	protected void forgetNormalizationEnergy()
+	{
+		super.forgetNormalizationEnergy();
+		_symmetric = -1;
+	}
 }

@@ -16,18 +16,15 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
-import java.util.Arrays;
 import java.util.Map;
 
-import org.apache.commons.math3.special.Gamma;
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.collect.ArrayUtil;
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
 
 
 /**
@@ -46,39 +43,36 @@ public class Dirichlet extends UnaryFactorFunction implements IParametricFactorF
 {
 	private static final long serialVersionUID = 1L;
 
-	// TODO replace fields with DirichletParameters
-	
-	private int _dimension;
-	private double[] _alphaMinusOne;
-	private double _logBetaAlpha;
+	protected DirichletParameters _parameters;
 	private boolean _parametersConstant;
 	private int _firstDirectedToIndex;
-	private static final double SIMPLEX_THRESHOLD = 1e-12;
 	
 	/*--------------
 	 * Construction
 	 */
 	
+	protected Dirichlet(DirichletParameters parameters, int index)
+	{
+		super((String)null);
+		_parameters = parameters;
+		_parametersConstant = index == 0;
+		_firstDirectedToIndex = index;
+	}
+	
 	public Dirichlet()		// Variable parameters
 	{
-		super((String)null);
-		_alphaMinusOne = ArrayUtil.EMPTY_DOUBLE_ARRAY;
-		_parametersConstant = false;
-		_firstDirectedToIndex = 1;	// Parameter vector is an array (one RealJoint variable)
+		this(new DirichletParameters(), 1);
 	}
+	
+	public Dirichlet(DirichletParameters parameters)
+	{
+		this(parameters, 0);
+	}
+	
 	public Dirichlet(double[] alpha)	// Constant parameters
 	{
-		super((String)null);
-		_dimension = alpha.length;
-		_alphaMinusOne = new double[_dimension];
-		_logBetaAlpha = logBeta(alpha);
-		_parametersConstant = true;
-		_firstDirectedToIndex = 0;
-    	for (int i = 0; i < _dimension; i++)
-    	{
-    		if (alpha[i] <= 0) throw new DimpleException("Non-positive alpha parameter. Domain must be restricted to positive values.");
-    		_alphaMinusOne[i] = alpha[i] - 1;
-    	}
+		this(new DirichletParameters(alpha.length));
+		_parameters.setAlpha(alpha);
 	}
 	
 	/**
@@ -98,10 +92,8 @@ public class Dirichlet extends UnaryFactorFunction implements IParametricFactorF
 	protected Dirichlet(Dirichlet other)
 	{
 		super(other);
-		_alphaMinusOne = other._alphaMinusOne.clone();
-		_dimension = other._dimension;
+		_parameters = other._parameters.clone();
 		_firstDirectedToIndex = other._firstDirectedToIndex;
-		_logBetaAlpha = other._logBetaAlpha;
 		_parametersConstant = other._parametersConstant;
 	}
 	
@@ -127,10 +119,8 @@ public class Dirichlet extends UnaryFactorFunction implements IParametricFactorF
 		{
 			Dirichlet that = (Dirichlet)other;
 			return _parametersConstant == that._parametersConstant &&
-				_dimension == that._dimension &&
-				_logBetaAlpha == that._logBetaAlpha &&
-				_firstDirectedToIndex == that._firstDirectedToIndex &&
-				Arrays.equals(_alphaMinusOne, that._alphaMinusOne);
+				_parameters.objectEquals(((Dirichlet) other)._parameters) &&
+				_firstDirectedToIndex == that._firstDirectedToIndex;
 		}
 		
 		return false;
@@ -146,64 +136,14 @@ public class Dirichlet extends UnaryFactorFunction implements IParametricFactorF
     	int index = 0;
     	if (!_parametersConstant)
     	{
-    		final double[] alpha = arguments[index++].getDoubleArray();		// First variable is array of parameter values
-    		_dimension = alpha.length;
-    		_alphaMinusOne = new double[_dimension];
-    		for (int i = 0; i < _dimension; i++)
-    		{
-    			final double alphai = alpha[i];
-    			if (alphai <= 0)
-    				return Double.POSITIVE_INFINITY;
-        		_alphaMinusOne[i] = alphai - 1;
-    		}
-    		_logBetaAlpha = logBeta(alpha);
+    		final double[] alpha = arguments[index++].getDoubleArray(); // First variable is array of parameter values
+    		if (_parameters.getSize() != alpha.length)
+    			_parameters = new DirichletParameters(alpha.length);
+    		_parameters.setAlpha(alpha);
     	}
-
-    	double sum = 0;
-    	final int length = arguments.length;
-    	final int N = length - index;			// Number of non-parameter variables
-    	for (; index < length; index++)
-    	{
-    		final double[] x = arguments[index].getDoubleArray();			// Remaining inputs are Dirichlet distributed random variable vectors
-    		if (x.length != _dimension)
-	    		throw new DimpleException("Dimension of variable does not equal to the dimension of the parameter vector.");
-    		double xSum = 0;
-    		for (int i = 0; i < _dimension; i++)
-    		{
-    			final double xi = x[i];
-    			if (xi <= 0)
-    				return Double.POSITIVE_INFINITY;
-    			else
-    				sum -= (_alphaMinusOne[i]) * Math.log(xi);	// -log(x_i ^ (a_i-1))
-    			xSum += xi;
-    		}
-    		
-    		if (!almostEqual(xSum, 1, SIMPLEX_THRESHOLD * _dimension))	// Values must be on the probability simplex
-    			return Double.POSITIVE_INFINITY;
-    	}
-
-    	return sum + N * _logBetaAlpha;
+    	
+    	return _parameters.evalNormalizedEnergy(arguments, index);
 	}
-    
-    
-    private final double logBeta(double[] alpha)
-    {
-    	int dimension = alpha.length;
-    	double sumAlpha = 0;
-    	for (int i = 0; i < dimension; i++)
-    		sumAlpha += alpha[i];
-    	
-    	double sumLogGamma = 0;
-    	for (int i = 0; i < dimension; i++)
-    		sumLogGamma += Gamma.logGamma(alpha[i]);
-    	
-    	return sumLogGamma - Gamma.logGamma(sumAlpha);
-    }
-    
-    private final boolean almostEqual(double a, double b, double threshold)
-    {
-    	return (a >= b ? a - b : b - a) < threshold;
-    }
     
     @Override
     public final boolean isDirected() {return true;}
@@ -238,12 +178,7 @@ public class Dirichlet extends UnaryFactorFunction implements IParametricFactorF
     		{
     		case "alpha":
     		case "alphas":
-    			final double[] alpha = _alphaMinusOne.clone();
-    			for (int i = alpha.length; --i>=0; )
-    			{
-    				++alpha[i];
-    			}
-    			return alpha;
+    			return _parameters.getAlphas();
     		}
     	}
     	return null;
@@ -261,10 +196,10 @@ public class Dirichlet extends UnaryFactorFunction implements IParametricFactorF
     
     public final double[] getAlphaMinusOneArray()
     {
-    	return _alphaMinusOne;
+    	return _parameters.getAlphaMinusOneArray();
     }
     public final int getDimension()
     {
-    	return _dimension;
+    	return _parameters.getSize();
     }
 }

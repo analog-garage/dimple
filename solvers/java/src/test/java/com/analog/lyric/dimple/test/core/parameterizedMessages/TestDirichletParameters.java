@@ -89,14 +89,12 @@ public class TestDirichletParameters extends TestParameterizedMessage
 			assertEquals(5, msg2.getAlpha(i), 0.0);
 		}
 		
-		msg.fillAlphaMinusOne(1.5);
-		msg2.add(msg);
-		assertEquals(3, msg.getSize());
-		for (int i = 0; i < 3; ++i)
+		expectThrow(IllegalArgumentException.class, msg2, "add", msg);
+		msg2.add(new DirichletParameters(4, 1.5));
+		for (int i = 0; i < 4; ++i)
 		{
 			assertEquals(6.5, msg2.getAlpha(i), 1e-15);
 		}
-		assertEquals(5, msg2.getAlpha(3), 0.0);
 		
 		msg2.setAlphaMinusOne(new double[] { 10, 11, 12 });
 		assertEquals(3, msg2.getSize());
@@ -104,6 +102,7 @@ public class TestDirichletParameters extends TestParameterizedMessage
 		assertEquals(11, msg2.getAlphaMinusOne(0), 0.0);
 		assertEquals(13, msg2.getAlphaMinusOne(1), 0.0);
 		assertEquals(15, msg2.getAlphaMinusOne(2), 0.0);
+		assertFalse(msg2.isSymmetric());
 		
 		msg2.setNull();
 		assertEquals(3, msg2.getSize());
@@ -111,6 +110,7 @@ public class TestDirichletParameters extends TestParameterizedMessage
 		{
 			assertEquals(0.0, msg2.getAlphaMinusOne(i), 0.0);
 		}
+		assertTrue(msg2.isSymmetric());
 		
 		msg2.setUniform();
 		assertEquals(3, msg2.getSize());
@@ -118,6 +118,7 @@ public class TestDirichletParameters extends TestParameterizedMessage
 		{
 			assertEquals(0.0, msg2.getAlphaMinusOne(i), 0.0);
 		}
+		assertTrue(msg2.isSymmetric());
 		
 		msg2.setAlphaMinusOne(new double[] { 1, 2, 3});
 		for (int i = 0; i < 3; ++i)
@@ -138,6 +139,7 @@ public class TestDirichletParameters extends TestParameterizedMessage
 		{
 			assertEquals(msg.getAlpha(i), msg2.getAlpha(i), 0.0);
 		}
+		assertEquals(msg.isSymmetric(), msg2.isSymmetric());
 		
 		DirichletParameters msg3 = SerializationTester.clone(msg);
 		assertNotSame(msg3, msg);
