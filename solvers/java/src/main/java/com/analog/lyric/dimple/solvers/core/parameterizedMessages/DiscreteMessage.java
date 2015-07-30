@@ -355,6 +355,10 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	 * This will compute the {@linkplain #sumOfWeights() sum of the weights} and use that to
 	 * normalize the message.
 	 * <p>
+	 * If the {@link #getNormalizationEnergy() normalization energy} has not already been computed, it
+	 * will be set to zero. If it had been computed, then the energy of the sum of weights will be added
+	 * to it.
+	 * <p>
 	 * @throws NormalizationException if {@link #sumOfWeights()} is zero.
 	 */
 	public abstract void normalize();
@@ -470,14 +474,9 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 		}
 	}
 	
-	protected double assertNonZeroSumOfWeights()
+	protected NormalizationException weightsAddUpToZero()
 	{
-		double sum = sumOfWeights();
-		if (sum == 0.0)
-		{
-			throw new NormalizationException("Cannot normalize message because weights add up to zero");
-		}
-		return sum;
+		return new NormalizationException("Cannot normalize message because weights add up to zero");
 	}
 
 	@Override
@@ -485,4 +484,5 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	{
 		return weightToEnergy(sumOfWeights());
 	}
+
 }

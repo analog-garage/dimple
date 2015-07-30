@@ -292,9 +292,15 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 	@Override
 	public void normalize()
 	{
-		double normalizer = Utilities.weightToEnergy(assertNonZeroSumOfWeights());
+		double sum = sumOfWeights();
+		if (sum == 0.0)
+		{
+			throw weightsAddUpToZero();
+		}
+
+		double normalizer = Utilities.weightToEnergy(sum);
 		for (int i = _message.length; --i >=0;)
-			_message[i] += normalizer;
+			_message[i] -= normalizer;
 		
 		if (_normalizationEnergy != _normalizationEnergy) // NaN
 		{
@@ -305,7 +311,7 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 			_normalizationEnergy += normalizer;
 		}
 	}
-	
+
 	@Override
 	public void setWeightsToZero()
 	{

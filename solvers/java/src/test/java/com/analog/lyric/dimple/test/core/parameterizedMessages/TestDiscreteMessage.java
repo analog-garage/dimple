@@ -268,8 +268,14 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 		int onlyNonZeroWeightIndex = -1;
 		for (int i = 0; i < size; ++i)
 		{
-			if (message.getWeight(i) != 0)
+			final double w = message.getWeight(i);
+			if (w == 0)
 			{
+				assertTrue(message.hasZeroWeight(i));
+			}
+			else
+			{
+				assertFalse(message.hasZeroWeight(i));
 				if (onlyNonZeroWeightIndex < 0)
 					onlyNonZeroWeightIndex = i;
 				else
@@ -342,6 +348,17 @@ public class TestDiscreteMessage extends TestParameterizedMessage
 		
 		message3.setFrom(message);
 		assertTrue(message.objectEquals(message3));
+		
+		message3.setNormalizationEnergy(Double.NaN); // unset
+		message3.normalize();
+		assertEquals(1.0, message3.sumOfWeights(), 1e-15);
+		assertEquals(0.0, message3.getNormalizationEnergy(), 0.0);
+		
+		message3.setFrom(message);
+		message3.setNormalizationEnergy(0.0);
+		message3.normalize();
+		assertEquals(1.0, message3.sumOfWeights(), 1e-15);
+		assertEquals(weightToEnergy(message.sumOfWeights()), message3.getNormalizationEnergy(), 1e-15);
 		
 		message3.setNull();
 		assertEquals(weightToEnergy(size), message3.getNormalizationEnergy(), 0.0);

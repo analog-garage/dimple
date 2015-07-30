@@ -23,6 +23,7 @@ import java.util.Arrays;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.data.IDatum;
+import com.analog.lyric.dimple.exceptions.NormalizationException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.math.Utilities;
 
@@ -245,8 +246,20 @@ public class DiscreteWeightMessage extends DiscreteMessage
 	@Override
 	public void normalize()
 	{
-		final double sum = assertNonZeroSumOfWeights();
-		
+		double sum = 0.0;
+		for (double w : _message)
+		{
+			if (w < 0)
+			{
+				throw new NormalizationException("Cannot normalize message because it contains a negative weight");
+			}
+			sum += w;
+		}
+		if (sum == 0.0)
+		{
+			throw weightsAddUpToZero();
+		}
+
 		for (int i = _message.length; --i >=0;)
 			_message[i] /= sum;
 		
