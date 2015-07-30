@@ -48,29 +48,31 @@ public class Normal extends UnaryFactorFunction implements IParametricFactorFunc
 {
 	private static final long serialVersionUID = 1L;
 
-	protected double _mean;
-	protected double _precision;
-	protected double _logSqrtPrecisionOver2Pi;
-	protected double _precisionOverTwo;
-	protected boolean _parametersConstant = false;
-	protected int _firstDirectedToIndex = 2;
-	protected static final double _logSqrt2pi = Math.log(2*Math.PI)*0.5;
+	protected NormalParameters _parameters;
+	protected boolean _parametersConstant;
+	protected int _firstDirectedToIndex;
 
 	/*--------------
 	 * Construction
 	 */
 	
-	public Normal() {super((String)null);}
+	private Normal(NormalParameters parameters, boolean constant)
+	{
+		super((String)null);
+		_parameters = parameters;
+		_parametersConstant = constant;
+		_firstDirectedToIndex = constant? 0 : 2;
+	}
+	
+	public Normal()
+	{
+		this(new NormalParameters(), false);
+	}
+	
 	public Normal(double mean, double precision)
 	{
-		this();
-		_mean = mean;
-		_precision = precision;
-		_logSqrtPrecisionOver2Pi = Math.log(_precision)*0.5 - _logSqrt2pi;
-		_precisionOverTwo = _precision*0.5;
-		_parametersConstant = true;
-		_firstDirectedToIndex = 0;
-    	if (_precision < 0)
+		this(new NormalParameters(mean, precision));
+    	if (precision < 0)
     		throw new DimpleException("Negative precision value. This must be a non-negative value.");
 	}
 	/**
@@ -78,7 +80,7 @@ public class Normal extends UnaryFactorFunction implements IParametricFactorFunc
 	 */
 	public Normal(NormalParameters parameters)
 	{
-		this(parameters.getMean(), parameters.getPrecision());
+		this(parameters, true);
 	}
 	
 	/**
@@ -103,11 +105,8 @@ public class Normal extends UnaryFactorFunction implements IParametricFactorFunc
 	protected Normal(Normal other)
 	{
 		super(other);
-		_mean = other._mean;
-		_precision = other._precision;
-		_precisionOverTwo = other._precisionOverTwo;
+		_parameters = other._parameters.clone();
 		_firstDirectedToIndex = other._firstDirectedToIndex;
-		_logSqrtPrecisionOver2Pi = other._logSqrtPrecisionOver2Pi;
 		_parametersConstant = other._parametersConstant;
 	}
 	
@@ -133,8 +132,7 @@ public class Normal extends UnaryFactorFunction implements IParametricFactorFunc
 		{
 			Normal that = (Normal)other;
 			return _parametersConstant == that._parametersConstant &&
-				_mean == that._mean &&
-				_precision == that._precision &&
+				_parameters.objectEquals(that._parameters) &&
 				_firstDirectedToIndex == that._firstDirectedToIndex;
 		}
 		
@@ -151,21 +149,14 @@ public class Normal extends UnaryFactorFunction implements IParametricFactorFunc
     	int index = 0;
     	if (!_parametersConstant)
     	{
-    		_mean = arguments[index++].getDouble();					// First variable is mean parameter
-    		_precision = arguments[index++].getDouble();			// Second variable is precision (must be non-negative)
-    		_logSqrtPrecisionOver2Pi = Math.log(_precision)*0.5 - _logSqrt2pi;
-    		_precisionOverTwo = _precision*0.5;
-    		if (_precision < 0) return Double.POSITIVE_INFINITY;
+    		double mean = arguments[index++].getDouble();					// First variable is mean parameter
+    		double precision = arguments[index++].getDouble();			// Second variable is precision (must be non-negative)
+    		if (precision < 0) return Double.POSITIVE_INFINITY;
+    		_parameters.setMean(mean);
+    		_parameters.setPrecision(precision);
     	}
-    	final int length = arguments.length;
-    	final int N = length - index;			// Number of non-parameter variables
-    	double sum = 0;
-    	for (; index < length; index++)
-    	{
-    		final double relInput = arguments[index].getDouble() - _mean;	// Remaining inputs are Normal variables
-    		sum += relInput*relInput;
-    	}
-    	return sum * _precisionOverTwo - N * _logSqrtPrecisionOver2Pi;
+    	
+    	return _parameters.evalNormalizedEnergy(arguments, index);
 	}
     
     
@@ -187,8 +178,8 @@ public class Normal extends UnaryFactorFunction implements IParametricFactorFunc
     {
     	if (_parametersConstant)
     	{
-    		parameters.put("mean", _mean);
-    		parameters.put("precision", _precision);
+    		parameters.put("mean", getMean());
+    		parameters.put("precision", getPrecision());
     		return 2;
     	}
     	return 0;
@@ -203,19 +194,25 @@ public class Normal extends UnaryFactorFunction implements IParametricFactorFunc
     		{
     		case "mean":
     		case "mu":
-    			return _mean;
+    			return getMean();
     		case "precision":
-    			return _precision;
+    			return getPrecision();
     		case "variance":
-    			return 1.0 / _precision;
+    			return getVariance();
     		case "sigma":
     		case "std":
-    			return Math.sqrt(1.0 / _precision);
+    			return getStandardDeviation();
     		}
     	}
 		return null;
     }
 
+    @Override
+    public NormalParameters getParameterizedMessage()
+    {
+    	return _parameters;
+    }
+    
     @Override
 	public final boolean hasConstantParameters()
     {
@@ -231,19 +228,19 @@ public class Normal extends UnaryFactorFunction implements IParametricFactorFunc
 	 */
     public final NormalParameters getParameters()
     {
-    	return new NormalParameters(_mean, _precision);
+    	return _parameters;
     }
     
     @Matlab
     public final double getMean()
     {
-    	return _mean;
+    	return _parameters.getMean();
     }
     
     @Matlab
     public final double getPrecision()
     {
-    	return _precision;
+    	return _parameters.getPrecision();
     }
     
 	/**
@@ -252,7 +249,7 @@ public class Normal extends UnaryFactorFunction implements IParametricFactorFunc
     @Matlab
 	public final double getVariance()
 	{
-		return 1/_precision;
+		return _parameters.getVariance();
 	}
     
 	/**
@@ -261,22 +258,20 @@ public class Normal extends UnaryFactorFunction implements IParametricFactorFunc
     @Matlab
 	public final double getStandardDeviation()
 	{
-		return 1/Math.sqrt(_precision);
+		return _parameters.getStandardDeviation();
 	}
 	/**
 	 * @since 0.05
 	 */
     public final void setMean(double mean)
     {
-    	_mean = mean;
+    	_parameters.setMean(mean);
     }
 	/**
 	 * @since 0.05
 	 */
     public final void setPrecision(double precision)
     {
-    	_precision = precision;
-		_logSqrtPrecisionOver2Pi = Math.log(_precision)*0.5 - _logSqrt2pi;
-		_precisionOverTwo = _precision*0.5;
+    	_parameters.setPrecision(precision);
     }
 }

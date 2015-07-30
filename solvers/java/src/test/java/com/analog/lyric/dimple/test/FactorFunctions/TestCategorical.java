@@ -22,6 +22,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import com.analog.lyric.dimple.exceptions.InvalidDistributionException;
 import com.analog.lyric.dimple.factorfunctions.Categorical;
 import com.analog.lyric.dimple.factorfunctions.CategoricalBase;
 import com.analog.lyric.dimple.factorfunctions.CategoricalEnergyParameters;
@@ -63,9 +64,9 @@ public class TestCategorical extends DimpleTestBase
 		try
 		{
 			new Categorical(new double[] { .3, -.4 });
-			fail("expected IllegalArgumentException");
+			fail("expected InvalidDistributionException");
 		}
-		catch (IllegalArgumentException ex)
+		catch (InvalidDistributionException ex)
 		{
 		}
 

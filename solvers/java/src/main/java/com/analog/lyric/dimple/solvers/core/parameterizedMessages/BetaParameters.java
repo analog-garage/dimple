@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2013 Analog Devices, Inc.
+*   Copyright 2013-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -25,6 +25,9 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.values.Value;
 
+/**
+ * Parameterized message for beta distribution.
+ */
 public class BetaParameters extends ParameterizedMessageBase
 {
 	/*-------

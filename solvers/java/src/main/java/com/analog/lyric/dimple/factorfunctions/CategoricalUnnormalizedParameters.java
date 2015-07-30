@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.Matlab;
 
@@ -57,7 +58,7 @@ public class CategoricalUnnormalizedParameters extends CategoricalBase
 	
 	public CategoricalUnnormalizedParameters(int dimension)		// Variable parameters
 	{
-		super(dimension);
+		super(new DiscreteWeightMessage(dimension), dimension);
 	}
 	
 	/**
@@ -77,8 +78,8 @@ public class CategoricalUnnormalizedParameters extends CategoricalBase
 	 */
 	public CategoricalUnnormalizedParameters(double[] alpha)		// Constant parameters
 	{
-		super(alpha);
-		normalizeAlphas();
+		super(new DiscreteWeightMessage(alpha));
+		_parameters.normalize();
 	}
 	
 	protected CategoricalUnnormalizedParameters(CategoricalUnnormalizedParameters other)
@@ -99,31 +100,21 @@ public class CategoricalUnnormalizedParameters extends CategoricalBase
     @Override
 	public final double evalEnergy(Value[] arguments)
     {
-    	final int dimension = _alpha.length;
     	int index = 0;
     	
-    	double normalizationValue = 0;
-
     	if (!_parametersConstant)
     	{
+        	final int dimension = _parameters.size();
     		for (int i = 0; i < dimension; i++)
     		{
-    			final double a = arguments[index++].getDouble();	// First _dimension arguments are vector of Alpha parameters, if not constant
+    			// First _dimension arguments are vector of Alpha parameters, if not constant
+    			final double a = arguments[index++].getDouble();
     			if (a < 0) return Double.POSITIVE_INFINITY;
-    			_alpha[i] = a;
-        		normalizationValue += a;
+    			
+    			_parameters.setWeight(i, a);
     		}
-    		normalizationValue = Math.log(normalizationValue);
     	}
-    	
-    	final int length = arguments.length;
-    	final int N = length - index;								// Number of non-parameter variables
-    	double sum = 0;
-    	for (; index < length; index++)
-    	{
-    		final int x = arguments[index].getIndexOrInt();			// Remaining arguments are Categorical variables
-    		sum += -Math.log(_alpha[x]);
-    	}
-    	return sum + N * normalizationValue;
+
+    	return _parameters.evalNormalizedEnergy(arguments,  index);
 	}
 }

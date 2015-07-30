@@ -1,5 +1,5 @@
 /*******************************************************************************
- *   Copyright 2012 Analog Devices, Inc.
+ *   Copyright 2012-2015 Analog Devices, Inc.
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -25,9 +25,10 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
 
 /**
- * Gamma distribution.
+ * Beta distribution.
  * <p>
  * The variables in the argument list are ordered as follows:
  * <ol>
@@ -42,38 +43,38 @@ public class Beta extends UnaryFactorFunction implements IParametricFactorFuncti
 {
 	private static final long serialVersionUID = 1L;
 
-	// TODO replace fields with BetaParameters instance
-	
-	protected double _alpha;
-	protected double _beta;
-	protected double _alphaMinusOne;
-	protected double _betaMinusOne;
-	protected double _logBetaAlphaBeta;
-	protected boolean _parametersConstant = false;
-	protected int _firstDirectedToIndex = 2;
+	protected BetaParameters _parameters;
+	protected boolean _parametersConstant;
+	protected int _firstDirectedToIndex;
 
 	/*--------------
 	 * Construction
 	 */
 
-	public Beta()
+	private Beta(BetaParameters parameters, boolean constant)
 	{
 		super((String)null);
+		_parameters = parameters;
+		_parametersConstant = constant;
+		_firstDirectedToIndex = constant ? 0 : 2;
+	}
+	
+	public Beta()
+	{
+		this(new BetaParameters(), false);
 	}
 
+	public Beta(BetaParameters parameters)
+	{
+		this(parameters, true);
+	}
+	
 	public Beta(double alpha, double beta)
 	{
-		this();
-		_alpha = alpha;
-		_beta = beta;
-		_alphaMinusOne = _alpha - 1;
-		_betaMinusOne = _beta - 1;
-		_logBetaAlphaBeta = org.apache.commons.math3.special.Beta.logBeta(_alpha, _beta);
-		_parametersConstant = true;
-		_firstDirectedToIndex = 0;
-		if (_alpha < 0)
+		this(new BetaParameters(alpha - 1, beta - 1));
+		if (alpha < 0)
 			throw new DimpleException("Negative alpha parameter. This must be a non-negative value.");
-		if (_beta < 0)
+		if (beta < 0)
 			throw new DimpleException("Negative beta parameter. This must be a non-negative value.");
 	}
 
@@ -95,11 +96,7 @@ public class Beta extends UnaryFactorFunction implements IParametricFactorFuncti
 	protected Beta(Beta other)
 	{
 		super(other);
-		_alpha = other._alpha;
-		_beta = other._beta;
-		_alphaMinusOne = other._alphaMinusOne;
-		_betaMinusOne = other._betaMinusOne;
-		_logBetaAlphaBeta = other._logBetaAlphaBeta;
+		_parameters = other._parameters.clone();
 		_parametersConstant = other._parametersConstant;
 		_firstDirectedToIndex = other._firstDirectedToIndex;
 	}
@@ -126,8 +123,7 @@ public class Beta extends UnaryFactorFunction implements IParametricFactorFuncti
 		{
 			Beta that = (Beta)other;
 			return _parametersConstant == that._parametersConstant &&
-				_alpha == that._alpha &&
-				_beta == that._beta &&
+				_parameters.objectEquals(that._parameters) &&
 				_firstDirectedToIndex == that._firstDirectedToIndex;
 		}
 		
@@ -144,68 +140,17 @@ public class Beta extends UnaryFactorFunction implements IParametricFactorFuncti
 		int index = 0;
 		if (!_parametersConstant)
 		{
-			_alpha = arguments[index++].getDouble();	// First input is alpha parameter (must be
-														// non-negative)
-			_beta = arguments[index++].getDouble();	// Second input is beta parameter (must be
-													// non-negative)
-			_alphaMinusOne = _alpha - 1;
-			_betaMinusOne = _beta - 1;
-			_logBetaAlphaBeta = org.apache.commons.math3.special.Beta.logBeta(_alpha, _beta);
-			if (_alpha < 0)
+			double alpha = arguments[index++].getDouble();
+			if (alpha < 0)
 				return Double.POSITIVE_INFINITY;
-			if (_beta < 0)
+			_parameters.setAlpha(alpha);
+			double beta = arguments[index++].getDouble();
+			if (beta < 0)
 				return Double.POSITIVE_INFINITY;
+			_parameters.setBeta(beta);
 		}
-		final int length = arguments.length;
-		final int N = length - index;			// Number of non-parameter variables
-		double sum = 0;
-		if (_alpha == 1 && _beta == 1)
-		{
-			for (; index < length; index++)
-			{
-				final double x = arguments[index].getDouble();			// Remaining inputs are Beta
-																// variables
-				if (x < 0 || x > 1)
-					return Double.POSITIVE_INFINITY;
-			}
-			return 0;	// Uniform within 0 <= x <= 1
-		}
-		else if (_alpha == 1)
-		{
-			for (; index < length; index++)
-			{
-				final double x = arguments[index].getDouble();			// Remaining inputs are Beta
-																// variables
-				if (x < 0 || x > 1)
-					return Double.POSITIVE_INFINITY;
-				sum += Math.log(1 - x);
-			}
-			return N * _logBetaAlphaBeta - sum * _betaMinusOne;
-		}
-		else if (_beta == 1)
-		{
-			for (; index < length; index++)
-			{
-				final double x = arguments[index].getDouble();			// Remaining inputs are Beta
-																// variables
-				if (x < 0 || x > 1)
-					return Double.POSITIVE_INFINITY;
-				sum += Math.log(x);
-			}
-			return N * _logBetaAlphaBeta - sum * _alphaMinusOne;
-		}
-		else
-		{
-			for (; index < length; index++)
-			{
-				final double x = arguments[index].getDouble();			// Remaining inputs are Beta
-																// variables
-				if (x < 0 || x > 1)
-					return Double.POSITIVE_INFINITY;
-				sum += _alphaMinusOne * Math.log(x) + _betaMinusOne * Math.log(1 - x);
-			}
-			return N * _logBetaAlphaBeta - sum;
-		}
+		
+		return _parameters.evalNormalizedEnergy(arguments, index);
 	}
 
 	@Override
@@ -230,8 +175,8 @@ public class Beta extends UnaryFactorFunction implements IParametricFactorFuncti
 	{
 		if (_parametersConstant)
 		{
-			parameters.put("alpha", _alpha);
-			parameters.put("beta", _beta);
+			parameters.put("alpha", _parameters.getAlpha());
+			parameters.put("beta", _parameters.getBeta());
 			return 2;
 		}
 		return 0;
@@ -245,12 +190,18 @@ public class Beta extends UnaryFactorFunction implements IParametricFactorFuncti
 			switch (parameterName)
 			{
 			case "alpha":
-				return _alpha;
+				return _parameters.getAlpha();
 			case "beta":
-				return _beta;
+				return _parameters.getBeta();
 			}
 		}
 		return null;
+	}
+	
+	@Override
+	public BetaParameters getParameterizedMessage()
+	{
+		return _parameters;
 	}
 	
 	@Override
@@ -265,11 +216,11 @@ public class Beta extends UnaryFactorFunction implements IParametricFactorFuncti
 	
 	public final double getAlphaMinusOne()	// The natural additive parameter, alpha - 1
 	{
-		return _alphaMinusOne;
+		return _parameters.getAlphaMinusOne();
 	}
 
 	public final double getBetaMinusOne()	// The natural additive parameter, beta - 1
 	{
-		return _betaMinusOne;
+		return _parameters.getBetaMinusOne();
 	}
 }

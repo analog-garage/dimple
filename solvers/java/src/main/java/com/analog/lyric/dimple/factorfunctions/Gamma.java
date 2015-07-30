@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 
 
 /**
@@ -42,33 +43,42 @@ public class Gamma extends UnaryFactorFunction implements IParametricFactorFunct
 {
 	private static final long serialVersionUID = 1L;
 
-	// TODO replace fields with GammaParameters
-	
-	protected double _alpha;
-	protected double _beta;
-	protected double _alphaMinusOne;
-	protected double _logBeta;
-	protected double _logGammaAlphaMinusAlphaLogBeta;
+	protected GammaParameters _parameters;
 	protected boolean _parametersConstant = false;
 	protected int _firstDirectedToIndex = 2;
-
+	
 	/*--------------
 	 * Construction
 	 */
 	
-	public Gamma() {super((String)null);}
+	private Gamma(GammaParameters parameters, boolean constant)
+	{
+		super((String)null);
+		_parameters = parameters;
+		_parametersConstant = constant;
+		_firstDirectedToIndex = constant? 0 : 2;
+	}
+	
+	public Gamma()
+	{
+		this(new GammaParameters(0.0, 0.0), false);
+	}
+	
+	/**
+	 * 
+	 * @param parameters
+	 * @since 0.08
+	 */
+	public Gamma(GammaParameters parameters)
+	{
+		this(parameters, true);
+	}
+	
 	public Gamma(double alpha, double beta)
 	{
-		this();
-		_alpha = alpha;
-		_beta = beta;
-		_alphaMinusOne = _alpha - 1;
-		_logBeta = Math.log(_beta);
-		_logGammaAlphaMinusAlphaLogBeta = org.apache.commons.math3.special.Gamma.logGamma(_alpha) - _alpha * _logBeta;
-		_parametersConstant = true;
-		_firstDirectedToIndex = 0;
-    	if (_alpha <= 0) throw new DimpleException("Non-positive alpha parameter. This must be a positive value.");
-    	if (_beta <= 0) throw new DimpleException("Non-positive beta parameter. This must be a positive value.");
+		this(new GammaParameters(alpha-1,beta));
+    	if (alpha <= 0) throw new DimpleException("Non-positive alpha parameter. This must be a positive value.");
+    	if (beta <= 0) throw new DimpleException("Non-positive beta parameter. This must be a positive value.");
 	}
 	
 	/**
@@ -88,11 +98,7 @@ public class Gamma extends UnaryFactorFunction implements IParametricFactorFunct
 	protected Gamma(Gamma other)
 	{
 		super(other);
-		_alpha = other._alpha;
-		_alphaMinusOne = other._alphaMinusOne;
-		_beta = other._beta;
-		_logBeta = other._logBeta;
-		_logGammaAlphaMinusAlphaLogBeta = other._logGammaAlphaMinusAlphaLogBeta;
+		_parameters = other._parameters.clone();
 		_firstDirectedToIndex = other._firstDirectedToIndex;
 		_parametersConstant = other._parametersConstant;
 	}
@@ -119,8 +125,7 @@ public class Gamma extends UnaryFactorFunction implements IParametricFactorFunct
 		{
 			Gamma that = (Gamma)other;
 			return _parametersConstant == that._parametersConstant &&
-				_alpha == that._alpha &&
-				_beta == that._beta &&
+				_parameters.objectEquals(that._parameters) &&
 				_firstDirectedToIndex == that._firstDirectedToIndex;
 		}
 		
@@ -134,47 +139,20 @@ public class Gamma extends UnaryFactorFunction implements IParametricFactorFunct
     @Override
     public final double evalEnergy(Value[] arguments)
     {
-    	int index = 0;
-    	if (!_parametersConstant)
-    	{
-    		_alpha = arguments[index++].getDouble();	// First input is alpha parameter (must be non-negative)
-    		if (_alpha <= 0) return Double.POSITIVE_INFINITY;
-    		_beta = arguments[index++].getDouble();	// Second input is beta parameter (must be non-negative)
-    		if (_beta <= 0) return Double.POSITIVE_INFINITY;
-    		_logBeta = Math.log(_beta);
-    	}
-    	final int length = arguments.length;
-    	final int N = length - index;			// Number of non-parameter variables
-    	double sum = 0;
-    	if (_alpha == 1)
-    	{
-    		for (; index < length; index++)
-    		{
-    			double x = arguments[index].getDouble();				// Remaining inputs are Gamma variables
-    			if (x < 0)
-    				return Double.POSITIVE_INFINITY;
-    			else
-    				sum += x;
-    		}
-    		return sum * _beta - N * _logBeta;
-    	}
-    	else
-    	{
-    		if (!_parametersConstant)
-    		{
-        		_alphaMinusOne = _alpha - 1;
-        		_logGammaAlphaMinusAlphaLogBeta = org.apache.commons.math3.special.Gamma.logGamma(_alpha) - _alpha * _logBeta;
-    		}
-        	for (; index < length; index++)
-        	{
-        		final double x = arguments[index].getDouble();				// Remaining inputs are Gamma variables
-            	if (x < 0)
-            		return Double.POSITIVE_INFINITY;
-            	else
-            		sum += x * _beta - Math.log(x) * _alphaMinusOne;
-        	}
-        	return sum + N * _logGammaAlphaMinusAlphaLogBeta;
-    	}
+		int index = 0;
+		if (!_parametersConstant)
+		{
+			double alpha = arguments[index++].getDouble();
+			if (alpha <= 0)
+				return Double.POSITIVE_INFINITY;
+			_parameters.setAlpha(alpha);
+			double beta = arguments[index++].getDouble();
+			if (beta <= 0)
+				return Double.POSITIVE_INFINITY;
+			_parameters.setBeta(beta);
+		}
+		
+		return _parameters.evalNormalizedEnergy(arguments, index);
 	}
     
     @Override
@@ -195,8 +173,8 @@ public class Gamma extends UnaryFactorFunction implements IParametricFactorFunct
     {
     	if (_parametersConstant)
     	{
-    		parameters.put("alpha", _alpha);
-    		parameters.put("beta", _beta);
+    		parameters.put("alpha", _parameters.getAlpha());
+    		parameters.put("beta", _parameters.getBeta());
     		return 2;
     	}
     	return 0;
@@ -210,12 +188,18 @@ public class Gamma extends UnaryFactorFunction implements IParametricFactorFunct
     		switch (parameterName)
     		{
     		case "alpha":
-    			return _alpha;
+    			return _parameters.getAlpha();
     		case "beta":
-    			return _beta;
+    			return _parameters.getBeta();
     		}
     	}
     	return null;
+    }
+    
+    @Override
+    public GammaParameters getParameterizedMessage()
+    {
+    	return _parameters;
     }
     
     @Override
@@ -230,10 +214,10 @@ public class Gamma extends UnaryFactorFunction implements IParametricFactorFunct
     
     public final double getAlphaMinusOne()
     {
-    	return _alphaMinusOne;
+    	return _parameters.getAlphaMinusOne();
     }
     public final double getBeta()
     {
-    	return _beta;
+    	return _parameters.getBeta();
     }
 }

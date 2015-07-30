@@ -16,11 +16,10 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
-import static com.analog.lyric.math.Utilities.*;
-
 import java.util.Map;
 
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 
 
 /**
@@ -50,7 +49,7 @@ public class Categorical extends CategoricalBase
 	
 	public Categorical()		// Variable parameters
 	{
-		super();
+		super(new DiscreteWeightMessage(0), 1);
 	}
 	
 	/**
@@ -58,8 +57,8 @@ public class Categorical extends CategoricalBase
 	 */
 	public Categorical(double[] alpha)	// Constant parameters
 	{
-		super(alpha);
-		normalizeAlphas();
+		super(new DiscreteWeightMessage(alpha));
+		_parameters.normalize();
 	}
 	
 	/**
@@ -94,17 +93,14 @@ public class Categorical extends CategoricalBase
 	public final double evalEnergy(Value[] arguments)
     {
     	int index = 0;
+    	
     	if (!_parametersConstant)
-    		_alpha = arguments[index++].getDoubleArray();	// First argument is the parameter vector, if not constant
-
-    	// Remaining arguments are Categorical variables
-    	final int length = arguments.length;
-    	double sum = 0;
-    	for (; index < length; index++)
     	{
-    		final int x = arguments[index].getIndexOrInt();
-    		sum += weightToEnergy(_alpha[x]);
+    		// First argument is the parameter vector, if not constant
+    		_parameters = new DiscreteWeightMessage(arguments[index++].getDoubleArray());
+    		_parameters.setNormalizationEnergy(0.0);
     	}
-    	return sum;
+    	
+    	return _parameters.evalNormalizedEnergy(arguments, index);
 	}
 }

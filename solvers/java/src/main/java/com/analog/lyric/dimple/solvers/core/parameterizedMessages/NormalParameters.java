@@ -160,6 +160,7 @@ public class NormalParameters extends ParameterizedMessageBase
 			return 0.0;
 		
 		final double x = value.getDouble() - _mean;
+		// FIXME x close to 0.0 and precision is infinity should be zero not NaN or Infinity
 		return x * x * precision * .5;
 	}
 	

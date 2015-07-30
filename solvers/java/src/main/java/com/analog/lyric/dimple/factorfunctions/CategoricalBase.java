@@ -18,15 +18,14 @@ package com.analog.lyric.dimple.factorfunctions;
 
 import static java.util.Objects.*;
 
-import java.util.Arrays;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 
 /**
  * 
@@ -41,7 +40,7 @@ public abstract class CategoricalBase extends UnaryFactorFunction implements IPa
 	
 	private static final long serialVersionUID = 1L;
 
-	protected double[] _alpha;
+	protected DiscreteMessage _parameters;
 	protected boolean _parametersConstant;
 	protected int _firstDirectedToIndex;
 
@@ -49,52 +48,25 @@ public abstract class CategoricalBase extends UnaryFactorFunction implements IPa
 	 * Construction
 	 */
 	
-	protected CategoricalBase()
+	protected CategoricalBase(DiscreteMessage parameters, int firstDirectedToIndex)
 	{
 		super((String)null);
-		_alpha = ArrayUtil.EMPTY_DOUBLE_ARRAY;
-		_parametersConstant = false;
-		_firstDirectedToIndex = 1;	// Parameter vector is an array (one RealJoint variable)
+		_parameters = parameters;
+		_parametersConstant = firstDirectedToIndex == 0;
+		_firstDirectedToIndex = firstDirectedToIndex;
 	}
 	
-	protected CategoricalBase(int dimension)
+	protected CategoricalBase(DiscreteMessage parameters)
 	{
-		super((String)null);
-		_alpha = new double[dimension];
-		_firstDirectedToIndex = dimension;
-		_parametersConstant = false;
+		this(parameters, 0);
 	}
 	
-	protected CategoricalBase(double[] alpha)
-	{
-		super((String)null);
-		_alpha = alpha.clone();
-		_parametersConstant = true;
-		_firstDirectedToIndex = 0;
-	}
-		
 	protected CategoricalBase(CategoricalBase other)
 	{
 		super(other);
-		_alpha = other._alpha.clone();
+		_parameters = other._parameters.clone();
 		_parametersConstant = other._parametersConstant;
 		_firstDirectedToIndex = other._firstDirectedToIndex;
-	}
-	
-	protected void normalizeAlphas()
-	{
-		double sum = 0;
-		for (double d : _alpha)
-		{
-			if (d < 0)
-			{
-				throw new IllegalArgumentException(
-					"Non-positive alpha parameter. Domain must be restricted to positive values.");
-			}
-			sum += d;
-		}
-		for (int i = 0; i < _alpha.length; i++)		// Normalize the alpha vector in case they're not already normalized
-			_alpha[i] /= sum;
 	}
 	
 	/*----------------
@@ -114,7 +86,7 @@ public abstract class CategoricalBase extends UnaryFactorFunction implements IPa
 			CategoricalBase that = (CategoricalBase)requireNonNull(other);
 			return _parametersConstant == that._parametersConstant &&
 				_firstDirectedToIndex == that._firstDirectedToIndex &&
-				Arrays.equals(_alpha, that._alpha);
+				_parameters.objectEquals(that._parameters);
 		}
 		
 		return false;
@@ -146,7 +118,7 @@ public abstract class CategoricalBase extends UnaryFactorFunction implements IPa
 	{
 		if (_parametersConstant)
 		{
-			parameters.put("alpha", _alpha.clone());
+			parameters.put("alpha", getParameters().clone());
 			return 1;
 		}
 		return 0;
@@ -162,7 +134,7 @@ public abstract class CategoricalBase extends UnaryFactorFunction implements IPa
 			{
 			case "alpha":
 			case "alphas":
-				return _alpha.clone();
+				return getParameters().clone();
 			}
 		}
 		return null;
@@ -173,15 +145,21 @@ public abstract class CategoricalBase extends UnaryFactorFunction implements IPa
 	{
 		return _parametersConstant;
 	}
+	
+	@Override
+	public DiscreteMessage getParameterizedMessage()
+	{
+		return _parameters;
+	}
 
 	public final double[] getParameters()
 	{
-		return _alpha;
+		return _parameters.representation();
 	}
 
 	public final int getDimension()
 	{
-		return _alpha.length;
+		return _parameters.size();
 	}
 
 }

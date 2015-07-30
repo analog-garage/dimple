@@ -126,13 +126,13 @@ public abstract class ParameterizedMessageBase implements IParameterizedMessage
 		return energy == energy ? energy : Double.POSITIVE_INFINITY;
 	}
 
-	public double evalNormalizedEnergy(Value ... values)
+	public double evalNormalizedEnergy(Value[] values, int startIndex)
 	{
 		final int n = values.length;
-		double energy = -n * getNormalizationEnergy();
-		for (Value value : values)
+		double energy = (n - startIndex) * -getNormalizationEnergy();
+		for (int i = startIndex; i < n; ++i)
 		{
-			energy += evalEnergy(value);
+			energy += evalEnergy(values[i]);
 		}
 		return energy;
 	}

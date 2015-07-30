@@ -16,7 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.sampledfactor;
 
-import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
@@ -66,7 +65,7 @@ class SumProductSampledNormalEdge extends SumProductNormalEdge
 			}
 			else
 			{
-				var.setPrior(new Normal(inputMessage));
+				var.setPrior(inputMessage);
 			}
 		}
 	}
