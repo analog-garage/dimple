@@ -185,6 +185,12 @@ public class Dirichlet extends UnaryFactorFunction implements IParametricFactorF
     }
     
     @Override
+    public DirichletParameters getParameterizedMessage()
+    {
+    	return _parameters;
+    }
+
+    @Override
 	public final boolean hasConstantParameters()
     {
     	return _parametersConstant;
