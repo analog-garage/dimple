@@ -108,7 +108,7 @@ public class RandomWithReplacementSchedule extends ScheduleBase
 		// One iteration consists of the number of factor updates equaling the total number of factors, even though not all factors will necessarily be updated
 		for (int iFactor = 0; iFactor < _numFactors; iFactor++)
 		{
-			final int factorIndex = DimpleRandomGenerator.rand.nextInt(_numFactors);
+			final int factorIndex = DimpleRandomGenerator.nextInt(_numFactors);
 			final Factor f = ((ArrayList<Factor>)_factors.values()).get(factorIndex);
 			final FactorGraph fg = f.requireParentGraph();
 			for (EdgeState edge : f.getSiblingEdgeState())

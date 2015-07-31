@@ -20,16 +20,15 @@ import org.apache.commons.math3.random.RandomGenerator;
 
 import cern.jet.random.engine.RandomEngine;
 
-
 public class DimpleRandomGenerator
 {
 	public static RandomGenerator rand = new org.apache.commons.math3.random.MersenneTwister();
 	
 	// Other random number generators not supported by the Apache framework
 	private static RandomEngine randEngine = new cern.jet.random.engine.MersenneTwister(rand.nextInt());
-	public static cern.jet.random.Gamma randGamma = new cern.jet.random.Gamma(1, 1, randEngine);
-	public static cern.jet.random.Beta randBeta = new cern.jet.random.Beta(1, 1, randEngine);
-	public static cern.jet.random.Binomial randBinomial = new cern.jet.random.Binomial(1, 0.5, randEngine);
+	private static cern.jet.random.Gamma randGamma = new cern.jet.random.Gamma(1, 1, randEngine);
+	private static cern.jet.random.Beta randBeta = new cern.jet.random.Beta(1, 1, randEngine);
+	private static cern.jet.random.Binomial randBinomial = new cern.jet.random.Binomial(1, 0.5, randEngine);
 	
 	
 	public static void setSeed(long seed)
@@ -43,6 +42,41 @@ public class DimpleRandomGenerator
 		randBinomial = new cern.jet.random.Binomial(1, 0.5, randEngine);
 	}
 	
+	public static double nextBeta(double alpha, double beta)
+	{
+		return randBeta.nextDouble(alpha, beta);
+		//return DimpleEnvironment.activeRandom().nextBeta(alpha, beta);
+	}
+
+	public static boolean nextBoolean()
+	{
+		return rand.nextBoolean();
+	}
+	
+	public static double nextDouble()
+	{
+		return rand.nextDouble();
+	}
+	
+	public static double nextGamma(double alpha, double beta)
+	{
+		return randGamma.nextDouble(alpha, beta);
+	}
+	
+	public static double nextGaussian()
+	{
+		return rand.nextGaussian();
+	}
+	
+	public static int nextInt(int n)
+	{
+		return rand.nextInt(n);
+	}
+	
+	public static long nextLong()
+	{
+		return rand.nextLong();
+	}
 	
 	// randBinomial doesn't accept zero N value or 1 or 0 p value
 	public static final int randomBinomial(int N, double p)

@@ -186,7 +186,7 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 					double sum = 0;
 					for (int i = 0; i < _dimension; i++)
 					{
-						double v = -Math.log(DimpleRandomGenerator.rand.nextDouble());	// Sample from an exponential distribution
+						double v = -Math.log(DimpleRandomGenerator.nextDouble());	// Sample from an exponential distribution
 						value[i] = v;
 						sum += v;
 					}

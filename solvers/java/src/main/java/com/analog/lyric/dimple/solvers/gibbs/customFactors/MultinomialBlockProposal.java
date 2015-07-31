@@ -102,7 +102,7 @@ public class MultinomialBlockProposal implements IBlockProposalKernel
 			// If N is variable, sample N uniformly
 			int previousN = currentValue[argumentIndex].getIndex();
 			int NDomainSize = requireNonNull(variableDomain[0].asDiscrete()).size();
-			nextN = DimpleRandomGenerator.rand.nextInt(NDomainSize);
+			nextN = DimpleRandomGenerator.nextInt(NDomainSize);
 			newValue[argumentIndex].setIndex(nextN);
 			argumentIndex++;
 			

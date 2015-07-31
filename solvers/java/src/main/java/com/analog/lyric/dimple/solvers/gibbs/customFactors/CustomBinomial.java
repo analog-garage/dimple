@@ -209,7 +209,7 @@ public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFac
 				int N = _hasConstantNParameter ? _constantNParameterValue : _NParameterVariable.getCurrentSampleIndex();
 				int nextIndex;
 				if (N > 0)
-					nextIndex = DimpleRandomGenerator.rand.nextInt(N + 1);
+					nextIndex = DimpleRandomGenerator.nextInt(N + 1);
 				else
 					nextIndex = 0;
 				

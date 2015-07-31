@@ -48,7 +48,7 @@ public class TrivialUniformBlockProposer implements IBlockProposalKernel
 				DiscreteDomain discreteDomain = requireNonNull(domain.asDiscrete());
 				int domainSize = discreteDomain.size();
 				Value v = Value.create(discreteDomain);
-				v.setIndex(DimpleRandomGenerator.rand.nextInt(domainSize));
+				v.setIndex(DimpleRandomGenerator.nextInt(domainSize));
 				newValue[i] = v;
 			}
 			else

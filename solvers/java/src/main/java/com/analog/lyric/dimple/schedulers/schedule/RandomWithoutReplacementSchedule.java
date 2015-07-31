@@ -109,7 +109,7 @@ public class RandomWithoutReplacementSchedule extends ScheduleBase
 		for (int iFactor = _numFactors - 1; iFactor > 0; iFactor--)
 		{
 			int randRange = iFactor + 1;
-		    int randFactor = DimpleRandomGenerator.rand.nextInt(randRange);
+		    int randFactor = DimpleRandomGenerator.nextInt(randRange);
 		    int nextIndex = _factorIndices[randFactor];
 		    _factorIndices[randFactor] = _factorIndices[iFactor];
 		    _factorIndices[iFactor] = nextIndex;

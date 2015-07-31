@@ -82,9 +82,9 @@ public class NormalSampler implements IRealConjugateSampler
 		double mean = parameters.getMean();
 		double precision = parameters.getPrecision();
 		if (precision > 0)
-			return mean + DimpleRandomGenerator.rand.nextGaussian() / Math.sqrt(precision);
+			return mean + DimpleRandomGenerator.nextGaussian() / Math.sqrt(precision);
 		else
-			return mean + DimpleRandomGenerator.rand.nextGaussian() * MAX_SIGMA;
+			return mean + DimpleRandomGenerator.nextGaussian() * MAX_SIGMA;
 	}
 
 	@Override

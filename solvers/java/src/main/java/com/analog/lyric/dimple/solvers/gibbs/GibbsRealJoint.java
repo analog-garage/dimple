@@ -552,7 +552,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 				{
 					// No available sampler, so if bounded, sample uniformly from the bounds
 					if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
-						setCurrentSample(i, DimpleRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
+						setCurrentSample(i, DimpleRandomGenerator.nextDouble() * (hi - lo) + lo);
 				}
 			}
 		}
@@ -591,7 +591,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 
 					// No available sampler, so if bounded, sample uniformly from the bounds
 					if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
-						setCurrentSample(i, DimpleRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
+						setCurrentSample(i, DimpleRandomGenerator.nextDouble() * (hi - lo) + lo);
 					else if (hi < _currentSample.getValue(i))
 						setCurrentSample(i, hi);
 					else if (lo > _currentSample.getValue(i))
@@ -610,7 +610,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 
 				// If bounded, sample uniformly from the bounds, otherwise leave current sample value
 				if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
-					setCurrentSample(i, DimpleRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
+					setCurrentSample(i, DimpleRandomGenerator.nextDouble() * (hi - lo) + lo);
 			}
 		}
 	}

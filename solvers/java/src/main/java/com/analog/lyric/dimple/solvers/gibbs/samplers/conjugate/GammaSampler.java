@@ -81,7 +81,7 @@ public class GammaSampler implements IRealConjugateSampler
 	{
 		double alphaMinusOne = parameters.getAlphaMinusOne();
 		double beta = parameters.getBeta();
-		return DimpleRandomGenerator.randGamma.nextDouble(alphaMinusOne + 1, beta);
+		return DimpleRandomGenerator.nextGamma(alphaMinusOne + 1, beta);
 	}
 	
 	@Override

@@ -47,7 +47,7 @@ public class TrivialNonuniformBlockProposer implements IBlockProposalKernel
 	{
 		_domainSizes = domainSizes;
 		_weights = weights;
-		_random = new Random(DimpleRandomGenerator.rand.nextLong());
+		_random = new Random(DimpleRandomGenerator.nextLong());
 		_numDomains = _domainSizes.length;
 		
 		_domainProducts = new int[_numDomains];
@@ -136,7 +136,7 @@ public class TrivialNonuniformBlockProposer implements IBlockProposalKernel
 		int product = 2 * 5 * 3 * 6 * 4;
 		double[] weights = new double[product];
 		for (int i = 0; i < product; i++)
-			weights[i] = DimpleRandomGenerator.rand.nextDouble();
+			weights[i] = DimpleRandomGenerator.nextDouble();
 		TrivialNonuniformBlockProposer t = new TrivialNonuniformBlockProposer(weights, domainSizes);
 		for (int i = 0; i < product; i++)
 		{

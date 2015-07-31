@@ -107,7 +107,7 @@ public class BlockMHSampler implements IBlockMCMCSampler
 			else
 				rejectionThreshold = 0;
 		}
-		if (DimpleRandomGenerator.rand.nextDouble() < rejectionThreshold)
+		if (DimpleRandomGenerator.nextDouble() < rejectionThreshold)
 		{
 			block.updateFinish(proposalValue);
 		}

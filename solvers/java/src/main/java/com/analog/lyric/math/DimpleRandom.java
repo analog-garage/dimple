@@ -40,7 +40,7 @@ public class DimpleRandom extends RandomAdaptor
 	
 	private static final long serialVersionUID = 1L;
 
-	// Other random number generators not supported by the Apache framework
+	// TODO - can we switch to use Apache versions of these?
 	private RandomEngine _randEngine;
 	private cern.jet.random.Beta _randBeta;
 	private cern.jet.random.Binomial _randBinomial;

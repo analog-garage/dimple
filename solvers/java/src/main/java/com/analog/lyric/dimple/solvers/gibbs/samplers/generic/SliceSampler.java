@@ -95,14 +95,14 @@ public class SliceSampler extends AbstractGenericSampler implements IMCMCSampler
 	public double sampleVerticalSlice(ISamplerClient samplerClient)
 	{
 		final double yValue = samplerClient.getCurrentSampleScore();
-		return yValue - Math.log(DimpleRandomGenerator.rand.nextDouble());
+		return yValue - Math.log(DimpleRandomGenerator.nextDouble());
 	}
 
 	// Sample horizontal slice using doubling method
 	public double sampleHorizontalSlice(double x, double y, IRealSamplerClient samplerClient)
 	{
 		// First finding slice using doubling method
-		double L = x - _initialSliceWidth * DimpleRandomGenerator.rand.nextDouble();
+		double L = x - _initialSliceWidth * DimpleRandomGenerator.nextDouble();
 		double R = L + _initialSliceWidth;
 		double fL = samplerClient.getSampleScore(L);
 		double fR = samplerClient.getSampleScore(R);
@@ -110,7 +110,7 @@ public class SliceSampler extends AbstractGenericSampler implements IMCMCSampler
 		{
 			if (y <= fL && y <= fR)
 				break;
-			if (DimpleRandomGenerator.rand.nextBoolean())	// Flip a coin
+			if (DimpleRandomGenerator.nextBoolean())	// Flip a coin
 			{
 				L -= (R - L);
 				fL = samplerClient.getSampleScore(L);
@@ -128,7 +128,7 @@ public class SliceSampler extends AbstractGenericSampler implements IMCMCSampler
 		double Rs = R;
 		while (true)
 		{
-			xSample = Ls + (Rs - Ls) * DimpleRandomGenerator.rand.nextDouble();
+			xSample = Ls + (Rs - Ls) * DimpleRandomGenerator.nextDouble();
 			double fSample = samplerClient.getSampleScore(xSample);
 			
 			if (y >= fSample && accept(xSample, x, y, L, R, samplerClient))

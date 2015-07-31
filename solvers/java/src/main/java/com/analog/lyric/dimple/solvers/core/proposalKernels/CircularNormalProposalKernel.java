@@ -59,7 +59,7 @@ public class CircularNormalProposalKernel extends NormalProposalKernel
 	@Override
 	public Proposal next(Value currentValue, Domain variableDomain)
 	{
-		double value = currentValue.getDouble() + _standardDeviation * DimpleRandomGenerator.rand.nextGaussian();
+		double value = currentValue.getDouble() + _standardDeviation * DimpleRandomGenerator.nextGaussian();
 		value = ((((value - _min) % _range) + _range) % _range) + _min;		// Wrap from -pi to pi
 		return new Proposal(value);
 	}

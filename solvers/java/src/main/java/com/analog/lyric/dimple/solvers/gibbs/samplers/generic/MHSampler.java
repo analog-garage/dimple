@@ -105,7 +105,7 @@ public class MHSampler extends AbstractGenericSampler implements IMCMCSampler
 			else
 				rejectionThreshold = 0;
 		}
-		if (DimpleRandomGenerator.rand.nextDouble() < rejectionThreshold)
+		if (DimpleRandomGenerator.nextDouble() < rejectionThreshold)
 		{
 			samplerClient.setNextSampleValue(proposalValue);		// Accept
 			return true;

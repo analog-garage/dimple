@@ -46,7 +46,7 @@ public class NormalProposalKernel implements IProposalKernel
 	@Override
 	public Proposal next(Value currentValue, Domain variableDomain)
 	{
-		return new Proposal(currentValue.getDouble() + _standardDeviation * DimpleRandomGenerator.rand.nextGaussian());
+		return new Proposal(currentValue.getDouble() + _standardDeviation * DimpleRandomGenerator.nextGaussian());
 	}
 	
 	@Deprecated

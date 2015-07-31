@@ -23,13 +23,13 @@ import java.util.List;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.data.IDatum;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.factorfunctions.Beta;
 import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
-import com.analog.lyric.math.DimpleRandomGenerator;
 
 
 public class BetaSampler implements IRealConjugateSampler
@@ -81,7 +81,7 @@ public class BetaSampler implements IRealConjugateSampler
 	{
 		double alphaMinusOne = parameters.getAlphaMinusOne();
 		double betaMinusOne = parameters.getBetaMinusOne();
-		return DimpleRandomGenerator.randBeta.nextDouble(alphaMinusOne + 1, betaMinusOne + 1);
+		return DimpleEnvironment.activeRandom().nextBeta(alphaMinusOne + 1, betaMinusOne + 1);
 	}
 	
 	@Override

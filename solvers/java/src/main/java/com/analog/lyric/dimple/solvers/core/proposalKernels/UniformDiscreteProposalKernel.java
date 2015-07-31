@@ -40,7 +40,7 @@ public class UniformDiscreteProposalKernel implements IProposalKernel
 		// Choose uniformly at random from among all values except the current value
 		DiscreteDomain domain = (DiscreteDomain)variableDomain;
 		int currentIndex = ((DiscreteValue)currentValue).getIndex();
-		int nextIndex = DimpleRandomGenerator.rand.nextInt(domain.size() - 1);
+		int nextIndex = DimpleRandomGenerator.nextInt(domain.size() - 1);
 		if (nextIndex >= currentIndex) nextIndex++;
 		Value value = Value.create(domain);
 		value.setIndex(nextIndex);

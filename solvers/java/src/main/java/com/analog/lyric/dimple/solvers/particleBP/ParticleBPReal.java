@@ -333,7 +333,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 					else
 						rejectionThreshold = 0;
 				}
-				if (DimpleRandomGenerator.rand.nextDouble() < rejectionThreshold)
+				if (DimpleRandomGenerator.nextDouble() < rejectionThreshold)
 				{
 					sampleValue.setDouble(proposalValue);
 					potential = potentialProposed;

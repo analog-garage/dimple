@@ -68,7 +68,7 @@ public class NegativeExpGammaSampler implements IRealConjugateSampler
 	{
 		double alphaMinusOne = parameters.getAlphaMinusOne();
 		double beta = parameters.getBeta();
-		return -Math.log(DimpleRandomGenerator.randGamma.nextDouble(alphaMinusOne + 1, beta));
+		return -Math.log(DimpleRandomGenerator.nextGamma(alphaMinusOne + 1, beta));
 	}
 	
 	@Override
