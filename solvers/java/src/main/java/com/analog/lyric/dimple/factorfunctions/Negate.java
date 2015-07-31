@@ -22,21 +22,22 @@ import com.analog.lyric.dimple.factorfunctions.core.DeterministicRealUnaryFactor
 /**
  * Deterministic negation. This is a deterministic directed factor
  * (if smoothing is not enabled).
- * 
+ * <p>
  * Optional smoothing may be applied, by providing a smoothing value in
  * the constructor. If smoothing is enabled, the distribution is
  * smoothed by exp(-difference^2/smoothing), where difference is the
  * distance between the output value and the deterministic output value
  * for the corresponding inputs.
- * 
+ * <p>
  * The variables are ordered as follows in the argument list:
- * 
- * 1) Output (negation of input)
- * 2) Input (double or integer)
- * 
+ * <ol>
+ * <li> Output (negation of input)
+ * <li> Input (double or integer)
+ * </ol>
  */
 public class Negate extends DeterministicRealUnaryFactorFunction
 {
+	@Override
 	protected final double myFunction(double in)
 	{
 		return -in;
