@@ -14,7 +14,7 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.test.model;
+package com.analog.lyric.dimple.test.model.variables;
 
 import static com.analog.lyric.dimple.model.sugar.ModelSyntacticSugar.*;
 import static com.analog.lyric.util.test.ExceptionTester.*;

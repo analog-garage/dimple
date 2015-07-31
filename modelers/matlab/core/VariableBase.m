@@ -25,6 +25,7 @@ classdef VariableBase < Node
         Input;
         FixedValue;
         
+        Condition;
         Prior;
         Belief;
         Value;
@@ -282,6 +283,14 @@ classdef VariableBase < Node
             end
         end
 
+        function condition = get.Condition(obj)
+            condition = obj.getCondition();
+        end
+        
+        function set.Condition(obj,value)
+            obj.setCondition(value);
+        end
+        
         function prior = get.Prior(obj)
             prior = obj.getPrior();
         end
@@ -342,6 +351,21 @@ classdef VariableBase < Node
     end
     
     methods (Access = protected)
+        
+        function condition = getCondition(obj)
+            condition = wrapProxyObject(cell(obj.VectorObject.getCondition()));
+            condition = obj.unpack(condition, obj.VectorIndices);
+        end
+        
+        function setCondition(obj,conditions)
+            input = obj.pack(conditions, obj.VectorIndices);
+            if ~iscell(input) && ~isfloat(input)
+                input = num2cell(input);
+            else
+                input = unwrapProxyObject(input);
+            end
+            obj.VectorObject.setCondition(input);
+        end
         
         function prior = getPrior(obj)
             prior = wrapProxyObject(cell(obj.VectorObject.getPrior()));

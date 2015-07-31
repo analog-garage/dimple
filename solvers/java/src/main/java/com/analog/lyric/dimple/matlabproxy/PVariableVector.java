@@ -162,6 +162,29 @@ public class PVariableVector extends PNodeVector
 		return retval;
 	}
 	
+	public Object[] getCondition()
+	{
+		final int n = size();
+		Object[] conditions = new Object[n];
+		final Variable [] vars = getVariableArray();
+		for (int i = 0; i < vars.length; i++)
+		{
+			final IDatum datum = vars[i].getCondition();
+			conditions[i] = datum instanceof Value ? ((Value)datum).getObject() : datum;
+		}
+		return conditions;
+	}
+	
+	public void setCondition(Object[] conditions)
+	{
+		final int n = size();
+		final Variable [] vars = getVariableArray();
+		for (int i = 0; i < n; i++)
+		{
+			vars[i].setCondition(conditions[i]);
+		}
+		
+	}
 	public Object[] getPrior()
 	{
 		final int n = size();

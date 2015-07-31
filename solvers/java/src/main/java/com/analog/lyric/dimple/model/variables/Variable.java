@@ -25,6 +25,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.data.DataLayer;
 import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.events.IDataEventSource;
 import com.analog.lyric.dimple.events.IDimpleEventListener;
@@ -86,7 +87,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	 * State
 	 */
 	
-    protected @Nullable IDatum _prior = null;
+    protected @Nullable IDatum _prior;
     
     @Deprecated
 	protected String _modelerClassName;
@@ -158,6 +159,10 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		return NodeType.VARIABLE;
 	}
 
+	/**
+	 * @deprecated as of release 0.08
+	 */
+	@Deprecated
 	@Override
 	public String getClassLabel()
     {
@@ -239,6 +244,67 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 		return (Discrete)this;
 	}
 
+	/**
+	 * Get condition value associated with variable in default conditioning layer, if any.
+	 * <p>
+	 * Returns the value associated with this variable from the {@linkplain FactorGraph#getDefaultConditioningLayer()
+	 * default conditioning layer} associated with this variable's {@linkplain #getParentGraph() parent}. Returns
+	 * null if there is no parent or no default conditioning layer.
+	 * <p>
+	 * This method is a convenience method to make it easy access condition values through model variables,
+	 * but it should not be used in situations when underlying solvers may use a different conditioning
+	 * layer.
+	 * <p>
+	 * @since 0.08
+	 * @see #setCondition(Object)
+	 */
+	public @Nullable IDatum getCondition()
+	{
+		FactorGraph parent = _parentGraph;
+		if (parent != null)
+		{
+			DataLayer<? extends IDatum> layer = parent.getDefaultConditioningLayer();
+			if (layer != null)
+			{
+				return layer.get(this);
+			}
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Set condition value associated with variable in default conditioning layer, creating one if missing.
+	 * <p>
+	 * Associates the value with this variable in the {@linkplain FactorGraph#createDefaultConditioningLayer()
+	 * default conditioning layer} associated with this variable's {@linkplain #getParentGraph() parent}.
+	 * <p>
+	 * This method is a convenience method to make it easy set condition values through model variables,
+	 * but it should not be used in situations when underlying solvers may use a different conditioning
+	 * layer.
+	 * <p>
+	 * @since 0.08
+	 * @see #getCondition()
+	 */
+	public void setCondition(@Nullable Object value)
+	{
+		FactorGraph parent = _parentGraph;
+		if (parent != null)
+		{
+			DataLayer<? extends IDatum> layer = value == null ?
+				parent.getDefaultConditioningLayer() : parent.createDefaultConditioningLayer();
+				
+			if (layer != null)
+			{
+				layer.set(this.asVariable(), value);
+			}
+		}
+		else if (value != null)
+		{
+			throw new IllegalStateException("Cannot set condition on parentless variable");
+		}
+	}
+	
 	/**
 	 * Get prior value associated with variable, if any.
 	 * <p>
@@ -490,7 +556,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
     	if (svar != null)
     		return svar.getBelief();
     	else
-    		return getInputObject();
+    		return getPrior();
     }
    
     
@@ -586,7 +652,7 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	 * @deprecated use {@link #getPriorValue()} and {@link Value#getObject()} instead.
 	 */
 	@Deprecated
-	public @Nullable Object getFixedValueAsObject()
+	public final @Nullable Object getFixedValueAsObject()
 	{
 		final Value value = getPriorValue();
 		return value != null ? value.getObject() : null;

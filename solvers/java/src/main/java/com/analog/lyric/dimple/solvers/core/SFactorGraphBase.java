@@ -144,6 +144,11 @@ public abstract class SFactorGraphBase
 		_blocks = new ExtendedArrayList<>(graph.getOwnedVariableBlocks().size());
 		_solverNodeMapping = new StandardSolverNodeMapping(this);
 		_parent = parent;
+		if (parent == null)
+		{
+			// Inherit default conditioning layer from model graph if this is the root.
+			setConditioningLayer(graph.getDefaultConditioningLayer());
+		}
 	}
 
 	/*----------------------------
