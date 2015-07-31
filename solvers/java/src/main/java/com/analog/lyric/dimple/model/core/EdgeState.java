@@ -49,6 +49,16 @@ public abstract class EdgeState
 	 */
 	
 	/**
+	 * Describes the direction of the edge.
+	 * @since 0.08
+	 */
+	public EdgeDirection direction(FactorGraph graph)
+	{
+		// TODO - perhaps we can store the direction directly in the edge state
+		return getFactor(graph).getEdgeDirection(getFactorToVariableEdgeNumber());
+	}
+	
+	/**
 	 * The index of this edge within the {@link FactorGraph} that owns it's factor.
 	 * <p>
 	 * This index can be used to look up this object within the parent graph of the factor

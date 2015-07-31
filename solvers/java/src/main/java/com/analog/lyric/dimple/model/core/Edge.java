@@ -160,6 +160,15 @@ public final class Edge implements IFactorGraphChild
 	 * Edge methods
 	 */
 	
+	/**
+	 * Describes the direction of the edge.
+	 * @since 0.08
+	 */
+	public EdgeDirection direction()
+	{
+		return _edge.direction(_graph);
+	}
+	
 	public int edgeIndex()
 	{
 		return _edge.factorEdgeIndex();

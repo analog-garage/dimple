@@ -31,6 +31,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
+import com.analog.lyric.dimple.model.core.EdgeDirection;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.FactorPort;
@@ -466,6 +467,31 @@ public class Factor extends FactorBase implements Cloneable
 
 	}
 
+	/**
+	 * Describes direction of given edge.
+	 * <p>
+	 * @throws IndexOutOfBoundsException if {@code edgeNumber} is negative or not less than {@link #getSiblingCount()}.
+	 * @since 0.08
+	 */
+	public EdgeDirection getEdgeDirection(int edgeNumber)
+	{
+		getSiblingEdgeIndex(edgeNumber); // call this to do a range check
+		
+		ensureDirectedToSet();
+		if (_directedTo == null)
+		{
+			return EdgeDirection.UNDIRECTED;
+		}
+		else if (isDirectedTo(edgeNumber))
+		{
+			return EdgeDirection.FROM_FACTOR;
+		}
+		else
+		{
+			return EdgeDirection.TO_FACTOR;
+		}
+	}
+	
 	/**
 	 * Sets all edges to specified variables as output edges.
 	 * @param variables
