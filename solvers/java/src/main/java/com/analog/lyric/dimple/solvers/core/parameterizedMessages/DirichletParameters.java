@@ -345,10 +345,23 @@ public class DirichletParameters extends ParameterizedMessageBase
 			throw new IllegalArgumentException("Cannot add from DirichletParameters with different size");
 		}
 		
-		if (_symmetric > 0 && other._symmetric > 0)
+		forgetNormalizationEnergy();
+
+		if (other.isSymmetric())
 		{
-			double a = params[0] + otherParams[0];
-			Arrays.fill(params, a);
+			double a = otherParams[0];
+			if (_symmetric > 0)
+			{
+				Arrays.fill(params, a + params[0]);
+				_symmetric = 1;
+			}
+			else
+			{
+				for (int i = params.length; --i>=0;)
+				{
+					params[i] += a;
+				}
+			}
 		}
 		else
 		{
@@ -357,8 +370,6 @@ public class DirichletParameters extends ParameterizedMessageBase
 				params[i] += otherParams[i];
 			}
 		}
-		
-		forgetNormalizationEnergy();
 	}
 	
 	/**

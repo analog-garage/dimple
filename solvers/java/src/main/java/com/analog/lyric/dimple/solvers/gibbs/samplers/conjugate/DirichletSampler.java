@@ -61,20 +61,23 @@ public class DirichletSampler implements IRealJointConjugateSampler
 			parameters.setSize(dimension);
 		parameters.setNull();
 		
-		// TODO use add from
-		
 		for (IDatum input : inputs)
 		{
-			double[] inputParameters;
+			DirichletParameters inputParameters = null;
+			
 			if (input instanceof DirichletParameters)
-				inputParameters = ((DirichletParameters)input).getAlphaMinusOneArray();
+				inputParameters = (DirichletParameters)input;
 			else if (input instanceof Dirichlet)
-				inputParameters = ((Dirichlet)input).getAlphaMinusOneArray();
-			else // ExchangeableDirichlet
-				inputParameters = ((ExchangeableDirichlet)input).getAlphaMinusOneArray();
-			if (inputParameters.length != dimension)
+				inputParameters = ((Dirichlet)input).getParameterizedMessage();
+			else if (input instanceof ExchangeableDirichlet)
+				inputParameters = ((ExchangeableDirichlet)input).getParameterizedMessage();
+			else
+				continue; // This should not be possible
+			
+			if (inputParameters.getSize() != dimension)
 				throw new DimpleException("All inputs to Dirichlet sampler must have the same number of dimensions");
-			parameters.add(inputParameters);
+			
+			parameters.addFrom(inputParameters);
 		}
 		
 		final int numEdges = edges.length;
@@ -91,7 +94,8 @@ public class DirichletSampler implements IRealJointConjugateSampler
 			}
 			else if (messageSize != dimension)
 				throw new DimpleException("All inputs to Dirichlet sampler must have the same number of dimensions");
-			parameters.add(message);
+			
+			parameters.addFrom(message);
 		}
 	}
 	

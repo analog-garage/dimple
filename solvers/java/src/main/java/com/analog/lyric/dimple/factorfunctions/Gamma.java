@@ -20,7 +20,6 @@ import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
@@ -77,8 +76,6 @@ public class Gamma extends UnaryFactorFunction implements IParametricFactorFunct
 	public Gamma(double alpha, double beta)
 	{
 		this(new GammaParameters(alpha-1,beta));
-    	if (alpha <= 0) throw new DimpleException("Non-positive alpha parameter. This must be a positive value.");
-    	if (beta <= 0) throw new DimpleException("Non-positive beta parameter. This must be a positive value.");
 	}
 	
 	/**

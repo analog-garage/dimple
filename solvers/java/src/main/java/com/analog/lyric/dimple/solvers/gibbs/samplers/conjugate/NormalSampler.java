@@ -47,28 +47,25 @@ public class NormalSampler implements IRealConjugateSampler
 	public final void aggregateParameters(IParameterizedMessage aggregateParameters, ISolverEdgeState[] edges,
 		List<? extends IDatum> inputs)
 	{
-		double totalPrecision = 0;
-		double totalMeanPrecisionProduct = 0;
+		NormalParameters parameters = (NormalParameters)aggregateParameters;
+		parameters.setNull();
 		
 		for (IDatum input : inputs)
 		{
-			double mean, precision;
+			NormalParameters normalInput;
 			
 			if (input instanceof NormalParameters)
 			{
-				NormalParameters normalInput = (NormalParameters)input;
-				mean = normalInput.getMean();
-				precision = normalInput.getPrecision();
+				normalInput = (NormalParameters)input;
+			}
+			else if (input instanceof Normal)
+			{
+				normalInput = ((Normal)input).getParameterizedMessage();
 			}
 			else
-			{
-				Normal normalInput = (Normal)input;
-				mean = normalInput.getMean();
-				precision = normalInput.getPrecision();
-			}
-				
-			totalMeanPrecisionProduct += mean * precision;
-			totalPrecision += precision;
+				continue; // should be impossible
+
+			parameters.addFrom(normalInput);
 		}
 		
 		final int numEdges = edges.length;
@@ -76,19 +73,8 @@ public class NormalSampler implements IRealConjugateSampler
 		{
 			// The message from each neighboring factor is an array with elements (mean, precision)
 			NormalParameters message = requireNonNull((NormalParameters)edges[i].getFactorToVarMsg());
-			double mean = message.getMean();
-			double precision = message.getPrecision();
-			
-			totalMeanPrecisionProduct += mean * precision;
-			totalPrecision += precision;
+			parameters.addFrom(message);
 		}
-		
-		double finalMean = (totalPrecision > 0) ? totalMeanPrecisionProduct / totalPrecision : 0;
-
-		// Set the output
-		NormalParameters parameters = (NormalParameters)aggregateParameters;
-		parameters.setMean(finalMean);
-		parameters.setPrecision(totalPrecision);
 	}
 	
 	public final double nextSample(NormalParameters parameters)

@@ -47,25 +47,25 @@ public class BetaSampler implements IRealConjugateSampler
 	public final void aggregateParameters(IParameterizedMessage aggregateParameters, ISolverEdgeState[] edges,
 		List<? extends IDatum> inputs)
 	{
-		// TODO use addFrom
-		
-		double alphaMinusOne = 0;
-		double betaMinusOne = 0;
+		BetaParameters parameters = (BetaParameters)aggregateParameters;
+		parameters.setNull();
 		
 		for (IDatum input : inputs)
 		{
+			BetaParameters betaInput;
+			
 			if (input instanceof BetaParameters)
 			{
-				BetaParameters betaInput = (BetaParameters)input;
-				alphaMinusOne += betaInput.getAlphaMinusOne();
-				betaMinusOne += betaInput.getBetaMinusOne();
+				betaInput = (BetaParameters)input;
+			}
+			else if (input instanceof Beta)
+			{
+				betaInput = ((Beta)input).getParameterizedMessage();
 			}
 			else
-			{
-				Beta betaInput = (Beta)input;
-				alphaMinusOne += betaInput.getAlphaMinusOne();
-				betaMinusOne += betaInput.getBetaMinusOne();
-			}
+				continue; // shouldn't be possible
+			
+			parameters.addFrom(betaInput);
 		}
 		
 		final int numEdges = edges.length;
@@ -73,14 +73,8 @@ public class BetaSampler implements IRealConjugateSampler
 		{
 			// The message from each neighboring factor is an array with elements (alpha, beta)
 			BetaParameters message = requireNonNull((BetaParameters)edges[i].getFactorToVarMsg());
-			alphaMinusOne += message.getAlphaMinusOne();
-			betaMinusOne += message.getBetaMinusOne();
+			parameters.addFrom(message);
 		}
-		
-		// Set the output
-		BetaParameters parameters = (BetaParameters)aggregateParameters;
-		parameters.setAlphaMinusOne(alphaMinusOne);
-		parameters.setBetaMinusOne(betaMinusOne);
 	}
 
 	public final double nextSample(BetaParameters parameters)

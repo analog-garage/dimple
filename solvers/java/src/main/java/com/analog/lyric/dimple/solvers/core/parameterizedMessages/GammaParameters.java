@@ -43,6 +43,11 @@ public class GammaParameters extends ParameterizedMessageBase
 		
 		_alphaMinusOne = alphaMinusOne;
 		_beta = beta;
+		
+		if (alphaMinusOne <= -1)
+			throw new IllegalArgumentException("Non-positive alpha parameter. This must be a positive value.");
+    	if (beta < 0)
+    		throw new IllegalArgumentException("Negative beta parameter. This must be a positive value.");
 	}
 	
 	public GammaParameters(GammaParameters other)		// Copy constructor

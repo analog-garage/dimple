@@ -16,15 +16,15 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
-import java.util.Arrays;
+import java.util.Map;
 
-import org.apache.commons.math3.special.Gamma;
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
 
 
 /**
@@ -44,44 +44,45 @@ import com.analog.lyric.dimple.model.values.Value;
  * 
  * @since 0.05
  */
-public class ExchangeableDirichlet extends UnaryFactorFunction
+public class ExchangeableDirichlet extends UnaryFactorFunction implements IParametricFactorFunction
 {
 	private static final long serialVersionUID = 1L;
 
-	// TODO - replace fields with DirichletParameters object
-	
-	private int _dimension;
-	private double _alpha;
-	private double _logBetaAlpha;
+	protected DirichletParameters _parameters;
 	private boolean _parametersConstant;
 	private int _firstDirectedToIndex;
-	private static final double SIMPLEX_THRESHOLD = 1e-12;
 	
-
+	private ExchangeableDirichlet(DirichletParameters parameters, int index)
+	{
+		super((String)null);
+		_parameters = parameters;
+		_parametersConstant = index == 0;
+		_firstDirectedToIndex = index;
+		if (!parameters.isSymmetric())
+		{
+			throw new IllegalArgumentException("ExchangeableDirichlet requires symmetric arguments");
+		}
+	}
+	
+	public ExchangeableDirichlet(DirichletParameters parameters)
+	{
+		this(parameters, 0);
+	}
+	
 	public ExchangeableDirichlet(int dimension)		// Variable parameter
 	{
-		super((String)null);
-		_dimension = dimension;
-		_parametersConstant = false;
-		_firstDirectedToIndex = 1;
+		this(new DirichletParameters(dimension), 1);
 	}
+
 	public ExchangeableDirichlet(int dimension, double alpha)	// Constant parameter
 	{
-		super((String)null);
-		_dimension = dimension;
-		_alpha = alpha;
-		_logBetaAlpha = logBeta(_alpha);
-		_parametersConstant = true;
-		_firstDirectedToIndex = 0;
-		if (_alpha <= 0) throw new DimpleException("Non-positive alpha parameter. Domain must be restricted to positive values.");
+		this(new DirichletParameters(dimension, alpha - 1));
 	}
 	
 	protected ExchangeableDirichlet(ExchangeableDirichlet other)
 	{
 		super(other);
-		_dimension = other._dimension;
-		_alpha = other._alpha;
-		_logBetaAlpha = other._logBetaAlpha;
+		_parameters = _parameters.clone();
 		_firstDirectedToIndex = other._firstDirectedToIndex;
 		_parametersConstant = other._parametersConstant;
 	}
@@ -108,8 +109,7 @@ public class ExchangeableDirichlet extends UnaryFactorFunction
 		{
 			ExchangeableDirichlet that = (ExchangeableDirichlet)other;
 			return _parametersConstant == that._parametersConstant &&
-				_dimension == that._dimension &&
-				_alpha == that._alpha &&
+				_parameters.objectEquals(_parameters) &&
 				_firstDirectedToIndex == that._firstDirectedToIndex;
 		}
 		
@@ -122,46 +122,13 @@ public class ExchangeableDirichlet extends UnaryFactorFunction
     	int index = 0;
     	if (!_parametersConstant)
     	{
-    		_alpha = arguments[index++].getDouble();		// First variable is parameter value
-    		if (_alpha <= 0)
+    		double alpha = arguments[index++].getDouble();
+    		if (alpha <= 0)
     			return Double.POSITIVE_INFINITY;
-    		_logBetaAlpha = logBeta(_alpha);
+    		_parameters.fillAlphaMinusOne(alpha - 1.0);
     	}
 
-    	double sum = 0;
-    	final int length = arguments.length;
-    	final int N = length - index;			// Number of non-parameter variables
-    	for (; index < length; index++)
-    	{
-    		final double[] x = arguments[index].getDoubleArray();	// Remaining inputs are Dirichlet distributed random variable vectors
-    		if (x.length != _dimension)
-	    		throw new DimpleException("Dimension of variable does not equal to the dimension of the parameter vector.");
-    		double xSum = 0;
-    		for (int i = 0; i < _dimension; i++)
-    		{
-    			final double xi = x[i];
-    			if (xi <= 0)
-    				return Double.POSITIVE_INFINITY;
-    			else
-    				sum -= Math.log(xi);	// -log(x_i ^ (a_i-1))
-    			xSum += xi;
-    		}
-    		
-    		if (!almostEqual(xSum, 1, SIMPLEX_THRESHOLD * _dimension))	// Values must be on the probability simplex
-    			return Double.POSITIVE_INFINITY;
-    	}
-
-    	return sum * (_alpha - 1) + N * _logBetaAlpha;
-    }
-    
-    private final double logBeta(double alpha)
-    {
-    	return Gamma.logGamma(alpha) * _dimension - Gamma.logGamma(alpha * _dimension);
-    }
-    
-    private final boolean almostEqual(double a, double b, double threshold)
-    {
-    	return (a >= b ? a - b : b - a) < threshold;
+    	return _parameters.evalNormalizedEnergy(arguments, index);
     }
     
     @Override
@@ -172,25 +139,63 @@ public class ExchangeableDirichlet extends UnaryFactorFunction
     	// All edges except the parameter edges (if present) are directed-to edges
 		return FactorFunctionUtilities.getListOfIndices(_firstDirectedToIndex, numEdges-1);
 	}
-
+    /*-----------------------------------
+     * IParametricFactorFunction methods
+     */
     
-    // Factor-specific methods
-    public final boolean hasConstantParameters()
+    @Override
+    public int copyParametersInto(Map<String, Object> parameters)
+    {
+    	if (_parametersConstant)
+    	{
+    		parameters.put("alpha", getParameter("alpha"));
+    		return 1;
+    	}
+    	return 0;
+    }
+    
+    @Override
+    public @Nullable Object getParameter(String parameterName)
+    {
+    	if (_parametersConstant)
+    	{
+    		switch (parameterName)
+    		{
+    		case "alpha":
+    		case "alphas":
+    			return getAlphaMinusOne() + 1;
+    		}
+    	}
+    	return null;
+    }
+    
+    @Override
+    public DirichletParameters getParameterizedMessage()
+    {
+    	return _parameters;
+    }
+
+    @Override
+	public final boolean hasConstantParameters()
     {
     	return _parametersConstant;
     }
+
+
+    /*--------------------------
+     * Factor-specific methods
+     */
+    
     public final double getAlphaMinusOne()
     {
-    	return _alpha - 1;
+    	return _parameters.getAlphaMinusOne(0);
     }
     public final double[] getAlphaMinusOneArray()	// Get parameters as if they were separate
     {
-    	double[] parameterArray = new double[_dimension];
-    	Arrays.fill(parameterArray, _alpha - 1);
-    	return parameterArray;
+    	return _parameters.getAlphaMinusOneArray();
     }
     public final int getDimension()
     {
-    	return _dimension;
+    	return _parameters.getSize();
     }
 }

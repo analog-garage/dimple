@@ -16,12 +16,15 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import java.util.Map;
+
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.factorfunctions.core.IParametricFactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.UnaryFactorFunction;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 
 
 /**
@@ -39,43 +42,49 @@ import com.analog.lyric.dimple.model.values.Value;
  * In this case, they are not included in the list of arguments.
  * 
  */
-public class NegativeExpGamma extends UnaryFactorFunction
+public class NegativeExpGamma extends UnaryFactorFunction implements IParametricFactorFunction
 {
 	private static final long serialVersionUID = 1L;
 
-	protected double _alpha;
-	protected double _beta;
-	protected double _alphaMinusOne;
-	protected double _logGammaAlphaMinusAlphaLogBeta;
-	protected boolean _parametersConstant = false;
-	protected int _firstDirectedToIndex = 2;
+	protected GammaParameters _parameters;
+	protected boolean _parametersConstant;
+	protected int _firstDirectedToIndex ;
 
 	/*--------------
 	 * Construction
 	 */
 	
-	public NegativeExpGamma() {super((String)null);}
+	private NegativeExpGamma(GammaParameters parameters, int index)
+	{
+		super((String)null);
+		_parameters = parameters;
+		_parametersConstant = index == 0;
+		_firstDirectedToIndex = index;
+	}
+	
+	public NegativeExpGamma()
+	{
+		this(new GammaParameters(), 2);
+	}
+
+	/**
+	 * @since 0.08
+	 */
+	public NegativeExpGamma(GammaParameters parameters)
+	{
+		this(parameters, 0);
+	}
+	
 	public NegativeExpGamma(double alpha, double beta)
 	{
-		this();
-		_alpha = alpha;
-		_beta = beta;
-		_alphaMinusOne = _alpha - 1;
-		_logGammaAlphaMinusAlphaLogBeta = org.apache.commons.math3.special.Gamma.logGamma(_alpha) - _alpha * Math.log(_beta);
-		_parametersConstant = true;
-		_firstDirectedToIndex = 0;
-    	if (_alpha <= 0) throw new DimpleException("Non-positive alpha parameter. This must be a positive value.");
-    	if (_beta <= 0) throw new DimpleException("Non-positive beta parameter. This must be a positive value.");
+		this(new GammaParameters(alpha - 1, beta));
 	}
 	
 	protected NegativeExpGamma(NegativeExpGamma other)
 	{
 		super(other);
-		_alpha = other._alpha;
-		_alphaMinusOne = other._alphaMinusOne;
-		_beta = other._beta;
+		_parameters = other._parameters.clone();
 		_firstDirectedToIndex = other._firstDirectedToIndex;
-		_logGammaAlphaMinusAlphaLogBeta = other._logGammaAlphaMinusAlphaLogBeta;
 		_parametersConstant = other._parametersConstant;
 	}
 	
@@ -97,8 +106,7 @@ public class NegativeExpGamma extends UnaryFactorFunction
 		{
 			NegativeExpGamma that = (NegativeExpGamma)other;
 			return _parametersConstant == that._parametersConstant &&
-				_alpha == that._alpha &&
-				_beta == that._beta &&
+				_parameters.objectEquals(that._parameters) &&
 				_firstDirectedToIndex == that._firstDirectedToIndex;
 		}
 		
@@ -109,24 +117,36 @@ public class NegativeExpGamma extends UnaryFactorFunction
 	public final double evalEnergy(Value[] arguments)
     {
     	int index = 0;
+    	
+    	double alphaMinusOne = _parameters.getAlphaMinusOne();
+    	double beta = _parameters.getBeta();
+    	
     	if (!_parametersConstant)
     	{
-    		_alpha = arguments[index++].getDouble();			// First input is alpha parameter (must be non-negative)
-    		if (_alpha <= 0) return Double.POSITIVE_INFINITY;
-    		_beta = arguments[index++].getDouble();				// Second input is beta parameter (must be non-negative)
-    		if (_beta <= 0) return Double.POSITIVE_INFINITY;
-    		_alphaMinusOne = _alpha - 1;
-    		_logGammaAlphaMinusAlphaLogBeta = org.apache.commons.math3.special.Gamma.logGamma(_alpha) - _alpha * Math.log(_beta);
+    		double alpha = arguments[index++].getDouble(); // First input is alpha parameter (must be non-negative)
+    		if (alpha <= 0)
+    			return Double.POSITIVE_INFINITY;
+    		beta = arguments[index++].getDouble(); // Second input is beta parameter (must be non-negative)
+    		if (beta <= 0)
+    			return Double.POSITIVE_INFINITY;
+    		_parameters.setAlpha(alpha);
+    		_parameters.setBeta(beta);
+    		alphaMinusOne = alpha - 1;
     	}
+    	
     	final int length = arguments.length;
     	final int N = length - index;			// Number of non-parameter variables
-    	double sum = 0;
+    	
+    	// The standard Gamma normalization can be reused:
+    	double sum = N * -_parameters.getNormalizationEnergy();
+
     	for (; index < length; index++)
     	{
     		final double x = arguments[index].getDouble();		// Remaining inputs are NegativeExpGamma variables
-        	sum += x * _alphaMinusOne + Math.exp(-x) * _beta;
+        	sum += x * alphaMinusOne + Math.exp(-x) * beta;
     	}
-    	return sum + N * _logGammaAlphaMinusAlphaLogBeta;
+    	
+    	return sum;
 	}
     
     @Override
@@ -138,18 +158,60 @@ public class NegativeExpGamma extends UnaryFactorFunction
 		return FactorFunctionUtilities.getListOfIndices(_firstDirectedToIndex, numEdges-1);
 	}
     
+    /*-----------------------------------
+     * IParametricFactorFunction methods
+     */
     
-    // Factor-specific methods
+    @Override
+    public int copyParametersInto(Map<String, Object> parameters)
+    {
+    	if (_parametersConstant)
+    	{
+    		parameters.put("alpha", _parameters.getAlpha());
+    		parameters.put("beta", _parameters.getBeta());
+    		return 2;
+    	}
+    	return 0;
+    }
+    
+    @Override
+    public @Nullable Object getParameter(String parameterName)
+    {
+    	if (_parametersConstant)
+    	{
+    		switch (parameterName)
+    		{
+    		case "alpha":
+    			return _parameters.getAlpha();
+    		case "beta":
+    			return _parameters.getBeta();
+    		}
+    	}
+    	return null;
+    }
+    
+    @Override
+    public GammaParameters getParameterizedMessage()
+    {
+    	return _parameters;
+    }
+    
+    @Override
     public final boolean hasConstantParameters()
     {
     	return _parametersConstant;
     }
+
+    /*-------------------------
+     * Factor-specific methods
+     */
+
     public final double getAlphaMinusOne()
     {
-    	return _alphaMinusOne;
+    	return _parameters.getAlphaMinusOne();
     }
     public final double getBeta()
     {
-    	return _beta;
+    	return _parameters.getBeta();
     }
 }
