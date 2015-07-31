@@ -527,6 +527,10 @@ public abstract class Node extends FactorGraphChild implements INode
 		return name != null ? name : Ids.defaultNameForLocalId(_id);
 	}
 	
+	/**
+	 * @deprecated as of release 0.08
+	 */
+	@Deprecated
     abstract public String getClassLabel();
     
 	@Override
