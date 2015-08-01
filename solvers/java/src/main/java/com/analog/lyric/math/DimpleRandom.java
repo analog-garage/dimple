@@ -45,11 +45,14 @@ public class DimpleRandom extends RandomAdaptor
 	
 	private static final long serialVersionUID = 1L;
 
+	final RandomGenerator _randGenerator;
+	
 	// TODO - can we switch to use Apache versions of these?
 	private RandomEngine _randEngine;
 	private cern.jet.random.Beta _randBeta;
 	private cern.jet.random.Binomial _randBinomial;
 	private cern.jet.random.Gamma _randGamma;
+	
 	private long _seed;
 	
 	/*--------------
@@ -64,6 +67,7 @@ public class DimpleRandom extends RandomAdaptor
 	public DimpleRandom(RandomGenerator randomGenerator, long seed)
 	{
 		super(randomGenerator);
+		_randGenerator = randomGenerator;
 		_seed = seed;
 		_randEngine = new cern.jet.random.engine.MersenneTwister((int)seed);
 		_randGamma = new cern.jet.random.Gamma(1, 1, _randEngine);

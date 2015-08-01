@@ -16,11 +16,11 @@
 
 package com.analog.lyric.math;
 
+import static com.analog.lyric.dimple.environment.DimpleEnvironment.*;
+
 import org.apache.commons.math3.random.RandomGenerator;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
-
-import cern.jet.random.engine.RandomEngine;
 
 /**
  * @deprecated as of release 0.08 use {@link DimpleEnvironment#activeRandom()}
@@ -32,11 +32,7 @@ public class DimpleRandomGenerator
 	 * @deprecated as of release 0.08 use {@link DimpleEnvironment#activeRandom()}.
 	 */
 	@Deprecated
-	public static RandomGenerator rand = new org.apache.commons.math3.random.MersenneTwister();
-	
-	// Other random number generators not supported by the Apache framework
-	private static RandomEngine randEngine = new cern.jet.random.engine.MersenneTwister(rand.nextInt());
-	private static cern.jet.random.Binomial randBinomial = new cern.jet.random.Binomial(1, 0.5, randEngine);
+	public static RandomGenerator rand = activeRandom()._randGenerator;
 	
 	/**
 	 * @deprecated as of release 0.08 use {@link DimpleRandom#setSeed(long)}
@@ -46,10 +42,7 @@ public class DimpleRandomGenerator
 	public static void setSeed(long seed)
 	{
 		rand.setSeed(seed);
-		
-		// WARNING: setting the seed creates new objects; which will not be used if reference to original object is cached
-		randEngine = new cern.jet.random.engine.MersenneTwister((int)seed);
-		randBinomial = new cern.jet.random.Binomial(1, 0.5, randEngine);
+		activeRandom().setSeed(seed);
 	}
 	
 	/**
@@ -59,14 +52,7 @@ public class DimpleRandomGenerator
 	@Deprecated
 	public static final int randomBinomial(int N, double p)
 	{
-		if (N <= 0)
-			return 0;
-		else if (p <= 0)
-			return 0;
-		else if (p >= 1)
-			return N;
-		else
-			return randBinomial.nextInt(N, p);
+		return activeRandom().nextBinomial(N,p);
 	}
 
 }
