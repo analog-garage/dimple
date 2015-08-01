@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.schedulers.schedule;
 
+import static com.analog.lyric.dimple.environment.DimpleEnvironment.*;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Objects;
@@ -31,7 +33,7 @@ import com.analog.lyric.dimple.schedulers.IScheduler;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
-import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.math.DimpleRandom;
 
 /**
  * @author jeffb
@@ -102,6 +104,8 @@ public class RandomWithoutReplacementSchedule extends ScheduleBase
 	@Override
 	public Iterator<IScheduleEntry> iterator()
 	{
+		final DimpleRandom rand = activeRandom();
+		
 		ArrayList<IScheduleEntry> updateList = new ArrayList<IScheduleEntry>();
 		
 		// Randomize the sequence
@@ -109,7 +113,7 @@ public class RandomWithoutReplacementSchedule extends ScheduleBase
 		for (int iFactor = _numFactors - 1; iFactor > 0; iFactor--)
 		{
 			int randRange = iFactor + 1;
-		    int randFactor = DimpleRandomGenerator.nextInt(randRange);
+		    int randFactor = rand.nextInt(randRange);
 		    int nextIndex = _factorIndices[randFactor];
 		    _factorIndices[randFactor] = _factorIndices[iFactor];
 		    _factorIndices[iFactor] = nextIndex;

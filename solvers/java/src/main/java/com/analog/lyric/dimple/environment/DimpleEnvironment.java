@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2014 Analog Devices, Inc.
+*   Copyright 2014-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -22,9 +22,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import net.jcip.annotations.GuardedBy;
-import net.jcip.annotations.ThreadSafe;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -49,8 +46,12 @@ import com.analog.lyric.dimple.solvers.core.DimpleSolverRegistry;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IGenericSampler;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
+import com.analog.lyric.math.DimpleRandom;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.options.IOptionKey;
+
+import net.jcip.annotations.GuardedBy;
+import net.jcip.annotations.ThreadSafe;
 
 /**
  * Shared environment for Dimple
@@ -187,6 +188,8 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 * Logging instance for this environment.
 	 */
 	private final AtomicReference<Logger> _logger = new AtomicReference<>();
+	
+	private final DimpleRandom _random = new DimpleRandom();
 	
 	private final FactorFunctionRegistry _factorFunctions = new FactorFunctionRegistry();
 	
@@ -497,6 +500,28 @@ public class DimpleEnvironment extends DimpleOptionHolder
 		return LoadedFromMATLAB.INSTANCE._fromMATLAB;
 	}
 	
+	/*------------
+	 * Randomness
+	 */
+
+	/**
+	 * Random generator belonging to the {@link #active} environment.
+	 * @since 0.08
+	 */
+	public static DimpleRandom activeRandom()
+	{
+		return active()._random;
+	}
+	
+	/**
+	 * Random generator belonging to this environment.
+	 * @since 0.08
+	 */
+	public DimpleRandom random()
+	{
+		return _random;
+	}
+	
 	/*-----------------
 	 * Logging methods
 	 */
@@ -617,6 +642,8 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	/*--------------------
 	 * Various registries
 	 */
+	
+	// TODO add conjugate samplers
 	
 	/**
 	 * Registry of factor function classes for this environment.

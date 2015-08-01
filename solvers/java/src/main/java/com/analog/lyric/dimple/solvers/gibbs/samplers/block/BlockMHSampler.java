@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers.block;
 
+import static com.analog.lyric.dimple.environment.DimpleEnvironment.*;
+
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -27,7 +29,6 @@ import com.analog.lyric.dimple.solvers.core.proposalKernels.BlockProposalKernelR
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IBlockProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsVariableBlock;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariableBlock;
-import com.analog.lyric.math.DimpleRandomGenerator;
 
 /**
  * Metropolis-Hastings block initializer for {@link GibbsVariableBlock}s.
@@ -107,7 +108,7 @@ public class BlockMHSampler implements IBlockMCMCSampler
 			else
 				rejectionThreshold = 0;
 		}
-		if (DimpleRandomGenerator.nextDouble() < rejectionThreshold)
+		if (activeRandom().nextDouble() < rejectionThreshold)
 		{
 			block.updateFinish(proposalValue);
 		}

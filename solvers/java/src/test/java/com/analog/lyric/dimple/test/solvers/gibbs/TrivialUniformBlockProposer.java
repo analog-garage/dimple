@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.test.solvers.gibbs;
 
+import static com.analog.lyric.dimple.environment.DimpleEnvironment.*;
 import static java.util.Objects.*;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -26,7 +27,7 @@ import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.BlockProposal;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IBlockProposalKernel;
-import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.math.DimpleRandom;
 
 /**
  * 
@@ -38,6 +39,8 @@ public class TrivialUniformBlockProposer implements IBlockProposalKernel
 	@Override
 	public BlockProposal next(Value[] currentValue, Domain[] variableDomain)
 	{
+		final DimpleRandom rand = activeRandom();
+		
 		int numVariables = currentValue.length;
 		Value[] newValue = new Value[numVariables];
 		for (int i = 0; i < numVariables; i++)
@@ -48,7 +51,7 @@ public class TrivialUniformBlockProposer implements IBlockProposalKernel
 				DiscreteDomain discreteDomain = requireNonNull(domain.asDiscrete());
 				int domainSize = discreteDomain.size();
 				Value v = Value.create(discreteDomain);
-				v.setIndex(DimpleRandomGenerator.nextInt(domainSize));
+				v.setIndex(rand.nextInt(domainSize));
 				newValue[i] = v;
 			}
 			else

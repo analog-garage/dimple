@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
+import static com.analog.lyric.dimple.environment.DimpleEnvironment.*;
+
 import java.util.Map;
 import java.util.Random;
 
@@ -97,7 +99,6 @@ import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultivaria
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultivariateNormalConstantParameters;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomNormalConstantParameters;
 import com.analog.lyric.dimple.solvers.sumproduct.sampledfactor.SampledFactor;
-import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.TemporaryOptionSettings;
 
@@ -331,7 +332,7 @@ public class SumProductSolverGraph extends BPSolverGraph<ISolverFactor,ISolverVa
 	public void setSeed(long seed)
 	{
 		_rand = new Random(seed);				// Used for parameter estimation
-		DimpleRandomGenerator.setSeed(seed);	// Used for sampled factors
+		activeRandom().setSeed(seed);	// Used for sampled factors
 	}
 	
 

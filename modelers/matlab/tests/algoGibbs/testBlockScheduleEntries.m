@@ -210,7 +210,7 @@ abcWeightsFlat = abcWeights(:);
 fg.Schedule = {{BlockMHSampler(TrivialNonuniformBlockProposer(abcWeightsFlat, abcDomainSizes)),a,b,c}, d};
 
 if repeatable
-    fg.Solver.setSeed(2);
+    fg.Solver.setSeed(4);
 end
 
 fg.Solver.setNumSamples(10000);

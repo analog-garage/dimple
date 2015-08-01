@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
+import static com.analog.lyric.dimple.environment.DimpleEnvironment.*;
 import static java.util.Objects.*;
 
 import java.util.Arrays;
@@ -26,7 +27,7 @@ import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.BlockProposal;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IBlockProposalKernel;
-import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.math.DimpleRandom;
 
 /**
  * 
@@ -57,6 +58,8 @@ public class MultinomialBlockProposal implements IBlockProposalKernel
 	@Override
 	public BlockProposal next(Value[] currentValue, Domain[] variableDomain)
 	{
+		final DimpleRandom rand = activeRandom();
+		
 		double proposalForwardEnergy = 0;
 		double proposalReverseEnergy = 0;
 		int argumentIndex = 0;
@@ -102,7 +105,7 @@ public class MultinomialBlockProposal implements IBlockProposalKernel
 			// If N is variable, sample N uniformly
 			int previousN = currentValue[argumentIndex].getIndex();
 			int NDomainSize = requireNonNull(variableDomain[0].asDiscrete()).size();
-			nextN = DimpleRandomGenerator.nextInt(NDomainSize);
+			nextN = rand.nextInt(NDomainSize);
 			newValue[argumentIndex].setIndex(nextN);
 			argumentIndex++;
 			
@@ -126,7 +129,7 @@ public class MultinomialBlockProposal implements IBlockProposalKernel
 			int previousX = currentValue[argumentIndex].getIndex();
 			int nextX;
 			if (argumentIndex < argumentLength - 1)
-				nextX = DimpleRandomGenerator.randomBinomial(remainingN, alphai/alphaSum);
+				nextX = rand.nextBinomial(remainingN, alphai/alphaSum);
 			else	// Last value
 				nextX = remainingN;
 			newValue[argumentIndex].setIndex(nextX);

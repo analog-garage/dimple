@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 
+import static com.analog.lyric.dimple.environment.DimpleEnvironment.*;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -23,7 +25,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.math.DimpleRandom;
 import com.analog.lyric.options.DoubleOptionKey;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.options.IntegerOptionKey;
@@ -95,14 +97,16 @@ public class SliceSampler extends AbstractGenericSampler implements IMCMCSampler
 	public double sampleVerticalSlice(ISamplerClient samplerClient)
 	{
 		final double yValue = samplerClient.getCurrentSampleScore();
-		return yValue - Math.log(DimpleRandomGenerator.nextDouble());
+		return yValue - Math.log(activeRandom().nextDouble());
 	}
 
 	// Sample horizontal slice using doubling method
 	public double sampleHorizontalSlice(double x, double y, IRealSamplerClient samplerClient)
 	{
+		final DimpleRandom rand = activeRandom();
+		
 		// First finding slice using doubling method
-		double L = x - _initialSliceWidth * DimpleRandomGenerator.nextDouble();
+		double L = x - _initialSliceWidth * rand.nextDouble();
 		double R = L + _initialSliceWidth;
 		double fL = samplerClient.getSampleScore(L);
 		double fR = samplerClient.getSampleScore(R);
@@ -110,7 +114,7 @@ public class SliceSampler extends AbstractGenericSampler implements IMCMCSampler
 		{
 			if (y <= fL && y <= fR)
 				break;
-			if (DimpleRandomGenerator.nextBoolean())	// Flip a coin
+			if (rand.nextBoolean())	// Flip a coin
 			{
 				L -= (R - L);
 				fL = samplerClient.getSampleScore(L);
@@ -128,7 +132,7 @@ public class SliceSampler extends AbstractGenericSampler implements IMCMCSampler
 		double Rs = R;
 		while (true)
 		{
-			xSample = Ls + (Rs - Ls) * DimpleRandomGenerator.nextDouble();
+			xSample = Ls + (Rs - Ls) * rand.nextDouble();
 			double fSample = samplerClient.getSampleScore(xSample);
 			
 			if (y >= fSample && accept(xSample, x, y, L, R, samplerClient))

@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
+import static com.analog.lyric.dimple.environment.DimpleEnvironment.*;
 import static java.util.Objects.*;
 
 import java.util.HashSet;
@@ -36,7 +37,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockInitializer;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
-import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.math.DimpleRandom;
 
 public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjugateFactor
 {
@@ -179,6 +180,8 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 			int numOutputEdges = nEdges - _numParameterEdges;
 			if (numOutputEdges > 0)
 			{
+				final DimpleRandom rand = activeRandom();
+				
 				double[] value = new double[_dimension];
 				for (int edge = _numParameterEdges; edge < nEdges; edge++)
 				{
@@ -186,7 +189,7 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 					double sum = 0;
 					for (int i = 0; i < _dimension; i++)
 					{
-						double v = -Math.log(DimpleRandomGenerator.nextDouble());	// Sample from an exponential distribution
+						double v = -Math.log(rand.nextDouble());	// Sample from an exponential distribution
 						value[i] = v;
 						sum += v;
 					}

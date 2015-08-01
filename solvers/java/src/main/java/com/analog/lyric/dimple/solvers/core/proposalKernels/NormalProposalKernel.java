@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.core.proposalKernels;
 
+import static com.analog.lyric.dimple.environment.DimpleEnvironment.*;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -23,7 +25,6 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.DoubleOptionKey;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.options.Option;
@@ -46,7 +47,7 @@ public class NormalProposalKernel implements IProposalKernel
 	@Override
 	public Proposal next(Value currentValue, Domain variableDomain)
 	{
-		return new Proposal(currentValue.getDouble() + _standardDeviation * DimpleRandomGenerator.nextGaussian());
+		return new Proposal(currentValue.getDouble() + _standardDeviation * activeRandom().nextGaussian());
 	}
 	
 	@Deprecated

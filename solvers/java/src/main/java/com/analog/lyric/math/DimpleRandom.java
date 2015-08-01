@@ -22,11 +22,16 @@ import org.apache.commons.math3.random.RandomAdaptor;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
+
 import cern.jet.random.engine.RandomEngine;
 import net.jcip.annotations.NotThreadSafe;
 
 /**
  * Extended implementation of {@link Random} for use in Dimple
+ * <p>
+ * Most users will want to use {@link DimpleEnvironment#activeRandom()} rather than constructing
+ * a new instance.
  * <p>
  * @since 0.08
  * @author Christopher Barber
@@ -51,6 +56,11 @@ public class DimpleRandom extends RandomAdaptor
 	 * Construction
 	 */
 	
+	/**
+	 * Construct using specified underlying random generator and seed.
+	 * <p>
+	 * @since 0.08
+	 */
 	public DimpleRandom(RandomGenerator randomGenerator, long seed)
 	{
 		super(randomGenerator);
@@ -61,11 +71,23 @@ public class DimpleRandom extends RandomAdaptor
 		_randBinomial = new cern.jet.random.Binomial(1, 0.5, _randEngine);
 	}
 	
+	/**
+	 * Construct using specified underlying random generator and a randomly generated seed.
+	 * <p>
+	 * The random value used to seed the generator can be obtained via {@link #getSeed()}.
+	 * <p>
+	 * @since 0.08
+	 */
 	public DimpleRandom(RandomGenerator randomGenerator)
 	{
 		this(randomGenerator, randomGenerator.nextLong());
 	}
 
+	/**
+	 * Construct with specified seed.
+	 * <p>
+	 * @since 0.08
+	 */
 	public DimpleRandom(long seed)
 	{
 		this(new org.apache.commons.math3.random.MersenneTwister(seed), seed);
@@ -73,7 +95,8 @@ public class DimpleRandom extends RandomAdaptor
 	
 	/**
 	 * Construct with randomly generated seed.
-	 * 
+	 * <p>
+	 * The random value used to seed the generator can be obtained via {@link #getSeed()}.
 	 * @since 0.08
 	 */
 	public DimpleRandom()

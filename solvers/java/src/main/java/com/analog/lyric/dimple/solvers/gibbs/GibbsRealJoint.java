@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import static com.analog.lyric.dimple.environment.DimpleEnvironment.*;
 import static com.analog.lyric.dimple.solvers.gibbs.GibbsSolverVariableEvent.*;
 import static java.util.Objects.*;
 
@@ -68,7 +69,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
-import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.math.DimpleRandom;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.Matlab;
@@ -508,6 +509,8 @@ public class GibbsRealJoint extends SRealJointVariableBase
 			return;
 		}
 
+		final DimpleRandom rand = activeRandom();
+		
 		// If the variable has a prior, sample from that (bounded by the domain)
 		final IUnaryFactorFunction priorJoint = _model.getPriorFunction();
 		
@@ -552,7 +555,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 				{
 					// No available sampler, so if bounded, sample uniformly from the bounds
 					if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
-						setCurrentSample(i, DimpleRandomGenerator.nextDouble() * (hi - lo) + lo);
+						setCurrentSample(i, activeRandom().nextDouble() * (hi - lo) + lo);
 				}
 			}
 		}
@@ -591,7 +594,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 
 					// No available sampler, so if bounded, sample uniformly from the bounds
 					if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
-						setCurrentSample(i, DimpleRandomGenerator.nextDouble() * (hi - lo) + lo);
+						setCurrentSample(i, rand.nextDouble() * (hi - lo) + lo);
 					else if (hi < _currentSample.getValue(i))
 						setCurrentSample(i, hi);
 					else if (lo > _currentSample.getValue(i))
@@ -610,7 +613,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 
 				// If bounded, sample uniformly from the bounds, otherwise leave current sample value
 				if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
-					setCurrentSample(i, DimpleRandomGenerator.nextDouble() * (hi - lo) + lo);
+					setCurrentSample(i, rand.nextDouble() * (hi - lo) + lo);
 			}
 		}
 	}

@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.core.proposalKernels;
 
+import static com.analog.lyric.dimple.environment.DimpleEnvironment.*;
+
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -24,7 +26,6 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.options.Option;
 
@@ -40,7 +41,7 @@ public class UniformDiscreteProposalKernel implements IProposalKernel
 		// Choose uniformly at random from among all values except the current value
 		DiscreteDomain domain = (DiscreteDomain)variableDomain;
 		int currentIndex = ((DiscreteValue)currentValue).getIndex();
-		int nextIndex = DimpleRandomGenerator.nextInt(domain.size() - 1);
+		int nextIndex = activeRandom().nextInt(domain.size() - 1);
 		if (nextIndex >= currentIndex) nextIndex++;
 		Value value = Value.create(domain);
 		value.setIndex(nextIndex);

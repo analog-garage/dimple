@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
+import static com.analog.lyric.dimple.environment.DimpleEnvironment.*;
 import static java.util.Objects.*;
 
 import java.util.List;
@@ -23,7 +24,6 @@ import java.util.List;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.data.IDatum;
-import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.factorfunctions.Beta;
 import com.analog.lyric.dimple.factorfunctions.core.IUnaryFactorFunction;
 import com.analog.lyric.dimple.model.domains.RealDomain;
@@ -81,7 +81,7 @@ public class BetaSampler implements IRealConjugateSampler
 	{
 		double alphaMinusOne = parameters.getAlphaMinusOne();
 		double betaMinusOne = parameters.getBetaMinusOne();
-		return DimpleEnvironment.activeRandom().nextBeta(alphaMinusOne + 1, betaMinusOne + 1);
+		return activeRandom().nextBeta(alphaMinusOne + 1, betaMinusOne + 1);
 	}
 	
 	@Override

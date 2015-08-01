@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.particleBP;
 
+import static com.analog.lyric.dimple.environment.DimpleEnvironment.*;
 import static java.util.Objects.*;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -37,7 +38,6 @@ import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 import com.analog.lyric.dimple.solvers.sumproduct.STableFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscreteEdge;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductTableFactor;
-import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.util.misc.Matlab;
 
 /**
@@ -225,7 +225,7 @@ public class ParticleBPSolverGraph extends BPSolverGraph<ISolverFactor, IParticl
 	// Sets the random seed for the Particle BP solver.  This allows runs of the solver to be repeatable.
 	public void setSeed(long seed)
 	{
-		DimpleRandomGenerator.setSeed(seed);
+		activeRandom().setSeed(seed);
 	}
 	
 

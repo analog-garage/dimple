@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
+import static com.analog.lyric.dimple.environment.DimpleEnvironment.*;
 import static java.util.Objects.*;
 
 import java.util.List;
@@ -29,7 +30,6 @@ import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
-import com.analog.lyric.math.DimpleRandomGenerator;
 
 
 public class NegativeExpGammaSampler implements IRealConjugateSampler
@@ -68,7 +68,7 @@ public class NegativeExpGammaSampler implements IRealConjugateSampler
 	{
 		double alphaMinusOne = parameters.getAlphaMinusOne();
 		double beta = parameters.getBeta();
-		return -Math.log(DimpleRandomGenerator.nextGamma(alphaMinusOne + 1, beta));
+		return -Math.log(activeRandom().nextGamma(alphaMinusOne + 1, beta));
 	}
 	
 	@Override

@@ -290,8 +290,8 @@ public class RealVariableParticleBPTest extends DimpleTestBase
 		if (debugPrint) System.out.println("bExpectedMean: " + bProb1);
 		
 		
-		assertTrue(nearlyEquals(aSolverMean,0.1929829696757485));
-		assertTrue(nearlyEquals(bSolverMean,0.5809732764581331));
+		assertEquals(aSolverMean, 0.1929829696757485, 1e-12);
+		assertEquals(bSolverMean, 0.5809732764581331, 1e-12);
 	}
 	
 	

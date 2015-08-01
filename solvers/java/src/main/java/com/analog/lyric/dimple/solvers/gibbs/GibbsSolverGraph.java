@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import static com.analog.lyric.dimple.environment.DimpleEnvironment.*;
 import static java.util.Objects.*;
 
 import java.util.ArrayList;
@@ -95,7 +96,6 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
-import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.util.misc.Matlab;
 
 import cern.colt.list.DoubleArrayList;
@@ -822,7 +822,7 @@ public class GibbsSolverGraph
 	// Sets the random seed for the Gibbs solver.  This allows runs of the solver to be repeatable.
 	public void setSeed(long seed)
 	{
-		DimpleRandomGenerator.setSeed(seed);
+		activeRandom().setSeed(seed);
 	}
 	
 	/**

@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.particleBP;
 
+import static com.analog.lyric.dimple.environment.DimpleEnvironment.*;
 import static com.analog.lyric.math.Utilities.*;
 import static java.util.Objects.*;
 
@@ -40,7 +41,7 @@ import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.Proposal;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
-import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.math.DimpleRandom;
 import com.analog.lyric.options.OptionDoubleList;
 import com.analog.lyric.options.OptionValidationException;
 import com.analog.lyric.util.misc.Matlab;
@@ -273,6 +274,8 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 
 	public void resample()
 	{
+		final DimpleRandom rand = activeRandom();
+		
 		final FactorGraph fg = _model.requireParentGraph();
 		int numPorts = _model.getSiblingCount();
 		Domain varDomain = _model.getDomain();
@@ -333,7 +336,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 					else
 						rejectionThreshold = 0;
 				}
-				if (DimpleRandomGenerator.nextDouble() < rejectionThreshold)
+				if (rand.nextDouble() < rejectionThreshold)
 				{
 					sampleValue.setDouble(proposalValue);
 					potential = potentialProposed;

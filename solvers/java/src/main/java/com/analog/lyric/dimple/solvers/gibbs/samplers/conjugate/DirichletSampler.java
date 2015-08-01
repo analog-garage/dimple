@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
+import static com.analog.lyric.dimple.environment.DimpleEnvironment.*;
 import static java.util.Objects.*;
 
 import java.util.List;
@@ -33,7 +34,7 @@ import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
-import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.math.DimpleRandom;
 
 
 public class DirichletSampler implements IRealJointConjugateSampler
@@ -101,6 +102,8 @@ public class DirichletSampler implements IRealJointConjugateSampler
 	
 	public final double[] nextSample(DirichletParameters parameters)
 	{
+		final DimpleRandom rand = activeRandom();
+		
 		// Sample from a series of Gamma distributions, then normalize to sum to 1
 		int dimension = parameters.getSize();
 		double[] sample = new double[dimension];
@@ -108,7 +111,7 @@ public class DirichletSampler implements IRealJointConjugateSampler
 		int numZeros = 0;
 		for (int i = 0; i < dimension; i++)
 		{
-			double nextSample = DimpleRandomGenerator.nextGamma(parameters.getAlphaMinusOne(i) + 1, 1);
+			double nextSample = rand.nextGamma(parameters.getAlphaMinusOne(i) + 1, 1);
 			sample[i] = nextSample;
 			sum += nextSample;
 			if (nextSample == 0)
@@ -136,8 +139,7 @@ public class DirichletSampler implements IRealJointConjugateSampler
 		{
 			// Corner case where all samples were zero
 			// Choose one sample value at random, make that (nearly) one, and the others (nearly) zero
-			int randomChoice = (int)(DimpleRandomGenerator.nextDouble() * dimension);
-			if (randomChoice > dimension - 1) randomChoice = dimension - 1;
+			int randomChoice = rand.nextInt(dimension);
 			for (int i = 0; i < dimension; i++)
 				if (i != randomChoice)
 					sample[i] = Double.MIN_VALUE;

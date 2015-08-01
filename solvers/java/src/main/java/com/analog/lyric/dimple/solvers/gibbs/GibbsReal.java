@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import static com.analog.lyric.dimple.environment.DimpleEnvironment.*;
 import static com.analog.lyric.dimple.solvers.gibbs.GibbsSolverVariableEvent.*;
 import static java.util.Objects.*;
 
@@ -63,7 +64,6 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
-import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.Matlab;
@@ -526,7 +526,7 @@ public class GibbsReal extends SRealVariableBase
 			// No input or no available sampler, so if bounded, sample uniformly from the bounds
 			if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
 			{
-				setCurrentSample(DimpleRandomGenerator.nextDouble() * (hi - lo) + lo);
+				setCurrentSample(activeRandom().nextDouble() * (hi - lo) + lo);
 			}
 			else
 			{

@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 
+import static com.analog.lyric.dimple.environment.DimpleEnvironment.*;
 import static java.util.Objects.*;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -28,7 +29,6 @@ import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel
 import com.analog.lyric.dimple.solvers.core.proposalKernels.Proposal;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.ProposalKernelOptionKey;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.UniformDiscreteProposalKernel;
-import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.IOptionHolder;
 
 /**
@@ -105,7 +105,7 @@ public class MHSampler extends AbstractGenericSampler implements IMCMCSampler
 			else
 				rejectionThreshold = 0;
 		}
-		if (DimpleRandomGenerator.nextDouble() < rejectionThreshold)
+		if (activeRandom().nextDouble() < rejectionThreshold)
 		{
 			samplerClient.setNextSampleValue(proposalValue);		// Accept
 			return true;

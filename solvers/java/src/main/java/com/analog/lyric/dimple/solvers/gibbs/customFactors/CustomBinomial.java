@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
+import static com.analog.lyric.dimple.environment.DimpleEnvironment.*;
 import static java.util.Objects.*;
 
 import java.util.HashSet;
@@ -36,7 +37,6 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockInitializer;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
-import com.analog.lyric.math.DimpleRandomGenerator;
 
 public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFactor
 {
@@ -209,7 +209,7 @@ public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFac
 				int N = _hasConstantNParameter ? _constantNParameterValue : _NParameterVariable.getCurrentSampleIndex();
 				int nextIndex;
 				if (N > 0)
-					nextIndex = DimpleRandomGenerator.nextInt(N + 1);
+					nextIndex = activeRandom().nextInt(N + 1);
 				else
 					nextIndex = 0;
 				

@@ -18,67 +18,45 @@ package com.analog.lyric.math;
 
 import org.apache.commons.math3.random.RandomGenerator;
 
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
+
 import cern.jet.random.engine.RandomEngine;
 
+/**
+ * @deprecated as of release 0.08 use {@link DimpleEnvironment#activeRandom()}
+ */
+@Deprecated
 public class DimpleRandomGenerator
 {
+	/**
+	 * @deprecated as of release 0.08 use {@link DimpleEnvironment#activeRandom()}.
+	 */
+	@Deprecated
 	public static RandomGenerator rand = new org.apache.commons.math3.random.MersenneTwister();
 	
 	// Other random number generators not supported by the Apache framework
 	private static RandomEngine randEngine = new cern.jet.random.engine.MersenneTwister(rand.nextInt());
-	private static cern.jet.random.Gamma randGamma = new cern.jet.random.Gamma(1, 1, randEngine);
-	private static cern.jet.random.Beta randBeta = new cern.jet.random.Beta(1, 1, randEngine);
 	private static cern.jet.random.Binomial randBinomial = new cern.jet.random.Binomial(1, 0.5, randEngine);
 	
-	
+	/**
+	 * @deprecated as of release 0.08 use {@link DimpleRandom#setSeed(long)}
+	 * on {@link DimpleEnvironment#activeRandom} instance.
+	 */
+	@Deprecated
 	public static void setSeed(long seed)
 	{
 		rand.setSeed(seed);
 		
 		// WARNING: setting the seed creates new objects; which will not be used if reference to original object is cached
 		randEngine = new cern.jet.random.engine.MersenneTwister((int)seed);
-		randGamma = new cern.jet.random.Gamma(1, 1, randEngine);
-		randBeta = new cern.jet.random.Beta(1, 1, randEngine);
 		randBinomial = new cern.jet.random.Binomial(1, 0.5, randEngine);
 	}
 	
-	public static double nextBeta(double alpha, double beta)
-	{
-		return randBeta.nextDouble(alpha, beta);
-		//return DimpleEnvironment.activeRandom().nextBeta(alpha, beta);
-	}
-
-	public static boolean nextBoolean()
-	{
-		return rand.nextBoolean();
-	}
-	
-	public static double nextDouble()
-	{
-		return rand.nextDouble();
-	}
-	
-	public static double nextGamma(double alpha, double beta)
-	{
-		return randGamma.nextDouble(alpha, beta);
-	}
-	
-	public static double nextGaussian()
-	{
-		return rand.nextGaussian();
-	}
-	
-	public static int nextInt(int n)
-	{
-		return rand.nextInt(n);
-	}
-	
-	public static long nextLong()
-	{
-		return rand.nextLong();
-	}
-	
-	// randBinomial doesn't accept zero N value or 1 or 0 p value
+	/**
+	 * @deprecated as of release 0.08 use {@link DimpleRandom#nextBinomial}
+	 * from {@link DimpleEnvironment#activeRandom} instance.
+	 */
+	@Deprecated
 	public static final int randomBinomial(int N, double p)
 	{
 		if (N <= 0)

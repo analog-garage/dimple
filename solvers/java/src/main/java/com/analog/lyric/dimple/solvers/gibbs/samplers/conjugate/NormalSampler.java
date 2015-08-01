@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
+import static com.analog.lyric.dimple.environment.DimpleEnvironment.*;
 import static java.util.Objects.*;
 
 import java.util.List;
@@ -29,7 +30,6 @@ import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
-import com.analog.lyric.math.DimpleRandomGenerator;
 
 public class NormalSampler implements IRealConjugateSampler
 {
@@ -81,10 +81,11 @@ public class NormalSampler implements IRealConjugateSampler
 	{
 		double mean = parameters.getMean();
 		double precision = parameters.getPrecision();
+		double normal = activeRandom().nextGaussian();
 		if (precision > 0)
-			return mean + DimpleRandomGenerator.nextGaussian() / Math.sqrt(precision);
+			return mean + normal / Math.sqrt(precision);
 		else
-			return mean + DimpleRandomGenerator.nextGaussian() * MAX_SIGMA;
+			return mean + normal * MAX_SIGMA;
 	}
 
 	@Override
