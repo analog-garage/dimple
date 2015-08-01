@@ -22,7 +22,6 @@ import java.util.AbstractCollection;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -88,12 +87,6 @@ public abstract class Node extends FactorGraphChild implements INode
 	 */
 	protected int _flags;
 	
-	// FIXME - eliminate this if possible
-	/**
-	 * Reverse mapping of sibling to its index. Created lazily as needed.
-	 */
-	private @Nullable HashMap<INode,Integer> _siblingToIndex = null;
-
 	private class SiblingEdgeStateIterator extends UnmodifiableIterator<EdgeState>
 	{
 		private final int _size = getSiblingCount();
@@ -609,7 +602,7 @@ public abstract class Node extends FactorGraphChild implements INode
 	@Deprecated
 	public final int getPortNum(INode node)
 	{
-		int port = getPortNumNoThrow(node);
+		int port = findSibling(node);
 		if (port < 0)
 		{
 			throw new DimpleException("Nodes are not connected: " + this + " and " + node);
@@ -647,7 +640,18 @@ public abstract class Node extends FactorGraphChild implements INode
 	@Override
 	public final boolean isConnected(INode node)
 	{
-		return getPortNumNoThrow(node) >= 0;
+		INode a,b;
+		
+		if (getSiblingCount() <= node.getSiblingCount())
+		{
+			a = this; b = node;
+		}
+		else
+		{
+			a = node; b = this;
+		}
+
+		return a.findSibling(b) >= 0;
 	}
 
 	/*--------------
@@ -781,11 +785,6 @@ public abstract class Node extends FactorGraphChild implements INode
 	protected void addSiblingEdgeState(EdgeState edge)
 	{
 		final int i = _siblingEdges.size();
-		final HashMap<INode,Integer> siblingToIndex = _siblingToIndex;
-		if (siblingToIndex != null)
-		{
-			siblingToIndex.put(edge.getSibling(this), i);
-		}
 		if (isVariable())
 		{
 			edge._variableToFactorEdgeNumber = i;
@@ -817,7 +816,6 @@ public abstract class Node extends FactorGraphChild implements INode
 				getSiblingEdgeState(j)._factorToVariableEdgeNumber = -1;
 			}
 		}
-		_siblingToIndex = null;
 		notifyConnectionsChanged();
 	}
 	
@@ -850,7 +848,6 @@ public abstract class Node extends FactorGraphChild implements INode
 				getSiblingEdgeState(j)._factorToVariableEdgeNumber = j;
 			}
 		}
-		_siblingToIndex = null;
 		notifyConnectionsChanged();
 	}
 	
@@ -862,13 +859,6 @@ public abstract class Node extends FactorGraphChild implements INode
 		oldEdge._factorToVariableEdgeNumber = -1;
 		_siblingEdges.set(i, newEdge.edgeIndex(this));
 		newEdge._factorToVariableEdgeNumber = i;
-		final HashMap<INode,Integer> siblingToIndex = _siblingToIndex;
-		if (siblingToIndex != null)
-		{
-			final FactorGraph fg = requireParentGraph();
-			siblingToIndex.remove(oldEdge.getVariable(fg));
-			siblingToIndex.put(newEdge.getVariable(fg), i);
-		}
 		notifyConnectionsChanged();
 	}
 	
@@ -964,66 +954,6 @@ public abstract class Node extends FactorGraphChild implements INode
 		_flags = BitSetUtil.setMaskedValue(_flags, mask, value);
 	}
 
-	/*-----------------
-	 * Private methods
-	 */
-
-	private int getPortNumNoThrow(INode node)
-	{
-		int nSiblings = _siblingEdges.size();
-		
-		HashMap<INode,Integer> siblingToIndex = _siblingToIndex;
-		
-		if (siblingToIndex == null && nSiblings > 10)
-		{
-			siblingToIndex = _siblingToIndex = new HashMap<>(nSiblings);
-			for (int i = 0; i < nSiblings; ++i)
-			{
-				siblingToIndex.put(getSibling(i), i);
-			}
-		}
-		
-		if (siblingToIndex != null)
-		{
-			Integer index = siblingToIndex.get(node);
-			return index != null ? index : -1;
-		}
-		else
-		{
-			for (int i = 0; i < _siblingEdges.size(); i++)
-			{
-				// FIXME: isConnected walks up parent chain. I don't think that is what
-				// we want.
-				if (isConnected(node,i))
-					return i;
-			}
-		}
-		return -1;
-	}
-	
-	private boolean isConnected(INode node, int portIndex)
-	{
-		INode other = requireNonNull(getSibling(portIndex));
-		
-		if (other == node)
-			return true;
-		
-		// FIXME: this logic does not seem right to me. This will return true if 'node' refers to a mutual
-		// parent graph of the current node and the sibling. Is that what we want? Shouldn't we instead
-		// have the caller of this method walk up this node's parent graphs and see if any of them are
-		// a direct sibling of 'node'?
-		
-		for (FactorGraph parent; (parent = other.getParentGraph()) != null; other = parent)
-		{
-			if (parent == node)
-			{
-				return true;
-			}
-		}
-	
-		return false;
-	}
-	
 	/*--------------------
 	 * Deprecated methods
 	 */
