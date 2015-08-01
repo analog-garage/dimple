@@ -445,7 +445,7 @@ assert(strcmp(x(1).Factors{1}.VectorObject.getFactorFunction.getContainedFactorF
 
 fg.Solver = 'Gibbs';
 if repeatable
-    fg.Solver.setSeed(1);
+    fg.Solver.setSeed(2);
 end
 fg.Solver.setNumSamples(1000);
 fg.Solver.saveAllSamples();

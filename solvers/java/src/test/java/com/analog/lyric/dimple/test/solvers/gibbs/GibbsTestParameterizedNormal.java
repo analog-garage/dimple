@@ -27,8 +27,8 @@ import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
 @SuppressWarnings("deprecation")
@@ -89,7 +89,7 @@ public class GibbsTestParameterizedNormal extends DimpleTestBase
 		GibbsReal svModelMean = requireNonNull((GibbsReal)vModelMean.getSolver());
 		GibbsReal svModelInverseVariance = requireNonNull((GibbsReal)vModelInverseVariance.getSolver());
 
-
+		
 
 		if (repeatable) solver.setSeed(1);					// Make this repeatable
 		graph.solve();
@@ -99,20 +99,14 @@ public class GibbsTestParameterizedNormal extends DimpleTestBase
 		if (debugPrint) System.out.println("vModelMeanBest: " + (Double)svModelMean.getBestSample());
 		if (debugPrint) System.out.println("vModelInverseVarianceBest: " + (Double)svModelInverseVariance.getBestSample());
 
-		assertTrue(nearlyEquals(svModelMean.getBestSample(),27.029282787511672));
-		assertTrue(nearlyEquals(svModelInverseVariance.getBestSample(),0.005320791975254845));
-	}
-	
-	
-
-	
-	
-	private static double TOLLERANCE = 1e-12;
-	private boolean nearlyEquals(double a, double b)
-	{
-		double diff = a - b;
-		if (diff > TOLLERANCE) return false;
-		if (diff < -TOLLERANCE) return false;
-		return true;
+		assertEquals(1.0, svModelMean.getBestSample() / modelMean, .05);
+		assertEquals(1.0, svModelInverseVariance.getBestSample() / modelInverseVariance, .05);
+		
+		if (repeatable)
+		{
+			// These values are arbitrary and based on the random number generator, sampler and seed
+			assertEquals(27.029282787511672,svModelMean.getBestSample(),1e-12);
+			assertEquals(0.005320791975254845,svModelInverseVariance.getBestSample(),1e-12);
+		}
 	}
 }

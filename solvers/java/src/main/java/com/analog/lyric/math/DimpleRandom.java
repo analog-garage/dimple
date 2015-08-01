@@ -18,6 +18,9 @@ package com.analog.lyric.math;
 
 import java.util.Random;
 
+import org.apache.commons.math3.distribution.BetaDistribution;
+import org.apache.commons.math3.distribution.BinomialDistribution;
+import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomAdaptor;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -47,10 +50,14 @@ public class DimpleRandom extends RandomAdaptor
 
 	final RandomGenerator _randGenerator;
 	
-	// TODO - can we switch to use Apache versions of these?
+	private BetaDistribution _randBeta;
+	private BinomialDistribution _randBinomial;
+
+	// For now, continue to use the CERN Gamma implementation. It is somewhere between 40-100% faster
+	// and the Apache implementation causes tests to fail in a way that suggest that it might not be as
+	// numerically accurate or stable. We should look at the next Apache release (3.6) to see if it does
+	// anything about this...
 	private RandomEngine _randEngine;
-	private cern.jet.random.Beta _randBeta;
-	private cern.jet.random.Binomial _randBinomial;
 	private cern.jet.random.Gamma _randGamma;
 	
 	private long _seed;
@@ -71,8 +78,8 @@ public class DimpleRandom extends RandomAdaptor
 		_seed = seed;
 		_randEngine = new cern.jet.random.engine.MersenneTwister((int)seed);
 		_randGamma = new cern.jet.random.Gamma(1, 1, _randEngine);
-		_randBeta = new cern.jet.random.Beta(1, 1, _randEngine);
-		_randBinomial = new cern.jet.random.Binomial(1, 0.5, _randEngine);
+		_randBeta = new BetaDistribution(_randGenerator, 1, 1);
+		_randBinomial = new BinomialDistribution(_randGenerator, 1, 0.5);
 	}
 	
 	/**
@@ -94,7 +101,7 @@ public class DimpleRandom extends RandomAdaptor
 	 */
 	public DimpleRandom(long seed)
 	{
-		this(new org.apache.commons.math3.random.MersenneTwister(seed), seed);
+		this(new MersenneTwister(seed), seed);
 	}
 	
 	/**
@@ -105,7 +112,7 @@ public class DimpleRandom extends RandomAdaptor
 	 */
 	public DimpleRandom()
 	{
-		this(new org.apache.commons.math3.random.MersenneTwister());
+		this(new MersenneTwister());
 		setSeed(nextLong());
 	}
 
@@ -120,8 +127,6 @@ public class DimpleRandom extends RandomAdaptor
 		_seed = seed;
 		_randEngine = new cern.jet.random.engine.MersenneTwister((int)seed);
 		_randGamma = new cern.jet.random.Gamma(1, 1, _randEngine);
-		_randBeta = new cern.jet.random.Beta(1, 1, _randEngine);
-		_randBinomial = new cern.jet.random.Binomial(1, 0.5, _randEngine);
 	}
 	
 	@Override
@@ -148,6 +153,18 @@ public class DimpleRandom extends RandomAdaptor
 	 */
 	
 	/**
+	 * The underlying Apache random generator.
+	 * <p>
+	 * May be used with Apache's distribution classes.
+	 * <p>
+	 * @since 0.08
+	 */
+	public RandomGenerator getGenerator()
+	{
+		return _randGenerator;
+	}
+	
+	/**
 	 * Returns seed used to initialize random generator.
 	 * <p>
 	 * Returns seed set by one of the {@link #setSeed} methods or randomly generated in constructor.
@@ -165,7 +182,7 @@ public class DimpleRandom extends RandomAdaptor
 	 */
 	public double nextBeta()
 	{
-		return _randBeta.nextDouble();
+		return nextBeta(1.0, 1.0);
 	}
 	
 	/**
@@ -174,7 +191,15 @@ public class DimpleRandom extends RandomAdaptor
 	 */
 	public double nextBeta(double alpha, double beta)
 	{
-		return _randBeta.nextDouble(alpha, beta);
+		BetaDistribution randBeta = _randBeta;
+		
+		if (randBeta.getAlpha() != alpha || randBeta.getBeta() != beta)
+		{
+			randBeta = new BetaDistribution(_randGenerator, alpha, beta);
+			_randBeta = randBeta;
+		}
+		
+		return randBeta.sample();
 	}
 	
 	/**
@@ -184,7 +209,7 @@ public class DimpleRandom extends RandomAdaptor
 	 */
 	public int nextBernoulli()
 	{
-		return _randBinomial.nextInt();
+		return nextBernoulli(.5);
 	}
 	
 	/**
@@ -209,8 +234,15 @@ public class DimpleRandom extends RandomAdaptor
 			return 0;
 		else if (p >= 1)
 			return n;
-		else
-			return _randBinomial.nextInt(n, p);
+		
+		BinomialDistribution randBinomial = _randBinomial;
+		
+		if (randBinomial.getNumberOfTrials() != n || randBinomial.getProbabilityOfSuccess() != p)
+		{
+			_randBinomial = randBinomial = new BinomialDistribution(_randGenerator, n, p);
+		}
+
+		return randBinomial.sample();
 	}
 	
 	/**
@@ -229,7 +261,7 @@ public class DimpleRandom extends RandomAdaptor
 	 */
 	public double nextGamma()
 	{
-		return _randGamma.nextDouble();
+		return nextGamma(1.0, 1.0);
 	}
 	
 	/**
