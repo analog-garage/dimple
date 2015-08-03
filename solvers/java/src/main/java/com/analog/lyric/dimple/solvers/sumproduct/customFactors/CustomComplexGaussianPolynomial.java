@@ -49,7 +49,7 @@ public class CustomComplexGaussianPolynomial extends MultivariateGaussianFactorB
 		if (factor.getSiblingCount() != 2)
 			throw new DimpleException("expected two complex numbers");
 
-		//TODO: throw error message if htis cast fails
+		//TODO: throw error message if this cast fails
 		Object[] constants = factor.getFactorFunction().getConstants();
 
 		//TODO: error check
