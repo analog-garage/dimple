@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.MatrixProduct;
 import com.analog.lyric.dimple.model.domains.Domain;
@@ -632,7 +633,7 @@ public abstract class FactorFunction implements IFactorFunction
 	 */
 	public Object[] getConstants()
 	{
-		return new Object[] {};
+		return ArrayUtil.EMPTY_OBJECT_ARRAY;
 	}
 
 	/**
@@ -640,7 +641,7 @@ public abstract class FactorFunction implements IFactorFunction
 	 */
 	public int[] getConstantIndices()
 	{
-		return new int[] {};
+		return ArrayUtil.EMPTY_INT_ARRAY;
 	}
 	
     /*---------------------------
