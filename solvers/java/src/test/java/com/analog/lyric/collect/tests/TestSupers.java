@@ -106,6 +106,12 @@ public class TestSupers
 			List<?> list = (List<?>)Supers.invokeMethod(Arrays.class, "asList", "1", "2", "3");
 			requireNonNull(list);
 			assertArrayEquals(new Object[] {"1", "2", "3",}, list.toArray());
+			
+			// Test invocation of method implemented in a non-public subclass
+			assertEquals(42, Supers.invokeMethod(TestSupers2.makePrivateClass1(), "bar"));
+			assertEquals(23, Supers.invokeMethod(TestSupers2.makePrivateClass1(), "bar", 23));
+			assertEquals(23, Supers.invokeMethod(TestSupers2.makePrivateClass2(), "foo"));
+			assertEquals(-12, Supers.invokeMethod(TestSupers2.makePrivateClass2(), "foo", 12));
 		}
 		catch (Exception ex)
 		{

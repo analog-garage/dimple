@@ -29,6 +29,7 @@ import java.util.Collections;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.primitives.Primitives;
 
 
@@ -165,6 +166,33 @@ public abstract class Supers
 					args = new Object[declaredSize];
 				}
 				requireNonNull(args)[declaredSize - 1] = varargs;
+			}
+		}
+		
+		if (!Modifier.isPublic(declaredClass.getModifiers()))
+		{
+			// Java for some reason does not let you reflectively invoke a method on a non-public
+			// class, even if the method binding is public and is declared in a public superclass
+			// or interface. As a workaround, try to find method binding from public super class.
+			
+			Class<?>[] parameterTypes = method.getParameterTypes();
+
+			Iterable<Class<?>> superclassesAndInterfaces =
+				Iterables.concat(superClasses(declaredClass).reverse(), Arrays.asList(declaredClass.getInterfaces()));
+			
+			for (Class<?> c : superclassesAndInterfaces)
+			{
+				if (Modifier.isPublic(c.getModifiers()))
+				{
+					try
+					{
+						method = c.getMethod(methodName, parameterTypes);
+						break;
+					}
+					catch (NoSuchMethodException ex)
+					{
+					}
+				}
 			}
 		}
 		
