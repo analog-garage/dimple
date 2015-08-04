@@ -90,5 +90,6 @@ public abstract class IntDiscreteDomain extends TypedDiscreteDomain<Integer>
 	
 	public abstract int getIndex(int value);
 	
+	@Override
 	public abstract int getIntElement(int i);
 }

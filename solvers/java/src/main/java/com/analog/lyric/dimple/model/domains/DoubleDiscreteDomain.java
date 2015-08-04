@@ -67,6 +67,7 @@ public abstract class DoubleDiscreteDomain extends TypedDiscreteDomain<Double>
 	 * DoubleDiscreteDomain methods
 	 */
 
+	@Override
 	public abstract double getDoubleElement(int i);
 	
 	public abstract int getIndex(double value);

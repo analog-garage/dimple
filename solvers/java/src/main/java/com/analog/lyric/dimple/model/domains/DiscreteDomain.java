@@ -23,7 +23,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.WeakInterner;
 import com.analog.lyric.dimple.exceptions.DomainException;
-import com.analog.lyric.dimple.model.values.Value;
+oveimport com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.util.misc.Internal;
 import com.google.common.collect.Interner;
@@ -410,6 +410,15 @@ public abstract class DiscreteDomain extends Domain
 	public abstract @Nullable <T> TypedDiscreteDomain<T> asTypedDomain(Class<T> elementClass);
 	
 	/**
+	 * Returns ith element as a double
+	 * @since 0.08
+	 */
+	public double getDoubleElement(int i)
+	{
+		return FactorFunctionUtilities.toDouble(getElement(i));
+	}
+	
+	/**
 	 * Common superclass of all elements.
 	 */
 	public abstract Class<?> getElementClass();
@@ -459,6 +468,15 @@ public abstract class DiscreteDomain extends Domain
 		}
 		
 		return array;
+	}
+	
+	/**
+	 * Returns ith element as an integer
+	 * @since 0.08
+	 */
+	public int getIntElement(int i)
+	{
+		return FactorFunctionUtilities.toInteger(getElement(i));
 	}
 
 	/**
