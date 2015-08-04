@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.model.values;
 
 import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
 
-public class GenericIntDiscreteValue extends IntDiscreteValue
+class GenericIntDiscreteValue extends IntDiscreteValue
 {
 	private static final long serialVersionUID = 1L;
 

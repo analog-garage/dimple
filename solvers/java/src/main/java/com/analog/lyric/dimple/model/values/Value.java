@@ -33,6 +33,7 @@ import com.analog.lyric.dimple.model.domains.DomainList;
 import com.analog.lyric.dimple.model.domains.DoubleRangeDomain;
 import com.analog.lyric.dimple.model.domains.FiniteFieldDomain;
 import com.analog.lyric.dimple.model.domains.FiniteFieldNumber;
+import com.analog.lyric.dimple.model.domains.IntDomain;
 import com.analog.lyric.dimple.model.domains.IntRangeDomain;
 import com.analog.lyric.dimple.model.domains.ObjectDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
@@ -53,6 +54,112 @@ public abstract class Value implements IDatum, Cloneable, Serializable
 	/*--------------
 	 * Construction
 	 */
+	
+	/**
+	 * Creates an immutable {@link Value} instance appropriate for given domain and value.
+	 * @since 0.08
+	 * @see #create(Domain)
+	 */
+	public static Value constant(Domain domain, @Nullable Object value)
+	{
+		if (domain instanceof DiscreteDomain)
+		{
+			return constantDiscrete((DiscreteDomain)domain, requireNonNull(value));
+		}
+
+		if (domain.isReal())
+		{
+			return constantReal(FactorFunctionUtilities.toDouble(value));
+		}
+		
+		if (domain.isRealJoint())
+		{
+			return constantRealJoint((double[])requireNonNull(value));
+		}
+		
+		if (domain instanceof IntDomain)
+		{
+			return new ConstantIntValue(FactorFunctionUtilities.toInteger(value));
+		}
+		
+		return new ConstantObjectValue(value);
+	}
+	
+	/**
+	 * Creates an immutable {@link Value} instance appropriate for given value.
+	 * @since 0.08
+	 * @see #create(Object)
+	 */
+	public static Value constant(@Nullable Object value)
+	{
+		if (value instanceof Number)
+		{
+			Number number = (Number)value;
+			
+			if (number instanceof Integer || number instanceof Short || number instanceof Byte)
+			{
+				return new ConstantIntValue(number.intValue());
+			}
+			else if (number instanceof FiniteFieldNumber)
+			{
+				return new ConstantFiniteFieldValue((FiniteFieldNumber)number);
+			}
+			else
+			{
+				// TODO: There is no LongValue so long gets returned as a Real
+				return constantReal(number.doubleValue());
+			}
+		}
+		else if (value instanceof Boolean)
+		{
+			return new ConstantDiscreteValue(DiscreteDomain.bool(), (Boolean)value ? 1 : 0);
+		}
+		else if (value instanceof double[])
+		{
+			return new ConstantRealJointValue((double[])value);
+		}
+		
+		return new ConstantObjectValue(value);
+	}
+
+	/**
+	 * Create an immutable {@link DiscreteValue} with given domain and value.
+	 * @since 0.08
+	 * @see #constantWithIndex(DiscreteDomain, int)
+	 */
+	public static DiscreteValue constantDiscrete(DiscreteDomain domain, Object value)
+	{
+		return constantWithIndex(domain, domain.getIndexOrThrow(value));
+	}
+
+	/**
+	 * Creates an immutable {@link RealValue} with unbounded domain and given value.
+	 * @since 0.08
+	 */
+	public static RealValue constantReal(double value)
+	{
+		return new ConstantRealValue(value);
+	}
+	
+	/**
+	 * Creates an immutable {@link RealJointValue} with unbounded domain and given value.
+	 * @since 0.08
+	 */
+	public static RealJointValue constantRealJoint(double ... value)
+	{
+		return new ConstantRealJointValue(value.clone());
+	}
+	
+	/**
+	 * Create an immutable {@link DiscreteValue} with given domain and value.
+	 * @since 0.08
+	 * @see #constantDiscrete(DiscreteDomain, Object)
+	 * @see #createWithIndex(DiscreteDomain, int)
+	 */
+	public static DiscreteValue constantWithIndex(DiscreteDomain domain, int index)
+	{
+		return new ConstantDiscreteValue(domain, index);
+	}
 	
 	/**
 	 * Creates a {@code Value} instance appropriate to the given {@code domain}
@@ -272,18 +379,41 @@ public abstract class Value implements IDatum, Cloneable, Serializable
 		{
 			return new RealJointValue((double[])initialValue);
 		}
+		else if (initialValue instanceof Boolean)
+		{
+			return createWithIndex(DiscreteDomain.bool(), (Boolean)initialValue ? 1 : 0);
+		}
 		else
 		{
 			return new ObjectValue(initialValue);
 		}
 	}
 	
+	/**
+	 * Returns a copy of the object.
+	 * <p>
+	 * Note that if {@link #isMutable()} is false, this will return an immutable
+	 * object (and may in fact return the same object). If you need a mutable copy
+	 * then instead use {@link #mutableClone()}.
+	 */
+	@Override
+	public abstract Value clone();
+	
+	/**
+	 * Returns a mutable clone of the value.
+	 * <p>
+	 * This returns a {@linkplain #isMutable() mutable} copy of the value.
+	 * <p>
+	 * @since 0.08
+	 */
+	public Value mutableClone()
+	{
+		return clone();
+	}
+	
 	/*----------------
 	 * Object methods
 	 */
-	
-	@Override
-	public abstract Value clone();
 	
 	@Override
 	public String toString()
@@ -343,6 +473,9 @@ public abstract class Value implements IDatum, Cloneable, Serializable
 	
 	/**
 	 * True if the value may be changed after construction.
+	 * <p>
+	 * If false, then {@link #setObject} and all other {@code set*} methods
+	 * will throw a {@link UnsupportedOperationException}.
 	 * <p>
 	 * The default implementation returns true.
 	 * @since 0.08
@@ -408,6 +541,8 @@ public abstract class Value implements IDatum, Cloneable, Serializable
 	/**
 	 * Gets the current value as a {@code FiniteFieldNumber}
 	 * @since 0.07
+	 * @throws ClassCastException if value does not contain a finite field value
+	 * @throws NullPointerException if {@link #getObject()} is null.
 	 */
 	public FiniteFieldNumber getFiniteField()
 	{
@@ -500,7 +635,20 @@ public abstract class Value implements IDatum, Cloneable, Serializable
 	{
 		return Objects.equals(getObject(), other.getObject());
 	}
+
+	/*----------
+	 * Internal
+	 */
 	
+	/**
+	 * Returns an exception indicating that value is not mutable.
+	 * @since 0.08
+	 */
+	protected RuntimeException notMutable()
+	{
+		throw new UnsupportedOperationException("Value is not mutable");
+	}
+
 	/*-----------------------
 	 * Static helper methods
 	 */

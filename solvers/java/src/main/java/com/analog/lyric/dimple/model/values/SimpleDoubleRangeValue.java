@@ -19,9 +19,9 @@ package com.analog.lyric.dimple.model.values;
 import com.analog.lyric.dimple.model.domains.DoubleRangeDomain;
 
 /**
- * Implementation of {@link DoubleDiscreteValue} where the index and the value are the same.
+ * Implementation of {@code DoubleDiscreteValue} where the index and the value are the same.
  */
-public class SimpleDoubleRangeValue extends DoubleDiscreteValue
+class SimpleDoubleRangeValue extends DoubleDiscreteValue
 {
 	private static final long serialVersionUID = 1L;
 

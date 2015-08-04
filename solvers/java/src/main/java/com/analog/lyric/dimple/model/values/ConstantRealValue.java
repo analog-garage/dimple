@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2014 Analog Devices, Inc.
+*   Copyright 2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -16,61 +16,44 @@
 
 package com.analog.lyric.dimple.model.values;
 
-import com.analog.lyric.dimple.model.domains.IntRangeDomain;
+import net.jcip.annotations.Immutable;
 
 /**
- * Implementation of {@code IntDiscreteValue} where the index and the value are the same.
+ * 
+ * @since 0.08
+ * @author Christopher Barber
  */
-class SimpleIntRangeValue extends IntDiscreteValue
+@Immutable
+final class ConstantRealValue extends RealValue
 {
 	private static final long serialVersionUID = 1L;
 
-	/*--------------
-	 * Construction
-	 */
-	
-	SimpleIntRangeValue(IntRangeDomain domain)
+	ConstantRealValue(double value)
 	{
-		this(domain, 0);
-	}
-
-	SimpleIntRangeValue(IntRangeDomain domain, int value)
-	{
-		super(domain, value);
-		assert(domain.getLowerBound() == 0 && domain.getInterval() == 1);
-	}
-	
-	SimpleIntRangeValue(SimpleIntRangeValue other)
-	{
-		super(other);
-	}
-	
-	/*---------------
-	 * Value methods
-	 */
-	
-	@Override
-	public SimpleIntRangeValue clone()
-	{
-		return new SimpleIntRangeValue(this);
+		super(value);
 	}
 
 	@Override
-	public IntRangeDomain getDomain()
+	public RealValue clone()
 	{
-		return (IntRangeDomain)super.getDomain();
-	}
-	
-	@Override
-	public int getIndex()
-	{
-		return _value;
+		return this;
 	}
 
 	@Override
-	public void setIndex(int index)
+	public RealValue mutableClone()
 	{
-		assertIndexInBounds(index);
-		_value = index;
+		return Value.createReal(_value);
+	}
+
+	@Override
+	public boolean isMutable()
+	{
+		return false;
+	}
+	
+	@Override
+	public void setDouble(double value)
+	{
+		throw notMutable();
 	}
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2014 Analog Devices, Inc.
+*   Copyright 2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -16,61 +16,57 @@
 
 package com.analog.lyric.dimple.model.values;
 
-import com.analog.lyric.dimple.model.domains.IntRangeDomain;
+import org.eclipse.jdt.annotation.Nullable;
+
+import net.jcip.annotations.Immutable;
 
 /**
- * Implementation of {@code IntDiscreteValue} where the index and the value are the same.
+ * @since 0.08
+ * @author Christopher Barber
  */
-class SimpleIntRangeValue extends IntDiscreteValue
+@Immutable
+final class ConstantRealJointValue extends RealJointValue
 {
 	private static final long serialVersionUID = 1L;
 
-	/*--------------
-	 * Construction
-	 */
-	
-	SimpleIntRangeValue(IntRangeDomain domain)
+	ConstantRealJointValue(double[] value)
 	{
-		this(domain, 0);
+		super(value);
 	}
-
-	SimpleIntRangeValue(IntRangeDomain domain, int value)
-	{
-		super(domain, value);
-		assert(domain.getLowerBound() == 0 && domain.getInterval() == 1);
-	}
-	
-	SimpleIntRangeValue(SimpleIntRangeValue other)
-	{
-		super(other);
-	}
-	
-	/*---------------
-	 * Value methods
-	 */
 	
 	@Override
-	public SimpleIntRangeValue clone()
+	public RealJointValue clone()
 	{
-		return new SimpleIntRangeValue(this);
+		return this;
+	}
+	
+	@Override
+	public RealJointValue mutableClone()
+	{
+		return Value.createRealJoint(_value.clone());
 	}
 
 	@Override
-	public IntRangeDomain getDomain()
+	public boolean isMutable()
 	{
-		return (IntRangeDomain)super.getDomain();
+		return false;
 	}
 	
 	@Override
-	public int getIndex()
+	public void setObject(@Nullable Object value)
 	{
-		return _value;
+		throw notMutable();
 	}
-
+	
 	@Override
-	public void setIndex(int index)
+	public void setValue(double[] value)
 	{
-		assertIndexInBounds(index);
-		_value = index;
+		throw notMutable();
+	}
+	
+	@Override
+	public void setValue(int index, double value)
+	{
+		throw notMutable();
 	}
 }

@@ -26,7 +26,7 @@ import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
  * Base class for {@link DiscreteValue} implementations for
  * discrete domains whose elements are doubles.
  */
-public abstract class DoubleDiscreteValue extends DiscreteValue
+abstract class DoubleDiscreteValue extends DiscreteValue
 {
 	private static final long serialVersionUID = 1L;
 

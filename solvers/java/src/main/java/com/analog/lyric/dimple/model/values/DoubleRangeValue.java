@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.model.values;
 
 import com.analog.lyric.dimple.model.domains.DoubleRangeDomain;
 
-public class DoubleRangeValue extends DoubleDiscreteValue
+class DoubleRangeValue extends DoubleDiscreteValue
 {
 	private static final long serialVersionUID = 1L;
 

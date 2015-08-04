@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.model.values;
 
 import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
 
-public class GenericDoubleDiscreteValue extends DoubleDiscreteValue
+class GenericDoubleDiscreteValue extends DoubleDiscreteValue
 {
 	/*-------
 	 * State

@@ -21,7 +21,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
 
-public abstract class IntDiscreteValue extends DiscreteValue
+abstract class IntDiscreteValue extends DiscreteValue
 {
 	private static final long serialVersionUID = 1L;
 

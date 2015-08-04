@@ -23,7 +23,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 
-public class GenericDiscreteValue extends DiscreteValue
+class GenericDiscreteValue extends DiscreteValue
 {
 	/*-------
 	 * State

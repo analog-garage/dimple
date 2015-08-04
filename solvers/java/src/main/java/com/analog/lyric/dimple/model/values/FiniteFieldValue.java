@@ -82,7 +82,7 @@ public class FiniteFieldValue extends DiscreteValue
 	@Override
 	public void setObject(@Nullable Object value)
 	{
-		_value = (FiniteFieldNumber)Objects.requireNonNull(value);
+		setFiniteField((FiniteFieldNumber)Objects.requireNonNull(value));
 	}
 
 	@Override
@@ -95,7 +95,7 @@ public class FiniteFieldValue extends DiscreteValue
 	public void setIndex(int index)
 	{
 		assertIndexInBounds(index);
-		_value = _value.cloneWithNewValue(index);
+		setFiniteField(_value.cloneWithNewValue(index));
 	}
 	
 	@Override

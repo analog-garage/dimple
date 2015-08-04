@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2014 Analog Devices, Inc.
+*   Copyright 2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -16,12 +16,18 @@
 
 package com.analog.lyric.dimple.model.values;
 
-import com.analog.lyric.dimple.model.domains.IntRangeDomain;
+import com.analog.lyric.dimple.model.domains.FiniteFieldNumber;
+
+import net.jcip.annotations.Immutable;
 
 /**
- * Implementation of {@code IntDiscreteValue} where the index and the value are the same.
+ * Immutable value containing a {@link FiniteFieldNumber}.
+ * <p>
+ * @since 0.08
+ * @author Christopher Barber
  */
-class SimpleIntRangeValue extends IntDiscreteValue
+@Immutable
+public final class ConstantFiniteFieldValue extends FiniteFieldValue
 {
 	private static final long serialVersionUID = 1L;
 
@@ -29,48 +35,30 @@ class SimpleIntRangeValue extends IntDiscreteValue
 	 * Construction
 	 */
 	
-	SimpleIntRangeValue(IntRangeDomain domain)
+	public ConstantFiniteFieldValue(FiniteFieldNumber number)
 	{
-		this(domain, 0);
+		super(number);
+	}
+	
+	@Override
+	public Value mutableClone()
+	{
+		return new FiniteFieldValue(getFiniteField());
 	}
 
-	SimpleIntRangeValue(IntRangeDomain domain, int value)
-	{
-		super(domain, value);
-		assert(domain.getLowerBound() == 0 && domain.getInterval() == 1);
-	}
-	
-	SimpleIntRangeValue(SimpleIntRangeValue other)
-	{
-		super(other);
-	}
-	
 	/*---------------
 	 * Value methods
 	 */
 	
 	@Override
-	public SimpleIntRangeValue clone()
+	public boolean isMutable()
 	{
-		return new SimpleIntRangeValue(this);
-	}
-
-	@Override
-	public IntRangeDomain getDomain()
-	{
-		return (IntRangeDomain)super.getDomain();
+		return false;
 	}
 	
 	@Override
-	public int getIndex()
+	public void setFiniteField(FiniteFieldNumber value)
 	{
-		return _value;
-	}
-
-	@Override
-	public void setIndex(int index)
-	{
-		assertIndexInBounds(index);
-		_value = index;
+		throw notMutable();
 	}
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2014 Analog Devices, Inc.
+*   Copyright 2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -16,61 +16,46 @@
 
 package com.analog.lyric.dimple.model.values;
 
-import com.analog.lyric.dimple.model.domains.IntRangeDomain;
+import org.eclipse.jdt.annotation.Nullable;
+
+import net.jcip.annotations.Immutable;
 
 /**
- * Implementation of {@code IntDiscreteValue} where the index and the value are the same.
+ * 
+ * @since 0.08
+ * @author Christopher Barber
  */
-class SimpleIntRangeValue extends IntDiscreteValue
+@Immutable
+final class ConstantObjectValue extends ObjectValue
 {
 	private static final long serialVersionUID = 1L;
 
-	/*--------------
-	 * Construction
-	 */
-	
-	SimpleIntRangeValue(IntRangeDomain domain)
+	ConstantObjectValue(@Nullable Object value)
 	{
-		this(domain, 0);
+		super(value);
 	}
-
-	SimpleIntRangeValue(IntRangeDomain domain, int value)
-	{
-		super(domain, value);
-		assert(domain.getLowerBound() == 0 && domain.getInterval() == 1);
-	}
-	
-	SimpleIntRangeValue(SimpleIntRangeValue other)
-	{
-		super(other);
-	}
-	
-	/*---------------
-	 * Value methods
-	 */
 	
 	@Override
-	public SimpleIntRangeValue clone()
+	public ObjectValue clone()
 	{
-		return new SimpleIntRangeValue(this);
+		return this;
+	}
+	
+	@Override
+	public boolean isMutable()
+	{
+		return false;
+	}
+	
+	@Override
+	public Value mutableClone()
+	{
+		return new ObjectValue(getObject());
 	}
 
 	@Override
-	public IntRangeDomain getDomain()
+	public void setObject(@Nullable Object value)
 	{
-		return (IntRangeDomain)super.getDomain();
-	}
-	
-	@Override
-	public int getIndex()
-	{
-		return _value;
-	}
-
-	@Override
-	public void setIndex(int index)
-	{
-		assertIndexInBounds(index);
-		_value = index;
+		throw notMutable();
 	}
 }

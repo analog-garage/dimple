@@ -73,7 +73,7 @@ public class IntValue extends Value
 	@Override
 	public void setFrom(Value other)
 	{
-		_value = other.getInt();
+		setInt(other.getInt());
 	}
 	
 	@Override
@@ -91,7 +91,7 @@ public class IntValue extends Value
 	@Override
 	public void setObject(@Nullable Object value)
 	{
-		_value = FactorFunctionUtilities.toInteger(value);
+		setInt(FactorFunctionUtilities.toInteger(value));
 	}
 	
 	@Override
@@ -109,7 +109,7 @@ public class IntValue extends Value
 	public void setDouble(double value)
 	{
 		// TODO: is this the semantics we want here?
-		_value = (int)Math.round(value);
+		setInt((int)Math.round(value));
 	}
 	
 	@Override
@@ -127,7 +127,7 @@ public class IntValue extends Value
 	@Override
 	public void setBoolean(boolean value)
 	{
-		_value = value ? 1 : 0;
+		setInt(value ? 1 : 0);
 	}
 	
 	@Override
