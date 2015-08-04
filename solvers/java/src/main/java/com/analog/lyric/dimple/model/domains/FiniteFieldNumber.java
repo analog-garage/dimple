@@ -29,8 +29,9 @@ import net.jcip.annotations.Immutable;
 public class FiniteFieldNumber extends Number
 {
 	private static final long serialVersionUID = 1L;
-	private int value;
-	private FiniteFieldDomain domain;
+	
+	private final int value;
+	private final FiniteFieldDomain domain;
 
 	public FiniteFieldNumber(int value, FiniteFieldDomain domain)
 	{
