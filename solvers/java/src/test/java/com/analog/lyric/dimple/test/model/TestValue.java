@@ -21,22 +21,19 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import com.analog.lyric.dimple.data.DataRepresentationType;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.domains.FiniteFieldNumber;
 import com.analog.lyric.dimple.model.domains.IntDomain;
 import com.analog.lyric.dimple.model.domains.ObjectDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
-import com.analog.lyric.dimple.model.values.DoubleRangeValue;
-import com.analog.lyric.dimple.model.values.GenericDiscreteValue;
-import com.analog.lyric.dimple.model.values.GenericIntDiscreteValue;
-import com.analog.lyric.dimple.model.values.IntRangeValue;
 import com.analog.lyric.dimple.model.values.IntValue;
 import com.analog.lyric.dimple.model.values.RealJointValue;
 import com.analog.lyric.dimple.model.values.RealValue;
-import com.analog.lyric.dimple.model.values.SimpleIntRangeValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 import com.analog.lyric.util.test.SerializationTester;
@@ -63,8 +60,13 @@ public class TestValue extends DimpleTestBase
 		assertEquals(0, value.getInt());
 		assertEquals(0, value.getIndex());
 		assertEquals(0, value.getObject());
-		assertTrue(value instanceof SimpleIntRangeValue);
+		assertEquals("SimpleIntRangeValue", value.getClass().getSimpleName());
 		testRealsFromDiscrete((DiscreteDomain)domain);
+		
+		value = Value.constant(domain, 1);
+		assertInvariants(value);
+		assertEquals(1, value.getInt());
+		assertFalse(value.isMutable());
 		
 		domain = DiscreteDomain.range(2, 5);
 		value = Value.create(domain);
@@ -72,8 +74,20 @@ public class TestValue extends DimpleTestBase
 		assertSame(domain, value.getDomain());
 		assertEquals(2, value.getInt());
 		assertEquals(0, value.getIndex());
-		assertTrue(value instanceof IntRangeValue);
+		assertEquals("IntRangeValue", value.getClass().getSimpleName());
 		testRealsFromDiscrete((DiscreteDomain)domain);
+		
+		value = Value.constant(domain, 3);
+		assertInvariants(value);
+		assertEquals(3, value.getInt());
+		assertFalse(value.isMutable());
+		assertSame(domain, value.getDomain());
+		
+		value = Value.constant(3);
+		assertInvariants(value);
+		assertEquals(3, value.getInt());
+		assertFalse(value.isMutable());
+		assertSame(IntDomain.unbounded(), value.getDomain());
 		
 		domain = DiscreteDomain.range(2.0, 5.0);
 		value = Value.create(domain);
@@ -81,7 +95,7 @@ public class TestValue extends DimpleTestBase
 		assertSame(domain, value.getDomain());
 		assertEquals(2, value.getInt());
 		assertEquals(0, value.getIndex());
-		assertTrue(value instanceof DoubleRangeValue);
+		assertEquals("DoubleRangeValue", value.getClass().getSimpleName());
 		testRealsFromDiscrete((DiscreteDomain)domain);
 		
 		domain = DiscreteDomain.range(0, 4, 2);
@@ -90,7 +104,7 @@ public class TestValue extends DimpleTestBase
 		assertSame(domain, value.getDomain());
 		assertEquals(0, value.getInt());
 		assertEquals(0, value.getIndex());
-		assertTrue(value instanceof IntRangeValue);
+		assertEquals("IntRangeValue", value.getClass().getSimpleName());
 		testRealsFromDiscrete((DiscreteDomain)domain);
 		
 		domain = DiscreteDomain.create(1,2,3,5,8,13);
@@ -99,7 +113,7 @@ public class TestValue extends DimpleTestBase
 		assertSame(domain, value.getDomain());
 		assertEquals(1, value.getInt());
 		assertEquals(0, value.getIndex());
-		assertTrue(value instanceof GenericIntDiscreteValue);
+		assertEquals("GenericIntDiscreteValue", value.getClass().getSimpleName());
 		testRealsFromDiscrete((DiscreteDomain)domain);
 		
 		domain = DiscreteDomain.create(1,2,3.5);
@@ -108,7 +122,7 @@ public class TestValue extends DimpleTestBase
 		assertSame(domain, value.getDomain());
 		assertEquals(1, value.getObject());
 		assertEquals(0, value.getIndex());
-		assertTrue(value instanceof GenericDiscreteValue);
+		assertEquals("GenericDiscreteValue", value.getClass().getSimpleName());
 		testRealsFromDiscrete((DiscreteDomain)domain);
 		
 		domain = RealDomain.unbounded();
@@ -118,8 +132,28 @@ public class TestValue extends DimpleTestBase
 		assertEquals(0.0, value.getDouble(), 0.0);
 		assertTrue(value instanceof RealValue);
 		
+		value = Value.createReal(3.14159);
+		assertInvariants(value);
+		assertEquals(3.14159, value.getDouble(), 0.0);
+		assertSame(domain, value.getDomain());
+		
+		value = Value.constant(1.234);
+		assertInvariants(value);
+		assertFalse(value.isMutable());
+		assertEquals(1.234, value.getDouble(), 0.0);
+		
+		value = Value.create(RealDomain.create(0.0, 1.0), .5); // domain bounds are ignored!
+		assertInvariants(value);
+		assertEquals(.5, value.getDouble(), 0.0);
+		assertSame(domain, value.getDomain());
+		
 		domain = RealJointDomain.create(2);
 		value = Value.create(domain);
+		assertInvariants(value);
+		assertEquals(domain, value.getDomain());
+		assertTrue(value instanceof RealJointValue);
+		
+		value = Value.createRealJoint(1.1, 2.2);
 		assertInvariants(value);
 		assertEquals(domain, value.getDomain());
 		assertTrue(value instanceof RealJointValue);
@@ -179,11 +213,25 @@ public class TestValue extends DimpleTestBase
 		assertInvariants(value);
 		assertEquals(42, value.getObject());
 		assertSame(IntDomain.unbounded(), value.getDomain());
+		assertTrue(value.isMutable());
+		
+		value = Value.constant((short)42);
+		assertInvariants(value);
+		assertEquals(42, value.getObject());
+		assertSame(IntDomain.unbounded(), value.getDomain());
+		assertFalse(value.isMutable());
 		
 		value = Value.create((byte)42);
 		assertInvariants(value);
 		assertEquals(42, value.getObject());
 		assertSame(IntDomain.unbounded(), value.getDomain());
+		assertTrue(value.isMutable());
+		
+		value = Value.constant((byte)42);
+		assertInvariants(value);
+		assertEquals(42, value.getObject());
+		assertSame(IntDomain.unbounded(), value.getDomain());
+		assertFalse(value.isMutable());
 		
 		value = Value.create(42.0);
 		assertInvariants(value);
@@ -195,12 +243,43 @@ public class TestValue extends DimpleTestBase
 		assertInvariants(value);
 		assertEquals(RealJointDomain.create(2), value.getDomain());
 		assertArrayEquals(array, (double[])value.getObject(), 0.0);
+
+		array = new double[] { 2.2, 4.4, 3.3 };
+		value = Value.constant(array);
+		assertInvariants(value);
+		assertFalse(value.isMutable());
+		assertArrayEquals(array, value.getDoubleArray(), 0.0);
 		
+		value = Value.create(true);
+		assertInvariants(value);
+		assertTrue(value.getBoolean());
+		assertSame(DiscreteDomain.bool(), value.getDomain());
+		assertTrue(value.isMutable());
+		value = Value.create(false);
+		assertFalse(value.getBoolean());
+		assertInvariants(value);
+		
+		value = Value.constant(true);
+		assertInvariants(value);
+		assertTrue(value.getBoolean());
+		assertSame(DiscreteDomain.bool(), value.getDomain());
+		assertFalse(value.isMutable());
+		value = Value.constant(false);
+		assertFalse(value.getBoolean());
+		assertInvariants(value);
+
 		value = Value.create("foo");
 		assertInvariants(value);
 		assertSame(ObjectDomain.instance(), value.getDomain());
 		assertEquals("foo", value.getObject());
 		
+		value = Value.constant("foot");
+		assertInvariants(value);
+		assertSame(ObjectDomain.instance(), value.getDomain());
+		assertEquals("foot", value.getObject());
+		assertFalse(value.isMutable());
+		
+
 		//
 		// Test integral values
 		//
@@ -286,6 +365,7 @@ public class TestValue extends DimpleTestBase
 		 */
 		
 		value = Value.create(3.14159);
+		assertInvariants(value);
 		assertEquals(3.14159, value.getDouble(), 0.0);
 		value.setInt(42);
 		assertEquals(42.0, value.getDouble(), 0.0);
@@ -372,6 +452,10 @@ public class TestValue extends DimpleTestBase
 
 	private void assertInvariants(Value value)
 	{
+		assertEquals(DataRepresentationType.VALUE, value.representationType());
+		assertTrue(value.objectEquals(value));
+		assertFalse(value.objectEquals(null));
+		
 		Domain domain = value.getDomain();
 		assertNotNull(domain);
 		
@@ -393,7 +477,7 @@ public class TestValue extends DimpleTestBase
 		{
 			Number number = (Number)objValue;
 			
-			assertEquals(number.intValue(), value.getInt());
+			assertEquals(Math.round(number.doubleValue()), value.getInt());
 			assertEquals(number.doubleValue(), value.getDouble(), 0.0);
 			assertEquals(number.doubleValue() != 0.0, value.getBoolean());
 			assertArrayEquals(new double[] { number.doubleValue() }, value.getDoubleArray(), 0.0);
@@ -420,7 +504,11 @@ public class TestValue extends DimpleTestBase
 		}
 		
 		Value value2 = value.clone();
-		assertNotSame(value, value2);
+		assertEquals(value.isMutable(), value2.isMutable());
+		if (value.isMutable())
+		{
+			assertNotSame(value, value2);
+		}
 		assertSame(value.getClass(), value2.getClass());
 		assertEquals(value.getIndex(), value2.getIndex());
 		assertTrue(value.valueEquals(value2));
@@ -429,7 +517,10 @@ public class TestValue extends DimpleTestBase
 		assertEquals(0.0, value.evalEnergy(value2), 0.0);
 		
 		Value value3 = Value.create(domain);
-		assertEquals(value.getClass(), value3.getClass());
+		if (value.isMutable())
+		{
+			assertEquals(value.getClass(), value3.getClass());
+		}
 		value3.setFrom(value);
 		assertTrue(value3.valueEquals(value));
 		assertEquals(objValue, value3.getObject());
@@ -438,11 +529,33 @@ public class TestValue extends DimpleTestBase
 		Value value4 = Value.create(domain, objValue);
 		assertEquals(objValue, value4.getObject());
 		assertEquals(value.getIndex(), value4.getIndex());
+		assertTrue(value4.isMutable());
 		
 		Value value5 = SerializationTester.clone(value);
 		assertNotSame(value, value5);
 		assertSame(value.getClass(), value5.getClass());
 		assertEquals(value.getIndex(), value5.getIndex());
 		assertTrue(value.valueEquals(value5));
+		
+		Value value6 = value.mutableClone();
+		assertTrue(value6.isMutable());
+		assertNotSame(value, value6);
+		assertTrue(value.valueEquals(value6));
+		assertTrue(value.objectEquals(value6));
+		
+		Value value7 = Value.constant(domain, objValue);
+		
+		
+		if (!value.isMutable())
+		{
+			expectThrow(UnsupportedOperationException.class, value, "setBoolean", true);
+			expectThrow(UnsupportedOperationException.class, value, "setDouble", 0.0);
+			expectThrow(UnsupportedOperationException.class, value, "setFiniteField",
+				new FiniteFieldNumber(1, DiscreteDomain.finiteField(0x2f)));
+			expectThrow(UnsupportedOperationException.class, value, "setFrom", value2);
+			expectThrow(UnsupportedOperationException.class, value, "setIndex", 0);
+			expectThrow(UnsupportedOperationException.class, value, "setInt", 0);
+			expectThrow(UnsupportedOperationException.class, value, "setObject", value.getObject());
+		}
 	}
 }
