@@ -543,9 +543,6 @@ public class TestValue extends DimpleTestBase
 		assertTrue(value.valueEquals(value6));
 		assertTrue(value.objectEquals(value6));
 		
-		Value value7 = Value.constant(domain, objValue);
-		
-		
 		if (!value.isMutable())
 		{
 			expectThrow(UnsupportedOperationException.class, value, "setBoolean", true);
