@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.analog.lyric.dimple.data.DataLayer;
 import com.analog.lyric.dimple.data.IDatum;
 import com.analog.lyric.dimple.factorfunctions.Negate;
 import com.analog.lyric.dimple.factorfunctions.Normal;
@@ -163,6 +164,24 @@ public class TestVariable extends DimpleTestBase
 		assertEquals(prior instanceof Value, var.hasFixedValue());
 		
 		IDatum condition = var.getCondition();
+
+		final FactorGraph graph = var.getParentGraph();
+		if (graph == null)
+		{
+			assertNull(condition);
+		}
+		else
+		{
+			DataLayer<?> conditioningLayer = graph.getDefaultConditioningLayer();
+			if (conditioningLayer == null)
+			{
+				assertNull(condition);
+			}
+			else
+			{
+				assertSame(conditioningLayer.get(var), condition);
+			}
+		}
 		
 		ISolverVariable svar = var.getSolver();
 		if (svar != null)
