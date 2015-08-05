@@ -18,6 +18,7 @@ package com.analog.lyric.util.test;
 
 import static org.junit.Assert.*;
 
+import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.regex.Pattern;
 
@@ -32,6 +33,107 @@ import com.analog.lyric.collect.Supers;
  */
 public class ExceptionTester
 {
+	private static class ReflectionFailure extends Error
+	{
+		private static final long serialVersionUID = 1L;
+
+		ReflectionFailure(String message)
+		{
+			super(message);
+		}
+	}
+	
+	/**
+	 * Test case interface for use with {@link #expectThrow(Class, String, Case)}.
+	 * 
+	 * @since 0.08
+	 */
+	public interface Case
+	{
+		void run() throws Throwable;
+	}
+	
+	/**
+	 * Standard error stream that will be used for dumping stacks on failure.
+	 * @since 0.08
+	 */
+	public static PrintStream stderr = System.err;
+	
+	/**
+	 * Test for expected delivery of an exception.
+	 * <p>
+	 * If test case fails to throw expected exception with expected message, this will
+	 * invoke {@link org.junit.Assert#fail}. Additionally, if the wrong exception type
+	 * is thrown, this will print the stack on {@link #stderr}.
+	 * <p>
+	 * Examples:
+	 * <blockquote><pre>
+	 * import static com.analog.lyric.util.test.ExpectionTester.*;
+	 * ...
+	 * // Java 8 or later using lambda expression
+	 * expectThrow(SomeException.class, "expected message", () -> doSomething());
+	 *
+	 * // Java 7
+	 * expectThrow(SomeException.class, "expected message",
+	 *    new ExceptionTester.Case() {
+	 *       public void run() throws Throwable {
+	 *          doSomething();
+	 *       }
+	 *    });
+	 * 
+	 * </pre></blockquote>
+	 * <p>
+	 * @param expectedEx is the expected exception type. The caught exception must be a subclass of this.
+	 * @param msgPattern if not-null specifies a regular expression that must match the exception's
+	 * {@linkplain Throwable#getMessage message}
+	 * @param testCase has a {@code run} method that is expected to throw the exception.
+	 * @since 0.08
+	 */
+	public static void expectThrow(Class<? extends Throwable> expectedEx, @Nullable String msgPattern, Case testCase)
+	{
+		boolean caughtSomething = false;
+		try
+		{
+			testCase.run();
+		}
+		catch (ReflectionFailure ex)
+		{
+			fail(ex.getMessage());
+		}
+		catch (Throwable ex)
+		{
+			caughtSomething = true;
+			
+			if (!expectedEx.isInstance(ex))
+			{
+				ex.printStackTrace(stderr);
+				fail(String.format("Expected '%s' but caught '%s'", expectedEx.getSimpleName(),
+					ex.getClass().getSimpleName()));
+			}
+			
+			if (msgPattern != null && !Pattern.matches(msgPattern, ex.getMessage()))
+			{
+				fail(String.format("Expected message matching '%s' but got '%s'", msgPattern, ex.getMessage()));
+			}
+		}
+		
+		if (!caughtSomething)
+		{
+			fail(String.format("Expected '%s' but no exception thrown", expectedEx.getSimpleName()));
+		}
+	}
+
+	/**
+	 * Test for expected delivery of an exception.
+	 * <p>
+	 * @see #expectThrow(Class, String, Case)
+	 * @since 0.08
+	 */
+	public static void expectThrow(Class<? extends Throwable> expectedEx, Case testCase)
+	{
+		expectThrow(expectedEx, null, testCase);
+	}
+
 	/**
 	 * Use reflective invocation to test for expected exception.
 	 * 
@@ -53,6 +155,9 @@ public class ExceptionTester
 	}
 	
 	/**
+	 * @deprecated as of release 0.08 it should no longer be necessary to use this method to work around
+	 * calling public methods on non-public subclasses.
+	 * <p>
 	 * Use reflective invocation to test for expected exception.
 	 * 
 	 * @param expectedException asserts that the invocation will result in an exception of this type (or a subtype).
@@ -66,42 +171,30 @@ public class ExceptionTester
 	 * @param args are the parameters of the method call.
 	 * @since 0.06
 	 */
+	@Deprecated
 	@SafeVarargs
 	public static <T> void expectThrow(Class<? extends Throwable> expectedException, @Nullable String messagePattern,
-		Object object, Class<?> declaringClass, String methodName, @Nullable T ... args)
+		final Object object, final Class<?> declaringClass, final String methodName, final @Nullable T ... args)
 	{
-		boolean caughtSomething = false;
-		
-		try
-		{
-			Supers.invokeMethod(object, declaringClass, methodName, args);
-		}
-		catch (InvocationTargetException wrappedEx)
-		{
-			Throwable ex = wrappedEx.getTargetException();
-			caughtSomething = true;
-			
-			if (!expectedException.isInstance(ex))
-			{
-				ex.printStackTrace();
-				fail(String.format("Expected '%s' but caught '%s'", expectedException.getSimpleName(),
-					ex.getClass().getSimpleName()));
-			}
-			
-			if (messagePattern != null && !Pattern.matches(messagePattern, ex.getMessage()))
-			{
-				fail(String.format("Expected message matching '%s' but got '%s'", messagePattern, ex.getMessage()));
-			}
-		}
-		catch (Exception ex)
-		{
-			fail(ex.toString());
-		}
-		
-		if (!caughtSomething)
-		{
-			fail(String.format("Expected '%s' but no exception thrown", expectedException.getSimpleName()));
-		}
+		expectThrow(expectedException, messagePattern,
+			new Case() {
+				@Override
+				public void run() throws Throwable
+				{
+					try
+					{
+						Supers.invokeMethod(object, declaringClass, methodName, args);
+					}
+					catch (InvocationTargetException wrappedEx)
+					{
+						throw wrappedEx.getTargetException();
+					}
+					catch (Exception ex)
+					{
+						throw new ReflectionFailure(ex.toString());
+					}
+				}
+		});
 	}
 	
 	/**

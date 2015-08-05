@@ -211,7 +211,7 @@ public class TestDimpleEventListener extends DimpleTestBase
 		assertNotSame(sources1, sources2);
 		assertEventSources(sources1, sv1, v1, sgraph, model, env);
 		assertEventSources(sources2, sv1, v1, sgraph, model, env);
-		expectThrow(UnsupportedOperationException.class, null, sources1, Iterator.class, "remove");
+		expectThrow(UnsupportedOperationException.class, null, sources1, "remove");
 		sources1.release();
 		sources2.release();
 		sources1 = listener.eventSources(v1);
