@@ -67,6 +67,8 @@ import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
 import com.analog.lyric.dimple.model.repeated.IVariableStreamSlice;
 import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
+import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.model.variables.Constant;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableBlock;
@@ -155,6 +157,8 @@ public class FactorGraph extends FactorBase
 	private final OwnedGraphs _ownedSubGraphs = new OwnedGraphs();
 	
 	private final OwnedVariableBlocks _ownedVariableBlocks = new OwnedVariableBlocks();
+	
+	private final OwnedConstants _ownedConstants = new OwnedConstants();
 
 	/**
 	 * Holds state common to entire tree of FactorGraphs.
@@ -1200,6 +1204,20 @@ public class FactorGraph extends FactorBase
 		return _factorGraphStreams;
 	}
 
+	/**
+	 * Adds a new constant value.
+	 * <p>
+	 * @param value
+	 * @return
+	 * @since 0.08
+	 */
+	public Constant addConstant(Value value)
+	{
+		Constant constant = new Constant(value);
+		_ownedConstants.add(constant);
+		return constant;
+	}
+	
 	public Factor addFactor(int [][] indices, double [] weights, Discrete ... vars)
 	{
 		return addFactor(FactorTable.create(indices, weights, vars),vars);
@@ -3025,9 +3043,21 @@ public class FactorGraph extends FactorBase
 			return new VariablePort(_edges.get(Ids.indexFromLocalId(localId)), this);
 		case Ids.VARIABLE_BLOCK_TYPE:
 			return _ownedVariableBlocks.getByLocalId(localId);
+		case Ids.CONSTANT_TYPE:
+			return _ownedConstants.getByLocalId(localId);
 		default:
 			return null;
 		}
+	}
+	
+	public @Nullable Constant getConstantByLocalId(int localId)
+	{
+		return Ids.typeIndexFromLocalId(localId) == Ids.CONSTANT_TYPE ? _ownedConstants.getByLocalId(localId) : null;
+	}
+	
+	public Collection<Constant> getOwnedConstants()
+	{
+		return Collections.unmodifiableCollection(_ownedConstants);
 	}
 	
 	/**
@@ -3831,7 +3861,7 @@ public class FactorGraph extends FactorBase
 		}
 		
 		_edges.add(edge);
-		factor.addSiblingEdgeState(edge);
+		((Node)factor).addSiblingEdgeState(edge);
 		variable.addSiblingEdgeState(edge);
 		
 		structureChanged();
@@ -3865,7 +3895,7 @@ public class FactorGraph extends FactorBase
 		final Variable variable = edge.getVariable(this);
 		final FactorGraph variableGraph = requireNonNull(variable.getParentGraph());
 		
-		factor.removeSiblingEdgeState(edge);
+		((Node)factor).removeSiblingEdgeState(edge);
 		variable.removeSiblingEdgeState(edge);
 
 		_edges.set(edge.factorEdgeIndex(), null);
@@ -3918,7 +3948,7 @@ public class FactorGraph extends FactorBase
 		}
 		
 		newVariable.addSiblingEdgeState(newEdge);
-		factor.replaceSiblingEdgeState(oldEdge, newEdge);
+		((Node)factor).replaceSiblingEdgeState(oldEdge, newEdge);
 
 		factorGraph._edges.set(factorEdgeIndex, newEdge);
 		

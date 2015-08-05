@@ -77,7 +77,7 @@ public abstract class Node extends FactorGraphChild implements INode
 	 * <p>
 	 * Contains integer indexes into the parent graph's edge list.
 	 */
-	private final IntArrayList _siblingEdges = new IntArrayList();
+	protected final IntArrayList _siblingEdges = new IntArrayList();
 	
 	/**
 	 * Temporary flags that can be used to mark the node during the execution of various algorithms
@@ -775,12 +775,18 @@ public abstract class Node extends FactorGraphChild implements INode
 	 * Protected methods
 	 */
 
+	/**
+	 * @category internal
+	 */
     @Internal
 	protected void addEdge(Factor factor, Variable variable)
 	{
 		requireNonNull(_parentGraph).addEdge(factor, variable);
 	}
 	
+	/**
+	 * @category internal
+	 */
     @Internal
 	protected void addSiblingEdgeState(EdgeState edge)
 	{
@@ -798,33 +804,18 @@ public abstract class Node extends FactorGraphChild implements INode
 		notifyConnectionsChanged();
 	}
 	
-	@Internal
-	protected void clearSiblingEdgeState()
-	{
-		_siblingEdges.clear();
-		if (isVariable())
-		{
-			for (int j = _siblingEdges.size(); --j >= 0;)
-			{
-				getSiblingEdgeState(j)._variableToFactorEdgeNumber = -1;
-			}
-		}
-		else
-		{
-			for (int j = _siblingEdges.size(); --j >= 0;)
-			{
-				getSiblingEdgeState(j)._factorToVariableEdgeNumber = -1;
-			}
-		}
-		notifyConnectionsChanged();
-	}
-	
+	/**
+	 * @category internal
+	 */
 	@Internal
 	protected void removeSiblingEdge(EdgeState edge)
 	{
 		requireNonNull(_parentGraph).removeSiblingEdge(edge);
 	}
 	
+	/**
+	 * @category internal
+	 */
 	@Internal
 	protected void removeSiblingEdgeState(EdgeState edge)
 	{
@@ -851,6 +842,9 @@ public abstract class Node extends FactorGraphChild implements INode
 		notifyConnectionsChanged();
 	}
 	
+	/**
+	 * @category internal
+	 */
 	@Internal
 	protected void replaceSiblingEdgeState(EdgeState oldEdge, EdgeState newEdge)
 	{

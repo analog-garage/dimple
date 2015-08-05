@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.events.IDimpleEventSource;
 import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
+import com.analog.lyric.util.misc.Internal;
 
 /**
  * Abstract base class for child objects of a {@link FactorGraph}.
@@ -31,7 +32,9 @@ import com.analog.lyric.dimple.options.DimpleOptionHolder;
  * @since 0.08
  * @author Christopher Barber
  */
-public abstract class FactorGraphChild extends DimpleOptionHolder implements IFactorGraphChild, IModelEventSource
+public abstract class FactorGraphChild
+	extends DimpleOptionHolder
+	implements IFactorGraphChild, IModelEventSource, IFactorGraphChildWithSetLocalId
 {
 	/*-------
 	 * State
@@ -113,7 +116,12 @@ public abstract class FactorGraphChild extends DimpleOptionHolder implements IFa
 		return parent != null ? parent.getRootGraph() : null;
 	}
 
-	void setLocalId(int id)
+	/**
+	 * @category internal
+	 */
+	@Internal
+	@Override
+	public void setLocalId(int id)
 	{
 		_id = id;
 	}

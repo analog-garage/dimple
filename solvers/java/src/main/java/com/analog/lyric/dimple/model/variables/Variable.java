@@ -55,7 +55,7 @@ import com.google.common.primitives.Longs;
  * 
  * @since 0.07
  */
-public abstract class Variable extends Node implements Cloneable, IDataEventSource
+public abstract class Variable extends Node implements Cloneable, IDataEventSource, IConstantOrVariable
 {
 	/*-----------
 	 * Constants

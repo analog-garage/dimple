@@ -23,13 +23,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
-import net.jcip.annotations.NotThreadSafe;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ReleasableIterators;
 import com.google.common.collect.UnmodifiableIterator;
+
+import net.jcip.annotations.NotThreadSafe;
 
 
 /**
@@ -43,7 +43,7 @@ import com.google.common.collect.UnmodifiableIterator;
  * @author Christopher Barber
  */
 @NotThreadSafe
-abstract class OwnedArray<T extends FactorGraphChild> extends AbstractCollection<T>
+abstract class OwnedArray<T extends IFactorGraphChildWithSetLocalId> extends AbstractCollection<T>
 {
 	/*-------
 	 * State
@@ -198,7 +198,7 @@ abstract class OwnedArray<T extends FactorGraphChild> extends AbstractCollection
 		}
 	}
 	
-	boolean containsNode(FactorGraphChild node)
+	boolean containsNode(IFactorGraphChild node)
 	{
 		return node == getByLocalId(node.getLocalId());
 	}
@@ -263,7 +263,7 @@ abstract class OwnedArray<T extends FactorGraphChild> extends AbstractCollection
 		return null;
 	}
 	
-	boolean removeNode(FactorGraphChild node)
+	boolean removeNode(IFactorGraphChild node)
 	{
 		final T[] nodes = _nodes;
 		if (nodes != null)

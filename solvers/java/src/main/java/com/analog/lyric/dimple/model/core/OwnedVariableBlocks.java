@@ -86,7 +86,7 @@ final class OwnedVariableBlocks extends OwnedArray<VariableBlock>
 	}
 	
 	@Override
-	boolean removeNode(FactorGraphChild node)
+	boolean removeNode(IFactorGraphChild node)
 	{
 		if (super.removeNode(node))
 		{

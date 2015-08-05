@@ -23,6 +23,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Constant;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableBlock;
 import com.analog.lyric.util.misc.IGetId;
@@ -179,53 +180,61 @@ public abstract class Ids
 	@Internal
 	public static final int LOCAL_ID_TYPE_OFFSET = 28;
 	
+	public static final int UNKNOWN_TYPE = 0;
+	
 	/**
 	 * Type index for factor identifiers.
 	 * @see #typeIndexFromLocalId(int)
 	 */
-	public static final int FACTOR_TYPE =    0;
+	public static final int FACTOR_TYPE = 1;
 	
 	/**
 	 * Type index for subgraph identifiers.
 	 * @see #typeIndexFromLocalId(int)
 	 */
-	public static final int GRAPH_TYPE =     1;
+	public static final int GRAPH_TYPE = 2;
 	
 	/**
 	 * Type index for owned (non-boundary) variable identifiers.
 	 * @see #typeIndexFromLocalId(int)
 	 */
-	public static final int VARIABLE_TYPE =  2;
+	public static final int VARIABLE_TYPE = 3;
 
 	/**
 	 * Type index for boundary variable identifiers.
 	 * @see #typeIndexFromLocalId(int)
 	 */
-	public static final int BOUNDARY_VARIABLE_TYPE = 3;
+	public static final int BOUNDARY_VARIABLE_TYPE = 4;
 
 	/**
 	 * Type index for edge identifiers.
 	 * @see #typeIndexFromLocalId(int)
 	 */
-	public static final int EDGE_TYPE = 4;
+	public static final int EDGE_TYPE = 5;
 	
 	/**
 	 * Type index for factor port identifiers
 	 * @see #typeIndexFromLocalId(int)
 	 */
-	public static final int FACTOR_PORT_TYPE = 5;
+	public static final int FACTOR_PORT_TYPE = 6;
 
 	/**
 	 * Type index for variable port identifiers
 	 * @see #typeIndexFromLocalId(int)
 	 */
-	public static final int VARIABLE_PORT_TYPE = 6;
+	public static final int VARIABLE_PORT_TYPE = 7;
 	
 	/**
 	 * Type index for variable block identifiers.
 	 * @see #typeIndexFromLocalId(int)
 	 */
-	public static final int VARIABLE_BLOCK_TYPE = 7;
+	public static final int VARIABLE_BLOCK_TYPE = 8;
+	
+	/**
+	 * Type index for constant identifiers.
+	 * @see #typeIndexFromLocalId(int)
+	 */
+	public static final int CONSTANT_TYPE = 9;
 	
 	/**
 	 * Value of minimum type index for local identifiers
@@ -235,7 +244,19 @@ public abstract class Ids
 	/**
 	 * Value of max type index for local identifiers
 	 */
-	public static final int TYPE_MAX = 7;
+	public static final int TYPE_MAX = 9;
+	
+	/**
+	 * This is only used as the {@link Type#instanceClass() instanceClass} of {@link Type#UNKNOWN}.
+	 * <p>
+	 * It cannot be instantiated.
+	 * 
+	 * @since 0.08
+	 */
+	public abstract class UnknownChild implements IFactorGraphChild
+	{
+		private UnknownChild() {}
+	}
 	
 	/**
 	 * Enumerates supported identifier types.
@@ -248,6 +269,10 @@ public abstract class Ids
 	 */
 	public enum Type
 	{
+		// NOTE: after release 0.08 new entries should be added at the end since the type
+		// index may be used in external persistent representations.
+		
+		UNKNOWN(UnknownChild.class),
 		FACTOR(Factor.class),
 		GRAPH(FactorGraph.class),
 		VARIABLE(Variable.class),
@@ -255,19 +280,22 @@ public abstract class Ids
 		EDGE(Edge.class),
 		FACTOR_PORT(FactorPort.class),
 		VARIABLE_PORT(VariablePort.class),
-		VARIABLE_BLOCK(VariableBlock.class);
+		VARIABLE_BLOCK(VariableBlock.class),
+		CONSTANT(Constant.class);
 		
-		// Future types:
-		//   CONSTANT
-		//   PARAMETER
-		//   COST VARIABLE
-		//   ACTION FACTOR
+		// Possible future types:
+		//   PARAMETER - T for theta
+		//   UTILITY VARIABLE - U
+		//   ACTION FACTOR - A
 		
 		private final Class<? extends IFactorGraphChild> _instanceType;
 		
 		private static final Type[] _values = Type.values();
 		
-		private static final String DEFAULT_NAME_PREFIX = "FGVBEPQK";
+		/**
+		 * Single character type prefixes in same order as enum instances.
+		 */
+		private static final String DEFAULT_NAME_PREFIX = "UFGVBEPQKC";
 
 		/*--------------
 		 * Construction
