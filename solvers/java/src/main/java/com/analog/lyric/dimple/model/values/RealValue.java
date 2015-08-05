@@ -106,16 +106,22 @@ public class RealValue extends Value
 		return values;
 	}
 
-	/*----------------
-	 * Object methods
-	 */
-	
 	@Override
 	public RealValue clone()
 	{
 		return new RealValue(this);
 	}
 
+	@Override
+	public RealValue immutableClone()
+	{
+		return new ConstantRealValue(_value);
+	}
+	
+	/*----------------
+	 * Object methods
+	 */
+	
 	@Override
 	public String toString()
 	{

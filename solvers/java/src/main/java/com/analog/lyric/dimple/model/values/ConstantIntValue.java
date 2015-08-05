@@ -40,6 +40,12 @@ final class ConstantIntValue extends IntValue
 	}
 
 	@Override
+	public IntValue immutableClone()
+	{
+		return this;
+	}
+
+	@Override
 	public IntValue mutableClone()
 	{
 		return new IntValue(_value);

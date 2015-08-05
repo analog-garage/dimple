@@ -48,6 +48,12 @@ final class ConstantDiscreteValue extends DiscreteValue
 	}
 	
 	@Override
+	public DiscreteValue immutableClone()
+	{
+		return this;
+	}
+
+	@Override
 	public DiscreteValue mutableClone()
 	{
 		return Value.createWithIndex(_domain, _index);

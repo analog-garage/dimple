@@ -41,6 +41,12 @@ final class ConstantRealJointValue extends RealJointValue
 	}
 	
 	@Override
+	public RealJointValue immutableClone()
+	{
+		return this;
+	}
+	
+	@Override
 	public RealJointValue mutableClone()
 	{
 		return Value.createRealJoint(_value.clone());

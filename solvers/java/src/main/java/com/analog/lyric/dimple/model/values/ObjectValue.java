@@ -16,8 +16,9 @@
 
 package com.analog.lyric.dimple.model.values;
 
-import com.analog.lyric.dimple.model.domains.ObjectDomain;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.model.domains.ObjectDomain;
 
 /**
  * Holder for arbitrary values represented as {@link Object}.
@@ -46,16 +47,22 @@ public class ObjectValue extends Value
 		this(null);
 	}
 	
-	/*----------------
-	 * Object methods
-	 */
-	
 	@Override
 	public ObjectValue clone()
 	{
 		return new ObjectValue(this._object);
 	}
 
+	@Override
+	public ObjectValue immutableClone()
+	{
+		return new ConstantObjectValue(_object);
+	}
+	
+	/*----------------
+	 * Object methods
+	 */
+	
 	@Override
 	public ObjectDomain getDomain()
 	{

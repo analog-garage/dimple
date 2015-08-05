@@ -41,7 +41,13 @@ public final class ConstantFiniteFieldValue extends FiniteFieldValue
 	}
 	
 	@Override
-	public Value mutableClone()
+	public DiscreteValue immutableClone()
+	{
+		return this;
+	}
+	
+	@Override
+	public DiscreteValue mutableClone()
 	{
 		return new FiniteFieldValue(getFiniteField());
 	}

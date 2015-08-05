@@ -85,6 +85,12 @@ public class RealJointComponentValue extends Value
 		return new RealJointComponentValue(this);
 	}
 
+	@Override
+	public RealValue immutableClone()
+	{
+		return new ConstantRealValue(getDouble());
+	}
+	
 	/*----------------
 	 * Object methods
 	 */

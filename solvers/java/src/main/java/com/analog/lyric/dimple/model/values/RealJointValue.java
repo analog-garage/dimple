@@ -49,15 +49,21 @@ public class RealJointValue extends Value
 		_value = that._value.clone();
 	}
 	
-	/*----------------
-	 * Object methods
-	 */
-	
 	@Override
 	public RealJointValue clone()
 	{
 		return new RealJointValue(this);
 	}
+
+	@Override
+	public RealJointValue immutableClone()
+	{
+		return new ConstantRealJointValue(_value.clone());
+	}
+	
+	/*----------------
+	 * Object methods
+	 */
 	
 	@Override
 	public String toString()

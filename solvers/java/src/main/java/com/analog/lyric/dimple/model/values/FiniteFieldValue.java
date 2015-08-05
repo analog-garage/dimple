@@ -52,7 +52,13 @@ public class FiniteFieldValue extends DiscreteValue
 	@Override
 	public DiscreteValue clone()
 	{
-		return new FiniteFieldValue(this._value);
+		return new FiniteFieldValue(_value);
+	}
+	
+	@Override
+	public DiscreteValue immutableClone()
+	{
+		return new ConstantFiniteFieldValue(_value);
 	}
 
 	@Override

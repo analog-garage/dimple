@@ -31,6 +31,12 @@ public abstract class DiscreteValue extends Value
 	public abstract DiscreteValue clone();
 	
 	@Override
+	public DiscreteValue immutableClone()
+	{
+		return new ConstantDiscreteValue(getDomain(), getIndex());
+	}
+	
+	@Override
 	public abstract DiscreteDomain getDomain();
 	
 	@Override

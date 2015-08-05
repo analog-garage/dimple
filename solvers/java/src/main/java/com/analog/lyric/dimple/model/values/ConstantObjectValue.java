@@ -40,19 +40,25 @@ final class ConstantObjectValue extends ObjectValue
 	{
 		return this;
 	}
-	
+
 	@Override
-	public boolean isMutable()
+	public ObjectValue immutableClone()
 	{
-		return false;
+		return this;
 	}
-	
+
 	@Override
 	public Value mutableClone()
 	{
 		return new ObjectValue(getObject());
 	}
 
+	@Override
+	public boolean isMutable()
+	{
+		return false;
+	}
+	
 	@Override
 	public void setObject(@Nullable Object value)
 	{

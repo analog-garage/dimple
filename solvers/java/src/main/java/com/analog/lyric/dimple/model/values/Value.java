@@ -400,6 +400,16 @@ public abstract class Value implements IDatum, Cloneable, Serializable
 	public abstract Value clone();
 	
 	/**
+	 * Returns an immutable clone of the value.
+	 * <p>
+	 * If the value is already immutable it will simply be returned, otherwise this
+	 * will return a newly created immutable value.
+	 * <p>
+	 * @since 0.08
+	 */
+	public abstract Value immutableClone();
+	
+	/**
 	 * Returns a mutable clone of the value.
 	 * <p>
 	 * This returns a {@linkplain #isMutable() mutable} copy of the value.

@@ -142,6 +142,11 @@ public class TestValue extends DimpleTestBase
 		assertFalse(value.isMutable());
 		assertEquals(1.234, value.getDouble(), 0.0);
 		
+		value = Value.constantReal(4.2);
+		assertInvariants(value);
+		assertFalse(value.isMutable());
+		assertEquals(4.2, value.getDouble(), 0.0);
+		
 		value = Value.create(RealDomain.create(0.0, 1.0), .5); // domain bounds are ignored!
 		assertInvariants(value);
 		assertEquals(.5, value.getDouble(), 0.0);
@@ -543,6 +548,18 @@ public class TestValue extends DimpleTestBase
 		assertTrue(value.valueEquals(value6));
 		assertTrue(value.objectEquals(value6));
 		
+		Value value7 = value.immutableClone();
+		assertFalse(value7.isMutable());
+		if (value.isMutable())
+		{
+			assertNotSame(value, value7);
+			assertTrue(value.valueEquals(value7));
+		}
+		else
+		{
+			assertSame(value, value7);
+		}
+		
 		if (!value.isMutable())
 		{
 			expectThrow(UnsupportedOperationException.class, value, "setBoolean", true);
@@ -554,5 +571,6 @@ public class TestValue extends DimpleTestBase
 			expectThrow(UnsupportedOperationException.class, value, "setInt", 0);
 			expectThrow(UnsupportedOperationException.class, value, "setObject", value.getObject());
 		}
+		
 	}
 }

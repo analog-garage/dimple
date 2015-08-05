@@ -40,6 +40,12 @@ final class ConstantRealValue extends RealValue
 	}
 
 	@Override
+	public RealValue immutableClone()
+	{
+		return this;
+	}
+	
+	@Override
 	public RealValue mutableClone()
 	{
 		return Value.createReal(_value);
