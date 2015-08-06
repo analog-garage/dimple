@@ -28,6 +28,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsReal;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverGraph;
 import com.analog.lyric.dimple.test.DimpleTestBase;
 
@@ -48,8 +49,7 @@ public class GibbsTestParameterizedNormal extends DimpleTestBase
 		int burnInUpdates = 1000;
 
 		FactorGraph graph = new FactorGraph();
-		graph.setSolverFactory(new com.analog.lyric.dimple.solvers.gibbs.Solver());
-		GibbsSolverGraph solver = requireNonNull((GibbsSolverGraph)graph.getSolver());
+		GibbsSolverGraph solver = requireNonNull(graph.setSolverFactory(new GibbsSolver()));
 		solver.setNumSamples(numSamples);
 		solver.setUpdatesPerSample(updatesPerSample);
 		solver.setBurnInUpdates(burnInUpdates);
