@@ -249,7 +249,7 @@ public class TestDimpleEventListener extends DimpleTestBase
 		assertHandledBy(listener, modelEvent, handler1);
 		
 		expectThrow(UnsupportedOperationException.class, null,
-			listener.allHandlerPerSource().iterator(), Iterator.class, "remove");
+			listener.allHandlerPerSource().iterator(), "remove");
 		
 		// sourceHasListenerFor
 		assertFalse(DimpleEventListener.sourceHasListenerFor(model, TestModelEvent.class));
