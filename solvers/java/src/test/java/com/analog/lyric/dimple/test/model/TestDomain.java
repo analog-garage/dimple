@@ -81,6 +81,12 @@ public class TestDomain extends DimpleTestBase
 		// Test discretes
 		//
 		
+		// Single-element discrete domains are allowed (and are used for constants)
+		DiscreteDomain trivial = DiscreteDomain.create(Math.PI);
+		assertInvariants(trivial);
+		assertEquals(1, trivial.size());
+		assertEquals(Math.PI, trivial.getDoubleElement(0), 0.0);
+		
 		IntRangeDomain bit = DiscreteDomain.bit();
 		assertInvariants(bit);
 		assertEquals(2, bit.size());
