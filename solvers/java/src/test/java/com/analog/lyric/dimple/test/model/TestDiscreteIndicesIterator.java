@@ -85,6 +85,27 @@ public class TestDiscreteIndicesIterator extends DimpleTestBase
 		}
 		assertFalse(iter.hasNext());
 		
+		iter = new DiscreteIndicesIterator(2,1,3);
+		expected = new int[][] {
+			new int[] {0,0,0},
+			new int[] {1,0,0},
+			new int[] {0,0,1},
+			new int[] {1,0,1},
+			new int[] {0,0,2},
+			new int[] {1,0,2}
+		};
+		
+		for (int i = 0; i < 2; ++i)
+		{
+			for (int[] curExpected : expected)
+			{
+				assertTrue(iter.hasNext());
+				assertArrayEquals(curExpected, iter.next());
+			}
+			assertFalse(iter.hasNext());
+			iter.reset();
+		}
+
 		iter = new DiscreteIndicesIterator();
 		assertTrue(iter.hasNext());
 		assertEquals(0, iter.next().length);

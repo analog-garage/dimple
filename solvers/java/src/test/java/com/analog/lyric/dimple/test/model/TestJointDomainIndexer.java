@@ -48,6 +48,7 @@ public class TestJointDomainIndexer extends DimpleTestBase
 	@Test
 	public void test()
 	{
+		DiscreteDomain d1 = DiscreteDomain.create(42);
 		DiscreteDomain d2 = DiscreteDomain.range(0,1);
 		DiscreteDomain d3 = DiscreteDomain.range(0,2);
 	
@@ -68,6 +69,9 @@ public class TestJointDomainIndexer extends DimpleTestBase
 		testInvariants(dl2by3);
 		assertSame(dl2by3, JointDomainIndexer.create(d2, d3));
 		assertNotEquals(dl2by3, JointDomainIndexer.create(d3, d2));
+		
+		JointDomainIndexer dl2by1by3 = JointDomainIndexer.create(d2, d1, d3);
+		testInvariants(dl2by1by3);
 		
 		JointDomainIndexer dl2to3 = JointDomainIndexer.create(new int[] { 1 }, new DiscreteDomain[] {d2, d3 });
 		testInvariants(dl2to3);

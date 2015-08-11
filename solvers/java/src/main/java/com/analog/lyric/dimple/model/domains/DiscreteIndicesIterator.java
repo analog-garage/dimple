@@ -19,9 +19,9 @@ package com.analog.lyric.dimple.model.domains;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import net.jcip.annotations.NotThreadSafe;
-
 import org.eclipse.jdt.annotation.Nullable;
+
+import net.jcip.annotations.NotThreadSafe;
 
 /**
  * An iterator over any array of integer indices each with a specified bounds
@@ -55,9 +55,22 @@ import org.eclipse.jdt.annotation.Nullable;
 @NotThreadSafe
 public final class DiscreteIndicesIterator implements Iterator<int[]>
 {
+	/**
+	 * Maximum value for each index.
+	 */
 	private final int[] _limits;
+	/**
+	 * Index values
+	 */
 	private final int[] _indices;
+	/**
+	 * The highest numbered index of {@code _indices} that has not already reached its maximum value.
+	 */
 	private int _lastNotAtLimit;
+	/**
+	 * The highest numbered index of {@code _limits} that is non-zero.
+	 */
+	private final int _lastNonZeroLimit;
 	private boolean _doOnce;
 
 	/*--------------
@@ -128,6 +141,18 @@ public final class DiscreteIndicesIterator implements Iterator<int[]>
 			_limits = sizesOrLimits;
 		}
 		_indices = indices != null ? indices : new int[dimensions];
+		
+		int lastNonZeroLimit = -1;
+		for (int i = dimensions; --i>=0;)
+		{
+			if (_limits[i] > 0)
+			{
+				lastNonZeroLimit = i;
+				break;
+			}
+		}
+		_lastNonZeroLimit = lastNonZeroLimit;
+		
 		reset();
 	}
 	
@@ -169,7 +194,8 @@ public final class DiscreteIndicesIterator implements Iterator<int[]>
 				_indices[i] = val;
 				if (val == limit && i == _lastNotAtLimit)
 				{
-					--_lastNotAtLimit;
+					while (--i>0 && _limits[i] == 0) {}
+					_lastNotAtLimit = i;
 				}
 				break;
 			}
@@ -206,6 +232,6 @@ public final class DiscreteIndicesIterator implements Iterator<int[]>
 		{
 			_doOnce = true;
 		}
-		_lastNotAtLimit = _indices.length - 1;
+		_lastNotAtLimit = _lastNonZeroLimit;
 	}
 }
