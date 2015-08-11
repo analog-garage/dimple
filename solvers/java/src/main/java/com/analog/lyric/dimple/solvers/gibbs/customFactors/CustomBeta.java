@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
+import static java.util.Objects.*;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,7 +25,6 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.Beta;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
@@ -114,7 +115,8 @@ public class CustomBeta extends GibbsRealFactor implements IRealConjugateFactor
 	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
-		FactorFunction factorFunction = _model.getFactorFunction();
+		final Factor factor = _model;
+		FactorFunction factorFunction = factor.getFactorFunction();
 		Beta specificFactorFunction = (Beta)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 
@@ -140,22 +142,24 @@ public class CustomBeta extends GibbsRealFactor implements IRealConjugateFactor
 		}
 		else	// Variable or constant parameters
 		{
-			_hasConstantAlpha = factorFunction.isConstantIndex(ALPHA_PARAMETER_INDEX);
+			_hasConstantAlpha = factor.isConstantIndex(ALPHA_PARAMETER_INDEX);
 			if (_hasConstantAlpha)	// Constant mean
-				_constantAlphaMinusOneValue = FactorFunctionUtilities.toDouble(factorFunction.getConstantByIndex(ALPHA_PARAMETER_INDEX)) - 1;
+				_constantAlphaMinusOneValue =
+				requireNonNull(factor.getConstantValueByIndex(ALPHA_PARAMETER_INDEX)).getDouble() - 1;
 			else					// Variable mean
 			{
-				_alphaParameterPort = factorFunction.getEdgeByIndex(ALPHA_PARAMETER_INDEX);
+				_alphaParameterPort = factor.getEdgeByIndex(ALPHA_PARAMETER_INDEX);
 				_alphaVariable = (GibbsReal)getSibling(_alphaParameterPort);
 				_numParameterEdges++;
 			}
 			
-			_hasConstantBeta = factorFunction.isConstantIndex(BETA_PARAMETER_INDEX);
+			_hasConstantBeta = factor.isConstantIndex(BETA_PARAMETER_INDEX);
 			if (_hasConstantBeta)	// Constant precision
-				_constantBetaMinusOneValue = FactorFunctionUtilities.toDouble(factorFunction.getConstantByIndex(BETA_PARAMETER_INDEX)) - 1;
+				_constantBetaMinusOneValue =
+				requireNonNull(factor.getConstantValueByIndex(BETA_PARAMETER_INDEX)).getDouble() - 1;
 			else 						// Variable precision
 			{
-				_betaParameterPort = factorFunction.getEdgeByIndex(BETA_PARAMETER_INDEX);
+				_betaParameterPort = factor.getEdgeByIndex(BETA_PARAMETER_INDEX);
 				_betaVariable = (GibbsReal)getSibling(_betaParameterPort);
 				_numParameterEdges++;
 			}

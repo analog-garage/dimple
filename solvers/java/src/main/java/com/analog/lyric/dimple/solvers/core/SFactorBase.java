@@ -22,6 +22,8 @@ import com.analog.lyric.dimple.events.SolverEvent;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.model.variables.IVariableToValue;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
@@ -126,15 +128,17 @@ public abstract class SFactorBase extends SNode<Factor> implements ISolverFactor
 	@Override
     public double getScore()
     {
-		int numPorts = _model.getSiblingCount();
-	    Object[] values = new Object[numPorts];
-
-	    for (int port = 0; port < numPorts; port++)
-	    {
-	    	values[port] = getSibling(port).getGuess();
-	    }
-	    
-	    return _model.getFactorFunction().evalEnergy(values);
+		return _model.evalEnergy(new IVariableToValue() {
+			@Override
+			@Nullable
+			public Value varToValue(Variable var)
+			{
+				return Value.create(var.getDomain(), var.getGuess());
+			}
+		});
+		
+		// JAVA8
+		// return _model.evalEnergy(var -> Value.create(var.getDomain(), var.getGuess()));
     }
 
 	@Override

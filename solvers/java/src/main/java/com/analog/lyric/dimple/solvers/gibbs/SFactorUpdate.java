@@ -20,8 +20,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.jcip.annotations.NotThreadSafe;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -29,6 +27,8 @@ import com.analog.lyric.collect.IKeyed;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
+
+import net.jcip.annotations.NotThreadSafe;
 
 /**
  * @since 0.05
@@ -83,12 +83,18 @@ public final class SFactorUpdate implements IKeyed<ISolverFactorGibbs>
 	 * SFactorUpdate methods
 	 */
 	
-	void addVariableUpdate(int variableIndex, Value oldValue)
+	/**
+	 * 
+	 * @param argumentIndex index into factor's argument list. This may be different than the
+	 * sibling number if the factor has constants.
+	 * @param oldValue
+	 */
+	void addVariableUpdate(int argumentIndex, Value oldValue)
 	{
 		final Set<IndexedValue> updates = _updates;
 		if (updates != null)
 		{
-			updates.add(new IndexedValue(variableIndex, oldValue));
+			updates.add(new IndexedValue(argumentIndex, oldValue));
 			if (updates.size() > _incrementalUpdateThreshold)
 			{
 				// Once we have exceeded the threshold, there is no point in

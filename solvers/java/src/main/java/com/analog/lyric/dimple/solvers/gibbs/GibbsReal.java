@@ -500,8 +500,6 @@ public class GibbsReal extends SRealVariableBase
 			inputConjugateSampler = RealConjugateSamplerRegistry.findCompatibleSampler(prior);
 		}
 
-		// FIXME - also check conditioning layer
-		
 		// Determine if there are bounds
 		double hi = _domain.getUpperBound();
 		double lo = _domain.getLowerBound();

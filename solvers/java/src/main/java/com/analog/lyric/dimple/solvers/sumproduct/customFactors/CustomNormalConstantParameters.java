@@ -53,16 +53,18 @@ public class CustomNormalConstantParameters extends GaussianFactorBase
 		super.initialize();
 		
 		// Pre-compute output message
-		FactorFunction factorFunction = _model.getFactorFunction();
+		final Factor factor = _model;
+		FactorFunction factorFunction = factor.getFactorFunction();
 		Normal specificFactorFunction = (Normal)factorFunction.getContainedFactorFunction(); 	// In case it's wrapped
 
 		NormalParameters outputMessage;
 		if (specificFactorFunction.hasConstantParameters())
 			outputMessage = specificFactorFunction.getParameters();
-		else if (factorFunction.isConstantIndex(MEAN_PARAMETER_INDEX) && factorFunction.isConstantIndex(PRECISION_PARAMETER_INDEX))
+		else if (factor.isConstantIndex(MEAN_PARAMETER_INDEX) && factor.isConstantIndex(PRECISION_PARAMETER_INDEX))
 		{
-			double mean = requireNonNull((Double)factorFunction.getConstantByIndex(MEAN_PARAMETER_INDEX));
-			double precision = requireNonNull((Double)factorFunction.getConstantByIndex(PRECISION_PARAMETER_INDEX));
+			double mean = requireNonNull(factor.getConstantValueByIndex(MEAN_PARAMETER_INDEX)).getDouble();
+			double precision =
+				requireNonNull(factor.getConstantValueByIndex(PRECISION_PARAMETER_INDEX)).getDouble();
 			outputMessage = new NormalParameters(mean, precision);
 		}
 		else
@@ -83,7 +85,7 @@ public class CustomNormalConstantParameters extends GaussianFactorBase
 		boolean constantParameters = false;
 		if (specificFactorFunction.hasConstantParameters())
 			constantParameters = true;
-		else if (factorFunction.isConstantIndex(MEAN_PARAMETER_INDEX) && factorFunction.isConstantIndex(PRECISION_PARAMETER_INDEX))
+		else if (factor.isConstantIndex(MEAN_PARAMETER_INDEX) && factor.isConstantIndex(PRECISION_PARAMETER_INDEX))
 			constantParameters = true;
 
 		if (!constantParameters)

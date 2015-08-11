@@ -19,6 +19,8 @@ package com.analog.lyric.dimple.factorfunctions.core;
 import static java.util.Objects.*;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -313,7 +315,7 @@ public abstract class FactorFunction implements IFactorFunction
      */
     public IFactorTable getFactorTable(Factor factor)
     {
-    	return getFactorTable(factor.getDomainList().asJointDomainIndexer());
+    	return getFactorTable(factor.getDomainListWithConstants().asJointDomainIndexer());
     }
 
     /**
@@ -493,6 +495,7 @@ public abstract class FactorFunction implements IFactorFunction
 	 * 
 	 * @since 0.05
 	 */
+    @Deprecated
 	public boolean hasConstants()
 	{
 		return false;
@@ -505,6 +508,7 @@ public abstract class FactorFunction implements IFactorFunction
 	 * 
 	 * @since 0.05
 	 */
+    @Deprecated
 	public int getConstantCount()
 	{
 		return 0;
@@ -527,8 +531,26 @@ public abstract class FactorFunction implements IFactorFunction
 	 * <p>
 	 * Default implementation returns null.
 	 * 
+	 * @since 0.08
+	 */
+	@Deprecated
+	public @Nullable Value getConstantValueByIndex(int index)
+	{
+		return null;
+	}
+	
+	/**
+	 * @deprecated as of release 0.08 use {@link #getConstantValueByIndex(int)}
+	 * instead.
+	 * <p>
+	 * Returns constant at edge identified by {@code index} or null if specified
+	 * edge is not a constant.
+	 * <p>
+	 * Default implementation returns null.
+	 * 
 	 * @since 0.05
 	 */
+	@Deprecated
 	public @Nullable Object getConstantByIndex(int index)
 	{
 		return null;
@@ -538,6 +560,7 @@ public abstract class FactorFunction implements IFactorFunction
 	 * Returns whether or not the index corresponds to a constant
 	 * @since 0.05
 	 */
+	@Deprecated
 	public boolean isConstantIndex(int index)
 	{
 		return false;
@@ -547,6 +570,7 @@ public abstract class FactorFunction implements IFactorFunction
 	 * Returns whether or not the index range corresponds to a constant
 	 * @since 0.06
 	 */
+	@Deprecated
 	public boolean hasConstantsInIndexRange(int minIndex, int maxIndex)
 	{
 		return false;
@@ -555,6 +579,7 @@ public abstract class FactorFunction implements IFactorFunction
 	 * Returns whether or not the index corresponds to a constant
 	 * @since 0.05
 	 */
+	@Deprecated
 	public boolean hasConstantAtOrAboveIndex(int index)
 	{
 		return false;
@@ -564,6 +589,7 @@ public abstract class FactorFunction implements IFactorFunction
 	 * Returns whether or not the index corresponds to a constant
 	 * @since 0.05
 	 */
+	@Deprecated
 	public boolean hasConstantAtOrBelowIndex(int index)
 	{
 		return false;
@@ -573,6 +599,7 @@ public abstract class FactorFunction implements IFactorFunction
 	 * Returns whether or not the index corresponds to a constant
 	 * @since 0.05
 	 */
+	@Deprecated
 	public int numConstantsInIndexRange(int minIndex, int maxIndex)
 	{
 		return 0;
@@ -582,6 +609,7 @@ public abstract class FactorFunction implements IFactorFunction
 	 * Returns whether or not the index corresponds to a constant
 	 * @since 0.05
 	 */
+	@Deprecated
 	public int numConstantsAtOrAboveIndex(int index)
 	{
 		return 0;
@@ -591,6 +619,7 @@ public abstract class FactorFunction implements IFactorFunction
 	 * Returns whether or not the index corresponds to a constant
 	 * @since 0.05
 	 */
+	@Deprecated
 	public int numConstantsAtOrBelowIndex(int index)
 	{
 		return 0;
@@ -603,6 +632,7 @@ public abstract class FactorFunction implements IFactorFunction
 	 * 
 	 * @since 0.05
 	 */
+	@Deprecated
 	public int getEdgeByIndex(int index)
 	{
 		return index;
@@ -612,6 +642,7 @@ public abstract class FactorFunction implements IFactorFunction
 	 * Return all edges within the range of indices specified
 	 * @since 0.06
 	 */
+	@Deprecated
 	public @Nullable int[] getEdgesByIndexRange(int minIndex, int maxIndex)
 	{
 		int[] edges = new int[maxIndex - minIndex + 1];
@@ -623,14 +654,27 @@ public abstract class FactorFunction implements IFactorFunction
 	/**
 	 * @since 0.05
 	 */
+	@Deprecated
 	public int getIndexByEdge(int edge)
 	{
 		return edge;
 	}
 
 	/**
+	 * Returns an immutable list view of the
+	 * @since 0.08
+	 */
+	@Deprecated
+	public List<Value> getConstantValues()
+	{
+		return Collections.emptyList();
+	}
+
+	/**
+	 * @deprecated as of release 0.08 use {@link #getConstantValues} instead.
 	 * @since 0.05
 	 */
+	@Deprecated
 	public Object[] getConstants()
 	{
 		return ArrayUtil.EMPTY_OBJECT_ARRAY;
@@ -639,6 +683,7 @@ public abstract class FactorFunction implements IFactorFunction
 	/**
 	 * @since 0.05
 	 */
+	@Deprecated
 	public int[] getConstantIndices()
 	{
 		return ArrayUtil.EMPTY_INT_ARRAY;
@@ -720,7 +765,7 @@ public abstract class FactorFunction implements IFactorFunction
 	 */
 	
     /**
-     * Returns a copy of arguments with output arguments replaced with clones.
+     * Returns a copy of arguments with output arguments replaced with mutable clones.
      * @since 0.08
      */
     private Value[] cloneOutputArguments(Value[] arguments)
@@ -730,7 +775,7 @@ public abstract class FactorFunction implements IFactorFunction
     	// Clone the Values for output indices only
     	for (int i : requireNonNull(getDirectedToIndices(arguments.length)))
     	{
-    		copy[i] = copy[i].clone(); // Assumes a deep clone
+    		copy[i] = copy[i].mutableClone(); // Assumes a deep clone
     	}
     	
     	return copy;

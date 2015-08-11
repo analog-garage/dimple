@@ -16,8 +16,11 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
+import java.util.List;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 
@@ -39,23 +42,19 @@ public class CustomGaussianLinear extends GaussianFactorBase
 		
 		//Make sure this is of the form a = b*c where either b or c is a constant.
 		
-		Object[] constants = factor.getFactorFunction().getConstants();
+		final List<Value> constants = factor.getConstantValues();
+		final int n = constants.size();
 		
-		if (constants.length < 1 || constants.length > 2)
+		if (n < 1 || n > 2)
 			throw new DimpleException("Need to specify vector of constants");
 
-		if ( !(constants[0] instanceof double[]))
-			throw new DimpleException("First parameter must be an array of constants");
-		
-		_constants = (double[]) constants[0];
+		_constants = constants.get(0).getDoubleArray();
 		_total = 0;
 		
 		
-		if (constants.length == 2)
+		if (n == 2)
 		{
-			if (! (constants[1] instanceof Double))
-				throw new DimpleException("Second parameter must be a double");
-			_total = (Double)constants[1];
+			_total = constants.get(1).getDouble();
 		}
 		
 		if (factor.getSiblingCount() != _constants.length)

@@ -21,13 +21,13 @@ import static java.util.Objects.*;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicReference;
 
-import cern.colt.map.OpenIntIntHashMap;
-
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
+
+import cern.colt.map.OpenIntIntHashMap;
 
 
 /**
@@ -124,11 +124,10 @@ public class MatrixProduct extends FactorFunction
 		return indexList;
 	}
     
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     public final int[] getDirectedToIndicesForInput(Factor factor, int inputEdge)
     {
-    	final FactorFunction function = factor.getFactorFunction();
-    	
     	final int outRows = _Nr;
     	final int outCols = _Nc;
     	final int outSize = outRows * outCols;
@@ -141,20 +140,20 @@ public class MatrixProduct extends FactorFunction
     	final int in2Cols = _Nc;
     	final int in2Size = in2Rows * in2Cols;
     	
-    	final int numEdges = factor.getSiblingCount() + function.getConstantCount();
+    	final int numEdges = factor.getFactorArgumentCount();
     	final int nInputEdges = numEdges - outSize;
     	
     	final int in1Offset = outSize;
     	
     	int in2Offset = in1Offset;
     	if (nInputEdges == in1Size + in2Size ||
-    		nInputEdges == in1Size + 1 && function.getConstantByIndex(numEdges - 1) instanceof double[][])
+    		nInputEdges == in1Size + 1 && factor.hasConstantOfType(numEdges - 1, double[][].class))
     	{
     		// First input matrix is flattened out.
     		in2Offset += in1Size;
     	}
     	else if (nInputEdges == 2 ||
-    		nInputEdges == in2Size + 1 && function.getConstantByIndex(in1Offset) instanceof double[][])
+    		nInputEdges == in2Size + 1 && factor.hasConstantOfType(in1Offset, double[][].class))
     	{
     		// First input matrix is a constant
     		in2Offset += 1;

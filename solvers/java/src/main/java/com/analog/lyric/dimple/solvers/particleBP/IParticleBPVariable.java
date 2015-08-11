@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.particleBP;
 
-import com.analog.lyric.dimple.model.values.RealValue;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 /**
@@ -26,5 +26,5 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
  */
 public interface IParticleBPVariable extends ISolverVariable
 {
-	public RealValue[] getParticleValueObjects();
+	public Value[] getParticleValueObjects();
 }

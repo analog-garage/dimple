@@ -16,14 +16,14 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
+import static java.util.Objects.*;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
@@ -41,7 +41,6 @@ public class CustomDiscreteTransition extends GibbsRealFactor implements IRealJo
 {
 	private @Nullable GibbsDiscrete _yVariable;
 	private @Nullable GibbsDiscrete _xVariable;
-	private @Nullable FactorFunction _factorFunction;
 	private boolean _hasConstantY;
 	private boolean _hasConstantX;
 	private int _yDimension;
@@ -87,7 +86,7 @@ public class CustomDiscreteTransition extends GibbsRealFactor implements IRealJo
 			outputMsg.setNull();
 
 			// Get the parameter coordinates
-			int parameterXIndex = _factorFunction.getIndexByEdge(portNum) - NUM_DISCRETE_VARIABLES;
+			int parameterXIndex = _model.getIndexByEdge(portNum) - NUM_DISCRETE_VARIABLES;
 			
 			// Get the sample values (indices of the discrete value, which corresponds to the value as well)
 			int xIndex = _hasConstantX ? _constantXValue : _xVariable.getCurrentSampleIndex();
@@ -134,8 +133,7 @@ public class CustomDiscreteTransition extends GibbsRealFactor implements IRealJo
 	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
-		FactorFunction factorFunction = _model.getFactorFunction();
-		_factorFunction = factorFunction;
+		final Factor factor = _model;
 
 		final int prevStartingParameterEdge = _startingParameterEdge;
 		
@@ -150,12 +148,12 @@ public class CustomDiscreteTransition extends GibbsRealFactor implements IRealJo
 		_startingParameterEdge = 0;
 		List<? extends Variable> siblings = _model.getSiblings();
 
-		_hasConstantY = factorFunction.isConstantIndex(Y_INDEX);
+		_hasConstantY = factor.isConstantIndex(Y_INDEX);
 		if (_hasConstantY)
-			_constantYValue = FactorFunctionUtilities.toInteger(factorFunction.getConstantByIndex(Y_INDEX));
+			_constantYValue = requireNonNull(factor.getConstantValueByIndex(Y_INDEX)).getInt();
 		else					// Variable Y
 		{
-			_yPort = factorFunction.getEdgeByIndex(Y_INDEX);
+			_yPort = factor.getEdgeByIndex(Y_INDEX);
 			Discrete yVar = ((Discrete)siblings.get(_yPort));
 			_yVariable = (GibbsDiscrete)yVar.getSolver();
 			_yDimension = yVar.getDomain().size();
@@ -163,12 +161,12 @@ public class CustomDiscreteTransition extends GibbsRealFactor implements IRealJo
 		}
 		
 		
-		_hasConstantX = factorFunction.isConstantIndex(X_INDEX);
+		_hasConstantX = factor.isConstantIndex(X_INDEX);
 		if (_hasConstantX)
-			_constantXValue = FactorFunctionUtilities.toInteger(factorFunction.getConstantByIndex(X_INDEX));
+			_constantXValue = requireNonNull(factor.getConstantValueByIndex(X_INDEX)).getInt();
 		else					// Variable X
 		{
-			_xPort = factorFunction.getEdgeByIndex(X_INDEX);
+			_xPort = factor.getEdgeByIndex(X_INDEX);
 			Discrete xVar = ((Discrete)siblings.get(_xPort));
 			_xVariable = (GibbsDiscrete)xVar.getSolver();
 			_startingParameterEdge++;

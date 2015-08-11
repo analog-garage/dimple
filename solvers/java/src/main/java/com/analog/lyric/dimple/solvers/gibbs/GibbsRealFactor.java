@@ -65,17 +65,7 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 		super.initialize();
 		
 		_outputsValid = false;
-    	final int size = getSiblingCount();
-    	
-    	if (_currentSamples.length != size)
-    	{
-    		_currentSamples = new Value[size];
-    	}
-    	
-	    for (int port = 0; port < size; port++)
-	    {
-	    	_currentSamples[port] = getSibling(port).getCurrentSampleValue();
-	    }
+    	_currentSamples = _model.fillFactorArguments(_parent, _currentSamples);
 	}
 	
 	@Override
@@ -112,8 +102,10 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 	@Override
 	public void updateEdgeMessage(EdgeState modelEdge, GibbsSolverEdge<?> solverEdge)
 	{
+		final Factor factor = _model;
 		final int outPortNum = modelEdge.getFactorToVariableEdgeNumber();
-		Value outValue = _currentSamples[outPortNum];
+		final int outIndex = factor.getIndexByEdge(outPortNum);
+		Value outValue = _currentSamples[outIndex];
 		
 		if (outValue.getDomain().isDiscrete())
 		{
@@ -121,11 +113,11 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 			// This method only considers the current conditional values, and does not propagate
 			// to any other variables (unlike get ConditionalPotential)
 			// This should only be called if this factor is not a deterministic directed factor
-			final FactorFunction factorFunction = _model.getFactorFunction();
+			final FactorFunction factorFunction = factor.getFactorFunction();
 			
 			final Value[] values = _currentSamples.clone();
 			outValue = outValue.clone();
-			values[outPortNum] = outValue;
+			values[outIndex] = outValue;
 			
 			double[] outputMsgs = ((DiscreteMessage)solverEdge.factorToVarMsg).representation();
 			
@@ -159,7 +151,7 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 	@Override
 	public double getPotential(Object[] inputs)
 	{
-	    return _model.getFactorFunction().evalEnergy(inputs);
+		return _model.evalEnergy(inputs);
 	}
 
 	@Override
@@ -178,7 +170,8 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 	@Override
 	public void updateNeighborVariableValue(int variableIndex, Value oldValue)
 	{
-		((GibbsSolverGraph)getRootSolverGraph()).scheduleDeterministicDirectedUpdate(this, variableIndex, oldValue);
+		final int argIndex = _model.getIndexByEdge(variableIndex);
+		((GibbsSolverGraph)getRootSolverGraph()).scheduleDeterministicDirectedUpdate(this, argIndex, oldValue);
 	}
 	
 	@Override
@@ -200,15 +193,25 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 			int[] changedOutputs = changedOutputsHolder.get();
 			if (changedOutputs != null)
 			{
+				if (factor.hasConstants())
+				{
+					for (int i = changedOutputs.length; --i>=0;)
+					{
+						// Translate from factor arg index back to edge index, even though
+						// we will just switch back again below.
+						changedOutputs[i] = factor.getEdgeByIndex(changedOutputs[i]);
+					}
+				}
 				directedTo = changedOutputs;
 			}
 
 			// Update the directed-to variables with the computed values
 			if (directedTo != null)
 			{
-				for (int outputIndex : directedTo)
+				for (int to : directedTo)
 				{
-					Variable variable = requireNonNull(factor.getSibling(outputIndex));
+					final int outputIndex = factor.getIndexByEdge(to);
+					Variable variable = requireNonNull(factor.getSibling(to));
 					Value newValue = values[outputIndex];
 					((ISolverVariableGibbs)solvers.getSolverVariable(variable)).setCurrentSample(newValue);
 				}
@@ -223,9 +226,10 @@ public class GibbsRealFactor extends SRealFactor implements ISolverFactorGibbs
 			if (directedTo != null)
 			{
 				// Full update
-				for (int outputIndex : directedTo)
+				for (int to : directedTo)
 				{
-					Variable variable = requireNonNull(factor.getSibling(outputIndex));
+					final int outputIndex = factor.getIndexByEdge(to);
+					Variable variable = requireNonNull(factor.getSibling(to));
 					Value newValue = values[outputIndex];
 					((ISolverVariableGibbs)solvers.getSolverVariable(variable)).setCurrentSample(newValue);
 				}

@@ -46,6 +46,7 @@ import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorBase;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableBlock;
 import com.analog.lyric.dimple.options.BPOptions;
@@ -151,6 +152,31 @@ public abstract class SFactorGraphBase
 		}
 	}
 
+	/*------------------
+	 * IVariableToValue
+	 */
+	
+	@Override
+	public @Nullable Value varToValue(Variable var)
+	{
+		Value value = var.getPriorValue();
+			
+		if (value == null)
+		{
+			DataLayer<?> layer = getConditioningLayer();
+			if (layer != null)
+			{
+				IDatum datum = layer.get(var);
+				if (datum instanceof Value)
+				{
+					value = (Value)datum;
+				}
+			}
+		}
+		
+		return value;
+	}
+	
 	/*----------------------------
 	 * ISolverEventSource methods
 	 */

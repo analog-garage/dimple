@@ -16,9 +16,11 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
+import java.util.List;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductFiniteFieldVariable;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
@@ -40,10 +42,8 @@ public class CustomFiniteFieldConstantMult extends SFiniteFieldFactor
 	{
 		super(factor, parent);
 		
-		FactorFunction ff = _model.getFactorFunction();
-		int [] constIndices = ff.getConstantIndices();
-		Object [] constants = ff.getConstants();
-		if (constIndices.length != 1)
+		final List<Value> constants = _model.getConstantValues();
+		if (constants.size() != 1)
 			throw new DimpleException("expected one constant");
 
 		if (factor.getSiblingCount() != 2)
@@ -57,7 +57,7 @@ public class CustomFiniteFieldConstantMult extends SFiniteFieldFactor
 		_varOutput = (SumProductFiniteFieldVariable)getSibling(1);
 		
 		//_varOutputPort = ports.get(1);
-		assignConstant((int)(double)(Double)constants[0]);
+		assignConstant(constants.get(0).getInt());
 
 		
 		

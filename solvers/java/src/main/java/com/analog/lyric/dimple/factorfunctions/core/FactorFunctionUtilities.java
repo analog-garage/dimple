@@ -18,8 +18,10 @@ package com.analog.lyric.dimple.factorfunctions.core;
 
 import java.util.Objects;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.collect.ArrayUtil;
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.google.common.math.DoubleMath;
 import com.google.common.primitives.Primitives;
 
@@ -160,11 +162,21 @@ public class FactorFunctionUtilities
 		}
 	}
 	
+	/**
+	 * Returns list of integer indexes from {@code startingIndex} to {@code endingIndex} inclusive.
+	 * <p>
+	 * If {@code startingIndex} is greater than {@code endingIndex}, this returns an empty
+	 * array.
+	 */
 	public static final int[] getListOfIndices(int startingIndex, int endingIndex)
 	{
-    	if (startingIndex > endingIndex)
-    		throw new DimpleException("Insufficient number of indices");
-    	int[] indices = new int[endingIndex - startingIndex + 1];
+		final int size = endingIndex - startingIndex + 1;
+		if (size <= 0)
+		{
+			return ArrayUtil.EMPTY_INT_ARRAY;
+		}
+		
+    	int[] indices = new int[size];
     	for (int i = 0, index = startingIndex; index <= endingIndex; i++, index++)
     		indices[i] = index;
 		return indices;

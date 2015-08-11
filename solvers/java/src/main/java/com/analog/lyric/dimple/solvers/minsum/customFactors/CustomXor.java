@@ -16,11 +16,12 @@
 
 package com.analog.lyric.dimple.solvers.minsum.customFactors;
 
+import java.util.List;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.minsum.MinSumDiscreteEdge;
 import com.analog.lyric.dimple.solvers.minsum.MinSumSolverGraph;
 
@@ -173,13 +174,13 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 		
 		// Pre-compute parity associated with any constant edges
 		_constantParity = 1;
-		FactorFunction factorFunction = _model.getFactorFunction();
-		if (factorFunction.hasConstants())
+		final Factor factor = _model;
+		if (factor.hasConstants())
 		{
-			Object[] constantValues = factorFunction.getConstants();
+			List<Value> constantValues = factor.getConstantValues();
 			int constantSum = 0;
-			for (int i = 0; i < constantValues.length; i++)
-				constantSum += FactorFunctionUtilities.toInteger(constantValues[i]);
+			for (Value value : constantValues)
+				constantSum += value.getInt();
 			_constantParity = ((constantSum & 1) == 0) ? 1 : -1;
 		}
 	}

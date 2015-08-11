@@ -19,6 +19,8 @@ package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 import static com.analog.lyric.math.MoreMatrixUtils.*;
 import static org.apache.commons.math3.linear.MatrixUtils.*;
 
+import java.util.List;
+
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.linear.CholeskyDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -26,6 +28,7 @@ import org.apache.commons.math3.linear.RealVector;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 
@@ -49,27 +52,18 @@ public class CustomComplexGaussianPolynomial extends MultivariateGaussianFactorB
 		if (factor.getSiblingCount() != 2)
 			throw new DimpleException("expected two complex numbers");
 
-		//TODO: throw error message if this cast fails
-		Object[] constants = factor.getFactorFunction().getConstants();
+		final List<Value> constants = factor.getConstantValues();
 
 		//TODO: error check
 		double [] powers;
 		double [] rcoeffs;
 		double [] icoeffs;
 		
-		if (constants[0] instanceof Double)
-		{
-			powers = new double[]{(Double)constants[0]};
-			rcoeffs = new double[]{(Double)constants[1]};
-		}
-		else
-		{
-			powers = (double[])constants[0];
-			rcoeffs = (double[])constants[1];
-		}
+		powers = constants.get(0).getDoubleArray();
+		rcoeffs = constants.get(1).getDoubleArray();
 		
-		if (constants.length > 2)
-			icoeffs = (double[])constants[2];
+		if (constants.size()> 2)
+			icoeffs = constants.get(2).getDoubleArray();
 		else
 			icoeffs = new double[rcoeffs.length];
 		

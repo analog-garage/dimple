@@ -202,7 +202,7 @@ public class SumProductSolverGraph extends BPSolverGraph<ISolverFactor,ISolverVa
 		FactorFunction factorFunction = factor.getFactorFunction().getContainedFactorFunction();	// In case it's wrapped
 		String factorName = factorFunction.getName();
 		boolean noFF = factorFunction instanceof CustomFactorFunctionWrapper;
-		boolean hasConstants = factor.getFactorFunction().hasConstants();
+		boolean hasConstants = factor.hasConstants();
 		
 		if (factor.isDiscrete())	// Factor contains only discrete variables
 		{

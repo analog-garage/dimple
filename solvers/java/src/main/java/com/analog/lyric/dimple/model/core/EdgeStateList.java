@@ -77,9 +77,18 @@ class EdgeStateList extends ArrayList<EdgeState>
 	@Override
 	public boolean add(EdgeState edge)
 	{
-		assert(edge.edgeIndexInParent(_graph) == size());
+		final int index = edge.edgeIndexInParent(_graph);
+		if (index == size())
+		{
+			super.add(edge);
+		}
+		else
+		{
+			assert(get(index) == null);
+			super.set(index, edge);
+		}
 		updateCounts(edge, 1);
-		return super.add(edge);
+		return true;
 	}
 	
 	@Override
@@ -150,6 +159,13 @@ class EdgeStateList extends ArrayList<EdgeState>
 	/*-----------------------
 	 * EdgeStateList methods
 	 */
+	
+	int allocateIndex()
+	{
+		int index = size();
+		super.add(null);
+		return index;
+	}
 	
 	boolean isInnerEdge(EdgeState edge)
 	{

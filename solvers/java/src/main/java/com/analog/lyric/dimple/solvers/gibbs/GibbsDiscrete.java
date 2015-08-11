@@ -518,7 +518,6 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 	}
 	}
 
-	// TODO - move up to ISolverVariable
 	@Override
 	public final double getSampleScore(Value sampleValue)
 	{
@@ -661,7 +660,6 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
     	_bestSampleIndex = _currentSample.getIndex();
     }
     
-    // TODO: move to ISolverNodeGibbs
 	@Override
 	public final double getPotential()
 	{
@@ -840,8 +838,6 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		return val != null ? val.getIndex() : -1;
 	}
 	
-    // TODO: move to ISolverVariableGibbs
-    
     @Override
 	public final void setBeta(double beta)	// beta = 1/temperature
     {
@@ -945,8 +941,8 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		return new DiscreteEnergyMessage(_model.getDiscreteDomain().size());
 	}
 
-	@Deprecated
 	@Override
+	@Deprecated
 	public double[] getInputMsg(int portIndex)
 	{
 		return getDiscreteEdge(portIndex).factorToVarMsg.representation();
@@ -1011,7 +1007,6 @@ public class GibbsDiscrete extends SDiscreteVariableBase implements ISolverVaria
 		ovar._input = null;
     }
 	
-	// TODO move to ISolverNode
 	@Override
 	public void initialize()
 	{

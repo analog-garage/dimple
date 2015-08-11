@@ -83,7 +83,8 @@ public class CustomGaussianLinearEquation extends GaussianFactorBase
 		super.initialize();
 		
 		// Pre-compute for any constant edges
-		FactorFunction factorFunction = _model.getFactorFunction();
+		final Factor factor = _model;
+		FactorFunction factorFunction = factor.getFactorFunction();
 		LinearEquation specificFactorFunction = (LinearEquation)factorFunction.getContainedFactorFunction();
 		
 		
@@ -95,14 +96,15 @@ public class CustomGaussianLinearEquation extends GaussianFactorBase
 		
 		// Account for constant and variable inputs; pre-compute a weighted sum for all constant inputs
 		_initialWeightedSum = 0;
-		_weightVector = new double[extendedWeigthVectorLength - factorFunction.getConstantCount()];
+		_weightVector = new double[extendedWeigthVectorLength - factor.getConstantCount()];
 		for (int index = 0, edge = 0; index < extendedWeigthVectorLength; index++)
 		{
-			if (factorFunction.isConstantIndex(index))
+			if (factor.isConstantIndex(index))
 			{
 				// Constant in this position, so subtract off the initial weighted sum (move to the other side of the equation)
 				_initialWeightedSum -=
-					extendedWeightVector[index] * (Double)requireNonNull(factorFunction.getConstantByIndex(index));
+					extendedWeightVector[index] *
+						requireNonNull(factor.getConstantValueByIndex(index)).getDouble();
 			}
 			else
 			{

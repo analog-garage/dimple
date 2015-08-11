@@ -38,7 +38,9 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorBase;
 import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
 import com.analog.lyric.dimple.model.repeated.IVariableStreamSlice;
+import com.analog.lyric.dimple.model.variables.Constant;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.model.variables.IConstantOrVariable;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.schedulers.IScheduler;
@@ -294,7 +296,14 @@ public class PFactorGraphVector extends PFactorBaseVector
 	}
 	
 
-	
+	/**
+	 * Add multiple factors.
+	 * <p>
+	 * @param factor is used as a prototype. It's factor function and constants should be copied.
+	 * @param vars should actually contain PNodeVectors. Each one contains the full set of variables
+	 * from which the factor arguments will be chosen.
+	 * @param indices
+	 */
 	public PNodeVector addFactorVectorized(PFactorVector factor, Object [] vars, Object [] indices)
 	{
 		PNodeVector [] nodes = PHelpers.convertObjectArrayToNodeVectorArray(vars);
@@ -302,9 +311,37 @@ public class PFactorGraphVector extends PFactorBaseVector
 		
 		PNodeVector [][] args = PHelpers.extractVectorization(nodes, intIndices);
 		
+		final Factor modelFactor = factor.getFactor(0);
+		final int nArgs = modelFactor.getFactorArgumentCount();
+		Object[] argsWithConstants = null;
+		if (modelFactor.hasConstants())
+		{
+			argsWithConstants = new Object[nArgs];
+			for (int j = 0; j < nArgs; ++j)
+			{
+				IConstantOrVariable arg = modelFactor.getFactorArgument(j);
+				if (arg instanceof Constant)
+				{
+					argsWithConstants[j] = arg;
+				}
+			}
+		}
+		
 		Node [] retval = new Node[args.length];
 		for (int i = 0; i < args.length; i++)
-			retval[i] = createFactor(factor.getFactorFunction(),args[i]).getModelerNode(0);
+		{
+			Object[] argsi = args[i];
+			if (argsWithConstants != null)
+			{
+				for (int j = 0; j < argsi.length; ++j)
+				{
+					argsWithConstants[modelFactor.getIndexByEdge(j)] = argsi[j];
+				}
+				argsi = argsWithConstants;
+			}
+			
+			retval[i] = createFactor(factor.getFactorFunction(),argsi).getFactor(0);
+		}
 	
 		return PHelpers.convertToFactorVector(retval);
 	}

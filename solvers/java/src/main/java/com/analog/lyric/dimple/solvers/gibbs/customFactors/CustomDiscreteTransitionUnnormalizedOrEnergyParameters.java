@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
+import static java.util.Objects.*;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,7 +28,6 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.DiscreteTransitionEnergyParameters;
 import com.analog.lyric.dimple.factorfunctions.DiscreteTransitionUnnormalizedParameters;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
@@ -156,7 +157,8 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends Gibb
 		final int prevStartingParameterEdge = _startingParameterEdge;
 		
 		// Get the factor function and related state
-		FactorFunction factorFunction = _model.getFactorFunction();
+		final Factor factor = _model;
+		FactorFunction factorFunction = factor.getFactorFunction();
 		FactorFunction containedFactorFunction = factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 		if (containedFactorFunction instanceof DiscreteTransitionUnnormalizedParameters)
 		{
@@ -186,14 +188,14 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends Gibb
 		_constantYValue = -1;
 		_constantXValue = -1;
 		_startingParameterEdge = 0;
-		List<? extends Variable> siblings = _model.getSiblings();
+		List<? extends Variable> siblings = factor.getSiblings();
 
-		_hasConstantY = factorFunction.isConstantIndex(Y_INDEX);
+		_hasConstantY = factor.isConstantIndex(Y_INDEX);
 		if (_hasConstantY)
-			_constantYValue = FactorFunctionUtilities.toInteger(factorFunction.getConstantByIndex(Y_INDEX));
+			_constantYValue = requireNonNull(factor.getConstantValueByIndex(Y_INDEX)).getInt();
 		else					// Variable Y
 		{
-			_yPort = factorFunction.getEdgeByIndex(Y_INDEX);
+			_yPort = factor.getEdgeByIndex(Y_INDEX);
 			Discrete yVar = ((Discrete)siblings.get(_yPort));
 			_yVariable = (GibbsDiscrete)yVar.getSolver();
 			_yDimension = yVar.getDomain().size();
@@ -201,25 +203,25 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends Gibb
 		}
 		
 		
-		_hasConstantX = factorFunction.isConstantIndex(X_INDEX);
+		_hasConstantX = factor.isConstantIndex(X_INDEX);
 		if (_hasConstantX)
-			_constantXValue = FactorFunctionUtilities.toInteger(factorFunction.getConstantByIndex(X_INDEX));
+			_constantXValue = requireNonNull(factor.getConstantValueByIndex(X_INDEX)).getInt();
 		else					// Variable X
 		{
-			_xPort = factorFunction.getEdgeByIndex(X_INDEX);
+			_xPort = factor.getEdgeByIndex(X_INDEX);
 			Discrete xVar = ((Discrete)siblings.get(_xPort));
 			_xVariable = (GibbsDiscrete)xVar.getSolver();
 			_startingParameterEdge++;
 		}
 		
 		// Create a mapping between the edge connecting parameters and the XY coordinates in the parameter array
-		int numParameterConstants = factorFunction.numConstantsAtOrAboveIndex(NUM_DISCRETE_VARIABLES);
+		int numParameterConstants = factor.numConstantsAtOrAboveIndex(NUM_DISCRETE_VARIABLES);
 		_numParameterEdges = _numParameters - numParameterConstants;
 		final int[] parameterXIndices = _parameterXIndices = new int[_numParameterEdges];
 		final int[] parameterYIndices = _parameterYIndices = new int[_numParameterEdges];
 		if (numParameterConstants > 0)
 		{
-			int[] constantIndices = factorFunction.getConstantIndices();
+			int[] constantIndices = factor.getConstantIndices();
 			int constantIndex = 0;
 			int parameterEdgeOffset = 0;
 			for (int x = 0; x < _xDimension; x++)	// Column scan order

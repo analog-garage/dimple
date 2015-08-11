@@ -14,32 +14,26 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.particleBP;
+package com.analog.lyric.dimple.model.variables;
 
-import com.analog.lyric.dimple.model.values.RealValue;
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscrete;
 
 /**
- * 
+ * Simple interface for mapping variables to values.
  * @since 0.08
  * @author Christopher Barber
  */
-public class ParticleBPDiscrete extends SumProductDiscrete implements IParticleBPVariable
+public interface IVariableToValue
 {
-	private final Value[] _particleValues;
+	// Note: do not add more methods to this interface unless they have
+	// default values (which requires Java 8) so that lambda expressions can
+	// be used in place of this interface.
 	
-	public ParticleBPDiscrete(Discrete var, ParticleBPSolverGraph parent)
-	{
-		super(var, parent);
-		_particleValues = RealValue.createFromDiscreteDomain(var.getDomain());
-	}
-
-	@Override
-	public final Value[] getParticleValueObjects()
-	{
-		return _particleValues;
-	}
-
+	/**
+	 * Returns object containing value for given variable, if any.
+	 * @since 0.08
+	 */
+	public @Nullable Value varToValue(Variable var);
 }

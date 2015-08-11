@@ -52,7 +52,6 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Uniform;
 import com.analog.lyric.dimple.factorfunctions.core.CustomFactorFunctionWrapper;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.JointFactorFunction;
@@ -1207,8 +1206,11 @@ public class FactorGraph extends FactorBase
 	/**
 	 * Adds a new constant value.
 	 * <p>
-	 * @param value
-	 * @return
+	 * Add a new constant owned by this graph for use with factors also owned by this graph.
+	 * <p>
+	 * @param value specifies the constant. It will be {@linkplain Value#immutableClone() cloned immutably}
+	 * if necessary.
+	 * @return the newly added constant object.
 	 * @since 0.08
 	 */
 	public Constant addConstant(Value value)
@@ -1216,6 +1218,42 @@ public class FactorGraph extends FactorBase
 		Constant constant = new Constant(value);
 		_ownedConstants.add(constant);
 		return constant;
+	}
+	
+	/**
+	 * Adds a new constant value.
+	 * <p>
+	 * Add a new constant owned by this graph for use with factors also owned by this graph.
+	 * <p>
+	 * @param object specifies the constant, may be one of:
+	 * <ul>
+	 * <li>{@link Constant}: if owned by this graph will simply be returned, otherwise a new
+	 * constant will be added with the same {@link Constant#value}.
+	 * <li>{@link Value}: same as {@link #addConstant(Value)}.
+	 * <li>any other {@link Object}: will be wrapped using {@link Value#constant}
+	 * </ul>
+	 * @return the newly added constant object.
+	 * @since 0.08
+	 */
+	public Constant addConstant(Object object)
+	{
+		if (object instanceof Constant)
+		{
+			Constant constant = (Constant)object;
+			if (constant.getParentGraph() == this)
+			{
+				return constant;
+			}
+			
+			return addConstant(constant.value());
+		}
+		
+		if (object instanceof Value)
+		{
+			return addConstant((Value)object);
+		}
+		
+		return addConstant(Value.constant(object));
 	}
 	
 	public Factor addFactor(int [][] indices, double [] weights, Discrete ... vars)
@@ -1249,91 +1287,70 @@ public class FactorGraph extends FactorBase
 		return addFactor(factorFunctionName, (Object[])vars);
 	}
 	
-	public Factor addFactor(FactorFunction factorFunction, Object ... vars)
+	public Factor addFactor(FactorFunction factorFunction, Object ... varsAndConstants)
 	{
-		int numConstants = 0;
-
-		for (int i = 0; i < vars.length; i++)
+		final int nArgs = varsAndConstants.length;
+		int[] factorArguments = new int[nArgs];
+		boolean allVarsDiscrete = true;
+		int nVars = 0;
+		
+		for (int i = 0; i < nArgs; ++i)
 		{
-			if (!(vars[i] instanceof Variable))
-				numConstants++;
-		}
-
-		Variable [] newvars = new Variable[vars.length - numConstants];
-		Object [] constants = new Object[numConstants];
-		int [] constantIndices = new int[numConstants];
-
-		int constantIndex = 0;
-		int varIndex = 0;
-
-		for (int i = 0; i < vars.length; i++)
-		{
-			if (vars[i] instanceof Variable)
+			final Object arg = varsAndConstants[i];
+			if (arg instanceof Variable)
 			{
-				newvars[varIndex] = (Variable)vars[i];
-				varIndex++;
+				++nVars;
+				Variable var = (Variable)arg;
+				if (!var.hasParentGraph())
+				{
+					addVariables(var);
+				}
+				factorArguments[i] = _edges.allocateIndex();
+				
+				setVariableSolver(var);
+				
+				if (!var.getDomain().isDiscrete())
+				{
+					allVarsDiscrete = false;
+				}
 			}
 			else
 			{
-				constants[constantIndex] = vars[i];
-				constantIndices[constantIndex] = i;
-				constantIndex++;
+				Constant constant = addConstant(arg);
+				factorArguments[i] = constant.getLocalId();
 			}
 		}
-
-
-		if (numConstants == 0)
-		{
-			return addFactorNoConstants(factorFunction,newvars);
-		}
-		else
-		{
-			return addFactorNoConstants(new FactorFunctionWithConstants(factorFunction, constants, constantIndices),newvars);
-		}
-
-	}
-
-	private Factor addFactorNoConstants(FactorFunction factorFunction, Variable ... vars)
-	{
-		if (vars.length == 0)
+		
+		if (nVars == 0)
 			throw new DimpleException("must pass at least one variable to addFactor");
-
-		// Add any variables that do not yet have a parent
-		for (Variable v : vars)
+		
+		Factor factor = allVarsDiscrete ? new DiscreteFactor(factorFunction) : new Factor(factorFunction);
+		addOwnedFactor(factor, false);
+		
+		for (int i = 0; i < nArgs; ++i)
 		{
-			if (v.getParentGraph() == null)
+			final int id = factorArguments[i];
+			if (Ids.typeIndexFromLocalId(id) != Ids.CONSTANT_TYPE)
 			{
-				addVariables(v);
+				addEdge(id, factor, (Variable)varsAndConstants[i]);
 			}
 		}
-
-		for (Variable v : vars)
-			setVariableSolver(v);
-
-		//TODO: where did the name go?
-
-		Factor f;
-		if (allDomainsAreDiscrete(vars))
-			f = new DiscreteFactor(factorFunction);
-		else
-			f = new Factor(factorFunction);
-
-		addFactor(f,vars);
-
+		
+		if (nVars != nArgs)
+		{
+			((Node)factor).setFactorArguments(factorArguments);
+		}
+		
 		final ISolverFactorGraph sfg = _solverFactorGraph;
 		if (sfg != null)
 		{
-			f.createSolverObject(_solverFactorGraph);
-			sfg.postAddFactor(f);
+			factor.createSolverObject(_solverFactorGraph);
+			sfg.postAddFactor(factor);
 		}
 
-
-
-		return f;
-
+		return factor;
 	}
-
-
+	
 	private void setVariableSolver(Variable v)
 	{
 		if (_solverFactorGraph != null)
@@ -2024,6 +2041,25 @@ public class FactorGraph extends FactorBase
 			{
 				Variable var = (Variable)old2newObjs.get(vTemplate);
 				addEdge(fCopy, var);
+			}
+			
+			if (fTemplate.hasConstants())
+			{
+				final int nArgs = fTemplate.getFactorArgumentCount();
+				int[] argids = new int[nArgs];
+				for (int i = 0, j = 0; i < nArgs; ++i)
+				{
+					Value value = fTemplate.getConstantValueByIndex(i);
+					if (value == null)
+					{
+						argids[i] = fCopy.getSiblingEdgeIndex(j++);
+					}
+					else
+					{
+						argids[i] = addConstant(value).getLocalId();
+					}
+				}
+				((Node)fCopy).setFactorArguments(argids);
 			}
 		}
 
@@ -3844,6 +3880,11 @@ public class FactorGraph extends FactorBase
 	@Override
 	protected void addEdge(Factor factor, Variable variable)
 	{
+		addEdge(_edges.allocateIndex(), factor, variable);
+	}
+	
+	private void addEdge(int edgeIndex, Factor factor, Variable variable)
+	{
 		assert(factor.getParentGraph() == this);
 
 		final FactorGraph variableGraph = requireNonNull(variable.getParentGraph());
@@ -3852,11 +3893,11 @@ public class FactorGraph extends FactorBase
 		
 		if (this == variableGraph)
 		{
-			edge = createLocalEdge(_edges.size(), factor, variable);
+			edge = createLocalEdge(edgeIndex, factor, variable);
 		}
 		else
 		{
-			edge = createBoundaryEdge(_edges.size(), variableGraph._edges.size(), factor, variable);
+			edge = createBoundaryEdge(edgeIndex, variableGraph._edges.size(), factor, variable);
 			variableGraph._edges.add(edge);
 		}
 		

@@ -16,8 +16,9 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
+import static java.util.Objects.*;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
@@ -38,17 +39,15 @@ public class CustomMultivariateGaussianProduct extends MultivariateGaussianFacto
 		
 		// TODO: alternatively, one of the ports could be a discrete variable with a single domain element
 		
-		FactorFunction ff = factor.getFactorFunction();
-		if (ff.getConstantCount() != 1)
+		if (factor.getConstantCount() != 1)
 			throw new DimpleException("expected one constant");
 		
-		double[][] constant;
-		if (ff.getConstants()[0] instanceof double[])
-			constant = new double[][] {(double[])ff.getConstants()[0]};
-		else
-			constant = (double[][])ff.getConstants()[0];
+		Object constantObj = requireNonNull(factor.getConstantValues().get(0).getObject());
 		
-		if (!ff.isConstantIndex(1))
+		double[][] constant = (constantObj instanceof double[]) ?
+			new double[][] { (double[])constantObj } : (double[][])constantObj;
+		
+		if (!factor.isConstantIndex(1))
 			throw new DimpleException("Expect matrix to be second arg");
 		
 		
@@ -88,8 +87,7 @@ public class CustomMultivariateGaussianProduct extends MultivariateGaussianFacto
 			return false;
 
 		// Must have exactly one constant
-		FactorFunction ff = factor.getFactorFunction();
-		if (ff.getConstantCount() != 1)
+		if (factor.getConstantCount() != 1)
 			return false;
 		
 		Variable y = factor.getSibling(0);
@@ -107,7 +105,7 @@ public class CustomMultivariateGaussianProduct extends MultivariateGaussianFacto
 		// Constant must be a matrix of the proper size
 		int yDimension = yDomain.getDimensions();
 		int xDimension = xDomain.getDimensions();
-		Object constant = ff.getConstants()[0];
+		Object constant = factor.getConstantValues().get(0).getObject();
 		if (!(constant instanceof double[][]))
 			return false;
 		double[][] dConstant = (double[][])constant;

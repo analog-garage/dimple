@@ -17,10 +17,17 @@
 package com.analog.lyric.dimple.solvers.particleBP;
 
 
+import static com.analog.lyric.math.Utilities.*;
+import static java.util.Objects.*;
+
 import com.analog.lyric.collect.CombinatoricIterator;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.RealValue;
+import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.model.variables.Constant;
+import com.analog.lyric.dimple.model.variables.IConstantOrVariable;
+import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.SDiscreteWeightEdge;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
@@ -41,7 +48,12 @@ public class ParticleBPRealFactor extends SFactorBase
 		super(factor, parent);
 	}
 	
-
+	@Override
+	public ParticleBPSolverGraph getParentGraph()
+	{
+		return (ParticleBPSolverGraph)_parent;
+	}
+	
 	public double getMarginalPotential(double value, int outPortIndex)
 	{
 		final int nEdges = getSiblingCount();
@@ -49,7 +61,7 @@ public class ParticleBPRealFactor extends SFactorBase
 
         double marginal = 0;
         
-        CombinatoricIterator<RealValue> iter = getCombinatoricIterator(value, outPortIndex);
+        CombinatoricIterator<Value> iter = getCombinatoricIterator(value, outPortIndex);
         final int[] variableIndices = iter.indices();
         
         final double[][] inputWeightsPerEdge = new double[nEdges][];
@@ -76,7 +88,7 @@ public class ParticleBPRealFactor extends SFactorBase
         }
         
         // FIXME: Should do bounds checking
-	    return -Math.log(marginal);
+	    return weightToEnergy(marginal);
 	}
 	
 	
@@ -90,11 +102,11 @@ public class ParticleBPRealFactor extends SFactorBase
 		outputMsg.setWeightsToZero();
         final double[] outputWeights = outputMsg.representation();
         
-        final CombinatoricIterator<RealValue> iter = getCombinatoricIterator();
+        final CombinatoricIterator<Value> iter = getCombinatoricIterator();
         final int[] variableIndices = iter.indices();
         while (iter.hasNext())
         {
-        	RealValue[] values = iter.next();
+        	Value[] values = iter.next();
         	double prob = factorFunction.eval(values);
 			
 			if (_beta != 1) prob = Math.pow(prob, _beta);
@@ -119,7 +131,7 @@ public class ParticleBPRealFactor extends SFactorBase
 	{
 		FactorFunction factorFunction = _model.getFactorFunction();
 
-        final CombinatoricIterator<RealValue> iter = getCombinatoricIterator();
+        final CombinatoricIterator<Value> iter = getCombinatoricIterator();
         final int[] variableIndices = iter.indices();
         
 		for (int outPortNum = 0, n = getSiblingCount(); outPortNum < n; outPortNum++)
@@ -132,7 +144,7 @@ public class ParticleBPRealFactor extends SFactorBase
 			iter.reset();
 			while (iter.hasNext())
 			{
-				RealValue[] variableValues = iter.next();
+				Value[] variableValues = iter.next();
 				double prob = 1;
 				prob = factorFunction.eval(variableValues);
 				if (_beta != 1) prob = Math.pow(prob, _beta);
@@ -207,35 +219,43 @@ public class ParticleBPRealFactor extends SFactorBase
 	/**
 	 * Returns an iterator over all combination of variable values
 	 */
-	private CombinatoricIterator<RealValue> getCombinatoricIterator()
+	private CombinatoricIterator<Value> getCombinatoricIterator()
 	{
 		final int nEdges = getSiblingCount();
-		final RealValue[][] particlesPerVar = new RealValue[nEdges][];
+		final Value[][] particlesPerVar = new Value[nEdges][];
 		for (int i = 0; i < nEdges; ++i)
 		{
 			particlesPerVar[i] = getSibling(i).getParticleValueObjects();
 		}
-		return new CombinatoricIterator<>(RealValue.class, particlesPerVar);
+		return new CombinatoricIterator<>(Value.class, particlesPerVar);
 	}
 	
 	/**
 	 * Returns an iterator over all combination of variable values except for edge
 	 */
-	private CombinatoricIterator<RealValue> getCombinatoricIterator(double frozenValue, int frozenEdge)
+	private CombinatoricIterator<Value> getCombinatoricIterator(double frozenValue, int frozenEdge)
 	{
-		final int nEdges = getSiblingCount();
-		final RealValue[][] particlesPerVar = new RealValue[nEdges][];
-		for (int i = 0; i < nEdges; ++i)
+		final Factor factor = _model;
+		final int nArgs = factor.getFactorArgumentCount();
+		final Value[][] particlesPerVar = new Value[nArgs][];
+		for (int i = 0; i < nArgs; ++i)
 		{
-			if (i == frozenEdge)
+			IConstantOrVariable arg = factor.getFactorArgument(i);
+			if (arg instanceof Constant)
 			{
-				particlesPerVar[i] = new RealValue[] { RealValue.create(frozenValue) };
+				particlesPerVar[i] = new Value[] { ((Constant)arg).value() };
+			}
+			else if (i == frozenEdge)
+			{
+				particlesPerVar[i] = new Value[] { RealValue.create(frozenValue) };
 			}
 			else
 			{
-				particlesPerVar[i] = getSibling(i).getParticleValueObjects();
+				Variable var = (Variable)arg;
+				IParticleBPVariable svar = requireNonNull(getParentGraph().getSolverVariable(var));
+				particlesPerVar[i] = svar.getParticleValueObjects();
 			}
 		}
-		return new CombinatoricIterator<>(RealValue.class, particlesPerVar);
+		return new CombinatoricIterator<>(Value.class, particlesPerVar);
 	}
 }

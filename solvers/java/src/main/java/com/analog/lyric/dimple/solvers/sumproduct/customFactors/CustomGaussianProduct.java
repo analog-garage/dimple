@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
@@ -41,10 +40,9 @@ public class CustomGaussianProduct extends GaussianFactorBase
 		if (factor.getSiblingCount() != 2)
 			throw new DimpleException("Factor must be of form a = b*c where b or c is a constant");
 		
-		FactorFunction ff = factor.getFactorFunction();
-		if (ff.getConstantCount() != 1)
+		if (factor.getConstantCount() != 1)
 			throw new DimpleException("Expected one constant");
-		_constant = (Double)ff.getConstants()[0];
+		_constant = factor.getConstantValues().get(0).getDouble();
 		if (_constant == 0)
 			throw new DimpleException("Constant of 0 not supported");
 		
@@ -97,8 +95,7 @@ public class CustomGaussianProduct extends GaussianFactorBase
 			return false;
 
 		// Must have exactly one constant
-		FactorFunction ff = factor.getFactorFunction();
-		if (ff.getConstantCount() != 1)
+		if (factor.getConstantCount() != 1)
 			return false;
 		
 		// Variables must be real and univariate
@@ -114,7 +111,7 @@ public class CustomGaussianProduct extends GaussianFactorBase
 		}
 		
 		// Constant must be non-zero
-		double constant = (Double)ff.getConstants()[0];
+		double constant = factor.getConstantValues().get(0).getDouble();
 		if (constant == 0)
 			return false;
 

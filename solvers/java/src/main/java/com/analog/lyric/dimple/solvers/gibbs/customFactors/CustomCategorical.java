@@ -26,9 +26,9 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.Categorical;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
@@ -128,29 +128,31 @@ public class CustomCategorical extends GibbsRealFactor implements IRealJointConj
 	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
-		FactorFunction factorFunction = _model.getFactorFunction();
+		final Factor factor = _model;
+		FactorFunction factorFunction = factor.getFactorFunction();
 		Categorical specificFactorFunction = (Categorical)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 		boolean hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 
 		final int prevNumParameterEdges = _numParameterEdges;
 		
 		// Pre-determine whether or not the parameters are constant
-		List<? extends Variable> siblings = _model.getSiblings();
+		List<? extends Variable> siblings = factor.getSiblings();
 		if (hasFactorFunctionConstructorConstants)
 		{
 			// The factor function has fixed parameters provided in the factor-function constructor
 			_numParameterEdges = 0;
-			_hasConstantOutputs = factorFunction.hasConstants();
+			_hasConstantOutputs = factor.hasConstants();
 			_parameterDimension = specificFactorFunction.getDimension();
 		}
 		else
 		{
-			boolean hasConstantParameters = factorFunction.isConstantIndex(PARAMETER_INDEX);
+			boolean hasConstantParameters = factor.isConstantIndex(PARAMETER_INDEX);
 			_numParameterEdges = hasConstantParameters ? 0 : 1;
-			_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(PARAMETER_INDEX + 1);
+			_hasConstantOutputs = factor.hasConstantAtOrAboveIndex(PARAMETER_INDEX + 1);
 			if (hasConstantParameters)
 			{
-				double[] constantParameters = (double[])factorFunction.getConstantByIndex(PARAMETER_INDEX);
+				double[] constantParameters =
+					requireNonNull(factor.getConstantValueByIndex(PARAMETER_INDEX)).getDoubleArray();
 				_parameterDimension = requireNonNull(constantParameters).length;
 			}
 			else
@@ -164,14 +166,14 @@ public class CustomCategorical extends GibbsRealFactor implements IRealJointConj
 		_constantOutputCounts = null;
 		if (_hasConstantOutputs)
 		{
-			Object[] constantValues = factorFunction.getConstants();
-			int[] constantIndices = factorFunction.getConstantIndices();
+			List<Value> constantValues = factor.getConstantValues();
+			int[] constantIndices = factor.getConstantIndices();
 			final int[] constantOutputCounts = _constantOutputCounts = new int[_parameterDimension];
 			for (int i = 0; i < constantIndices.length; i++)
 			{
 				if (hasFactorFunctionConstructorConstants || constantIndices[i] >= NUM_PARAMETERS)
 				{
-					int outputValue = FactorFunctionUtilities.toInteger(constantValues[i]);
+					int outputValue = constantValues.get(i).getInt();
 					constantOutputCounts[outputValue]++;	// Histogram among constant outputs
 				}
 			}

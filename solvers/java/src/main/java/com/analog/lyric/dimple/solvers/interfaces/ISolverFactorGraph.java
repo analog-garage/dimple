@@ -27,6 +27,7 @@ import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
+import com.analog.lyric.dimple.model.variables.IVariableToValue;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableBlock;
 import com.analog.lyric.dimple.schedulers.IScheduler;
@@ -36,7 +37,7 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.Matlab;
 
-public interface ISolverFactorGraph	extends ISolverNode
+public interface ISolverFactorGraph	extends ISolverNode, IVariableToValue
 {
 	// FIXME review new names!
 	

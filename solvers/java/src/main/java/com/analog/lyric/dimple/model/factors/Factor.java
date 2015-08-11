@@ -16,12 +16,13 @@
 
 package com.analog.lyric.dimple.model.factors;
 
+import static java.lang.String.*;
 import static java.util.Objects.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.Objects;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -38,10 +39,14 @@ import com.analog.lyric.dimple.model.core.FactorPort;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Ids;
 import com.analog.lyric.dimple.model.core.NodeType;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.DomainList;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.model.variables.Constant;
+import com.analog.lyric.dimple.model.variables.IConstantOrVariable;
+import com.analog.lyric.dimple.model.variables.IVariableToValue;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.options.DimpleOptions;
@@ -54,16 +59,45 @@ import cern.colt.list.IntArrayList;
 
 public class Factor extends FactorBase implements Cloneable
 {
+	// TODO rearrange methods
+	
+	/*-------
+	 * State
+	 */
+	
 	/**
 	 * Sentinel value for {@link #_directedTo} indicating it has not yet been set.
 	 */
 	private static final int[] NOT_YET_SET = new int[0];
 	
+	@Deprecated
 	private String _modelerFunctionName = "";
 	private FactorFunction _factorFunction;
 	protected @Nullable int [] _directedTo = NOT_YET_SET;
 	@Nullable int [] _directedFrom = null;
 	
+	/**
+	 * Represents arguments to factor function.
+	 * <p>
+	 * Includes all of the edge ids found in {@link _siblingEdges} in the same order, but with additional constant
+	 * ids inserted. If there are no constants, this field will simply point to {@link _siblingEdges}.
+	 */
+	private IntArrayList _factorArguments;
+
+	/**
+	 * Mapping from sibling number offset in {@code _siblingEdges} to corresponding offset in {@link _factorArguments}
+	 * <p>
+	 * Computed lazily.
+	 */
+	private int[] _siblingToFactorArgumentNumber = NOT_YET_SET;
+	
+	/**
+	 * If non-null provides a cumulative count of constants in {@link _factorArguments} upto a
+	 * given factor function argument index. This will be one greater than the size of {@link _factorArguments}.
+	 * <p>
+	 * Computed lazily
+	 */
+	private int[] _constantsBeforeFactorArgument = NOT_YET_SET;
 	
 	@Override
 	public final Factor asFactor()
@@ -88,6 +122,10 @@ public class Factor extends FactorBase implements Cloneable
 		return _modelerFunctionName;
 	}
 	
+	/*--------------
+	 * Construction
+	 */
+	
 	@Internal
 	public Factor(FactorFunction factorFunc)
 	{
@@ -95,6 +133,7 @@ public class Factor extends FactorBase implements Cloneable
 		
 		_factorFunction = factorFunc;
 		_modelerFunctionName = factorFunc.getName();
+		_factorArguments = _siblingEdges;
 	}
 	
 	protected Factor(Factor that)
@@ -102,6 +141,8 @@ public class Factor extends FactorBase implements Cloneable
 		super(that);
 		_modelerFunctionName = that._modelerFunctionName;
 		_factorFunction = that._factorFunction; // clone?
+		// Note that this does not copy the constants or the edges
+		_factorArguments = _siblingEdges;
 		int[] directedTo = _directedTo = that._directedTo;
 		if (directedTo != null && directedTo != NOT_YET_SET && directedTo != ArrayUtil.EMPTY_INT_ARRAY)
 		{
@@ -114,18 +155,17 @@ public class Factor extends FactorBase implements Cloneable
 		}
 	}
 	
-//	public Factor(int id,VariableBase [] variables, String modelerFunctionName)
-//	{
-//		super(id);
-//
-//		_modelerFunctionName = modelerFunctionName;
-//		for (int i = 0; i < variables.length; i++)
-//		{
-//			connect(variables[i]);
-//			variables[i].connect(this);
-//		}
-//	}
-
+	/**
+	 * @category internal
+	 */
+	@Override
+	@Internal
+	protected void setFactorArguments(int[] argids)
+	{
+		_factorArguments = new IntArrayList(argids);
+		forgetConstantInfo();
+	}
+	
 	public IFactorTable getFactorTable()
 	{
 		return getFactorFunction().getFactorTable(this);
@@ -162,7 +202,8 @@ public class Factor extends FactorBase implements Cloneable
 		if (_factorFunction.isDirected())
 		{
 			// Automatically set direction if inherent in factor function
-			setDirectedTo(Objects.requireNonNull(_factorFunction.getDirectedToIndices(getSiblingCount())));
+			int[] to = requireNonNull(_factorFunction.getDirectedToIndices(getFactorArgumentCount()));
+			setDirectedTo(getEdgesFromIndices(to));
 		}
 	}
 	
@@ -231,12 +272,10 @@ public class Factor extends FactorBase implements Cloneable
 	}
 	
 	/**
-	 * Removes edges to all variables that have fixed values and modifies the
-	 * factor function to incorporate those values.
+	 * Removes edges to all variables that have fixed values and replace with constants.
 	 * <p>
 	 * For {@link DiscreteFactor}s, this will replace the factor function with one using a newly
-	 * generated factor table. For other factor types this wraps the factor function with
-	 * {@link FactorFunctionWithConstants}.
+	 * generated factor table.
 	 * </p>
 	 * @return the number of variable edges that were removed.
 	 * 
@@ -253,6 +292,10 @@ public class Factor extends FactorBase implements Cloneable
 		final FactorGraph parent = requireNonNull(getParentGraph());
 		
 		// Visit in reverse order so that disconnect is safe.
+		
+		// FIXME Constant - this is not correct now that constants are in factors
+		// but there aren't currently any tests that exercise this code for the
+		// non-discrete case.
 		
 		for (int i = nEdges; --i>=0;)
 		{
@@ -328,6 +371,9 @@ public class Factor extends FactorBase implements Cloneable
 		return new FactorFunctionWithConstants(oldFunction,	constantValues,	constantIndices);
 	}
 	
+	/**
+	 * The domains of the adjacent variables in order.
+	 */
 	public DomainList<?> getDomainList()
 	{
 		int numVariables = getSiblingCount();
@@ -342,7 +388,28 @@ public class Factor extends FactorBase implements Cloneable
 		return DomainList.create(getDirectedTo(), domains);
 	}
 	
-
+	public DomainList<?> getDomainListWithConstants()
+	{
+		int nArgs = getFactorArgumentCount();
+		Domain [] domains = new Domain[nArgs];
+		
+		for (int i = 0; i < nArgs; i++)
+		{
+			IConstantOrVariable arg = getFactorArgument(i);
+			if (arg instanceof Constant)
+			{
+				// Make a single-element discrete domain for the constant value.
+				domains[i] = DiscreteDomain.create(requireNonNull(((Constant)arg).value().getObject()));
+			}
+			else
+			{
+				domains[i] = ((Variable)arg).getDomain();
+			}
+		}
+		
+		return DomainList.create(getDirectedTo(), domains);
+	}
+	
 	@Override
 	public Factor clone()
 	{
@@ -358,12 +425,13 @@ public class Factor extends FactorBase implements Cloneable
 	@Override
 	public void initialize()
 	{
-		if (_factorFunction.isDirected())	// Automatically set direction if inherent in factor function
+		final FactorFunction func = _factorFunction;
+		if (func.isDirected())	// Automatically set direction if inherent in factor function
 		{
-			setDirectedTo(Objects.requireNonNull(_factorFunction.getDirectedToIndices(getSiblingCount())));
+			setDirectedTo(getEdgesFromIndices(requireNonNull(func.getDirectedToIndices(getFactorArgumentCount()))));
 			if (_factorFunction.isDeterministicDirected())
 			{
-				final int[] directedTo = Objects.requireNonNull(_directedTo);
+				final int[] directedTo = requireNonNull(_directedTo);
 				for (int to : directedTo)
 				{
 					getSibling(to).setDeterministicOutput();
@@ -489,6 +557,32 @@ public class Factor extends FactorBase implements Cloneable
 		else
 		{
 			return EdgeDirection.TO_FACTOR;
+		}
+	}
+	
+	public int getFactorArgumentCount()
+	{
+		return _factorArguments.size();
+	}
+	
+	@SuppressWarnings("null")
+	public IConstantOrVariable getFactorArgument(int i)
+	{
+		final FactorGraph graph = requireParentGraph();
+		int id = _factorArguments.get(i);
+		int index = Ids.indexFromLocalId(id);
+
+		switch (Ids.typeIndexFromLocalId(id))
+		{
+		case Ids.UNKNOWN_TYPE:
+		case Ids.EDGE_TYPE:
+			return graph.getGraphEdgeState(index).getVariable(graph);
+			
+		case Ids.CONSTANT_TYPE:
+			return graph.getConstantByLocalId(id);
+			
+		default:
+			throw new IllegalStateException();
 		}
 	}
 	
@@ -625,5 +719,459 @@ public class Factor extends FactorBase implements Cloneable
 		}
 		
 		return Arrays.binarySearch(to, edge) >= 0;
+	}
+	
+	/**
+	 * Evaluates energy for factor for given values.
+	 * <p>
+	 * Calls underlying {@linkplain #getFactorFunction() factor function} after inserting
+	 * any constant values held by the factor.
+	 * <p>
+	 * @param values specifies the values of the sibling variables to be evaluated.
+	 * @since 0.08
+	 */
+	public double evalEnergy(Value[] values)
+	{
+		final int nEdges = getSiblingCount();
+		final int nArgs = getFactorArgumentCount();
+		
+		if (values.length != getSiblingCount())
+		{
+			throw new IllegalArgumentException("Values length does not match number of edges");
+		}
+	
+		if (nEdges != nArgs)
+		{
+			// Fill in constant values
+			Value[] tmp = new Value[nArgs];
+			for (int i = 0, j = 0; i < nArgs; ++i)
+			{
+				Value value = getConstantValueByIndex(i);
+				tmp[i] = value != null ? value : values[j++];
+			}
+			values = tmp;
+		}
+		
+		return _factorFunction.evalEnergy(values);
+	}
+	
+	/**
+	 * Evaluates energy for factor for given values.
+	 * <p>
+	 * Calls underlying {@linkplain #getFactorFunction() factor function} after inserting
+	 * any constant values held by the factor.
+	 * <p>
+	 * @param values specifies the values of the sibling variables to be evaluated.
+	 * @since 0.08
+	 */
+	public double evalEnergy(Object[] values)
+	{
+		final int nEdges = getSiblingCount();
+		final int nArgs = getFactorArgumentCount();
+		
+		if (values.length != getSiblingCount())
+		{
+			throw new IllegalArgumentException("Values length does not match number of edges");
+		}
+	
+		if (nEdges != nArgs)
+		{
+			// Fill in constant values
+			Value[] tmp = new Value[nArgs];
+			for (int i = 0, j = 0; i < nArgs; ++i)
+			{
+				Value value = getConstantValueByIndex(i);
+				if (value != null)
+				{
+					tmp[i] = value;
+				}
+				else
+				{
+					Variable var = getSibling(j);
+					tmp[i] = Value.create(var.getDomain(), values[j]);
+					++j;
+				}
+			}
+			values = tmp;
+		}
+		
+		return _factorFunction.evalEnergy(values);
+	}
+
+	// FIXME document
+	public double evalEnergy(IVariableToValue v2v)
+	{
+		return _factorFunction.evalEnergy(fillFactorArguments(v2v, null));
+	}
+	
+	// FIXME document
+	public Value[] fillFactorArguments(IVariableToValue v2v, @Nullable Value[] values)
+	{
+		final int nargs = getFactorArgumentCount();
+		if (values == null || values.length != nargs)
+		{
+			values = new Value[nargs];
+		}
+		for (int i = 0; i < nargs; ++i)
+		{
+			IConstantOrVariable arg = getFactorArgument(i);
+			
+			if (arg instanceof Constant)
+			{
+				values[i] = ((Constant)arg).value();
+			}
+			else
+			{
+				Variable var = (Variable)arg;
+				Value value = v2v.varToValue(var);
+				if (value == null)
+				{
+					throw new IllegalStateException(format("There is no value for %s", var));
+				}
+				values[i] = value;
+			}
+		}
+		return values;
+	}
+	
+	/*-------------------
+	 * Protected methods
+	 */
+
+	/**
+	 * @category internal
+	 */
+	@Internal
+	@Override
+	protected void addSiblingEdgeState(EdgeState edge)
+	{
+		super.addSiblingEdgeState(edge);
+		if (_factorArguments != _siblingEdges)
+		{
+			final int edgeNumber = edge.getFactorToVariableEdgeNumber();
+			_factorArguments.add(edgeNumber);
+			forgetConstantInfo();
+		}
+	}
+	
+	/**
+	 * @category internal
+	 */
+	@Internal
+	@Override
+	protected void removeSiblingEdgeState(EdgeState edge)
+	{
+		if (_factorArguments != _siblingEdges)
+		{
+			final int edgeNumber = edge.getFactorToVariableEdgeNumber();
+			int argumentIndex;
+			if (_siblingToFactorArgumentNumber != NOT_YET_SET)
+			{
+				argumentIndex = _siblingToFactorArgumentNumber[edgeNumber];
+			}
+			else
+			{
+				argumentIndex = 0;
+				for (int sibling = 0; sibling <= edgeNumber; ++argumentIndex)
+				{
+					if (Ids.typeIndexFromLocalId(_factorArguments.get(argumentIndex)) != Ids.CONSTANT_TYPE)
+					{
+						++sibling;
+					}
+				}
+			}
+			_factorArguments.remove(argumentIndex);
+			forgetConstantInfo();
+		}
+		super.removeSiblingEdgeState(edge);
+	}
+	
+	/**
+	 * @category internal
+	 */
+	@Override
+	@Internal
+	protected void replaceSiblingEdgeState(EdgeState oldEdge, EdgeState newEdge)
+	{
+		super.replaceSiblingEdgeState(oldEdge, newEdge);
+		if (_factorArguments != _siblingEdges)
+		{
+			final int newEdgeNumber = newEdge.getFactorToVariableEdgeNumber();
+			final int argumentIndex = getIndexByEdge(newEdgeNumber);
+			_factorArguments.set(argumentIndex, newEdgeNumber);
+		}
+	}
+
+	/*----------------------------------------------
+	 * Formerly FactorFunctionWithConstants methods
+	 */
+	
+	// TODO - rename these methods as needed given the change in context
+	
+	@SuppressWarnings("deprecation")
+	public boolean hasConstants()
+	{
+		return _factorArguments != _siblingEdges
+			// FIXME
+			|| _factorFunction.hasConstants();
+	}
+	
+	@SuppressWarnings("deprecation")
+	public int getConstantCount()
+	{
+		// FIXME
+		if (_factorArguments == _siblingEdges)
+		{
+			return _factorFunction.getConstantCount();
+		}
+		
+		return _factorArguments.size() - _siblingEdges.size();
+	}
+	
+	@SuppressWarnings("deprecation")
+	public List<Value> getConstantValues()
+	{
+		if (_factorArguments == _siblingEdges || _parentGraph == null)
+		{
+			// FIXME
+			return _factorFunction.getConstantValues();
+//			return Collections.emptyList();
+		}
+		
+		final int n = getConstantCount();
+		FactorGraph graph = requireParentGraph();
+		final Value[] constants = new Value[n];
+		for (int i = 0, j = 0; j < n; ++i)
+		{
+			Constant constant = graph.getConstantByLocalId(_factorArguments.get(i));
+			if (constant != null)
+			{
+				constants[j++] = constant.value();
+			}
+		}
+		
+		return Arrays.asList(constants);
+	}
+	
+	@SuppressWarnings("deprecation")
+	public int[] getConstantIndices()
+	{
+		// FIXME
+		if (_factorArguments == _siblingEdges)
+		{
+			return _factorFunction.getConstantIndices();
+		}
+
+		if (!hasConstants())
+		{
+			return ArrayUtil.EMPTY_INT_ARRAY;
+		}
+		
+		final int n = getConstantCount();
+		int[] indices = new int[n];
+		for (int i = 0, j = 0; j < n; ++i)
+		{
+			if (Ids.typeIndexFromLocalId(_factorArguments.get(i)) == Ids.CONSTANT_TYPE)
+			{
+				indices[j++] = i;
+			}
+		}
+		
+		return indices;
+	}
+	
+	@SuppressWarnings("deprecation")
+	public boolean isConstantIndex(int index)
+	{
+		// FIXME
+		if (_factorArguments == _siblingEdges)
+		{
+			return _factorFunction.isConstantIndex(index);
+		}
+
+		return Ids.typeIndexFromLocalId(_factorArguments.get(index)) == Ids.CONSTANT_TYPE;
+	}
+	
+	public boolean hasConstantOfType(int index, Class<?> type)
+	{
+		Value value = getConstantValueByIndex(index);
+		return value != null && type.isInstance(value.getObject());
+	}
+	
+	public boolean hasConstantsInIndexRange(int minIndex, int maxIndex)
+	{
+		return numConstantsInIndexRange(minIndex, maxIndex) > 0;
+	}
+	
+	public boolean hasConstantAtOrAboveIndex(int index)
+	{
+		return numConstantsAtOrAboveIndex(index) > 0;
+	}
+	
+	public boolean hasConstantAtOrBelowIndex(int index)
+	{
+		return numConstantsAtOrBelowIndex(index) > 0;
+	}
+
+	@SuppressWarnings("deprecation")
+	public int numConstantsAtOrAboveIndex(int index)
+	{
+		// FIXME - remove when FactorFunctionWithConstants is removed
+		if (_factorArguments == _siblingEdges)
+		{
+			return _factorFunction.numConstantsAtOrAboveIndex(index);
+		}
+		
+		return computeConstantInfo() ? getConstantCount() - _constantsBeforeFactorArgument[index] : 0;
+	}
+	
+	@SuppressWarnings("deprecation")
+	public int numConstantsAtOrBelowIndex(int index)
+	{
+		// FIXME - remove when FactorFunctionWithConstants is removed
+		if (_factorArguments == _siblingEdges)
+		{
+			return _factorFunction.numConstantsAtOrBelowIndex(index);
+		}
+		
+		return computeConstantInfo() ? _constantsBeforeFactorArgument[index + 1] : 0;
+	}
+	
+	@SuppressWarnings("deprecation")
+	public int numConstantsInIndexRange(int minIndex, int maxIndex)
+	{
+		// FIXME - remove when FactorFunctionWithConstants is removed
+		if (_factorArguments == _siblingEdges)
+		{
+			return _factorFunction.numConstantsInIndexRange(minIndex, maxIndex);
+		}
+		
+		if (computeConstantInfo())
+		{
+			int[] constantCounts = _constantsBeforeFactorArgument;
+			return constantCounts[maxIndex + 1] - constantCounts[minIndex];
+		}
+
+		return 0;
+	}
+	
+	@SuppressWarnings("deprecation")
+	/**
+	 * Returns {@link Constant#value} for given factor argument {@code index} or null if not a constant.
+	 * @since 0.08
+	 */
+	public @Nullable Value getConstantValueByIndex(int index)
+	{
+		// FIXME - remove when FactorFunctionWithConstants is removed
+		if (_factorArguments == _siblingEdges)
+		{
+			return _factorFunction.getConstantValueByIndex(index);
+		}
+		
+		FactorGraph graph = _parentGraph;
+		if (graph != null)
+		{
+			Constant constant = graph.getConstantByLocalId(_factorArguments.get(index));
+			if (constant != null)
+			{
+				return constant.value();
+			}
+		}
+		return null;
+	}
+	
+	@SuppressWarnings("deprecation")
+	/**
+	 * Returns sibling index corresponding to given factor argument index.
+	 * <p>
+	 * This should only be used if {@code index} does not refer to a constant.
+	 * @since 0.08
+	 */
+	public int getEdgeByIndex(int index)
+	{
+		// FIXME - remove when FactorFunctionWithConstants is removed
+		if (_factorArguments == _siblingEdges)
+		{
+			return _factorFunction.getEdgeByIndex(index);
+		}
+		
+		return computeConstantInfo() ? index - _constantsBeforeFactorArgument[index] : index;
+	}
+	
+	public int[] getEdgesFromIndices(int[] indices)
+	{
+		if (hasConstants())
+		{
+			// Filter out constant indices
+			IntArrayList tmp = new IntArrayList(getSiblingCount());
+			for (int index : indices)
+			{
+				if (!isConstantIndex(index))
+				{
+					tmp.add(getEdgeByIndex(index));
+				}
+			}
+			tmp.trimToSize();
+			indices = tmp.elements();
+		}
+		
+		return indices;
+	}
+	
+	@SuppressWarnings("deprecation")
+	public int getIndexByEdge(int edge)
+	{
+		// FIXME - remove when FactorFunctionWithConstants is removed
+		if (_factorArguments == _siblingEdges)
+		{
+			return _factorFunction.getIndexByEdge(edge);
+		}
+
+		return computeConstantInfo() ? _siblingToFactorArgumentNumber[edge] : edge;
+	}
+	
+	private void forgetConstantInfo()
+	{
+		_constantsBeforeFactorArgument = NOT_YET_SET;
+		_siblingToFactorArgumentNumber = NOT_YET_SET;
+	}
+	
+	private boolean computeConstantInfo()
+	{
+		if (_constantsBeforeFactorArgument == NOT_YET_SET)
+		{
+			final IntArrayList factorArguments = _factorArguments;
+			if (factorArguments == _siblingEdges)
+			{
+				// There are no constants.
+				_constantsBeforeFactorArgument = ArrayUtil.EMPTY_INT_ARRAY;
+				return false;
+			}
+			
+			final int nArgs = factorArguments.size();
+			final int[] constantsBeforeFactorArgument = new int[nArgs + 1];
+			final int[] siblingToFactorArgumentNumber= new int[_siblingEdges.size()];
+			int nConstants = 0;
+			for (int sibling = 0, arg = 0; arg < nArgs; ++arg)
+			{
+				constantsBeforeFactorArgument[arg] = nConstants;
+				if (Ids.typeIndexFromLocalId(_factorArguments.get(arg)) == Ids.CONSTANT_TYPE)
+				{
+					++nConstants;
+				}
+				else
+				{
+					siblingToFactorArgumentNumber[sibling++] = arg;
+				}
+			}
+			constantsBeforeFactorArgument[nArgs] = nConstants;
+			
+			_constantsBeforeFactorArgument = constantsBeforeFactorArgument;
+			_siblingToFactorArgumentNumber = siblingToFactorArgumentNumber;
+			
+			return true;
+		}
+		
+		return _constantsBeforeFactorArgument.length != 0;
 	}
 }

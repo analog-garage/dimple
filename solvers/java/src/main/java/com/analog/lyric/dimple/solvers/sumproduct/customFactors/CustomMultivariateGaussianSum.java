@@ -16,10 +16,12 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
+import java.util.List;
+
 import com.analog.lyric.collect.ArrayUtil;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
@@ -106,17 +108,17 @@ public class CustomMultivariateGaussianSum extends MultivariateGaussianFactorBas
 		super.initialize();
 		
 		// Pre-compute sum associated with any constant edges
-		FactorFunction factorFunction = _model.getFactorFunction();
-		_sumPort = factorFunction.isConstantIndex(_sumIndex) ? -1 : _sumIndex;	// If sum isn't a variable, then set port to invalid value
+		final Factor factor = _model;
+		_sumPort = factor.isConstantIndex(_sumIndex) ? -1 : _sumIndex;	// If sum isn't a variable, then set port to invalid value
 		int dimension = getSiblingEdgeState(0).varToFactorMsg.getVectorLength();
 		_constantSum = new double[dimension];	// Assume all zero
-		if (factorFunction.hasConstants())
+		if (_model.hasConstants())
 		{
-			Object[] constantValues = factorFunction.getConstants();
-			int[] constantIndices = factorFunction.getConstantIndices();
-			for (int i = 0; i < constantValues.length; i++)
+			final List<Value> constantValues = factor.getConstantValues();
+			int[] constantIndices = factor.getConstantIndices();
+			for (int i = 0, n = constantValues.size(); i < n; i++)
 			{
-				double[] constantValue = (double[])constantValues[i];
+				double[] constantValue = constantValues.get(i).getDoubleArray();
 				if (constantIndices[i] == _sumIndex)
 					for (int v = 0; v < dimension; v++)
 						_constantSum[v] -= constantValue[v];	// Constant sum value counts as negative

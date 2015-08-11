@@ -16,9 +16,11 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
+import java.util.List;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductFiniteFieldVariable;
@@ -40,7 +42,7 @@ public class CustomFiniteFieldProjection extends SFiniteFieldFactor
 		if (nVars <= 1)
 			throw new DimpleException("need to specify at least one bit for projection");
 		
-		final int nEdges = _model.getSiblingCount();
+		final int nEdges = factor.getSiblingCount();
 		
 		//First variable is the FiniteFieldVariable
 		//Other variables should be bits.
@@ -51,13 +53,11 @@ public class CustomFiniteFieldProjection extends SFiniteFieldFactor
 			_portIndex2bitIndex[i] = -1;
 		
 		//get constant value and make sure it's in range
-		FactorFunction ff = _model.getFactorFunction();
-		int [] constIndices = ff.getConstantIndices();
-		Object [] constants = ff.getConstants();
-		if (constIndices.length != 1)
+		final List<Value> constants = factor.getConstantValues();
+		if (constants.size()!= 1)
 			throw new DimpleException("expected one constant to specify the array of bit positions");
 
-		double [] domain = (double[])constants[0];
+		double [] domain = constants.get(0).getDoubleArray();
 		
 		if (nVars != 1+domain.length)
 			throw new DimpleException("expect finite field variable, bit positions, and bits");

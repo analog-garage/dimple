@@ -30,6 +30,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.FactorGraphIterables;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.model.variables.IVariableToValue;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.google.common.collect.Lists;
 
@@ -38,7 +39,7 @@ import com.google.common.collect.Lists;
  * @since 0.08
  * @author Christopher Barber
  */
-public class DataStack extends AbstractList<DataLayer<?>>
+public class DataStack extends AbstractList<DataLayer<?>> implements IVariableToValue
 {
 	/*-------
 	 * State
@@ -88,6 +89,17 @@ public class DataStack extends AbstractList<DataLayer<?>>
 	public int size()
 	{
 		return _stack.size();
+	}
+	
+	/*------------------
+	 * IVariableToValue
+	 */
+
+	@Override
+	@Nullable
+	public Value varToValue(Variable var)
+	{
+		return getValue(var);
 	}
 	
 	/*-------------------
@@ -159,23 +171,11 @@ public class DataStack extends AbstractList<DataLayer<?>>
 			}
 		}
 		
+		Value[] values = null;
 		for (Factor factor : FactorGraphIterables.factors(root))
 		{
-			final int nVars = factor.getSiblingCount();
-			final Value[] values = new Value[nVars];
-			
-			for (int i = 0; i < nVars; ++i)
-			{
-				Variable var = factor.getSibling(i);
-				Value value = getValue(var);
-				if (value == null)
-				{
-					throw new IllegalStateException(format("There is no value for %s", var));
-				}
-				values[i] = value;
-			}
-			
-			energy += factor.getFactorFunction().evalEnergy(values);
+			values = factor.fillFactorArguments(this, null);
+			energy += factor.evalEnergy(values);
 			if (energy == Double.POSITIVE_INFINITY)
 			{
 				return energy;

@@ -116,7 +116,8 @@ public class CustomPoisson extends GibbsRealFactor implements IRealConjugateFact
 	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
-		FactorFunction factorFunction = _model.getFactorFunction();
+		final Factor factor = _model;
+		FactorFunction factorFunction = factor.getFactorFunction();
 		Poisson specificFactorFunction = (Poisson)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 
 		final int prevLambdaParameterEdge = _lambdaParameterEdge;
@@ -128,31 +129,31 @@ public class CustomPoisson extends GibbsRealFactor implements IRealConjugateFact
 		_outputVariable = null;
 		if (specificFactorFunction.hasConstantLambdaParameter())		// Lambda parameter is constructor constant
 		{
-			_hasConstantOutput = factorFunction.isConstantIndex(OUTPUT_INDEX_FIXED_LAMBDA);
+			_hasConstantOutput = factor.isConstantIndex(OUTPUT_INDEX_FIXED_LAMBDA);
 			if (_hasConstantOutput)
 			{
 				_constantOutputValue =
-					requireNonNull((Integer)factorFunction.getConstantByIndex(OUTPUT_INDEX_FIXED_LAMBDA));
+					requireNonNull(factor.getConstantValueByIndex(OUTPUT_INDEX_FIXED_LAMBDA)).getInt();
 			}
 			else
 			{
-				int outputEdge = factorFunction.getEdgeByIndex(OUTPUT_INDEX_FIXED_LAMBDA);
+				int outputEdge = factor.getEdgeByIndex(OUTPUT_INDEX_FIXED_LAMBDA);
 				_outputVariable = (GibbsDiscrete)getSibling(outputEdge);
 			}
 		}
 		else	// Variable or constant lambda parameter
 		{
-			if (!factorFunction.isConstantIndex(LAMBDA_PARAMETER_INDEX))
-				_lambdaParameterEdge = factorFunction.getEdgeByIndex(LAMBDA_PARAMETER_INDEX);
+			if (!factor.isConstantIndex(LAMBDA_PARAMETER_INDEX))
+				_lambdaParameterEdge = factor.getEdgeByIndex(LAMBDA_PARAMETER_INDEX);
 			
-			_hasConstantOutput = factorFunction.isConstantIndex(OUTPUT_INDEX);
+			_hasConstantOutput = factor.isConstantIndex(OUTPUT_INDEX);
 			if (_hasConstantOutput)
 			{
-				_constantOutputValue = requireNonNull((Integer)factorFunction.getConstantByIndex(OUTPUT_INDEX));
+				_constantOutputValue = requireNonNull(factor.getConstantValueByIndex(OUTPUT_INDEX)).getInt();
 			}
 			else
 			{
-				int outputEdge = factorFunction.getEdgeByIndex(OUTPUT_INDEX);
+				int outputEdge = factor.getEdgeByIndex(OUTPUT_INDEX);
 				_outputVariable = (GibbsDiscrete)getSibling(outputEdge);
 			}
 		}

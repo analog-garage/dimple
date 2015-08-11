@@ -122,15 +122,14 @@ public class MatrixVectorProduct extends FactorFunction
 		return indexList;
 	}
     
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     public final @Nullable int[] getDirectedToIndicesForInput(Factor factor, int inputEdge)
     {
-    	final FactorFunction function = factor.getFactorFunction();
-    	
     	final int outLength = _outLength;
     	final int inLength = _inLength;
     	
-    	final int nEdges = factor.getSiblingCount() + function.getConstantCount();
+    	final int nEdges = factor.getFactorArgumentCount();
     	final int nInputEdges = nEdges - outLength;
     	
     	final int matrixSize = outLength * inLength;
@@ -140,12 +139,12 @@ public class MatrixVectorProduct extends FactorFunction
     	int vectorOffset = matrixOffset;
     	
     	if (nInputEdges == matrixSize + vectorSize ||
-    		nInputEdges == matrixSize + 1 && function.getConstantByIndex(nEdges - 1) instanceof double[])
+    		nInputEdges == matrixSize + 1 && factor.hasConstantOfType(nEdges - 1, double[].class))
     	{
     		vectorOffset += matrixSize;
     	}
     	else if (nInputEdges == 2 ||
-    		nInputEdges == vectorSize + 1 && function.getConstantByIndex(matrixOffset) instanceof double[][])
+    		nInputEdges == vectorSize + 1 && factor.hasConstantOfType(matrixOffset, double[][].class))
     	{
     		vectorOffset += 1;
     	}

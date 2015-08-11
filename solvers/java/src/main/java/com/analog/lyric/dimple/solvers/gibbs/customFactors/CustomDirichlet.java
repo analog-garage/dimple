@@ -119,7 +119,8 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
-		FactorFunction factorFunction = _model.getFactorFunction();
+		final Factor factor = _model;
+		FactorFunction factorFunction = factor.getFactorFunction();
 		Dirichlet specificFactorFunction = (Dirichlet)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 
 		final int prevNumParameterEdges = _numParameterEdges;
@@ -136,13 +137,13 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 		}
 		else // Variable or constant parameter
 		{
-			_hasConstantParameters = factorFunction.isConstantIndex(PARAMETER_INDEX);
+			_hasConstantParameters = factor.isConstantIndex(PARAMETER_INDEX);
 			if (_hasConstantParameters)
 			{
 				_numParameterEdges = 0;
 				@SuppressWarnings("null")
 				final double[] constantAlphaMinusOne = _constantAlphaMinusOne =
-					minusOne((double[])factorFunction.getConstantByIndex(PARAMETER_INDEX));
+					minusOne(factor.getConstantValueByIndex(PARAMETER_INDEX).getDoubleArray());
 				_alphaVariable = null;
 				_dimension = constantAlphaMinusOne.length;
 			}
@@ -150,7 +151,7 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 			{
 				_numParameterEdges = 1;
 				_constantAlphaMinusOne = null;
-				_alphaVariable = (GibbsRealJoint)getSibling(factorFunction.getEdgeByIndex(PARAMETER_INDEX));
+				_alphaVariable = (GibbsRealJoint)getSibling(factor.getEdgeByIndex(PARAMETER_INDEX));
 				_dimension = requireNonNull(_alphaVariable).getDimension();
 			}
 		}

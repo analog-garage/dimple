@@ -26,9 +26,9 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.Bernoulli;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsBetaEdge;
@@ -135,15 +135,16 @@ public class CustomBernoulli extends GibbsRealFactor implements IRealConjugateFa
 	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
-		FactorFunction factorFunction = _model.getFactorFunction();
+		final Factor factor = _model;
+		FactorFunction factorFunction = factor.getFactorFunction();
 		Bernoulli specificFactorFunction = (Bernoulli)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
-		boolean hasFactorFunctionConstants = factorFunction.hasConstants();
+		boolean hasFactorFunctionConstants = factor.hasConstants();
 		boolean hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 
 		final int prevNumParameterEdges = _numParameterEdges;
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		List<? extends Variable> siblings = _model.getSiblings();
+		List<? extends Variable> siblings = factor.getSiblings();
 		_numParameterEdges = NUM_PARAMETERS;
 		_hasConstantOutputs = false;
 		if (hasFactorFunctionConstructorConstants)
@@ -155,8 +156,8 @@ public class CustomBernoulli extends GibbsRealFactor implements IRealConjugateFa
 		else if (hasFactorFunctionConstants)
 		{
 			// Factor function has constants, figure out which are parameters and which are discrete variables
-			_numParameterEdges = factorFunction.isConstantIndex(PARAMETER_INDEX) ? 0 : 1;
-			_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(PARAMETER_INDEX + 1);
+			_numParameterEdges = factor.isConstantIndex(PARAMETER_INDEX) ? 0 : 1;
+			_hasConstantOutputs = factor.hasConstantAtOrAboveIndex(PARAMETER_INDEX + 1);
 		}
 
 		
@@ -165,13 +166,13 @@ public class CustomBernoulli extends GibbsRealFactor implements IRealConjugateFa
 		_constantOutputOneCount = 0;
 		if (_hasConstantOutputs)
 		{
-			Object[] constantValues = factorFunction.getConstants();
-			int[] constantIndices = factorFunction.getConstantIndices();
+			final List<Value> constantValues = factor.getConstantValues();
+			int[] constantIndices = factor.getConstantIndices();
 			for (int i = 0; i < constantIndices.length; i++)
 			{
 				if (hasFactorFunctionConstructorConstants || constantIndices[i] >= NUM_PARAMETERS)
 				{
-					int outputValue = FactorFunctionUtilities.toInteger(constantValues[i]);
+					int outputValue = constantValues.get(i).getInt();
 					if (outputValue == 0)
 						_constantOutputZeroCount++;
 					else

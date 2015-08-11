@@ -229,13 +229,13 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 		final int[] inputPortMap = _inputPortMap = new int[numInputEdges];
 		if (_hasFactorFunctionConstants)
 		{
-			FactorFunction factorFunction = _model.getFactorFunction();
-			int numConstants = factorFunction.getConstantIndices().length;
+			final Factor factor = _model;
+			int numConstants = factor.getConstantCount();
 			
 			int numIndices = nEdges + numConstants;
 			for (int index = 0, port = 0, selectorIndex = 0; index < numIndices; index++)
 			{
-				if (factorFunction.isConstantIndex(index))
+				if (factor.isConstantIndex(index))
 				{
 					if (index > FIRST_INPUT_PORT_INDEX)
 						selectorIndex++;
@@ -260,15 +260,16 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
-		FactorFunction factorFunction = _model.getFactorFunction();
+		final Factor factor = _model;
+		FactorFunction factorFunction = factor.getFactorFunction();
 		Multiplexer specificFactorFunction = (Multiplexer)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
-		_hasFactorFunctionConstants = factorFunction.hasConstants();
+		_hasFactorFunctionConstants = factor.hasConstants();
 		if (specificFactorFunction.hasSmoothing())
 		{
 			_incompatibleWithConjugateSampling = true;
 			return;
 		}
-		if (factorFunction.isConstantIndex(OUTPUT_INDEX))
+		if (factor.isConstantIndex(OUTPUT_INDEX))
 		{
 			_incompatibleWithConjugateSampling = true;
 			return;
@@ -278,21 +279,21 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 		_selectorVariable = null;
 		_selectorConstantValue = -1;
 		
-		_outputPortNumber = factorFunction.getEdgeByIndex(OUTPUT_INDEX);	// Must be a variable if not returned already
+		_outputPortNumber = factor.getEdgeByIndex(OUTPUT_INDEX);	// Must be a variable if not returned already
 		ISolverVariable outputVariable = getSibling(_outputPortNumber);
 		if (outputVariable instanceof ISolverRealVariableGibbs)
 			_outputVariable = (ISolverRealVariableGibbs)outputVariable;
 		_outputVariableSiblingPortIndex = _model.getReverseSiblingNumber(_outputPortNumber);
 
-		_hasConstantSelector = factorFunction.isConstantIndex(SELECTOR_INDEX);
+		_hasConstantSelector = factor.isConstantIndex(SELECTOR_INDEX);
 		if (_hasConstantSelector)
 		{
-			_selectorConstantValue = requireNonNull((Integer)factorFunction.getConstantByIndex(SELECTOR_INDEX));
+			_selectorConstantValue = requireNonNull(factor.getConstantValueByIndex(SELECTOR_INDEX)).getInt();
 			_firstInputPortNumber = FIRST_INPUT_PORT_INDEX - 1;
 		}
 		else
 		{
-			_selectorPortNumber = factorFunction.getEdgeByIndex(SELECTOR_INDEX);
+			_selectorPortNumber = factor.getEdgeByIndex(SELECTOR_INDEX);
 			_selectorVariable = (GibbsDiscrete)getSibling(_selectorPortNumber);
 			_firstInputPortNumber = FIRST_INPUT_PORT_INDEX;
 		}

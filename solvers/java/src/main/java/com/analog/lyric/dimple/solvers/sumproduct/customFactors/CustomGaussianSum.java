@@ -16,11 +16,12 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
+import java.util.List;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
@@ -112,19 +113,20 @@ public class CustomGaussianSum extends GaussianFactorBase
 		super.initialize();
 		
 		// Pre-compute sum associated with any constant edges
-		FactorFunction factorFunction = _model.getFactorFunction();
-		_sumPort = factorFunction.isConstantIndex(_sumIndex) ? -1 : _sumIndex;	// If sum isn't a variable, then set port to invalid value
+		final Factor factor = _model;
+		_sumPort = factor.isConstantIndex(_sumIndex) ? -1 : _sumIndex;	// If sum isn't a variable, then set port to invalid value
 		_constantSum = 0;
-		if (factorFunction.hasConstants())
+		if (_model.hasConstants())
 		{
-			Object[] constantValues = factorFunction.getConstants();
-			int[] constantIndices = factorFunction.getConstantIndices();
-			for (int i = 0; i < constantValues.length; i++)
+			List<Value> constantValues = factor.getConstantValues();
+			int[] constantIndices = factor.getConstantIndices();
+			for (int i = 0, n = constantValues.size(); i < n; i++)
 			{
+				double constant = constantValues.get(i).getDouble();
 				if (constantIndices[i] == _sumIndex)
-					_constantSum -= FactorFunctionUtilities.toDouble(constantValues[i]);	// Constant sum value counts as negative
+					_constantSum -= constant;	// Constant sum value counts as negative
 				else
-					_constantSum += FactorFunctionUtilities.toDouble(constantValues[i]);	// Constant summand value counts as positive
+					_constantSum += constant;	// Constant summand value counts as positive
 			}
 		}
 

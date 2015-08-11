@@ -125,6 +125,12 @@ public class ParticleBPSolverGraph extends BPSolverGraph<ISolverFactor, IParticl
 		
 		throw unsupportedVariableType(var);
 	}
+	
+	@Override
+	public IParticleBPVariable getSolverVariable(Variable variable)
+	{
+		return (IParticleBPVariable)super.getSolverVariable(variable);
+	}
 
 	@Override
 	public void initialize()

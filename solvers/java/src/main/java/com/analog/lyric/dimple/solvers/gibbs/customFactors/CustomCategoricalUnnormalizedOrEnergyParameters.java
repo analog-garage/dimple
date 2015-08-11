@@ -26,9 +26,9 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.CategoricalEnergyParameters;
 import com.analog.lyric.dimple.factorfunctions.CategoricalUnnormalizedParameters;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsDiscrete;
@@ -43,7 +43,6 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGamma
 public class CustomCategoricalUnnormalizedOrEnergyParameters extends GibbsRealFactor implements IRealConjugateFactor
 {
 	private @Nullable GibbsDiscrete[] _outputVariables;
-	private @Nullable FactorFunction _factorFunction;
 	private int _parameterDimension;
 	private int _numParameterEdges;
 	private @Nullable int[] _constantOutputCounts;
@@ -81,7 +80,7 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends GibbsRealFa
 			GammaParameters outputMsg = (GammaParameters)solverEdge.factorToVarMsg;
 
 			// The parameter being updated corresponds to this value
-			int parameterIndex = _factorFunction.getIndexByEdge(portNum);
+			int parameterIndex = _model.getIndexByEdge(portNum);
 
 			// Start with the ports to variable outputs
 			int count = 0;
@@ -139,10 +138,10 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends GibbsRealFa
 		final int prevNumParameterEdges = _numParameterEdges;
 		
 		// Get the factor function and related state
-		FactorFunction factorFunction = _model.getFactorFunction();
+		final Factor factor = _model;
+		FactorFunction factorFunction = factor.getFactorFunction();
 		FactorFunction containedFactorFunction = factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
-		_factorFunction = factorFunction;
-		boolean hasFactorFunctionConstants = factorFunction.hasConstants();
+		boolean hasFactorFunctionConstants = factor.hasConstants();
 		boolean hasFactorFunctionConstructorConstants;
 		if (containedFactorFunction instanceof CategoricalUnnormalizedParameters)
 		{
@@ -162,7 +161,7 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends GibbsRealFa
 			throw new DimpleException("Invalid factor function");
 
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		List<? extends Variable> siblings = _model.getSiblings();
+		List<? extends Variable> siblings = factor.getSiblings();
 		_numParameterEdges = _parameterDimension;
 		_hasConstantOutputs = false;
 		if (hasFactorFunctionConstructorConstants)
@@ -173,8 +172,8 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends GibbsRealFa
 		}
 		else if (hasFactorFunctionConstants)
 		{
-			_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(_parameterDimension);
-			int numConstantParameters = factorFunction.numConstantsInIndexRange(0, _parameterDimension - 1);
+			_hasConstantOutputs = factor.hasConstantAtOrAboveIndex(_parameterDimension);
+			int numConstantParameters = factor.numConstantsInIndexRange(0, _parameterDimension - 1);
 			_numParameterEdges = _parameterDimension - numConstantParameters;
 		}
 
@@ -183,14 +182,14 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends GibbsRealFa
 		_constantOutputCounts = null;
 		if (_hasConstantOutputs)
 		{
-			Object[] constantValues = factorFunction.getConstants();
-			int[] constantIndices = factorFunction.getConstantIndices();
+			final List<Value> constantValues = factor.getConstantValues();
+			int[] constantIndices = factor.getConstantIndices();
 			final int[] constantOutputCounts = _constantOutputCounts = new int[_parameterDimension];
 			for (int i = 0; i < constantIndices.length; i++)
 			{
 				if (hasFactorFunctionConstructorConstants || constantIndices[i] >= _parameterDimension)
 				{
-					int outputValue = FactorFunctionUtilities.toInteger(constantValues[i]);
+					int outputValue = constantValues.get(i).getInt();
 					constantOutputCounts[outputValue]++;	// Histogram among constant outputs
 				}
 			}

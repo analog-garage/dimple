@@ -70,7 +70,7 @@ public class PFactorVector extends PFactorBaseVector
 	 * PFactorVector methods
 	 */
 	
-	private Factor getFactor(int index)
+	Factor getFactor(int index)
 	{
 		return (Factor)getModelerNode(index);
 	}

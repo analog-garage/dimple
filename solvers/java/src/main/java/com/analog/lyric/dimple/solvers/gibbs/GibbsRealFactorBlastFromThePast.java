@@ -87,13 +87,13 @@ public class GibbsRealFactorBlastFromThePast extends SBlastFromThePast implement
 			ISolverVariableGibbs var = otherFactor.getSibling(i);
 			currentSamples[i] = var.getPrevSampleValue();
 		}
-	    return getFactor().getFactorFunction().evalEnergy(currentSamples);
+	    return otherFactor.getModelObject().evalEnergy(currentSamples);
 	}
 	
 	@Deprecated
 	public double getPotential(Object[] inputs)
 	{
-		return getFactor().getFactorFunction().evalEnergy(inputs);
+		return getFactor().evalEnergy(inputs);
 	}
 
 	@Override

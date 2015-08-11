@@ -255,7 +255,7 @@ public class MinSumTableFactor extends STableFactorDoubleArray
 	@Override
 	public double evalFactorFunction(Object[] inputs)
 	{
-		return getFactorFunction().evalEnergy(inputs);
+		return _model.evalEnergy(inputs);
 	}
 
 	@Override

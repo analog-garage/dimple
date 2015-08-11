@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
 import static com.analog.lyric.math.Utilities.*;
+import static java.util.Objects.*;
 
 import java.util.HashSet;
 import java.util.List;
@@ -26,9 +27,9 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.NegativeExpGamma;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsGammaEdge;
@@ -155,9 +156,10 @@ public class CustomNegativeExpGamma extends GibbsRealFactor implements IRealConj
 	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
-		FactorFunction factorFunction = _model.getFactorFunction();
+		final Factor factor = _model;
+		FactorFunction factorFunction = factor.getFactorFunction();
 		NegativeExpGamma specificFactorFunction = (NegativeExpGamma)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
-		boolean hasFactorFunctionConstants = factorFunction.hasConstants();
+		boolean hasFactorFunctionConstants = factor.hasConstants();
 		boolean hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 
 		final int prevBetaParameterPort = _betaParameterPort;
@@ -184,22 +186,24 @@ public class CustomNegativeExpGamma extends GibbsRealFactor implements IRealConj
 		}
 		else	// Variable or constant parameters
 		{
-			_hasConstantAlpha = factorFunction.isConstantIndex(ALPHA_PARAMETER_INDEX);
+			_hasConstantAlpha = factor.isConstantIndex(ALPHA_PARAMETER_INDEX);
 			if (_hasConstantAlpha)	// Constant mean
-				_constantAlphaValueMinusOne = FactorFunctionUtilities.toDouble(factorFunction.getConstantByIndex(ALPHA_PARAMETER_INDEX)) - 1;
+				_constantAlphaValueMinusOne =
+				requireNonNull(factor.getConstantValueByIndex(ALPHA_PARAMETER_INDEX)).getDouble() - 1;
 			else					// Variable mean
 			{
-				_alphaParameterPort = factorFunction.getEdgeByIndex(ALPHA_PARAMETER_INDEX);
+				_alphaParameterPort = factor.getEdgeByIndex(ALPHA_PARAMETER_INDEX);
 				_alphaVariable = (GibbsReal)getSibling(_alphaParameterPort);
 				_numParameterEdges++;
 			}
 			
-			_hasConstantBeta = factorFunction.isConstantIndex(BETA_PARAMETER_INDEX);
+			_hasConstantBeta = factor.isConstantIndex(BETA_PARAMETER_INDEX);
 			if (_hasConstantBeta)	// Constant precision
-				_constantBetaValue = FactorFunctionUtilities.toDouble(factorFunction.getConstantByIndex(BETA_PARAMETER_INDEX));
+				_constantBetaValue =
+				requireNonNull(factor.getConstantValueByIndex(BETA_PARAMETER_INDEX)).getDouble();
 			else 						// Variable precision
 			{
-				_betaParameterPort = factorFunction.getEdgeByIndex(BETA_PARAMETER_INDEX);
+				_betaParameterPort = factor.getEdgeByIndex(BETA_PARAMETER_INDEX);
 				_betaVariable = (GibbsReal)getSibling(_betaParameterPort);
 				_numParameterEdges++;
 			}
@@ -210,15 +214,15 @@ public class CustomNegativeExpGamma extends GibbsRealFactor implements IRealConj
 		_hasConstantOutputs = false;
 		if (hasFactorFunctionConstants)
 		{
-			Object[] constantValues = factorFunction.getConstants();
-			int[] constantIndices = factorFunction.getConstantIndices();
+			final List<Value> constantValues = factor.getConstantValues();
+			int[] constantIndices = factor.getConstantIndices();
 			_constantOutputCount = 0;
 			_constantOutputSum = 0;
 			for (int i = 0; i < constantIndices.length; i++)
 			{
 				if (hasFactorFunctionConstructorConstants || constantIndices[i] >= NUM_PARAMETERS)
 				{
-					_constantOutputSum += Math.exp(-(Double)constantValues[i]);
+					_constantOutputSum += Math.exp(-constantValues.get(i).getDouble());
 					_constantOutputCount++;
 		}
 			}

@@ -54,7 +54,6 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 	private @Nullable GibbsDiscrete[] _outputVariables;
 	private @Nullable GibbsDiscrete _NVariable;
 	private @Nullable GibbsReal[] _alphaVariables;
-	private @Nullable FactorFunction _factorFunction;
 	private int _dimension;
 	private int _alphaParameterMinIndex;
 	private int _alphaParameterMinEdge;
@@ -67,7 +66,6 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 	private @Nullable boolean[] _hasConstantAlpha;
 	private @Nullable double[] _constantAlpha;
 	private boolean _useEnergyParameters;
-	private static final int NO_PORT = -1;
 	private static final int ALPHA_PARAMETER_MIN_INDEX_FIXED_N = 0;	// If N is in constructor then alpha is first index (0)
 	private static final int N_PARAMETER_INDEX = 0;					// If N is not in constructor then N is the first index (0)
 	private static final int ALPHA_PARAMETER_MIN_INDEX = 1;			// If N is not in constructor then alpha is second index (1)
@@ -105,7 +103,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 			GammaParameters outputMsg = (GammaParameters)solverEdge.factorToVarMsg;
 
 			// The parameter being updated corresponds to this value
-			int parameterOffset = _factorFunction.getIndexByEdge(portNum) - _alphaParameterMinIndex;
+			int parameterOffset = _model.getIndexByEdge(portNum) - _alphaParameterMinIndex;
 
 			// Get the count from the corresponding output
 			int count = _hasConstantOutputs ? _constantOutputCounts[parameterOffset] : _outputVariables[parameterOffset].getCurrentSampleIndex();
@@ -214,9 +212,9 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 		final int prevAlphaParameterMinEdge = _alphaParameterMinEdge;
 		final int prevAlphaParameterMaxEdge = _alphaParameterMaxEdge;
 		
-		FactorFunction factorFunction = _model.getFactorFunction();
+		final Factor factor = _model;
+		FactorFunction factorFunction = factor.getFactorFunction();
 		FactorFunction containedFactorFunction = factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
-		_factorFunction = factorFunction;
 		boolean hasFactorFunctionConstructorConstantN;
 		if (containedFactorFunction instanceof MultinomialUnnormalizedParameters)
 		{
@@ -238,7 +236,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 			throw new DimpleException("Invalid factor function");
 		
 		// Pre-determine whether or not the parameters are constant
-		List<? extends Variable> siblings = _model.getSiblings();
+		List<? extends Variable> siblings = factor.getSiblings();
 		_NVariable = null;
 		_hasConstantOutputs = false;
 		_outputVariables = null;
@@ -249,11 +247,11 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 			_hasConstantN = true;
 		else	// Variable or constant N
 		{
-			_hasConstantN = factorFunction.isConstantIndex(N_PARAMETER_INDEX);
+			_hasConstantN = factor.isConstantIndex(N_PARAMETER_INDEX);
 			if (_hasConstantN)
-				_constantN = requireNonNull((Integer)factorFunction.getConstantByIndex(N_PARAMETER_INDEX));
+				_constantN = requireNonNull(factor.getConstantValueByIndex(N_PARAMETER_INDEX)).getInt();
 			else
-				_NVariable = (GibbsDiscrete)getSibling(factorFunction.getEdgeByIndex(N_PARAMETER_INDEX));
+				_NVariable = (GibbsDiscrete)getSibling(factor.getEdgeByIndex(N_PARAMETER_INDEX));
 		}
 		
 		final SolverNodeMapping solvers = getSolverMapping();
@@ -263,30 +261,24 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 		_hasConstantAlpha = null;
 		_constantAlpha = null;
 		final GibbsReal[] alphaVariables = _alphaVariables = new GibbsReal[_dimension];
-		_alphaParameterMinEdge = NO_PORT;
-		_alphaParameterMaxEdge = NO_PORT;
-		int[] edges = factorFunction.getEdgesByIndexRange(_alphaParameterMinIndex, alphaParameterMaxIndex);
-		if (edges != null)	// Not all constants
-		{
-			_alphaParameterMinEdge = edges[0];
-			_alphaParameterMaxEdge = edges[edges.length - 1];
-		}
-		if (factorFunction.hasConstantsInIndexRange(_alphaParameterMinIndex, alphaParameterMaxIndex))	// Some constant alphas
+		_alphaParameterMinEdge = factor.getEdgeByIndex(_alphaParameterMinEdge);
+		_alphaParameterMaxEdge = factor.getEdgeByIndex(alphaParameterMaxIndex);
+		if (factor.hasConstantsInIndexRange(_alphaParameterMinIndex, alphaParameterMaxIndex))	// Some constant alphas
 		{
 			_hasConstantAlphas = true;
 			final boolean[] hasConstantAlpha = _hasConstantAlpha = new boolean[_dimension];
 			final double[] constantAlpha = _constantAlpha = new double[_dimension];
 			for (int i = 0, index = _alphaParameterMinIndex; i < _dimension; i++, index++)
 			{
-				if (factorFunction.isConstantIndex(index))
+				if (factor.isConstantIndex(index))
 				{
 					hasConstantAlpha[i] = true;
-					constantAlpha[i] = (Double)requireNonNull(factorFunction.getConstantByIndex(index));
+					constantAlpha[i] = requireNonNull(factor.getConstantValueByIndex(index)).getDouble();
 				}
 				else
 				{
 					hasConstantAlpha[i] = false;
-					int alphaEdge = factorFunction.getEdgeByIndex(index);
+					int alphaEdge = factor.getEdgeByIndex(index);
 					alphaVariables[i] = (GibbsReal)solvers.getSolverVariable(siblings.get(alphaEdge));
 				}
 			}
@@ -295,7 +287,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 		{
 			for (int i = 0, index = _alphaParameterMinIndex; i < _dimension; i++, index++)
 			{
-				int alphaEdge = factorFunction.getEdgeByIndex(index);
+				int alphaEdge = factor.getEdgeByIndex(index);
 				alphaVariables[i] = (GibbsReal)solvers.getSolverVariable(siblings.get(alphaEdge));
 			}
 		}
@@ -303,24 +295,24 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 		
 		// Save the output constant or variables as well
 		final int nEdges = getSiblingCount();
-		int numOutputEdges = nEdges - factorFunction.getEdgeByIndex(outputMinIndex);
-		_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(outputMinIndex);
+		int numOutputEdges = nEdges - factor.getEdgeByIndex(outputMinIndex);
+		_hasConstantOutputs = factor.hasConstantAtOrAboveIndex(outputMinIndex);
 		final GibbsDiscrete[] outputVariables = _outputVariables = new GibbsDiscrete[numOutputEdges];
-		_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(outputMinIndex);
+		_hasConstantOutputs = factor.hasConstantAtOrAboveIndex(outputMinIndex);
 		_constantOutputCounts = null;
 		if (_hasConstantOutputs)
 		{
-			int numConstantOutputs = factorFunction.numConstantsAtOrAboveIndex(outputMinIndex);
+			int numConstantOutputs = factor.numConstantsAtOrAboveIndex(outputMinIndex);
 			final int[] constantOutputCounts = _constantOutputCounts = new int[numConstantOutputs];
 			for (int i = 0, index = outputMinIndex; i < _dimension; i++, index++)
 			{
-				if (factorFunction.isConstantIndex(index))
+				if (factor.isConstantIndex(index))
 				{
-					constantOutputCounts[i] = requireNonNull((Integer)factorFunction.getConstantByIndex(index));
+					constantOutputCounts[i] = requireNonNull(factor.getConstantValueByIndex(index)).getInt();
 				}
 				else
 				{
-					int outputEdge = factorFunction.getEdgeByIndex(index);
+					int outputEdge = factor.getEdgeByIndex(index);
 					outputVariables[i] = (GibbsDiscrete)solvers.getSolverVariable(siblings.get(outputEdge));
 				}
 			}
@@ -329,7 +321,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 		{
 			for (int i = 0, index = outputMinIndex; i < _dimension; i++, index++)
 			{
-				int outputEdge = factorFunction.getEdgeByIndex(index);
+				int outputEdge = factor.getEdgeByIndex(index);
 				outputVariables[i] = (GibbsDiscrete)solvers.getSolverVariable(siblings.get(outputEdge));
 			}
 		}

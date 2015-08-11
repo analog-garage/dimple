@@ -192,13 +192,14 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 	
 	private void determineConstantsAndEdges()
 	{
-		FactorFunction factorFunction = _model.getFactorFunction();
+		final Factor factor = _model;
+		FactorFunction factorFunction = factor.getFactorFunction();
 		Multinomial specificFactorFunction = (Multinomial)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 
 		final int prevAlphaParameterEdge = _alphaParameterEdge;
 		
 		// Pre-determine whether or not the parameters are constant
-		List<? extends Variable> siblings = _model.getSiblings();
+		List<? extends Variable> siblings = factor.getSiblings();
 		int alphaParameterIndex;
 		int outputMinIndex;
 		_constantN = -1;
@@ -212,11 +213,11 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 		}
 		else	// Variable or constant N parameter
 		{
-			_hasConstantN = factorFunction.isConstantIndex(N_PARAMETER_INDEX);
+			_hasConstantN = factor.isConstantIndex(N_PARAMETER_INDEX);
 			if (_hasConstantN)
-				_constantN = requireNonNull((Integer)factorFunction.getConstantByIndex(N_PARAMETER_INDEX));
+				_constantN = requireNonNull(factor.getConstantValueByIndex(N_PARAMETER_INDEX)).getInt();
 			else
-				_NVariable = (GibbsDiscrete)getSibling(factorFunction.getEdgeByIndex(N_PARAMETER_INDEX));
+				_NVariable = (GibbsDiscrete)getSibling(factor.getEdgeByIndex(N_PARAMETER_INDEX));
 			alphaParameterIndex = ALPHA_PARAMETER_INDEX;
 			outputMinIndex = OUTPUT_MIN_INDEX;
 		}
@@ -226,14 +227,15 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 		_constantAlpha = null;
 		_alphaVariable = null;
 		_alphaParameterEdge = NO_PORT;
-		if (factorFunction.isConstantIndex(alphaParameterIndex))
+		if (factor.isConstantIndex(alphaParameterIndex))
 		{
 			_hasConstantAlpha = true;
-			_constantAlpha = (double[])factorFunction.getConstantByIndex(alphaParameterIndex);
+			_constantAlpha =
+				requireNonNull(factor.getConstantValueByIndex(alphaParameterIndex)).getDoubleArray();
 		}
 		else
 		{
-			_alphaParameterEdge = factorFunction.getEdgeByIndex(alphaParameterIndex);
+			_alphaParameterEdge = factor.getEdgeByIndex(alphaParameterIndex);
 			_alphaVariable = (GibbsRealJoint)getSibling(_alphaParameterEdge);
 		}
 		
@@ -241,29 +243,29 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 		
 		// Save the output constant or variables as well
 		final int nEdges = getSiblingCount();
-		int numOutputEdges = nEdges - factorFunction.getEdgeByIndex(outputMinIndex);
+		int numOutputEdges = nEdges - factor.getEdgeByIndex(outputMinIndex);
 		final GibbsDiscrete[] outputVariables = _outputVariables = new GibbsDiscrete[numOutputEdges];
-		_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(outputMinIndex);
+		_hasConstantOutputs = factor.hasConstantAtOrAboveIndex(outputMinIndex);
 		_constantOutputCounts = null;
 		_hasConstantOutput = null;
 		_dimension = -1;
 		if (_hasConstantOutputs)
 		{
-			int numConstantOutputs = factorFunction.numConstantsAtOrAboveIndex(outputMinIndex);
+			int numConstantOutputs = factor.numConstantsAtOrAboveIndex(outputMinIndex);
 			_dimension = numOutputEdges + numConstantOutputs;
 			final boolean[] hasConstantOutput = _hasConstantOutput = new boolean[_dimension];
 			final int[] constantOutputCounts = _constantOutputCounts = new int[numConstantOutputs];
 			for (int i = 0, index = outputMinIndex; i < _dimension; i++, index++)
 			{
-				if (factorFunction.isConstantIndex(index))
+				if (factor.isConstantIndex(index))
 				{
 					hasConstantOutput[i] = true;
-					constantOutputCounts[i] = requireNonNull((Integer)factorFunction.getConstantByIndex(index));
+					constantOutputCounts[i] = requireNonNull(factor.getConstantValueByIndex(index)).getInt();
 				}
 				else
 				{
 					hasConstantOutput[i] = false;
-					int outputEdge = factorFunction.getEdgeByIndex(index);
+					int outputEdge = factor.getEdgeByIndex(index);
 					outputVariables[i] = (GibbsDiscrete)solvers.getSolverVariable(siblings.get(outputEdge));
 				}
 			}
@@ -273,7 +275,7 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 			_dimension = numOutputEdges;
 			for (int i = 0, index = outputMinIndex; i < _dimension; i++, index++)
 			{
-				int outputEdge = factorFunction.getEdgeByIndex(index);
+				int outputEdge = factor.getEdgeByIndex(index);
 				outputVariables[i] = (GibbsDiscrete)solvers.getSolverVariable(siblings.get(outputEdge));
 			}
 		}

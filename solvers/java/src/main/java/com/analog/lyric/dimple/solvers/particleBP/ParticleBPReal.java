@@ -475,7 +475,7 @@ public class ParticleBPReal extends SRealVariableBase implements IParticleBPVari
 	}
 
 	@Override
-	public final RealValue[] getParticleValueObjects()
+	public final Value[] getParticleValueObjects()
 	{
 		return _particleValues;
 	}

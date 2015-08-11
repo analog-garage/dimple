@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
+import static java.util.Objects.*;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,9 +26,9 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
@@ -186,9 +188,10 @@ public class CustomNormal extends GibbsRealFactor implements IRealConjugateFacto
 	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
-		FactorFunction factorFunction = _model.getFactorFunction();
+		final Factor factor = _model;
+		FactorFunction factorFunction = factor.getFactorFunction();
 		Normal specificFactorFunction = (Normal)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
-		boolean hasFactorFunctionConstants = factorFunction.hasConstants();
+		boolean hasFactorFunctionConstants = factor.hasConstants();
 		boolean hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 
 		final int prevNumParameterEdges = _numParameterEdges;
@@ -215,22 +218,24 @@ public class CustomNormal extends GibbsRealFactor implements IRealConjugateFacto
 		}
 		else	// Variable or constant parameters
 		{
-			_hasConstantMean = factorFunction.isConstantIndex(MEAN_PARAMETER_INDEX);
+			_hasConstantMean = factor.isConstantIndex(MEAN_PARAMETER_INDEX);
 			if (_hasConstantMean)	// Constant mean
-				_constantMeanValue = FactorFunctionUtilities.toDouble(factorFunction.getConstantByIndex(MEAN_PARAMETER_INDEX));
+				_constantMeanValue =
+					requireNonNull(factor.getConstantValueByIndex(MEAN_PARAMETER_INDEX)).getDouble();
 			else					// Variable mean
 			{
-				_meanParameterPort = factorFunction.getEdgeByIndex(MEAN_PARAMETER_INDEX);
+				_meanParameterPort = factor.getEdgeByIndex(MEAN_PARAMETER_INDEX);
 				_meanVariable = (GibbsReal)getSibling(_meanParameterPort);
 				_numParameterEdges++;
 			}
 			
-			_hasConstantPrecision = factorFunction.isConstantIndex(PRECISION_PARAMETER_INDEX);
+			_hasConstantPrecision = factor.isConstantIndex(PRECISION_PARAMETER_INDEX);
 			if (_hasConstantPrecision)	// Constant precision
-				_constantPrecisionValue = FactorFunctionUtilities.toDouble(factorFunction.getConstantByIndex(PRECISION_PARAMETER_INDEX));
+				_constantPrecisionValue =
+				requireNonNull(factor.getConstantValueByIndex(PRECISION_PARAMETER_INDEX)).getDouble();
 			else 						// Variable precision
 			{
-				_precisionParameterPort = factorFunction.getEdgeByIndex(PRECISION_PARAMETER_INDEX);
+				_precisionParameterPort = factor.getEdgeByIndex(PRECISION_PARAMETER_INDEX);
 				_precisionVariable = (GibbsReal)getSibling(_precisionParameterPort);
 				_numParameterEdges++;
 			}
@@ -243,13 +248,13 @@ public class CustomNormal extends GibbsRealFactor implements IRealConjugateFacto
 		_constantOutputSumOfSquares = 0;
 		if (hasFactorFunctionConstants)
 		{
-			Object[] constantValues = factorFunction.getConstants();
-			int[] constantIndices = factorFunction.getConstantIndices();
+			final List<Value> constantValues = factor.getConstantValues();
+			int[] constantIndices = factor.getConstantIndices();
 			for (int i = 0; i < constantIndices.length; i++)
 			{
 				if (hasFactorFunctionConstructorConstants || constantIndices[i] >= NUM_PARAMETERS)
 				{
-					double outputValue = (Double)constantValues[i];
+					double outputValue = constantValues.get(i).getDouble();
 					_constantOutputSum += outputValue;
 					_constantOutputSumOfSquares += outputValue*outputValue;
 					_constantOutputCount++;

@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
-import static java.util.Objects.*;
-
 import java.util.Collection;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -48,7 +46,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	 * State
 	 */
 	
-    protected DiscreteValue[] _currentSamples = new DiscreteValue[0];
+    protected Value[] _currentSamples = new DiscreteValue[0];
     protected boolean _isDeterministicDirected;
     private boolean _visited = false;
 	private int _topologicalOrder = 0;
@@ -110,17 +108,20 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 
 		if (_isDeterministicDirected) throw new DimpleException("Invalid call to updateEdge");
 		
+		final Factor factor = _model;
 		final int outPortNum = modelEdge.getFactorToVariableEdgeNumber();
+		final int outIndex = factor.getIndexByEdge(outPortNum);
 		final double[] outMessage = ((DiscreteMessage)solverEdge.factorToVarMsg).representation();
 
 		final IFactorTable factorTable = getFactorTableIfComputed();
 		if (factorTable != null)
 		{
+			// FIXME Constant should outPortNum be outIndex?
 			factorTable.getEnergySlice(outMessage, outPortNum, _currentSamples);
 		}
 		else
 		{
-			final Value changedValue = _currentSamples[outPortNum];
+			final Value changedValue = _currentSamples[outIndex];
 			final FactorFunction function = _model.getFactorFunction();
 			final int savedIndex = changedValue.getIndex();
 			final int sliceLength = outMessage.length;
@@ -131,6 +132,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 			if (function.useUpdateEnergy(_currentSamples, 1))
 			{
 				final Value prevValue = changedValue.clone();
+				// FIXME Constant should outPortNum be outIndex?
 				final IndexedValue[] changedValues = new IndexedValue[] { new IndexedValue(outPortNum, prevValue) };
 
 				double energy = outMessage[0];
@@ -205,7 +207,8 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	@Override
 	public void updateNeighborVariableValue(int variableIndex, Value oldValue)
 	{
-		((GibbsSolverGraph)requireNonNull(getRootSolverGraph())).scheduleDeterministicDirectedUpdate(this, variableIndex, oldValue);
+		final int argIndex = _model.getIndexByEdge(variableIndex);
+		((GibbsSolverGraph)getRootSolverGraph()).scheduleDeterministicDirectedUpdate(this, argIndex, oldValue);
 	}
 	
 	@Override
@@ -220,9 +223,10 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 		int[] directedTo = factor.getDirectedTo();
 		if (directedTo != null)
 		{
-			for (int outputIndex : directedTo)
+			for (int to : directedTo)
 			{
-				Variable variable = factor.getSibling(outputIndex);
+				final int outputIndex = factor.getIndexByEdge(to);
+				Variable variable = factor.getSibling(to);
 				// FIXME: is sample value already set? Just need to handle side effects?
 				ISolverVariableGibbs svar = (ISolverVariableGibbs) solvers.getSolverVariable(variable);
 				svar.setCurrentSample(values[outputIndex]);
@@ -234,26 +238,16 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	public void initialize()
 	{
 		super.initialize();
+
 		_isDeterministicDirected = _model.getFactorFunction().isDeterministicDirected();
-		
-    	final int size = getSiblingCount();
-    	
-    	if (_currentSamples.length != size)
-    	{
-    		_currentSamples = new DiscreteValue[size];
-    	}
-    	
-	    for (int port = 0; port < size; port++)
-	    {
-	    	_currentSamples[port] = (DiscreteValue)((ISolverVariableGibbs)getSibling(port)).getCurrentSampleValue();
-	    }
+    	_currentSamples = _model.fillFactorArguments(_parent, _currentSamples);
 	}
 
 	@Deprecated
 	@Override
 	public DiscreteValue getInputMsg(int portIndex)
 	{
-		return _currentSamples[portIndex];
+		return (DiscreteValue)_currentSamples[_model.getIndexByEdge(portIndex)];
 	}
 
 	@Deprecated

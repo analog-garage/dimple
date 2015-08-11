@@ -166,6 +166,16 @@ public class GibbsSolverGraph
 		super(factorGraph, parent);
 	}
 
+	/*--------------------------
+	 * IVariableToValue methods
+	 */
+	
+	@Override
+	public Value varToValue(Variable var)
+	{
+		return getSolverVariable(var).getCurrentSampleValue();
+	}
+	
 	/*----------------------------
 	 * ISolverFactorGraph methods
 	 */
@@ -1210,7 +1220,15 @@ public class GibbsSolverGraph
 		return null;
 	}
 
-	void scheduleDeterministicDirectedUpdate(ISolverFactorGibbs sfactor, int changedVariableIndex, Value oldValue)
+	/**
+	 * 
+	 * @param sfactor
+	 * @param changedArgIndex is the index of the changed factor argument. This may be different
+	 * than the sibling index if the factor has constants.
+	 * @param oldValue
+	 * @since 0.08
+	 */
+	void scheduleDeterministicDirectedUpdate(ISolverFactorGibbs sfactor, int changedArgIndex, Value oldValue)
 	{
 		if (_deferDeterministicFactorUpdatesCounter > 0)
 		{
@@ -1226,7 +1244,7 @@ public class GibbsSolverGraph
 				update = new SFactorUpdate(sfactor);
 				requireNonNull(_deferredDeterministicFactorUpdates).offer(update);
 			}
-			update.addVariableUpdate(changedVariableIndex, oldValue);
+			update.addVariableUpdate(changedArgIndex, oldValue);
 		}
 		else
 		{
@@ -1235,7 +1253,7 @@ public class GibbsSolverGraph
 			IndexedValue.SingleList oldValues = null;
 			if (factor.getFactorFunction().updateDeterministicLimit(nEdges) > 0)
 			{
-				oldValues = IndexedValue.SingleList.create(changedVariableIndex, oldValue);
+				oldValues = IndexedValue.SingleList.create(changedArgIndex, oldValue);
 			}
 			deferDeterministicUpdates();
 			sfactor.updateNeighborVariableValuesNow(oldValues);

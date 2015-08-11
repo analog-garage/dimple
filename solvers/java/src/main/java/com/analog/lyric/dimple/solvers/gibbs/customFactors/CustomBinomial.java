@@ -132,7 +132,8 @@ public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFac
 	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
-		FactorFunction factorFunction = _model.getFactorFunction();
+		final Factor factor = _model;
+		FactorFunction factorFunction = factor.getFactorFunction();
 		Binomial specificFactorFunction = (Binomial)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 
 		final int prevProbabilityParameterEdge = _probabilityParameterEdge;
@@ -150,43 +151,44 @@ public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFac
 			_hasConstantNParameter = true;
 			_constantNParameterValue = specificFactorFunction.getN();
 			
-			if (!factorFunction.isConstantIndex(P_PARAMETER_INDEX_FIXED_N))
-				_probabilityParameterEdge = factorFunction.getEdgeByIndex(P_PARAMETER_INDEX_FIXED_N);
+			if (!factor.isConstantIndex(P_PARAMETER_INDEX_FIXED_N))
+				_probabilityParameterEdge = factor.getEdgeByIndex(P_PARAMETER_INDEX_FIXED_N);
 			
-			_hasConstantOutput = factorFunction.isConstantIndex(OUTPUT_INDEX_FIXED_N);
+			_hasConstantOutput = factor.isConstantIndex(OUTPUT_INDEX_FIXED_N);
 			if (_hasConstantOutput)
-				_constantOutputValue = requireNonNull((Integer)factorFunction.getConstantByIndex(OUTPUT_INDEX_FIXED_N));
+				_constantOutputValue =
+					requireNonNull(factor.getConstantValueByIndex(OUTPUT_INDEX_FIXED_N)).getInt();
 			else
 			{
-				int outputEdge = factorFunction.getEdgeByIndex(OUTPUT_INDEX_FIXED_N);
+				int outputEdge = factor.getEdgeByIndex(OUTPUT_INDEX_FIXED_N);
 				_outputVariable = (GibbsDiscrete)getSibling(outputEdge);
 			}
 		}
 		else	// Variable or constant N parameter
 		{
-			_hasConstantNParameter = factorFunction.isConstantIndex(N_PARAMETER_INDEX);
+			_hasConstantNParameter = factor.isConstantIndex(N_PARAMETER_INDEX);
 			if (_hasConstantNParameter)
 			{
 				_constantNParameterValue =
-				requireNonNull((Integer)factorFunction.getConstantByIndex(N_PARAMETER_INDEX));
+					requireNonNull(factor.getConstantValueByIndex(N_PARAMETER_INDEX)).getInt();
 			}
 			else
 			{
-				int nParameterEdge = factorFunction.getEdgeByIndex(N_PARAMETER_INDEX);
+				int nParameterEdge = factor.getEdgeByIndex(N_PARAMETER_INDEX);
 				_NParameterVariable = (GibbsDiscrete)getSibling(nParameterEdge);
 			}
 			
-			if (!factorFunction.isConstantIndex(P_PARAMETER_INDEX))
-				_probabilityParameterEdge = factorFunction.getEdgeByIndex(P_PARAMETER_INDEX);
+			if (!factor.isConstantIndex(P_PARAMETER_INDEX))
+				_probabilityParameterEdge = factor.getEdgeByIndex(P_PARAMETER_INDEX);
 			
-			_hasConstantOutput = factorFunction.isConstantIndex(OUTPUT_INDEX);
+			_hasConstantOutput = factor.isConstantIndex(OUTPUT_INDEX);
 			if (_hasConstantOutput)
 			{
-				_constantOutputValue = requireNonNull((Integer)factorFunction.getConstantByIndex(OUTPUT_INDEX));
+				_constantOutputValue = requireNonNull(factor.getConstantValueByIndex(OUTPUT_INDEX)).getInt();
 			}
 			else
 			{
-				int outputEdge = factorFunction.getEdgeByIndex(OUTPUT_INDEX);
+				int outputEdge = factor.getEdgeByIndex(OUTPUT_INDEX);
 				_outputVariable = (GibbsDiscrete)getSibling(outputEdge);
 			}
 		}

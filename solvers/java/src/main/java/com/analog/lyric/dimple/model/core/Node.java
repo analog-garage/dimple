@@ -929,6 +929,15 @@ public abstract class Node extends FactorGraphChild implements INode
 	
 	protected abstract ISolverNode requireSolver(String method);
 	
+	
+	/**
+	 * @category internal
+	 */
+	@Internal
+	protected void setFactorArguments(int[] argids)
+	{
+	}
+	
 	/**
 	 * Sets all of the bits in {@code mask} in the flags.
 	 * <p>

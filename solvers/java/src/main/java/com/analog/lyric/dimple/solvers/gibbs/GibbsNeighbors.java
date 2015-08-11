@@ -24,9 +24,6 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicReference;
 
-import net.jcip.annotations.Immutable;
-import net.jcip.annotations.NotThreadSafe;
-
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -39,6 +36,9 @@ import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Variable;
+
+import net.jcip.annotations.Immutable;
+import net.jcip.annotations.NotThreadSafe;
 
 /**
  * Represents the neighbors of a {@link ISolverVariableGibbs} that need to be included in the variable's
@@ -261,7 +261,7 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 					return queue;
 				}
 				
-				outputEdges = function.getDirectedToIndices(factor.getSiblingCount());
+				outputEdges = factor.getDirectedTo();
 			}
 			
 			int counter = counterHolder[0];
