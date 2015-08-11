@@ -589,10 +589,42 @@ public class TestJointDomainIndexer extends DimpleTestBase
 		JointDomainReindexer dl3by4_to_dl4 = JointDomainReindexer.createPermuter(dl3by4, dl4, new int[] {1,0});
 		testInvariants(dl3by4_to_dl4);
 		
+		//
 		// Conditioning
+		//
+		
 		JointDomainReindexer dl2by3by4by5_conditionedOn_2_3 =
 			JointDomainReindexer.createConditioner(dl2by3by4by5, new int[] {-1, -1, 2, 3});
 		testInvariants(dl2by3by4by5_conditionedOn_2_3);
+		assertEquals(2, dl2by3by4by5_conditionedOn_2_3.getToDomains().size());
+
+		// instead of removing dimension, replace with single-element domains
+		dl2by3by4by5_conditionedOn_2_3 =
+			JointDomainReindexer.createConditioner(dl2by3by4by5, new int[] {-1, -1, 2, 3}, true);
+		testInvariants(dl2by3by4by5_conditionedOn_2_3);
+		assertEquals(4, dl2by3by4by5_conditionedOn_2_3.getToDomains().size());
+		assertEquals(1, dl2by3by4by5_conditionedOn_2_3.getToDomains().get(2).size());
+		assertEquals(dl2by3by4by5_conditionedOn_2_3.getFromDomains().get(2).getElement(2),
+			dl2by3by4by5_conditionedOn_2_3.getToDomains().get(2).getElement(0));
+		assertEquals(1, dl2by3by4by5_conditionedOn_2_3.getToDomains().get(3).size());
+		assertEquals(dl2by3by4by5_conditionedOn_2_3.getFromDomains().get(3).getElement(3),
+			dl2by3by4by5_conditionedOn_2_3.getToDomains().get(3).getElement(0));
+
+		JointDomainReindexer dl2by3by4by5_conditionedOn_1_2 =
+			JointDomainReindexer.createConditioner(dl2by3by4by5, new int[] {1, -1, 2, -1});
+		testInvariants(dl2by3by4by5_conditionedOn_1_2, false);
+		assertEquals(2, dl2by3by4by5_conditionedOn_1_2.getToDomains().size());
+
+		dl2by3by4by5_conditionedOn_1_2 =
+			JointDomainReindexer.createConditioner(dl2by3by4by5, new int[] {1, -1, 2, -1}, true);
+		testInvariants(dl2by3by4by5_conditionedOn_1_2, false);
+		assertEquals(4, dl2by3by4by5_conditionedOn_1_2.getToDomains().size());
+		assertEquals(1, dl2by3by4by5_conditionedOn_1_2.getToDomains().get(0).size());
+		assertEquals(dl2by3by4by5_conditionedOn_1_2.getFromDomains().get(0).getElement(1),
+			dl2by3by4by5_conditionedOn_1_2.getToDomains().get(0).getElement(0));
+		assertEquals(1, dl2by3by4by5_conditionedOn_1_2.getToDomains().get(2).size());
+		assertEquals(dl2by3by4by5_conditionedOn_1_2.getFromDomains().get(2).getElement(2),
+			dl2by3by4by5_conditionedOn_1_2.getToDomains().get(2).getElement(0));
 
 		//
 		// Construction errors

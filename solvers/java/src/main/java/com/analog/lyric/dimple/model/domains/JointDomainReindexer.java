@@ -24,14 +24,15 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import net.jcip.annotations.NotThreadSafe;
-import net.jcip.annotations.ThreadSafe;
-import cern.colt.list.IntArrayList;
-import cern.colt.map.OpenIntIntHashMap;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BitSetUtil;
-import org.eclipse.jdt.annotation.Nullable;
+
+import cern.colt.list.IntArrayList;
+import cern.colt.map.OpenIntIntHashMap;
+import net.jcip.annotations.NotThreadSafe;
+import net.jcip.annotations.ThreadSafe;
 
 /**
  * Supports conversion of indexes between two {@link JointDomainIndexer}s.
@@ -161,8 +162,28 @@ public abstract class JointDomainReindexer
 	 * or an index value that is valid for that dimension that indicates the value to be conditioned on.
 	 *
 	 * @since 0.05
+	 * @see #createConditioner(JointDomainIndexer, int[], boolean)
 	 */
 	public static JointDomainReindexer createConditioner(JointDomainIndexer fromDomains, int[] valueIndices)
+	{
+		return createConditioner(fromDomains, valueIndices, false);
+	}
+	
+	/**
+	 * Creates a converter that removes or replaces domains conditioned on the specified value indices.
+	 * <p>
+	 * @param fromDomains
+	 * @param valueIndices is an array of length equal to size of {@code fromDomains}. Each entry
+	 * is either a negative value to indicate that that dimension will be retained in the new graph
+	 * or an index value that is valid for that dimension that indicates the value to be conditioned on.
+	 * @param retainSize indicates whether the new indexer should retain the same size as the original one. If true
+	 * then instead of removing conditioned dimensions, they will be replaced with a single-element domain.
+	 * <p>
+	 * @since 0.08
+	 * @see #createConditioner(JointDomainIndexer, int[], boolean)
+	 */
+	public static JointDomainReindexer createConditioner(final JointDomainIndexer fromDomains, int[] valueIndices,
+		boolean retainSize)
 	{
 		final int fromSize = fromDomains.size();
 
@@ -206,6 +227,7 @@ public abstract class JointDomainReindexer
 		conditionedValues.trimToSize();
 
 		JointDomainReindexer permuter = null;
+		JointDomainIndexer prevDomains = fromDomains;
 		
 		if (firstConditionedIndex + conditionedValues.size() != fromSize)
 		{
@@ -220,15 +242,39 @@ public abstract class JointDomainReindexer
 			}
 			
 			permuter = createPermuter(fromDomains, oldToNew);
-			fromDomains = permuter.getToDomains();
+			prevDomains = permuter.getToDomains();
 		}
 		
 		JointDomainReindexer conditioner =
-			JointDomainIndexConditioner._createConditioner(fromDomains, conditionedValues.elements());
+			JointDomainIndexConditioner._createConditioner(prevDomains, conditionedValues.elements());
 		
 		if (permuter != null)
 		{
 			conditioner = permuter.combineWith(conditioner);
+		}
+		
+		if (retainSize)
+		{
+			// Add a permuter to replace removed domains with single-element domains.
+			final JointDomainIndexer conditioned = conditioner.getToDomains();
+			final int[] newToOld = new int[conditioned.size()];
+			final DiscreteDomain[] domains = fromDomains.toArray(new DiscreteDomain[fromSize]);
+			for (int i = 0, j = 0; i < fromSize; ++i)
+			{
+				int vi = valueIndices[i];
+				if (vi >= 0)
+				{
+					domains[i] = DiscreteDomain.create(fromDomains.get(i).getElement(vi));
+				}
+				else
+				{
+					newToOld[j++] = i;
+				}
+			}
+			JointDomainIndexer toDomains = JointDomainIndexer.create(fromDomains.getOutputSet(), domains);
+			
+			JointDomainReindexer domainReplacer = createPermuter(conditioned, toDomains, newToOld);
+			conditioner = conditioner.combineWith(domainReplacer);
 		}
 		
 		return conditioner;

@@ -21,13 +21,17 @@ import static java.util.Objects.*;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import net.jcip.annotations.Immutable;
-import cern.colt.list.IntArrayList;
-
 import org.eclipse.jdt.annotation.Nullable;
 
+import cern.colt.list.IntArrayList;
+import net.jcip.annotations.Immutable;
+
 /**
- * 
+ * Converts {@link JointDomainIndexer} by conditioning one or more dimensions on fixed values.
+ * <p>
+ * Construct using {@link JointDomainReindexer#createConditioner}. There should be no reason to
+ * refer to this class directly.
+ * <p>
  * @since 0.05
  * @author Christopher Barber
  */
@@ -88,6 +92,13 @@ public final class JointDomainIndexConditioner extends JointDomainReindexer
 		_inverse = inverse;
 	}
 	
+	/**
+	 * Create new conditioning reindexer.
+	 * <p>
+	 * @param fromDomains the indexer to be conditioned
+	 * @param conditionedValues an array the same length as {@code fromDomains} size. Non-negative entries indicate
+	 * a discrete index to condition on.
+	 */
 	static JointDomainIndexConditioner _createConditioner(JointDomainIndexer fromDomains, int[] conditionedValues)
 	{
 		final int nConditioned = conditionedValues.length;
