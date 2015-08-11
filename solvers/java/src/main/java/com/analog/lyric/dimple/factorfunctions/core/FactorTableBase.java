@@ -20,17 +20,16 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Random;
 
-import net.jcip.annotations.NotThreadSafe;
-
 import org.eclipse.jdt.annotation.Nullable;
-
-import cern.colt.list.DoubleArrayList;
-import cern.colt.list.IntArrayList;
 
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.values.Value;
+
+import cern.colt.list.DoubleArrayList;
+import cern.colt.list.IntArrayList;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
@@ -166,7 +165,14 @@ public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
 	@Override
 	public IFactorTable createTableConditionedOn(int[] valueIndices)
 	{
-		JointDomainReindexer conditioner = JointDomainReindexer.createConditioner(getDomainIndexer(), valueIndices);
+		return createTableConditionedOn(valueIndices, false);
+	}
+	
+	@Override
+	public IFactorTable createTableConditionedOn(int[] valueIndices, boolean retainDimensions)
+	{
+		JointDomainReindexer conditioner =
+			JointDomainReindexer.createConditioner(getDomainIndexer(), valueIndices, retainDimensions);
 		return convert(conditioner);
 	}
 	

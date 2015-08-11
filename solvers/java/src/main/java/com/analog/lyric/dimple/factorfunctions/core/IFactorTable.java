@@ -62,9 +62,32 @@ public interface IFactorTable extends IFactorTableBase
 	 * the range [0, <i>dimension-size</i> - 1].
 	 * 
 	 * @since 0.05
+	 * @see #createTableConditionedOn(int[], boolean)
 	 */
 	public IFactorTable createTableConditionedOn(int[] valueIndices);
 
+	/**
+	 * Constructs a new factor table by conditioning one or more dimensions
+	 * conditioned on specified values.
+	 * <p>
+	 * The new table will only retain its directedness if {@code retainDimensions} is true
+	 * and will have the same representation as the original
+	 * table except that {@link FactorTableRepresentation#DETERMINISTIC} will become
+	 * {@link FactorTableRepresentation#SPARSE_ENERGY}.
+	 * <p>
+	 * @param valueIndices is an array of length {@link #getDimensions()} that specifies which
+	 * dimensions are to be conditioned away. Each entry in the array should either be
+	 * a negative value if the dimension is to be retained, or a non-negative value in
+	 * the range [0, <i>dimension-size</i> - 1].
+	 * @param retainDimensions if true, the new table will retain the same number of dimensions as
+	 * the original table, but the domains of the conditioned dimensions will become single-element
+	 * domains. Otherwise conditioned dimensions will be removed from the new table entirely.
+	 * <p>
+	 * @since 0.08
+	 * @see #createTableConditionedOn(int[])
+	 */
+	public IFactorTable createTableConditionedOn(int[] valueIndices, boolean retainDimensions);
+	
 	/**
 	 * Constructs a new factor table by appending dimensions for the specified {@code newDomains}.
 	 */

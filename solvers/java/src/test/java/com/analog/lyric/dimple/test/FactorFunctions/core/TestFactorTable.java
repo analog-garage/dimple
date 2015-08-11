@@ -34,8 +34,6 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import cern.colt.map.OpenIntIntHashMap;
-
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.collect.Comparators;
@@ -58,6 +56,8 @@ import com.analog.lyric.util.test.SerializationTester;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+
+import cern.colt.map.OpenIntIntHashMap;
 
 public class TestFactorTable extends DimpleTestBase
 {
@@ -613,27 +613,36 @@ public class TestFactorTable extends DimpleTestBase
 	
 	private void testConditionOn(IFactorTable table, int ... valueIndices)
 	{
-		IFactorTable newTable = table.createTableConditionedOn(valueIndices);
-		
-		JointDomainIndexer oldDomains = table.getDomainIndexer();
+		final JointDomainIndexer oldDomains = table.getDomainIndexer();
 		assertEquals(oldDomains.size(), valueIndices.length);
 		
-		JointDomainIndexer newDomains = newTable.getDomainIndexer();
+		final IFactorTable newTable = table.createTableConditionedOn(valueIndices);
+		 // retain same # of dimensions
+		final IFactorTable newTable2 = table.createTableConditionedOn(valueIndices, true);
+		
+		final JointDomainIndexer newDomains = newTable.getDomainIndexer();
+		final JointDomainIndexer newDomains2 = newTable2.getDomainIndexer();
+		assertEquals(oldDomains.size(), newDomains2.size());
 		
 		int nRemoved = 0;
 		int[] oldToNew = new int[oldDomains.size()];
 		int[] newToOld = new int[newDomains.size()];
 		for (int i = 0, j = 0; i < valueIndices.length; ++i)
 		{
+			final DiscreteDomain oldDomain = oldDomains.get(i);
+			final DiscreteDomain newDomain2 = newDomains2.get(i);
 			int valueIndex = valueIndices[i];
 			if (valueIndex < 0)
 			{
+				assertSame(newDomain2, oldDomain);
 				oldToNew[i] = j;
 				newToOld[j] = i;
 				++j;
 			}
 			else
 			{
+				assertEquals(1, newDomain2.size());
+				assertEquals(oldDomain.getElement(valueIndex), newDomain2.getElement(0));
 				oldToNew[i] = -1;
 				++nRemoved;
 			}
@@ -642,19 +651,26 @@ public class TestFactorTable extends DimpleTestBase
 		
 		int[] oldIndices = oldDomains.allocateIndices(null);
 		int[] newIndices = newDomains.allocateIndices(null);
+		int[] newIndices2 = newDomains2.allocateIndices(null);
 		DiscreteIndicesIterator newIndicesIterator = new DiscreteIndicesIterator(newDomains, newIndices);
+		DiscreteIndicesIterator newIndicesIterator2 = new DiscreteIndicesIterator(newDomains2, newIndices2);
 		while (newIndicesIterator.hasNext())
 		{
+			assertTrue(newIndicesIterator2.hasNext());
 			newIndicesIterator.next();
+			newIndicesIterator2.next();
 			for (int i = 0; i < oldIndices.length; ++i)
 			{
-				oldIndices[i] = oldToNew[i] >=0 ? newIndices[oldToNew[i]] : valueIndices[i];
+				final int vi = valueIndices[i];
+				oldIndices[i] = oldToNew[i] >=0 ? newIndices[oldToNew[i]] : vi;
+				assertEquals(oldIndices[i], vi < 0 ? newIndices2[i] : vi);
 			}
 			
 			double oldWeight = table.getWeightForIndices(oldIndices);
 			double newWeight = newTable.getWeightForIndices(newIndices);
+			double newWeight2 = newTable2.getWeightForIndices(newIndices2);
 			assertEquals(oldWeight, newWeight, 1e-12);
-		}
+			assertEquals(oldWeight, newWeight2, 1e-12);		}
 		
 		IFactorTableIterator oldIter = table.iterator();
 		outer:
@@ -683,6 +699,7 @@ public class TestFactorTable extends DimpleTestBase
 			double newWeight = newTable.getWeightForIndices(newIndices);
 			assertEquals(oldWeight, newWeight, 1e-12);
 		}
+		
 	}
 	
 	/**
