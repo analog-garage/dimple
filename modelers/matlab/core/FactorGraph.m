@@ -976,7 +976,7 @@ classdef FactorGraph < Node
             else
                 
                 
-                %Should return objects.  Eitehr a Factor or a Factor Graph
+                %Should return objects.  Either a Factor or a Factor Graph
                 retval = [];
                 
                 if isa(firstArg,'function_handle')
