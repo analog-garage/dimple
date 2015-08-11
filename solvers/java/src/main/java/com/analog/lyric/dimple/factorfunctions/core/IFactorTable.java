@@ -154,6 +154,14 @@ public interface IFactorTable extends IFactorTableBase
 	 */
 	public double[] getEnergySlice(int sliceDimension, int ... indices);
 	
+	/**
+	 * Returns an array of energies for the {@code sliceDimension} of the factor table with all other
+	 * dimensions fixed to provided values.
+	 * <p>
+	 * Same as {@link #getEnergySlice(int, int[])} but always allocates a new array.
+	 * <p>
+	 * @see #getWeightSlice(int, Value...)
+	 */
 	public double[] getEnergySlice(int sliceDimension, Value ... values);
 	
 	/**
@@ -175,7 +183,24 @@ public interface IFactorTable extends IFactorTableBase
 	 */
 	public double[] getEnergySlice(@Nullable double[] slice, int sliceDimension, int ... indices);
 	
-	public double[] getEnergySlice(@Nullable double[] slize, int sliceDimension, Value ... values);
+	/**
+	 * Returns an array of energies for the {@code sliceDimension} of the factor table with all other
+	 * dimensions fixed to provided values.
+	 * 
+	 * @param sliceDimension is an integer in the range [0, {@link #getDimensions()}-1] that identifies which
+	 * domain the slice is for.
+	 * @param values specifies the values of the fixed dimensions. The element value at position
+	 * {@code sliceDimension} will be ignored.
+	 * @param slice if non-null and large enough to accommodate the values will be used as the return value,
+	 * otherwise a new array will be allocated.
+	 * @return an array of energy values with size equal to the size of the {@code sliceDimension} of
+	 * the table (i.e. {@code getDomainIndexer().getDomainSize(sliceDimension)}) holding the energy values
+	 * from the table
+	 * <p>
+	 * @see #getEnergySlice(double[], int, int[])
+	 * @see #getWeightSlice(double[], int, Value...)
+	 */
+	public double[] getEnergySlice(@Nullable double[] slice, int sliceDimension, Value ... values);
 	
 	/**
 	 * Get factor function used to populate the table, if any.
@@ -247,6 +272,14 @@ public interface IFactorTable extends IFactorTableBase
 	 */
 	public double[] getWeightSlice(int sliceDimension, int ... indices);
 	
+	/**
+	 * Returns an array of weights for the {@code sliceDimension} of the factor table with all other
+	 * dimensions fixed to provided values.
+	 * <p>
+	 * Same as {@link #getWeightSlice(int, Value[])} but always allocates a new array.
+	 * <p>
+	 * @see #getEnergySlice(int, Value[])
+	 */
 	public double[] getWeightSlice(int sliceDimension, Value ... values);
 	
 	/**
@@ -268,6 +301,23 @@ public interface IFactorTable extends IFactorTableBase
 	 */
 	public double[] getWeightSlice(@Nullable double[] slice, int sliceDimension, int ... indices);
 	
+	/**
+	 * Returns an array of weights for the {@code sliceDimension} of the factor table with all other
+	 * dimensions fixed to provided values.
+	 * 
+	 * @param sliceDimension is an integer in the range [0, {@link #getDimensions()}-1] that identifies which
+	 * domain the slice is for.
+	 * @param values specifies the values of the fixed dimensions. The element value at position
+	 * {@code sliceDimension} will be ignored.
+	 * @param slice if non-null and large enough to accommodate the values will be used as the return value,
+	 * otherwise a new array will be allocated.
+	 * @return an array of weight values with size equal to the size of the {@code sliceDimension} of
+	 * the table (i.e. {@code getDomainIndexer().getDomainSize(sliceDimension)}) holding the weight values
+	 * from the table
+	 * <p>
+	 * @see #getWeightSlice(int, Value[])
+	 * @see #getEnergySlice(double[], int, Value[])
+	 */
 	public double[] getWeightSlice(@Nullable double[] slice, int sliceDimension, Value ... values);
 	
 	/**
