@@ -57,6 +57,9 @@ public class JunctionTreeTransformMap
 	private final FactorGraph _targetModel;
 	private final @Nullable Map<Factor,Factor> _sourceToTargetFactors;
 	private final @Nullable Map<Variable, Variable> _sourceToTargetVariables;
+	/**
+	 * Newly created joint variables that are deterministically computed from component variables.
+	 */
 	private final LinkedHashMap<Variable, AddedJointVariable<?>> _addedDeterministicVariables;
 	private final Set<Variable> _conditionedVariables;
 	
