@@ -77,6 +77,9 @@ public abstract class Domain implements Serializable
 	{
 		return _hashCode;
 	}
+	
+	@Override
+	public abstract boolean equals(@Nullable Object other);
 
 	/*----------------
 	 * Domain methods
