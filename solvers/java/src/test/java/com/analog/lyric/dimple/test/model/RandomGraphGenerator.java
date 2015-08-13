@@ -24,8 +24,6 @@ import java.util.Random;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import cern.colt.list.IntArrayList;
-
 import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
@@ -35,6 +33,8 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.google.common.collect.ObjectArrays;
+
+import cern.colt.list.IntArrayList;
 
 /**
  * Test helper class for generating test graphs.
@@ -459,6 +459,10 @@ public class RandomGraphGenerator
 	public Discrete newDiscrete(DiscreteDomain domain, @Nullable String name)
 	{
 		Discrete var = new Discrete(domain);
+		if (name != null)
+		{
+			var.setName(name);
+		}
 		return var;
 	}
 
