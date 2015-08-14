@@ -21,7 +21,6 @@ import static org.junit.Assert.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import org.junit.Test;
 
@@ -56,9 +55,7 @@ import com.google.common.math.DoubleMath;
  */
 public class TestJunctionTree extends DimpleTestBase
 {
-	private final long _seed = new Random().nextLong();
-	private final Random _rand = new Random(_seed);
-	private final RandomGraphGenerator _graphGenerator = new RandomGraphGenerator(_rand);
+	private final RandomGraphGenerator _graphGenerator = new RandomGraphGenerator(testRand);
 	
 	@Test
 	public void testSolverEquality()
@@ -104,6 +101,7 @@ public class TestJunctionTree extends DimpleTestBase
 	@Test
 	public void testStudentNetwork()
 	{
+//		testRand.setSeed(222282413083410127L);
 		testGraph(_graphGenerator.buildStudentNetwork());
 	}
 	
@@ -116,7 +114,7 @@ public class TestJunctionTree extends DimpleTestBase
 
 		for (int i = 0; i < nGraphs; ++i)
 		{
-			testGraph(gen.buildRandomGraph(_rand.nextInt(maxSize) + 10));
+			testGraph(gen.buildRandomGraph(testRand.nextInt(maxSize) + 10));
 		}
 		
 	}
@@ -129,9 +127,10 @@ public class TestJunctionTree extends DimpleTestBase
 		}
 		catch (Throwable ex)
 		{
-			String msg = String.format("%s. TestJunctionTreeTransform._seed==%dL", ex.toString(), _seed);
+			long seed = testRand.getSeed();
+			String msg = String.format("%s. TestJunctionTreeTransform._seed==%dL", ex.toString(), seed);
 			ex.printStackTrace(System.err);
-			System.err.format(">>> TestJunctionTreeTransform._seed==%dL;<<<\n", _seed);
+			System.err.format(">>> TestJunctionTreeTransform._seed==%dL;<<<\n", seed);
 			throw new RuntimeException(msg, ex);
 		}
 	}
@@ -149,9 +148,9 @@ public class TestJunctionTree extends DimpleTestBase
 		
 		// Choose a variable at random and give it a fixed value.
 		final VariableList variables = model.getVariables();
-		final int varIndex = _rand.nextInt(variables.size());
+		final int varIndex = testRand.nextInt(variables.size());
 		final Discrete variable = variables.getByIndex(varIndex).asDiscreteVariable();
-		final int valueIndex = _rand.nextInt(variable.getDomain().size());
+		final int valueIndex = testRand.nextInt(variable.getDomain().size());
 		variable.asDiscreteVariable().setPriorIndex(valueIndex);
 		
 		testGraphImpl(model, useMap, false);
@@ -167,7 +166,7 @@ public class TestJunctionTree extends DimpleTestBase
 		JunctionTreeSolverGraphBase<?> jtgraph =
 			model.createSolver(useMap ? new JunctionTreeMAPSolver() : new JunctionTreeSolver());
 		jtgraph.useConditioning(useConditioning);
-		jtgraph.getTransformer().random(_rand); // set random generator so we can reproduce failures
+		jtgraph.getTransformer().random(testRand); // set random generator so we can reproduce failures
 		model.solve();
 		
 		FactorGraph transformedModel = requireNonNull(jtgraph.getDelegate()).getModelObject();
@@ -305,7 +304,7 @@ public class TestJunctionTree extends DimpleTestBase
 					Discrete var2 = (Discrete)entry.getValue();
 					if (!var.hasFixedValue())
 					{
-						int guessIndex = _rand.nextInt(var.getDomain().size());
+						int guessIndex = testRand.nextInt(var.getDomain().size());
 						var.setGuessIndex(guessIndex);
 						var2.setGuessIndex(guessIndex);
 						assertEquals(var.getScore(), var2.getScore(), 1e-14);
