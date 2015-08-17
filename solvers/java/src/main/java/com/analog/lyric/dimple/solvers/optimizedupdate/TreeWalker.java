@@ -62,7 +62,7 @@ final class TreeWalker<T>
 		List<Integer> indices = new ArrayList<Integer>(dimensions);
 		for (int i = 0; i < dimensions; i++)
 		{
-			indices.add(i);
+				indices.add(i);
 			domainSizes[i] = domainIndexer.getDomainSize(i);
 		}
 		Comparator<Integer> comparator = new Comparator<Integer>() {
@@ -71,7 +71,7 @@ final class TreeWalker<T>
 			public int compare(Integer i, Integer j)
 			{
 				// Decreasing order
-				return 0 - Integer.compare(domainSizes[i], domainSizes[j]);
+				return Integer.compare(domainSizes[j], domainSizes[i]);
 			}
 		};
 		Collections.sort(indices, comparator);
