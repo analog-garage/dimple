@@ -697,7 +697,7 @@ public abstract class JointDomainReindexer
 	
 	/**
 	 * Computes {@link Indices#toIndices} and {@link Indices#removedIndices} fields of {@code indices}
-	 * assuming that {@link Indices#fromIndices}, {@link Indices#toIndices} and {@link Indices#joinedIndices}
+	 * assuming that {@link Indices#fromIndices}, {@link Indices#addedIndices} and {@link Indices#joinedIndices}
 	 * have already been set.
 	 */
 	public abstract void convertIndices(Indices indices);
