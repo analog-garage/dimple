@@ -33,6 +33,8 @@ public class Constant extends SimpleFactorGraphChild implements IConstantOrVaria
 	
 	private final Value _constant;
 	
+	// TODO add reference count so that we know when it is safe to delete a Constant
+	
 	/*--------------
 	 * Construction
 	 */
@@ -50,7 +52,7 @@ public class Constant extends SimpleFactorGraphChild implements IConstantOrVaria
 	/*-------------------
 	 * Constant methods
 	 */
-	
+
 	public Value value()
 	{
 		return _constant;
