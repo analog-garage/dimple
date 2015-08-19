@@ -129,7 +129,7 @@ public class MatrixVectorProduct extends FactorFunction
     	final int outLength = _outLength;
     	final int inLength = _inLength;
     	
-    	final int nEdges = factor.getFactorArgumentCount();
+    	final int nEdges = factor.getArgumentCount();
     	final int nInputEdges = nEdges - outLength;
     	
     	final int matrixSize = outLength * inLength;
@@ -139,12 +139,12 @@ public class MatrixVectorProduct extends FactorFunction
     	int vectorOffset = matrixOffset;
     	
     	if (nInputEdges == matrixSize + vectorSize ||
-    		nInputEdges == matrixSize + 1 && factor.hasConstantOfType(nEdges - 1, double[].class))
+    		nInputEdges == matrixSize + 1 && factor.hasConstantAtIndexOfType(nEdges - 1, double[].class))
     	{
     		vectorOffset += matrixSize;
     	}
     	else if (nInputEdges == 2 ||
-    		nInputEdges == vectorSize + 1 && factor.hasConstantOfType(matrixOffset, double[][].class))
+    		nInputEdges == vectorSize + 1 && factor.hasConstantAtIndexOfType(matrixOffset, double[][].class))
     	{
     		vectorOffset += 1;
     	}

@@ -142,24 +142,24 @@ public class CustomBeta extends GibbsRealFactor implements IRealConjugateFactor
 		}
 		else	// Variable or constant parameters
 		{
-			_hasConstantAlpha = factor.isConstantIndex(ALPHA_PARAMETER_INDEX);
+			_hasConstantAlpha = factor.hasConstantAtIndex(ALPHA_PARAMETER_INDEX);
 			if (_hasConstantAlpha)	// Constant mean
 				_constantAlphaMinusOneValue =
 				requireNonNull(factor.getConstantValueByIndex(ALPHA_PARAMETER_INDEX)).getDouble() - 1;
 			else					// Variable mean
 			{
-				_alphaParameterPort = factor.getEdgeByIndex(ALPHA_PARAMETER_INDEX);
+				_alphaParameterPort = factor.argIndexToSiblingNumber(ALPHA_PARAMETER_INDEX);
 				_alphaVariable = (GibbsReal)getSibling(_alphaParameterPort);
 				_numParameterEdges++;
 			}
 			
-			_hasConstantBeta = factor.isConstantIndex(BETA_PARAMETER_INDEX);
+			_hasConstantBeta = factor.hasConstantAtIndex(BETA_PARAMETER_INDEX);
 			if (_hasConstantBeta)	// Constant precision
 				_constantBetaMinusOneValue =
 				requireNonNull(factor.getConstantValueByIndex(BETA_PARAMETER_INDEX)).getDouble() - 1;
 			else 						// Variable precision
 			{
-				_betaParameterPort = factor.getEdgeByIndex(BETA_PARAMETER_INDEX);
+				_betaParameterPort = factor.argIndexToSiblingNumber(BETA_PARAMETER_INDEX);
 				_betaVariable = (GibbsReal)getSibling(_betaParameterPort);
 				_numParameterEdges++;
 			}

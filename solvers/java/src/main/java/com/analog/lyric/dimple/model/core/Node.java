@@ -934,7 +934,7 @@ public abstract class Node extends FactorGraphChild implements INode
 	 * @category internal
 	 */
 	@Internal
-	protected void setFactorArguments(int[] argids)
+	protected void setArguments(int[] argids)
 	{
 	}
 	

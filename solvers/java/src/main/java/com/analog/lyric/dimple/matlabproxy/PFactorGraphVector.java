@@ -312,14 +312,14 @@ public class PFactorGraphVector extends PFactorBaseVector
 		PNodeVector [][] args = PHelpers.extractVectorization(nodes, intIndices);
 		
 		final Factor modelFactor = factor.getFactor(0);
-		final int nArgs = modelFactor.getFactorArgumentCount();
+		final int nArgs = modelFactor.getArgumentCount();
 		Object[] argsWithConstants = null;
 		if (modelFactor.hasConstants())
 		{
 			argsWithConstants = new Object[nArgs];
 			for (int j = 0; j < nArgs; ++j)
 			{
-				IConstantOrVariable arg = modelFactor.getFactorArgument(j);
+				IConstantOrVariable arg = modelFactor.getArgument(j);
 				if (arg instanceof Constant)
 				{
 					argsWithConstants[j] = arg;
@@ -335,7 +335,7 @@ public class PFactorGraphVector extends PFactorBaseVector
 			{
 				for (int j = 0; j < argsi.length; ++j)
 				{
-					argsWithConstants[modelFactor.getIndexByEdge(j)] = argsi[j];
+					argsWithConstants[modelFactor.siblingNumberToArgIndex(j)] = argsi[j];
 				}
 				argsi = argsWithConstants;
 			}

@@ -129,7 +129,7 @@ public class CustomPoisson extends GibbsRealFactor implements IRealConjugateFact
 		_outputVariable = null;
 		if (specificFactorFunction.hasConstantLambdaParameter())		// Lambda parameter is constructor constant
 		{
-			_hasConstantOutput = factor.isConstantIndex(OUTPUT_INDEX_FIXED_LAMBDA);
+			_hasConstantOutput = factor.hasConstantAtIndex(OUTPUT_INDEX_FIXED_LAMBDA);
 			if (_hasConstantOutput)
 			{
 				_constantOutputValue =
@@ -137,23 +137,23 @@ public class CustomPoisson extends GibbsRealFactor implements IRealConjugateFact
 			}
 			else
 			{
-				int outputEdge = factor.getEdgeByIndex(OUTPUT_INDEX_FIXED_LAMBDA);
+				int outputEdge = factor.argIndexToSiblingNumber(OUTPUT_INDEX_FIXED_LAMBDA);
 				_outputVariable = (GibbsDiscrete)getSibling(outputEdge);
 			}
 		}
 		else	// Variable or constant lambda parameter
 		{
-			if (!factor.isConstantIndex(LAMBDA_PARAMETER_INDEX))
-				_lambdaParameterEdge = factor.getEdgeByIndex(LAMBDA_PARAMETER_INDEX);
+			if (!factor.hasConstantAtIndex(LAMBDA_PARAMETER_INDEX))
+				_lambdaParameterEdge = factor.argIndexToSiblingNumber(LAMBDA_PARAMETER_INDEX);
 			
-			_hasConstantOutput = factor.isConstantIndex(OUTPUT_INDEX);
+			_hasConstantOutput = factor.hasConstantAtIndex(OUTPUT_INDEX);
 			if (_hasConstantOutput)
 			{
 				_constantOutputValue = requireNonNull(factor.getConstantValueByIndex(OUTPUT_INDEX)).getInt();
 			}
 			else
 			{
-				int outputEdge = factor.getEdgeByIndex(OUTPUT_INDEX);
+				int outputEdge = factor.argIndexToSiblingNumber(OUTPUT_INDEX);
 				_outputVariable = (GibbsDiscrete)getSibling(outputEdge);
 			}
 		}

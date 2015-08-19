@@ -213,11 +213,11 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 		}
 		else	// Variable or constant N parameter
 		{
-			_hasConstantN = factor.isConstantIndex(N_PARAMETER_INDEX);
+			_hasConstantN = factor.hasConstantAtIndex(N_PARAMETER_INDEX);
 			if (_hasConstantN)
 				_constantN = requireNonNull(factor.getConstantValueByIndex(N_PARAMETER_INDEX)).getInt();
 			else
-				_NVariable = (GibbsDiscrete)getSibling(factor.getEdgeByIndex(N_PARAMETER_INDEX));
+				_NVariable = (GibbsDiscrete)getSibling(factor.argIndexToSiblingNumber(N_PARAMETER_INDEX));
 			alphaParameterIndex = ALPHA_PARAMETER_INDEX;
 			outputMinIndex = OUTPUT_MIN_INDEX;
 		}
@@ -227,7 +227,7 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 		_constantAlpha = null;
 		_alphaVariable = null;
 		_alphaParameterEdge = NO_PORT;
-		if (factor.isConstantIndex(alphaParameterIndex))
+		if (factor.hasConstantAtIndex(alphaParameterIndex))
 		{
 			_hasConstantAlpha = true;
 			_constantAlpha =
@@ -235,7 +235,7 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 		}
 		else
 		{
-			_alphaParameterEdge = factor.getEdgeByIndex(alphaParameterIndex);
+			_alphaParameterEdge = factor.argIndexToSiblingNumber(alphaParameterIndex);
 			_alphaVariable = (GibbsRealJoint)getSibling(_alphaParameterEdge);
 		}
 		
@@ -243,7 +243,7 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 		
 		// Save the output constant or variables as well
 		final int nEdges = getSiblingCount();
-		int numOutputEdges = nEdges - factor.getEdgeByIndex(outputMinIndex);
+		int numOutputEdges = nEdges - factor.argIndexToSiblingNumber(outputMinIndex);
 		final GibbsDiscrete[] outputVariables = _outputVariables = new GibbsDiscrete[numOutputEdges];
 		_hasConstantOutputs = factor.hasConstantAtOrAboveIndex(outputMinIndex);
 		_constantOutputCounts = null;
@@ -257,7 +257,7 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 			final int[] constantOutputCounts = _constantOutputCounts = new int[numConstantOutputs];
 			for (int i = 0, index = outputMinIndex; i < _dimension; i++, index++)
 			{
-				if (factor.isConstantIndex(index))
+				if (factor.hasConstantAtIndex(index))
 				{
 					hasConstantOutput[i] = true;
 					constantOutputCounts[i] = requireNonNull(factor.getConstantValueByIndex(index)).getInt();
@@ -265,7 +265,7 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 				else
 				{
 					hasConstantOutput[i] = false;
-					int outputEdge = factor.getEdgeByIndex(index);
+					int outputEdge = factor.argIndexToSiblingNumber(index);
 					outputVariables[i] = (GibbsDiscrete)solvers.getSolverVariable(siblings.get(outputEdge));
 				}
 			}
@@ -275,7 +275,7 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 			_dimension = numOutputEdges;
 			for (int i = 0, index = outputMinIndex; i < _dimension; i++, index++)
 			{
-				int outputEdge = factor.getEdgeByIndex(index);
+				int outputEdge = factor.argIndexToSiblingNumber(index);
 				outputVariables[i] = (GibbsDiscrete)solvers.getSolverVariable(siblings.get(outputEdge));
 			}
 		}

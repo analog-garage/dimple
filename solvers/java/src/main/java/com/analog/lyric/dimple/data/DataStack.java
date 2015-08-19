@@ -174,7 +174,7 @@ public class DataStack extends AbstractList<DataLayer<?>> implements IVariableTo
 		Value[] values = null;
 		for (Factor factor : FactorGraphIterables.factors(root))
 		{
-			values = factor.fillFactorArguments(this, null);
+			values = factor.fillInArgumentValues(this, null);
 			energy += factor.evalEnergy(values);
 			if (energy == Double.POSITIVE_INFINITY)
 			{

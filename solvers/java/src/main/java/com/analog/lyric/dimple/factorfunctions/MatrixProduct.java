@@ -140,20 +140,20 @@ public class MatrixProduct extends FactorFunction
     	final int in2Cols = _Nc;
     	final int in2Size = in2Rows * in2Cols;
     	
-    	final int numEdges = factor.getFactorArgumentCount();
+    	final int numEdges = factor.getArgumentCount();
     	final int nInputEdges = numEdges - outSize;
     	
     	final int in1Offset = outSize;
     	
     	int in2Offset = in1Offset;
     	if (nInputEdges == in1Size + in2Size ||
-    		nInputEdges == in1Size + 1 && factor.hasConstantOfType(numEdges - 1, double[][].class))
+    		nInputEdges == in1Size + 1 && factor.hasConstantAtIndexOfType(numEdges - 1, double[][].class))
     	{
     		// First input matrix is flattened out.
     		in2Offset += in1Size;
     	}
     	else if (nInputEdges == 2 ||
-    		nInputEdges == in2Size + 1 && factor.hasConstantOfType(in1Offset, double[][].class))
+    		nInputEdges == in2Size + 1 && factor.hasConstantAtIndexOfType(in1Offset, double[][].class))
     	{
     		// First input matrix is a constant
     		in2Offset += 1;

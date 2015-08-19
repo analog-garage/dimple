@@ -60,7 +60,7 @@ public class CustomNormalConstantParameters extends GaussianFactorBase
 		NormalParameters outputMessage;
 		if (specificFactorFunction.hasConstantParameters())
 			outputMessage = specificFactorFunction.getParameters();
-		else if (factor.isConstantIndex(MEAN_PARAMETER_INDEX) && factor.isConstantIndex(PRECISION_PARAMETER_INDEX))
+		else if (factor.hasConstantAtIndex(MEAN_PARAMETER_INDEX) && factor.hasConstantAtIndex(PRECISION_PARAMETER_INDEX))
 		{
 			double mean = requireNonNull(factor.getConstantValueByIndex(MEAN_PARAMETER_INDEX)).getDouble();
 			double precision =
@@ -85,7 +85,7 @@ public class CustomNormalConstantParameters extends GaussianFactorBase
 		boolean constantParameters = false;
 		if (specificFactorFunction.hasConstantParameters())
 			constantParameters = true;
-		else if (factor.isConstantIndex(MEAN_PARAMETER_INDEX) && factor.isConstantIndex(PRECISION_PARAMETER_INDEX))
+		else if (factor.hasConstantAtIndex(MEAN_PARAMETER_INDEX) && factor.hasConstantAtIndex(PRECISION_PARAMETER_INDEX))
 			constantParameters = true;
 
 		if (!constantParameters)

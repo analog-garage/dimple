@@ -241,7 +241,7 @@ public abstract class FactorFunction implements IFactorFunction
 	 */
 	public boolean factorTableExists(Factor factor)
 	{
-		return factorTableExists(factor.getFactorArgumentDomains().asJointDomainIndexer());
+		return factorTableExists(factor.getArgumentDomains().asJointDomainIndexer());
 	}
 
 	
@@ -338,7 +338,7 @@ public abstract class FactorFunction implements IFactorFunction
      */
     public IFactorTable getFactorTable(Factor factor)
     {
-		final JointDomainIndexer argDomains = requireNonNull(factor.getFactorArgumentDomains().asJointDomainIndexer());
+		final JointDomainIndexer argDomains = requireNonNull(factor.getArgumentDomains().asJointDomainIndexer());
 		IFactorTable table = getFactorTable(argDomains);
 		if (factor.hasConstants())
 		{
@@ -348,7 +348,7 @@ public abstract class FactorFunction implements IFactorFunction
 			final int[] oldToNew = new int[nArgs];
 			for (int i = 0, keep = 0, remove = edgeDomains.size(); i < nArgs; ++i)
 			{
-				oldToNew[i] = factor.isConstantIndex(i) ? remove++ : keep++;
+				oldToNew[i] = factor.hasConstantAtIndex(i) ? remove++ : keep++;
 			}
 			JointDomainReindexer converter = JointDomainReindexer.createPermuter(argDomains, edgeDomains, oldToNew);
 			table = table.convert(converter);
@@ -378,7 +378,7 @@ public abstract class FactorFunction implements IFactorFunction
      */
     public @Nullable IFactorTable getFactorTableIfExists(Factor factor)
     {
-    	return getFactorTableIfExists(factor.getFactorArgumentDomains().asJointDomainIndexer());
+    	return getFactorTableIfExists(factor.getArgumentDomains().asJointDomainIndexer());
     }
     
 	@Override

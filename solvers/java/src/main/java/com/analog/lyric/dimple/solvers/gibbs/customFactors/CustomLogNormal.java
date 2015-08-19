@@ -219,24 +219,24 @@ public class CustomLogNormal extends GibbsRealFactor implements IRealConjugateFa
 		}
 		else	// Variable or constant parameters
 		{
-			_hasConstantMean = factor.isConstantIndex(MEAN_PARAMETER_INDEX);
+			_hasConstantMean = factor.hasConstantAtIndex(MEAN_PARAMETER_INDEX);
 			if (_hasConstantMean)	// Constant mean
 				_constantMeanValue =
 					requireNonNull(factor.getConstantValueByIndex(MEAN_PARAMETER_INDEX)).getDouble();
 			else					// Variable mean
 			{
-				_meanParameterPort = factor.getEdgeByIndex(MEAN_PARAMETER_INDEX);
+				_meanParameterPort = factor.argIndexToSiblingNumber(MEAN_PARAMETER_INDEX);
 				_meanVariable = (GibbsReal)getSibling(_meanParameterPort);
 				_numParameterEdges++;
 			}
 			
-			_hasConstantPrecision = factor.isConstantIndex(PRECISION_PARAMETER_INDEX);
+			_hasConstantPrecision = factor.hasConstantAtIndex(PRECISION_PARAMETER_INDEX);
 			if (_hasConstantPrecision)	// Constant precision
 				_constantPrecisionValue =
 					requireNonNull(factor.getConstantValueByIndex(PRECISION_PARAMETER_INDEX)).getDouble();
 			else 						// Variable precision
 			{
-				_precisionParameterPort = factor.getEdgeByIndex(PRECISION_PARAMETER_INDEX);
+				_precisionParameterPort = factor.argIndexToSiblingNumber(PRECISION_PARAMETER_INDEX);
 				_precisionVariable = (GibbsReal)getSibling(_precisionParameterPort);
 				_numParameterEdges++;
 			}

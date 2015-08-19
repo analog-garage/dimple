@@ -109,7 +109,7 @@ public class CustomMultivariateGaussianSum extends MultivariateGaussianFactorBas
 		
 		// Pre-compute sum associated with any constant edges
 		final Factor factor = _model;
-		_sumPort = factor.isConstantIndex(_sumIndex) ? -1 : _sumIndex;	// If sum isn't a variable, then set port to invalid value
+		_sumPort = factor.hasConstantAtIndex(_sumIndex) ? -1 : _sumIndex;	// If sum isn't a variable, then set port to invalid value
 		int dimension = getSiblingEdgeState(0).varToFactorMsg.getVectorLength();
 		_constantSum = new double[dimension];	// Assume all zero
 		if (_model.hasConstants())

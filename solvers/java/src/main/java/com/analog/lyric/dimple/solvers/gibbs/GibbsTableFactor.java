@@ -110,7 +110,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 		
 		final Factor factor = _model;
 		final int outPortNum = modelEdge.getFactorToVariableEdgeNumber();
-		final int outIndex = factor.getIndexByEdge(outPortNum);
+		final int outIndex = factor.siblingNumberToArgIndex(outPortNum);
 		final double[] outMessage = ((DiscreteMessage)solverEdge.factorToVarMsg).representation();
 
 		final IFactorTable factorTable = getFactorTableIfComputed();
@@ -205,7 +205,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	@Override
 	public void updateNeighborVariableValue(int variableIndex, Value oldValue)
 	{
-		final int argIndex = _model.getIndexByEdge(variableIndex);
+		final int argIndex = _model.siblingNumberToArgIndex(variableIndex);
 		((GibbsSolverGraph)getRootSolverGraph()).scheduleDeterministicDirectedUpdate(this, argIndex, oldValue);
 	}
 	
@@ -223,7 +223,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 		{
 			for (int to : directedTo)
 			{
-				final int outputIndex = factor.getIndexByEdge(to);
+				final int outputIndex = factor.siblingNumberToArgIndex(to);
 				Variable variable = factor.getSibling(to);
 				// FIXME: is sample value already set? Just need to handle side effects?
 				ISolverVariableGibbs svar = (ISolverVariableGibbs) solvers.getSolverVariable(variable);
@@ -238,14 +238,14 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 		super.initialize();
 
 		_isDeterministicDirected = _model.getFactorFunction().isDeterministicDirected();
-    	_currentSamples = _model.fillFactorArguments(_parent, _currentSamples);
+    	_currentSamples = _model.fillInArgumentValues(_parent, _currentSamples);
 	}
 
 	@Deprecated
 	@Override
 	public DiscreteValue getInputMsg(int portIndex)
 	{
-		return (DiscreteValue)_currentSamples[_model.getIndexByEdge(portIndex)];
+		return (DiscreteValue)_currentSamples[_model.siblingNumberToArgIndex(portIndex)];
 	}
 
 	@Deprecated
@@ -305,7 +305,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 			samples = new Value[factor.getSiblingCount()];
 			for (int i = samples.length; --i>=0;)
 			{
-				samples[i] = _currentSamples[factor.getIndexByEdge(i)];
+				samples[i] = _currentSamples[factor.siblingNumberToArgIndex(i)];
 			}
 		}
 		return samples;

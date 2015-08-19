@@ -16,7 +16,8 @@
 
 package com.analog.lyric.dimple.factorfunctions.core;
 
-import java.util.Collections;
+import static java.util.Objects.*;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -42,7 +43,7 @@ public class TableFactorFunction extends FactorFunction
 	private final IFactorTable _factorTable;
 	
 	private final int[] _argNumberToTableDimension;
-	private final List<Value> _constants;
+	private final @Nullable Value[] _constants;
 	
 	/*
 	 * Construction
@@ -53,7 +54,7 @@ public class TableFactorFunction extends FactorFunction
 		super();
 		_factorTable = factorTable;
 		_argNumberToTableDimension = argNumberToTableDimension;
-		_constants = constants;
+		_constants = constants.toArray(new Value[constants.size()]);
 	}
 	
 	public TableFactorFunction(String name, IFactorTable factorTable)
@@ -61,12 +62,12 @@ public class TableFactorFunction extends FactorFunction
 		super(name);
 		_factorTable = factorTable;
 		_argNumberToTableDimension = ArrayUtil.EMPTY_INT_ARRAY;
-		_constants = Collections.emptyList();
+		_constants = null;
 	}
 	
 	public static TableFactorFunction forFactor(Factor factor, IFactorTable factorTable)
 	{
-		return new TableFactorFunction(factorTable,	factor.getFactorArgumentToSiblingNumberMapping(),
+		return new TableFactorFunction(factorTable,	factor.getArgIndexToToSiblingNumberMapping(),
 			factor.getConstantValues());
 	}
 	
@@ -128,7 +129,7 @@ public class TableFactorFunction extends FactorFunction
 				}
 				else
 				{
-					final Value constant = _constants.get(j - nDims);
+					final Value constant = requireNonNull(_constants)[j - nDims];
 					if (!constant.valueEquals(value))
 					{
 						return Double.POSITIVE_INFINITY;

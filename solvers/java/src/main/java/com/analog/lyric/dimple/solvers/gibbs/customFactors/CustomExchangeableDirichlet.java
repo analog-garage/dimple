@@ -129,7 +129,7 @@ public class CustomExchangeableDirichlet extends GibbsRealFactor implements IRea
 		}
 		else // Variable or constant parameter
 		{
-			_hasConstantParameters = factor.isConstantIndex(PARAMETER_INDEX);
+			_hasConstantParameters = factor.hasConstantAtIndex(PARAMETER_INDEX);
 			if (_hasConstantParameters)
 			{
 				_numParameterEdges = 0;

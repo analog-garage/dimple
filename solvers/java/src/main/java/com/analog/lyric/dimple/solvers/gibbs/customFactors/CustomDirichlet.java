@@ -137,7 +137,7 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 		}
 		else // Variable or constant parameter
 		{
-			_hasConstantParameters = factor.isConstantIndex(PARAMETER_INDEX);
+			_hasConstantParameters = factor.hasConstantAtIndex(PARAMETER_INDEX);
 			if (_hasConstantParameters)
 			{
 				_numParameterEdges = 0;
@@ -151,7 +151,7 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 			{
 				_numParameterEdges = 1;
 				_constantAlphaMinusOne = null;
-				_alphaVariable = (GibbsRealJoint)getSibling(factor.getEdgeByIndex(PARAMETER_INDEX));
+				_alphaVariable = (GibbsRealJoint)getSibling(factor.argIndexToSiblingNumber(PARAMETER_INDEX));
 				_dimension = requireNonNull(_alphaVariable).getDimension();
 			}
 		}

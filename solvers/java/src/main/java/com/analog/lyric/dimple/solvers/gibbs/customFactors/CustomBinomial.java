@@ -151,22 +151,22 @@ public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFac
 			_hasConstantNParameter = true;
 			_constantNParameterValue = specificFactorFunction.getN();
 			
-			if (!factor.isConstantIndex(P_PARAMETER_INDEX_FIXED_N))
-				_probabilityParameterEdge = factor.getEdgeByIndex(P_PARAMETER_INDEX_FIXED_N);
+			if (!factor.hasConstantAtIndex(P_PARAMETER_INDEX_FIXED_N))
+				_probabilityParameterEdge = factor.argIndexToSiblingNumber(P_PARAMETER_INDEX_FIXED_N);
 			
-			_hasConstantOutput = factor.isConstantIndex(OUTPUT_INDEX_FIXED_N);
+			_hasConstantOutput = factor.hasConstantAtIndex(OUTPUT_INDEX_FIXED_N);
 			if (_hasConstantOutput)
 				_constantOutputValue =
 					requireNonNull(factor.getConstantValueByIndex(OUTPUT_INDEX_FIXED_N)).getInt();
 			else
 			{
-				int outputEdge = factor.getEdgeByIndex(OUTPUT_INDEX_FIXED_N);
+				int outputEdge = factor.argIndexToSiblingNumber(OUTPUT_INDEX_FIXED_N);
 				_outputVariable = (GibbsDiscrete)getSibling(outputEdge);
 			}
 		}
 		else	// Variable or constant N parameter
 		{
-			_hasConstantNParameter = factor.isConstantIndex(N_PARAMETER_INDEX);
+			_hasConstantNParameter = factor.hasConstantAtIndex(N_PARAMETER_INDEX);
 			if (_hasConstantNParameter)
 			{
 				_constantNParameterValue =
@@ -174,21 +174,21 @@ public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFac
 			}
 			else
 			{
-				int nParameterEdge = factor.getEdgeByIndex(N_PARAMETER_INDEX);
+				int nParameterEdge = factor.argIndexToSiblingNumber(N_PARAMETER_INDEX);
 				_NParameterVariable = (GibbsDiscrete)getSibling(nParameterEdge);
 			}
 			
-			if (!factor.isConstantIndex(P_PARAMETER_INDEX))
-				_probabilityParameterEdge = factor.getEdgeByIndex(P_PARAMETER_INDEX);
+			if (!factor.hasConstantAtIndex(P_PARAMETER_INDEX))
+				_probabilityParameterEdge = factor.argIndexToSiblingNumber(P_PARAMETER_INDEX);
 			
-			_hasConstantOutput = factor.isConstantIndex(OUTPUT_INDEX);
+			_hasConstantOutput = factor.hasConstantAtIndex(OUTPUT_INDEX);
 			if (_hasConstantOutput)
 			{
 				_constantOutputValue = requireNonNull(factor.getConstantValueByIndex(OUTPUT_INDEX)).getInt();
 			}
 			else
 			{
-				int outputEdge = factor.getEdgeByIndex(OUTPUT_INDEX);
+				int outputEdge = factor.argIndexToSiblingNumber(OUTPUT_INDEX);
 				_outputVariable = (GibbsDiscrete)getSibling(outputEdge);
 			}
 		}

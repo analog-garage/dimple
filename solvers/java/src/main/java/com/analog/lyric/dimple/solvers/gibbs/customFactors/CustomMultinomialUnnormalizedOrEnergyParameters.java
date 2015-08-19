@@ -103,7 +103,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 			GammaParameters outputMsg = (GammaParameters)solverEdge.factorToVarMsg;
 
 			// The parameter being updated corresponds to this value
-			int parameterOffset = _model.getIndexByEdge(portNum) - _alphaParameterMinIndex;
+			int parameterOffset = _model.siblingNumberToArgIndex(portNum) - _alphaParameterMinIndex;
 
 			// Get the count from the corresponding output
 			int count = _hasConstantOutputs ? _constantOutputCounts[parameterOffset] : _outputVariables[parameterOffset].getCurrentSampleIndex();
@@ -247,11 +247,11 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 			_hasConstantN = true;
 		else	// Variable or constant N
 		{
-			_hasConstantN = factor.isConstantIndex(N_PARAMETER_INDEX);
+			_hasConstantN = factor.hasConstantAtIndex(N_PARAMETER_INDEX);
 			if (_hasConstantN)
 				_constantN = requireNonNull(factor.getConstantValueByIndex(N_PARAMETER_INDEX)).getInt();
 			else
-				_NVariable = (GibbsDiscrete)getSibling(factor.getEdgeByIndex(N_PARAMETER_INDEX));
+				_NVariable = (GibbsDiscrete)getSibling(factor.argIndexToSiblingNumber(N_PARAMETER_INDEX));
 		}
 		
 		final SolverNodeMapping solvers = getSolverMapping();
@@ -261,8 +261,8 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 		_hasConstantAlpha = null;
 		_constantAlpha = null;
 		final GibbsReal[] alphaVariables = _alphaVariables = new GibbsReal[_dimension];
-		_alphaParameterMinEdge = factor.getEdgeByIndex(_alphaParameterMinEdge);
-		_alphaParameterMaxEdge = factor.getEdgeByIndex(alphaParameterMaxIndex);
+		_alphaParameterMinEdge = factor.argIndexToSiblingNumber(_alphaParameterMinEdge);
+		_alphaParameterMaxEdge = factor.argIndexToSiblingNumber(alphaParameterMaxIndex);
 		if (factor.hasConstantsInIndexRange(_alphaParameterMinIndex, alphaParameterMaxIndex))	// Some constant alphas
 		{
 			_hasConstantAlphas = true;
@@ -270,7 +270,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 			final double[] constantAlpha = _constantAlpha = new double[_dimension];
 			for (int i = 0, index = _alphaParameterMinIndex; i < _dimension; i++, index++)
 			{
-				if (factor.isConstantIndex(index))
+				if (factor.hasConstantAtIndex(index))
 				{
 					hasConstantAlpha[i] = true;
 					constantAlpha[i] = requireNonNull(factor.getConstantValueByIndex(index)).getDouble();
@@ -278,7 +278,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 				else
 				{
 					hasConstantAlpha[i] = false;
-					int alphaEdge = factor.getEdgeByIndex(index);
+					int alphaEdge = factor.argIndexToSiblingNumber(index);
 					alphaVariables[i] = (GibbsReal)solvers.getSolverVariable(siblings.get(alphaEdge));
 				}
 			}
@@ -287,7 +287,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 		{
 			for (int i = 0, index = _alphaParameterMinIndex; i < _dimension; i++, index++)
 			{
-				int alphaEdge = factor.getEdgeByIndex(index);
+				int alphaEdge = factor.argIndexToSiblingNumber(index);
 				alphaVariables[i] = (GibbsReal)solvers.getSolverVariable(siblings.get(alphaEdge));
 			}
 		}
@@ -295,7 +295,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 		
 		// Save the output constant or variables as well
 		final int nEdges = getSiblingCount();
-		int numOutputEdges = nEdges - factor.getEdgeByIndex(outputMinIndex);
+		int numOutputEdges = nEdges - factor.argIndexToSiblingNumber(outputMinIndex);
 		_hasConstantOutputs = factor.hasConstantAtOrAboveIndex(outputMinIndex);
 		final GibbsDiscrete[] outputVariables = _outputVariables = new GibbsDiscrete[numOutputEdges];
 		_hasConstantOutputs = factor.hasConstantAtOrAboveIndex(outputMinIndex);
@@ -306,13 +306,13 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 			final int[] constantOutputCounts = _constantOutputCounts = new int[numConstantOutputs];
 			for (int i = 0, index = outputMinIndex; i < _dimension; i++, index++)
 			{
-				if (factor.isConstantIndex(index))
+				if (factor.hasConstantAtIndex(index))
 				{
 					constantOutputCounts[i] = requireNonNull(factor.getConstantValueByIndex(index)).getInt();
 				}
 				else
 				{
-					int outputEdge = factor.getEdgeByIndex(index);
+					int outputEdge = factor.argIndexToSiblingNumber(index);
 					outputVariables[i] = (GibbsDiscrete)solvers.getSolverVariable(siblings.get(outputEdge));
 				}
 			}
@@ -321,7 +321,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 		{
 			for (int i = 0, index = outputMinIndex; i < _dimension; i++, index++)
 			{
-				int outputEdge = factor.getEdgeByIndex(index);
+				int outputEdge = factor.argIndexToSiblingNumber(index);
 				outputVariables[i] = (GibbsDiscrete)solvers.getSolverVariable(siblings.get(outputEdge));
 			}
 		}

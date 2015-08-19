@@ -125,20 +125,20 @@ public class DiscreteFactor extends Factor
 	}
 
 	@Override
-	public JointDomainIndexer getFactorArgumentDomains()
+	public JointDomainIndexer getArgumentDomains()
 	{
 		JointDomainIndexer domainList = _factorArgumentDomains;
 		
 		if (domainList == null)
 		{
-			super.getFactorArgumentDomains();
-			int numArgs = getFactorArgumentCount();
+			super.getArgumentDomains();
+			int numArgs = getArgumentCount();
 
 			DiscreteDomain[] domains = new DiscreteDomain[numArgs];
 
 			for (int i = 0; i < numArgs; i++)
 			{
-				IConstantOrVariable arg = getFactorArgument(i);
+				IConstantOrVariable arg = getArgument(i);
 				if (arg instanceof Constant)
 				{
 					// Make a single-element discrete domain for the constant value.

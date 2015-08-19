@@ -236,11 +236,11 @@ public class ParticleBPRealFactor extends SFactorBase
 	private CombinatoricIterator<Value> getCombinatoricIterator(double frozenValue, int frozenEdge)
 	{
 		final Factor factor = _model;
-		final int nArgs = factor.getFactorArgumentCount();
+		final int nArgs = factor.getArgumentCount();
 		final Value[][] particlesPerVar = new Value[nArgs][];
 		for (int i = 0; i < nArgs; ++i)
 		{
-			IConstantOrVariable arg = factor.getFactorArgument(i);
+			IConstantOrVariable arg = factor.getArgument(i);
 			if (arg instanceof Constant)
 			{
 				particlesPerVar[i] = new Value[] { ((Constant)arg).value() };

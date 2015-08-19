@@ -190,12 +190,12 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends Gibb
 		_startingParameterEdge = 0;
 		List<? extends Variable> siblings = factor.getSiblings();
 
-		_hasConstantY = factor.isConstantIndex(Y_INDEX);
+		_hasConstantY = factor.hasConstantAtIndex(Y_INDEX);
 		if (_hasConstantY)
 			_constantYValue = requireNonNull(factor.getConstantValueByIndex(Y_INDEX)).getInt();
 		else					// Variable Y
 		{
-			_yPort = factor.getEdgeByIndex(Y_INDEX);
+			_yPort = factor.argIndexToSiblingNumber(Y_INDEX);
 			Discrete yVar = ((Discrete)siblings.get(_yPort));
 			_yVariable = (GibbsDiscrete)yVar.getSolver();
 			_yDimension = yVar.getDomain().size();
@@ -203,12 +203,12 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends Gibb
 		}
 		
 		
-		_hasConstantX = factor.isConstantIndex(X_INDEX);
+		_hasConstantX = factor.hasConstantAtIndex(X_INDEX);
 		if (_hasConstantX)
 			_constantXValue = requireNonNull(factor.getConstantValueByIndex(X_INDEX)).getInt();
 		else					// Variable X
 		{
-			_xPort = factor.getEdgeByIndex(X_INDEX);
+			_xPort = factor.argIndexToSiblingNumber(X_INDEX);
 			Discrete xVar = ((Discrete)siblings.get(_xPort));
 			_xVariable = (GibbsDiscrete)xVar.getSolver();
 			_startingParameterEdge++;

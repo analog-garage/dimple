@@ -146,7 +146,7 @@ public class CustomCategorical extends GibbsRealFactor implements IRealJointConj
 		}
 		else
 		{
-			boolean hasConstantParameters = factor.isConstantIndex(PARAMETER_INDEX);
+			boolean hasConstantParameters = factor.hasConstantAtIndex(PARAMETER_INDEX);
 			_numParameterEdges = hasConstantParameters ? 0 : 1;
 			_hasConstantOutputs = factor.hasConstantAtOrAboveIndex(PARAMETER_INDEX + 1);
 			if (hasConstantParameters)

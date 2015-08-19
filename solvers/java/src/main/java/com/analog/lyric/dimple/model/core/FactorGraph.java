@@ -1340,7 +1340,7 @@ public class FactorGraph extends FactorBase
 		
 		if (nVars != nArgs)
 		{
-			((Node)factor).setFactorArguments(factorArguments);
+			((Node)factor).setArguments(factorArguments);
 		}
 		
 		final ISolverFactorGraph sfg = _solverFactorGraph;
@@ -1652,11 +1652,11 @@ public class FactorGraph extends FactorBase
 		ArrayList<Tuple2<FactorFunction, int[]>> oldToNew = new ArrayList<Tuple2<FactorFunction, int[]>>(nFactors);
 		for (Factor factor : factors)
 		{
-			final int nArgsInFactor = factor.getFactorArgumentCount();
+			final int nArgsInFactor = factor.getArgumentCount();
 			final int[] oldToNewIndex = new int[nArgsInFactor];
 			for (int i = 0; i < nArgsInFactor; ++i)
 			{
-				final IConstantOrVariable arg = factor.getFactorArgument(i);
+				final IConstantOrVariable arg = factor.getArgument(i);
 				final Integer oldIndex = argToIndex.get(arg);
 				if (oldIndex == null)
 				{
@@ -2074,11 +2074,11 @@ public class FactorGraph extends FactorBase
 			
 			if (fTemplate.hasConstants())
 			{
-				final int nArgs = fTemplate.getFactorArgumentCount();
+				final int nArgs = fTemplate.getArgumentCount();
 				int[] argids = new int[nArgs];
 				for (int i = 0, j = 0; i < nArgs; ++i)
 				{
-					final IConstantOrVariable arg = fTemplate.getFactorArgument(i);
+					final IConstantOrVariable arg = fTemplate.getArgument(i);
 					if (arg instanceof Constant)
 					{
 						argids[i] = ((Constant)old2newObjs.get(arg)).getLocalId();
@@ -2088,7 +2088,7 @@ public class FactorGraph extends FactorBase
 						argids[i] = fCopy.getSiblingEdgeIndex(j++);
 					}
 				}
-				((Node)fCopy).setFactorArguments(argids);
+				((Node)fCopy).setArguments(argids);
 			}
 		}
 

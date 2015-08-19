@@ -47,7 +47,7 @@ public class CustomMultivariateGaussianProduct extends MultivariateGaussianFacto
 		double[][] constant = (constantObj instanceof double[]) ?
 			new double[][] { (double[])constantObj } : (double[][])constantObj;
 		
-		if (!factor.isConstantIndex(1))
+		if (!factor.hasConstantAtIndex(1))
 			throw new DimpleException("Expect matrix to be second arg");
 		
 		

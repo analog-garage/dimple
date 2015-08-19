@@ -156,7 +156,7 @@ public class CustomBernoulli extends GibbsRealFactor implements IRealConjugateFa
 		else if (hasFactorFunctionConstants)
 		{
 			// Factor function has constants, figure out which are parameters and which are discrete variables
-			_numParameterEdges = factor.isConstantIndex(PARAMETER_INDEX) ? 0 : 1;
+			_numParameterEdges = factor.hasConstantAtIndex(PARAMETER_INDEX) ? 0 : 1;
 			_hasConstantOutputs = factor.hasConstantAtOrAboveIndex(PARAMETER_INDEX + 1);
 		}
 

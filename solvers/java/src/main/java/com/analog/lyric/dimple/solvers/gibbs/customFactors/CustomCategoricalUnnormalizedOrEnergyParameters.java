@@ -80,7 +80,7 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends GibbsRealFa
 			GammaParameters outputMsg = (GammaParameters)solverEdge.factorToVarMsg;
 
 			// The parameter being updated corresponds to this value
-			int parameterIndex = _model.getIndexByEdge(portNum);
+			int parameterIndex = _model.siblingNumberToArgIndex(portNum);
 
 			// Start with the ports to variable outputs
 			int count = 0;

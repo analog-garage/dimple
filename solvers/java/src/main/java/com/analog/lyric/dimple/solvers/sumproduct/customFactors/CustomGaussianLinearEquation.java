@@ -99,7 +99,7 @@ public class CustomGaussianLinearEquation extends GaussianFactorBase
 		_weightVector = new double[extendedWeigthVectorLength - factor.getConstantCount()];
 		for (int index = 0, edge = 0; index < extendedWeigthVectorLength; index++)
 		{
-			if (factor.isConstantIndex(index))
+			if (factor.hasConstantAtIndex(index))
 			{
 				// Constant in this position, so subtract off the initial weighted sum (move to the other side of the equation)
 				_initialWeightedSum -=

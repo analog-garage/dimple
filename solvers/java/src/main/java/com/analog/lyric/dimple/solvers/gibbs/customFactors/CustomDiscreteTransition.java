@@ -86,7 +86,7 @@ public class CustomDiscreteTransition extends GibbsRealFactor implements IRealJo
 			outputMsg.setNull();
 
 			// Get the parameter coordinates
-			int parameterXIndex = _model.getIndexByEdge(portNum) - NUM_DISCRETE_VARIABLES;
+			int parameterXIndex = _model.siblingNumberToArgIndex(portNum) - NUM_DISCRETE_VARIABLES;
 			
 			// Get the sample values (indices of the discrete value, which corresponds to the value as well)
 			int xIndex = _hasConstantX ? _constantXValue : _xVariable.getCurrentSampleIndex();
@@ -148,12 +148,12 @@ public class CustomDiscreteTransition extends GibbsRealFactor implements IRealJo
 		_startingParameterEdge = 0;
 		List<? extends Variable> siblings = _model.getSiblings();
 
-		_hasConstantY = factor.isConstantIndex(Y_INDEX);
+		_hasConstantY = factor.hasConstantAtIndex(Y_INDEX);
 		if (_hasConstantY)
 			_constantYValue = requireNonNull(factor.getConstantValueByIndex(Y_INDEX)).getInt();
 		else					// Variable Y
 		{
-			_yPort = factor.getEdgeByIndex(Y_INDEX);
+			_yPort = factor.argIndexToSiblingNumber(Y_INDEX);
 			Discrete yVar = ((Discrete)siblings.get(_yPort));
 			_yVariable = (GibbsDiscrete)yVar.getSolver();
 			_yDimension = yVar.getDomain().size();
@@ -161,12 +161,12 @@ public class CustomDiscreteTransition extends GibbsRealFactor implements IRealJo
 		}
 		
 		
-		_hasConstantX = factor.isConstantIndex(X_INDEX);
+		_hasConstantX = factor.hasConstantAtIndex(X_INDEX);
 		if (_hasConstantX)
 			_constantXValue = requireNonNull(factor.getConstantValueByIndex(X_INDEX)).getInt();
 		else					// Variable X
 		{
-			_xPort = factor.getEdgeByIndex(X_INDEX);
+			_xPort = factor.argIndexToSiblingNumber(X_INDEX);
 			Discrete xVar = ((Discrete)siblings.get(_xPort));
 			_xVariable = (GibbsDiscrete)xVar.getSolver();
 			_startingParameterEdge++;
