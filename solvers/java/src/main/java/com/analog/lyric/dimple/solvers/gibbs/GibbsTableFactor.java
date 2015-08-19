@@ -116,8 +116,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 		final IFactorTable factorTable = getFactorTableIfComputed();
 		if (factorTable != null)
 		{
-			// FIXME Constant should outPortNum be outIndex?
-			factorTable.getEnergySlice(outMessage, outPortNum, _currentSamples);
+			factorTable.getEnergySlice(outMessage, outPortNum, samplesForFactorTable());
 		}
 		else
 		{
@@ -132,8 +131,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 			if (function.useUpdateEnergy(_currentSamples, 1))
 			{
 				final Value prevValue = changedValue.clone();
-				// FIXME Constant should outPortNum be outIndex?
-				final IndexedValue[] changedValues = new IndexedValue[] { new IndexedValue(outPortNum, prevValue) };
+				final IndexedValue[] changedValues = new IndexedValue[] { new IndexedValue(outIndex, prevValue) };
 
 				double energy = outMessage[0];
 				for (int i = 1; i < sliceLength; ++i)
@@ -181,7 +179,7 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 			return energy;
 		}
 		
-		return factorTable.getEnergyForValues(_currentSamples);
+		return factorTable.getEnergyForValues(samplesForFactorTable());
 	}
 	
 	@Matlab
@@ -288,4 +286,29 @@ public class GibbsTableFactor extends STableFactorBase implements ISolverFactorG
 	{
 		return (GibbsDiscreteEdge)getSiblingEdgeState_(siblingIndex);
 	}
+	
+	/*-----------------
+	 * Private methods
+	 */
+	
+	/**
+	 * Same as {@link _currentSamples} with constant entries removed. For use with factor table.
+	 * @since 0.08
+	 */
+	private Value[] samplesForFactorTable()
+	{
+		final Factor factor = _model;
+		Value[] samples = _currentSamples;
+		if (factor.hasConstants())
+		{
+			// FIXME Constant - can we avoid doing this copy?
+			samples = new Value[factor.getSiblingCount()];
+			for (int i = samples.length; --i>=0;)
+			{
+				samples[i] = _currentSamples[factor.getIndexByEdge(i)];
+			}
+		}
+		return samples;
+	}
+	
 }

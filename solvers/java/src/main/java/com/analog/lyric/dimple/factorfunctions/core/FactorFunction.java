@@ -35,6 +35,8 @@ import com.analog.lyric.dimple.factorfunctions.MatrixProduct;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.DomainList;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
+import com.analog.lyric.dimple.model.factors.DiscreteFactor;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.RealValue;
@@ -59,6 +61,7 @@ public abstract class FactorFunction implements IFactorFunction
 	 * State
 	 */
 	
+	// FIXME - make factor table cache weak
 	// Cache of factor tables for this function by domain.
 	private AtomicReference<ConcurrentMap<JointDomainIndexer, IFactorTable>> _factorTables =
 		new AtomicReference<ConcurrentMap<JointDomainIndexer, IFactorTable>>();
@@ -192,6 +195,21 @@ public abstract class FactorFunction implements IFactorFunction
 	}
     
     /**
+     * Required domains of factor function arguments, if any.
+     * <p>
+     * Factor functions that require a fixed number of arguments with specific domains
+     * can specify them through this method.
+     * <p>
+     * The default implementation returns null.
+     * <p>
+     * @since 0.08
+     */
+    public @Nullable DomainList<?> getDomains()
+    {
+    	return null;
+    }
+    
+    /**
      * Run {@link #evalDeterministic} without modifying the arguments.
      * @param arguments will be copied to return
      * @return freshly allocated array of {@link Value}s holding references the original {@code Value}
@@ -223,7 +241,7 @@ public abstract class FactorFunction implements IFactorFunction
 	 */
 	public boolean factorTableExists(Factor factor)
 	{
-		return factorTableExists(factor.getDomainList().asJointDomainIndexer());
+		return factorTableExists(factor.getFactorArgumentDomains().asJointDomainIndexer());
 	}
 
 	
@@ -311,11 +329,31 @@ public abstract class FactorFunction implements IFactorFunction
     }
     
     /**
+     * Create a factor table for given factor.
+     * <p>
+     * Intended for internal use in {@link DiscreteFactor#getFactorTable()}
+     * <p>
+     * @param factor must be a {@link DiscreteFactor}
      * @since 0.05
      */
     public IFactorTable getFactorTable(Factor factor)
     {
-    	return getFactorTable(factor.getDomainListWithConstants().asJointDomainIndexer());
+		final JointDomainIndexer argDomains = requireNonNull(factor.getFactorArgumentDomains().asJointDomainIndexer());
+		IFactorTable table = getFactorTable(argDomains);
+		if (factor.hasConstants())
+		{
+			// Get rid of constant dimensions
+			final JointDomainIndexer edgeDomains = requireNonNull(factor.getDomainList().asJointDomainIndexer());
+			final int nArgs = argDomains.size();
+			final int[] oldToNew = new int[nArgs];
+			for (int i = 0, keep = 0, remove = edgeDomains.size(); i < nArgs; ++i)
+			{
+				oldToNew[i] = factor.isConstantIndex(i) ? remove++ : keep++;
+			}
+			JointDomainReindexer converter = JointDomainReindexer.createPermuter(argDomains, edgeDomains, oldToNew);
+			table = table.convert(converter);
+		}
+		return table;
     }
 
     /**
@@ -340,7 +378,7 @@ public abstract class FactorFunction implements IFactorFunction
      */
     public @Nullable IFactorTable getFactorTableIfExists(Factor factor)
     {
-    	return getFactorTableIfExists(factor.getDomainList().asJointDomainIndexer());
+    	return getFactorTableIfExists(factor.getFactorArgumentDomains().asJointDomainIndexer());
     }
     
 	@Override

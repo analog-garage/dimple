@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -69,6 +70,7 @@ import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Constant;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.model.variables.IConstantOrVariable;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableBlock;
 import com.analog.lyric.dimple.model.variables.VariableList;
@@ -93,6 +95,7 @@ import com.analog.lyric.util.misc.Matlab;
 import com.analog.lyric.util.test.Helpers;
 import com.google.common.base.Predicate;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 
 import cern.colt.list.IntArrayList;
@@ -1252,7 +1255,7 @@ public class FactorGraph extends FactorBase
 		{
 			return addConstant((Value)object);
 		}
-		
+
 		return addConstant(Value.constant(object));
 	}
 	
@@ -1316,8 +1319,7 @@ public class FactorGraph extends FactorBase
 			}
 			else
 			{
-				Constant constant = addConstant(arg);
-				factorArguments[i] = constant.getLocalId();
+				factorArguments[i] = addConstant(arg).getLocalId();
 			}
 		}
 		
@@ -1600,7 +1602,7 @@ public class FactorGraph extends FactorBase
 	 * {@code variables} in the specified order, this will simply return that factor without
 	 * modifying the graph.
 	 */
-	public Factor join(Variable[] variables, Factor ... factors)
+	public Factor join(final Variable[] variables, Factor ... factors)
 	{
 		final int nFactors = factors.length;
 		final int nVariables = variables.length;
@@ -1628,11 +1630,21 @@ public class FactorGraph extends FactorBase
 			}
 		}
 	
-		// Build map of variables in all factors to its index in the merged factor.
-		final Map<Variable, Integer> varToIndex = new HashMap<Variable, Integer>();
+		// Build map of variables and constants in all factors to its index in the merged factor.
+		final Map<IConstantOrVariable, Integer> argToIndex = new LinkedHashMap<>();
 		for (int i = 0; i < nVariables; ++i)
 		{
-			varToIndex.put(variables[i], i);
+			argToIndex.put(variables[i], i);
+		}
+		for (Factor factor : factors)
+		{
+			for (Constant constant : factor.getConstants())
+			{
+				if (!argToIndex.containsKey(constant))
+				{
+					argToIndex.put(constant, argToIndex.size());
+				}
+			}
 		}
 		
 		// Build mappings from each factor's variable order to the merged order
@@ -1640,18 +1652,21 @@ public class FactorGraph extends FactorBase
 		ArrayList<Tuple2<FactorFunction, int[]>> oldToNew = new ArrayList<Tuple2<FactorFunction, int[]>>(nFactors);
 		for (Factor factor : factors)
 		{
-			final int nVarsInFactor = factor.getSiblingCount();
-			final int[] oldToNewIndex = new int[nVarsInFactor];
-			for (int i = 0; i < nVarsInFactor; ++i)
+			final int nArgsInFactor = factor.getFactorArgumentCount();
+			final int[] oldToNewIndex = new int[nArgsInFactor];
+			for (int i = 0; i < nArgsInFactor; ++i)
 			{
-				final Variable variable = factor.getSibling(i);
-				final Integer oldIndex = varToIndex.get(variable);
+				final IConstantOrVariable arg = factor.getFactorArgument(i);
+				final Integer oldIndex = argToIndex.get(arg);
 				if (oldIndex == null)
 				{
-					throw new DimpleException("Variable %s from factor %s not in variable list for join");
+					throw new DimpleException("Variable %s from factor %s not in variable list for join", arg, factor);
 				}
 				oldToNewIndex[i] = oldIndex.intValue();
-				varsUsed.set(oldIndex.intValue());
+				if (arg instanceof Variable)
+				{
+					varsUsed.set(oldIndex.intValue());
+				}
 			}
 			oldToNew.add(Tuple2.create(factor.getFactorFunction(), oldToNewIndex));
 		}
@@ -1710,7 +1725,14 @@ public class FactorGraph extends FactorBase
 		}
 		
 		// Add new factor
-		return parentGraph.addFactor(jointFunction, variables);
+		if (nVariables == argToIndex.size())
+		{
+			return parentGraph.addFactor(jointFunction, variables);
+		}
+		else
+		{
+			return parentGraph.addFactor(jointFunction, Iterables.toArray(argToIndex.keySet(), Object.class));
+		}
 	}
 
 	/**
@@ -2004,6 +2026,13 @@ public class FactorGraph extends FactorBase
 			}
 		}
 		
+		// Copy constants
+		for (Constant templateConstant : templateGraph._ownedConstants)
+		{
+			Constant constant = addConstant(templateConstant.value());
+			old2newObjs.put(templateConstant, constant);
+		}
+		
 		// Copy blocks
 		for (VariableBlock templateBlock : templateGraph._ownedVariableBlocks)
 		{
@@ -2049,14 +2078,14 @@ public class FactorGraph extends FactorBase
 				int[] argids = new int[nArgs];
 				for (int i = 0, j = 0; i < nArgs; ++i)
 				{
-					Value value = fTemplate.getConstantValueByIndex(i);
-					if (value == null)
+					final IConstantOrVariable arg = fTemplate.getFactorArgument(i);
+					if (arg instanceof Constant)
 					{
-						argids[i] = fCopy.getSiblingEdgeIndex(j++);
+						argids[i] = ((Constant)old2newObjs.get(arg)).getLocalId();
 					}
 					else
 					{
-						argids[i] = addConstant(value).getLocalId();
+						argids[i] = fCopy.getSiblingEdgeIndex(j++);
 					}
 				}
 				((Node)fCopy).setFactorArguments(argids);

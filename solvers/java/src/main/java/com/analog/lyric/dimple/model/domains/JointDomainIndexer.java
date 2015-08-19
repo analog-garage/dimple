@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
@@ -150,6 +151,11 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		this(computeHashCode(domains), domains);
 	}
 	
+	private static JointDomainIndexer lookupOrCreate(@Nullable BitSet outputs, List<DiscreteDomain> domains)
+	{
+		return lookupOrCreate(outputs, domains.toArray(new DiscreteDomain[domains.size()]), false);
+	}
+	
 	private static JointDomainIndexer lookupOrCreate(@Nullable BitSet outputs, DiscreteDomain[] domains, boolean cloneDomains)
 	{
 		if (cloneDomains)
@@ -178,6 +184,11 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		}
 	}
 	
+	private static JointDomainIndexer lookupOrCreate(@Nullable int[] outputIndices, List<DiscreteDomain> domains)
+	{
+		return lookupOrCreate(outputIndices, domains.toArray(new DiscreteDomain[domains.size()]), false);
+	}
+	
 	static JointDomainIndexer lookupOrCreate(@Nullable int[] outputIndices, DiscreteDomain[] domains, boolean cloneDomains)
 	{
 		BitSet outputs = null;
@@ -190,9 +201,27 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		return lookupOrCreate(outputs, domains, cloneDomains);
 	}
 
+	/**
+	 * Creates a directed indexer consisting of the specified {@code domains} in the given
+	 * order and with the specified domains designated as outputs.
+	 * <p>
+	 * If {@code outputs} is null, this will instead return an undirected indexer.
+	 */
 	public static JointDomainIndexer create(@Nullable BitSet outputs, DiscreteDomain ... domains)
 	{
 		return lookupOrCreate(outputs, domains, true);
+	}
+	
+	/**
+	 * Creates a directed indexer consisting of the specified {@code domains} in the given
+	 * order and with the specified domains designated as outputs.
+	 * <p>
+	 * If {@code outputs} is null, this will instead return an undirected indexer.
+	 * @since 0.08
+	 */
+	public static JointDomainIndexer create(@Nullable BitSet outputs, List<DiscreteDomain> domains)
+	{
+		return lookupOrCreate(outputs, domains);
 	}
 	
 	/**
@@ -206,6 +235,17 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	}
 	
 	/**
+	 * Creates an undirected indexer consisting of the specified {@code domains} in the given order.
+	 * <p>
+	 * May return a previously cached value.
+	 * @since 0.08
+	 */
+	public static JointDomainIndexer create(List<DiscreteDomain> domains)
+	{
+		return lookupOrCreate((BitSet)null, domains);
+	}
+	
+	/**
 	 * Creates a directed indexer consisting of the specified {@code domains} in the given
 	 * order and with the specified domains designated as outputs.
 	 * <p>
@@ -214,6 +254,18 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	public static JointDomainIndexer create(@Nullable int[] outputDomainIndices, DiscreteDomain[] domains)
 	{
 		return lookupOrCreate(outputDomainIndices, domains, true);
+	}
+	
+	/**
+	 * Creates a directed indexer consisting of the specified {@code domains} in the given
+	 * order and with the specified domains designated as outputs.
+	 * <p>
+	 * If {@code outputIndices} is null, this will instead return an undirected indexer.
+	 * @since 0.08
+	 */
+	public static JointDomainIndexer create(@Nullable int[] outputDomainIndices, List<DiscreteDomain> domains)
+	{
+		return lookupOrCreate(outputDomainIndices, domains);
 	}
 	
 	/**

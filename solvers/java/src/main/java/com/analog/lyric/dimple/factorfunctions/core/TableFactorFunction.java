@@ -16,37 +16,74 @@
 
 package com.analog.lyric.dimple.factorfunctions.core;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 
-
+/**
+ * A factor function based on a factor table.
+ * <p>
+ */
 public class TableFactorFunction extends FactorFunction
 {
+	/*-------
+	 * State
+	 */
 	
-	private IFactorTable _factorTable;
-
-	public TableFactorFunction(String name,IFactorTable factorTable)
+	private final IFactorTable _factorTable;
+	
+	private final int[] _argNumberToTableDimension;
+	private final List<Value> _constants;
+	
+	/*
+	 * Construction
+	 */
+	
+	private TableFactorFunction(IFactorTable factorTable, int[] argNumberToTableDimension, List<Value> constants)
+	{
+		super();
+		_factorTable = factorTable;
+		_argNumberToTableDimension = argNumberToTableDimension;
+		_constants = constants;
+	}
+	
+	public TableFactorFunction(String name, IFactorTable factorTable)
 	{
 		super(name);
 		_factorTable = factorTable;
+		_argNumberToTableDimension = ArrayUtil.EMPTY_INT_ARRAY;
+		_constants = Collections.emptyList();
+	}
+	
+	public static TableFactorFunction forFactor(Factor factor, IFactorTable factorTable)
+	{
+		return new TableFactorFunction(factorTable,	factor.getFactorArgumentToSiblingNumberMapping(),
+			factor.getConstantValues());
 	}
 	
 	public TableFactorFunction(String name, int [][] indices, double [] probs, DiscreteDomain ... domains)
 	{
 		this(name,FactorTable.create(indices, probs, domains));
 	}
+	
 	public TableFactorFunction(String name, int [][] indices, double [] probs, Discrete... discretes)
 	{
 		this(name,FactorTable.create(indices, probs, discretes));
 	}
 	
-
+	/*------------------------
+	 * FactorFunction methods
+	 */
+	
     @Override
 	public boolean convertFactorTable(@Nullable JointDomainIndexer oldDomains, @Nullable JointDomainIndexer newDomains)
     {
@@ -75,27 +112,40 @@ public class TableFactorFunction extends FactorFunction
 	@Override
 	public double evalEnergy(Value[] input)
 	{
+		final int[] argToTableDimension = _argNumberToTableDimension;
+		
+		if (argToTableDimension.length > 0)
+		{
+			final int nDims = _factorTable.getDimensions();
+			Value[] tmp = new Value[nDims];
+			for (int i = argToTableDimension.length; --i>=0;)
+			{
+				final Value value = input[i];
+				int j = argToTableDimension[i];
+				if (j < nDims)
+				{
+					tmp[j] = value;
+				}
+				else
+				{
+					final Value constant = _constants.get(j - nDims);
+					if (!constant.valueEquals(value))
+					{
+						return Double.POSITIVE_INFINITY;
+					}
+				}
+			}
+			input = tmp;
+		}
+		
 		return _factorTable.getEnergyForValues(input);
 	}
-
-	@Override
-	public double evalEnergy(Object... input)
-	{
-		return _factorTable.getEnergyForElements(input);
-	}
 	
 	@Override
-	public double eval(Value[] input)
+	public JointDomainIndexer getDomains()
 	{
-		return _factorTable.getWeightForValues(input);
+		return _factorTable.getDomainIndexer();
 	}
-	
-	@Override
-	public double eval(Object... input)
-	{
-		return _factorTable.getWeightForElements(input);
-	}
-	
 
 	public IFactorTable getFactorTable()
 	{
@@ -128,9 +178,17 @@ public class TableFactorFunction extends FactorFunction
     
 	// For directed factors...
 	@Override
-	public boolean isDirected() {return _factorTable.isDirected();}
+	public boolean isDirected()
+	{
+		return _factorTable.isDirected();
+	}
+	
 	@Override
-	protected @Nullable int[] getDirectedToIndices() {return _factorTable.getDomainIndexer().getOutputDomainIndices();}
+	protected @Nullable int[] getDirectedToIndices()
+	{
+		// FIXME Constant - convert to arg indices
+		return _factorTable.getDomainIndexer().getOutputDomainIndices();
+	}
 	
 	// For deterministic directed factors...
 	// This means that for any given input, only one of its outputs has non-zero value (equivalently, finite energy)
@@ -140,6 +198,26 @@ public class TableFactorFunction extends FactorFunction
 	// For deterministic directed factors, evaluate the deterministic function output(s) given only the inputs
 	// The arguments are in the same order as eval and evalEnergy, but in this case the output values should be overridden by new values
 	@Override
-	public void evalDeterministic(Value[] arguments){_factorTable.evalDeterministic(arguments);}
+	public void evalDeterministic(Value[] arguments)
+	{
+		final int[] argToTableDimension = _argNumberToTableDimension;
+		
+		if (argToTableDimension.length > 0)
+		{
+			final int nDims = _factorTable.getDimensions();
+			final Value[] tmp = new Value[nDims];
+			for (int i = argToTableDimension.length; --i>=0;)
+			{
+				final int j = argToTableDimension[i];
+				if (j < nDims)
+				{
+					tmp[j] = arguments[i];
+				}
+			}
+			arguments = tmp;
+		}
+		
+		_factorTable.evalDeterministic(arguments);
+	}
 	
 }

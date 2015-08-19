@@ -22,6 +22,7 @@ import static java.util.Objects.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -30,8 +31,8 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
 import com.analog.lyric.dimple.model.core.EdgeDirection;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -43,6 +44,7 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.DomainList;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Constant;
 import com.analog.lyric.dimple.model.variables.IConstantOrVariable;
@@ -92,12 +94,14 @@ public class Factor extends FactorBase implements Cloneable
 	private int[] _siblingToFactorArgumentNumber = NOT_YET_SET;
 	
 	/**
-	 * If non-null provides a cumulative count of constants in {@link _factorArguments} upto a
-	 * given factor function argument index. This will be one greater than the size of {@link _factorArguments}.
+	 * Mapping from {@link _factorArguments} offset to sibling number offset in {@code _siblingEdges}. Offsets
+	 * corresponding to constants, which have no corresponding edge, will instead map to offsets after the
+	 * edges (i.e. the same format used by
+	 * {@link JointDomainReindexer#createPermuter(JointDomainIndexer, JointDomainIndexer, int[])}
 	 * <p>
 	 * Computed lazily
 	 */
-	private int[] _constantsBeforeFactorArgument = NOT_YET_SET;
+	private int[] _factorArgumentToSiblingNumber = NOT_YET_SET;
 	
 	@Override
 	public final Factor asFactor()
@@ -126,6 +130,9 @@ public class Factor extends FactorBase implements Cloneable
 	 * Construction
 	 */
 	
+	/**
+	 * @category internal
+	 */
 	@Internal
 	public Factor(FactorFunction factorFunc)
 	{
@@ -135,7 +142,7 @@ public class Factor extends FactorBase implements Cloneable
 		_modelerFunctionName = factorFunc.getName();
 		_factorArguments = _siblingEdges;
 	}
-	
+
 	protected Factor(Factor that)
 	{
 		super(that);
@@ -168,7 +175,7 @@ public class Factor extends FactorBase implements Cloneable
 	
 	public IFactorTable getFactorTable()
 	{
-		return getFactorFunction().getFactorTable(this);
+		throw new UnsupportedOperationException("Factor tables only available on DiscreteFactors");
 	}
 	
 	public boolean hasFactorTable()
@@ -283,92 +290,62 @@ public class Factor extends FactorBase implements Cloneable
 	 */
 	public final int removeFixedVariables()
 	{
-		final int[] oldDirectedTo = getDirectedTo();
 		final int nEdges = getSiblingCount();
-		final ArrayList<Variable> constantVariables = new ArrayList<Variable>(nEdges);
-		final IntArrayList constantIndices = new IntArrayList(nEdges);
 		IFactorTable oldFactorTable = null;
 		
 		final FactorGraph parent = requireNonNull(getParentGraph());
 		
 		// Visit in reverse order so that disconnect is safe.
 		
-		// FIXME Constant - this is not correct now that constants are in factors
-		// but there aren't currently any tests that exercise this code for the
-		// non-discrete case.
+		int[] valueIndices = ArrayUtil.EMPTY_INT_ARRAY;
+		IntArrayList factorArguments = _factorArguments;
+		int nRemoved = 0;
 		
 		for (int i = nEdges; --i>=0;)
 		{
 			final EdgeState edge = getSiblingEdgeState(i);
 			final Variable var = edge.getVariable(parent);
-			if (var.hasFixedValue())
+			Value value = var.getPriorValue();
+			if (value != null)
 			{
-				if (constantIndices.isEmpty() && isDiscrete())
+				if (factorArguments == _factorArguments)
 				{
-					// Before disconnecting siblings, force the factor table
-					// to be instantiated if discrete, since it may depend on
-					// the original edges.
-					oldFactorTable = getFactorTable();
+					valueIndices = new int[factorArguments.size()];
+					Arrays.fill(valueIndices, -1);
+					factorArguments = factorArguments.copy();
+					factorArguments.trimToSize();
+					if (isDiscrete())
+					{
+						// Before disconnecting siblings, force the factor table
+						// to be instantiated if discrete, since it may depend on
+						// the original edges.
+						oldFactorTable = getFactorTable();
+					}
 				}
+				final int argIndex = getIndexByEdge(i);
+				valueIndices[argIndex] = value.getIndex();
+				factorArguments.set(argIndex, parent.addConstant(value).getLocalId());
 				removeSiblingEdge(edge);
-				constantVariables.add(var);
-				constantIndices.add(i);
+				++nRemoved;
 			}
 		}
 		
-		final int nRemoved = constantIndices.size();
-		
 		if (nRemoved > 0)
 		{
-			constantIndices.trimToSize();
-			final FactorFunction oldFunction = getFactorFunction();
-			final FactorFunction newFunction =
-				removeFixedVariablesImpl(oldFunction, oldFactorTable, constantVariables, constantIndices.elements());
+			setFactorArguments(factorArguments.elements());
 			
-			int[] newDirectedTo = null;
-			if (oldDirectedTo != null && !oldFunction.isDirected())
+			if (_factorFunction instanceof TableFactorFunction)
 			{
-				// If factor function is not inherently directed, then update the directed indices.
-				newDirectedTo = ArrayUtil.contractSortedIndexList(oldDirectedTo, constantIndices.elements());
+				IFactorTable newTable = requireNonNull(oldFactorTable).createTableConditionedOn(valueIndices);
+				setFactorFunction(TableFactorFunction.forFactor(this, newTable));
 			}
-
-			setFactorFunction(newFunction);
-			
-			if (newDirectedTo != null)
+			else
 			{
-				setDirectedTo(newDirectedTo);
+				setFactorFunction(_factorFunction);
 			}
 		}
 		
 		return nRemoved;
-	}
-	
-	/**
-	 * Replaces factor function conditioned on a set of variables with fixed values that
-	 * have already been removed from the factor. This should only be called from within
-	 * {@link #removeFixedVariables()}.
-	 * <p>
-	 * This is invoked after the fixed value variables have already been disconnected from the
-	 * factor, but before the factor function has been replaced.
-	 * <p>
-	 * @param constantVariables lists the variables
-	 * @param constantIndices
-	 */
-	protected FactorFunction removeFixedVariablesImpl(
-		FactorFunction oldFunction,
-		@Nullable IFactorTable oldFactorTable,
-		ArrayList<Variable> constantVariables,
-		int[] constantIndices)
-	{
-		final Object[] constantValues = new Object[constantVariables.size()];
-		for (int i = constantValues.length; --i>=0;)
-		{
-			final Variable variable = constantVariables.get(i);
-			final Value value = variable.getPriorValue();
-			constantValues[i] = value != null ? value.getObject() : null;
-		}
-		
-		return new FactorFunctionWithConstants(oldFunction,	constantValues,	constantIndices);
 	}
 	
 	/**
@@ -388,7 +365,17 @@ public class Factor extends FactorBase implements Cloneable
 		return DomainList.create(getDirectedTo(), domains);
 	}
 	
-	public DomainList<?> getDomainListWithConstants()
+	/**
+	 * The domains of the {@link #getFactorArgument(int) factor arguments} in order.
+	 * <p>
+	 * Similar to {@link #getDomainList()} but for factor arguments instead of sibling
+	 * variables. If factor does not {@linkplain #hasConstants() have constants}, this is
+	 * the same as {@link #getDomainList()}. If there are constants, they will be represented
+	 * using single-element {@link DiscreteDomain}s.
+	 * <p>
+	 * @since 0.08
+	 */
+	public DomainList<?> getFactorArgumentDomains()
 	{
 		int nArgs = getFactorArgumentCount();
 		Domain [] domains = new Domain[nArgs];
@@ -871,9 +858,10 @@ public class Factor extends FactorBase implements Cloneable
 			}
 			else
 			{
-				argumentIndex = 0;
-				for (int sibling = 0; sibling <= edgeNumber; ++argumentIndex)
+				argumentIndex = -1;
+				for (int sibling = 0; sibling <= edgeNumber; )
 				{
+					++argumentIndex;
 					if (Ids.typeIndexFromLocalId(_factorArguments.get(argumentIndex)) != Ids.CONSTANT_TYPE)
 					{
 						++sibling;
@@ -908,61 +896,65 @@ public class Factor extends FactorBase implements Cloneable
 	
 	// TODO - rename these methods as needed given the change in context
 	
-	@SuppressWarnings("deprecation")
 	public boolean hasConstants()
 	{
-		return _factorArguments != _siblingEdges
-			// FIXME
-			|| _factorFunction.hasConstants();
+		return _factorArguments != _siblingEdges;
 	}
 	
-	@SuppressWarnings("deprecation")
 	public int getConstantCount()
 	{
-		// FIXME
-		if (_factorArguments == _siblingEdges)
-		{
-			return _factorFunction.getConstantCount();
-		}
-		
 		return _factorArguments.size() - _siblingEdges.size();
 	}
 	
-	@SuppressWarnings("deprecation")
-	public List<Value> getConstantValues()
+	public List<Constant> getConstants()
 	{
-		if (_factorArguments == _siblingEdges || _parentGraph == null)
+		final int n = getConstantCount();
+		if (n == 0)
 		{
-			// FIXME
-			return _factorFunction.getConstantValues();
-//			return Collections.emptyList();
+			return Collections.emptyList();
 		}
 		
-		final int n = getConstantCount();
+		final List<Constant> constants = new ArrayList<>(n);
 		FactorGraph graph = requireParentGraph();
-		final Value[] constants = new Value[n];
 		for (int i = 0, j = 0; j < n; ++i)
 		{
 			Constant constant = graph.getConstantByLocalId(_factorArguments.get(i));
 			if (constant != null)
 			{
-				constants[j++] = constant.value();
+				constants.add(constant);
+				++j;
+			}
+		}
+	
+		return constants;
+	}
+	
+	public List<Value> getConstantValues()
+	{
+		if (_factorArguments == _siblingEdges || _parentGraph == null)
+		{
+			return Collections.emptyList();
+		}
+		
+		final int n = getConstantCount();
+		final List<Value> values = new ArrayList<>(n);
+		FactorGraph graph = requireParentGraph();
+		for (int i = 0, j = 0; j < n; ++i)
+		{
+			Constant constant = graph.getConstantByLocalId(_factorArguments.get(i));
+			if (constant != null)
+			{
+				values.add(constant.value());
+				++j;
 			}
 		}
 		
-		return Arrays.asList(constants);
+		return values;
 	}
 	
-	@SuppressWarnings("deprecation")
 	public int[] getConstantIndices()
 	{
-		// FIXME
 		if (_factorArguments == _siblingEdges)
-		{
-			return _factorFunction.getConstantIndices();
-		}
-
-		if (!hasConstants())
 		{
 			return ArrayUtil.EMPTY_INT_ARRAY;
 		}
@@ -980,15 +972,8 @@ public class Factor extends FactorBase implements Cloneable
 		return indices;
 	}
 	
-	@SuppressWarnings("deprecation")
 	public boolean isConstantIndex(int index)
 	{
-		// FIXME
-		if (_factorArguments == _siblingEdges)
-		{
-			return _factorFunction.isConstantIndex(index);
-		}
-
 		return Ids.typeIndexFromLocalId(_factorArguments.get(index)) == Ids.CONSTANT_TYPE;
 	}
 	
@@ -1013,61 +998,64 @@ public class Factor extends FactorBase implements Cloneable
 		return numConstantsAtOrBelowIndex(index) > 0;
 	}
 
-	@SuppressWarnings("deprecation")
 	public int numConstantsAtOrAboveIndex(int index)
 	{
-		// FIXME - remove when FactorFunctionWithConstants is removed
-		if (_factorArguments == _siblingEdges)
-		{
-			return _factorFunction.numConstantsAtOrAboveIndex(index);
-		}
+		if (!computeConstantInfo())
+			return 0;
 		
-		return computeConstantInfo() ? getConstantCount() - _constantsBeforeFactorArgument[index] : 0;
+		final int nEdges = _siblingEdges.size();
+		final int x = _factorArgumentToSiblingNumber[index];
+		final int nConstants = getConstantCount();
+		
+		if (x < nEdges)
+		{
+			// An edge index
+			return nConstants + x - index;
+		}
+		else
+		{
+			// A constant
+			return nConstants + nEdges - x;
+		}
 	}
 	
-	@SuppressWarnings("deprecation")
 	public int numConstantsAtOrBelowIndex(int index)
 	{
-		// FIXME - remove when FactorFunctionWithConstants is removed
-		if (_factorArguments == _siblingEdges)
-		{
-			return _factorFunction.numConstantsAtOrBelowIndex(index);
-		}
+		if (!computeConstantInfo())
+			return 0;
 		
-		return computeConstantInfo() ? _constantsBeforeFactorArgument[index + 1] : 0;
+		final int nEdges = _siblingEdges.size();
+		final int x = _factorArgumentToSiblingNumber[index];
+		if (x < nEdges)
+		{
+			// An edge index
+			return index - x;
+		}
+		else
+		{
+			// A constant
+			return 1 + x - nEdges;
+		}
 	}
 	
-	@SuppressWarnings("deprecation")
 	public int numConstantsInIndexRange(int minIndex, int maxIndex)
 	{
-		// FIXME - remove when FactorFunctionWithConstants is removed
-		if (_factorArguments == _siblingEdges)
+		int n = numConstantsAtOrBelowIndex(maxIndex);
+		
+		if (n > 0 && minIndex > 0)
 		{
-			return _factorFunction.numConstantsInIndexRange(minIndex, maxIndex);
+			n -= numConstantsAtOrBelowIndex(minIndex - 1);
 		}
 		
-		if (computeConstantInfo())
-		{
-			int[] constantCounts = _constantsBeforeFactorArgument;
-			return constantCounts[maxIndex + 1] - constantCounts[minIndex];
-		}
-
-		return 0;
+		return n;
 	}
 	
-	@SuppressWarnings("deprecation")
 	/**
 	 * Returns {@link Constant#value} for given factor argument {@code index} or null if not a constant.
 	 * @since 0.08
 	 */
 	public @Nullable Value getConstantValueByIndex(int index)
 	{
-		// FIXME - remove when FactorFunctionWithConstants is removed
-		if (_factorArguments == _siblingEdges)
-		{
-			return _factorFunction.getConstantValueByIndex(index);
-		}
-		
 		FactorGraph graph = _parentGraph;
 		if (graph != null)
 		{
@@ -1080,7 +1068,6 @@ public class Factor extends FactorBase implements Cloneable
 		return null;
 	}
 	
-	@SuppressWarnings("deprecation")
 	/**
 	 * Returns sibling index corresponding to given factor argument index.
 	 * <p>
@@ -1089,13 +1076,17 @@ public class Factor extends FactorBase implements Cloneable
 	 */
 	public int getEdgeByIndex(int index)
 	{
-		// FIXME - remove when FactorFunctionWithConstants is removed
-		if (_factorArguments == _siblingEdges)
-		{
-			return _factorFunction.getEdgeByIndex(index);
-		}
-		
-		return computeConstantInfo() ? index - _constantsBeforeFactorArgument[index] : index;
+		return computeConstantInfo() ? _factorArgumentToSiblingNumber[index] : index;
+	}
+	
+	/**
+	 * @category internal
+	 * @since 0.08
+	 */
+	@Internal
+	public int[] getFactorArgumentToSiblingNumberMapping()
+	{
+		return computeConstantInfo() ? _factorArgumentToSiblingNumber.clone() : ArrayUtil.EMPTY_INT_ARRAY;
 	}
 	
 	public int[] getEdgesFromIndices(int[] indices)
@@ -1118,60 +1109,52 @@ public class Factor extends FactorBase implements Cloneable
 		return indices;
 	}
 	
-	@SuppressWarnings("deprecation")
 	public int getIndexByEdge(int edge)
 	{
-		// FIXME - remove when FactorFunctionWithConstants is removed
-		if (_factorArguments == _siblingEdges)
-		{
-			return _factorFunction.getIndexByEdge(edge);
-		}
-
 		return computeConstantInfo() ? _siblingToFactorArgumentNumber[edge] : edge;
 	}
 	
 	private void forgetConstantInfo()
 	{
-		_constantsBeforeFactorArgument = NOT_YET_SET;
 		_siblingToFactorArgumentNumber = NOT_YET_SET;
+		_factorArgumentToSiblingNumber = NOT_YET_SET;
 	}
 	
 	private boolean computeConstantInfo()
 	{
-		if (_constantsBeforeFactorArgument == NOT_YET_SET)
+		if (_siblingToFactorArgumentNumber == NOT_YET_SET)
 		{
 			final IntArrayList factorArguments = _factorArguments;
 			if (factorArguments == _siblingEdges)
 			{
 				// There are no constants.
-				_constantsBeforeFactorArgument = ArrayUtil.EMPTY_INT_ARRAY;
+				_siblingToFactorArgumentNumber = ArrayUtil.EMPTY_INT_ARRAY;
 				return false;
 			}
 			
+			final int nEdges = _siblingEdges.size();
 			final int nArgs = factorArguments.size();
-			final int[] constantsBeforeFactorArgument = new int[nArgs + 1];
-			final int[] siblingToFactorArgumentNumber= new int[_siblingEdges.size()];
-			int nConstants = 0;
-			for (int sibling = 0, arg = 0; arg < nArgs; ++arg)
+			final int[] siblingToFactorArgumentNumber = new int[nEdges];
+			final int[] factorArgumentToSiblingNumber = new int[nArgs];
+			for (int sibling = 0, arg = 0, removed = nEdges; arg < nArgs; ++arg)
 			{
-				constantsBeforeFactorArgument[arg] = nConstants;
 				if (Ids.typeIndexFromLocalId(_factorArguments.get(arg)) == Ids.CONSTANT_TYPE)
 				{
-					++nConstants;
+					factorArgumentToSiblingNumber[arg] = removed++;
 				}
 				else
 				{
+					factorArgumentToSiblingNumber[arg] = sibling;
 					siblingToFactorArgumentNumber[sibling++] = arg;
 				}
 			}
-			constantsBeforeFactorArgument[nArgs] = nConstants;
 			
-			_constantsBeforeFactorArgument = constantsBeforeFactorArgument;
 			_siblingToFactorArgumentNumber = siblingToFactorArgumentNumber;
+			_factorArgumentToSiblingNumber = factorArgumentToSiblingNumber;
 			
 			return true;
 		}
 		
-		return _constantsBeforeFactorArgument.length != 0;
+		return _siblingToFactorArgumentNumber.length != 0;
 	}
 }

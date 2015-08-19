@@ -62,6 +62,16 @@ public abstract class Value implements IDatum, Cloneable, Serializable
 	 */
 	public static Value constant(Domain domain, @Nullable Object value)
 	{
+		if (value instanceof Value)
+		{
+			Value v = (Value)value;
+			if (domain.equals(v.getDomain()))
+			{
+				return v.immutableClone();
+			}
+			value = v.getObject();
+		}
+		
 		if (domain instanceof DiscreteDomain)
 		{
 			return constantDiscrete((DiscreteDomain)domain, requireNonNull(value));
@@ -117,6 +127,10 @@ public abstract class Value implements IDatum, Cloneable, Serializable
 		else if (value instanceof double[])
 		{
 			return new ConstantRealJointValue((double[])value);
+		}
+		else if (value instanceof Value)
+		{
+			return ((Value)value).immutableClone();
 		}
 		
 		return new ConstantObjectValue(value);

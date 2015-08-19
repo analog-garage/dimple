@@ -101,7 +101,6 @@ public class TestJunctionTree extends DimpleTestBase
 	@Test
 	public void testStudentNetwork()
 	{
-//		testRand.setSeed(222282413083410127L);
 		testGraph(_graphGenerator.buildStudentNetwork());
 	}
 	

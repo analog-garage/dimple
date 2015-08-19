@@ -19,7 +19,6 @@ package com.analog.lyric.dimple.model.factors;
 import static java.util.Objects.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -30,7 +29,10 @@ import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
+import com.analog.lyric.dimple.model.variables.Constant;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.model.variables.IConstantOrVariable;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.util.misc.Internal;
 
@@ -44,6 +46,10 @@ public class DiscreteFactor extends Factor
 	 */
 	
 	private @Nullable JointDomainIndexer _domainList = null;
+	
+	private @Nullable JointDomainIndexer _factorArgumentDomains = null;
+	
+	private @Nullable IFactorTable _factorTable = null;
 	
 	/*--------------
 	 * Construction
@@ -87,6 +93,8 @@ public class DiscreteFactor extends Factor
 	protected void notifyConnectionsChanged()
 	{
 		_domainList = null;
+		_factorArgumentDomains = null;
+		_factorTable = null;
 	}
 	
 	/*----------------
@@ -116,6 +124,73 @@ public class DiscreteFactor extends Factor
 		return domainList;
 	}
 
+	@Override
+	public JointDomainIndexer getFactorArgumentDomains()
+	{
+		JointDomainIndexer domainList = _factorArgumentDomains;
+		
+		if (domainList == null)
+		{
+			super.getFactorArgumentDomains();
+			int numArgs = getFactorArgumentCount();
+
+			DiscreteDomain[] domains = new DiscreteDomain[numArgs];
+
+			for (int i = 0; i < numArgs; i++)
+			{
+				IConstantOrVariable arg = getFactorArgument(i);
+				if (arg instanceof Constant)
+				{
+					// Make a single-element discrete domain for the constant value.
+					domains[i] = DiscreteDomain.create(requireNonNull(((Constant)arg).value().getObject()));
+				}
+				else
+				{
+					domains[i] = ((Discrete)arg).getDomain();
+				}
+			}
+
+			domainList = JointDomainIndexer.create(getDirectedTo(), domains);
+			_factorArgumentDomains = domainList;
+		}
+		
+		return domainList;
+	}
+
+	@Override
+	public IFactorTable getFactorTable()
+	{
+		IFactorTable table = _factorTable;
+		if (table == null)
+		{
+			final FactorFunction func = getFactorFunction();
+			if (func instanceof TableFactorFunction)
+			{
+				final TableFactorFunction tableFunc = (TableFactorFunction)func;
+				table = tableFunc.getFactorTable();
+				if (hasConstants() && table.getDimensions() != getSiblingCount())
+				{
+					// Convert table to get rid of the constant dimensions
+					table.convert(JointDomainReindexer.createRemover(table.getDomainIndexer(), getConstantIndices()));
+				}
+			}
+			else
+			{
+				table = func.getFactorTable(this);
+			}
+			
+			_factorTable = table;
+		}
+		return table;
+	}
+	
+	@Override
+	public void setFactorFunction(FactorFunction function)
+	{
+		super.setFactorFunction(function);
+		_factorTable = null;
+	}
+	
 	public int[][] getPossibleBeliefIndices()
 	{
 		return requireSolver("getPossibleBeliefIndices").getPossibleBeliefIndices();
@@ -127,26 +202,6 @@ public class DiscreteFactor extends Factor
 		return true;
 	}
 
-	@Override
-	protected FactorFunction removeFixedVariablesImpl(
-		FactorFunction oldFunction,
-		@Nullable IFactorTable oldFactorTable,
-		ArrayList<Variable> constantVariables,
-		int[] constantIndices)
-	{
-		requireNonNull(oldFactorTable);
-		final int nRemoved = constantIndices.length;
-		final int[] valueIndices = new int[oldFactorTable.getDimensions()];
-		Arrays.fill(valueIndices, -1);
-		for (int i = 0; i < nRemoved; ++i)
-		{
-			final Discrete variable = (Discrete) constantVariables.get(i);
-			valueIndices[constantIndices[i]] = variable.getPriorIndex();
-		}
-		
-		return new TableFactorFunction(oldFunction.getName(), oldFactorTable.createTableConditionedOn(valueIndices));
-	}
-	
 	@Override
 	public void replaceVariablesWithJoint(Variable [] variablesToJoin, Variable newJoint)
 	{
@@ -182,7 +237,7 @@ public class DiscreteFactor extends Factor
 		{
 			//getFactorFunction();
 			IFactorTable newTable = getFactorTable().createTableWithNewVariables(newDomains);
-			setFactorFunction(new TableFactorFunction(getFactorFunction().getName(), newTable));
+			setFactorFunction(TableFactorFunction.forFactor(this, newTable));
 			
 			for (Variable v : newVariables)
 			{
@@ -247,5 +302,15 @@ public class DiscreteFactor extends Factor
 		return (double[])requireSolver("getBelief").getBelief();
 	}
 
-
+	void setFactorTable(IFactorTable table)
+	{
+		setFactorFunction(TableFactorFunction.forFactor(this, table));
+		_factorTable = table;
+		if (!hasConstants())
+		{
+			// If there are no domains, then this is the same as the table's
+			_factorArgumentDomains = table.getDomainIndexer();
+		}
+	}
+	
 }
