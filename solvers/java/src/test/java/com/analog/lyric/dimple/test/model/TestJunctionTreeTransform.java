@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2014 Analog Devices, Inc.
+*   Copyright 2014-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@
 package com.analog.lyric.dimple.test.model;
 
 import static org.junit.Assert.*;
-
-import java.util.Random;
 
 import org.apache.commons.math3.stat.descriptive.moment.Variance;
 import org.eclipse.jdt.annotation.Nullable;
@@ -45,9 +43,7 @@ import com.analog.lyric.util.misc.Misc;
  */
 public class TestJunctionTreeTransform extends DimpleTestBase
 {
-	private final long _seed = new Random().nextLong();
-	private final Random rand = new Random(_seed);
-	private final RandomGraphGenerator _graphGenerator = new RandomGraphGenerator(rand);
+	private final RandomGraphGenerator _graphGenerator = new RandomGraphGenerator(testRand);
 	
 	private static final DiscreteDomain d2 = DiscreteDomain.range(0, 1);
 	private static final DiscreteDomain d3 = DiscreteDomain.range(0, 2);
@@ -108,7 +104,7 @@ public class TestJunctionTreeTransform extends DimpleTestBase
 
 		for (int i = 0; i < nGraphs; ++i)
 		{
-			testGraph(gen.buildRandomGraph(rand.nextInt(maxSize) + 10), null);
+			testGraph(gen.buildRandomGraph(testRand.nextInt(maxSize) + 10), null);
 		}
 	}
 	
@@ -223,17 +219,17 @@ public class TestJunctionTreeTransform extends DimpleTestBase
 		}
 		catch (Throwable ex)
 		{
-			String msg = String.format("%s. TestJunctionTreeTransform._seed==%dL", ex.toString(), _seed);
+			String msg = String.format("%s. TestJunctionTreeTransform._seed==%dL", ex.toString(), testRand.getSeed());
 			ex.printStackTrace(System.err);
-			System.err.format(">>> TestJunctionTreeTransform._seed==%dL;<<<\n", _seed);
+			System.err.format(">>> TestJunctionTreeTransform._seed==%dL;<<<\n", testRand.getSeed());
 			throw new RuntimeException(msg, ex);
 		}
 	}
 	
 	private void testGraphImpl(FactorGraph model, @Nullable Boolean expectIdentity)
 	{
-		JunctionTreeTransform jt = new JunctionTreeTransform().random(rand);
-		assertSame(rand, jt.random());
+		JunctionTreeTransform jt = new JunctionTreeTransform().random(testRand);
+		assertSame(testRand, jt.random());
 		assertFalse(jt.useConditioning());
 		
 		JunctionTreeTransformMap transformMap = jt.transform(model);
@@ -260,11 +256,11 @@ public class TestJunctionTreeTransform extends DimpleTestBase
 		VariableList variables = model.getVariables();
 		for (int i = 0; i < 100000; ++i)
 		{
-			Variable variable = variables.getByIndex(rand.nextInt(variables.size()));
+			Variable variable = variables.getByIndex(testRand.nextInt(variables.size()));
 			if (variable instanceof Discrete)
 			{
 				Discrete discrete = (Discrete)variable;
-				discrete.setPriorIndex(rand.nextInt(discrete.getDomain().size()));
+				discrete.setPriorIndex(testRand.nextInt(discrete.getDomain().size()));
 				break;
 			}
 		}
