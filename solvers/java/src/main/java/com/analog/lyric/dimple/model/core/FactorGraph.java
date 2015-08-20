@@ -170,6 +170,12 @@ public class FactorGraph extends FactorBase
 		private @Nullable DataLayer<? extends IDatum> _defaultConditioningLayer = null;
 		
 		/**
+		 * Indicates whether any changes can be made to the graph tree or any of its
+		 * component graphs. For use in template graphs.
+		 */
+		private boolean _frozen;
+		
+		/**
 		 * Counter that is modified whenever a structural change is made anywhere in the graph tree.
 		 */
 		private long _globalStructureVersion = 0;
@@ -204,6 +210,14 @@ public class FactorGraph extends FactorBase
 			_graphs.add(graph);
 			++_nGraphs;
 			return this;
+		}
+		
+		private void assertNotFrozen()
+		{
+			if (_frozen)
+			{
+				throw new IllegalStateException("Changes cannot be made to frozen graph");
+			}
 		}
 		
 		private void removeGraph(FactorGraph graph)
@@ -979,6 +993,8 @@ public class FactorGraph extends FactorBase
 	 */
 	public void setDefaultConditioningLayer(@Nullable DataLayer<? extends IDatum> layer)
 	{
+		assertGraphNotFrozen();
+		
 		if (this != getRootGraph())
 		{
 			throw new IllegalStateException("The default conditioning layer may only be set on the root graph.");
@@ -1036,6 +1052,8 @@ public class FactorGraph extends FactorBase
 	 */
 	public @Nullable <SG extends ISolverFactorGraph> SG setSolverFactory(@Nullable IFactorGraphFactory<SG> factory)
 	{
+		assertGraphNotFrozen();
+		
 		_solverFactory = factory;
 
 		final FactorGraph parent = getParentGraph();
@@ -1218,8 +1236,10 @@ public class FactorGraph extends FactorBase
 	 */
 	public Constant addConstant(Value value)
 	{
+		assertGraphNotFrozen();
 		Constant constant = new Constant(value);
 		_ownedConstants.add(constant);
+		constant.setParentGraph(this);
 		return constant;
 	}
 	
@@ -1292,6 +1312,8 @@ public class FactorGraph extends FactorBase
 	
 	public Factor addFactor(FactorFunction factorFunction, Object ... varsAndConstants)
 	{
+		assertGraphNotFrozen();
+		
 		final int nArgs = varsAndConstants.length;
 		int[] factorArguments = new int[nArgs];
 		boolean allVarsDiscrete = true;
@@ -1391,6 +1413,31 @@ public class FactorGraph extends FactorBase
 	}
 	
 	/**
+	 * Freeze graph tree including this graph from future changes.
+	 * <p>
+	 * Once frozen, a graph may not be unfrozen.
+	 * <p>
+	 * @since 0.08
+	 * @see #frozen
+	 */
+	public void freeze()
+	{
+		// TODO renumber and compress representations to conserve memory and id address space
+		_graphTreeState._frozen = true;
+	}
+	
+	/**
+	 * Indicate whether graph tree including this graph has been frozen to future changes.
+	 * <p>
+	 * @since 0.08
+	 * @see #freeze
+	 */
+	public boolean frozen()
+	{
+		return _graphTreeState._frozen;
+	}
+	
+	/**
 	 * True if child is owned directly by this graph.
 	 *
 	 * @param node
@@ -1423,6 +1470,43 @@ public class FactorGraph extends FactorBase
 		return false;
 	}
 	
+//	TODO public void reindexGraphTree()
+//	{
+//		// Renumber and compress graph tree indexes - requires renumbering in VariableBlocks
+//		final GraphTreeState state = _graphTreeState;
+//		final int[] old2newGraphTreeIndex = new int[state._maxGraphTreeIndex + 1];
+//
+//		int to = 0;
+//		for (int from = 0, max = state._maxGraphTreeIndex; from <= max; ++from)
+//		{
+//			FactorGraph graph = state._graphs.get(from);
+//			if (graph != null)
+//			{
+//				old2newGraphTreeIndex[from] = to;
+//				if (from != to)
+//				{
+//					graph._graphTreeIndex = to;
+//					state._graphs.set(to, graph);
+//					state._graphs.set(from, null);
+//				}
+//				++to;
+//			}
+//		}
+//		if (to != state._graphs.size())
+//		{
+//			state._graphs.setSize(to);
+//			state._maxGraphTreeIndex = to - 1;
+//		}
+//
+//		// TODO - replace VariableBlocks with new graph tree ids
+//
+//		// - renumber edges
+//		// - renumber variables
+//		// - renumber constants
+//		// - renumber factorss
+//		// - renumber subgraphs
+//	}
+	
 	/**
 	 * Removes variables from the graph.
 	 * <p>
@@ -1447,6 +1531,8 @@ public class FactorGraph extends FactorBase
 	 */
 	public void remove(Variable v)
 	{
+		assertGraphNotFrozen();
+		
 		if (v.getSiblingCount() != 0)
 			throw new DimpleException("can only remove a variable if it is no longer connected to a factor");
 
@@ -1474,6 +1560,8 @@ public class FactorGraph extends FactorBase
 		
 	public void addBoundaryVariables(Variable ... vars)
 	{
+		assertGraphNotFrozen();
+		
 		for (Variable v : vars)
 		{
 			boolean setSolver = false;
@@ -1522,6 +1610,8 @@ public class FactorGraph extends FactorBase
 	
 	public void addVariables(Variable... variables)
 	{
+		assertGraphNotFrozen();
+		
 		for (Variable v : variables)
 		{
 			if (_boundaryVariables.contains(v))
@@ -1549,6 +1639,7 @@ public class FactorGraph extends FactorBase
 	 */
 	public VariableBlock addVariableBlock(Collection<Variable> variables)
 	{
+		assertGraphNotFrozen();
 		return _ownedVariableBlocks.addBlock(new VariableBlock(this, variables));
 	}
 
@@ -1574,6 +1665,8 @@ public class FactorGraph extends FactorBase
 	 */
 	public Factor join(Factor ... factors)
 	{
+		assertGraphNotFrozen();
+		
 		Set<Variable> variables = new LinkedHashSet<Variable>();
 		for (Factor factor : factors)
 		{
@@ -1604,6 +1697,8 @@ public class FactorGraph extends FactorBase
 	 */
 	public Factor join(final Variable[] variables, Factor ... factors)
 	{
+		assertGraphNotFrozen();
+		
 		final int nFactors = factors.length;
 		final int nVariables = variables.length;
 		
@@ -1741,6 +1836,8 @@ public class FactorGraph extends FactorBase
 	 */
 	public Variable join(Variable ... variables)
 	{
+		assertGraphNotFrozen();
+		
 		if (variables.length < 2)
 			throw new DimpleException("need at least two variables");
 
@@ -1806,12 +1903,14 @@ public class FactorGraph extends FactorBase
 	 */
 	public Variable split(Variable variable,Factor ... factorsToBeMovedToCopy)
 	{
+		assertGraphNotFrozen();
 		return variable.split(this,factorsToBeMovedToCopy);
 	}
 
 
 	private FactorBase addFactor(Factor function, Variable ... variables)
 	{
+		assertGraphNotFrozen();
 		addOwnedFactor(function, false);
 		for (Variable var : variables)
 		{
@@ -1846,6 +1945,8 @@ public class FactorGraph extends FactorBase
 	 */
 	public void setScheduler(@Nullable IScheduler scheduler)
 	{
+		assertGraphNotFrozen();
+		
 		if (scheduler != null)
 		{
 			for (SchedulerOptionKey key : scheduler.applicableSchedulerOptions())
@@ -1890,7 +1991,8 @@ public class FactorGraph extends FactorBase
 	 */
 	public FactorGraph addGraph(FactorGraph subGraphTemplate, Variable ... boundaryVariables)
 	{
-
+		assertGraphNotFrozen();
+		
 		// FIXME: solver logic is hacky
 		// Really we should not try to update solver state while mutating the graph.
 		// Instead wait until we are done...
@@ -2530,6 +2632,8 @@ public class FactorGraph extends FactorBase
 	 */
 	public void absorbSubgraph(FactorGraph subgraph)
 	{
+		assertGraphNotFrozen();
+		
 		if (!ownsDirectly(subgraph))
 		{
 			throw new DimpleException("Cannot absorb subgraph that is not directly owned.");
@@ -2579,6 +2683,10 @@ public class FactorGraph extends FactorBase
 	 */
 	public void remove(FactorGraph subgraph)
 	{
+		assertGraphNotFrozen();
+		
+		_graphTreeState.assertNotFrozen();
+		
 		VariableList varList = subgraph.getVariablesFlat();
 		IMapList<FactorBase> factors = subgraph.getFactorsTop();
 
@@ -2640,6 +2748,8 @@ public class FactorGraph extends FactorBase
 	 */
 	public void remove(Factor factor)
 	{
+		assertGraphNotFrozen();
+		
 		//_ownedFactors;
 		if (!_ownedFactors.containsNode(factor))
 		{
@@ -3524,6 +3634,8 @@ public class FactorGraph extends FactorBase
 
 	public @Nullable Node getObjectByName(@Nullable String name)
 	{
+		assertGraphNotFrozen();
+		
 		IFactorGraphChild child = getChildByName(name);
 		if (child instanceof Node)
 		{
@@ -3987,6 +4099,8 @@ public class FactorGraph extends FactorBase
 	@Internal
 	public void replaceEdge(Factor factor, int edgeIndex, Variable newVariable)
 	{
+		assertGraphNotFrozen();
+		
 		final FactorGraph factorGraph = requireNonNull(factor.getParentGraph());
 		
 		final EdgeState oldEdge = factor.getSiblingEdgeState(edgeIndex);
@@ -4039,6 +4153,8 @@ public class FactorGraph extends FactorBase
 	@Internal
 	public void setSolver(ISolverFactorGraph solver)
 	{
+		assertGraphNotFrozen();
+		
 		_solverFactorGraph = solver;
 	}
 	
@@ -4065,6 +4181,16 @@ public class FactorGraph extends FactorBase
 			{
 				return var.getParentGraph() != fg;
 			}});
+	}
+	
+	final int ownedConstantCount()
+	{
+		return _ownedConstants.size();
+	}
+	
+	final Iterator<Constant> ownedConstantIterator()
+	{
+		return _ownedConstants.iterator();
 	}
 	
 	final Iterator<Factor> ownedFactorIterator()
@@ -4097,6 +4223,16 @@ public class FactorGraph extends FactorBase
 		return _ownedVariables.size();
 	}
 	
+	final int ownedVariableBlockCount()
+	{
+		return _ownedVariableBlocks.size();
+	}
+	
+	final Iterator<VariableBlock> ownedVariableBlockIterator()
+	{
+		return _ownedVariableBlocks.iterator();
+	}
+	
 	/**
 	 * Returns solver graph or throws an error if null.
 	 * <p>
@@ -4121,6 +4257,7 @@ public class FactorGraph extends FactorBase
 	@Deprecated
 	public void clearNames()
 	{
+		assertGraphNotFrozen();
 		Helpers.clearNames(this);
 	}
 	
@@ -4306,6 +4443,7 @@ public class FactorGraph extends FactorBase
 	@Deprecated
 	public void setEventListener(@Nullable DimpleEventListener listener)
 	{
+		assertGraphNotFrozen();
 		getEnvironment().setEventListener(listener);
 		notifyListenerChanged();
 	}
@@ -4313,6 +4451,7 @@ public class FactorGraph extends FactorBase
 	@Deprecated
 	public void setNamesByStructure()
 	{
+		assertGraphNotFrozen();
 		Helpers.setNamesByStructure(this);
 	}
 	
@@ -4323,12 +4462,18 @@ public class FactorGraph extends FactorBase
 			String rootGraphString,
 			String childGraphString)
 	{
+		assertGraphNotFrozen();
 		Helpers.setNamesByStructure(this, boundaryString, ownedString, factorString, rootGraphString, childGraphString);
 	}
 	
 	/*-----------------
 	 * Private methods
 	 */
+	
+	void assertGraphNotFrozen()
+	{
+		_graphTreeState.assertNotFrozen();
+	}
 	
 	//==============
 	//
@@ -4349,6 +4494,8 @@ public class FactorGraph extends FactorBase
 	@Deprecated
 	public void setSchedule(@Nullable ISchedule schedule)
 	{
+		assertGraphNotFrozen();
+
 		if (schedule instanceof FixedSchedule)
 		{
 			CustomScheduler scheduler = new CustomScheduler(this);

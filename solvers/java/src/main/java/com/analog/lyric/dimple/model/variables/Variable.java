@@ -288,6 +288,8 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	 */
 	public void setCondition(@Nullable Object value)
 	{
+		assertNotFrozen();
+		
 		FactorGraph parent = _parentGraph;
 		if (parent != null)
 		{
@@ -366,6 +368,8 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	 */
 	public @Nullable IDatum setPrior(@Nullable Object prior)
 	{
+		assertNotFrozen();
+		
 		final IDatum priorPrior = _prior;
 		
 		if (prior == null || prior instanceof IDatum)
@@ -496,9 +500,9 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
     }
 	
    public void setGuess(@Nullable Object guess)
-    {
+   {
     	requireSolver("setGuess").setGuess(guess);
-    }
+   }
 
     public boolean guessWasSet()
     {
@@ -597,6 +601,8 @@ public abstract class Variable extends Node implements Cloneable, IDataEventSour
 	@Internal
     public Variable split(FactorGraph fg,Factor [] factorsToBeMovedToCopy)
     {
+		assertNotFrozen();
+		
     	//create a copy of this variable
     	Variable mycopy = clone();
     	mycopy.createSolverObject(null);

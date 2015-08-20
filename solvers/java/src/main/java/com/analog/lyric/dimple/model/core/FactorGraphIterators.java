@@ -28,7 +28,9 @@ import com.analog.lyric.collect.ReleasableIterators;
 import com.analog.lyric.collect.SingleIterator;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorBase;
+import com.analog.lyric.dimple.model.variables.Constant;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.VariableBlock;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.UnmodifiableIterator;
 
@@ -50,6 +52,36 @@ public class FactorGraphIterators
 		return new BoundaryVariableIterator(graph);
 	}
 	
+	/**
+	 * Returns iterator over all {@link Constant} objects contained in this graph.
+	 * <p>
+	 * Constants are visited in top-down order, i.e. those in a subgraph are visited after those from their parent.
+	 * <p>
+	 * @param root is the root graph whose constants will be visited. Only constants contained in this
+	 * graph or its subgraphs will be included.
+	 * @since 0.08
+	 */
+	public static IFactorGraphChildIterator<Constant> constants(FactorGraph root)
+	{
+		return new NestedConstantIterator(root, Integer.MAX_VALUE);
+	}
+	
+	/**
+	 * Returns iterator over all {@link Constant} objects contained in this graph down to specified depth below root.
+	 * <p>
+	 * Constants are visited in top-down order, i.e. those in a subgraph are visited after those from their parent.
+	 * <p>
+	 * @param root is the root graph whose constants will be visited. Only constants contained in this
+	 * graph or its subgraphs will be included.
+	 * @param maxNestingDepth specifies how deep in the subgraph tree to visit. If zero is specified, only
+	 * constants contained directly in the root will be included.
+	 * @since 0.08
+	 */
+	public static IFactorGraphChildIterator<Constant> constantsDownto(FactorGraph root, int maxNestingDepth)
+	{
+		return new NestedConstantIterator(root, maxNestingDepth);
+	}
+
 	/**
 	 * Returns iterator over all {@link Factor} objects contained in this graph.
 	 * <p>
@@ -101,6 +133,15 @@ public class FactorGraphIterators
 	}
 	
 	/**
+	 * Returns iterator over {@link Constant}s directly owned by a graph.
+	 * @since 0.08
+	 */
+	public static Iterator<Constant> ownedConstants(FactorGraph graph)
+	{
+		return graph.ownedConstantIterator();
+	}
+	
+	/**
 	 * Returns iterator over {@link Factor}s directly owned by a graph.
 	 * @since 0.08
 	 */
@@ -129,6 +170,15 @@ public class FactorGraphIterators
 	}
 	
 	/**
+	 * Returns iterator over {@link VariableBlock}s directly owned by a graph.
+	 * @since 0.08
+	 */
+	public static Iterator<VariableBlock> ownedVariableBlocks(FactorGraph graph)
+	{
+		return graph.ownedVariableBlockIterator();
+	}
+	
+	/**
 	 * Returns iterator over all nested subgraphs of the root graph, including the root itself.
 	 * <p>
 	 * Subgraphs are visited in top-down order, i.e. those farther away from the root will be visited after
@@ -151,7 +201,7 @@ public class FactorGraphIterators
 	 * <p>
 	 * @param root is the root graph whose subgraphs will be visited. Only subgraphs contained in this
 	 * graph or its subgraphs will be included.
-	 * @param maxNestingDepth specifies how deep in the subgraph heirarchy to visit. If zero is specified, only
+	 * @param maxNestingDepth specifies how deep in the subgraph hierarchy to visit. If zero is specified, only
 	 * the root graph will be visited, if one is specified the root and its immediate subgraphs will be included.
 	 * Note that this behaves differently from how the correspondingly named argument to the other functions
 	 * in this class behaves!
@@ -229,6 +279,36 @@ public class FactorGraphIterators
 	public static IFactorGraphChildIterator<Variable> variablesAndBoundaryDownto(FactorGraph root, int maxNestingDepth)
 	{
 		return  new NestedVariableIterator(root, maxNestingDepth, true);
+	}
+
+	/**
+	 * Returns iterator over all {@link VariableBlock}s contained in this graph.
+	 * <p>
+	 * Blocks are visited in top-down order, i.e. those in a subgraph are visited after those from their parent.
+	 * <p>
+	 * @param root is the root graph whose blocks will be visited. Only blocks contained in this
+	 * graph or its subgraphs will be included.
+	 * @since 0.08
+	 */
+	public static IFactorGraphChildIterator<VariableBlock> variableBlocks(FactorGraph root)
+	{
+		return new NestedVariableBlockIterator(root, Integer.MAX_VALUE);
+	}
+	
+	/**
+	 * Returns iterator over all {@link VariableBlock} objects contained in this graph down to specified depth below root.
+	 * <p>
+	 * Blocks are visited in top-down order, i.e. those in a subgraph are visited after those from their parent.
+	 * <p>
+	 * @param root is the root graph whose blocks will be visited. Only blocks contained in this
+	 * graph or its subgraphs will be included.
+	 * @param maxNestingDepth specifies how deep in the subgraph tree to visit. If zero is specified, only
+	 * constants contained directly in the root will be included.
+	 * @since 0.08
+	 */
+	public static IFactorGraphChildIterator<VariableBlock> variableBlocksDownto(FactorGraph root, int maxNestingDepth)
+	{
+		return new NestedVariableBlockIterator(root, maxNestingDepth);
 	}
 
 	/*-----------------
@@ -454,6 +534,34 @@ public class FactorGraphIterators
 		protected Iterator<Variable> childIterator(FactorGraph graph, int depth)
 		{
 			return graph.boundaryVariableIterator();
+		}
+	}
+	
+	private static class NestedConstantIterator extends NestedChildIterator<Constant>
+	{
+		private NestedConstantIterator(FactorGraph graph, int maxNestingDepth)
+		{
+			super(graph, maxNestingDepth);
+		}
+		
+		@Override
+		protected Iterator<? extends Constant> childIterator(FactorGraph graph, int depth)
+		{
+			return graph.ownedConstantIterator();
+		}
+	}
+	
+	private static class NestedVariableBlockIterator extends NestedChildIterator<VariableBlock>
+	{
+		private NestedVariableBlockIterator(FactorGraph graph, int maxNestingDepth)
+		{
+			super(graph, maxNestingDepth);
+		}
+		
+		@Override
+		protected Iterator<? extends VariableBlock> childIterator(FactorGraph graph, int depth)
+		{
+			return graph.ownedVariableBlockIterator();
 		}
 	}
 }

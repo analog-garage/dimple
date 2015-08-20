@@ -925,6 +925,8 @@ public class Factor extends FactorBase implements Cloneable
 	 */
 	public final int removeFixedVariables()
 	{
+		assertNotFrozen();
+		
 		final int nEdges = getSiblingCount();
 		IFactorTable oldFactorTable = null;
 		
@@ -986,11 +988,14 @@ public class Factor extends FactorBase implements Cloneable
 	@Internal
 	public void replaceVariablesWithJoint(Variable [] variablesToJoin, Variable newJoint)
 	{
+		assertNotFrozen();
 		throw new DimpleException("not implemented");
 	}
 	
 	public void setDirectedTo(int [] directedTo)
 	{
+		assertNotFrozen();
+		
 		if (!canBeDirected())
 		{
 			throw new UnsupportedOperationException(String.format("'%s' does not support setting direction",
@@ -1058,6 +1063,8 @@ public class Factor extends FactorBase implements Cloneable
 	 */
 	public final void setDirectedTo(Set<Variable> variables)
 	{
+		assertNotFrozen();
+		
 		final IntArrayList directedTo = new IntArrayList(variables.size());
 		
 		for (int i = 0, n = getSiblingCount(); i < n; ++i)
@@ -1090,6 +1097,8 @@ public class Factor extends FactorBase implements Cloneable
 	
 	public void setFactorFunction(FactorFunction function)
 	{
+		assertNotFrozen();
+		
 		_factorFunction = function;
 		if (_factorFunction.isDirected())
 		{
@@ -1106,6 +1115,8 @@ public class Factor extends FactorBase implements Cloneable
 	 */
 	public void setUndirected()
 	{
+		assertNotFrozen();
+		
 		_directedTo = null;
 		_directedFrom = null;
 		if (hasFactorTable())

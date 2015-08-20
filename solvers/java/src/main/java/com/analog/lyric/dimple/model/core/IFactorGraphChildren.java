@@ -25,6 +25,8 @@ import java.util.Collection;
  */
 public interface IFactorGraphChildren<T> extends Collection<T>
 {
+	@Override IFactorGraphChildIterator<T> iterator();
+	
 	public int maxNestingDepth();
 	
 	public FactorGraph root();

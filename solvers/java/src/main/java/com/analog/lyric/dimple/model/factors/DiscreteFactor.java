@@ -205,6 +205,8 @@ public class DiscreteFactor extends Factor
 	@Override
 	public void replaceVariablesWithJoint(Variable [] variablesToJoin, Variable newJoint)
 	{
+		assertNotFrozen();
+		
 		//Support a mixture of variables referred to in this factor and previously not referred to in this factor
 		List<? extends Variable> ports = getSiblings();
 		ArrayList<Variable> newVariables = new ArrayList<Variable>();
@@ -304,6 +306,8 @@ public class DiscreteFactor extends Factor
 
 	void setFactorTable(IFactorTable table)
 	{
+		assertNotFrozen();
+		
 		setFactorFunction(TableFactorFunction.forFactor(this, table));
 		_factorTable = table;
 		if (!hasConstants())

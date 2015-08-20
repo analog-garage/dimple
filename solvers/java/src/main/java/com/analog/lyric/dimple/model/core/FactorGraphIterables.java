@@ -21,7 +21,9 @@ import java.util.Iterator;
 
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorBase;
+import com.analog.lyric.dimple.model.variables.Constant;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.VariableBlock;
 
 /**
  * Contains static methods for constructing {@link Iterable}s over contents of {@link FactorGraph}s.
@@ -44,6 +46,28 @@ public class FactorGraphIterables
 	public static IFactorGraphChildren<Variable> boundary(FactorGraph graph)
 	{
 		return new BoundaryVariables(graph);
+	}
+	
+	/**
+	 * Returns iterable over all {@link Constant} objects contained in this graph.
+	 * <p>
+	 * Iterates using {@link FactorGraphIterators#constants(FactorGraph)}.
+	 * @since 0.08
+	 */
+	public static IFactorGraphChildren<Constant> constants(FactorGraph graph)
+	{
+		return constantsDownto(graph, Integer.MAX_VALUE);
+	}
+
+	/**
+	 * Returns iterable over all {@link Constant} objects contained in this graph down to specified depth.
+	 * <p>
+	 * Iterates using {@link FactorGraphIterators#constantsDownto(FactorGraph, int)}.
+	 * @since 0.08
+	 */
+	public static IFactorGraphChildren<Constant> constantsDownto(FactorGraph graph, int maxNestingDepth)
+	{
+		return new NestedConstants(graph, maxNestingDepth);
 	}
 	
 	/**
@@ -149,6 +173,28 @@ public class FactorGraphIterables
 		return new NestedVariables(graph, maxNestingDepth, true);
 	}
 
+	/**
+	 * Returns iterable over all {@link VariableBlock} objects contained in this graph.
+	 * <p>
+	 * Iterates using {@link FactorGraphIterators#variableBlocks(FactorGraph)}.
+	 * @since 0.08
+	 */
+	public static IFactorGraphChildren<VariableBlock> variableBlocks(FactorGraph graph)
+	{
+		return variableBlocksDownto(graph, Integer.MAX_VALUE);
+	}
+
+	/**
+	 * Returns iterable over all {@link VariableBlock} objects contained in this graph down to specified depth.
+	 * <p>
+	 * Iterates using {@link FactorGraphIterators#variableBlocksDownto(FactorGraph, int)}.
+	 * @since 0.08
+	 */
+	public static IFactorGraphChildren<VariableBlock> variableBlocksDownto(FactorGraph graph, int maxNestingDepth)
+	{
+		return new NestedVariableBlocks(graph, maxNestingDepth);
+	}
+	
 	/*-----------------
 	 * Implementations
 	 */
@@ -171,7 +217,7 @@ public class FactorGraphIterables
 		}
 		
 		@Override
-		public Iterator<FactorGraph> iterator()
+		public IFactorGraphChildIterator<FactorGraph> iterator()
 		{
 			return FactorGraphIterators.subgraphsDownto(_root, _maxNestingDepth);
 		}
@@ -184,7 +230,7 @@ public class FactorGraphIterables
 			case 0:
 				return 1;
 			case 1:
-				return _root.ownedGraphCount();
+				return 1 + _root.ownedGraphCount();
 			}
 
 			final Iterator<FactorGraph> iter = iterator();
@@ -265,6 +311,26 @@ public class FactorGraphIterables
 		}
 
 		protected abstract int childCount(FactorGraph graph, int depth);
+	}
+
+	private static class NestedConstants extends NestedFactorGraphChildren<Constant>
+	{
+		private NestedConstants(FactorGraph graph, int maxNestingDepth)
+		{
+			super(graph, maxNestingDepth);
+		}
+
+		@Override
+		protected int childCount(FactorGraph graph, int depth)
+		{
+			return graph.ownedConstantCount();
+		}
+
+		@Override
+		public IFactorGraphChildIterator<Constant> iterator()
+		{
+			return FactorGraphIterators.constantsDownto(_root, _maxNestingDepth);
+		}
 	}
 
 	private static class NestedFactors extends NestedFactorGraphChildren<Factor>
@@ -376,4 +442,26 @@ public class FactorGraphIterables
 			return _root.getBoundaryVariableCount();
 		}
 	}
+	
+	private static class NestedVariableBlocks extends NestedFactorGraphChildren<VariableBlock>
+	{
+		private NestedVariableBlocks(FactorGraph graph, int maxNestingDepth)
+		{
+			super(graph, maxNestingDepth);
+		}
+
+		@Override
+		protected int childCount(FactorGraph graph, int depth)
+		{
+			return graph.ownedVariableBlockCount();
+		}
+
+		@Override
+		public IFactorGraphChildIterator<VariableBlock> iterator()
+		{
+			return FactorGraphIterators.variableBlocksDownto(_root, _maxNestingDepth);
+		}
+	}
+
+
 }

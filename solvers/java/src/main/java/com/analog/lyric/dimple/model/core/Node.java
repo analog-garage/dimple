@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012-2013 Analog Devices, Inc.
+*   Copyright 2012-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.model.core;
 
 import static java.util.Objects.*;
 
+import java.io.Serializable;
 import java.util.AbstractCollection;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.options.DimpleOptions;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.MapList;
@@ -135,6 +137,31 @@ public abstract class Node extends FactorGraphChild implements INode
 		super(other);
 		_id = other._id | Ids.LOCAL_ID_INDEX_MAX;
 		_name = other._name;
+	}
+	
+	/*-----------------------
+	 * IOptionHolder methods
+	 */
+	
+	@Override
+	public void clearLocalOptions()
+	{
+		assertNotFrozen();
+		super.clearLocalOptions();
+	}
+	
+	@Override
+	public <T extends Serializable> void setOption(IOptionKey<T> key, T value)
+	{
+		assertNotFrozen();
+		super.setOption(key, value);
+	}
+	
+	@Override
+	public void unsetOption(IOptionKey<?> key)
+	{
+		assertNotFrozen();
+		super.unsetOption(key);
 	}
 	
 	/*----------------------------
@@ -478,7 +505,10 @@ public abstract class Node extends FactorGraphChild implements INode
 	@Override
 	public void setName(@Nullable String name)
 	{
+		assertNotFrozen();
+		
 		// TODO restrict name to valid Java identifier
+		//  Note that there are currently factors in test code with names like "f(a,b)"
 		if(name != null && name.contains("."))
 		{
 			throw new DimpleException("ERROR '.' is not a valid character in names");
@@ -803,7 +833,16 @@ public abstract class Node extends FactorGraphChild implements INode
 
 		notifyConnectionsChanged();
 	}
-	
+
+    protected void assertNotFrozen()
+    {
+    	final FactorGraph graph = _parentGraph;
+    	if (graph != null)
+    	{
+    		graph.assertGraphNotFrozen();
+    	}
+    }
+    
 	/**
 	 * @category internal
 	 */
