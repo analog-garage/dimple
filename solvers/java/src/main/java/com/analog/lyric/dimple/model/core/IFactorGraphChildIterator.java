@@ -26,6 +26,10 @@ import java.util.Iterator;
  */
 public interface IFactorGraphChildIterator<T> extends Iterator<T>
 {
+	/**
+	 * The nesting depth of the last object returned by the iterator.
+	 * @since 0.08
+	 */
 	public abstract int lastDepth();
 	
 	/**
