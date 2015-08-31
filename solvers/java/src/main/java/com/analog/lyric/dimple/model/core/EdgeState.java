@@ -236,4 +236,25 @@ public abstract class EdgeState
 	 * @since 0.08
 	 */
 	abstract public int variableLocalId();
+	
+	/**
+	 * Set edge index to a new value with respect to given parent graph.
+	 * @param newEdgeIndex must be smaller than the existing value of {@link #edgeIndexInParent(FactorGraph)}.
+	 * @since 0.08
+	 */
+	abstract void setEdgeIndexInParent(FactorGraph graph, int newEdgeIndex);
+	
+	/**
+	 * Set index of edge's factor to a new value.
+	 * @param newIndex must be smaller than the existing value of {@link #factorIndex()}
+	 * @since 0.08
+	 */
+	abstract void setFactorIndex(int newIndex);
+
+	/**
+	 * Set index of edge's variable to a new value.
+	 * @param newIndex must be smaller than the existing value of {@link #variableIndex()}
+	 * @since 0.08
+	 */
+	abstract void setVariableIndex(int newIndex);
 }

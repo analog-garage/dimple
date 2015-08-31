@@ -160,6 +160,16 @@ public class Factor extends FactorBase implements Cloneable
 	 * Node methods
 	 */
 	
+	@Override
+	protected void fixSiblingEdgeStateIndex(EdgeState edge)
+	{
+		super.fixSiblingEdgeStateIndex(edge);
+		if (hasConstants())
+		{
+			_argids.set(siblingNumberToArgIndex(edge.getSiblingIndex(this)), edge.edgeIndex(this));
+		}
+	}
+	
 	/*----------------
 	 * Factor methods
 	 */
@@ -1257,6 +1267,13 @@ public class Factor extends FactorBase implements Cloneable
 	{
 		_argids = new IntArrayList(argids);
 		forgetConstantInfo();
+	}
+	
+	@Override
+	protected void trimToSize()
+	{
+		super.trimToSize();
+		_argids.trimToSize();
 	}
 
 	/*--------------------

@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.model.core;
 
+import static java.lang.String.*;
 import static java.util.Objects.*;
 
 import java.util.ArrayList;
@@ -262,8 +263,8 @@ public class FactorGraph extends FactorBase
 	private @Nullable IFactorGraphFactory<?> _solverFactory;
 	private @Nullable ISolverFactorGraph _solverFactorGraph;
 	private @Nullable LoadingCache<Functions, JointFactorFunction> _jointFactorCache = null;
-	private final HashSet<VariableStreamBase<?>> _variableStreams = new HashSet<>();
-	private final ArrayList<FactorGraphStream> _factorGraphStreams = new ArrayList<FactorGraphStream>();
+	private @Nullable HashSet<VariableStreamBase<?>> _variableStreams = null;
+	private @Nullable ArrayList<FactorGraphStream> _factorGraphStreams = null;
 	private int _numSteps = 1;
 	private boolean _numStepsInfinite = true;
 	
@@ -354,10 +355,9 @@ public class FactorGraph extends FactorBase
 		}
 	}
 	
-	@Immutable
 	private static final class SmallLocalEdgeState extends LocalEdgeState
 	{
-		final private long _data;
+		private long _data;
 		
 		private static final int EDGE_BITS = 26;
 		private static final int NODE_BITS = 19;
@@ -406,14 +406,33 @@ public class FactorGraph extends FactorBase
 		{
 			return (int)(_data >>> VARIABLE_OFFSET) & NODE_MASK;
 		}
+		
+		@Override
+		void setEdgeIndexInParent(FactorGraph graph, int newEdgeIndex)
+		{
+			_data = newEdgeIndex | _data & ~(long)EDGE_MASK;
+		}
+		
+		@Override
+		void setFactorIndex(int newIndex)
+		{
+			_data &= ~((long)NODE_MASK << FACTOR_OFFSET);
+			_data |= (long)newIndex << FACTOR_OFFSET;
+		}
+		
+		@Override
+		void setVariableIndex(int newIndex)
+		{
+			_data &= ~((long)NODE_MASK << VARIABLE_OFFSET);
+			_data |= newIndex << VARIABLE_OFFSET;
+		}
 	}
 	
-	@Immutable
 	private static final class FullLocalEdgeState extends LocalEdgeState
 	{
-		final private int _edgeIndex;
-		final private int _factorIndex;
-		final private int _variableIndex;
+		private int _edgeIndex;
+		private int _factorIndex;
+		private int _variableIndex;
 		
 		private FullLocalEdgeState(int edgeIndex, int factorOffset, int variableOffset)
 		{
@@ -456,6 +475,24 @@ public class FactorGraph extends FactorBase
 		public int variableIndex()
 		{
 			return _variableIndex;
+		}
+		
+		@Override
+		void setEdgeIndexInParent(FactorGraph graph, int newEdgeIndex)
+		{
+			_edgeIndex = newEdgeIndex;
+		}
+		
+		@Override
+		void setFactorIndex(int newIndex)
+		{
+			_factorIndex = newIndex;
+		}
+		
+		@Override
+		void setVariableIndex(int newIndex)
+		{
+			_variableIndex = newIndex;
 		}
 	}
 	
@@ -551,11 +588,18 @@ public class FactorGraph extends FactorBase
 		{
 			return Ids.localIdFromParts(Ids.BOUNDARY_VARIABLE_TYPE, variableIndex());
 		}
+		
+		@Override
+		void setFactorIndex(int newIndex)
+		{
+			// Index comes directly from Factor, so it should already be set
+			assert(newIndex == factorIndex());
+		}
 	}
 	
 	private static final class SmallBoundaryEdge extends BoundaryEdge
 	{
-		private final int _data;
+		private int _data;
 		
 		private static final int EDGE_BITS = 11;
 		private static final int EDGE_MASK = (1 << EDGE_BITS) - 1;
@@ -600,13 +644,35 @@ public class FactorGraph extends FactorBase
 		{
 			return _data & VARIABLE_MASK;
 		}
+		
+		@Override
+		void setEdgeIndexInParent(FactorGraph graph, int newEdgeIndex)
+		{
+			if (_factor.getParentGraph() == graph)
+			{
+				_data &= ~(EDGE_MASK << FACTOR_EDGE_OFFSET);
+				_data |= newEdgeIndex << FACTOR_EDGE_OFFSET;
+			}
+			else
+			{
+				_data &= ~(EDGE_MASK << VARIABLE_EDGE_OFFSET);
+				_data |= newEdgeIndex << VARIABLE_EDGE_OFFSET;
+			}
+		}
+		
+		@Override
+		void setVariableIndex(int newIndex)
+		{
+			_data &= ~VARIABLE_MASK;
+			_data |= newIndex;
+		}
 	}
 	
 	private static final class FullBoundaryEdge extends BoundaryEdge
 	{
-		private final int _factorEdgeIndex;
-		private final int _boundaryIndex;
-		private final int _variableEdgeIndex;
+		private int _factorEdgeIndex;
+		private int _boundaryIndex;
+		private int _variableEdgeIndex;
 		
 		private FullBoundaryEdge(Factor factor, int factorEdgeIndex, int boundaryIndex, int variableEdgeIndex)
 		{
@@ -645,6 +711,25 @@ public class FactorGraph extends FactorBase
 		{
 			return _boundaryIndex;
 		}
+		
+		@Override
+		void setEdgeIndexInParent(FactorGraph graph, int newEdgeIndex)
+		{
+			if (_factor.getParentGraph() == graph)
+			{
+				_factorEdgeIndex = newEdgeIndex;
+			}
+			else
+			{
+				_variableEdgeIndex = newEdgeIndex;
+			}
+		}
+		
+		@Override
+		void setVariableIndex(int newIndex)
+		{
+			_boundaryIndex = newIndex;
+		}
 	}
 	
 	/*--------------
@@ -655,10 +740,12 @@ public class FactorGraph extends FactorBase
 	{
 		this(new Variable[0], "");
 	}
+	
 	public FactorGraph(@Nullable String name)
 	{
 		this(null, name);
 	}
+	
 	/**
 	 * @since 0.07
 	 */
@@ -914,6 +1001,8 @@ public class FactorGraph extends FactorBase
 	 */
 	public void setEventAndOptionParent(@Nullable IDimpleEventSource parent)
 	{
+		assertGraphNotFrozen();
+		
 		_eventAndOptionParent = parent;
 	}
 	
@@ -1110,6 +1199,8 @@ public class FactorGraph extends FactorBase
 
     public BlastFromThePastFactor addBlastFromPastFactor(Variable var,Port factorPort)
     {
+    	assertGraphNotFrozen();
+    	
 		boolean setVarSolver = false;
 		
 		// FIXME boundary variable solver logic is hacky
@@ -1158,14 +1249,26 @@ public class FactorGraph extends FactorBase
 
 	public FactorGraphStream addRepeatedFactorWithBufferSize(FactorGraph nestedGraph, int bufferSize,Object ... vars)
 	{
-
+		assertGraphNotFrozen();
+		
 		FactorGraphStream fgs = new FactorGraphStream(this, nestedGraph, bufferSize, vars);
-		_factorGraphStreams.add(fgs);
+		ArrayList<FactorGraphStream> fgstreams = _factorGraphStreams;
+		if (fgstreams == null)
+		{
+			_factorGraphStreams = fgstreams = new ArrayList<>();
+		}
+		fgstreams.add(fgs);
+		
+		HashSet<VariableStreamBase<?>> vstreams = _variableStreams;
+		if (vstreams == null)
+		{
+			_variableStreams = vstreams = new HashSet<>();
+		}
 		for (Object v : vars)
 		{
 			if (v instanceof IVariableStreamSlice)
 			{
-				_variableStreams.add(((IVariableStreamSlice<?>) v).getStream());
+				vstreams.add(((IVariableStreamSlice<?>) v).getStream());
 			}
 		}
 		return fgs;
@@ -1194,13 +1297,22 @@ public class FactorGraph extends FactorBase
 	{
 		ISolverFactorGraph solver = requireSolver("advance");
 		
-		for (VariableStreamBase<?> vs : _variableStreams)
+		final Set<VariableStreamBase<?>> vstreams = _variableStreams;
+		if (vstreams != null)
 		{
-			vs.advanceState();
+			for (VariableStreamBase<?> vs : vstreams)
+			{
+				vs.advanceState();
+			}
 		}
-		for (FactorGraphStream s : _factorGraphStreams)
+		
+		final List<FactorGraphStream> fgstreams = _factorGraphStreams;
+		if (fgstreams != null)
 		{
-			s.advance();
+			for (FactorGraphStream s : fgstreams)
+			{
+				s.advance();
+			}
 		}
 
 		solver.postAdvance();
@@ -1209,19 +1321,31 @@ public class FactorGraph extends FactorBase
 
 	public boolean hasNext()
 	{
-		if (_factorGraphStreams.size() == 0)
+		List<FactorGraphStream> streams = _factorGraphStreams;
+
+		if (streams == null || streams.size() == 0)
 			return false;
 
-		for (FactorGraphStream s : _factorGraphStreams)
+		for (FactorGraphStream s : streams)
 			if (!s.hasNext())
 				return false;
 
 		return true;
 	}
 
-	public ArrayList<FactorGraphStream> getFactorGraphStreams()
+	/**
+	 * {@link FactorGraphStream}s for repeated factors.
+	 * @see #addRepeatedFactor(FactorGraph, Object...)
+	 * @see #addRepeatedFactorWithBufferSize(FactorGraph, int, Object...)
+	 */
+	public List<FactorGraphStream> getFactorGraphStreams()
 	{
-		return _factorGraphStreams;
+		List<FactorGraphStream> streams = _factorGraphStreams;
+		if (streams == null)
+		{
+			streams = Collections.emptyList();
+		}
+		return streams;
 	}
 
 	/**
@@ -1417,20 +1541,82 @@ public class FactorGraph extends FactorBase
 	 * <p>
 	 * Once frozen, a graph may not be unfrozen.
 	 * <p>
+	 * Graph may only be frozen if all of the following conditions are met:
+	 * <ul>
+	 * <li>there is no {@link #getDefaultConditioningLayer() default conditioning layer}
+	 * <li>no graph is associated with a {@link #getSolver() solver graph}
+	 * <li>{@link #getFactorGraphStreams()} is empty
+	 * </ul>
+	 * <p>
+	 * This is primarily intended for freezing template graphs so that graphs generated from them
+	 * can be assured to have the same layout.
+	 * <p>
+	 * @throws IllegalStateException if any of the conditions listed above are violated.
 	 * @since 0.08
 	 * @see #frozen
+	 * @see #reindexGraphTree()
 	 */
-	public void freeze()
+	public void freezeGraphTree()
 	{
-		// TODO renumber and compress representations to conserve memory and id address space
-		_graphTreeState._frozen = true;
+		final GraphTreeState state = _graphTreeState;
+		
+		if (state._frozen)
+			return;
+		
+		assertOkToFreezeOrReindex("Cannot freeze graph tree");
+		
+		// Since graphs are frozen, shrink any arrays down to the minimum required size.
+		for (FactorGraph graph : FactorGraphIterables.subgraphs(getRootGraph()))
+		{
+			graph._edges.trimToSize();
+			graph._ownedConstants.trimToSize();
+			graph._ownedFactors.trimToSize();
+			graph._ownedSubGraphs.trimToSize();
+			graph._ownedVariableBlocks.trimToSize();
+			graph._ownedVariables.trimToSize();
+			graph.updateSiblings();
+			graph._siblingEdges.trimToSize();
+			
+			for (Node factor : graph._ownedFactors)
+			{
+				factor.trimToSize();
+			}
+			for (Node var : graph._ownedVariables)
+			{
+				var.trimToSize();
+			}
+		}
+
+		state._frozen = true;
+		
+	}
+	
+	private void assertOkToFreezeOrReindex(String baseErrorMessage)
+	{
+		if (getDefaultConditioningLayer() != null)
+		{
+			throw new IllegalStateException(format("%s: default conditioning layer is not null", baseErrorMessage));
+		}
+			
+		for (FactorGraph graph : FactorGraphIterables.subgraphs(getRootGraph()))
+		{
+			if (graph._solverFactorGraph != null)
+			{
+				throw new IllegalStateException(format("%s: %s has a solver graph", baseErrorMessage, graph));
+			}
+			
+			if (graph._factorGraphStreams != null)
+			{
+				throw new IllegalStateException(format("%s: %s has FactorGraphStreams", baseErrorMessage, graph));
+			}
+		}
 	}
 	
 	/**
 	 * Indicate whether graph tree including this graph has been frozen to future changes.
 	 * <p>
 	 * @since 0.08
-	 * @see #freeze
+	 * @see #freezeGraphTree
 	 */
 	public boolean frozen()
 	{
@@ -1470,42 +1656,145 @@ public class FactorGraph extends FactorBase
 		return false;
 	}
 	
-//	TODO public void reindexGraphTree()
-//	{
-//		// Renumber and compress graph tree indexes - requires renumbering in VariableBlocks
-//		final GraphTreeState state = _graphTreeState;
-//		final int[] old2newGraphTreeIndex = new int[state._maxGraphTreeIndex + 1];
-//
-//		int to = 0;
-//		for (int from = 0, max = state._maxGraphTreeIndex; from <= max; ++from)
-//		{
-//			FactorGraph graph = state._graphs.get(from);
-//			if (graph != null)
-//			{
-//				old2newGraphTreeIndex[from] = to;
-//				if (from != to)
-//				{
-//					graph._graphTreeIndex = to;
-//					state._graphs.set(to, graph);
-//					state._graphs.set(from, null);
-//				}
-//				++to;
-//			}
-//		}
-//		if (to != state._graphs.size())
-//		{
-//			state._graphs.setSize(to);
-//			state._maxGraphTreeIndex = to - 1;
-//		}
-//
-//		// TODO - replace VariableBlocks with new graph tree ids
-//
-//		// - renumber edges
-//		// - renumber variables
-//		// - renumber constants
-//		// - renumber factorss
-//		// - renumber subgraphs
-//	}
+	/**
+	 * Reindex elements of graph tree to compress representation.
+	 * <p>
+	 * This reallocates space left by removal of factors, variables, subgraphs, edges, etc.
+	 * by moving higher-numbered elements into the freed up spots. This will produce a more
+	 * compact representation for both solver and data state for the graph. If no elements have been
+	 * removed then this should have no effect. Note that {@link #join(Factor...)} and
+	 * {@link #join(Variable[], Factor...)} will implicitly remove variables, factors, edges
+	 * and subgraphs.
+	 * <p>
+	 * Graph may only be reindexed if all of the following conditions are met:
+	 * <ul>
+	 * <li>the graph tree is not {@link #frozen}.
+	 * <li>there is no {@link #getDefaultConditioningLayer() default conditioning layer}
+	 * <li>no graph is associated with a {@link #getSolver() solver graph}
+	 * <li>{@link #getFactorGraphStreams()} is empty
+	 * </ul>
+	 * <b>Reindexing the graph could invalidate any existing solvers or data layers
+	 * that refer to the graphs in the tree, so this should only be used after finishing modifications
+	 * to the model, but before associating data or solvers with it.</b>
+	 * <p>
+	 * @return true if any changes were made.
+	 * @throws IllegalStateException if any of the conditions listed above were violated.
+	 * @since 0.08
+	 */
+	public boolean reindexGraphTree()
+	{
+		assertNotFrozen();
+		
+		assertOkToFreezeOrReindex("Cannot reindex graph tree");
+		
+		// Renumber and compress graph tree indexes - requires renumbering in VariableBlocks
+		final GraphTreeState state = _graphTreeState;
+		final FactorGraph root = getRootGraph();
+		
+		final int[] old2newGraphTreeIndex = new int[state._maxGraphTreeIndex + 1];
+
+		boolean indexChanged = false;
+		int to = 0;
+		for (int from = 0, max = state._maxGraphTreeIndex; from <= max; ++from)
+		{
+			FactorGraph graph = state._graphs.get(from);
+			if (graph != null)
+			{
+				old2newGraphTreeIndex[from] = to;
+				if (from != to)
+				{
+					indexChanged = true;
+					graph._graphTreeIndex = to;
+					state._graphs.set(to, graph);
+					state._graphs.set(from, null);
+				}
+				++to;
+			}
+		}
+		if (to != state._graphs.size())
+		{
+			state._graphs.setSize(to);
+			state._maxGraphTreeIndex = to - 1;
+		}
+
+		List<VariableBlock> blocks = new ArrayList<>();
+		for (VariableBlock block : FactorGraphIterables.variableBlocks(root))
+		{
+			blocks.add(block);
+			if (indexChanged)
+			{
+				((FactorGraphChild)block).fixGraphTreeIndices(old2newGraphTreeIndex);
+			}
+		}
+		
+		for (FactorGraph graph : FactorGraphIterables.subgraphs(root))
+		{
+			indexChanged |= graph.reindex(blocks);
+		}
+		
+		return indexChanged;
+	}
+	
+	/**
+	 * Reindex elements directly owned by this graph.
+	 * <p>
+	 * @param blocks list of all {@link VariableBlock}s from graph tree. Used to reindex affected variables.
+	 * @return true if any indexes were changed
+	 * @since 0.08
+	 */
+	private boolean reindex(List<VariableBlock> blocks)
+	{
+		int from, to, n;
+		
+		// renumber edges
+		for (from = 0, to = 0, n = _edges.size(); from < n; ++from)
+		{
+			EdgeState edge = _edges.get(from);
+			if (edge != null)
+			{
+				if (from != to)
+				{
+					_edges.set(to, edge);
+					_edges.set(from, null);
+					edge.setEdgeIndexInParent(this, to);
+					switch (edge.type(this))
+					{
+					case LOCAL:
+						((Node)edge.getFactor(this)).fixSiblingEdgeStateIndex(edge);
+						edge.getVariable(this).fixSiblingEdgeStateIndex(edge);
+						break;
+					case INNER:
+						edge.getVariable(this).fixSiblingEdgeStateIndex(edge);
+						break;
+					case OUTER:
+						((Node)edge.getFactor(this)).fixSiblingEdgeStateIndex(edge);
+						break;
+					}
+				}
+				++to;
+			}
+		}
+
+		boolean indexChanged = from != to;
+
+		indexChanged |= _ownedFactors.renumber(false) != null;
+		indexChanged |= _ownedSubGraphs.renumber(false) != null;
+		indexChanged |= _ownedVariableBlocks.renumber(false) != null;
+
+		int[] old2newVarIndex = _ownedVariables.renumber(true);
+		if (old2newVarIndex != null)
+		{
+			indexChanged = true;
+			for (FactorGraphChild block : blocks)
+			{
+				block.fixVarIndicesForGraph(_graphTreeIndex, old2newVarIndex);
+			}
+		}
+		
+		// Constants and boundary variables currently cannot be removed, so there is currently no need to renumber.
+		
+		return indexChanged;
+	}
 	
 	/**
 	 * Removes variables from the graph.

@@ -123,6 +123,8 @@ public abstract class FactorGraphChild
 	@Override
 	public void setLocalId(int id)
 	{
+		assertNotFrozen();
+		
 		_id = id;
 	}
 
@@ -194,5 +196,43 @@ public abstract class FactorGraphChild
 		
 		throw new IllegalStateException(String.format("%s '%s' does not belong to a graph.",
 			getClass().getSimpleName(), this));
+	}
+	
+	/*-------------------
+	 * Protected methods
+	 */
+	
+	protected void assertNotFrozen()
+	{
+		final FactorGraph graph = getContainingGraph();
+		if (graph != null)
+		{
+			graph.assertGraphNotFrozen();
+		}
+	}
+
+	/**
+	 * Fix graph tree indexes after they have been changed
+	 * @param old2newGraphTreeIndex maps old indexes to new ones. It is safe to assume that
+	 * {@code old2newGraphTreeIndex[i] <= i}.
+	 * @since 0.08
+	 * @category internal
+	 */
+	@Internal
+	protected void fixGraphTreeIndices(int[] old2newGraphTreeIndex)
+	{
+	}
+	
+	/**
+	 * Fix variable indexes from graph with given graph tree index after they have been changed.
+	 * @param graphTreeIndex identifies the graph whose variables were reindexed
+	 * @param old2newVarIndex maps old variable indices to their new values. It is safe to assume
+	 * that {@code old2newVarIndex[i] <= i}
+	 * @since 0.08
+	 * @category internal
+	 */
+	@Internal
+	protected void fixVarIndicesForGraph(int graphTreeIndex, int[] old2newVarIndex)
+	{
 	}
 }

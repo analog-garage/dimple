@@ -47,6 +47,22 @@ final class OwnedVariables extends OwnedArray<Variable>
 	}
 	
 	@Override
+	void renumberNode(Variable var, int newIndex)
+	{
+		super.renumberNode(var, newIndex);
+		
+		for (EdgeState edge : var.getSiblingEdgeState())
+		{
+			if (edge.isLocal())
+			{
+				// Only update local edges because the variable index of boundary
+				// uses the boundary variable index.
+				edge.setVariableIndex(newIndex);
+			}
+		}
+	}
+	
+	@Override
 	Variable[] resize(@Nullable Variable[] array, int length)
 	{
 		final Variable[] newArray = new Variable[length];

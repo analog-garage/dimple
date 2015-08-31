@@ -763,6 +763,7 @@ public abstract class Node extends FactorGraphChild implements INode
 	@Internal
     public void clearMarked()
     {
+    	assertNotFrozen();
     	clearFlags(MARKED);
     }
 	
@@ -770,6 +771,7 @@ public abstract class Node extends FactorGraphChild implements INode
 	@Internal
     public void clearVisited()
     {
+    	assertNotFrozen();
     	clearFlags(VISITED);
     }
 	
@@ -791,6 +793,7 @@ public abstract class Node extends FactorGraphChild implements INode
 	@Internal
     public final void setMarked()
     {
+    	assertNotFrozen();
     	setFlags(MARKED);
     }
     
@@ -798,6 +801,7 @@ public abstract class Node extends FactorGraphChild implements INode
 	@Internal
     public final void setVisited()
     {
+    	assertNotFrozen();
     	setFlags(VISITED);
     }
     
@@ -834,15 +838,20 @@ public abstract class Node extends FactorGraphChild implements INode
 		notifyConnectionsChanged();
 	}
 
-    protected void assertNotFrozen()
-    {
-    	final FactorGraph graph = _parentGraph;
-    	if (graph != null)
-    	{
-    		graph.assertGraphNotFrozen();
-    	}
-    }
-    
+    /**
+	 * Reset index for given edge.
+	 * <p>
+	 * To be invoked after edge index has been changed to a lower value.
+	 * <p>
+	 * @category internal
+	 * @since 0.08
+	 */
+	@Internal
+	protected void fixSiblingEdgeStateIndex(EdgeState edge)
+	{
+		_siblingEdges.set(edge.getSiblingIndex(this), edge.edgeIndex(this));
+	}
+	
 	/**
 	 * @category internal
 	 */
@@ -996,6 +1005,17 @@ public abstract class Node extends FactorGraphChild implements INode
 		_flags = BitSetUtil.setMaskedValue(_flags, mask, value);
 	}
 
+	/**
+	 * Trims representation of sibling edges to their size to save memory.
+	 * @category internal
+	 * @since 0.08
+	 */
+	@Internal
+	protected void trimToSize()
+	{
+		_siblingEdges.trimToSize();
+	}
+	
 	/*--------------------
 	 * Deprecated methods
 	 */

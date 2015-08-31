@@ -30,22 +30,29 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.FactorGraphChild;
+import com.analog.lyric.dimple.model.core.Ids;
 import com.analog.lyric.util.misc.Internal;
 import com.google.common.primitives.Longs;
 
 import cern.colt.map.OpenLongObjectHashMap;
-import net.jcip.annotations.Immutable;
+import net.jcip.annotations.ThreadSafe;
 
 /**
  * Represents a block of {@link Variable}s in a {@link FactorGraph}.
  * <p>
  * The list of variables in this block is immutable and cannot change once it has been created.
  * <p>
+ * Note that while the list of variables cannot change, the underlying representation can change if
+ * the {@linkplain FactorGraph#reindexGraphTree graph tree is reindexed}. This may change the value
+ * of the {@link #hashCode()}, so avoid reindexing when you have {@link java.util.HashSet HashSet}
+ * containing blocks from the graph tree, or a {@link java.util.HashMap HashMap} with blocks used
+ * as keys.
+ * <p>
  * @since 0.08
  * @author Christopher Barber
  * @see FactorGraph#addVariableBlock(Collection)
  */
-@Immutable
+@ThreadSafe
 public final class VariableBlock extends FactorGraphChild implements List<Variable>, RandomAccess
 {
 	/*-------
@@ -53,7 +60,7 @@ public final class VariableBlock extends FactorGraphChild implements List<Variab
 	 */
 	
 	private final long[] _variableGraphTreeIds;
-	private final int _hashCode;
+	private int _hashCode;
 	
 	/*--------------
 	 * Construction
@@ -168,6 +175,41 @@ public final class VariableBlock extends FactorGraphChild implements List<Variab
 	public FactorGraph getParentGraph()
 	{
 		return _parentGraph;
+	}
+	
+	@Override
+	protected void fixGraphTreeIndices(int[] old2newGraphTreeIndex)
+	{
+		final long[] ids = _variableGraphTreeIds;
+		
+		for (int i = ids.length; --i>=0;)
+		{
+			final long id = ids[i];
+			final int oldGraphTreeIndex = Ids.graphTreeIndexFromGraphTreeId(id);
+			final int newGraphTreeIndex = old2newGraphTreeIndex[oldGraphTreeIndex];
+			ids[i] = Ids.graphTreeIdFromParts(newGraphTreeIndex, Ids.localIdFromGraphTreeId(id));
+		}
+		
+		_hashCode = Arrays.hashCode(ids);
+	}
+	
+	@Override
+	protected void fixVarIndicesForGraph(int graphTreeIndex, int[] old2newVarIndex)
+	{
+		final long[] ids = _variableGraphTreeIds;
+		
+		for (int i = ids.length; --i>=0;)
+		{
+			final long id = ids[i];
+			if (graphTreeIndex == Ids.graphTreeIndexFromGraphTreeId(id))
+			{
+				final int oldVarIndex = Ids.indexFromLocalId(Ids.localIdFromGraphTreeId(id));
+				final int newVarIndex = old2newVarIndex[oldVarIndex];
+				ids[i] = Ids.graphTreeIdFromParts(graphTreeIndex, Ids.localIdFromParts(Ids.VARIABLE_TYPE, newVarIndex));
+			}
+		}
+		
+		_hashCode = Arrays.hashCode(ids);
 	}
 	
 	/*---------------

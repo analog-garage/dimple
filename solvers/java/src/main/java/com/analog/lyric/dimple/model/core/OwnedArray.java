@@ -26,6 +26,7 @@ import java.util.Iterator;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.ReleasableIterators;
 import com.google.common.collect.UnmodifiableIterator;
 
@@ -278,6 +279,60 @@ abstract class OwnedArray<T extends IFactorGraphChildWithSetLocalId> extends Abs
 			}
 		}
 		return false;
+	}
+	
+	@Nullable int[] renumber(boolean returnOldToNewMapping)
+	{
+		int[] old2new = null;
+		
+		final T[] nodes = _nodes;
+		if (nodes != null)
+		{
+			int from = 0, to = 0, n = _size;
+			for (; from < n; ++from)
+			{
+				T node = nodes[from];
+				if (node != null)
+				{
+					if (from != to)
+					{
+						if (returnOldToNewMapping)
+						{
+							if (old2new == null)
+							{
+								old2new = new int[n];
+								for (int i = 0; i < from; ++i)
+								{
+									old2new[i] = i;
+								}
+							}
+							old2new[from] = to;
+						}
+						nodes[to] = node;
+						nodes[from] = null;
+						renumberNode(node, to);
+					}
+					++to;
+				}
+			}
+			
+			if (to != from && !returnOldToNewMapping)
+			{
+				old2new = ArrayUtil.EMPTY_INT_ARRAY;
+			}
+		}
+		
+		return old2new;
+	}
+	
+	void renumberNode(T node, int newIndex)
+	{
+		node.setLocalId(newIndex|idTypeMask());
+	}
+	
+	void trimToSize()
+	{
+		capacity(_size);
 	}
 	
 	/*------------------

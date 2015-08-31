@@ -46,6 +46,17 @@ final class OwnedFactors extends OwnedArray<Factor>
 	}
 	
 	@Override
+	void renumberNode(Factor node, int newIndex)
+	{
+		super.renumberNode(node, newIndex);
+		
+		for (EdgeState edge : node.getSiblingEdgeState())
+		{
+			edge.setFactorIndex(newIndex);
+		}
+	}
+	
+	@Override
 	Factor[] resize(@Nullable Factor[] array, int length)
 	{
 		final Factor[] newArray = new Factor[length];
