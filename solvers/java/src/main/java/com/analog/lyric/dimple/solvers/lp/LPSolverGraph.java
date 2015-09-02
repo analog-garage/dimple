@@ -162,11 +162,11 @@ public class LPSolverGraph extends SFactorGraphBase<LPTableFactor, LPDiscrete, N
 		
 		if (sfactor == null)
 		{
-		if (!(factor instanceof DiscreteFactor))
-		{
-			throw new DimpleException("Factor '%s' is not a DiscreteFactor. LP solver only supports discrete factors.",
-				factor.getName());
-		}
+			if (!(factor instanceof DiscreteFactor))
+			{
+				throw new DimpleException("Factor '%s' is not a DiscreteFactor. LP solver only supports discrete factors.",
+					factor.getName());
+			}
 
 			sfactor = new STableFactor(this, (DiscreteFactor)factor);
 			_factorMap.put(factor,  sfactor);
