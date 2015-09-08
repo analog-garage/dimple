@@ -55,6 +55,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjug
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.RealConjugateSamplerRegistry;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.RealJointConjugateSamplerRegistry;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IGenericSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IJointMCMCSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IMCMCSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IRealSamplerClient;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.MHSampler;
@@ -189,18 +190,31 @@ public class GibbsRealJoint extends SRealJointVariableBase
 		if (conjugateSampler == null)
 		{
 			// Use MCMC sampler
-			RealValue nextSample = RealValue.create();
 			IMCMCSampler sampler = Objects.requireNonNull(_sampler);
-			for (int i = 0; i < _numRealVars; i++)
+			if (_sampler instanceof IJointMCMCSampler)
 			{
-				_tempIndex = i;		// Save this to be used by the call-back from sampler
-				nextSample.setDouble(_sampleValue[i]);
+				RealJointValue nextSample = Value.create(getDomain(), _sampleValue);
 				if (!sampler.nextSample(nextSample, this))
 				{
 					++rejectCount;
 				}
 				_updateCount++;	// Updates count each real variable when using an MCMC sampler
 				_rejectCount += rejectCount;
+			}
+			else
+			{
+				RealValue nextSample = RealValue.create();
+				for (int i = 0; i < _numRealVars; i++)
+				{
+					_tempIndex = i;		// Save this to be used by the call-back from sampler
+					nextSample.setDouble(_sampleValue[i]);
+					if (!sampler.nextSample(nextSample, this))
+					{
+						++rejectCount;
+					}
+					_updateCount++;	// Updates count each real variable when using an MCMC sampler
+					_rejectCount += rejectCount;
+				}
 			}
 		}
 		else
@@ -255,7 +269,15 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	@Override
 	public final double getSampleScore(Value sampleValue)
 	{
-		return getSampleScore(sampleValue.getDouble());
+		if (sampleValue.getDomain().isRealJoint())
+		{
+			// WARNING: Side effect is that the current sample value changes to this sample value
+			// Could change back but less efficient to do this, since we'll be updating the sample value anyway
+			setCurrentSample(sampleValue);
+			return getCurrentSampleScore();
+		}
+		else	// Real value; set one dimension only
+			return getSampleScore(sampleValue.getDouble());
 	}
 	@Override
 	public final double getSampleScore(double sampleValue)
@@ -326,7 +348,10 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	@Override
 	public final void setNextSampleValue(Value sampleValue)
 	{
-		setNextSampleValue(sampleValue.getDouble());
+		if (sampleValue.getDomain().isRealJoint())
+			setCurrentSample(sampleValue);
+		else	// Real value; set one dimension only
+			setNextSampleValue(sampleValue.getDouble());
 	}
 	@Override
 	public final void setNextSampleValue(double sampleValue)
@@ -991,8 +1016,11 @@ public class GibbsRealJoint extends SRealJointVariableBase
 	@Deprecated
 	public final void setSampler(String samplerName)
 	{
-		_sampler = (IMCMCSampler)GibbsOptions.realSampler.instantiate(this);
+		GibbsOptions.realSampler.convertAndSet(this, samplerName);
+		IMCMCSampler sampler = (IMCMCSampler) GibbsOptions.realSampler.instantiateIfDifferent(this, _sampler);
+		_sampler = sampler;
 		_samplerSpecificallySpecified = true;
+		sampler.initializeFromVariable(this);
 	}
 	
 	@Override
