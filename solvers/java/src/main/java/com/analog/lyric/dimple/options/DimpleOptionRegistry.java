@@ -20,6 +20,7 @@ import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.CircularNormalProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.JointMHSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.MHSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.SliceSampler;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeOptions;
@@ -111,6 +112,7 @@ public final class DimpleOptionRegistry extends OptionRegistry
 			
 			// Samplers
 			MHSampler.class,
+			JointMHSampler.class,
 			SliceSampler.class
 			);
 	}
