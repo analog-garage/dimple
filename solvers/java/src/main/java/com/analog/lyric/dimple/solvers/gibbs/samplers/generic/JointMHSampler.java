@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
@@ -28,7 +30,6 @@ import com.analog.lyric.dimple.solvers.core.proposalKernels.ProposalKernelOption
 import com.analog.lyric.dimple.solvers.core.proposalKernels.UniformDiscreteProposalKernel;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.IOptionHolder;
-import com.sun.istack.internal.Nullable;
 
 /**
  * Single-variable Metropolis-Hastings sampler.
