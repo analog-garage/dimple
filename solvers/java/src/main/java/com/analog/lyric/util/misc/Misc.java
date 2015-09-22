@@ -17,6 +17,7 @@
 package com.analog.lyric.util.misc;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
 import com.analog.lyric.dimple.factorfunctions.XorDelta;
@@ -78,8 +79,6 @@ public class Misc
 		
 		for ( int [] counter : ic)
 		{
-			indices[index] = counter.clone();
-			
 			tmpObj = obj;
 			int i = 0;
 			while (tmpObj.getClass().isArray())
@@ -90,10 +89,24 @@ public class Misc
 					tmpObj = ((Object[])tmpObj)[counter[i]];
 				i++;
 			}
-			values[index] = (Double)tmpObj;
 			
+			final double value = (Double)tmpObj;
 			
-			index++;
+			if (value != 0.0)
+			{
+				// Skip zero values
+				values[index] = value;
+				indices[index] = counter.clone();
+			
+				index++;
+			}
+		}
+		
+		if (index < size)
+		{
+			// Trim arrays if necessary
+			indices = Arrays.copyOf(indices, index);
+			values = Arrays.copyOf(values, index);
 		}
 		
 		return new Object[]{indices,values};

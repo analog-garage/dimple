@@ -738,6 +738,25 @@ public class TestFactorTable extends DimpleTestBase
 	}
 	
 	@Test
+	public void testCreateFromMultidimensionalArray()
+	{
+		// Regression case for bug 417
+		
+		final DiscreteDomain rowDomain = DiscreteDomain.range(1, 3);
+		final DiscreteDomain colDomain = DiscreteDomain.range(1, 4);
+		final double[][] matrix =
+			new double[][] {
+				new double[] { 1, 3, 0, 0},
+				new double[] { 2, 0, 5, 0},
+				new double[] { 0, 4, 0, 6}
+			};
+		
+		IFactorTable table = FactorTable.create(matrix, new DiscreteDomain[] { rowDomain, colDomain });
+		assertArrayEquals(new double[] { 1, 2, 3, 4, 5, 6 }, table.getWeightsSparseUnsafe(), 0.0);
+		assertEquals(table.countNonZeroWeights(), table.sparseSize());
+	}
+	
+	@Test
 	@Ignore
 	public void performanceComparison()
 	{
@@ -946,9 +965,17 @@ public class TestFactorTable extends DimpleTestBase
 				FactorTableRepresentation newRep = FactorTableRepresentation.values()[rand.nextInt(nReps)];
 				try
 				{
+					int nonZeroCount = table.countNonZeroWeights();
+					
 					table.setRepresentation(newRep);
 					FactorTableRepresentation actualNewRep = table.getRepresentation();
 					assertEquals(newRep, actualNewRep);
+					
+					if (!oldRep.hasSparse() && nonZeroCount < table.jointSize() && newRep.hasSparse())
+					{
+						// Make sure that conversion does weed out the zero weights
+						assertEquals(table.sparseSize(), table.countNonZeroWeights());
+					}
 				}
 				catch (DimpleException ex)
 				{
