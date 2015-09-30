@@ -23,7 +23,7 @@ import java.util.Iterator;
  */
 public interface PrimitiveIterator<T> extends Iterator<T>
 {
-	// JAVA8: This is a partial copy of part of a new interface proposed for java.util package in Java 8.
+	// JAVA8: This is a partial copy of part of a new interface in java.util package in Java 8.
 	 
 	public static interface OfDouble extends PrimitiveIterator<Double>
 	{
