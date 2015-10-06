@@ -118,8 +118,9 @@ import net.jcip.annotations.ThreadSafe;
  * as described in the Java {@linkplain java.util.logging.LogManager LogManager} class documentation; relevant
  * properties are documented in the various handler classes (e.g.
  * {@linkplain java.util.logging.ConsoleHandler ConsoleHandler},
- * {@linkplain java.util.logging.FileHandler FileHandler}). The default configuration usually will just log
- * to {@link System#err}.
+ * {@linkplain java.util.logging.FileHandler FileHandler}). The Java logging system is described in more detail
+ * in the <a href="http://docs.oracle.com/javase/7/docs/technotes/guides/logging/overview.html">Java Logging Overview</a>
+ * in the Java SE Documentation. The default configuration usually will just log to {@link System#err}.
  * <p>
  * This class provides some simple methods for logging {@linkplain #logError(String, Object...) errors} and
  * {@linkplain #logWarning(String, Object...) warnings}. The environment's {@link #logger()} instance can
@@ -138,8 +139,8 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	@GuardedBy("_allInstances")
 	private static final WeakLongHashMap<DimpleEnvironment> _allInstances = new WeakLongHashMap<>();
 	
-	private static final AtomicReference<DimpleEnvironment> _globalInstance =
-		new AtomicReference<>(new DimpleEnvironment());
+	@GuardedBy("class")
+	private static @Nullable DimpleEnvironment _globalInstance;
 	
 	private static final ThreadLocal<DimpleEnvironment> _threadInstance = new ThreadLocal<DimpleEnvironment>() {
 		@Override
@@ -282,9 +283,14 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 * @see #setDefaultEnvironment(DimpleEnvironment)
 	 * @since 0.07
 	 */
-	public static DimpleEnvironment defaultEnvironment()
+	public synchronized static DimpleEnvironment defaultEnvironment()
 	{
-		return _globalInstance.get();
+		DimpleEnvironment env = _globalInstance;
+		if (env == null)
+		{
+			_globalInstance = env = new DimpleEnvironment();
+		}
+		return env;
 	}
 	
 	/**
@@ -323,9 +329,9 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 * @see #defaultEnvironment()
 	 * @since 0.07
 	 */
-	public static void setDefaultEnvironment(DimpleEnvironment env)
+	public synchronized static void setDefaultEnvironment(DimpleEnvironment env)
 	{
-		_globalInstance.set(env);
+		_globalInstance = env;
 	}
 	
 	/**
@@ -540,11 +546,28 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	}
 	
 	/**
+	 * Logs a message using the thread-specific Dimple logger.
+	 * <p>
+	 * This is simply shorthand for:
+	 * <blockquote><pre>
+	 * DimpleEnvironment.{@link #active}().{@link #logger}().{@link Logger#log log}(level, format, args);
+	 * </pre></blockquote>
+	 * @param level indicates the relative severity/priority of the message. The underlying logger is typically
+	 * configured to ignore lower level messages. You can also use {@link ExtendedLevel} values here.
+	 * @since 0.08
+	 * @see #logger
+	 */
+	public static void log(Level level, String format, Object ... args)
+	{
+		active().logger().log(level, format, args);
+	}
+	
+	/**
 	 * Logs a warning message using the thread-specific Dimple logger.
 	 * <p>
 	 * This is simply shorthand for:
 	 * <blockquote>
-     *   local().logger().warning(String.format(format, args));
+     *   DimpleEnvironment.{@link #active}().{@link #logger}().{@link Logger#warning warning}(String.format(format, args));
 	 * </blockquote>
 	 * <p>
 	 * @param format a non-null String for use with {@link String#format}.
@@ -561,7 +584,7 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 * <p>
 	 * This is simply shorthand for:
 	 * <blockquote>
-     *   local().logger().warning(message);
+     *   DimpleEnvironment.{@link #active}().{@link #logger}().{@link Logger#warning warning}(message);
 	 * </blockquote>
 	 * <p>
 	 * @since 0.07
@@ -576,7 +599,7 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 * <p>
 	 * This is simply shorthand for:
 	 * <blockquote>
-     *   local().logger().severe(String.format(format, args));
+     *   DimpleEnvironment.{@link #active}().{@link #logger}().{@link Logger#severe severe}(String.format(format, args));
 	 * </blockquote>
 	 * <p>
 	 * @param format a non-null String for use with {@link String#format}.
@@ -593,7 +616,7 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 * <p>
 	 * This is simply shorthand for:
 	 * <blockquote>
-     *   local().logger().severe(message);
+     *   DimpleEnvironment.{@link #active}().{@link #logger}().{@link Logger#severe severe}(message);
 	 * </blockquote>
 	 * <p>
 	 * @since 0.07

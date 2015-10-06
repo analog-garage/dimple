@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2014 Analog Devices, Inc.
+*   Copyright 2014-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -38,8 +38,11 @@ import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Ids;
+import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
+import com.analog.lyric.dimple.schedulers.GibbsRandomScanScheduler;
+import com.analog.lyric.dimple.schedulers.validator.AllEdgeScheduleValidator;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.SliceSampler;
@@ -57,6 +60,9 @@ public class TestDimpleEnvironment extends DimpleTestBase
 	@Test
 	public void testInstances()
 	{
+		// Assume JUnit tests will not be run from MATLAB
+		assertFalse(DimpleEnvironment.loadedFromMATLAB());
+		
 		assertNull(DimpleEnvironment.withId(new SecureRandom().nextLong()));
 		
 		final DimpleEnvironment global1 = DimpleEnvironment.defaultEnvironment();
@@ -98,6 +104,7 @@ public class TestDimpleEnvironment extends DimpleTestBase
 		assertSame(global2, DimpleEnvironment.defaultEnvironment());
 		assertSame(local1, DimpleEnvironment.active());
 		assertNotEquals(uid, global2.getUUID());
+		assertSame(local1.random(), DimpleEnvironment.activeRandom());
 		
 		Thread thread2 = new Thread() {
 			@Override
@@ -107,6 +114,7 @@ public class TestDimpleEnvironment extends DimpleTestBase
 				DimpleEnvironment.setDefaultEnvironment(global1);
 				assertSame(global1, DimpleEnvironment.defaultEnvironment());
 				assertSame(global2, DimpleEnvironment.active());
+				assertSame(global2.random(), DimpleEnvironment.activeRandom());
 			}
 		};
 		thread2.start();
@@ -261,6 +269,12 @@ public class TestDimpleEnvironment extends DimpleTestBase
 		assertEquals(ExtendedLevel.ERROR, record.getLevel());
 		assertEquals("'whoops'", record.getMessage());
 		assertTrue(testLogger.loggedRecords().isEmpty());
+		
+		DimpleEnvironment.log(Level.INFO, "info");
+		record = testLogger.loggedRecords().remove();
+		assertEquals(Level.INFO, record.getLevel());
+		assertEquals("info", record.getMessage());
+		assertTrue(testLogger.loggedRecords().isEmpty());
 	}
 	
 	@Test
@@ -274,6 +288,15 @@ public class TestDimpleEnvironment extends DimpleTestBase
 		assertNull(env.factorGraphs().getGraphWithId(0));
 		assertSame(env.factorGraphs(), env.factorGraphs());
 		
+		FactorGraph fg1 = new FactorGraph();
+		FactorGraph fg2 = new FactorGraph();
+		Real v1 = new Real();
+		fg1.addVariables(v1);
+		assertSame(fg1, env.factorGraphs().getGraphWithId(fg1.getGraphId()));
+		assertSame(fg2, env.factorGraphs().getGraphWithId(fg2.getGraphId()));
+		assertSame(v1, env.getNodeByGlobalId(v1.getGlobalId()));
+		assertNull(env.getNodeByGlobalId(0));
+		
 		assertEquals(SliceSampler.class, env.genericSamplers().getClass("SliceSampler"));
 		assertSame(env.genericSamplers(), env.genericSamplers());
 		
@@ -285,5 +308,10 @@ public class TestDimpleEnvironment extends DimpleTestBase
 		
 		assertEquals(GibbsSolver.class, env.solvers().getClass("Gibbs"));
 		assertSame(env.solvers(), env.solvers());
+		
+		assertEquals(GibbsRandomScanScheduler.class, env.schedulers().getClass("GibbsRandomScanScheduler"));
+		assertSame(env.schedulers(), env.schedulers());
+		
+		assertEquals(AllEdgeScheduleValidator.class, env.scheduleValidators().getClass("AllEdgeScheduleValidator"));
 	}
 }
