@@ -37,7 +37,6 @@ import com.analog.lyric.dimple.model.core.EdgeDirection;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.FactorPort;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Ids;
 import com.analog.lyric.dimple.model.core.NodeType;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
@@ -51,10 +50,12 @@ import com.analog.lyric.dimple.model.variables.IConstantOrVariable;
 import com.analog.lyric.dimple.model.variables.IVariableToValue;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
+import com.analog.lyric.dimple.model.variables.VariablePredicates;
 import com.analog.lyric.dimple.options.DimpleOptions;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.util.misc.Internal;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
 import cern.colt.list.IntArrayList;
@@ -832,16 +833,7 @@ public class Factor extends FactorBase implements Cloneable
 	
 	public boolean isDiscrete()
 	{
-		for (INode p : getSiblings())
-		{
-			Variable vb = (Variable)p;
-			if (! vb.getDomain().isDiscrete())
-			{
-				return false;
-			}
-		}
-		
-		return true;
+		return Iterables.all(getSiblings(), VariablePredicates.isDiscrete());
 	}
 	
 	@Override
