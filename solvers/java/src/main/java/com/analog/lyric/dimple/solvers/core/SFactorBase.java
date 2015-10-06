@@ -189,6 +189,35 @@ public abstract class SFactorBase extends SNode<Factor> implements ISolverFactor
 		return FactorToVariableMessageEvent.class;
 	}
 	
+	/*----------------------------
+	 * SFactorBase helper methods
+	 */
+	
+	/**
+	 * For use in constructor to asserts that factor is only attached to discrete variables.
+	 * <p>
+	 * @param factor passed to subclass constructor
+	 * @throws SolverFactorCreationException if {@code factor} is not discrete
+	 * @since 0.08
+	 */
+	protected void assertDiscrete(Factor factor)
+	{
+		if (!factor.isDiscrete())
+		{
+			throw new SolverFactorCreationException("%s cannot be used with not entirely discrete factor %s",
+				getClass().getSimpleName(), factor);
+		}
+	}
+	
+	protected void assertHasConstants(Factor factor)
+	{
+		if (!factor.hasConstants())
+		{
+			throw new SolverFactorCreationException("%s cannot be used with factor that does not have constants %s",
+				getClass().getSimpleName(), factor);
+		}
+	}
+	
 	/*--------------------
 	 * Deprecated methods
 	 */
