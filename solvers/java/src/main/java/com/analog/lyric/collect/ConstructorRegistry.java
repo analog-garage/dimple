@@ -31,14 +31,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.jcip.annotations.GuardedBy;
-import net.jcip.annotations.ThreadSafe;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.reflect.ClassPath;
+
+import net.jcip.annotations.GuardedBy;
+import net.jcip.annotations.ThreadSafe;
 
 /**
  * Simple registry mapping class names to constructor instances.
@@ -277,7 +277,7 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 				{
 					constructors = addConstructorsFrom(Class.forName(name, false, loader), false);
 				}
-				catch (Exception e)
+				catch (Throwable e)
 				{
 				}
 			}
@@ -294,7 +294,7 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 						break;
 					}
 				}
-				catch (Exception e)
+				catch (Throwable e)
 				{
 				}
 			}
