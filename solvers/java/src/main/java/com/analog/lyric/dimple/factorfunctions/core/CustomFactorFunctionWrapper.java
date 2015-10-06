@@ -19,13 +19,8 @@ package com.analog.lyric.dimple.factorfunctions.core;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.values.Value;
 
-public class CustomFactorFunctionWrapper extends FactorFunction
+public final class CustomFactorFunctionWrapper extends FactorFunction
 {
-
-	public CustomFactorFunctionWrapper()
-	{
-		super();
-	}
 	public CustomFactorFunctionWrapper(String name)
 	{
 		super(name);
