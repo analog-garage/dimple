@@ -532,6 +532,7 @@ public abstract class FactorFunction implements IFactorFunction
 	 * Return whether or not there are constants in the factor function instance
 	 * 
 	 * @since 0.05
+	 * @deprecated since release 0.08
 	 */
     @Deprecated
 	public boolean hasConstants()
@@ -545,6 +546,7 @@ public abstract class FactorFunction implements IFactorFunction
 	 * Default implementation returns zero.
 	 * 
 	 * @since 0.05
+	 * @deprecated since release 0.08
 	 */
     @Deprecated
 	public int getConstantCount()
@@ -557,7 +559,9 @@ public abstract class FactorFunction implements IFactorFunction
 	 * In this case, there is no containing class
 	 * 
 	 * @since 0.05
+	 * @deprecated since release 0.08
 	 */
+    @Deprecated
 	public FactorFunction getContainedFactorFunction()
 	{
 		return this;
@@ -570,6 +574,7 @@ public abstract class FactorFunction implements IFactorFunction
 	 * Default implementation returns null.
 	 * 
 	 * @since 0.08
+	 * @deprecated since release 0.08
 	 */
 	@Deprecated
 	public @Nullable Value getConstantValueByIndex(int index)
@@ -587,6 +592,7 @@ public abstract class FactorFunction implements IFactorFunction
 	 * Default implementation returns null.
 	 * 
 	 * @since 0.05
+	 * @deprecated since release 0.08
 	 */
 	@Deprecated
 	public @Nullable Object getConstantByIndex(int index)
@@ -597,6 +603,7 @@ public abstract class FactorFunction implements IFactorFunction
 	/**
 	 * Returns whether or not the index corresponds to a constant
 	 * @since 0.05
+	 * @deprecated since release 0.08
 	 */
 	@Deprecated
 	public boolean isConstantIndex(int index)
@@ -607,6 +614,7 @@ public abstract class FactorFunction implements IFactorFunction
 	/**
 	 * Returns whether or not the index range corresponds to a constant
 	 * @since 0.06
+	 * @deprecated since release 0.08
 	 */
 	@Deprecated
 	public boolean hasConstantsInIndexRange(int minIndex, int maxIndex)
@@ -616,6 +624,7 @@ public abstract class FactorFunction implements IFactorFunction
 	/**
 	 * Returns whether or not the index corresponds to a constant
 	 * @since 0.05
+	 * @deprecated since release 0.08
 	 */
 	@Deprecated
 	public boolean hasConstantAtOrAboveIndex(int index)
@@ -626,6 +635,7 @@ public abstract class FactorFunction implements IFactorFunction
 	/**
 	 * Returns whether or not the index corresponds to a constant
 	 * @since 0.05
+	 * @deprecated since release 0.08
 	 */
 	@Deprecated
 	public boolean hasConstantAtOrBelowIndex(int index)
@@ -636,6 +646,7 @@ public abstract class FactorFunction implements IFactorFunction
 	/**
 	 * Returns whether or not the index corresponds to a constant
 	 * @since 0.05
+	 * @deprecated since release 0.08
 	 */
 	@Deprecated
 	public int numConstantsInIndexRange(int minIndex, int maxIndex)
@@ -646,6 +657,7 @@ public abstract class FactorFunction implements IFactorFunction
 	/**
 	 * Returns whether or not the index corresponds to a constant
 	 * @since 0.05
+	 * @deprecated since release 0.08
 	 */
 	@Deprecated
 	public int numConstantsAtOrAboveIndex(int index)
@@ -656,6 +668,7 @@ public abstract class FactorFunction implements IFactorFunction
 	/**
 	 * Returns whether or not the index corresponds to a constant
 	 * @since 0.05
+	 * @deprecated since release 0.08
 	 */
 	@Deprecated
 	public int numConstantsAtOrBelowIndex(int index)
@@ -669,6 +682,7 @@ public abstract class FactorFunction implements IFactorFunction
 	 * For factors with not constants, these are identical.
 	 * 
 	 * @since 0.05
+	 * @deprecated since release 0.08
 	 */
 	@Deprecated
 	public int getEdgeByIndex(int index)
@@ -699,7 +713,7 @@ public abstract class FactorFunction implements IFactorFunction
 	}
 
 	/**
-	 * Returns an immutable list view of the
+	 * @deprecated as of release 0.08 use {@link Factor#getConstantValues} instead.
 	 * @since 0.08
 	 */
 	@Deprecated
@@ -709,7 +723,7 @@ public abstract class FactorFunction implements IFactorFunction
 	}
 
 	/**
-	 * @deprecated as of release 0.08 use {@link #getConstantValues} instead.
+	 * @deprecated as of release 0.08 use {@link Factor#getConstantValues} instead.
 	 * @since 0.05
 	 */
 	@Deprecated
@@ -720,6 +734,7 @@ public abstract class FactorFunction implements IFactorFunction
 
 	/**
 	 * @since 0.05
+	 * @deprecated since release 0.08 use {@link Factor#getConstantIndices} instead.
 	 */
 	@Deprecated
 	public int[] getConstantIndices()
