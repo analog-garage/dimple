@@ -19,7 +19,8 @@ package com.analog.lyric.util.misc;
 import org.eclipse.jdt.annotation.Nullable;
 
 /**
- * 
+ * Utility methods for use by the MATLAB API
+ * <p>
  * @since 0.08
  * @author Christopher Barber
  */
