@@ -212,15 +212,6 @@ public class LPSolverGraph extends SFactorGraphBase<LPTableFactor, LPDiscrete, N
 	}
 
 	/**
-	 * Always returns false.
-	 */
-	@Override
-	public boolean customFactorExists(String funcName)
-	{
-		return false;
-	}
-
-	/**
 	 * {@inheritDoc}
 	 * <p>
 	 * This implementation returns "dimpleLPSolve" if the value of {@link #getLPSolverName()} is

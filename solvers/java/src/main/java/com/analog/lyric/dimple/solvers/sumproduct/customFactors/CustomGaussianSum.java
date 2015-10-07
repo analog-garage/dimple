@@ -18,13 +18,12 @@ package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import java.util.List;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.VariablePredicates;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
+import com.google.common.collect.Iterables;
 
 
 public class CustomGaussianSum extends GaussianFactorBase
@@ -37,14 +36,7 @@ public class CustomGaussianSum extends GaussianFactorBase
 	{
 		super(factor, parent);
 		_sumIndex = 0;		// Index that is the sum of all the others
-		
-		for (int i = 0, endi = factor.getSiblingCount(); i < endi; i++)
-		{
-			Variable v = factor.getSibling(i);
-			
-			if (v.getDomain().isDiscrete())
-				throw new DimpleException("Cannot connect discrete variable to this factor");
-		}
+		assertUnboundedReal(factor);
 	}
 
 	@Override
@@ -133,21 +125,14 @@ public class CustomGaussianSum extends GaussianFactorBase
 	}
 	
 	
-	// Utility to indicate whether or not a factor is compatible with the requirements of this custom factor
+	/**
+	 * Utility to indicate whether or not a factor is compatible with the requirements of this custom factor
+	 * @deprecated as of release 0.08
+	 */
+	@Deprecated
 	public static boolean isFactorCompatible(Factor factor)
 	{
-		for (int i = 0, end = factor.getSiblingCount(); i < end; i++)
-		{
-			Variable v = factor.getSibling(i);
-			Domain domain = v.getDomain();
-			
-			// Must be unbounded univariate real
-			if (!domain.isReal() || domain.isBounded())
-			{
-				return false;
-			}
-		}
-		return true;
+		return Iterables.all(factor.getSiblings(), VariablePredicates.isUnboundedReal());
 	}
 
 

@@ -190,7 +190,7 @@ public class CustomNormal extends GibbsRealFactor implements IRealConjugateFacto
 		// Get the factor function and related state
 		final Factor factor = _model;
 		FactorFunction factorFunction = factor.getFactorFunction();
-		Normal specificFactorFunction = (Normal)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		Normal specificFactorFunction = (Normal)factorFunction;
 		boolean hasFactorFunctionConstants = factor.hasConstants();
 		boolean hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 

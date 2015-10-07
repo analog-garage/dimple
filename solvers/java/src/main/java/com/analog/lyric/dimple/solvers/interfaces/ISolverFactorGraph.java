@@ -70,6 +70,7 @@ public interface ISolverFactorGraph	extends ISolverNode, IVariableToValue
 	 * @param factorName
 	 * @return True only for custom factors that do not have a corresponding FactorFunction of the same name
 	 */
+	@Deprecated
 	@Matlab
 	public boolean customFactorExists(String factorName);
 

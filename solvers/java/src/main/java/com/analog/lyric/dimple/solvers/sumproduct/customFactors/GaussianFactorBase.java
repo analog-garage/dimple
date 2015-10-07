@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2013 Analog Devices, Inc.
+*   Copyright 2013-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -17,10 +17,13 @@
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.VariablePredicates;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.core.SNormalEdge;
+import com.analog.lyric.dimple.solvers.core.SolverFactorCreationException;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+import com.google.common.collect.Iterables;
 
 public abstract class GaussianFactorBase extends SFactorBase
 {
@@ -52,4 +55,26 @@ public abstract class GaussianFactorBase extends SFactorBase
 	{
 		return (SNormalEdge)getSiblingEdgeState_(siblingIndex);
 	}
+	
+	/*-----------------------------------
+	 * GaussianFactorBase helper methods
+	 */
+	
+	/**
+	 * Asserts that factor has only unbounded Real variables.
+	 * <p>
+	 * For use in subclass constructors.
+	 * <p>
+	 * @throws SolverFactorCreationException if assertion fails.
+	 * @since 0.08
+	 */
+	protected void assertUnboundedReal(Factor factor)
+	{
+		if (!Iterables.all(factor.getSiblings(), VariablePredicates.isUnboundedReal()))
+		{
+			throw new SolverFactorCreationException("Cannot use %s with %s: not all variables are unbounded Real",
+				getClass().getSimpleName(), factor);
+		}
+	}
+
 }

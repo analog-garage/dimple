@@ -117,7 +117,7 @@ public class CustomBeta extends GibbsRealFactor implements IRealConjugateFactor
 		// Get the factor function and related state
 		final Factor factor = _model;
 		FactorFunction factorFunction = factor.getFactorFunction();
-		Beta specificFactorFunction = (Beta)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		Beta specificFactorFunction = (Beta)factorFunction;
 		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 
 		final int prevNumParameterEdges = _numParameterEdges;

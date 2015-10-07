@@ -114,7 +114,7 @@ public class CustomExchangeableDirichlet extends GibbsRealFactor implements IRea
 		// Get the factor function and related state
 		final Factor factor = _model;
 		FactorFunction factorFunction = factor.getFactorFunction();
-		ExchangeableDirichlet specificFactorFunction = (ExchangeableDirichlet)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		ExchangeableDirichlet specificFactorFunction = (ExchangeableDirichlet)factorFunction;
 		_dimension = specificFactorFunction.getDimension();
 
 		final int prevNumParameterEdges = _numParameterEdges;

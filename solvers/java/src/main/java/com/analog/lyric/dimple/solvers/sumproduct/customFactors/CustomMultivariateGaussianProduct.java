@@ -18,10 +18,10 @@ package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import static java.util.Objects.*;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.solvers.core.SolverFactorCreationException;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 
@@ -35,27 +35,34 @@ public class CustomMultivariateGaussianProduct extends MultivariateGaussianFacto
 		
 		// Make sure this is of the form a = b*c where either b or c is a constant.
 		if (factor.getSiblingCount() != 2)
-			throw new DimpleException("factor must be of form a = b*c where b is a constant matrix");
+			throw new SolverFactorCreationException("factor must be of form a = b*c where b is a constant matrix");
 		
 		// TODO: alternatively, one of the ports could be a discrete variable with a single domain element
 		
 		if (factor.getConstantCount() != 1)
-			throw new DimpleException("expected one constant");
+			throw new SolverFactorCreationException("expected one constant");
+		
+		if (!factor.hasConstantAtIndex(1))
+			throw new SolverFactorCreationException("Expect matrix to be second arg");
 		
 		Object constantObj = requireNonNull(factor.getConstantValues().get(0).getObject());
 		
-		double[][] constant = (constantObj instanceof double[]) ?
-			new double[][] { (double[])constantObj } : (double[][])constantObj;
+		if (!(constantObj instanceof double[][]))
+		{
+			throw new SolverFactorCreationException("Constant not a double[][] matrix");
+		}
 		
-		if (!factor.hasConstantAtIndex(1))
-			throw new DimpleException("Expect matrix to be second arg");
+		final double[][] constant = (double[][])constantObj;
 		
+		assertUnboundedRealJoint(factor);
 		
-		Variable a = _model.getSibling(0);
-		Variable b = _model.getSibling(1);
+		final int yDim = factor.getSibling(0).getDomain().getDimensions();
+		final int xDim = factor.getSibling(1).getDomain().getDimensions();
 		
-		if (a.getDomain().isDiscrete() || b.getDomain().isDiscrete())
-			throw new DimpleException("Variables must be reals");
+		if (constant.length != yDim || constant[0].length != xDim)
+		{
+			throw new SolverFactorCreationException("Constant matrix does not have expected dimensions");
+		}
 		
 		_constant = constant;
 		
@@ -79,7 +86,11 @@ public class CustomMultivariateGaussianProduct extends MultivariateGaussianFacto
 	}
 	
 	
-	// Utility to indicate whether or not a factor is compatible with the requirements of this custom factor
+	/**
+	 * Utility to indicate whether or not a factor is compatible with the requirements of this custom factor
+	 * @deprecated as of release 0.08
+	 */
+	@Deprecated
 	public static boolean isFactorCompatible(Factor factor)
 	{
 		// Must be of the form form y = A*x where either A is a constant matrix.

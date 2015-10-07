@@ -121,7 +121,7 @@ public class CustomDirichlet extends GibbsRealFactor implements IRealJointConjug
 		// Get the factor function and related state
 		final Factor factor = _model;
 		FactorFunction factorFunction = factor.getFactorFunction();
-		Dirichlet specificFactorFunction = (Dirichlet)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		Dirichlet specificFactorFunction = (Dirichlet)factorFunction;
 
 		final int prevNumParameterEdges = _numParameterEdges;
 		

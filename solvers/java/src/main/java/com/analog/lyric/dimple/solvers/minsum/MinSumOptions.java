@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2014 Analog Devices, Inc.
+*   Copyright 2014-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package com.analog.lyric.dimple.solvers.minsum;
 
 import com.analog.lyric.dimple.options.BPOptions;
+import com.analog.lyric.dimple.solvers.core.CustomFactorsOptionKey;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 
 /**
  * Options for {@link MinSumSolver}.
@@ -28,4 +30,7 @@ import com.analog.lyric.dimple.options.BPOptions;
  */
 public class MinSumOptions extends BPOptions
 {
+	public static final CustomFactorsOptionKey<ISolverFactor, MinSumSolverGraph, MinSumCustomFactors>
+		customFactors =	new CustomFactorsOptionKey<>(MinSumOptions.class, "customFactors",
+			MinSumCustomFactors.class);
 }

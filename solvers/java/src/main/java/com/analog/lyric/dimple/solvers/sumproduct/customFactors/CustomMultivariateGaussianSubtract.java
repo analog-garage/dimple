@@ -16,10 +16,10 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
-import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.VariablePredicates;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
+import com.google.common.collect.Iterables;
 
 // Same as CustomMultivariateGaussianSum, except the second edge is treated as the output instead of the first
 public class CustomMultivariateGaussianSubtract extends CustomMultivariateGaussianSum
@@ -27,23 +27,17 @@ public class CustomMultivariateGaussianSubtract extends CustomMultivariateGaussi
 	public CustomMultivariateGaussianSubtract(Factor factor, SumProductSolverGraph parent)
 	{
 		super(factor, parent);
+		assertUnboundedRealJoint(factor);
 		_sumIndex = 1;	// Port that is the sum of all the others
 	}
 	
-	// Utility to indicate whether or not a factor is compatible with the requirements of this custom factor
+	/**
+	 * Utility to indicate whether or not a factor is compatible with the requirements of this custom factor
+	 * @deprecated as of release 0.08
+	 */
+	@Deprecated
 	public static boolean isFactorCompatible(Factor factor)
 	{
-		for (int i = 0, end = factor.getSiblingCount(); i < end; i++)
-		{
-			Variable v = factor.getSibling(i);
-			Domain domain = v.getDomain();
-			
-			// Must be unbounded multivariate real
-			if (!domain.isRealJoint() || domain.isBounded())
-			{
-				return false;
-			}
-		}
-		return true;
+		return Iterables.all(factor.getSiblings(), VariablePredicates.isUnboundedRealJoint());
 	}
 }

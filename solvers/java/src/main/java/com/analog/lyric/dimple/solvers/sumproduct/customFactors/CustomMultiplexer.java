@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import org.eclipse.jdt.annotation.NonNull;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.factorfunctions.Multiplexer;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -30,18 +31,25 @@ import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscreteEdge;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
 
-/*
+/**
+ * Custom factor for {@link Multiplexer}
+ * <p>
  * The Multiplexer factor is a directed factor
- *    a z(1) z(2) ...
+ * <blockquote><pre>
+ *   a z(1) z(2) ...
  *    \ |   /    /
- *       y
- *  such that P(Y=y|a,z(1),z(2),...) = Identity(y == z(a))
- * 
- *  The following custom factor provides optimized inference for the
- *  Multiplexer factor function
+ *     ++--+----+
+ *         |
+ *         y
+ * </pre></blockquote>
+ * such that P(Y=y|a,z(1),z(2),...) = Identity(y == z(a))
  */
 public class CustomMultiplexer extends STableFactorDoubleArray
 {
+	/*-------
+	 * State
+	 */
+	
 	private int _yDomainSize;
 	private int _aDomainSize;
 	
@@ -52,10 +60,15 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 	//Create a mapping between a z index and the y
 	private int [][] _zIndices2yIndex;
 
+	/*--------------
+	 * Construction
+	 */
+	
 	@SuppressWarnings("unchecked")
 	public CustomMultiplexer(Factor factor, SumProductSolverGraph parent)
 	{
 		super(factor, parent);
+		assertDiscrete(factor);
 		
 		final int nVars = factor.getSiblingCount();
 		if (nVars < 2)

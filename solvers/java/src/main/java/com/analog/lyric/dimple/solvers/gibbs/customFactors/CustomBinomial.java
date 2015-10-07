@@ -134,7 +134,7 @@ public class CustomBinomial extends GibbsRealFactor implements IRealConjugateFac
 		// Get the factor function and related state
 		final Factor factor = _model;
 		FactorFunction factorFunction = factor.getFactorFunction();
-		Binomial specificFactorFunction = (Binomial)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		Binomial specificFactorFunction = (Binomial)factorFunction;
 
 		final int prevProbabilityParameterEdge = _probabilityParameterEdge;
 		

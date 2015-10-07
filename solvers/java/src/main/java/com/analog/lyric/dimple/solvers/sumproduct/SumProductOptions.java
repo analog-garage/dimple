@@ -17,6 +17,8 @@
 package com.analog.lyric.dimple.solvers.sumproduct;
 
 import com.analog.lyric.dimple.options.BPOptions;
+import com.analog.lyric.dimple.solvers.core.CustomFactorsOptionKey;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 
 /**
  * Options for sum-product solver.
@@ -28,4 +30,8 @@ import com.analog.lyric.dimple.options.BPOptions;
  */
 public class SumProductOptions extends BPOptions
 {
+	public static final CustomFactorsOptionKey<ISolverFactor, SumProductSolverGraph, SumProductCustomFactors>
+		customFactors =	new CustomFactorsOptionKey<>(SumProductOptions.class, "customFactors",
+			SumProductCustomFactors.class);
+	
 }

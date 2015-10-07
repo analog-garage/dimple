@@ -262,7 +262,7 @@ public class CustomMultiplexer extends GibbsRealFactor implements IRealConjugate
 		// Get the factor function and related state
 		final Factor factor = _model;
 		FactorFunction factorFunction = factor.getFactorFunction();
-		Multiplexer specificFactorFunction = (Multiplexer)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		Multiplexer specificFactorFunction = (Multiplexer)factorFunction;
 		_hasFactorFunctionConstants = factor.hasConstants();
 		if (specificFactorFunction.hasSmoothing())
 		{

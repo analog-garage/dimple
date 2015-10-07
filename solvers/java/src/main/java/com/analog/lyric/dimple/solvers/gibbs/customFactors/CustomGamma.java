@@ -149,7 +149,7 @@ public class CustomGamma extends GibbsRealFactor implements IRealConjugateFactor
 		// Get the factor function and related state
 		final Factor factor = _model;
 		FactorFunction factorFunction = factor.getFactorFunction();
-		Gamma specificFactorFunction = (Gamma)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		Gamma specificFactorFunction = (Gamma)factorFunction;
 		boolean hasFactorFunctionConstants = factor.hasConstants();
 		boolean hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 

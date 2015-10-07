@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.solvers.core.SolverFactorCreationException;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductDiscreteEdge;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
@@ -30,8 +30,13 @@ public class CustomFiniteFieldAdd extends SFiniteFieldFactor
 	{
 		super(factor, parent);
 		
-		if (factor.getPorts().size() != 3)
-			throw new DimpleException("Only supports 3 arguments");
+		if (factor.hasConstants())
+			throw new SolverFactorCreationException("%s does not support constant arguments",
+				getClass().getSimpleName());
+		
+		if (factor.getArgumentCount() != 3)
+			throw new SolverFactorCreationException("%s expects 3 arguments",
+				getClass().getSimpleName());
 
 	}
 

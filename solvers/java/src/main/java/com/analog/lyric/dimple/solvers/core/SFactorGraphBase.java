@@ -631,6 +631,7 @@ public abstract class SFactorGraphBase
 		DimpleEnvironment.logError("Cannot handle custom schedule entry '%s'", entry);
 	}
 	
+	@Deprecated
 	@Override
 	public boolean customFactorExists(String funcName)
 	{

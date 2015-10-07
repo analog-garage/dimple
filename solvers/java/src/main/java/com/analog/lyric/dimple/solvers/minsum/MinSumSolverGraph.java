@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -21,9 +21,6 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.Tuple2;
-import com.analog.lyric.dimple.factorfunctions.Xor;
-import com.analog.lyric.dimple.factorfunctions.core.CustomFactorFunctionWrapper;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -38,7 +35,6 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import com.analog.lyric.dimple.solvers.minsum.customFactors.CustomXor;
 import com.analog.lyric.dimple.solvers.optimizedupdate.CostEstimationTableWrapper;
 import com.analog.lyric.dimple.solvers.optimizedupdate.CostType;
 import com.analog.lyric.dimple.solvers.optimizedupdate.Costs;
@@ -107,29 +103,10 @@ public class MinSumSolverGraph extends BPSolverGraph<ISolverFactor,ISolverVariab
 	}
 
 
-	@SuppressWarnings("deprecation") // TODO remove when SVariable removed
 	@Override
 	public ISolverFactor createFactor(Factor factor)
 	{
-		FactorFunction factorFunction = factor.getFactorFunction().getContainedFactorFunction();	// In case it's wrapped
-		String factorName = factorFunction.getName();
-		boolean noFF = factorFunction instanceof CustomFactorFunctionWrapper;
-
-		
-		// First see if any custom factor should be created
-		if (factorFunction instanceof Xor)
-		{
-			return new CustomXor(factor, this);
-		}
-		else if (noFF && (factorName.equals("CustomXor") || factorName.equals("customXor")))
-		{
-			// For backward compatibility
-			return new CustomXor(factor, this);
-		}
-		else // No custom factor exists, so create a generic one
-		{
-			return new STableFactor(factor, this);
-		}
+		return MinSumOptions.customFactors.createFactor(factor, this);
 	}
 	
 	@Override

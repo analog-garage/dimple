@@ -159,7 +159,7 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends Gibb
 		// Get the factor function and related state
 		final Factor factor = _model;
 		FactorFunction factorFunction = factor.getFactorFunction();
-		FactorFunction containedFactorFunction = factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		FactorFunction containedFactorFunction = factorFunction;
 		if (containedFactorFunction instanceof DiscreteTransitionUnnormalizedParameters)
 		{
 			DiscreteTransitionUnnormalizedParameters specificFactorFunction = (DiscreteTransitionUnnormalizedParameters)containedFactorFunction;

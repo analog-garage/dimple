@@ -194,7 +194,7 @@ public class CustomMultinomial extends GibbsRealFactor implements IRealJointConj
 	{
 		final Factor factor = _model;
 		FactorFunction factorFunction = factor.getFactorFunction();
-		Multinomial specificFactorFunction = (Multinomial)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		Multinomial specificFactorFunction = (Multinomial)factorFunction;
 
 		final int prevAlphaParameterEdge = _alphaParameterEdge;
 		

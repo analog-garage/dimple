@@ -17,10 +17,13 @@
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.VariablePredicates;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.core.SMultivariateNormalEdge;
+import com.analog.lyric.dimple.solvers.core.SolverFactorCreationException;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+import com.google.common.collect.Iterables;
 
 public abstract class MultivariateGaussianFactorBase extends SFactorBase
 {
@@ -51,4 +54,26 @@ public abstract class MultivariateGaussianFactorBase extends SFactorBase
 	{
 		return (SMultivariateNormalEdge)getSiblingEdgeState_(siblingIndex);
 	}
+
+	/*-----------------------------------------------
+	 * MultivariateGaussianFactorBase helper methods
+	 */
+	
+	/**
+	 * Asserts that factor has only unbounded RealJoint variables.
+	 * <p>
+	 * For use in subclass constructors.
+	 * <p>
+	 * @throws SolverFactorCreationException if assertion fails.
+	 * @since 0.08
+	 */
+	protected void assertUnboundedRealJoint(Factor factor)
+	{
+		if (!Iterables.all(factor.getSiblings(), VariablePredicates.isUnboundedRealJoint()))
+		{
+			throw new SolverFactorCreationException("Cannot use %s with %s: not all variables are unbounded RealJoint",
+				getClass().getSimpleName(), factor);
+		}
+	}
+
 }

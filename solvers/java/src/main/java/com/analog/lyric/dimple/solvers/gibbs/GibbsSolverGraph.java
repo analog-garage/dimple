@@ -32,27 +32,6 @@ import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.KeyedPriorityQueue;
 import com.analog.lyric.dimple.data.ValueDataLayer;
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.Bernoulli;
-import com.analog.lyric.dimple.factorfunctions.Beta;
-import com.analog.lyric.dimple.factorfunctions.Binomial;
-import com.analog.lyric.dimple.factorfunctions.Categorical;
-import com.analog.lyric.dimple.factorfunctions.CategoricalEnergyParameters;
-import com.analog.lyric.dimple.factorfunctions.CategoricalUnnormalizedParameters;
-import com.analog.lyric.dimple.factorfunctions.Dirichlet;
-import com.analog.lyric.dimple.factorfunctions.DiscreteTransition;
-import com.analog.lyric.dimple.factorfunctions.DiscreteTransitionEnergyParameters;
-import com.analog.lyric.dimple.factorfunctions.DiscreteTransitionUnnormalizedParameters;
-import com.analog.lyric.dimple.factorfunctions.ExchangeableDirichlet;
-import com.analog.lyric.dimple.factorfunctions.Gamma;
-import com.analog.lyric.dimple.factorfunctions.LogNormal;
-import com.analog.lyric.dimple.factorfunctions.Multinomial;
-import com.analog.lyric.dimple.factorfunctions.MultinomialEnergyParameters;
-import com.analog.lyric.dimple.factorfunctions.MultinomialUnnormalizedParameters;
-import com.analog.lyric.dimple.factorfunctions.Multiplexer;
-import com.analog.lyric.dimple.factorfunctions.NegativeExpGamma;
-import com.analog.lyric.dimple.factorfunctions.Normal;
-import com.analog.lyric.dimple.factorfunctions.Poisson;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.DirectedNodeSorter;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -74,23 +53,6 @@ import com.analog.lyric.dimple.schedulers.schedule.IGibbsSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
-import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomBernoulli;
-import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomBeta;
-import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomBinomial;
-import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomCategorical;
-import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomCategoricalUnnormalizedOrEnergyParameters;
-import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDirichlet;
-import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDiscreteTransition;
-import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDiscreteTransitionUnnormalizedOrEnergyParameters;
-import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomExchangeableDirichlet;
-import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomGamma;
-import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomLogNormal;
-import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomMultinomial;
-import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomMultinomialUnnormalizedOrEnergyParameters;
-import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomMultiplexer;
-import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNegativeExpGamma;
-import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNormal;
-import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomPoisson;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockInitializer;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
@@ -247,57 +209,10 @@ public class GibbsSolverGraph
 	// Note, customFactorExists is intentionally not overridden and therefore returns false
 	// This is because all of the custom factors for this solver also exist as FactorFunctions,
 	// and therefore we still want the MATLAB code to create a factor with the specified FactorFunctions.
-	@SuppressWarnings("deprecation") // TODO: remove when S*Factor classes removed.
 	@Override
 	public ISolverFactorGibbs createFactor(Factor factor)
 	{
-		FactorFunction factorFunction = factor.getFactorFunction().getContainedFactorFunction();	// In case it's wrapped
-		
-		// First see if any custom factor should be created
-		if (factorFunction instanceof Normal)
-			return new CustomNormal(factor, this);
-		else if (factorFunction instanceof Gamma)
-			return new CustomGamma(factor, this);
-		else if (factorFunction instanceof NegativeExpGamma)
-			return new CustomNegativeExpGamma(factor, this);
-		else if (factorFunction instanceof LogNormal)
-			return new CustomLogNormal(factor, this);
-		else if (factorFunction instanceof DiscreteTransition)
-			return new CustomDiscreteTransition(factor, this);
-		else if (factorFunction instanceof DiscreteTransitionUnnormalizedParameters)
-			return new CustomDiscreteTransitionUnnormalizedOrEnergyParameters(factor, this);
-		else if (factorFunction instanceof DiscreteTransitionEnergyParameters)
-			return new CustomDiscreteTransitionUnnormalizedOrEnergyParameters(factor, this);
-		else if (factorFunction instanceof Categorical)
-			return new CustomCategorical(factor, this);
-		else if (factorFunction instanceof CategoricalUnnormalizedParameters)
-			return new CustomCategoricalUnnormalizedOrEnergyParameters(factor, this);
-		else if (factorFunction instanceof CategoricalEnergyParameters)
-			return new CustomCategoricalUnnormalizedOrEnergyParameters(factor, this);
-		else if (factorFunction instanceof Dirichlet)
-			return new CustomDirichlet(factor, this);
-		else if (factorFunction instanceof ExchangeableDirichlet)
-			return new CustomExchangeableDirichlet(factor, this);
-		else if (factorFunction instanceof Beta)
-			return new CustomBeta(factor, this);
-		else if (factorFunction instanceof Bernoulli)
-			return new CustomBernoulli(factor, this);
-		else if (factorFunction instanceof Binomial)
-			return new CustomBinomial(factor, this);
-		else if (factorFunction instanceof Multinomial)
-			return new CustomMultinomial(factor, this);
-		else if (factorFunction instanceof MultinomialUnnormalizedParameters)
-			return new CustomMultinomialUnnormalizedOrEnergyParameters(factor, this);
-		else if (factorFunction instanceof MultinomialEnergyParameters)
-			return new CustomMultinomialUnnormalizedOrEnergyParameters(factor, this);
-		else if (factorFunction instanceof Poisson)
-			return new CustomPoisson(factor, this);
-		else if (factorFunction instanceof Multiplexer)
-			return new CustomMultiplexer(factor, this);
-		else if (factor.isDiscrete())			// No custom factor exists, so create a generic one
-			return new STableFactor(factor, this);	// Generic discrete factor
-		else
-			return new GibbsRealFactor(factor, this);		// Generic real factor
+		return GibbsOptions.customFactors.createFactor(factor, this);
 	}
 	
 

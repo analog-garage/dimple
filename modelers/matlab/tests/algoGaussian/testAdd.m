@@ -108,6 +108,6 @@ function testAdd()
         message = E.message;
     end
     assertEqual(exFound,true);
-    assertTrue(findstr(message,'Cannot connect discrete variable to this factor')> 0);
+    assertFalse(isempty(findstr(message,'Variables must be unbounded and all Real or all RealJoint')));
 end
 

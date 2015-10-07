@@ -137,7 +137,7 @@ public class CustomBernoulli extends GibbsRealFactor implements IRealConjugateFa
 		// Get the factor function and related state
 		final Factor factor = _model;
 		FactorFunction factorFunction = factor.getFactorFunction();
-		Bernoulli specificFactorFunction = (Bernoulli)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		Bernoulli specificFactorFunction = (Bernoulli)factorFunction;
 		boolean hasFactorFunctionConstants = factor.hasConstants();
 		boolean hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 

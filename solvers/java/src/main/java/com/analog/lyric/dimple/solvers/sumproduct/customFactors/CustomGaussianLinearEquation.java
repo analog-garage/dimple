@@ -22,11 +22,11 @@ import static java.util.Objects.*;
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.factorfunctions.LinearEquation;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.VariablePredicates;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
+import com.google.common.collect.Iterables;
 
 public class CustomGaussianLinearEquation extends GaussianFactorBase
 {
@@ -37,6 +37,7 @@ public class CustomGaussianLinearEquation extends GaussianFactorBase
 	public CustomGaussianLinearEquation(Factor factor, SumProductSolverGraph parent)
 	{
 		super(factor, parent);
+		assertUnboundedReal(factor);
 	}
 	
 	
@@ -85,7 +86,7 @@ public class CustomGaussianLinearEquation extends GaussianFactorBase
 		// Pre-compute for any constant edges
 		final Factor factor = _model;
 		FactorFunction factorFunction = factor.getFactorFunction();
-		LinearEquation specificFactorFunction = (LinearEquation)factorFunction.getContainedFactorFunction();
+		LinearEquation specificFactorFunction = (LinearEquation)factorFunction;
 		
 		
 		double[] specifiedWeightVector = specificFactorFunction.getWeightArray();
@@ -116,22 +117,14 @@ public class CustomGaussianLinearEquation extends GaussianFactorBase
 	}
 	
 	
-	// Utility to indicate whether or not a factor is compatible with the requirements of this custom factor
+	/**
+	 *  Utility to indicate whether or not a factor is compatible with the requirements of this custom factor
+	 *  @deprecated as of release 0.08
+	 */
+	@Deprecated
 	public static boolean isFactorCompatible(Factor factor)
 	{
-		for (int i = 0, end = factor.getSiblingCount(); i < end; i++)
-		{
-			Variable v = factor.getSibling(i);
-			
-			Domain domain = v.getDomain();
-			
-			// Must be an unbounded univariate real
-			if (!domain.isReal() || domain.isBounded())
-			{
-				return false;
-			}
-		}
-		return true;
+		return Iterables.all(factor.getSiblings(), VariablePredicates.isUnboundedReal());
 	}
 
 }

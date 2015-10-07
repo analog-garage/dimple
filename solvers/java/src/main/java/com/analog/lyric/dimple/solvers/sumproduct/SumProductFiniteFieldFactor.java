@@ -32,6 +32,7 @@ public abstract class SumProductFiniteFieldFactor extends SFactorBase
 	public SumProductFiniteFieldFactor(Factor factor, ISolverFactorGraph parent)
 	{
 		super(factor, parent);
+		assertDiscrete(factor);
 	}
 
 	/*---------------

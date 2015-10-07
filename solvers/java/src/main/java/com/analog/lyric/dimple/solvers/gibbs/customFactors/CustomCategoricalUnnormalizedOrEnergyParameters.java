@@ -140,7 +140,7 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends GibbsRealFa
 		// Get the factor function and related state
 		final Factor factor = _model;
 		FactorFunction factorFunction = factor.getFactorFunction();
-		FactorFunction containedFactorFunction = factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		FactorFunction containedFactorFunction = factorFunction;
 		boolean hasFactorFunctionConstants = factor.hasConstants();
 		boolean hasFactorFunctionConstructorConstants;
 		if (containedFactorFunction instanceof CategoricalUnnormalizedParameters)

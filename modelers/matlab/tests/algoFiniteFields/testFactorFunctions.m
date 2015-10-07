@@ -56,7 +56,11 @@ fco = fg6.addFactor(@finiteFieldMult,  v(15), constant, v(16));
 fpf = fg7.addFactor('FiniteFieldProjection', v(17), m-1:-1:0, b(1:m));
 fpo = fg8.addFactor(@finiteFieldProjection,  v(18), m-1:-1:0, b(m+1:2*m));
 facf = fg9.addFactor('FiniteFieldAdd', v(19), constant, v(20));
-faco = fg10.addFactor(@finiteFieldAdd, v(21), constant, v(22));
+try
+    fg10.addFactor(@finiteFieldAdd, v(21), constant, v(22));
+catch err
+    assert(~isempty(strfind(err.message, 'does not support constant arguments')));
+end
 
 assert(~isempty(strfind(faf.Solver.toString, 'CustomFiniteFieldAdd')));
 assert(~isempty(strfind(fao.Solver.toString, 'CustomFiniteFieldAdd')));
@@ -67,7 +71,6 @@ assert(~isempty(strfind(fco.Solver.toString, 'CustomFiniteFieldConstantMult')));
 assert(~isempty(strfind(fpf.Solver.toString, 'CustomFiniteFieldProjection')));
 assert(~isempty(strfind(fpo.Solver.toString, 'CustomFiniteFieldProjection')));
 assert(~isempty(strfind(facf.Solver.toString, 'STableFactor')));    % No custom factor for this case
-assert(~isempty(strfind(faco.Solver.toString, 'STableFactor')));    % No custom factor for this case
 assert(~isempty(strfind(faf.VectorObject.getFactorFunction.getContainedFactorFunction,'FiniteFieldAdd')));
 assert(~isempty(strfind(fmf.VectorObject.getFactorFunction.getContainedFactorFunction,'FiniteFieldMult')));
 assert(~isempty(strfind(fcf.VectorObject.getFactorFunction.getContainedFactorFunction,'FiniteFieldMult')));

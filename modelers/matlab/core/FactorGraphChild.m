@@ -231,6 +231,6 @@ function unwrappedVal = unwrapOptionValue(val)
 if isa(val, 'Scheduler')
     unwrappedVal = val.IScheduler;
 else
-    unwrappedVal = val;
+    unwrappedVal = unwrapProxyObject(val);
 end
 end

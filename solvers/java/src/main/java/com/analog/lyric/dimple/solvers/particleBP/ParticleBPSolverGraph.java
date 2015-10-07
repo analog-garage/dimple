@@ -69,12 +69,6 @@ public class ParticleBPSolverGraph extends BPSolverGraph<ISolverFactor, IParticl
 	}
 	
 	@Override
-	public boolean customFactorExists(String funcName)
-	{
-		return false;
-	}
-
-	@Override
 	public ISolverEdgeState createEdgeState(EdgeState edge)
 	{
 		Variable var = edge.getVariable(_model);

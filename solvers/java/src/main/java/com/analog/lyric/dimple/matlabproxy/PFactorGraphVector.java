@@ -142,11 +142,9 @@ public class PFactorGraphVector extends PFactorBaseVector
 		
 	}
 	
+	@Deprecated
 	public boolean customFactorExists(String funcName)
 	{
-    	if (getGraph().isSolverRunning())
-    		throw new DimpleException("No changes allowed while the solver is running.");
-
 		return getGraph().customFactorExists(funcName);
 	}
 	

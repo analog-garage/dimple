@@ -41,6 +41,7 @@ public class CustomFiniteFieldConstantMult extends SFiniteFieldFactor
 	public CustomFiniteFieldConstantMult(Factor factor, SumProductSolverGraph parent)
 	{
 		super(factor, parent);
+		assertHasConstants(factor);
 		
 		final List<Value> constants = _model.getConstantValues();
 		if (constants.size() != 1)

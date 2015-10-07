@@ -118,7 +118,7 @@ public class CustomPoisson extends GibbsRealFactor implements IRealConjugateFact
 		// Get the factor function and related state
 		final Factor factor = _model;
 		FactorFunction factorFunction = factor.getFactorFunction();
-		Poisson specificFactorFunction = (Poisson)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		Poisson specificFactorFunction = (Poisson)factorFunction;
 
 		final int prevLambdaParameterEdge = _lambdaParameterEdge;
 		

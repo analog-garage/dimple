@@ -21,6 +21,7 @@ import com.analog.lyric.dimple.schedulers.DefaultScheduler;
 import com.analog.lyric.dimple.schedulers.GibbsDefaultScheduler;
 import com.analog.lyric.dimple.schedulers.validator.ScheduleValidatorOptionKey;
 import com.analog.lyric.dimple.schedulers.validator.VariablesOnlyScheduleValidator;
+import com.analog.lyric.dimple.solvers.core.CustomFactorsOptionKey;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.CDFSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.GenericSamplerOptionKey;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.SliceSampler;
@@ -38,6 +39,9 @@ import com.analog.lyric.options.IntegerOptionKey;
  */
 public class GibbsOptions extends SolverOptions
 {
+	public static final CustomFactorsOptionKey<ISolverFactorGibbs, GibbsSolverGraph, GibbsCustomFactors> customFactors =
+		new CustomFactorsOptionKey<>(GibbsOptions.class, "customFactors", GibbsCustomFactors.class);
+	
 	/**
 	 * The number of samples to generate per restart in Gibbs solver.
 	 * <p>

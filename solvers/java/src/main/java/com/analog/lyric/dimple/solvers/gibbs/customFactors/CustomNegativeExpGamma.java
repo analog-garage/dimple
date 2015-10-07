@@ -158,7 +158,7 @@ public class CustomNegativeExpGamma extends GibbsRealFactor implements IRealConj
 		// Get the factor function and related state
 		final Factor factor = _model;
 		FactorFunction factorFunction = factor.getFactorFunction();
-		NegativeExpGamma specificFactorFunction = (NegativeExpGamma)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		NegativeExpGamma specificFactorFunction = (NegativeExpGamma)factorFunction;
 		boolean hasFactorFunctionConstants = factor.hasConstants();
 		boolean hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 

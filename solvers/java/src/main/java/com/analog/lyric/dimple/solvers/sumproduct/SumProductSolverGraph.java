@@ -24,26 +24,6 @@ import java.util.Random;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.Tuple2;
-import com.analog.lyric.dimple.factorfunctions.ComplexNegate;
-import com.analog.lyric.dimple.factorfunctions.ComplexSubtract;
-import com.analog.lyric.dimple.factorfunctions.ComplexSum;
-import com.analog.lyric.dimple.factorfunctions.FiniteFieldAdd;
-import com.analog.lyric.dimple.factorfunctions.FiniteFieldMult;
-import com.analog.lyric.dimple.factorfunctions.FiniteFieldProjection;
-import com.analog.lyric.dimple.factorfunctions.LinearEquation;
-import com.analog.lyric.dimple.factorfunctions.MatrixRealJointVectorProduct;
-import com.analog.lyric.dimple.factorfunctions.Multiplexer;
-import com.analog.lyric.dimple.factorfunctions.MultivariateNormal;
-import com.analog.lyric.dimple.factorfunctions.Negate;
-import com.analog.lyric.dimple.factorfunctions.Normal;
-import com.analog.lyric.dimple.factorfunctions.Product;
-import com.analog.lyric.dimple.factorfunctions.RealJointNegate;
-import com.analog.lyric.dimple.factorfunctions.RealJointSubtract;
-import com.analog.lyric.dimple.factorfunctions.RealJointSum;
-import com.analog.lyric.dimple.factorfunctions.Subtract;
-import com.analog.lyric.dimple.factorfunctions.Sum;
-import com.analog.lyric.dimple.factorfunctions.core.CustomFactorFunctionWrapper;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.EdgeState;
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -80,24 +60,6 @@ import com.analog.lyric.dimple.solvers.optimizedupdate.IUpdateStepEstimator;
 import com.analog.lyric.dimple.solvers.optimizedupdate.TableWrapper;
 import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateApproach;
 import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateCostOptimizer;
-import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomComplexGaussianPolynomial;
-import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomFiniteFieldAdd;
-import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomFiniteFieldConstantMult;
-import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomFiniteFieldMult;
-import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomFiniteFieldProjection;
-import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianLinear;
-import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianLinearEquation;
-import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianNegate;
-import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianProduct;
-import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianSubtract;
-import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianSum;
-import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultiplexer;
-import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultivariateGaussianNegate;
-import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultivariateGaussianProduct;
-import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultivariateGaussianSubtract;
-import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultivariateGaussianSum;
-import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultivariateNormalConstantParameters;
-import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomNormalConstantParameters;
 import com.analog.lyric.dimple.solvers.sumproduct.sampledfactor.SampledFactor;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.TemporaryOptionSettings;
@@ -195,92 +157,10 @@ public class SumProductSolverGraph extends BPSolverGraph<ISolverFactor,ISolverVa
 
 	
 
-	@SuppressWarnings("deprecation") // TODO remove when STableFactor removed
 	@Override
 	public ISolverFactor createFactor(Factor factor)
 	{
-		FactorFunction factorFunction = factor.getFactorFunction().getContainedFactorFunction();	// In case it's wrapped
-		String factorName = factorFunction.getName();
-		boolean noFF = factorFunction instanceof CustomFactorFunctionWrapper;
-		boolean hasConstants = factor.hasConstants();
-		
-		if (factor.isDiscrete())	// Factor contains only discrete variables
-		{
-			// First see if any custom factor should be created
-			if (((factorFunction instanceof FiniteFieldAdd) || (noFF && factorName.equals("finiteFieldAdd"))) && !hasConstants)		// "finiteFieldAdd" for backward compatibility
-				return new CustomFiniteFieldAdd(factor, this);
-			else if ((factorFunction instanceof FiniteFieldMult) || (noFF && factorName.equals("finiteFieldMult")))					// "finiteFieldMult" for backward compatibility
-			{
-				if (hasConstants)
-					return new CustomFiniteFieldConstantMult(factor, this);
-				else
-					return new CustomFiniteFieldMult(factor, this);
-			}
-			else if ((factorFunction instanceof FiniteFieldProjection) || (noFF && factorName.equals("finiteFieldProjection")))		// "finiteFieldProjection" for backward compatibility
-				return new CustomFiniteFieldProjection(factor, this);
-			else if ((factorFunction instanceof Multiplexer) || (noFF && factorName.equals("multiplexerCPD")))	// "multiplexerCPD" for backward compatibility
-				return new CustomMultiplexer(factor, this);															// Currently only supports discrete variables
-			else	// No custom factor exists, so create a generic one
-			{
-				// For discrete case, create a table factor
-				return new STableFactor(factor, this);
-			}
-		}
-		else	// Factor includes at least one continuous variable
-		{
-			// First see if any custom factor should be created
-			if ((factorFunction instanceof Sum) && CustomGaussianSum.isFactorCompatible(factor))
-				return new CustomGaussianSum(factor, this);
-			else if ((factorFunction instanceof Subtract) && CustomGaussianSubtract.isFactorCompatible(factor))
-				return new CustomGaussianSubtract(factor, this);
-			else if ((factorFunction instanceof Negate) && CustomGaussianNegate.isFactorCompatible(factor))
-				return new CustomGaussianNegate(factor, this);
-			else if ((factorFunction instanceof Product) && CustomGaussianProduct.isFactorCompatible(factor))
-				return new CustomGaussianProduct(factor, this);
-			else if ((factorFunction instanceof ComplexSum) && CustomMultivariateGaussianSum.isFactorCompatible(factor))
-				return new CustomMultivariateGaussianSum(factor, this);
-			else if ((factorFunction instanceof ComplexSubtract) && CustomMultivariateGaussianSubtract.isFactorCompatible(factor))
-				return new CustomMultivariateGaussianSubtract(factor, this);
-			else if ((factorFunction instanceof ComplexNegate) && CustomMultivariateGaussianNegate.isFactorCompatible(factor))
-				return new CustomMultivariateGaussianNegate(factor, this);
-			else if ((factorFunction instanceof RealJointSum) && CustomMultivariateGaussianSum.isFactorCompatible(factor))
-				return new CustomMultivariateGaussianSum(factor, this);
-			else if ((factorFunction instanceof RealJointSubtract) && CustomMultivariateGaussianSubtract.isFactorCompatible(factor))
-				return new CustomMultivariateGaussianSubtract(factor, this);
-			else if ((factorFunction instanceof RealJointNegate) && CustomMultivariateGaussianNegate.isFactorCompatible(factor))
-				return new CustomMultivariateGaussianNegate(factor, this);
-			else if ((factorFunction instanceof MatrixRealJointVectorProduct) && CustomMultivariateGaussianProduct.isFactorCompatible(factor))
-				return new CustomMultivariateGaussianProduct(factor, this);
-			else if ((factorFunction instanceof Normal) && CustomNormalConstantParameters.isFactorCompatible(factor))
-				return new CustomNormalConstantParameters(factor, this);
-			else if ((factorFunction instanceof MultivariateNormal) && CustomMultivariateNormalConstantParameters.isFactorCompatible(factor))
-				return new CustomMultivariateNormalConstantParameters(factor, this);
-			else if ((factorFunction instanceof LinearEquation) && CustomGaussianLinearEquation.isFactorCompatible(factor))
-				return new CustomGaussianLinearEquation(factor, this);
-			else if (noFF && factorName.equals("add"))								// For backward compatibility
-			{
-				if (isMultivariate(factor))
-					return new CustomMultivariateGaussianSum(factor, this);
-				else
-					return new CustomGaussianSum(factor, this);
-			}
-			else if (noFF && factorName.equals("constmult"))						// For backward compatibility
-			{
-				if (isMultivariate(factor))
-					return new CustomMultivariateGaussianProduct(factor, this);
-				else
-					return new CustomGaussianProduct(factor, this);
-			}
-			else if (noFF && factorName.equals("linear"))							// For backward compatibility
-				return new CustomGaussianLinear(factor, this);
-			else if (noFF && factorName.equals("polynomial"))						// For backward compatibility
-				return new CustomComplexGaussianPolynomial(factor, this);
-			else	// No custom factor exists, so create a generic one
-			{
-				// For non-discrete factor that doesn't have a custom factor, create a sampled factor
-				return new SampledFactor(factor, this);
-			}
-		}
+		return SumProductOptions.customFactors.createFactor(factor, this);
 	}
 	
 	@SuppressWarnings("deprecation") // TODO remove when SFactorGraph removed
@@ -291,6 +171,7 @@ public class SumProductSolverGraph extends BPSolverGraph<ISolverFactor,ISolverVa
 	}
 	
 	// This should return true only for custom factors that do not have a corresponding FactorFunction of the same name
+	@Deprecated
 	@Override
 	public boolean customFactorExists(String funcName)
 	{
@@ -314,16 +195,6 @@ public class SumProductSolverGraph extends BPSolverGraph<ISolverFactor,ISolverVa
 			return false;
 	}
 	
-
-	private boolean isMultivariate(Factor factor)
-	{
-		if (factor.getSiblingCount() > 0 && (factor.getSibling(0) instanceof RealJoint))
-			return true;
-		else
-			return false;
-	}
-
-
 	public static Random getRandom()
 	{
 		return _rand;

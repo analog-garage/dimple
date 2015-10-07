@@ -2208,6 +2208,7 @@ public class FactorGraph extends FactorBase
 		return function;
 	}
 
+	@Deprecated
 	public boolean customFactorExists(String funcName)
 	{
 		final ISolverFactorGraph sfg = _solverFactorGraph;

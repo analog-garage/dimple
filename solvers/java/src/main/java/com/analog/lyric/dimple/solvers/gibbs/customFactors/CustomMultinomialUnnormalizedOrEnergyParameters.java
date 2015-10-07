@@ -214,7 +214,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends GibbsRealFa
 		
 		final Factor factor = _model;
 		FactorFunction factorFunction = factor.getFactorFunction();
-		FactorFunction containedFactorFunction = factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		FactorFunction containedFactorFunction = factorFunction;
 		boolean hasFactorFunctionConstructorConstantN;
 		if (containedFactorFunction instanceof MultinomialUnnormalizedParameters)
 		{

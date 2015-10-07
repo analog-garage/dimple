@@ -116,6 +116,7 @@ public abstract class ProxySolverFactorGraph<SFactor extends ISolverFactor, SVar
 		return null;
 	}
 	
+	@Deprecated
 	@Override
 	public boolean customFactorExists(String funcName)
 	{

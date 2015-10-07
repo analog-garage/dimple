@@ -16,12 +16,12 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.model.variables.VariablePredicates;
+import com.analog.lyric.dimple.solvers.core.SolverFactorCreationException;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
+import com.google.common.collect.Iterables;
 
 
 
@@ -38,19 +38,15 @@ public class CustomGaussianProduct extends GaussianFactorBase
 		
 		// Make sure this is of the form a = b*c where either b or c is a non-zero constant.
 		if (factor.getSiblingCount() != 2)
-			throw new DimpleException("Factor must be of form a = b*c where b or c is a constant");
+			throw new SolverFactorCreationException("Factor must be of form a = b*c where b or c is a constant");
 		
 		if (factor.getConstantCount() != 1)
-			throw new DimpleException("Expected one constant");
+			throw new SolverFactorCreationException("Expected one constant");
 		_constant = factor.getConstantValues().get(0).getDouble();
 		if (_constant == 0)
-			throw new DimpleException("Constant of 0 not supported");
+			throw new SolverFactorCreationException("Constant of 0 not supported");
 		
-		Variable a = factor.getSibling(0);
-		Variable b = factor.getSibling(1);
-		
-		if (a.getDomain().isDiscrete() || b.getDomain().isDiscrete())
-			throw new DimpleException("Variables must be reals");
+		assertUnboundedReal(factor);
 	}
 
 	@Override
@@ -87,7 +83,11 @@ public class CustomGaussianProduct extends GaussianFactorBase
 	}
 	
 	
-	// Utility to indicate whether or not a factor is compatible with the requirements of this custom factor
+	/**
+	 * Utility to indicate whether or not a factor is compatible with the requirements of this custom factor
+	 * @deprecated as of release 0.08
+	 */
+	@Deprecated
 	public static boolean isFactorCompatible(Factor factor)
 	{
 		// Must be of the form form a = b*c where either b or c is a constant.
@@ -99,16 +99,8 @@ public class CustomGaussianProduct extends GaussianFactorBase
 			return false;
 		
 		// Variables must be real and univariate
-		Variable a = factor.getSibling(0);
-		Variable b = factor.getSibling(1);
-		
-		Domain aDomain = a.getDomain();
-		Domain bDomain = b.getDomain();
-		
-		if (!aDomain.isReal() || !bDomain.isReal() || aDomain.isBounded() || bDomain.isBounded())
-		{
+		if (!Iterables.all(factor.getSiblings(), VariablePredicates.isUnboundedReal()))
 			return false;
-		}
 		
 		// Constant must be non-zero
 		double constant = factor.getConstantValues().get(0).getDouble();
