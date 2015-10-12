@@ -190,7 +190,7 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 */
 	private final AtomicReference<Logger> _logger = new AtomicReference<>();
 	
-	private final DimpleRandom _random = new DimpleRandom();
+	private final AtomicReference<DimpleRandom> _random = new AtomicReference<>(new DimpleRandom());
 	
 	private final FactorFunctionRegistry _factorFunctions = new FactorFunctionRegistry();
 	
@@ -513,19 +513,33 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	/**
 	 * Random generator belonging to the {@link #active} environment.
 	 * @since 0.08
+	 * @see #random()
 	 */
 	public static DimpleRandom activeRandom()
 	{
-		return active()._random;
+		return active().random();
 	}
 	
 	/**
 	 * Random generator belonging to this environment.
 	 * @since 0.08
+	 * @see #activeRandom()
+	 * @see #setRandom(DimpleRandom)
 	 */
 	public DimpleRandom random()
 	{
-		return _random;
+		return _random.get();
+	}
+	
+	/**
+	 * Sets random generator belonging to this environment.
+	 * @param newRandom the new {@link DimpleRandom} object to be returned by {@link #random()}
+	 * @return the previous random object that was replaced
+	 * @since 0.08
+	 */
+	public DimpleRandom setRandom(DimpleRandom newRandom)
+	{
+		return _random.getAndSet(newRandom);
 	}
 	
 	/*-----------------

@@ -47,6 +47,7 @@ import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.SliceSampler;
 import com.analog.lyric.dimple.test.DimpleTestBase;
+import com.analog.lyric.math.DimpleRandom;
 import com.analog.lyric.util.test.TestLogger;
 
 /**
@@ -105,6 +106,10 @@ public class TestDimpleEnvironment extends DimpleTestBase
 		assertSame(local1, DimpleEnvironment.active());
 		assertNotEquals(uid, global2.getUUID());
 		assertSame(local1.random(), DimpleEnvironment.activeRandom());
+		DimpleRandom prevRandom = local1.random();
+		DimpleRandom newRandom = new DimpleRandom();
+		assertSame(prevRandom, local1.setRandom(newRandom));
+		assertSame(newRandom, local1.random());
 		
 		Thread thread2 = new Thread() {
 			@Override
