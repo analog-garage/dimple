@@ -72,7 +72,9 @@ public class Utilities
         return ++x;
     }
     
-    // Find the position of the MSB
+    /**
+     * Find the position of the most significant bit.
+     */
     public static final int findMSB(int value)
     {
     	// This might be faster depending on the JVM:
@@ -90,6 +92,10 @@ public class Utilities
     
     // Log base 2
     private static final double LOG2 = Math.log(2);
+    
+    /**
+     * Computes log base 2 of input.
+     */
 	public static final double log2(double x)
 	{
 		return Math.log(x)/LOG2;
