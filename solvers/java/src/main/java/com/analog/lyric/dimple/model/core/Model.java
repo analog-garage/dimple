@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2015 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -21,8 +21,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import org.eclipse.jdt.annotation.Nullable;
+
+import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
+
+// FIXME: bug 418 - all of this functionality really should be moved to DimpleEnvironment
 
 public class Model
 {
@@ -56,17 +59,26 @@ public class Model
 		setDefaultGraphFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
 	}
 	
+	/**
+	 * The default solver factory used by newly constructed {@link FactorGraph}s
+	 * @see #setDefaultGraphFactory(IFactorGraphFactory)
+	 */
 	public @Nullable IFactorGraphFactory<?> getDefaultGraphFactory()
 	{
 		return _defaultGraphFactory;
 	}
 
+	/**
+	 * Set the {@linkplain #getDefaultGraphFactory default solver factory} used by newly constructed {@link FactorGraph}s
+	 */
 	public void setDefaultGraphFactory(@Nullable IFactorGraphFactory<?> graphFactory)
 	{
 		_defaultGraphFactory = graphFactory;
 	}
 	
-	
+	/**
+	 * @return Version string for this release of Dimple
+	 */
 	public static String getVersion()
 	{
 		InputStream in = System.class.getResourceAsStream("/VERSION");
