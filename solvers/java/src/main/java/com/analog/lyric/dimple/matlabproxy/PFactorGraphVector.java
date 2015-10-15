@@ -100,7 +100,7 @@ public class PFactorGraphVector extends PFactorBaseVector
 	 * PFactorGraphVector methods
 	 */
 
-	protected FactorGraph getGraph()
+	public FactorGraph getGraph()
 	{
 		if (size() != 1)
 			throw new DimpleException("operation not supported");
