@@ -33,6 +33,7 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.DoubleRangeDomain;
 import com.analog.lyric.dimple.model.domains.EnumDomain;
+import com.analog.lyric.dimple.model.domains.FiniteFieldDomain;
 import com.analog.lyric.dimple.model.domains.IntDomain;
 import com.analog.lyric.dimple.model.domains.IntRangeDomain;
 import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
@@ -285,6 +286,20 @@ public class TestDomain extends DimpleTestBase
 		assertEquals(0, floatsWithZero.getIndex((float)-0.0));
 		
 		//
+		// FiniteFieldDomain
+		//
+		
+		FiniteFieldDomain ffd = FiniteFieldDomain.create(0x2f);
+		assertSame(ffd, FiniteFieldDomain.create(0x2f));
+		assertEquals(0x2f, ffd.getPrimitivePolynomial());
+		assertTrue(ffd.hasIntCompatibleValues());
+		assertTrue(ffd.isIntegral());
+		assertEquals(5, ffd.getN());
+		assertEquals(32, ffd.size());
+		assertInvariants(ffd);
+		assertNotEquals(ffd, FiniteFieldDomain.create(0x1f));
+		
+		//
 		// Test RealJoint
 		//
 		
@@ -313,6 +328,7 @@ public class TestDomain extends DimpleTestBase
 		assertFalse(unitCube.valueInDomain(Value.createRealJoint(.5, 0.0, 1.5)));
 		assertFalse(unitCube.valueInDomain(Value.createReal(.5)));
 		assertTrue(unitCube.valueInDomain(Value.createRealJoint(.5, 0.0, .5)));
+		assertSame(RealJointDomain.create(unit,3), unitCube);
 		
 		//
 		// Test IntDomain

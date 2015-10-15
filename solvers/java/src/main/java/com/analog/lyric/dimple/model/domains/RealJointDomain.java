@@ -58,7 +58,7 @@ public class RealJointDomain extends Domain
 	
 	protected RealJointDomain(RealDomain domain, int size)
 	{
-		super(domain.hashCode() * size);
+		super(43 + domain.hashCode() * size);
 		_domains = new RealDomain[] { domain };
 		_size = size;
 		_homogeneous = true;

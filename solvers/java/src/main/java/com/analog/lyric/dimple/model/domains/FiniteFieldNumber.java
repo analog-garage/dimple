@@ -17,11 +17,13 @@
 package com.analog.lyric.dimple.model.domains;
 
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import net.jcip.annotations.Immutable;
 
 /**
  * An extension of Number that includes additional information needed to fully
- * define arithmetic operations on a finite field of characteristic 2 (GF(2^N)).
+ * define arithmetic operations on a finite field of characteristic 2 (GF(2<sup>N</sup>)).
  * This includes a binary representation of the primitive polynomial and the
  * length in bits.
  */
@@ -30,8 +32,16 @@ public class FiniteFieldNumber extends Number
 {
 	private static final long serialVersionUID = 1L;
 	
+	/*-------
+	 * State
+	 */
+	
 	private final int value;
 	private final FiniteFieldDomain domain;
+	
+	/*--------------
+	 * Construction
+	 */
 
 	public FiniteFieldNumber(int value, FiniteFieldDomain domain)
 	{
@@ -44,6 +54,10 @@ public class FiniteFieldNumber extends Number
 		this.value = value;
 		this.domain = other.domain;
 	}
+	
+	/*---------------------------
+	 * FiniteFieldNumber methods
+	 */
 	
 	public int getPrimativePolynomial()
 	{
@@ -70,6 +84,10 @@ public class FiniteFieldNumber extends Number
 		return isCompatible(other) && (value == other.value);
 	}
 
+	/*----------------
+	 * Number methods
+	 */
+	
 	@Override
 	public double doubleValue()
 	{
@@ -103,6 +121,31 @@ public class FiniteFieldNumber extends Number
 	public FiniteFieldNumber cloneWithNewValue(int newValue)
 	{
 		return new FiniteFieldNumber(newValue, this.domain);
+	}
+	
+	/*----------------
+	 * Object methods
+	 */
+	
+	@Override
+	public boolean equals(@Nullable Object other)
+	{
+		if (other == this)
+			return true;
+		
+		if (other instanceof FiniteFieldNumber)
+		{
+			final FiniteFieldNumber that = (FiniteFieldNumber)other;
+			return value == that.value && domain.equals(that.domain);
+		}
+		
+		return false;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return value + 13 * domain.hashCode();
 	}
 	
 	@Override

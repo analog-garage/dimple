@@ -18,12 +18,14 @@ package com.analog.lyric.dimple.model.domains;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.collect.WeakInterner;
 import com.analog.lyric.math.Utilities;
+import com.google.common.collect.Interner;
 
 import net.jcip.annotations.Immutable;
 
 /**
- * A finite field of characteristic 2 (GF(2^N)).  The domain is determined by the length, N,
+ * A finite field of characteristic 2 (GF(2<sup>N</sup>)).  The domain is determined by the length, N,
  * as well as the primitive polynomial.
  */
 @Immutable
@@ -35,6 +37,13 @@ public class FiniteFieldDomain extends TypedDiscreteDomain<FiniteFieldNumber>
 	private int _N;
 	private int _size;
 
+	private static enum InternedDomains
+	{
+		INSTANCE;
+		
+		private final Interner<FiniteFieldDomain> interner = WeakInterner.create();
+	}
+	
 	/*--------------
 	 * Construction
 	 */
@@ -45,7 +54,7 @@ public class FiniteFieldDomain extends TypedDiscreteDomain<FiniteFieldNumber>
 	 */
 	public static FiniteFieldDomain create(int primitivePolynomial)
 	{
-		return new FiniteFieldDomain(primitivePolynomial);
+		return new FiniteFieldDomain(primitivePolynomial).intern();
 	}
 	
 	FiniteFieldDomain(int primitivePolynomial)
@@ -60,6 +69,12 @@ public class FiniteFieldDomain extends TypedDiscreteDomain<FiniteFieldNumber>
 	private static int computeHashCode(int primitivePolynomial)
 	{
 		return primitivePolynomial;
+	}
+	
+	@Override
+	protected FiniteFieldDomain intern()
+	{
+		return InternedDomains.INSTANCE.interner.intern(this);
 	}
 	
 	public final int getPrimitivePolynomial()
@@ -85,7 +100,7 @@ public class FiniteFieldDomain extends TypedDiscreteDomain<FiniteFieldNumber>
 		if (that instanceof FiniteFieldDomain)
 		{
 			FiniteFieldDomain thatFF = (FiniteFieldDomain)that;
-			return (_primitivePolynomial == thatFF._primitivePolynomial) && (_N == thatFF._N);
+			return _primitivePolynomial == thatFF._primitivePolynomial;
 		}
 		
 		return false;
