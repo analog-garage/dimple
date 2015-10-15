@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.matlabproxy.repeated.PDiscreteStream;
 import com.analog.lyric.dimple.matlabproxy.repeated.PDoubleArrayDataSink;
 import com.analog.lyric.dimple.matlabproxy.repeated.PDoubleArrayDataSource;
@@ -36,6 +37,8 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.schedulers.SchedulerOptionKey;
+import com.analog.lyric.dimple.solvers.core.CustomFactors;
+import com.analog.lyric.dimple.solvers.core.CustomFactorsOptionKey;
 import com.analog.lyric.dimple.solvers.core.multithreading.ThreadPool;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergyMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
@@ -43,6 +46,7 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeight
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
+import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.util.misc.Matlab;
 
 /**
@@ -51,31 +55,31 @@ import com.analog.lyric.util.misc.Matlab;
 @Matlab
 public class ModelFactory
 {
-//	/**
-//	 * Create empty {@link PCustomFactors} wrapper appropriate for given option.
-//	 * <p>
-//	 * @param optionName identifies a {@link CustomFactorsOptionKey} instance that is
-//	 * looked up in the {@link DimpleEnvironment#optionRegistry() optionRegistry} of the
-//	 * {@linkplain DimpleEnvironment#active() active environment}, e.g. {@code "GibbsOptions.customFactors"}.
-//	 * @throws DimpleException if matching option cannot be found or is not the correct type.
-//	 * @since 0.08
-//	 */
-//	public PCustomFactors createCustomFactors(String optionName)
-//	{
-//		IOptionKey<?> key = DimpleEnvironment.active().optionRegistry().get(optionName);
-//		if (key == null)
-//		{
-//			throw new DimpleException("Cannot find option '%s'", optionName);
-//		}
-//		if (!(key instanceof CustomFactorsOptionKey))
-//		{
-//			throw new DimpleException("Option '%s' is not a CustomFactors option", optionName);
-//		}
-//		CustomFactorsOptionKey<?,?,?> customFactorsKey = (CustomFactorsOptionKey<?,?,?>)key;
-//		CustomFactors<?,?> customFactors = customFactorsKey.createValue();
-//		return new PCustomFactors(customFactors);
-//	}
-//
+	/**
+	 * Create empty {@link PCustomFactors} wrapper appropriate for given option.
+	 * <p>
+	 * @param optionName identifies a {@link CustomFactorsOptionKey} instance that is
+	 * looked up in the {@link DimpleEnvironment#optionRegistry() optionRegistry} of the
+	 * {@linkplain DimpleEnvironment#active() active environment}, e.g. {@code "GibbsOptions.customFactors"}.
+	 * @throws DimpleException if matching option cannot be found or is not the correct type.
+	 * @since 0.08
+	 */
+	public PCustomFactors createCustomFactors(String optionName)
+	{
+		IOptionKey<?> key = DimpleEnvironment.active().optionRegistry().get(optionName);
+		if (key == null)
+		{
+			throw new DimpleException("Cannot find option '%s'", optionName);
+		}
+		if (!(key instanceof CustomFactorsOptionKey))
+		{
+			throw new DimpleException("Option '%s' is not a CustomFactors option", optionName);
+		}
+		CustomFactorsOptionKey<?,?,?> customFactorsKey = (CustomFactorsOptionKey<?,?,?>)key;
+		CustomFactors<?,?> customFactors = customFactorsKey.createValue();
+		return new PCustomFactors(customFactors);
+	}
+
 	/**
 	 * Create custom scheduler for graph.
 	 * 

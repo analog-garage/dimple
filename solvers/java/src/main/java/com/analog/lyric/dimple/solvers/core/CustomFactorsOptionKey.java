@@ -29,6 +29,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.options.OptionKey;
 import com.analog.lyric.options.OptionLookupIterator;
+import com.analog.lyric.util.misc.Matlab;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
@@ -133,29 +134,45 @@ public class CustomFactorsOptionKey<SFactor extends ISolverFactor, SGraph extend
 	 */
 	
 	/**
+	 * Creates an empty {@link CustomFactors} for use with this option key.
+	 * <p>
+	 * @return empty new instance of the appropriate concrete {@link #type()}.
+	 * @throws DimpleException if instance cannot be created using reflection on the
+	 * default no-argument constructor.
+	 * <p>
+	 * @since 0.08
+	 * @see #getOrCreate(IOptionHolder)
+	 */
+	@Matlab
+	public CF createValue()
+	{
+		try
+		{
+			return type().newInstance();
+		}
+		catch (InstantiationException | IllegalAccessException ex)
+		{
+			// This should not happen unless CF class is abstract, not public or doesn't
+			// have a default constructor.
+			throw new DimpleException(ex);
+		}
+	}
+	
+	/**
 	 * Locally lookup CustomFactors instance for this key, creating and adding if not already set on {@code holder}.
 	 * <p>
 	 * Creation uses reflection to invoke the default constructor so the concrete {@link #type()} must be
 	 * public and have a public no-argument constructor.
 	 * <p>
 	 * @since 0.08
+	 * @see #createValue()
 	 */
 	public CF getOrCreate(IOptionHolder holder)
 	{
 		CF customFactors = holder.getLocalOption(this);
 		if (customFactors == null)
 		{
-			try
-			{
-				customFactors = type().newInstance();
-				set(holder, customFactors);
-			}
-			catch (InstantiationException | IllegalAccessException ex)
-			{
-				// This should not happen unless CF class is abstract, not public or doesn't
-				// have a default constructor.
-				throw new DimpleException(ex);
-			}
+			set(holder, customFactors = createValue());
 		}
 		return customFactors;
 	}

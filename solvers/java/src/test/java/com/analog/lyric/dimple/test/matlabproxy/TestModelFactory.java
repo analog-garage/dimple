@@ -21,8 +21,10 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.matlabproxy.ModelFactory;
+import com.analog.lyric.dimple.matlabproxy.PCustomFactors;
 import com.analog.lyric.dimple.matlabproxy.PDimpleEventLogger;
 import com.analog.lyric.dimple.matlabproxy.PDiscreteDomain;
 import com.analog.lyric.dimple.matlabproxy.PDiscreteVariableVector;
@@ -53,6 +55,7 @@ import com.analog.lyric.dimple.model.domains.FiniteFieldDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.variables.Variable;
+import com.analog.lyric.dimple.options.BPOptions;
 import com.analog.lyric.dimple.schedulers.CustomScheduler;
 import com.analog.lyric.dimple.schedulers.GibbsRandomScanScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
@@ -63,6 +66,7 @@ import com.analog.lyric.dimple.solvers.core.multithreading.ThreadPool;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
+import com.analog.lyric.dimple.solvers.gibbs.GibbsCustomFactors;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsOptions;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
@@ -80,17 +84,17 @@ public class TestModelFactory extends DimpleTestBase
 	// These are mostly lame tests of the code in ModelFactory itself and does not test
 	// the correctness of the returned objects for the most part.
 
-//	@Test
-//	public void createCustomFactors()
-//	{
-//		PCustomFactors pcf = mf.createCustomFactors("GibbsOptions.customFactors");
-//		assertSame(GibbsCustomFactors.class, pcf.getDelegate().getClass());
-//
-//		expectThrow(DimpleException.class, "Cannot find option 'Bogus.customFactors'",
-//			mf, "createCustomFactors", "Bogus.customFactors");
-//		expectThrow(DimpleException.class, "Option 'BPOptions.damping' is not a CustomFactors option",
-//			mf, "createCustomFactors", BPOptions.damping.qualifiedName());
-//	}
+	@Test
+	public void createCustomFactors()
+	{
+		PCustomFactors pcf = mf.createCustomFactors("GibbsOptions.customFactors");
+		assertSame(GibbsCustomFactors.class, pcf.getDelegate().getClass());
+
+		expectThrow(DimpleException.class, "Cannot find option 'Bogus.customFactors'",
+			mf, "createCustomFactors", "Bogus.customFactors");
+		expectThrow(DimpleException.class, "Option 'BPOptions.damping' is not a CustomFactors option",
+			mf, "createCustomFactors", BPOptions.damping.qualifiedName());
+	}
 	
 	@Test
 	public void createDomains()

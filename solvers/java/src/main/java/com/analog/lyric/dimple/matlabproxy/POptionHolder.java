@@ -29,6 +29,7 @@ import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.options.DimpleOptionRegistry;
 import com.analog.lyric.dimple.schedulers.IScheduler;
+import com.analog.lyric.dimple.solvers.core.CustomFactors;
 import com.analog.lyric.options.IOption;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.Option;
@@ -247,6 +248,10 @@ public abstract class POptionHolder extends PObject
 		else if (value instanceof IScheduler)
 		{
 			return new PScheduler((IScheduler)value);
+		}
+		else if (value instanceof CustomFactors)
+		{
+			return new PCustomFactors((CustomFactors<?,?>)value);
 		}
 		
 		return value;
