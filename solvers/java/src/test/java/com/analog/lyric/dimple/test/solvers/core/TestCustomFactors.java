@@ -284,6 +284,7 @@ public class TestCustomFactors extends DimpleTestBase
 		customFactors.addFirst("Xor", MyCustomXor3.class);
 		
 		customFactors.addFirst(Xor.class, MyCustomXor4.class);
+		customFactors.addFirst("xor_alias", xor1);
 		customFactors.addFirst("xor_alias", "MyCustomXor");
 		
 		creators = customFactors.get(Xor.class.getName());
@@ -295,7 +296,7 @@ public class TestCustomFactors extends DimpleTestBase
 		assertSame(MyCustomXor4.class, creators.get(0).create(xorFactor, sfg).getClass());
 		
 		creators = customFactors.get("xor_alias");
-		assertEquals(1, creators.size());
+		assertEquals(2, creators.size());
 		
 		// Test freeze
 		customFactors.freeze();

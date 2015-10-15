@@ -32,7 +32,6 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.options.IOptionValue;
-import com.analog.lyric.util.misc.Matlab;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -53,7 +52,6 @@ import com.google.common.collect.ListMultimap;
  * @since 0.08
  * @author Christopher Barber
  */
-@Matlab(wrapper="CustomFactors")
 public abstract class CustomFactors<SFactor extends ISolverFactor, SGraph extends ISolverFactorGraph>
 	implements IOptionValue, Cloneable, Serializable
 {
@@ -423,7 +421,7 @@ public abstract class CustomFactors<SFactor extends ISolverFactor, SGraph extend
 	 */
 	public CustomFactors<SFactor,SGraph> addFirst(String factorFunction, String customClassName)
 	{
-		return add(factorFunction, getFactorClass(customClassName));
+		return addFirst(factorFunction, getFactorClass(customClassName));
 	}
 
 	/**
