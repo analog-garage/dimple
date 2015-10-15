@@ -45,12 +45,37 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParamete
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.util.misc.Matlab;
 
-/*
+/**
  * The model factory creates variable vectors and FactorGraphs for MATLAB
  */
 @Matlab
 public class ModelFactory
 {
+//	/**
+//	 * Create empty {@link PCustomFactors} wrapper appropriate for given option.
+//	 * <p>
+//	 * @param optionName identifies a {@link CustomFactorsOptionKey} instance that is
+//	 * looked up in the {@link DimpleEnvironment#optionRegistry() optionRegistry} of the
+//	 * {@linkplain DimpleEnvironment#active() active environment}, e.g. {@code "GibbsOptions.customFactors"}.
+//	 * @throws DimpleException if matching option cannot be found or is not the correct type.
+//	 * @since 0.08
+//	 */
+//	public PCustomFactors createCustomFactors(String optionName)
+//	{
+//		IOptionKey<?> key = DimpleEnvironment.active().optionRegistry().get(optionName);
+//		if (key == null)
+//		{
+//			throw new DimpleException("Cannot find option '%s'", optionName);
+//		}
+//		if (!(key instanceof CustomFactorsOptionKey))
+//		{
+//			throw new DimpleException("Option '%s' is not a CustomFactors option", optionName);
+//		}
+//		CustomFactorsOptionKey<?,?,?> customFactorsKey = (CustomFactorsOptionKey<?,?,?>)key;
+//		CustomFactors<?,?> customFactors = customFactorsKey.createValue();
+//		return new PCustomFactors(customFactors);
+//	}
+//
 	/**
 	 * Create custom scheduler for graph.
 	 * 
@@ -71,7 +96,7 @@ public class ModelFactory
 			String schedulerKeyName = (String)schedulerKey;
 			if (schedulerKeyName == null || schedulerKeyName.isEmpty())
 			{
-				// This is only to support
+				// This is only to support MATLAB FactorGraph.Schedule setter
 				@SuppressWarnings("deprecation")
 				PScheduler scheduler = new PScheduler(graph, scheduleEntries);
 				return scheduler;
@@ -105,7 +130,7 @@ public class ModelFactory
 	@Deprecated
 	public PRealJointVariableVector createRealJointVariableVector(String className, PRealJointDomain domain, int numEls)
 	{
-		return new PRealJointVariableVector(className, domain, numEls);
+		return new PRealJointVariableVector(domain, numEls);
 	}
 
 	public PRealJointVariableVector createRealJointVariableVector(PRealJointDomain domain, int numEls)
@@ -126,7 +151,7 @@ public class ModelFactory
 	@Deprecated
 	public PDiscreteVariableVector createDiscreteVariableVector(String className, PDiscreteDomain domain, int numEls)
 	{
-		return new PDiscreteVariableVector(className,domain,numEls);
+		return new PDiscreteVariableVector(domain,numEls);
 	}
 	
 	public PDiscreteVariableVector createDiscreteVariableVector(PDiscreteDomain domain, int numEls)
@@ -138,7 +163,7 @@ public class ModelFactory
 	@Deprecated
 	public PDiscreteVariableVector createVariableVector(String className, PDiscreteDomain domain, int numEls)
 	{
-		return new PDiscreteVariableVector(className,domain,numEls);
+		return new PDiscreteVariableVector(domain,numEls);
 	}
 	
 	public PFiniteFieldVariableVector createFiniteFieldVariableVector(PFiniteFieldDomain domain, int numEls)
@@ -163,7 +188,7 @@ public class ModelFactory
 
 	public PRealDomain createRealDomain(double lowerBound, double upperBound)
 	{
-		return new PRealDomain(new RealDomain(lowerBound,upperBound));
+		return new PRealDomain(RealDomain.create(lowerBound,upperBound));
 	}
 	
 	public PVariableStreamBase createDiscreteStream(PDiscreteDomain domain, double numVars)
@@ -233,10 +258,9 @@ public class ModelFactory
 	@Deprecated
 	public PRealVariableVector createRealVariableVector(String className, PRealDomain domain, int numEls)
 	{
-		return new PRealVariableVector(className, domain, numEls);
+		return new PRealVariableVector(domain, numEls);
 	}
 
-	@Deprecated
 	public PRealVariableVector createRealVariableVector(PRealDomain domain, int numEls)
 	{
 		return new PRealVariableVector(domain, numEls);
