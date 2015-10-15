@@ -300,7 +300,7 @@ public class ModelFactory
 
 	public void setSolver(@Nullable IFactorGraphFactory<?> solver)
 	{
-		Model.getInstance().setDefaultGraphFactory(solver);
+		DimpleEnvironment.active().setDefaultSolver(solver);
 	}
 
 	public PFactorFunctionDataSource getFactorFunctionDataSource(double numVars)

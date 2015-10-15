@@ -16,6 +16,9 @@
 
 package com.analog.lyric.dimple.environment;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.security.SecureRandom;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -46,6 +49,7 @@ import com.analog.lyric.dimple.solvers.core.DimpleSolverRegistry;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IGenericSampler;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolver;
 import com.analog.lyric.math.DimpleRandom;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.options.IOptionKey;
@@ -212,6 +216,9 @@ public class DimpleEnvironment extends DimpleOptionHolder
 		new ConstructorRegistry<>(ScheduleValidator.class);
 	
 	private final DimpleSolverRegistry _solverRegistry = new DimpleSolverRegistry();
+	
+	private final AtomicReference<IFactorGraphFactory<?>> _defaultSolverFactory =
+		new AtomicReference<IFactorGraphFactory<?>> (new SumProductSolver());
 	
 	@GuardedBy("_eventListenerLock")
 	private volatile @Nullable DimpleEventListener _eventListener = null;
@@ -506,6 +513,61 @@ public class DimpleEnvironment extends DimpleOptionHolder
 		return LoadedFromMATLAB.INSTANCE._fromMATLAB;
 	}
 	
+	/**
+	 * @return Version string for this release of Dimple
+	 * @since 0.08
+	 */
+	public static String getVersion()
+	{
+		InputStream in = System.class.getResourceAsStream("/VERSION");
+		if (in == null)
+		{
+			return "UNKNOWN";
+		}
+		
+		String version = "UNKNOWN";
+		
+		try (BufferedReader br = new BufferedReader(new InputStreamReader(in)))
+		{
+			version = br.readLine();
+		}
+		catch (Exception e)
+		{
+			// Ignore errors reading file.
+		}
+		
+		return version;
+	}
+
+	/**
+	 * Registry of known option keys for this environment.
+	 * <p>
+	 * Supports lookup of Dimple {@linkplain IOptionKey option key} instances by name.
+	 * Primarily for use in dynamic language implementations of Dimple.
+	 * <p>
+	 * @see DimpleOptionRegistry
+	 * @since 0.07
+	 */
+	public DimpleOptionRegistry optionRegistry()
+	{
+		return _optionRegistry;
+	}
+
+	/**
+	 * Sets the environment-specific {@link #logger} instance.
+	 * <p>
+	 * This can be used to replace the logger with special implementation
+	 * for test purposes when testing logging behavior.
+	 * <p>
+	 * @param logger
+	 * @return the previous logger instance.
+	 * @since 0.07
+	 */
+	public Logger setLogger(Logger logger)
+	{
+		return _logger.getAndSet(logger);
+	}
+
 	/*------------
 	 * Randomness
 	 */
@@ -661,20 +723,7 @@ public class DimpleEnvironment extends DimpleOptionHolder
 		return _logger.get();
 	}
 	
-	/**
-	 * Sets the environment-specific {@link #logger} instance.
-	 * <p>
-	 * This can be used to replace the logger with special implementation
-	 * for test purposes when testing logging behavior.
-	 * <p>
-	 * @param logger
-	 * @return the previous logger instance.
-	 * @since 0.07
-	 */
-	public Logger setLogger(Logger logger)
-	{
-		return _logger.getAndSet(logger);
-	}
+	
 	
 	/*--------------------
 	 * Various registries
@@ -719,20 +768,6 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	public ConstructorRegistry<IGenericSampler> genericSamplers()
 	{
 		return _genericSamplers;
-	}
-	
-	/**
-	 * Registry of known option keys for this environment.
-	 * <p>
-	 * Supports lookup of Dimple {@linkplain IOptionKey option key} instances by name.
-	 * Primarily for use in dynamic language implementations of Dimple.
-	 * <p>
-	 * @see DimpleOptionRegistry
-	 * @since 0.07
-	 */
-	public DimpleOptionRegistry optionRegistry()
-	{
-		return _optionRegistry;
 	}
 	
 	/**
@@ -789,6 +824,37 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	public DimpleSolverRegistry solvers()
 	{
 		return _solverRegistry;
+	}
+	
+	/**
+	 * The default solver factory used by newly constructed {@link FactorGraph}s
+	 * @see #setDefaultSolver(IFactorGraphFactory)
+	 * @since 0.08
+	 */
+	public @Nullable IFactorGraphFactory<?> defaultSolver()
+	{
+		return _defaultSolverFactory.get();
+	}
+	
+	/**
+	 * Restores the system default solver factory for this environment.
+	 * <p>
+	 * The default solver is currently sum-product.
+	 * <p>
+	 * @since 0.08
+	 */
+	public void restoreSystemDefaultSolver()
+	{
+		_defaultSolverFactory.set(new SumProductSolver());
+	}
+	
+	/**
+	 * Set the {@linkplain #defaultSolver default solver factory} used by newly constructed {@link FactorGraph}s
+	 * @since 0.08
+	 */
+	public IFactorGraphFactory<?> setDefaultSolver(@Nullable IFactorGraphFactory<?> solver)
+	{
+		return _defaultSolverFactory.getAndSet(solver);
 	}
 	
 	/*----------------

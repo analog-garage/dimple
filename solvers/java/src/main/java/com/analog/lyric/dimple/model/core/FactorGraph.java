@@ -759,7 +759,7 @@ public class FactorGraph extends FactorBase
 	 */
 	public FactorGraph(@Nullable Variable[] boundaryVariables, @Nullable String name)
 	{
-		this(boundaryVariables, name, Model.getInstance().getDefaultGraphFactory());
+		this(boundaryVariables, name, DimpleEnvironment.active().defaultSolver());
 	}
 
 	/**

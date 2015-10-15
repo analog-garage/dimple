@@ -31,13 +31,13 @@ import java.util.TreeMap;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.XorDelta;
 import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.FactorGraphIterables;
 import com.analog.lyric.dimple.model.core.INode;
-import com.analog.lyric.dimple.model.core.Model;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.IntRangeDomain;
@@ -64,7 +64,7 @@ public class Helpers
 	
 	static public FactorGraph MakeSimpleThreeLevelGraph()
 	{
-		return MakeSimpleThreeLevelGraph(Model.getInstance().getDefaultGraphFactory());
+		return MakeSimpleThreeLevelGraph(DimpleEnvironment.active().defaultSolver());
 	}
 	static public FactorGraph MakeSimpleThreeLevelGraph(@Nullable IFactorGraphFactory<?> graphFactory)
 	{
@@ -102,7 +102,7 @@ public class Helpers
 	}
 	static public FactorGraph MakeSimpleGraph(String tag)
 	{
-		return MakeSimpleGraph(tag, Model.getInstance().getDefaultGraphFactory(), false);
+		return MakeSimpleGraph(tag, DimpleEnvironment.active().defaultSolver(), false);
 	}
 	static public FactorGraph MakeSimpleChainGraph(	String tag,
 												 	@Nullable IFactorGraphFactory<?> graphFactory,
@@ -143,8 +143,8 @@ public class Helpers
 												 	@Nullable IFactorGraphFactory<?> graphFactory,
 												 	boolean randomInput)
 	{
-		IFactorGraphFactory<?> oldFactory = Model.getInstance().getDefaultGraphFactory();
-		Model.getInstance().setDefaultGraphFactory(graphFactory);
+		DimpleEnvironment env = DimpleEnvironment.active();
+		IFactorGraphFactory<?> oldFactory = env.setDefaultSolver(graphFactory);
 		FactorGraph fg = null;
 
 		Discrete vB1 = new Discrete(0.0, 1.0);
@@ -183,12 +183,12 @@ public class Helpers
 			}
 		}
 
-		Model.getInstance().setDefaultGraphFactory(oldFactory);
+		env.setDefaultSolver(oldFactory);
 		return fg;
 	}
 	static public FactorGraph[] MakeSimpleThreeLevelGraphs()
 	{
-		return MakeSimpleThreeLevelGraphs(Model.getInstance().getDefaultGraphFactory());
+		return MakeSimpleThreeLevelGraphs(DimpleEnvironment.active().defaultSolver());
 	}
 	static public FactorGraph[] MakeSimpleThreeLevelGraphs(@Nullable IFactorGraphFactory<?> factory)
 	{

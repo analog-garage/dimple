@@ -21,6 +21,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.matlabproxy.ModelFactory;
@@ -49,7 +50,6 @@ import com.analog.lyric.dimple.matlabproxy.repeated.PMultivariateDataSink;
 import com.analog.lyric.dimple.matlabproxy.repeated.PMultivariateDataSource;
 import com.analog.lyric.dimple.matlabproxy.repeated.PVariableStreamBase;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.Model;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.FiniteFieldDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
@@ -355,20 +355,12 @@ public class TestModelFactory extends DimpleTestBase
 	@Test
 	public void setSolver()
 	{
-		try
-		{
-			mf.setSolver(null);
-			assertNull(Model.getInstance().getDefaultGraphFactory());
+		mf.setSolver(null);
+		assertNull(DimpleEnvironment.active().defaultSolver());
 
-			IFactorGraphFactory<?> solverFactory = new GibbsSolver();
-			mf.setSolver(solverFactory);
-			assertSame(solverFactory, Model.getInstance().getDefaultGraphFactory());
-		}
-		finally
-		{
-			// This shouldn't be necessary, but this state is currently shared by other tests
-			Model.getInstance().restoreDefaultDefaultGraphFactory();
-		}
+		IFactorGraphFactory<?> solverFactory = new GibbsSolver();
+		mf.setSolver(solverFactory);
+		assertSame(solverFactory, DimpleEnvironment.active().defaultSolver());
 	}
 	
 	@Test

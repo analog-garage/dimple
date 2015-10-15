@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 
 import org.junit.Test;
 
-import com.analog.lyric.dimple.model.core.Model;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 
 /**
  * Tests construction and reading of version string.
@@ -42,7 +42,7 @@ public class VersionTest extends DimpleTestBase
 	@Test
 	public void test_version()
 	{
-		String str = Model.getVersion();
+		String str = DimpleEnvironment.getVersion();
 //		System.out.println(str);
 		
 		// <version> <branch> <iso-date>

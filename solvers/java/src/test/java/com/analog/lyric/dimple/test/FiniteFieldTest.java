@@ -20,13 +20,10 @@ import static org.junit.Assert.*;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.Model;
 import com.analog.lyric.dimple.model.variables.FiniteFieldVariable;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolverGraph;
@@ -37,16 +34,6 @@ public class FiniteFieldTest extends DimpleTestBase
 
 	static @Nullable IFactorGraphFactory<?> _oldSolver;
 	
-	@BeforeClass
-	public static void setUpBeforeClass()  {
-		_oldSolver = Model.getInstance().getDefaultGraphFactory();
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass()  {
-		Model.getInstance().setDefaultGraphFactory(_oldSolver);
-	}
-
 	@Before
 	public void setUp()  {
 	}
@@ -73,9 +60,6 @@ public class FiniteFieldTest extends DimpleTestBase
 		}
 		
 		priors[0] =  1-sum;
-
-		Model m = Model.getInstance();
-		m.setDefaultGraphFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
 
 		FactorGraph fg = new FactorGraph();
 

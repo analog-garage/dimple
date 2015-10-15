@@ -16,100 +16,68 @@
 
 package com.analog.lyric.dimple.model.core;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
 import org.eclipse.jdt.annotation.Nullable;
 
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 
-// FIXME: bug 418 - all of this functionality really should be moved to DimpleEnvironment
-
+/**
+ * As of release 0.08 all functionality moved to {@link DimpleEnvironment}
+ */
+@Deprecated
 public class Model
 {
-	@Nullable IFactorGraphFactory<?> _defaultGraphFactory;
-
 	private Model()
 	{
-		try
-		{
-			restoreDefaultDefaultGraphFactory();
-		}
-		catch(Exception e)
-		{
-			_defaultGraphFactory = null;
-		}
 	}
-
 
 	private static class ModelerHolder
 	{
 		static final Model INSTANCE = new Model();
 	}
 
+	@Deprecated
 	public static Model getInstance()
 	{
 		return ModelerHolder.INSTANCE;
 	}
-	
+
+	/**
+	 * Restores system default solver factory on {@link DimpleEnvironment#active()}
+	 * @deprecated as of release 0.08 use {@link DimpleEnvironment#restoreSystemDefaultSolver()} instead.
+	 */
+	@Deprecated
 	public void restoreDefaultDefaultGraphFactory()
 	{
-		setDefaultGraphFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
+		DimpleEnvironment.active().restoreSystemDefaultSolver();
 	}
 	
 	/**
-	 * The default solver factory used by newly constructed {@link FactorGraph}s
-	 * @see #setDefaultGraphFactory(IFactorGraphFactory)
+	 * Returns default solver factory from {@link DimpleEnvironment#active()}.
+	 * @deprecated as of release 0.08 use {@link DimpleEnvironment#defaultSolver()} instead.
 	 */
+	@Deprecated
 	public @Nullable IFactorGraphFactory<?> getDefaultGraphFactory()
 	{
-		return _defaultGraphFactory;
+		return DimpleEnvironment.active().defaultSolver();
 	}
 
 	/**
-	 * Set the {@linkplain #getDefaultGraphFactory default solver factory} used by newly constructed {@link FactorGraph}s
+	 * Sets default solver factory for {@link DimpleEnvironment#active()}
+	 * @deprecated as of release 0.08
 	 */
+	@Deprecated
 	public void setDefaultGraphFactory(@Nullable IFactorGraphFactory<?> graphFactory)
 	{
-		_defaultGraphFactory = graphFactory;
+		DimpleEnvironment.active().setDefaultSolver(graphFactory);
 	}
 	
 	/**
-	 * @return Version string for this release of Dimple
+	 * @deprecated as of release 0.08 use {@link DimpleEnvironment#getVersion()} instead
 	 */
+	@Deprecated
 	public static String getVersion()
 	{
-		InputStream in = System.class.getResourceAsStream("/VERSION");
-		if (in == null)
-		{
-			return "UNKNOWN";
-		}
-		
-		BufferedReader br = new BufferedReader(new InputStreamReader(in));
-		String version = "UNKNOWN";
-		
-		try
-		{
-			version = br.readLine();
-		}
-		catch (Exception e)
-		{
-			// Ignore errors reading file.
-		}
-		finally
-		{
-			try
-			{
-				br.close();
-			}
-			catch (IOException ex)
-			{
-			}
-		}
-		
-		return version;
-
+		return DimpleEnvironment.getVersion();
 	}
 }
