@@ -42,6 +42,29 @@ classdef MatrixObject < handle
             proxy = obj.VectorObject;
         end
         
+        function n = numArgumentsFromSubscript(~,~,callingContext)
+            % Determines number of arguments for special subsref and subsasgn methods.
+            %
+            % Required by R2015b and later to specify the number of
+            % expected inputs for subsasgn or the number of expected
+            % outputs from subsref.
+
+            % TODO: always returning one seems to capture our existing
+            % behavior. (1) Is that really true? (2) Is that what we want?
+            
+            switch callingContext
+                case matlab.mixin.util.IndexingContext.Statement
+                    % nargout for indexed reference used as statement
+                    n = 1;
+                case matlab.mixin.util.IndexingContext.Expression
+                    % nargout for indexed reference used as function argument
+                    n = 1;
+                case matlab.mixin.util.IndexingContext.Assignment
+                    % nargin for indexed assignment
+                    n = 1;
+            end
+        end
+        
         function varargout = subsref(obj,S)
             
             varargout = cell(1,max(1,nargout));
