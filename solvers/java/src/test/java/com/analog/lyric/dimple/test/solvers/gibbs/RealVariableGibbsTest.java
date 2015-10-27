@@ -299,7 +299,6 @@ public class RealVariableGibbsTest extends DimpleTestBase
 			testRand.setSeed(seed);
 			env.setOption(DimpleOptions.randomSeed, seed);
 		}
-		System.out.println(testRand.getSeed());
 		
 		// Model parameters
 		final double initialMean = 0.0;
