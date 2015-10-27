@@ -106,7 +106,6 @@ public class TestDiscreteLikelihood extends DimpleTestBase
 	public void testRandomTrees()
 	{
 		testRand.setSeed(0x8474da1a9a0f86ddL);
-		System.out.format("%x\n", testRand.getSeed());
 		FactorGraph fg = new RandomGraphGenerator(testRand).maxBranches(2).buildRandomTree(4);
 		testGraph(fg, false);
 
