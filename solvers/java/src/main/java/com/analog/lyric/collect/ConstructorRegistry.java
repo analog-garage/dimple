@@ -58,6 +58,11 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 {
 	private final Class<? super T> _superClass;
 
+	/**
+	 * The number of packages specified in the constructor.
+	 */
+	private final int _nInitialPackages;
+	
 	@GuardedBy("this")
 	protected final ArrayList<String> _packages;
 
@@ -96,6 +101,7 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 	public ConstructorRegistry(Class<? super T> superClass, String... packages)
 	{
 		_superClass = superClass;
+		_nInitialPackages = packages.length;
 		_packages = new ArrayList<String>();
 		for (String packageName : packages)
 		{
@@ -444,6 +450,19 @@ public class ConstructorRegistry<T> extends AbstractMap<String, Constructor<T>>
 		}
 	}
 
+	/**
+	 * Resets back to initial state upon construction.
+	 * <p>
+	 * @since 0.08
+	 */
+	public synchronized void reset()
+	{
+		// Remove any added packages
+		_packages.subList(_nInitialPackages, _packages.size()).clear();
+		// Clear constructor cache
+		_nameToConstructors.clear();
+	}
+	
 	/*-----------------
 	 * Private methods
 	 */

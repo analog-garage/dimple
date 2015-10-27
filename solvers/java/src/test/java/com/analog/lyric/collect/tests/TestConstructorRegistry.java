@@ -64,6 +64,10 @@ public class TestConstructorRegistry
 		assertEquals(2 * BinaryHeap.class.getConstructors().length, heapRegistry.size());
 		assertTrue(heapRegistry.containsKey("BinaryHeap"));
 		
+		heapRegistry.reset();
+		assertArrayEquals(new String[] { lyricCollectPackage }, heapRegistry.getPackages());
+		assertTrue(heapRegistry.isEmpty());
+		
 		ConstructorRegistry<Collection<?>> collectionRegistry =
 			new ConstructorRegistry<>(Collection.class, lyricCollectPackage);
 		assertTrue(collectionRegistry.isEmpty());
@@ -90,6 +94,11 @@ public class TestConstructorRegistry
 		expectThrow(IllegalArgumentException.class, ".*not a subclass.*", collectionRegistry, "addClass", Object.class);
 		expectThrow(IllegalArgumentException.class, ".*does not have an accessible constructor.*",
 			collectionRegistry, "addClass", CollectionWithoutConstructor.class);
+		
+		collectionRegistry.reset();
+		assertTrue(collectionRegistry.isEmpty());
+		assertArrayEquals(new String[] { lyricCollectPackage }, collectionRegistry.getPackages());
+		assertInvariants(collectionRegistry);
 		
 		try
 		{
