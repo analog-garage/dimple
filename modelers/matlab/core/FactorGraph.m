@@ -1022,10 +1022,10 @@ classdef FactorGraph < Node
                         % Must be a Java FactorFunction
                         
                         % TODO: avoid creating the same factor-function
-                        % over and over if it's already created
+                        % over and over if it's already created (if
+                        % parameters are the same).
                         registry = FactorFunctionRegistry();
-                        factorFunction = registry.get(firstArg);
-                        factorFunction = factorFunction();  % Assume no constructor arguments
+                        factorFunction = registry.instantiate(firstArg); % Assume no constructor arguments
                         retval = obj.addJavaFactorFunction(factorFunction,varargin{:});
                     end
                     

@@ -35,6 +35,9 @@ classdef DimpleEnvironment < handle
     properties
         %The Java proxy object that provides the underlying implementation.
         PEnvironment;
+        %FactorFunctions is the registry of built-in factor functions for this environment.
+        %See also FactorFunctionRegistry
+        FactorFunctions;
     end
     
     methods(Static)
@@ -62,6 +65,10 @@ classdef DimpleEnvironment < handle
             obj.PEnvironment.clearOptions();
         end
 
+        function functions = get.FactorFunctions(obj)
+            functions = FactorFunctionRegistry(obj.PEnvironment.factorFunctions());
+        end
+        
         function value = getOption(obj,option)
             %getOption Returns current value of specified option.
             %

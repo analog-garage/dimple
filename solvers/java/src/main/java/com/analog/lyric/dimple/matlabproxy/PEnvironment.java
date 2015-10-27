@@ -85,6 +85,11 @@ public class PEnvironment extends POptionHolder
 		return _env;
 	}
 	
+	public PFactorFunctionRegistry factorFunctions()
+	{
+		return new PFactorFunctionRegistry(_env.factorFunctions());
+	}
+	
 	public Object[] getOptionKeysMatching(String regexp)
 	{
 		return _env.optionRegistry().getAllMatching(regexp).toArray();

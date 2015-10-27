@@ -1,5 +1,9 @@
+%FactorFunction
+%
+% See also FactorFunctionRegistry
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Copyright 2013 Analog Devices, Inc.
+%   Copyright 2013-2015 Analog Devices, Inc.
 %
 %   Licensed under the Apache License, Version 2.0 (the "License");
 %   you may not use this file except in compliance with the License.
@@ -23,13 +27,13 @@ classdef FactorFunction < handle
             if ischar(functionName)
                 % Create a Java FactorFunction
                 registry = FactorFunctionRegistry();
-                factorFunction = registry.get(functionName);
-                obj.IFactorFunction = factorFunction(varargin{:});
+                obj.IFactorFunction = registry.instantiate(functionName, varargin{:});
             else
                 error('First argument must be a string');
             end
         end
         
+        %get returns the underlying Java factor function instance.
         function factorFunction = get(obj)
             factorFunction = obj.IFactorFunction;
         end
