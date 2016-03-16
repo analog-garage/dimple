@@ -198,7 +198,7 @@ public class GibbsRealJoint extends SRealJointVariableBase
 				{
 					++rejectCount;
 				}
-				_updateCount++;	// Updates count each real variable when using an MCMC sampler
+				_updateCount++;	// Updates count each real-joint variable when using a joint MCMC sampler
 				_rejectCount += rejectCount;
 			}
 			else

@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2013 Analog Devices, Inc.
+*   Copyright 2016 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -24,49 +24,36 @@ import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
-import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
+import com.analog.lyric.dimple.solvers.core.proposalKernels.NullProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.Proposal;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.ProposalKernelOptionKey;
-import com.analog.lyric.dimple.solvers.core.proposalKernels.UniformDiscreteProposalKernel;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.options.IOptionHolder;
 
 /**
- * Single-variable Metropolis-Hastings sampler.
+ * Metropolis-Hastings sampler for RealJoint variables
  * 
- * @since 0.07
- * @author Christopher Barber
+ * @since 0.07.1
  */
 public class JointMHSampler extends AbstractGenericSampler implements IJointMCMCSampler
 {
 	protected @Nullable IProposalKernel _proposalKernel;
-	protected boolean _useDiscreteKernel;
 	protected boolean _explicitKernel = false;
 	
 	/**
-	 * Option specifies which discrete proposal kernel to use for MHSampler
+	 * Option specifies which proposal kernel to use for JointMHSampler
 	 * <p>
-	 * Default value is {@link UniformDiscreteProposalKernel}.
+	 * No default value.
 	 * <p>
-	 * @since 0.07
+	 * @since 0.07.1
 	 */
-	public static final ProposalKernelOptionKey discreteProposalKernel =
-		new ProposalKernelOptionKey(JointMHSampler.class, "discreteProposalKernel", UniformDiscreteProposalKernel.class);
-	
-	/**
-	 * Option specifies which real proposal kernel to use for MHSampler
-	 * <p>
-	 * Default value is {@link NormalProposalKernel}.
-	 * <p>
-	 * @since 0.07
-	 */
-	public static final ProposalKernelOptionKey realProposalKernel =
-		new ProposalKernelOptionKey(JointMHSampler.class, "realProposalKernel", NormalProposalKernel.class);
+	@SuppressWarnings("null")
+	public static final ProposalKernelOptionKey realJointProposalKernel =
+		new ProposalKernelOptionKey(JointMHSampler.class, "realJointProposalKernel", NullProposalKernel.class);
 	
 	@Override
 	public void initialize(Domain variableDomain)
 	{
-		_useDiscreteKernel = variableDomain.isDiscrete();
 	}
 	
 	@Override
@@ -76,7 +63,7 @@ public class JointMHSampler extends AbstractGenericSampler implements IJointMCMC
 		
 		if (kernel == null || !_explicitKernel)
 		{
-			ProposalKernelOptionKey key = _useDiscreteKernel ? discreteProposalKernel : realProposalKernel;
+			ProposalKernelOptionKey key = realJointProposalKernel;
 			_proposalKernel = kernel = key.instantiateIfDifferent(optionHolder, kernel);
 		}
 		
