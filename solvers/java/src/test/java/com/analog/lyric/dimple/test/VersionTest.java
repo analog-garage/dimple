@@ -46,7 +46,7 @@ public class VersionTest extends DimpleTestBase
 //		System.out.println(str);
 		
 		// <version> <branch> <iso-date>
-		String pattern = "^\\d+\\.\\d+ ([^\\s]+) (.*)$";
+		String pattern = "^\\d+(?:\\.\\d+)+ ([^\\s]+) (.*)$";
 		Pattern p = Pattern.compile(pattern);
 		Matcher m = p.matcher(str);
 		assertTrue(m.find());
