@@ -123,7 +123,7 @@ import com.google.common.collect.SetMultimap;
  * Bayesian Reasoning and Machine Learning.</a>
  * Chapter 6.
  * 
- * <li>Daphne Koller & Nir Friedman.
+ * <li>Daphne Koller &amp; Nir Friedman.
  * <a href="http://mitpress.mit.edu/books/probabilistic-graphical-models">
  * Probabilistic Graphical Models: <em>Principals and Techniques</em></a>
  * Chapter 10.

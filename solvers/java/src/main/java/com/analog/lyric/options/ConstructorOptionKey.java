@@ -16,11 +16,11 @@
 
 package com.analog.lyric.options;
 
-import net.jcip.annotations.Immutable;
-
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ConstructorRegistry;
+
+import net.jcip.annotations.Immutable;
 
 /**
  * Key for options with literal Java class values with accessible no-argument constructor.
@@ -42,7 +42,7 @@ public abstract class ConstructorOptionKey<SuperClass> extends ClassOptionKey<Su
 	 * @param declaringClass is the class containing the static field declaration for this key.
 	 * @param name is the name of static field declaration for this key.
 	 * @param superClass is the superclass of all valid values. Should be same as the declared
-	 * &LT;SuperClass&GT; parameter.
+	 * &lt;SuperClass&gt; parameter.
 	 * @param defaultValue is the default value of the option. Used when option is not set.
 	 * @since 0.07
 	 */

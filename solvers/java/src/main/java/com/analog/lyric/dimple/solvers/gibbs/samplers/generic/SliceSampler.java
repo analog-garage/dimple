@@ -37,15 +37,9 @@ public class SliceSampler extends AbstractGenericSampler implements IMCMCSampler
 	private boolean _explicitInitialSliceWidth = false;
 	private boolean _explicitMaximumDoublings = false;
 	
-	/**
-	 * <description>
-	 */
 	public static final DoubleOptionKey initialSliceWidth =
 		new DoubleOptionKey(SliceSampler.class, "initialSliceWidth", 1.0);
 	
-	/**
-	 * <description>
-	 */
 	public static final IntegerOptionKey maximumDoublings =
 		new IntegerOptionKey(SliceSampler.class, "maximumDoublings", 10);
 	

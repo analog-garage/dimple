@@ -18,11 +18,11 @@ package com.analog.lyric.dimple.events;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import net.jcip.annotations.NotThreadSafe;
-
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.UnmodifiableReleasableIterator;
+
+import net.jcip.annotations.NotThreadSafe;
 
 /**
  * Iterates over Dimple event sources, which are also Dimple option holders.
@@ -51,12 +51,12 @@ import com.analog.lyric.collect.UnmodifiableReleasableIterator;
  *     visit(source);
  * 
  *     IDimpleEventSource modelSource = source.getModelEventSource();
- *     boolean hasModel = modelSource != null && modelSource != source;
+ *     boolean hasModel = modelSource != null &amp;&amp; modelSource != source;
  *     if (hasModel)
  *         visit(modelSource);
  * 
  *     IDimpleEventSource parent = source.getEventParent();
- *     if (parent == null && hasModel)
+ *     if (parent == null &amp;&amp; hasModel)
  *         parent = model.getEventParent();
  * 
  *     if (parent != null)

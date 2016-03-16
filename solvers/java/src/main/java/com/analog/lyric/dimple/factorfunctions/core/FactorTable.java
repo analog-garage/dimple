@@ -28,11 +28,7 @@ import java.util.BitSet;
 import java.util.Map;
 import java.util.Objects;
 
-import net.jcip.annotations.NotThreadSafe;
-
 import org.eclipse.jdt.annotation.Nullable;
-
-import cern.colt.map.OpenIntDoubleHashMap;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BitSetUtil;
@@ -49,6 +45,9 @@ import com.analog.lyric.math.Utilities;
 import com.analog.lyric.util.misc.Misc;
 import com.google.common.math.DoubleMath;
 import com.google.common.primitives.Ints;
+
+import cern.colt.map.OpenIntDoubleHashMap;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class FactorTable extends SparseFactorTableBase
@@ -145,7 +144,7 @@ public class FactorTable extends SparseFactorTableBase
 	 * Maps sparse indexes to joint indexes. Empty if table is in dense form
 	 * (because in that case the location and joint index are the same).
 	 * <p>
-	 * If not dense or deterministic (&directed) this lookup will require a
+	 * If not dense or deterministic (and directed) this lookup will require a
 	 * binary search.
 	 */
 	int[] _sparseIndexToJointIndex = ArrayUtil.EMPTY_INT_ARRAY;

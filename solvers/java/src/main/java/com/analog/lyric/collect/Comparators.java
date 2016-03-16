@@ -21,10 +21,10 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.SortedSet;
 
-import net.jcip.annotations.Immutable;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+
+import net.jcip.annotations.Immutable;
 
 /**
  * 
@@ -114,7 +114,7 @@ public final class Comparators
 	/**
 	 * Returns comparator used by collection.
 	 * 
-	 * <If collection is a {@link SortedSet} returns {@link SortedSet#comparator()}, else returns null.
+	 * If collection is a {@link SortedSet} returns {@link SortedSet#comparator()}, else returns null.
 	 */
 	public static @Nullable <T> Comparator<? super T> fromCollection(Collection<? extends T> collection)
 	{

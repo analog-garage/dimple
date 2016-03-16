@@ -29,9 +29,9 @@ import java.util.Iterator;
  * <p>
  * 
  * <pre>
- *     public class FooIterator implements ReleasableIterator<Foo>
+ *     public class FooIterator implements ReleasableIterator&lt;Foo&gt;
  *     {
- *         private static final ThreadLocal<FooIterator> resusableInstance = new ThreadLocal<FooIterator>();
+ *         private static final ThreadLocal&lt;FooIterator&gt; resusableInstance = new ThreadLocal&lt;FooIterator&gt;();
  * 
  *         public static FooIterator make(FooContainer c)
  *         {

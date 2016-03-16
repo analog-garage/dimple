@@ -16,9 +16,9 @@
 
 package com.analog.lyric.options;
 
-import net.jcip.annotations.Immutable;
-
 import org.eclipse.jdt.annotation.Nullable;
+
+import net.jcip.annotations.Immutable;
 
 /**
  * Key for options with literal Java class values.
@@ -42,7 +42,7 @@ public class ClassOptionKey<SuperClass> extends OptionKey<Class<? extends SuperC
 	 * @param declaringClass is the class containing the static field declaration for this key.
 	 * @param name is the name of static field declaration for this key.
 	 * @param superClass is the superclass of all valid values. Should be same as the declared
-	 * &LT;SuperClass&GT; parameter.
+	 * &lt;SuperClass&gt; parameter.
 	 * @param defaultValue is the default value of the option. Used when option is not set.
 	 * @since 0.07
 	 */
@@ -117,7 +117,7 @@ public class ClassOptionKey<SuperClass> extends OptionKey<Class<? extends SuperC
 	}
 	
 	/**
-	 * The value of the &LT;SuperClass&GT; parameter.
+	 * The value of the &lt;SuperClass&gt; parameter.
 	 * @since 0.07
 	 */
 	public Class<SuperClass> superClass()

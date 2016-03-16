@@ -26,8 +26,6 @@ import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import cern.colt.list.DoubleArrayList;
-
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.KeyedPriorityQueue;
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -94,6 +92,8 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.math.DimpleRandomGenerator;
+
+import cern.colt.list.DoubleArrayList;
 
 /**
  * Solver-specific factor graph for Gibbs solver.
@@ -313,17 +313,17 @@ public class GibbsSolverGraph extends SFactorGraphBase //implements ISolverFacto
 	 * Performs the equivalent of:
 	 * <blockquote>
 	 * <pre>
-	 * for (int restart = 0; restart <= {@link #getNumRestarts()}; ++restart)
+	 * for (int restart = 0; restart &lt;= {@link #getNumRestarts()}; ++restart)
 	 * {
 	 *     {@linkplain #burnIn(int) burnIn(restart)};
-	 *     for (int i = 0; i < {@link #getNumSamples()}; ++i)
+	 *     for (int i = 0; i &lt; {@link #getNumSamples()}; ++i)
 	 *     {
 	 *         {@link #sample()};
 	 *     }
 	 * }
 	 * </pre>
 	 * </blockquote>
-	 * </ol>
+	 * 
 	 */
 	@Override
 	public void solveOneStep()

@@ -24,14 +24,15 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import net.jcip.annotations.NotThreadSafe;
-import net.jcip.annotations.ThreadSafe;
-import cern.colt.list.IntArrayList;
-import cern.colt.map.OpenIntIntHashMap;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BitSetUtil;
-import org.eclipse.jdt.annotation.Nullable;
+
+import cern.colt.list.IntArrayList;
+import cern.colt.map.OpenIntIntHashMap;
+import net.jcip.annotations.NotThreadSafe;
+import net.jcip.annotations.ThreadSafe;
 
 /**
  * Supports conversion of indexes between two {@link JointDomainIndexer}s.
@@ -288,7 +289,7 @@ public abstract class JointDomainReindexer
 	 *   <dd>The {@code oldToNewIndex} must be the same size as {@code fromDomains}.
 	 *   It is necessary to deduce the {@code removedDomains}.
 	 *   </dd>
-	 * </ol>
+	 * </dl>
 	 */
 	public static JointDomainReindexer createPermuter(
 		JointDomainIndexer fromDomains,
@@ -1010,7 +1011,7 @@ public abstract class JointDomainReindexer
 	
 	/**
 	 * True if converter maintains the same order of joint indexes such that if
-	 * oldA <= oldB, then newA <= newB. Used to avoid sorting when converting
+	 * oldA &lt;= oldB, then newA &lt;= newB. Used to avoid sorting when converting
 	 * sparse indices.
 	 * <p>
 	 * True only if all removals are at front of list, additions are at end of

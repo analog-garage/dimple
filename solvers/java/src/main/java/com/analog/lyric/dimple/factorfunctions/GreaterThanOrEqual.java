@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.model.values.Value;
  * 
  * The variables are ordered as follows in the argument list:
  * 
- * 1) Output (Logical output = FirstValue > SecondValue)
+ * 1) Output (Logical output = FirstValue &gt;= SecondValue)
  * 2) FirstValue (double or integer)
  * 3) SecondValue (double or integer)
  * 

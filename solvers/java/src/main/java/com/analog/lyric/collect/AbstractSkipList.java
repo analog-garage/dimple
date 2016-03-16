@@ -389,7 +389,7 @@ public abstract class AbstractSkipList<K>
 	 * <p>
 	 *  (b + 2)/2 * log<sub>b</sub>(size)
 	 * <p>
-	 * so we want to find the minimum value of b > 1 of
+	 * so we want to find the minimum value of b &gt; 1 of
 	 * <p>
 	 * (b + 2) / 2ln(b)
 	 * <p>

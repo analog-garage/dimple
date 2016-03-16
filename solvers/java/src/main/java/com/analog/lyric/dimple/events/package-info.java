@@ -97,7 +97,7 @@
  * For example, here is a simple handler class that simply prints events out to the console with a verbosity of one:
  * 
  * <pre>
- * public class EventPrinter extends DimpleEventHandler&LT;DimpleEvent&GT;
+ * public class EventPrinter extends DimpleEventHandler&lt;DimpleEvent&gt;
  * {
  *     public void handleEvent(DimpleEvent event)
  *     {
@@ -111,7 +111,7 @@
  * of the total graph score during Gibbs sampling based on sample score differences:
  * 
  * <pre>
- * public class RunningScoreHandler extends DimpleEventHandler&LT;GibbsScoredVariableUpdateEvent&GT;
+ * public class RunningScoreHandler extends DimpleEventHandler&lt;GibbsScoredVariableUpdateEvent&gt;
  * {
  *     public double score;
  * 
@@ -142,8 +142,10 @@
  * any such object. Instead of serializing the actual object, the name and id of the object will be serialized.
  * <p>
  * @since
+ * <ul>
  * <li>0.07 - support for DimpleEnvironment
  * <li>0.06 - package was first introduced
+ * </ul>
  * @author Christopher Barber
  */
 @org.eclipse.jdt.annotation.NonNullByDefault

@@ -28,8 +28,6 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 
-import net.jcip.annotations.ThreadSafe;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -38,6 +36,8 @@ import com.analog.lyric.collect.Supers;
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.util.misc.Internal;
 import com.google.common.collect.MapMaker;
+
+import net.jcip.annotations.ThreadSafe;
 
 
 /**
@@ -354,7 +354,7 @@ public class DimpleEventListener implements IDimpleEventListener
 	 * Specifically, this is equivalent to the ordering that would be produced by:
 	 * <p>
 	 * <pre>
-	 * void addSources(List&LT;IDimpleEventSource&GT; sources, IDimpleEventSource source)
+	 * void addSources(List&lt;IDimpleEventSource&gt; sources, IDimpleEventSource source)
 	 * {
 	 *     source.add(source);
 	 *     if (source.getModelEventSource() != source)

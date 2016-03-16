@@ -25,8 +25,6 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.Random;
 
-import net.jcip.annotations.Immutable;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -37,6 +35,8 @@ import com.analog.lyric.collect.Supers;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.Value;
+
+import net.jcip.annotations.Immutable;
 
 /**
  * Provides a representation and canonical indexing operations for an ordered list of
@@ -761,7 +761,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * That is:
 	 * <pre>
 	 *       int jointIndex = 0;
-	 *       for (int i = 0; i < getDimensions(); ++i)
+	 *       for (int i = 0; i &lt; getDimensions(); ++i)
 	 *          jointIndex += getStride(i) * indices[i];
 	 * </pre>
 	 * <p>
@@ -1080,7 +1080,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * <ul>
 	 * <li>{@code indices} has {@link #size()} elements
 	 * <li>all values are non-negative
-	 * <li>{@code indices[i]} < {@link #getDomainSize}{@code (i)}
+	 * <li>{@code indices[i]} less than {@link #getDomainSize}{@code (i)}
 	 * </ul>
 	 * @throws IllegalArgumentException if wrong number of indices
 	 * @throws IndexOutOfBoundsException if any index is out of range for its domain.
