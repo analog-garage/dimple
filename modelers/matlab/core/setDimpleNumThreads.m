@@ -15,5 +15,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function setDimpleNumThreads(numThreads)
-    getModeler().setNumThreads(numThreads);
+    modeler = getModeler();
+    modeler.setNumThreads(numThreads);
 end
