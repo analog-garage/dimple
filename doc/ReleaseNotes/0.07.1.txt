@@ -1,0 +1,11 @@
+Dimple version 0.07.1 release notes
+==================================
+
+Significant New Features Since v0.07
+------------------------------------
+- Added JointMHSampler for RealJoint variables (experimental feature - requires separately written joint proposal kernel).
+
+
+Significant Bug Fixes Since v0.07
+---------------------------------
+- Fixed compatibility issues with MATLAB 2015b.
