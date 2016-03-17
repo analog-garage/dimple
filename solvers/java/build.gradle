@@ -27,7 +27,7 @@ apply plugin: 'jacoco' // for java code coverage
 
 apply plugin: 'maven-publish'
 
-apply plugin: 'bintray'
+apply plugin: 'com.jfrog.bintray'
 
 archivesBaseName = 'dimple'
 
@@ -41,7 +41,7 @@ buildscript {
 			jcenter()
 		}
 		dependencies {
-			classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.3'
+			classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.6'
 		}
 }
 
