@@ -165,7 +165,8 @@ task testInstallkit(dependsOn: [testInstallkitSetup, 'solvers:java:testClasses']
     testLogging.showStandardStreams = true
 
  	testClassesDir = testSet.output.classesDir
- 	testSrcDirs = testSet.java.srcDirs.asList()
+ 	// FIXME - not supported in gradle 3.0 - is it needed?
+ 	//testSrcDirs = testSet.java.srcDirs.asList()
 
  	classpath = files(testClassesDir, fileTree(dir: dimpleUnzippedInstallkit, includes:['**/*.jar']))
 	reports.html.enabled = false
