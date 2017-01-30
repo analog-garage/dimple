@@ -26,7 +26,7 @@
 			<attribute name="javadoc_location" value="http://javailp.sourceforge.net/javadoc/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="build/external-libs/jama-1.0.2.jar">
+	<classpathentry kind="lib" path="build/external-libs/jama-1.0.3.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="http://math.nist.gov/javanumerics/jama/doc/"/>
 		</attributes>
