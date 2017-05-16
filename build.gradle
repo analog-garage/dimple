@@ -19,6 +19,12 @@
  
 defaultTasks 'build'
 
+// Note that GradleVersion is not in official API, but this works
+if (GradleVersion.current().compareTo(GradleVersion.version('3.0')) >= 0 ||
+	GradleVersion.current().compareTo(GradleVersion.version('2.0')) < 0) {
+	throw new GradleException('Requires gradle 2.x')
+}
+
 ext {
 	dimpleVersionFile = file('VERSION')
 	dimpleLongVersionFile = file('LONG_VERSION')
