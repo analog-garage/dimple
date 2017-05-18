@@ -4,7 +4,6 @@
 	<classpathentry kind="src" output="build/classes/benchmarking" path="src/benchmarking/java"/>
 	<classpathentry kind="src" output="build/classes/test" path="src/test/java"/>
 	<classpathentry kind="src" path="src/main/resources"/>
-	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="build/external-libs/junit-4.11.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="http://junit.org/javadoc/4.11/"/>
@@ -49,5 +48,6 @@
 			<attribute name="javadoc_location" value="http://wendykierp.github.io/JTransforms/apidocs/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="output" path="build/classes/main"/>
 </classpath>
