@@ -39,6 +39,7 @@ import com.analog.lyric.collect.BinaryHeap;
 import com.analog.lyric.collect.IHeap;
 import com.analog.lyric.collect.SkipSet;
 import com.analog.lyric.collect.Tuple2;
+import com.analog.lyric.dimple.environment.DimpleEnvironment;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Uniform;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
@@ -58,6 +59,7 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.options.BPOptions;
+import com.analog.lyric.math.DimpleRandom;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
@@ -147,7 +149,7 @@ public class JunctionTreeTransform
 	private int _nEliminationAttempts = DEFAULT_MAX_TRANSFORMATION_ATTEMPTS;
 	private boolean _useConditioning = false;
 	private CostFunction[] _costFunctions = {};
-	private Random _rand = new Random();
+	private Random _rand = new DimpleRandom(DimpleEnvironment.activeRandom().nextLong());
 	
 	/**
 	 * Orders variables by id.
