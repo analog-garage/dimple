@@ -27,15 +27,18 @@ import org.junit.Test;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.factors.DiscreteFactor;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.core.SolverBase;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolver;
+import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolverGraph;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolverGraphBase;
 import com.analog.lyric.dimple.solvers.junctiontreemap.JunctionTreeMAPSolver;
 import com.analog.lyric.dimple.test.DimpleTestBase;
@@ -118,7 +121,131 @@ public class TestJunctionTree extends DimpleTestBase
 		
 	}
 	
-	private void testGraph(FactorGraph model)
+	@Test
+	public void testBug429()
+	{
+		FactorGraph graph = new FactorGraph();
+		Discrete a = new Bit(), b = new Bit(), c = new Bit(), d = new Bit();
+		a.setName("a");
+		b.setName("b");
+		c.setName("c");
+		d.setName("d");
+		a.setPrior(.3,.7);
+
+		IFactorTable ab = FactorTable.create(DiscreteDomain.bit(), DiscreteDomain.bit());
+		ab.setWeightForIndices(.6, 0, 0);
+		ab.setWeightForIndices(.4, 0, 1);
+		ab.setWeightForIndices(.2, 1, 0);
+		ab.setWeightForIndices(.8, 1, 1);
+		Factor abf = graph.addFactor(ab, a,b);
+		abf.setName("ab");
+		abf.setDirectedTo(b);
+
+		IFactorTable ac = FactorTable.create(DiscreteDomain.bit(), DiscreteDomain.bit());
+		ac.setWeightForIndices(.4, 0, 0);
+		ac.setWeightForIndices(.6, 0, 1);
+		ac.setWeightForIndices(.875, 1, 0);
+		ac.setWeightForIndices(.125, 1, 1);
+		Factor acf = graph.addFactor(ac, a,c);
+		acf.setName("ac");
+		acf.setDirectedTo(c);
+
+		IFactorTable bcd = FactorTable.create(DiscreteDomain.bit(), DiscreteDomain.bit(), DiscreteDomain.bit());
+		bcd.setWeightForIndices(.2, 0, 0, 0);
+		bcd.setWeightForIndices(.8, 0, 0, 1);
+		bcd.setWeightForIndices(.15, 0, 1, 0);
+		bcd.setWeightForIndices(.85, 0, 1, 1);
+		bcd.setWeightForIndices(.6, 1, 0, 0);
+		bcd.setWeightForIndices(.4, 1, 0, 1);
+		bcd.setWeightForIndices(.7, 1, 1, 0);
+		bcd.setWeightForIndices(.3, 1, 1, 1);
+		Factor bcdf = graph.addFactor(bcd, b,c,d);
+		bcdf.setName("bcd");
+		bcdf.setDirectedTo(d);
+
+		for (int i = 10; --i>=0;)
+		{
+			JunctionTreeSolverGraph sgraph = graph.createSolver(new JunctionTreeSolver());
+			sgraph.solve();
+			assertArrayEquals(new double[] { .48, .52 }, d.getBelief(), 0.01);
+		}
+		
+
+		testGraph(graph);
+	}
+	
+	@Test
+	public void testBug429A()
+	{
+		FactorGraph graph = new FactorGraph();
+		Discrete a = new Bit(), b = new Bit(), c = new Bit(), d = new Bit(), e = new Bit(), f = new Bit();
+		a.setName("a");
+		b.setName("b");
+		c.setName("c");
+		d.setName("d");
+		e.setName("e");
+		f.setName("f");
+		
+		e.setPrior(.1, .9);
+		
+		IFactorTable ea = FactorTable.create(DiscreteDomain.bit(), DiscreteDomain.bit());
+		ea.setWeightForIndices(0.3, 0, 0);
+		ea.setWeightForIndices(.7, 0, 1);
+		ea.setWeightForIndices(.55, 1, 0);
+		ea.setWeightForIndices(.45, 1, 1);
+		Factor eaf = graph.addFactor(ea, e, a);
+		eaf.setName("ea");
+		eaf.setDirectedTo(a);
+		
+		IFactorTable ab = FactorTable.create(DiscreteDomain.bit(), DiscreteDomain.bit());
+		ab.setWeightForIndices(.6, 0, 0);
+		ab.setWeightForIndices(.4, 0, 1);
+		ab.setWeightForIndices(.2, 1, 0);
+		ab.setWeightForIndices(.8, 1, 1);
+		Factor abf = graph.addFactor(ab, a, b);
+		abf.setName("ab");
+		abf.setDirectedTo(b);
+
+		IFactorTable ac = FactorTable.create(DiscreteDomain.bit(), DiscreteDomain.bit());
+		ac.setWeightForIndices(.4, 0, 0);
+		ac.setWeightForIndices(.6, 0, 1);
+		ac.setWeightForIndices(.875, 1, 0);
+		ac.setWeightForIndices(.125, 1, 1);
+		Factor acf = graph.addFactor(ab, a, c);
+		acf.setName("ac");
+		acf.setDirectedTo(c);
+		
+		IFactorTable bcd = FactorTable.create(DiscreteDomain.bit(), DiscreteDomain.bit(), DiscreteDomain.bit());
+		bcd.setWeightForIndices(.2, 0, 0, 0);
+		bcd.setWeightForIndices(.8, 0, 0, 1);
+		bcd.setWeightForIndices(.15, 0, 1, 0);
+		bcd.setWeightForIndices(.85, 0, 1, 1);
+		bcd.setWeightForIndices(.6, 1, 0, 0);
+		bcd.setWeightForIndices(.4, 1, 0, 1);
+		bcd.setWeightForIndices(.7, 1, 1, 0);
+		bcd.setWeightForIndices(.3, 1, 1, 1);
+		Factor bcdf = graph.addFactor(bcd, b, c, d);
+		bcdf.setName("bcd");
+		bcdf.setDirectedTo(d);
+
+		IFactorTable df = FactorTable.create(DiscreteDomain.bit(), DiscreteDomain.bit());
+		df.setWeightForIndices(.15, 0, 0);
+		df.setWeightForIndices(.85, 0, 1);
+		df.setWeightForIndices(.1, 1, 0);
+		df.setWeightForIndices(.9, 1, 1);
+		Factor dff = graph.addFactor(df, d, f);
+		dff.setName("df");
+		dff.setDirectedTo(f);
+		
+		testGraph(graph);
+	}
+
+	
+	/*------------------
+	 *  Helper methods
+	 */
+	
+	void testGraph(FactorGraph model)
 	{
 		try
 		{
@@ -177,10 +304,10 @@ public class TestJunctionTree extends DimpleTestBase
 		final BiMap<Object,Object> new2old = old2new.inverse();
 		FactorGraph model2 = model.copyRoot(old2new);
 		IMapList<Factor> factors2 = model2.getFactors();
-		Factor factor2 = null;
+		Factor megafactor = null;
 		if (factors2.size() > 0)
 		{
-			factor2 = model2.join(factors2.toArray(new Factor[factors2.size()]));
+			megafactor = model2.join(factors2.toArray(new Factor[factors2.size()]));
 		}
 		model2.setSolverFactory(jtgraph.getDelegateSolverFactory());
 		model2.solve();
@@ -221,12 +348,12 @@ public class TestJunctionTree extends DimpleTestBase
 		}
 		
 		// Compare factor beliefs
-		if (!useMap && factor2 instanceof DiscreteFactor)
+		if (!useMap && megafactor instanceof DiscreteFactor)
 		{
-			DiscreteFactor discreteFactor2 = (DiscreteFactor) factor2;
-			JointDomainIndexer fullDomains = discreteFactor2.getDomainList();
-			final double[] fullBeliefs = discreteFactor2.getBelief();
-			final int[][] fullBeliefIndices = discreteFactor2.getPossibleBeliefIndices();
+			DiscreteFactor discreteMegafactor = (DiscreteFactor) megafactor;
+			JointDomainIndexer fullDomains = discreteMegafactor.getDomainList();
+			final double[] fullBeliefs = discreteMegafactor.getBelief();
+			final int[][] fullBeliefIndices = discreteMegafactor.getPossibleBeliefIndices();
 			final IFactorTable fullTable = FactorTable.create(fullDomains);
 			fullTable.setWeightsSparse(fullBeliefIndices, fullBeliefs);
 
@@ -247,7 +374,7 @@ public class TestJunctionTree extends DimpleTestBase
 				
 				for (int from = 0, remove = nFactorDomains; from < nFullDomains; ++from)
 				{
-					final Variable fromVar = discreteFactor2.getSibling(from);
+					final Variable fromVar = discreteMegafactor.getSibling(from);
 					final int to = factorVars.indexOf(new2old.get(fromVar));
 					fullToMarginal[from] = to >= 0 ? to : remove++;
 				}
@@ -256,6 +383,8 @@ public class TestJunctionTree extends DimpleTestBase
 					JointDomainReindexer.createPermuter(fullDomains, factorDomains, fullToMarginal);
 		
 				final IFactorTable beliefTable2 = fullTable.convert(marginalizer);
+				// Set direction to match original factor table so that sparse indices will be in same order.
+				beliefTable2.setDirected(discreteFactor.getFactorTable().getOutputSet());
 				double[] beliefs2 = beliefTable2.getWeightsSparseUnsafe();
 				int[][] beliefIndices2 = beliefTable2.getIndicesSparseUnsafe();
 				
