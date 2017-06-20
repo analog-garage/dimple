@@ -1,0 +1,7 @@
+Dimple version 0.07.2 release notes
+==================================
+
+Significant Bug Fixes Since v0.07.1
+---------------------------------
+- Fixed serious bug in JunctionTreeSolver on directed graphs that could lead to incorrect inference.
+
