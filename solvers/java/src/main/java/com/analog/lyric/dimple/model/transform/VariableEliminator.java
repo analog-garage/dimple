@@ -32,7 +32,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
-import net.jcip.annotations.Immutable;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.analog.lyric.collect.BinaryHeap;
 import com.analog.lyric.collect.IHeap;
@@ -44,9 +44,9 @@ import com.analog.lyric.dimple.model.factors.FactorBase;
 import com.analog.lyric.dimple.model.factors.FactorList;
 import com.analog.lyric.dimple.model.variables.Variable;
 import com.analog.lyric.dimple.model.variables.VariableList;
-import org.eclipse.jdt.annotation.Nullable;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Sets;
+
+import net.jcip.annotations.Immutable;
 
 /**
  * Computes a variable elimination order for a factor graph using a greedy
@@ -1058,27 +1058,29 @@ public class VariableEliminator
 			{
 				// If there is more than one factor whose variables are wholly contained by this clique,
 				// they will need to be merged.
-				final Set<Variable> variables = Sets.newHashSetWithExpectedSize(size);
-				variables.add(variable);
-				for (VarLink link = var._neighborList._next; link.hasVar(); link = link._next)
-				{
-					variables.add(link.var()._variable);
-				}
-				
+
 				int nCliqueFactors = 0;
 				nextFactor:
 				for (int i = 0; i < nFactors; ++i)
 				{
 					final Factor factor = variable.getSibling(i);
+					int neighborsInFactor = 0;
 					for (int j = 0, nFactorVars = factor.getSiblingCount(); j < nFactorVars; ++j)
 					{
-						if (!variables.contains(factor.getSibling(j)))
+						final Variable neighbor = factor.getSibling(j);
+
+						if (var.isAdjacent(neighbor))
+						{
+							++neighborsInFactor;
+						}
+						else if (!var.wasRemoved(neighbor) && neighbor != variable)
 						{
 							// Factor is not entirely contained by this clique.
 							continue nextFactor;
 						}
 					}
-					++nCliqueFactors;
+					if (neighborsInFactor > 0)
+						++nCliqueFactors;
 				}
 				
 				if (nCliqueFactors > 1)
@@ -1113,7 +1115,8 @@ public class VariableEliminator
 	{
 		final Variable _variable;
 		final VarLink _neighborList = new VarLink();
-		final Map<Var, VarLink> _neighborMap;
+		final Map<Variable, VarLink> _neighborMap;
+		final Set<Variable> _removedNeighbors;
 		
 		/**
 		 * Pointer to heap entry for this object for use in efficient reprioritization.
@@ -1137,8 +1140,9 @@ public class VariableEliminator
 		{
 			_variable = variable;
 			_incrementalCost = incrementalCost;
-			_neighborMap = new HashMap<Var, VarLink>(variable.getSiblingCount());
+			_neighborMap = new HashMap<>(variable.getSiblingCount());
 			_isConditioned = isConditioned;
+			_removedNeighbors = new HashSet<>();
 		}
 		
 		/*----------------
@@ -1153,10 +1157,10 @@ public class VariableEliminator
 		
 		private boolean addNeighbor(Var neighbor)
 		{
-			if (neighbor != this && !_neighborMap.containsKey(neighbor))
+			if (neighbor != this && !_neighborMap.containsKey(neighbor._variable))
 			{
 				VarLink link = new VarLink(neighbor);
-				_neighborMap.put(neighbor, link);
+				_neighborMap.put(neighbor._variable, link);
 				link.insertBefore(_neighborList);
 				return true;
 			}
@@ -1188,9 +1192,14 @@ public class VariableEliminator
 		/**
 		 * True if {@code other} variable neighbors this one (i.e. if both are connected to the same factor).
 		 */
-		public boolean isAdjacent(Var other)
+		public boolean isAdjacent(Variable other)
 		{
 			return _neighborMap.containsKey(other);
+		}
+		
+		public boolean wasRemoved(Variable var)
+		{
+			return _removedNeighbors.contains(var);
 		}
 		
 		/**
@@ -1219,7 +1228,8 @@ public class VariableEliminator
 		
 		private void removeNeighbor(Var neighbor)
 		{
-			_neighborMap.remove(neighbor).remove();
+			_neighborMap.remove(neighbor._variable).remove();
+			_removedNeighbors.add(neighbor._variable);
 		}
 	}
 
@@ -1434,7 +1444,7 @@ public class VariableEliminator
 				for (VarLink link2 = link1._next; link2.hasVar(); link2 = link2._next)
 				{
 					final Var neighbor2 = link2.var();
-					if (!neighbor1.isAdjacent(neighbor2))
+					if (!neighbor1.isAdjacent(neighbor2._variable))
 					{
 						++count;
 					}
@@ -1477,7 +1487,7 @@ public class VariableEliminator
 				for (VarLink link2 = link1._next; link2.hasVar(); link2 = link2._next)
 				{
 					final Var neighbor2 = link2.var();
-					if (!neighbor1.isAdjacent(neighbor2))
+					if (!neighbor1.isAdjacent(neighbor2._variable))
 					{
 						weight += neighbor1.cardinality() * neighbor2.cardinality();
 					}
