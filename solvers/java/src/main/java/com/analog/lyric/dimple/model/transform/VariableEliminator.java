@@ -19,16 +19,16 @@ package com.analog.lyric.dimple.model.transform;
 import static java.util.Objects.*;
 
 import java.io.Serializable;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
@@ -613,9 +613,8 @@ public class VariableEliminator
 				_stats.addConditionedVariable();
 			}
 			long cliqueCardinality = isConditioned ? 1 : var.cardinality();
-			for (VarLink link = var._neighborList._next; link.hasVar(); link = link._next)
+			for (Var neighbor : var.neighbors())
 			{
-				final Var neighbor = link.var();
 				neighbor.removeNeighbor(var);
 				cliqueCardinality *= neighbor.cardinality();
 			}
@@ -623,28 +622,30 @@ public class VariableEliminator
 			_stats.addClique(var, cliqueCardinality);
 
 			// Add edges between remaining neighbors
-			for (VarLink link1 = var._neighborList._next; link1.hasVar(); link1 = link1._next)
 			{
-				final Var neighbor1 = link1.var();
-				for (VarLink link2 = link1._next; link2.hasVar(); link2 = link2._next)
+				final ArrayDeque<Var> neighbors = new ArrayDeque<>(var.neighbors());
+				
+				while (!neighbors.isEmpty())
 				{
-					final Var neighbor2 = link2.var();
-					if (neighbor1.addNeighbor(neighbor2))
+					final Var neighbor1 = neighbors.pop();
+					for (Var neighbor2 : neighbors)
 					{
-						neighbor2.addNeighbor(neighbor1);
-						// Update added edge statistics
-						_stats.addEdgeWeight(neighbor1.cardinality() * neighbor2.cardinality());
+						if (neighbor1.addNeighbor(neighbor2))
+						{
+							neighbor2.addNeighbor(neighbor1);
+							// Update added edge statistics
+							_stats.addEdgeWeight(neighbor1.cardinality() * neighbor2.cardinality());
+						}
 					}
 				}
 			}
-
+				
 			// Update priorities
 			if (costFunction.neighborsOnly())
 			{
 				heap.deferOrderingForBulkChange(var.nNeighbors());
-				for (VarLink link = var._neighborList._next; link.hasVar(); link = link._next)
+				for (Var neighbor : var.neighbors())
 				{
-					final Var neighbor = link.var();
 					IEntry<Var> heapEntry = neighbor._heapEntry;
 					if (heapEntry != null)
 					{
@@ -655,13 +656,12 @@ public class VariableEliminator
 			else
 			{
 				Set<Var> changeSet = new HashSet<Var>();
-				for (VarLink link1 = var._neighborList._next; link1.hasVar(); link1 = link1._next)
+				for (Var neighbor : var.neighbors())
 				{
-					final Var neighbor = link1.var();
 					changeSet.add(neighbor);
-					for (VarLink link2 = neighbor._neighborList._next; link2.hasVar(); link2 = link2._next)
+					for (Var neighbor2 : neighbor.neighbors())
 					{
-						changeSet.add(link2.var());
+						changeSet.add(neighbor2);
 					}
 				}
 				heap.deferOrderingForBulkChange(changeSet.size());
@@ -1061,14 +1061,11 @@ public class VariableEliminator
 
 				int nCliqueFactors = 0;
 				nextFactor:
-				for (int i = 0; i < nFactors; ++i)
+				for (Factor factor : variable.getSiblings())
 				{
-					final Factor factor = variable.getSibling(i);
 					int neighborsInFactor = 0;
-					for (int j = 0, nFactorVars = factor.getSiblingCount(); j < nFactorVars; ++j)
+					for (Variable neighbor : factor.getSiblings())
 					{
-						final Variable neighbor = factor.getSibling(j);
-
 						if (var.isAdjacent(neighbor))
 						{
 							++neighborsInFactor;
@@ -1114,8 +1111,7 @@ public class VariableEliminator
 	public static class Var
 	{
 		final Variable _variable;
-		final VarLink _neighborList = new VarLink();
-		final Map<Variable, VarLink> _neighborMap;
+		final Map<Variable, Var> _neighborMap;
 		final Set<Variable> _removedNeighbors;
 		
 		/**
@@ -1140,7 +1136,7 @@ public class VariableEliminator
 		{
 			_variable = variable;
 			_incrementalCost = incrementalCost;
-			_neighborMap = new HashMap<>(variable.getSiblingCount());
+			_neighborMap = new LinkedHashMap<>(variable.getSiblingCount());
 			_isConditioned = isConditioned;
 			_removedNeighbors = new HashSet<>();
 		}
@@ -1159,9 +1155,7 @@ public class VariableEliminator
 		{
 			if (neighbor != this && !_neighborMap.containsKey(neighbor._variable))
 			{
-				VarLink link = new VarLink(neighbor);
-				_neighborMap.put(neighbor._variable, link);
-				link.insertBefore(_neighborList);
+				_neighborMap.put(neighbor._variable, neighbor);
 				return true;
 			}
 			
@@ -1179,14 +1173,6 @@ public class VariableEliminator
 		public int cardinality()
 		{
 			return requireNonNull(_variable.getDomain().asDiscrete()).size();
-		}
-		
-		/**
-		 * Start of linked list of variable neighbors.
-		 */
-		public VarLink firstNeighbor()
-		{
-			return _neighborList._next;
 		}
 		
 		/**
@@ -1218,6 +1204,11 @@ public class VariableEliminator
 			return _neighborMap.size();
 		}
 		
+		public Collection<Var> neighbors()
+		{
+			return _neighborMap.values();
+		}
+		
 		/**
 		 * The underlying variable.
 		 */
@@ -1228,68 +1219,11 @@ public class VariableEliminator
 		
 		private void removeNeighbor(Var neighbor)
 		{
-			_neighborMap.remove(neighbor._variable).remove();
+			_neighborMap.remove(neighbor._variable);
 			_removedNeighbors.add(neighbor._variable);
 		}
 	}
 
-	/**
-	 * A node in a linked list of {@link Var} entries.
-	 */
-	public static final class VarLink
-	{
-		private final @Nullable Var _var;
-		private VarLink _prev = this;
-		private VarLink _next = this;
-		
-		VarLink(Var info)
-		{
-			_var = info;
-		}
-		
-		VarLink()
-		{
-			_var = null;
-		}
-		
-		public boolean hasVar()
-		{
-			return _var != null;
-		}
-		
-		/**
-		 * Refers to the next link.
-		 */
-		public VarLink next()
-		{
-			return _next;
-		}
-		
-		/**
-		 * The {@link Var} object for this link.
-		 */
-		public Var var()
-		{
-			return Objects.requireNonNull(_var);
-		}
-		
-		void insertBefore(VarLink next)
-		{
-			_next = next;
-			_prev = next._prev;
-			next._prev = this;
-			_prev._next = this;
-		}
-		
-		void remove()
-		{
-			_prev._next = _next;
-			_next._prev = _prev;
-			_next = this;
-			_prev = this;
-		}
-	}
-	
 	/*-------------------------------
 	 * Cost function implementations
 	 */
@@ -1403,9 +1337,9 @@ public class VariableEliminator
 		{
 			double weight = 1.0;
 			
-			for (VarLink link = var._neighborList._next; link.hasVar(); link = link._next)
+			for (Var neighbor : var.neighbors())
 			{
-				weight *= link.var().cardinality();
+				weight *= neighbor.cardinality();
 			}
 			
 			return weight;
@@ -1438,17 +1372,14 @@ public class VariableEliminator
 		{
 			double count = 0.0;
 			
-			for (VarLink link1 = var._neighborList._next; link1.hasVar(); link1 = link1._next)
+			final ArrayDeque<Var> neighbors = new ArrayDeque<>(var.neighbors());
+
+			while (!neighbors.isEmpty())
 			{
-				final Var neighbor1 = link1.var();
-				for (VarLink link2 = link1._next; link2.hasVar(); link2 = link2._next)
-				{
-					final Var neighbor2 = link2.var();
+				final Var neighbor1 = neighbors.pop();
+				for (Var neighbor2 : neighbors)
 					if (!neighbor1.isAdjacent(neighbor2._variable))
-					{
 						++count;
-					}
-				}
 			}
 			
 			return count;
@@ -1481,17 +1412,14 @@ public class VariableEliminator
 		{
 			double weight = 0.0;
 			
-			for (VarLink link1 = var._neighborList._next; link1.hasVar(); link1 = link1._next)
+			final ArrayDeque<Var> neighbors = new ArrayDeque<>(var.neighbors());
+
+			while (!neighbors.isEmpty())
 			{
-				final Var neighbor1 = link1.var();
-				for (VarLink link2 = link1._next; link2.hasVar(); link2 = link2._next)
-				{
-					final Var neighbor2 = link2.var();
+				final Var neighbor1 = neighbors.pop();
+				for (Var neighbor2 : neighbors)
 					if (!neighbor1.isAdjacent(neighbor2._variable))
-					{
 						weight += neighbor1.cardinality() * neighbor2.cardinality();
-					}
-				}
 			}
 			
 			return weight;
@@ -1581,10 +1509,8 @@ public class VariableEliminator
 				factor.clearMarked();
 			}
 
-			for (VarLink link = var._neighborList._next; link.hasVar(); link = link._next)
-			{
-				link.var()._variable.clearMarked();
-			}
+			for (Var neighbor : var.neighbors())
+				neighbor._variable.clearMarked();
 		}
 
 		for (Factor factor : factorsWithDuplicateVars)
