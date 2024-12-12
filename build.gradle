@@ -16,14 +16,19 @@
 
 // Except for building the installkit, the real work happens in subprojects.
 // The subprojects are included in settings.gradle.
- 
+
+plugins {
+	id 'java'
+	id 'maven-publish'
+}
+
 defaultTasks 'build'
 
 ext {
 	dimpleVersionFile = file('VERSION')
 	dimpleLongVersionFile = file('LONG_VERSION')
 	dimpleVersion = dimpleVersionFile.text.trim()
-	dimpleUnderlineVersion = dimpleVersion.replace('.','_')
+	dimpleUnderlineVersion = dimpleVersion.replace('.', '_')
 
 	dimpleInstallkitDir = file('build/')
 	dimpleInstallkitName = "dimple_v${dimpleUnderlineVersion}.zip"
@@ -31,101 +36,91 @@ ext {
 	dimpleUnzippedInstallkit = new File(dimpleInstallkitDir, 'installkit')
 }
 
-task(longVersion) {
+tasks.register('longVersion') {
 	description = 'Build LONG_VERSION file'
 	group = 'Build'
-	
+
 	inputs.files(dimpleVersionFile)
 	outputs.files(dimpleLongVersionFile)
 
-	// currentGitBranchName
-	try {
-		new ByteArrayOutputStream().withStream { out ->
-			exec {
-				standardOutput = out;
-				commandLine 'git', 'rev-parse', '--abbrev-ref', 'HEAD'
-			}
-			ext.currentBranchName = out.toString().trim()
+	doLast {
+		// currentGitBranchName
+		try {
+			ext.currentBranchName = 'git rev-parse --abbrev-ref HEAD'.execute().text.trim()
+		} catch (Exception ex) {
+			logger.error("WARNING: could not determine git branch: " + ex.toString())
+			ext.currentBranchName = 'unknown-branch'
 		}
-	} catch (Exception ex) {
-		logger.error("WARNING: could not determine git branch: " + ex.toString())
-		ext.currentBranchName = 'unknown-branch'
-	}
 
-	// lastGitCommitDate
-	try {
-		new ByteArrayOutputStream().withStream { out ->
-			exec {
-				standardOutput = out;
-				commandLine 'git', 'log', '-1', '--format=%ci'
-			}
-			ext.lastGitCommitDate = out.toString().trim()
+		// lastGitCommitDate
+		try {
+			ext.lastGitCommitDate = 'git log -1 --format=%ci'.execute().text.trim()
+		} catch (Exception ex) {
+			logger.error("WARNING: could not determine git commit date:" + ex.toString())
+			ext.lastGitCommitDate = 'unknown-date'
 		}
-	} catch (Exception ex) {
-		logger.error("WARNING: could not determine git commit date:" + ex.toString())
-		ext.lastGitCommitDate = 'unknown-date'
+
+		String dimpleLongVersion = "${dimpleVersion} ${currentBranchName} ${lastGitCommitDate}"
+		int hash = dimpleLongVersion.hashCode()
+
+		List advs = file('solvers/java/adv.txt').readLines()
+		String adv = advs[hash % advs.size].trim().capitalize()
+		List adjs = file('solvers/java/adj.txt').readLines()
+		String adj = adjs[hash % adjs.size].trim().capitalize()
+		List nouns = file('solvers/java/nouns.txt').readLines()
+		String noun = nouns[hash % nouns.size].trim().capitalize()
+
+		dimpleLongVersion += " \"${adv} ${adj} ${noun}\""
+
+		dimpleLongVersionFile.withWriter { out -> out.writeLine(dimpleLongVersion) }
 	}
-
-	String dimpleLongVersion = "${dimpleVersion} ${currentBranchName} ${lastGitCommitDate}"
-	int hash = dimpleLongVersion.hashCode()
-
-	List advs = file('solvers/java/adv.txt').readLines()
-	String adv = advs[hash % advs.size].trim().capitalize()
-	List adjs = file('solvers/java/adj.txt').readLines()
-	String adj = adjs[hash % adjs.size].trim().capitalize()
-	List nouns = file('solvers/java/nouns.txt').readLines()
-	String noun = nouns[hash % nouns.size].trim().capitalize()
-
-	dimpleLongVersion += " \"${adv} ${adj} ${noun}\""
-	
-	dimpleLongVersionFile.withWriter { out -> out.writeLine(dimpleLongVersion) }
 }
 
-task installkit(type: Zip) {
+tasks.register('installkit', Zip) {
 	description = 'Build Dimple install kit'
 	group = 'Build'
 
 	dependsOn(':solvers:java:assemble', ':solvers:java:javadoc', ':doc:userDocs')
-	destinationDir = dimpleInstallkitDir
-	archiveName = dimpleInstallkitName
+	destinationDirectory = dimpleInstallkitDir
+	archiveFileName = dimpleInstallkitName
 
-	from ('demo/') {
+	from('demo/') {
 		into 'demo/'
 	}
 
-	from ('doc/') {
+	from('doc/') {
 		include 'ReleaseNotes/**'
 		include "DimpleUserManual_v${dimpleVersion}*.pdf"
 		into 'doc/'
 	}
 
-	from ('solvers/java/build/docs/') {
+	from('solvers/java/build/docs/') {
 		include "javadoc/**"
 		into 'doc/'
 	}
 
-	from ('modelers/matlab/') {
+	from('modelers/matlab/') {
 		include 'lib/**'
 		include '**/*.m'
 		into 'modelers/matlab/'
 	}
 
-	from ('modelers/javascript/') {
+	from('modelers/javascript/') {
 		include 'applet-test.html'
 		into 'modelers/javascript/'
 	}
 
-	from ('solvers/lib/') {
+	from('solvers/lib/') {
 		include '*.jar'
 		include '*.jnlp'
 		into 'solvers/lib'
 	}
 
-	from ('solvers/licenses/') {
+	from('solvers/licenses/') {
 		into 'solvers/licenses'
 	}
 
-	from ('.') {
+	from('.') {
 		include 'LICENSE.txt'
 		include 'LONG_VERSION'
 		include 'VERSION'
@@ -135,44 +130,91 @@ task installkit(type: Zip) {
 	}
 }
 
-task cleanInstallkit(type: Delete) {
+tasks.register('cleanInstallkit', Delete) {
 	description = 'Remove install kits'
 	group = 'Cleanup'
 
-	delete fileTree(dir: dimpleInstallkitDir, includes:['dimple_v*.zip'])
+	delete fileTree(dir: dimpleInstallkitDir, includes: ['dimple_v*.zip'])
 }
 
-task testInstallkitSetup(dependsOn: installkit, type: Copy) {
+tasks.register('testInstallkitSetup', Copy) {
+	dependsOn installkit
 	from zipTree(dimpleInstallkitFile)
 	into dimpleUnzippedInstallkit
 }
 
-task testInstallkitClean(type: Delete) {
+tasks.register('testInstallkitClean', Delete) {
 	delete dimpleUnzippedInstallkit
 }
 
-task testInstallkit(dependsOn: [testInstallkitSetup, 'solvers:java:testClasses'], type:Test) {
+tasks.register('testInstallkit', Test) {
 	description = 'Runs tests against install kit'
 	group = 'Verification'
 
+	dependsOn testInstallkitSetup, ':solvers:java:testClasses'
 	evaluationDependsOn ':solvers:java'
-    ext.testSet = project(':solvers:java').sourceSets.test { 
-    	// Exclude jsproxy tests because the installkit does not include the plugin.jar
-    	exclude('**/jsproxy/**') 
-    }
 
-    // show standard out and standard error of the test JVM(s) on the console
-    testLogging.showStandardStreams = true
+	ext.testSet = project(':solvers:java').sourceSets.test {
+		// Exclude jsproxy tests because the installkit does not include the plugin.jar
+		exclude('**/jsproxy/**')
+	}
 
- 	testClassesDir = testSet.output.classesDir
- 	// FIXME - not supported in gradle 3.0 - is it needed?
- 	//testSrcDirs = testSet.java.srcDirs.asList()
+	// show standard out and standard error of the test JVM(s) on the console
+	testLogging.showStandardStreams = true
 
- 	classpath = files(testClassesDir, fileTree(dir: dimpleUnzippedInstallkit, includes:['**/*.jar']))
-	reports.html.enabled = false
-	reports.junitXml.enabled = false
-	binResultsDir = new File(dimpleUnzippedInstallkit, "installtestOutput") // FIXME
+	testClassesDirs = testSet.output.classesDirs
+	classpath = files(testClassesDirs, fileTree(dir: dimpleUnzippedInstallkit, includes: ['**/*.jar']))
+	reports.html.required.set(false)
+	reports.junitXml.required.set(false)
+	binaryResultsDirectory = new File(dimpleUnzippedInstallkit, "installtestOutput")
 
 	finalizedBy testInstallkitClean
 }
 
+tasks.register('sourcesJar', Jar) {
+	dependsOn classes
+	archiveClassifier.set('sources')
+	from sourceSets.main.allSource
+}
+
+tasks.register('javadocJar', Jar) {
+	dependsOn javadoc
+	archiveClassifier.set('javadoc')
+	from javadoc.destinationDir
+}
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+			artifactId = 'dimple'
+
+			artifact(sourcesJar) {
+				classifier = "sources"
+			}
+
+			artifact(javadocJar) {
+				classifier = "javadoc"
+			}
+		}
+	}
+}
+
+if (hasProperty('bintrayUser')) {
+	// Do not enable bintrayUpload task unless a user/key pair has been
+	// configured in the user's gradle.properties file. We don't want to
+	// put this in the gradle build files themselves because that would
+	// expose our private API key!
+	bintray {
+		user = bintrayUser
+		key = bintrayKey
+		publications = ['mavenJava']
+		pkg {
+			repo = 'maven'
+			userOrg = 'lyriclabs'
+			name = 'dimple'
+			desc = 'Dimple probabilistic inference library for Java'
+			licenses = ['Apache-2.0']
+		}
+	}
+}

@@ -8,6 +8,10 @@ solvers/java/bin/
 solvers/java/src/com/lyricsemi/dimple/test/output
 build/*.zip
 build/dimple_*
+build/libs/
+build/reports/
+build/tmp/
+doc/build/
 bee.out.txt
 dimple.ant.txt
 testDimpleexitDone.txt

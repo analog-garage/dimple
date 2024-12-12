@@ -59,8 +59,8 @@ public class SkipSetTest
 		set1.add(151);
 		set1.add(23);
 		assertEquals(set1.size(), 3);
-		assertEquals(set1.first(), new Integer(23));
-		assertEquals(set1.last(), new Integer(151));
+		assertEquals(set1.first(), Integer.valueOf(23));
+		assertEquals(set1.last(), Integer.valueOf(151));
 		assertEquals(null, set1.ceiling(Integer.MAX_VALUE));
 		assertEquals(null, set1.floor(Integer.MIN_VALUE));
 		tester.validateSkipSet(set1);
@@ -156,7 +156,7 @@ public class SkipSetTest
 		
 		for (int i = 100; i > 0; --i)
 		{
-			assertTrue(set2.add(new Integer(i)));
+			assertTrue(set2.add(Integer.valueOf(i)));
 		}
 		tester.validateSkipSet(set2);
 	}

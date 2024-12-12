@@ -56,7 +56,7 @@ public class SumProductReal extends SRealVariableBase
 	public Object getValue()
 	{
 		NormalParameters belief = getBelief();
-		return new Double(belief.getMean());
+		return Double.valueOf(belief.getMean());
 	}
 	
 	public NormalParameters createDefaultMessage()

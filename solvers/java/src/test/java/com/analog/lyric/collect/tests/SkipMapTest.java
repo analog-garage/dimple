@@ -59,7 +59,7 @@ public class SkipMapTest
 		assertFalse(map1.keySet().contains(42));
 		assertFalse(map1.values().contains("42"));
 		
-		Integer k = new Integer(42);
+		Integer k = Integer.valueOf(42);
 		assertEquals(null, map1.put(k, "43"));
 		assertEquals(k, map1.firstKey());
 		assertEquals(k, map1.lastKey());

@@ -44,7 +44,7 @@ import net.jcip.annotations.ThreadSafe;
  * Simple registry mapping class names to constructor instances.
  * <p>
  * Note that {@link Map} methods such as {@link #containsKey}, {@link #containsValue},
- * {@link #keySet}, {@link #values}, {@link #entrySet}, and {@link #size} will only reflect keys
+ * {@link #keySet()}, {@link #values()}, {@link #entrySet}, and {@link #size} will only reflect keys
  * that have been explicitly looked up using one of {@link #get}, {@link #getClass},
  * {@link #instantiate} or {@link #loadAll()}.
  * <p>

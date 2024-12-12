@@ -375,7 +375,7 @@ public class TestDomain extends DimpleTestBase
 		assertFalse(Domain.isIntCompatibleValue(4.01));
 		assertFalse(Domain.isIntCompatibleValue((double)(Integer.MAX_VALUE + 1)));
 		assertFalse(Domain.isIntCompatibleValue((long)Integer.MAX_VALUE + 1));
-		assertFalse(Domain.isIntCompatibleValue(new Long(Integer.MAX_VALUE + 1)));
+		assertFalse(Domain.isIntCompatibleValue(Long.valueOf(Integer.MAX_VALUE + 1)));
 		assertTrue(Domain.isIntCompatibleValue(BigInteger.ONE));
 	}
 	

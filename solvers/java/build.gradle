@@ -19,104 +19,75 @@
  * script works.
  */
 
-project.description = 'Java API'
-project.version = dimpleVersion
-project.group = 'com.analog.lyric'
-
-apply plugin: 'java'
-apply plugin: 'jacoco' // for java code coverage
-
-apply plugin: 'maven-publish'
-
-apply plugin: 'com.jfrog.bintray'
-
-buildscript {
-		repositories {
-			jcenter()
-		}
-		dependencies {
-			classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.3.1'
-		}
+plugins {
+	id 'java'
+	id 'jacoco'
+	id 'maven-publish'
 }
-
-// TODO in Gradle 2.1 and later you can just write:
-// plugins {
-//    id "com.jfrog.bintray" version "1.3.1"	
-// }
-// with no need for the extra buildscript stuff
-
-archivesBaseName = 'dimple'
 
 defaultTasks 'build'
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+java {
+	sourceCompatibility = '22'
+	targetCompatibility = '22'
+}
 
-//Specify what repositories to use when looking for jars
 repositories {
-  mavenCentral()
-  maven {
-    url "http://mbari-maven-repository.googlecode.com/svn/repository/"
-  }
-  maven {
-    url "http://www.array.ca/nest-web/maven/"
-  }
-
+	mavenCentral()
+//	maven {
+//		url "http://mbari-maven-repository.googlecode.com/svn/repository/"
+//	}
+//	maven {
+//		url "https://www.array.ca/nest-web/maven/"
+//	}
 }
 
 sourceSets {
-  main {
-    resources {
-      // Need to include the non-java files within benchmarking as resources. (Images, etc.)
-      srcDirs += 'src/benchmarking/java'
-    }
-  }
-  //Include the benchmarking source set
-  benchmarking
+	main {
+		resources {
+			srcDirs += 'src/main/resources'
+			srcDirs += 'src/benchmarking/java'
+		}
+	}
+	benchmarking
 }
 
-//Benchmarking source set depends on main and its dependencies
 dependencies {
-	compile "org.eclipse.jdt:org.eclipse.jdt.annotation:1.1.0"
-	compile "com.google.guava:guava:18.0"
-	compile "org.apache.commons:commons-math3:3.5"
-	compile "com.github.wendykierp:JTransforms:3.0"
-	compile "gov.nist.math:jama:1.0.3"
-	compile "colt:colt:1.2.0"
-	compile "net.jcip:jcip-annotations:1.0"
-	compile "junit:junit:4.11"
-	compile files('../non-maven-jars/javailp-1.2a.jar')
+	implementation "org.eclipse.jdt:org.eclipse.jdt.annotation:1.1.0"
+	implementation 'com.google.guava:guava:33.3.1-jre'
+	implementation "org.apache.commons:commons-math3:3.6.1"
+	implementation "com.github.wendykierp:JTransforms:3.1"
+	implementation "gov.nist.math:jama:1.0.3"
+	implementation "colt:colt:1.2.0"
+	implementation "net.jcip:jcip-annotations:1.0"
+	implementation "junit:junit:4.13.2"
+	implementation files('../non-maven-jars/javailp-1.2a.jar')
 
-    benchmarkingCompile sourceSets.main.runtimeClasspath
+	benchmarkingImplementation sourceSets.main.runtimeClasspath
 }
 
-//This task will copy all of the jar files into the lib directory.
-//MATLAB will add these jar files to the path.
-task('copyExternalJars', type: Copy) {
-  from (configurations.compile)
-  into file('../lib')
+tasks.register('copyExternalJars', Copy) {
+	from configurations.compileClasspath
+	into file('../lib')
 }
 
-//Eclipse can only specify relative paths for jar files that are in
-//subdirectories of the .classpath file.  As a result, we also have
-//to copy all of the jar files into the build/external-libs directory
-task copyExternalJarsForEclipse(type: Copy) {
-  from configurations.compile
-  into file('build/external-libs')
+tasks.register('copyExternalJarsForEclipse', Copy) {
+	from configurations.compileClasspath
+	into file('build/external-libs')
 }
 
-task eclipseSetup(dependsOn: copyExternalJarsForEclipse) {
+tasks.register('eclipseSetup') {
+	dependsOn copyExternalJarsForEclipse
 	description = 'Setup external libs needed for Eclipse project.'
 }
 
-//We also provide a task to copy the dimple jar file to ../lib so that
-//the build kit and other projects can reference this jar file.
-task(copyDimpleJar,type: Copy) {
-  from(jar)
-  into(file('../lib'))
+tasks.register('copyDimpleJar', Copy) {
+	from jar
+	into file('../lib')
 }
 
-task(versionResource, dependsOn: rootProject.longVersion, type: Copy) {
+tasks.register('versionResource', Copy) {
+	dependsOn rootProject.tasks.named('longVersion')
 	from dimpleLongVersionFile
 	into 'src/main/resources/'
 	rename 'LONG_VERSION', 'VERSION'
@@ -124,215 +95,106 @@ task(versionResource, dependsOn: rootProject.longVersion, type: Copy) {
 
 processResources.dependsOn versionResource
 
-//clean removes the build directory by default.  We also remove ../lib.
 clean {
-  delete 'src/main/resources/VERSION'
-  delete '../lib'
-
+	delete 'src/main/resources/VERSION'
+	delete '../lib'
 }
 
 jar {
-	// FIXME: instead of this, only include .class files from classes directory
-	// to avoid picking up resources that Eclipse implicitly copies.
 	duplicatesStrategy = 'exclude'
 	manifest {
 		attributes(
-			"Implementation-Title": "Dimple",
-			"Implementation-Vendor": "Lyric Labs | Analog Devices",
-			"Implementation-Version": dimpleVersion,
-			"Permissions": "sandbox")
+				"Implementation-Title": "Dimple",
+				"Implementation-Vendor": "Lyric Labs | Analog Devices",
+				"Implementation-Version": dimpleVersion,
+				"Permissions": "sandbox"
+		)
 	}
 }
 
-//define a new task for copying all jars
-task copyJars
+tasks.register('copyJars') {
+	dependsOn copyDimpleJar, copyExternalJars, copyExternalJarsForEclipse
+}
 
-//In order to copy the dimple jar, we have to produce it
-copyDimpleJar.dependsOn jar
-
-//define all of the jar copy tasks
-copyJars.dependsOn copyDimpleJar, copyExternalJars, copyExternalJarsForEclipse
-
-//As part of assembly, make sure all jars are in the required locations
 assemble.dependsOn copyJars
 
-//
-// Benchmarking tasks
-//
-
-task(runJavaBenchmarks, dependsOn: 'benchmarkingClasses', type: JavaExec) {
-  main = 'com.analog.lyric.dimple.benchmarks.DimpleBenchmarks'
-  classpath = sourceSets.benchmarking.runtimeClasspath
-  minHeapSize = '1g'
-  maxHeapSize = '6g'
+tasks.register('runJavaBenchmarks', JavaExec) {
+	dependsOn 'benchmarkingClasses'
+	mainClass.set('com.analog.lyric.dimple.benchmarks.DimpleBenchmarks')
+	classpath = sourceSets.benchmarking.runtimeClasspath
+	minHeapSize = '1g'
+	maxHeapSize = '6g'
 }
 
-task(runMATLABBenchmarks, type: Exec) {
-  workingDir '../..' 
-  commandLine 'matlab', '-nodesktop', '-nodisplay', '-nosplash', '-wait', '-r', 'try, startup; cd modelers/matlab/benchmarks; run; end; exit'
+tasks.register('runMATLABBenchmarks', Exec) {
+	workingDir '../..'
+	commandLine 'matlab', '-nodesktop', '-nodisplay', '-nosplash', '-wait', '-r', 'try, startup; cd modelers/matlab/benchmarks; run; end; exit'
 }
-runMATLABBenchmarks.dependsOn benchmarkingClasses
-runMATLABBenchmarks.dependsOn copyExternalJars
+runMATLABBenchmarks.dependsOn 'benchmarkingClasses', 'copyExternalJars'
 
-task runBenchmarks
-runBenchmarks.dependsOn runJavaBenchmarks, runMATLABBenchmarks
-
-//
-// javadoc
-//
+tasks.register('runBenchmarks') {
+	dependsOn runJavaBenchmarks, runMATLABBenchmarks
+}
 
 ext {
 	docSubpackages = 'com.analog.lyric'
-	
-	// Exclude packages that are internal implementation packages or that are not ready for prime time.
 	docExcludePackages = [
-		'com.analog.lyric.dimple.examples',
-		'com.analog.lyric.dimple.jsproxy',
-		'com.analog.lyric.dimple.learning',
-		'com.analog.lyric.dimple.matlabproxy',
-		'com.analog.lyric.dimple.model.serializerdetails',
-		'com.analog.lyric.dimple.model.sugar',
-		'com.analog.lyric.dimple.parameters',
-		'com.analog.lyric.dimple.schedulers.dependencyGraph',
-		'com.analog.lyric.dimple.solvers.core.kbest',
-		'com.analog.lyric.dimple.solvers.core.multithreading',
-		'com.analog.lyric.dimple.solvers.gaussian',
-		'com.analog.lyric.dimple.solvers.gibbs.customFactors',
-		'com.analog.lyric.dimple.solvers.minsum.customFactors',
-		'com.analog.lyric.dimple.solvers.sumproduct.customFactors',
-		'com.analog.lyric.dimple.solvers.sumproduct.pseudolikelihood',
-		'com.analog.lyric.dimple.solvers.sumproduct.sampledfactor',
-		'com.analog.lyric.dimple.solvers.template',
-		'com.analog.lyric.math',
-		'com.analog.lyric.util'
-		];
-	docExclude = docExcludePackages.join(':');	
+			'com.analog.lyric.dimple.examples',
+			'com.analog.lyric.dimple.jsproxy',
+			'com.analog.lyric.dimple.learning',
+			'com.analog.lyric.dimple.matlabproxy',
+			'com.analog.lyric.dimple.model.serializerdetails',
+			'com.analog.lyric.dimple.model.sugar',
+			'com.analog.lyric.dimple.parameters',
+			'com.analog.lyric.dimple.schedulers.dependencyGraph',
+			'com.analog.lyric.dimple.solvers.core.kbest',
+			'com.analog.lyric.dimple.solvers.core.multithreading',
+			'com.analog.lyric.dimple.solvers.gaussian',
+			'com.analog.lyric.dimple.solvers.gibbs.customFactors',
+			'com.analog.lyric.dimple.solvers.minsum.customFactors',
+			'com.analog.lyric.dimple.solvers.sumproduct.customFactors',
+			'com.analog.lyric.dimple.solvers.sumproduct.pseudolikelihood',
+			'com.analog.lyric.dimple.solvers.sumproduct.sampledfactor',
+			'com.analog.lyric.dimple.solvers.template',
+			'com.analog.lyric.math',
+			'com.analog.lyric.util'
+	]
+	docExclude = docExcludePackages.join(':')
 }
 
 javadoc {
-    exclude docExcludePackages.collect{ '**/' + it.replace('.','/') + '/**' }
-    title 'Dimple Java API ' + dimpleVersion
-	options.header 'Dimple ' + dimpleVersion
-	// Allow use of @category tags, which are supported by Eclipse
+	exclude docExcludePackages.collect { '**/' + it.replace('.', '/') + '/**' }
+	title = 'Dimple Java API ' + dimpleVersion
+	options.header = 'Dimple ' + dimpleVersion
 	options.tags 'category'
-
 }
 
-task (javadocVersion, dependsOn: javadoc, type:Copy) {
+tasks.register('javadocVersion', Copy) {
+	dependsOn javadoc
 	description = "Copies javadoc into version-specific directory"
 	group = 'Documentation'
-	
+
 	from javadoc.destinationDir
-	into javadoc.destinationDir.parent + "/javadoc_v${dimpleUnderlineVersion}"
+	into "${javadoc.destinationDir.parent}/javadoc_v${dimpleUnderlineVersion}"
 }
 
-task(allDoc, dependsOn: 'javadocVersion') {
-	description "Builds all documentation"
-	group 'Documentation'
+tasks.register('allDoc') {
+	dependsOn 'javadocVersion'
+	description = "Builds all documentation"
+	group = 'Documentation'
 }
 
-// jdiff tasks
-//
-// These require you to install JDiff somewhere and define the environment
-// variable JDIFF_HOME as the directory containing the jdiff jars.
-//
-// To use:
-//    - checkout previous version you want to compare with
-//    - add these gradle tasks to build.gradle if necessary
-//    - gradle jdiffPrevAPI
-//    - checkout new version
-//    - gradle jdiff
-//    - change description is in build/jdiff
-//
-ext {
-	jdiffHome = System.env["JDIFF_HOME"]
-	jdiffJars = files("$jdiffHome/jdiff.jar", "$jdiffHome/xerces.jar")
-	jdiffDocletPath = jdiffJars.getAsPath()
-	jdiffDocletClass = 'jdiff.JDiff'
-
-	jdiffApiname = 'Dimple ' + dimpleVersion
-	jdiffApiFilename = 'Dimple_' + dimpleVersion + '.xml'
-	jdiffApiDirname = 'build/jdiff'
-	jdiffApiDir = file(jdiffApiDirname)
-	jdiffApiFile = file(jdiffApiDirname + '/' + jdiffApiFilename)
-	jdiffPrevApiname = 'Dimple_prev'
-	jdiffPrevApiFilename = jdiffPrevApiname + '.xml'
-	jdiffPrevApiFile = file(jdiffApiDirname + '/' + jdiffPrevApiFilename)
-	jdiffChangesFile = file(jdiffApiDirname + '/changes.html')
+tasks.register('sourcesJar', Jar) {
+	dependsOn classes
+	archiveClassifier.set('sources')
+	from sourceSets.main.allSource
 }
 
-// This task generates the file build/jdiff/Dimple_<version>.xml containing
-// an abstract description of the Java API that can be used to compare against
-// another release. It will only include public members and those that do not
-// contain "@category internal" in their java doc comment.
-//
-task jdiffAPI(dependsOn: 'assemble', type: Exec) {
-	description 'Generates jdiff API file in build/jdiff for current version'
-	
-	outputs.file(jdiffApiFile)
-	
-	commandLine 'javadoc', 
-	'-docletpath', jdiffDocletPath,
-	'-doclet', jdiffDocletClass,
-	'-classpath', project.sourceSets.main.compileClasspath.getAsPath(),
-	'-public',
-	'-apiname', jdiffApiname, 
-	'-apidir', jdiffApiDirname,
-	'-excludetag', ' @category internal',
-	'-sourcepath', 'src/main/java', 
-	'-subpackages', docSubpackages,
-	'-exclude', docExclude
-	
-	doFirst {
-		mkdir(jdiffApiDirname)
-	}
+tasks.register('javadocJar', Jar) {
+	dependsOn javadoc
+	archiveClassifier.set('javadoc')
+	from javadoc.destinationDir
 }
-
-task jdiffPrevAPI(dependsOn: 'jdiffAPI', type:Copy) {
-	 description 'Generates jdiff API file in build/jdiff and designates as previous version'
-
-	 from jdiffApiFile
-	 into jdiffApiDir
-	 rename jdiffApiFilename, jdiffPrevApiFilename
-	 inputs.file jdiffApiFile
-}
-
-task jdiff(dependsOn: 'jdiffAPI', type: Exec) {
-	 description 'Generates comparison between this Java API and previous one'
-
-	inputs.files(jdiffPrevApiFile, jdiffApiFile)
-	outputs.files(jdiffChangesFile)
-
-	commandLine 'javadoc', 
-	 	'-docletpath', jdiffDocletPath, 
-		'-doclet', jdiffDocletClass,
-		'-classpath', project.sourceSets.main.compileClasspath.getAsPath(),
-		'-oldapi', jdiffPrevApiname,
-		'-oldapidir', jdiffApiDirname,
-		'-newapi', jdiffApiname, 
-		'-newapidir', jdiffApiDirname,
-		'-d', jdiffApiDirname,
-		'com.analog.lyric'
-}
-
-task jdiffClean(type: Delete) {
-	description 'Cleans up jdiff API files for current release so that you can rerun jdiff'
-	delete jdiffApiFile, jdiffChangesFile
-}
-
-//
-// Publishing
-// 
-
- task sourcesJar(type: Jar, dependsOn: classes) {
-        classifier = 'sources'
-        from sourceSets.main.allSource
- }
-
- task javadocJar(type: Jar, dependsOn: javadoc) {
-        classifier = 'javadoc'
-        from javadoc.destinationDir
- }
 
 publishing {
 	publications {
@@ -340,32 +202,23 @@ publishing {
 			from components.java
 			artifactId = 'dimple'
 
-           artifact sourcesJar {
-                classifier "sources"
-            }
+			artifact(sourcesJar) {
+				classifier = "sources"
+			}
 
-            artifact javadocJar {
-                classifier "javadoc"
-            }
+			artifact(javadocJar) {
+				classifier = "javadoc"
+			}
 		}
 	}
-}
-
-if (hasProperty('bintrayUser')) {
-	// Do not enable bintrayUpload task unless a user/key pair has been
-	// configured in the user's gradle.properties file. We don't want to
-	// put this in the gradle build files themselves because that would
-	// expose our private API key!
-	bintray {
-		user = bintrayUser
-		key = bintrayKey
-		publications = ['mavenJava']
-		pkg {
-			repo = 'maven'
-			userOrg = 'lyriclabs'
-			name = 'dimple'
-			desc = 'Dimple probabilistic inference library for Java'
-			licenses = ['Apache-2.0']
+	repositories {
+		maven {
+			name = "myRepo"
+			url = uri("https://my.repo.url/repository/maven-releases/")
+			credentials {
+				username = project.findProperty("repoUser") ?: ""
+				password = project.findProperty("repoPassword") ?: ""
+			}
 		}
 	}
 }

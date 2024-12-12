@@ -1,9 +1,13 @@
+plugins {
+	id 'java'
+}
 
 project.description = 'LaTeX documentation'
- ext {
+
+ext {
 	dimpleVersion = file('../VERSION').text.trim()
 
-	tmpFilePatterns = ['**.aux', '**.log', '**.out', '**.toc', '**.pdf', '**.dvi']
+	tmpFilePatterns = ['**/*.aux', '**/*.log', '**/*.out', '**/*.toc', '**/*.pdf', '**/*.dvi']
 
 	userDocName = 'DimpleUserManual'
 	userDocDir = file(userDocName)
@@ -13,83 +17,78 @@ project.description = 'LaTeX documentation'
 	userDocMatlabPdf = makePdfName(userDocName, 'matlab')
 }
 
-task(clean, type: Delete) {
-	description 'Deletes temporary files'
-	group 'Cleanup'
-	
-	delete fileTree(dir:userDocDir, includes:tmpFilePatterns)
+tasks.register('cleanTmp', Delete) {
+	description = 'Deletes temporary files'
+	group = 'Cleanup'
+
+	delete fileTree(dir: userDocDir, includes: tmpFilePatterns)
 }
 
-task(reallyClean, type: Delete) {
-	description 'Deletes all generated files'
-	group 'Cleanup'
-	
-	delete fileTree(dir:projectDir, includes:tmpFilePatterns)
+tasks.register('reallyClean', Delete) {
+	description = 'Deletes all generated files'
+	group = 'Cleanup'
+
+	delete fileTree(dir: projectDir, includes: tmpFilePatterns)
 }
 
-task(javaUserDoc) {
-	description 'Builds Java user documentation'
-	group 'Documentation'
-	
-	inputs.files fileTree(dir:userDocDir, excludes:tmpFilePatterns)
+tasks.register('javaUserDoc') {
+	description = 'Builds Java user documentation'
+	group = 'Documentation'
+
+	inputs.files fileTree(dir: userDocDir, excludes: tmpFilePatterns)
 	outputs.files userDocJavaPdf
 
 	doLast {
 		generatePDF(userDocSource, dimpleVersion, 'java')
 		copy {
 			from file(userDocGeneratedPdf)
-			into file ('.')
+			into file('.')
 			rename("${userDocName}.pdf", userDocJavaPdf)
 		}
 	}
 }
 
-task(matlabUserDoc) {
-	description 'Builds Java user documentation'
-	group 'Documentation'
-	
-	inputs.files fileTree(dir:userDocDir, excludes:tmpFilePatterns)
+tasks.register('matlabUserDoc') {
+	description = 'Builds MATLAB user documentation'
+	group = 'Documentation'
+
+	inputs.files fileTree(dir: userDocDir, excludes: tmpFilePatterns)
 	outputs.files userDocMatlabPdf
 
 	doLast {
 		generatePDF(userDocSource, dimpleVersion, 'matlab')
 		copy {
 			from file(userDocGeneratedPdf)
-			into file ('.')
+			into file('.')
 			rename("${userDocName}.pdf", userDocMatlabPdf)
 		}
 	}
 }
 
-task(userDocs, dependsOn: ['matlabUserDoc', 'javaUserDoc']) {
-	description 'Builds all user documentation'
-	group 'Documentation'
+tasks.register('userDocs') {
+	description = 'Builds all user documentation'
+	group = 'Documentation'
+	dependsOn 'matlabUserDoc', 'javaUserDoc'
 }
 
-task(allDoc, dependsOn: ['userDocs']) {
-	description 'Builds all documentation'
-	group 'Documentation'
+tasks.register('allDoc') {
+	description = 'Builds all documentation'
+	group = 'Documentation'
+	dependsOn 'userDocs'
 }
 
 //
 // Helper functions
 //
 
-String makePdfName(String basename, String flag)
-{
-	if (flag == null)
-	{
+String makePdfName(String basename, String flag) {
+	if (flag == null) {
 		return "${basename}_v${dimpleVersion}.pdf"
-	}
-	else if (flag == "java")
-	{
+	} else if (flag == "java") {
 		return "${basename}_v${dimpleVersion}_Java_API.pdf"
-	}
-	else if (flag == "matlab")
-	{
+	} else if (flag == "matlab") {
 		return "${basename}_v${dimpleVersion}_MATLAB_API.pdf"
 	}
-
 	return null
 }
 
@@ -103,9 +102,8 @@ void generatePDF(File sourceFile, String version, String apiLanguage) {
 			"\\def\\version{${dimpleVersion}}\\input{\\def\\for${apiLanguage}{}\\input{${basename}}}")
 }
 
-void generatePDF(String dir, String latexCommands)
-{
+void generatePDF(String dir, String latexCommands) {
 	3.times {
-		ant.exec(executable: 'pdflatex', dir: dir, failonerror: true) { arg(value: latexCommands) }
+		ant.exec(executable: 'pdf-slatex', dir: dir, failonerror: true) { arg(value: latexCommands) }
 	}
 }

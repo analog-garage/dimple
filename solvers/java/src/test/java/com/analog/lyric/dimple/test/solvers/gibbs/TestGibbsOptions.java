@@ -141,7 +141,7 @@ public class TestGibbsOptions extends DimpleTestBase
 		assertEquals(5, sfg.getNumRestarts());
 		assertEquals((Integer)5, sfg.getLocalOption(GibbsOptions.numRandomRestarts));
 		sfg.setUpdatesPerSample(6);
-		assertEquals(new Integer(-1), sfg.getLocalOption(GibbsOptions.scansPerSample));
+		assertEquals(Integer.valueOf(-1), sfg.getLocalOption(GibbsOptions.scansPerSample));
 		sfg.setScansPerSample(3);
 		assertEquals(3 * nVars, sfg.getUpdatesPerSample());
 		assertEquals((Integer)3, sfg.getLocalOption(GibbsOptions.scansPerSample));
@@ -153,10 +153,10 @@ public class TestGibbsOptions extends DimpleTestBase
 
 		sfg.setUpdatesPerSample(23);
 		assertEquals(23, sfg.getUpdatesPerSample());
-		assertEquals(new Integer(-1), sfg.getLocalOption(GibbsOptions.scansPerSample));
+		assertEquals(Integer.valueOf(-1), sfg.getLocalOption(GibbsOptions.scansPerSample));
 		sfg.setBurnInUpdates(12);
 		assertEquals(12, sfg.getBurnInUpdates());
-		assertEquals(new Integer(-1), sfg.getLocalOption(GibbsOptions.burnInScans));
+		assertEquals(Integer.valueOf(-1), sfg.getLocalOption(GibbsOptions.burnInScans));
 		
 		sfg.unsetOption(GibbsOptions.saveAllSamples);
 		b2.unsetOption(GibbsOptions.saveAllSamples);

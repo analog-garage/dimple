@@ -39,16 +39,16 @@ public class TestWeakInterner
 	{
 		Interner<Double> interner = WeakInterner.create();
 		
-		Double d42 = new Double(42);
-		Double d42a = new Double(42);
+		Double d42 = Double.valueOf(42);
+		Double d42a = Double.valueOf(42);
 		assertNotSame(d42, d42a);
 		
 		assertSame(d42, interner.intern(d42));
 		assertSame(d42, interner.intern(d42a));
 		
-		Double d23 = new Double(23);
+		Double d23 = Double.valueOf(23);
 
-		WeakReference<Double> d23ref = new WeakReference<Double>(new Double(23));
+		WeakReference<Double> d23ref = new WeakReference<Double>(Double.valueOf(23));
 		assertNotSame(d23, interner.intern(d23ref.get()));
 		assertNotSame(d23, interner.intern(d23));
 		

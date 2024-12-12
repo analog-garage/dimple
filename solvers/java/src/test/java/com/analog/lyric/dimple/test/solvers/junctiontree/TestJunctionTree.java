@@ -289,8 +289,12 @@ public class TestJunctionTree extends DimpleTestBase
 	
 	private void testGraphImpl(FactorGraph model, boolean useMap, boolean useConditioning)
 	{
-		JunctionTreeSolverGraphBase<?> jtgraph =
-			model.createSolver(useMap ? new JunctionTreeMAPSolver() : new JunctionTreeSolver());
+		JunctionTreeSolverGraphBase<?> jtgraph = null;
+		if (useMap) {
+			jtgraph = model.createSolver(new JunctionTreeMAPSolver());
+		} else {
+			jtgraph = model.createSolver(new JunctionTreeSolver());
+		} ;
 		jtgraph.useConditioning(useConditioning);
 		jtgraph.getTransformer().random(testRand); // set random generator so we can reproduce failures
 		model.solve();

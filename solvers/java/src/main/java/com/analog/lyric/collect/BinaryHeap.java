@@ -493,7 +493,7 @@ public class BinaryHeap<E> extends AbstractHeap<E>
 	
 	/**
 	 * Set i'th slot of heap array to given entry and
-	 * update entry's {@link #_offset} accordingly.
+	 * update entry's internal offset accordingly.
 	 */
 	private void heapSet(int i, Entry<E> entry)
 	{

@@ -1,0 +1,8 @@
+name: dimple
+channels:
+  - garage-conda-local
+dependencies:
+  - python >=3.12
+  - gradle >=8.11
+  # documentation
+  - pdflatex >=0.1.3
