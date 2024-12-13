@@ -19,6 +19,8 @@ import os
 import shutil
 import glob
 import sys
+import tempfile
+from subprocess import check_call
 
 class cd:
     def __init__(self, newPath):
@@ -33,22 +35,25 @@ class cd:
 
 def producedoc(fileName,option):
     #pdflatex "\def\version{0.04}\input{\def\formatlab{}\input{DimpleUserManual.tex}}"
-    os.system('pdflatex ' + fileName)
-    os.system('pdflatex ' + fileName)
-    os.system('pdflatex ' + fileName)
+    pdflatex = pdflatex
+    os.system(pdflatex + fileName)
+    os.system(pdflatex + fileName)
+    os.system(pdflatex + fileName)
 
 def produceUserDoc(fileName,flag,versionString):
     #forjava or formatlab
-    command = 'pdflatex "\def\\version{' + versionString + '}\input{\def\\' + flag + '{}\input{' + fileName + '}}"'
-    print command
-    os.system(command)
-    os.system(command)
-    os.system(command)
-
+    src = '"\def\\version{' + versionString + '}\input{\def\\' + flag + '{}\input{' + fileName + '}}"'
+#     src = fr'\def\\version{{{versionString}}}\input{{\def\\{flag}{{}}\input{{{fileName}}}'
+    print(src)
+    with tempfile.NamedTemporaryFile("w", prefix="DimpleUserDoc", suffix=".tex") as file:
+        file.write(src)
+        cmd = ['pdflatex', src]
+        for _ in range(3):
+            check_call(cmd)
 
 def extractVersionString():
-    f = file('../VERSION','r')
-    version = f.readlines()[0].strip()
+    with open('../VERSION','r') as f:
+        version = f.readlines()[0].strip()
     return version
 
 if __name__ == "__main__":
