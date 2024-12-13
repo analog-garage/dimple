@@ -25,7 +25,7 @@ import com.analog.lyric.collect.ReleasableIterator;
 
 /**
  * Provides default implementation of some {@link IOptionHolder} methods.
- * <p>
+ *
  * @see LocalOptionHolder
  * @see StatelessOptionHolder
  * @since 0.07

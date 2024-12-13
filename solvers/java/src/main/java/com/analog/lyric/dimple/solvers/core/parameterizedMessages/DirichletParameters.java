@@ -371,25 +371,26 @@ public class DirichletParameters extends ParameterizedMessageBase
 			}
 		}
 	}
-	
+
+	// FIXME -want <big> around Sigma, Pi and Gamma
 	/**
 	 * {@inheritDoc}
 	 * <p>
 	 * Dirichlet parameter messages are computed using:
 	 * <blockquote>
 	 * log &Beta;(<b>&alpha;<sub>Q</sub></b>) - log &Beta;(<b>&alpha;<sub>P</sub></b>)
-	 * + <big><big>&Sigma;</big></big>(&alpha;<sub>Q<sub>i</sub></sub>-&alpha;<sub>P<sub>i</sub></sub>)
+	 * + &Sigma; (&alpha;<sub>Q<sub>i</sub></sub>-&alpha;<sub>P<sub>i</sub></sub>)
 	 * (&psi;(&alpha;<sub>P<sub>i</sub></sub>) - &psi;(&Sigma;&alpha;<sub>P<sub>j</sub></sub>))
 	 * </blockquote>
 	 * where &Beta;(x) is the multinomial beta function:
 	 * <blockquote>
 	 * &Beta;(<b>&alpha;</b>) =
-	 * <big>&Pi;</big>&Gamma;&alpha;<sub>i</sub> <big>/</big> <big>&Gamma;</big>&Sigma;&alpha;<sub>i</sub>
+	 * &Pi;&Gamma;&alpha;<sub>i</sub> / &Gamma; &Sigma;&alpha;<sub>i</sub>
 	 * </blockquote>
 	 * so
 	 * <blockquote>
 	 * log &Beta;(<b>&alpha;</b>) =
-	 * <big>&Sigma;</big>log &Gamma;&alpha;<sub>i</sub> - log <big>&Gamma;</big>&Sigma;&alpha;<sub>i</sub>
+	 * &Sigma; log &Gamma;&alpha;<sub>i</sub> - log &Gamma;&Sigma;&alpha;<sub>i</sub>
 	 * </blockquote>
 	 *  and &psi;(x) is the digamma function.
 	 */

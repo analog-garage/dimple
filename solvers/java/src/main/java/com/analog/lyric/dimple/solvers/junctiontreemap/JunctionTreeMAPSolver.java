@@ -26,6 +26,8 @@ import com.analog.lyric.dimple.solvers.minsum.MinSumSolver;
 import com.analog.lyric.dimple.solvers.minsum.MinSumSolverGraph;
 
 /**
+ * Junction tree MAP solver
+ *
  * @since 0.05
  * @author Christopher Barber
  */

@@ -20,7 +20,8 @@ import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 
 /**
- * 
+ * Solver edge for multivariate normal messages
+ *
  * @since 0.08
  * @author Christopher Barber
  */

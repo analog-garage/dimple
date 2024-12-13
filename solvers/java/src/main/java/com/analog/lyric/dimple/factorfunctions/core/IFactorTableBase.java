@@ -379,10 +379,15 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	 * <p>
 	 * The sparse and joint index values should have the same ordering relationship, so that
 	 * <pre>
-	 *   sparse1 < sparse2</pre>
+	 * {@code
+	 *   sparse1 < sparse2
+	 * }
+	 * </pre>
 	 * implies that
 	 * <pre>
+	 * {@code
 	 *    t.sparseIndexToJointIndex(sparse1) < t.sparseIndexToJointIndex(sparse2)
+	 * }
 	 * </pre>
 	 * <p>
 	 * @return joint index in range [0,{@link #jointSize}).

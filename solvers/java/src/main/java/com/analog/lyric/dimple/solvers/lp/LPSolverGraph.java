@@ -52,7 +52,7 @@ import net.sf.javailp.SolverFactory;
  * Solver-specific factor graph for LP solver.
  * <p>
  * <em>Previously was com.analog.lyric.dimple.solvers.lp.SFactorGraph</em>
- *  <p>
+ *
  * @since 0.07
  */
 @NotThreadSafe

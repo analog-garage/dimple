@@ -66,7 +66,7 @@ import com.analog.lyric.options.TemporaryOptionSettings;
 
 /**
  * Solver representation of factor graph under Sum-Product solver.
- * <p>
+ *
  * @since 0.07
  */
 public class SumProductSolverGraph extends BPSolverGraph<ISolverFactor,ISolverVariable,ISolverEdgeState>

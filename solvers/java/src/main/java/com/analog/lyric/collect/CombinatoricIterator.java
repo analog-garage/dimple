@@ -29,6 +29,7 @@ import com.google.common.collect.UnmodifiableIterator;
  * <p>
  * For example, the following code:
  * <pre>
+ * {@code
  *     String[] first = new String[] { "a", "b" };
  *     String[] second = new String[] { "x", "y", "z" };
  *     CombinatoricIterator<String> iter = new CombinatoricIterator<>(String.class, first, second);
@@ -36,6 +37,7 @@ import com.google.common.collect.UnmodifiableIterator;
  *     {
  *        System.out.format("%s\n", Arrays.toString(iter.next());
  *     }
+ * }
  * </pre>
  * will produce the output:
  * <pre>
@@ -48,7 +50,7 @@ import com.google.common.collect.UnmodifiableIterator;
  * </pre>
  * Unlike most iterators, this always returns the same int[] instance, so if you want
  * a fresh copy, you must make sure to clone it.
- * <p>
+ *
  * @since 0.08
  * @author Christopher Barber
  */

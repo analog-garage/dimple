@@ -20,7 +20,7 @@ import net.jcip.annotations.Immutable;
 
 /**
  * Key for boolean options.
- * <p>
+ *
  * @since 0.07
  * @author Christopher Barber
  */

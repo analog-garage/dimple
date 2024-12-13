@@ -22,7 +22,7 @@ import com.analog.lyric.dimple.model.values.Value;
 
 /**
  * Deterministic multiplication by a constant.
- * <p.
+ * <p>
  * The constant is specified in the constructor.
  * This is a deterministic directed factor (if smoothing is not enabled).
  * <p>

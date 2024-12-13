@@ -24,7 +24,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
  * Options for {@link MinSumSolver}.
  * <p>
  * There are currently no options specific to the MinSum solver. See {@link BPOptions} instead.
- * <p>
+ *
  * @since 0.07
  * @author Christopher Barber
  */

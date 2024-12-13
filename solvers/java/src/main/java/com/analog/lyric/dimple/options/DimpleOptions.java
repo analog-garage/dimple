@@ -29,7 +29,7 @@ import com.analog.lyric.options.StringOptionKey;
  * <p>
  * Also contains declarations for option keys that are not specific to any
  * particular component of dimple.
- * <p>
+ *
  * @since 0.07
  * @author Christopher Barber
  */

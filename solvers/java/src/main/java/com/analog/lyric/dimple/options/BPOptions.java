@@ -29,7 +29,7 @@ import com.analog.lyric.options.IntegerOptionKey;
 
 /**
  * Common options for belief-propagation based solvers.
- * <p>
+ *
  * @since 0.07
  * @author Christopher Barber
  */

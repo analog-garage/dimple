@@ -156,13 +156,14 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	{
 		addEnergiesFrom((DiscreteMessage)other);
 	}
-	
+
+	// FIXME - <big>&Sigma;</big>
 	/**
 	 * {@inheritDoc}
 	 * <p>
 	 * Discrete messages compute KL using:
 	 * <blockquote>
-	 * <big>&Sigma;</big> ln(P<sub>i</sub> / Q<sub>i</sub>) P<sub>i</sub>
+	 * &Sigma; ln(P<sub>i</sub> / Q<sub>i</sub>) P<sub>i</sub>
 	 * </blockquote>
 	 */
 	@Override
@@ -335,9 +336,10 @@ public abstract class DiscreteMessage extends ParameterizedMessageBase
 	 * True if weight at given index is zero.
 	 * <p>
 	 * This is the same as:
-	 * <blockquote><tt>
+	 * <blockquote>
+	 * <pre>
 	 * {@link #getWeight}(i) == 0.0
-	 * </tt></blockquote>
+	 * </pre></blockquote>
 	 * but may be faster if underlying representation uses energies.
 	 * @since 0.08
 	 */

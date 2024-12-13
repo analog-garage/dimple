@@ -26,9 +26,10 @@ import java.util.Iterator;
  * Typical implementations will stash a reusable copy of the iterator in a variable, which will be
  * nulled out when the iterator has been handed out but not yet released. Here is a partial example
  * using a {@link ThreadLocal} variable:
- * <p>
+ *
  * 
  * <pre>
+ * {@code
  *     public class FooIterator implements ReleasableIterator<Foo>
  *     {
  *         private static final ThreadLocal<FooIterator> resusableInstance = new ThreadLocal<FooIterator>();
@@ -55,6 +56,7 @@ import java.util.Iterator;
  *         // Reset iterator to start of contents of container.
  *         public void reset(FooContainer c)  ...
  *     }
+ * }
  * </pre>
  * 
  * Other possible caching techniques include use of a static

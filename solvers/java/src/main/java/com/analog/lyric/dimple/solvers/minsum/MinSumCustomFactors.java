@@ -24,7 +24,8 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.minsum.customFactors.CustomXor;
 
 /**
- * 
+ * Custom factors for min-sum
+ *
  * @since 0.08
  * @author Christopher Barber
  */

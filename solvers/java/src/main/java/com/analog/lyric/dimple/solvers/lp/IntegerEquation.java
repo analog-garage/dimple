@@ -24,8 +24,9 @@ import org.eclipse.jdt.annotation.Nullable;
 /**
  * Represents a linear equation with integer coefficients of the form:
  * <p>
+ * {@code
  * c1*x1 + c2*x2 + ... + cn*xn = c
- * <p>
+ * }
  */
 public abstract class IntegerEquation
 {

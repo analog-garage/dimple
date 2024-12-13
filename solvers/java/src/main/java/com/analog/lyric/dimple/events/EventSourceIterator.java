@@ -46,6 +46,7 @@ import com.analog.lyric.collect.UnmodifiableReleasableIterator;
  * Or written in pseudocode:
  * <blockquote>
  * <pre>
+ * {@code
  * void visitSources(IDimpleEventSource source)
  * {
  *     visit(source);
@@ -64,9 +65,10 @@ import com.analog.lyric.collect.UnmodifiableReleasableIterator;
  *         visitSources(parent);
  *     }
  * }
+ * }
  * </pre>
  * </blockquote>
- * <p>
+ *
  * @since 0.07
  * @author Christopher Barber
  */

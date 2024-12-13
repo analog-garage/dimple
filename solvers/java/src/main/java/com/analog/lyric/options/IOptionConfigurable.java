@@ -22,7 +22,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Interface for non-option-holder objects that can be configured using options.
- * <p>
+ *
  * @since 0.07
  * @author Christopher Barber
  */

@@ -27,7 +27,7 @@ import net.jcip.annotations.Immutable;
  * Indicates more than one possible match found for an option key lookup.
  * <p>
  * Thrown by {@link OptionRegistry#get(String)}.
- * <p>
+ *
  * @since 0.07
  * @author Christopher Barber
  */

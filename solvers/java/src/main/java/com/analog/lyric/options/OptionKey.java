@@ -32,7 +32,7 @@ import net.jcip.annotations.Immutable;
  * <p>
  * This is the preferred base class for implementing option key classes and also
  * provides useful static methods for naming and construction.
- * <p>
+ *
  * @param <T> is the type of  the values of the option indexed by this key.
  * @since 0.07
  * @author Christopher Barber

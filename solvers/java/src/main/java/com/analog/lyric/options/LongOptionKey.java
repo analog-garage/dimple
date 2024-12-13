@@ -22,7 +22,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Option key with type {@link Long}.
- * <p>
+ *
  * @since 0.07
  * @author Christopher Barber
  */

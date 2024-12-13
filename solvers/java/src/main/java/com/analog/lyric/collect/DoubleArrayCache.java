@@ -33,7 +33,7 @@ import org.eclipse.jdt.annotation.Nullable;
  * Currently, this cache only supports allocating arrays with a minimum size, not an exact size.
  * This allows it to simply return the appropriate power-of-two sized array, which it can look
  * up very quickly.
- * <p>
+ *
  * @since 0.08
  * @author Christopher Barber
  * @see IntArrayCache

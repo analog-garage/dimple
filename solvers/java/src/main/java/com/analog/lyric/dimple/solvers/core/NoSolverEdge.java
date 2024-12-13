@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverEdgeState;
  * <p>
  * You can use this in place of {@link ISolverEdgeState} to document that there is no edge state as in
  * {@linkplain com.analog.lyric.dimple.solvers.lp.LPSolverGraph LPSolverGraph}.
- * <p>
+ *
  * @since 0.08
  * @author Christopher Barber
  */

@@ -33,7 +33,7 @@ import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
  * <p>
  * This is the implementation used by
  * {@linkplain com.analog.lyric.dimple.solvers.core.SFactorGraphBase SFactorGraphBase}.
- * <p>
+ *
  * @since 0.08
  * @author Christopher Barber
  */

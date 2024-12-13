@@ -45,10 +45,10 @@ import com.google.common.collect.ListMultimap;
  * <p>
  * Dimple solvers that support user-defined custom solver factors should extend this class
  * and define an option using {@link CustomFactorsOptionKey}.
- * <p>
+ *
  * @param <SFactor> is the base class for solver factors that may be created
  * @param <SGraph> is the base class for the solver graph for which solver factor is created
- * <p>
+ *
  * @since 0.08
  * @author Christopher Barber
  */
@@ -63,7 +63,7 @@ public abstract class CustomFactors<SFactor extends ISolverFactor, SGraph extend
 	
 	/**
 	 * Implementation of {@link ISolverFactorCreator} that invokes target class's constructor reflectively.
-	 * <p>
+	 *
 	 * @since 0.08
 	 */
 	protected static class ConstructorFactory<SFactor extends ISolverFactor, SGraph extends ISolverFactorGraph>
@@ -224,10 +224,10 @@ public abstract class CustomFactors<SFactor extends ISolverFactor, SGraph extend
 	 * <p>
 	 * This will be invoked when no other creator can be found to construct the
 	 * solver factor.
-	 * <p>
+	 *
 	 * @param factor is the factor for which the solver factor is to be created
 	 * @param sgraph will be the immediate parent of the new solver factor
-	 * @throw SolverFactorCreationException
+	 * @throws SolverFactorCreationException
 	 * @since 0.08
 	 */
 	public abstract SFactor createDefault(Factor factor, SGraph sgraph);

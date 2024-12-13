@@ -27,7 +27,7 @@ import org.eclipse.jdt.annotation.Nullable;
  * Provides a minimal stateless implementation of {@link IOptionHolder} methods.
  * <p>
  * This implementation does not support local options.
- * <p>
+ *
  * @see LocalOptionHolder
  * @since 0.07
  * @author Christopher Barber

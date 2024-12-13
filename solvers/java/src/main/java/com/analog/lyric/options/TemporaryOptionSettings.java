@@ -42,7 +42,7 @@ import org.eclipse.jdt.annotation.Nullable;
  * } // Previous values restored when try block is exited
  * </pre>
  * </blockquote>
- * <p>
+ *
  * @since 0.08
  * @author Christopher Barber
  */

@@ -20,7 +20,8 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.SDiscreteEnergyEdge;
 
 /**
- * 
+ * Edge for discrete min-sum
+ *
  * @since 0.08
  * @author Christopher Barber
  */

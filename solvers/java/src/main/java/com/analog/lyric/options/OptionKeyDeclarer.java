@@ -32,7 +32,7 @@ import com.analog.lyric.collect.ReleasableIterator;
  * <p>
  * It is recommended that a project using this option package declare a subclass of this
  * class as the root for their project's options.
- * <p>
+ *
  * @since 0.07
  * @author Christopher Barber
  */

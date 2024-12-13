@@ -135,7 +135,7 @@ public class FactorGraph extends FactorBase
 	
 	/**
 	 * Environment for this graph determined at construction. Unless the constructor
-	 * specifies a different one, this will be the value of {@link DimpleEnvironment.active}
+	 * specifies a different one, this will be the value of {@link DimpleEnvironment#active}
 	 * when the object was constructed.
 	 */
 	private final DimpleEnvironment _env;
@@ -2646,10 +2646,12 @@ public class FactorGraph extends FactorBase
 	 * Returns {@link Edge} at given index, if it exists.
 	 * <p>
 	 * If this returns a non-null {@code edge}, the following will be true:
-	 * <blockquote><code>
+	 * <pre>
+	 * {@code
 	 *     edge.{@linkplain Edge#edgeIndex() edgeIndex()} == index &&
 	 *     edge.{@linkplain Edge#graph() graph()} == this
-	 * </code></blockquote>
+	 * }
+	 * </pre>
 	 * 
 	 * @param index an integer in the range [0, {@link #getGraphEdgeStateMaxIndex}]
 	 * @since 0.08
@@ -4025,7 +4027,7 @@ public class FactorGraph extends FactorBase
 	 * <dl>
 	 * <dt>{@code null} or {@link Node}</dt>
 	 * <dd> Value will simply be returned (even if node does not belong to this graph)</dd>
-	 * <dl>{@link Long}</dl>
+	 * <dt>{@link Long}</dt>
 	 * <dd>If number appears to be a global id according to {@link Ids#isGlobalId} then
 	 * {@link #getNodeByGlobalId} will be used to look up the node, otherwise it will be treated as a graph
 	 * tree id and passed to {@link #getNodeByGraphTreeId}.

@@ -75,7 +75,7 @@ import com.analog.lyric.options.OptionRegistry;
  * Additional options can be added to the registry using {@linkplain OptionRegistry#addFromClasses addFromClasses}.
  * <p>
  * Instances of this class should be obtained from {@link DimpleEnvironment#optionRegistry()}.
- * <p>
+ *
  * @since 0.07
  * @author Christopher Barber
  */

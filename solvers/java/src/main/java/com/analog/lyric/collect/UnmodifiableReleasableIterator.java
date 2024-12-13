@@ -20,7 +20,9 @@ import com.google.common.collect.UnmodifiableIterator;
 
 /**
  * A {@link ReleasableIterator} that does not support {@link #remove()}.
- * 
+ *
+ * @param <T>, iterated type
+ *
  * @since 0.07
  * @author Christopher Barber
  */

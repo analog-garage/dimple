@@ -22,7 +22,7 @@ import org.eclipse.jdt.annotation.Nullable;
  * Key for options holding a pair of double values that define a range.
  * <p>
  * This requires that the values have exactly two elements and that the second is greater than or equal to the first.
- * <p>
+ *
  * @since 0.07
  * @author Christopher Barber
  */

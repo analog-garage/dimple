@@ -54,7 +54,7 @@ import com.analog.lyric.options.IOptionKey;
  * Solver-specific factor graph for min-sum solver.
  * <p>
  * <em>Previously was com.analog.lyric.dimple.solvers.minsum.SFactorGraph</em>
- *  <p>
+ *
  * @since 0.07
  */
 public class MinSumSolverGraph extends BPSolverGraph<ISolverFactor,ISolverVariable,ISolverEdgeState>

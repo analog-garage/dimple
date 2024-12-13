@@ -30,7 +30,8 @@ import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.math.Utilities;
 
 /**
- * 
+ * Message type for discrete energy messages.
+ *
  * @since 0.06
  * @author Christopher Barber
  */

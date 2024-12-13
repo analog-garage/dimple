@@ -37,7 +37,9 @@ import com.analog.lyric.collect.UnmodifiableReleasableIterator;
  * <p>
  * Note that in normal option lookup implemented by {@link AbstractOptionHolder#getOptionOrDefault}
  * only the first value would be returned. This iterator provides a way to visit all of the values.
- * <p>
+ *
+ * @param <T>, iteration type
+ *
  * @since 0.08
  * @author Christopher Barber
  */

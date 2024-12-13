@@ -222,9 +222,9 @@ public abstract class Domain implements Serializable
 	 * Indicate whether {@code value} is a valid member of the domain.
 	 * <p>
 	 * Semantically equivalent to
-	 * <blockquote><tt>
+	 * <blockquote><pre>
 	 * {@link #inDomain(Object) inDomain}(value.{@link Value#getObject getObject}());
-	 * </tt></blockquote>
+	 * </pre></blockquote>
 	 * @param value holds the value to be checked.
 	 * @since 0.08
 	 * @see #inDomain(Object)

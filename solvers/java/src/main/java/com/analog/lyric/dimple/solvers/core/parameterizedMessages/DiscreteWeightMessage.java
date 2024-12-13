@@ -28,7 +28,8 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.math.Utilities;
 
 /**
- * 
+ * Discrete weight message
+ *
  * @since 0.06
  * @author Christopher Barber
  */

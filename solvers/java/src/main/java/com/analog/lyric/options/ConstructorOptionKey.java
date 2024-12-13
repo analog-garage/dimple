@@ -24,7 +24,8 @@ import com.analog.lyric.collect.ConstructorRegistry;
 
 /**
  * Key for options with literal Java class values with accessible no-argument constructor.
- * <p>
+ *
+ * @param <SuperClass> declaring class
  * @since 0.07
  * @author Christopher Barber
  */

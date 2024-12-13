@@ -117,7 +117,7 @@ import net.jcip.annotations.ThreadSafe;
  * The environment also provides a simple logging interface that may be used by Dimple solver implementations to
  * log various non-fatal conditions. Although intended primarily for use in implementations of solvers and custom
  * factors, it is also available for use by by users of Dimple. The environment provides an instance of the
- * standard Java {@link Logger} class that is created using {@link Logger#getLogger} with the string
+ * standard Java {@link Logger} class that is created using {@link Logger#getLogger(String)} with the string
  * {@code "com.analog.lyric.dimple"}. This may be configured using Java system properties and config files
  * as described in the Java {@linkplain java.util.logging.LogManager LogManager} class documentation; relevant
  * properties are documented in the various handler classes (e.g.

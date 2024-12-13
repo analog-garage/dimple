@@ -204,8 +204,10 @@ public abstract class Supers
 	 * <p>
 	 * This is simply syntactic sugar for:
 	 * <pre>
+	 * {@code
 	 *     superClass.{@linkplain Class#isAssignableFrom(Class) isAssignableFrom}.(subClass)
-	 * <pre>
+	 * }
+	 * </pre>
 	 * 
 	 * @since 0.07
 	 */

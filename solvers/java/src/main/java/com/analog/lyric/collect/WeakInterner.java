@@ -30,7 +30,7 @@ import com.google.common.collect.Interner;
  * This duplicates the functionality of {@linkplain com.google.common.collect.Interners#newWeakInterner
  * Interners.newWeakInterner()} from the Guava library. It is really only needed to work around a bug
  * in MATLAB.
- * <p>
+ *
  * @since 0.07
  * @author Christopher Barber
  */

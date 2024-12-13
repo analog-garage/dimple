@@ -20,7 +20,10 @@ import com.analog.lyric.dimple.solvers.core.SolverBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 /**
- * 
+ * Base class for Junction tree solvers
+ *
+ * @param <SG> solver factory graph interface
+ * @param <JTSG> junction tree solver interface
  * @since 0.05
  * @author Christopher Barber
  */

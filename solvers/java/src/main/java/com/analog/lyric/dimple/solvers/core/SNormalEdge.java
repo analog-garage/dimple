@@ -19,7 +19,8 @@ package com.analog.lyric.dimple.solvers.core;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 
 /**
- * 
+ * Normal solver edge
+ *
  * @since 0.08
  * @author Christopher Barber
  */

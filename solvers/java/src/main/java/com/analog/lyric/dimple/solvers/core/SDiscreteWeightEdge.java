@@ -20,7 +20,8 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 
 /**
- * 
+ * Solver edge for descrete weight messages
+ *
  * @since 0.08
  * @author Christopher Barber
  */

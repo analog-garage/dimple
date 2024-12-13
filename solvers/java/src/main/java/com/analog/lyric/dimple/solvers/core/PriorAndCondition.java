@@ -31,7 +31,7 @@ import com.analog.lyric.dimple.model.values.Value;
  * This is primarily intended for internal use in solver variable implementations.
  * <p>
  * Note that {@link #release()} can be used to return instance for reuse.
- * <p>
+ *
  * @since 0.08
  * @author Christopher Barber
  * @see SVariableBase#getPriorAndCondition

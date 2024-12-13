@@ -376,17 +376,16 @@ public class GibbsSolverGraph
 	 * Performs the equivalent of:
 	 * <blockquote>
 	 * <pre>
-	 * for (int restart = 0; restart <= {@link #getNumRestarts()}; ++restart)
+	 * for (int restart = 0; restart &lt;= {@link #getNumRestarts()}; ++restart)
 	 * {
 	 *     {@linkplain #burnIn(int) burnIn(restart)};
-	 *     for (int i = 0; i < {@link #getNumSamples()}; ++i)
+	 *     for (int i = 0; i &lt; {@link #getNumSamples()}; ++i)
 	 *     {
 	 *         {@link #sample()};
 	 *     }
 	 * }
 	 * </pre>
 	 * </blockquote>
-	 * </ol>
 	 */
 	@Override
 	public void solveOneStep()

@@ -99,8 +99,8 @@ public class BlockScheduleEntry implements IScheduleEntry
 
 	/**
 	 * {@inheritDoc}
-	 * <p>
-	 * @returns parent of {@link #getBlock() variable block}, which is not necessarily the same as the
+	 *
+	 * @return parent of {@link #getBlock() variable block}, which is not necessarily the same as the
 	 * parent of the variables contained in the block.
 	 */
 	@Override

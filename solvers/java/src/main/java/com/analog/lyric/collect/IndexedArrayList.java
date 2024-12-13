@@ -30,7 +30,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * <p>
  * This maintains an array of values and a map of each value to its
  * index in the array.
- * <p>
+ *
  * @since 0.08
  * @author Christopher Barber
  */

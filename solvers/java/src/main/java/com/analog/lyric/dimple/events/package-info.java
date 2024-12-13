@@ -140,10 +140,12 @@
  * purposely will not attempt to serialize references to model or solver elements, since that would require
  * serializing the entire graph. This means that deserialized event objects will contain null references for
  * any such object. Instead of serializing the actual object, the name and id of the object will be serialized.
- * <p>
+ *
  * @since
+ * <ol>
  * <li>0.07 - support for DimpleEnvironment
  * <li>0.06 - package was first introduced
+ * </ol>
  * @author Christopher Barber
  */
 @org.eclipse.jdt.annotation.NonNullByDefault

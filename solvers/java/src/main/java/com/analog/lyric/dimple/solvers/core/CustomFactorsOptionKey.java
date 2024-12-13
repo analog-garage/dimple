@@ -45,18 +45,18 @@ import com.google.common.base.Suppliers;
  * to a particular graph, this will often be done by setting the option on the {@linkplain DimpleEnvironment#active()
  * active Dimple environment} so that it will be inherited by all solver graphs. For instance, one might define
  * a new custom factor association for sum-product using:
- * <p>
+ *
  * <blockquote><pre>
  * SumProductOptions.customFactors
  *     .getOrCreate(DimpleEnvironment.active()
  *     .add(Xor.class, MyCustomXor.class);
  * </pre></blockquote>
- * <p>
+ *
  * @param <SFactor> is the base class of any solver factors that will be created by {@link CustomFactors}
  * values associated with this key.
  * @param <SGraph> is the base class for the solver graph for which solver factor is created
  * @param <CF> is the concrete subclass of {@link CustomFactors} that can be used as this option's values.
- * <p>
+ *
  * @since 0.08
  * @author Christopher Barber
  */
@@ -78,10 +78,12 @@ public class CustomFactorsOptionKey<SFactor extends ISolverFactor, SGraph extend
 	 * <p>
 	 * Example:
 	 * <pre>
+	 * {@code
 	 * class MyOptions
 	 * {
 	 *     public static final CustomFactorsOptionKey<MySFactor, MySolverGraph> customFactors =
 	 *         new CustomFactorsOptionKey<>(MyOptions.class, "customFactors", MyCustomFactors.class);
+	 * }
 	 * }
 	 * </pre>
 	 * <p>

@@ -26,7 +26,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * A unique key for looking up or setting a value from a {@link IOptionHolder}.
- * <p>
+ *
  * @param <T> is the type of the value that will be associated with the key. The type
  * should either be {@link String}, a wrapped primitive type (e.g. {@link Double}, {@link Boolean}),
  * or an immutable concrete implementation of {@link IOptionValue}.
@@ -36,7 +36,7 @@ import org.eclipse.jdt.annotation.Nullable;
  * <p>
  * {@link OptionKey} contains useful static methods for loading option keys, whether or not
  * they are implemented as subclasses of that class.
- * <p>
+ *
  * @see OptionKey#forCanonicalName
  * @see OptionKey#inClass(Class, String)
  * @see OptionKey#canonicalName(IOptionKey)

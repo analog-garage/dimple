@@ -22,10 +22,10 @@ import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Key for options with literal Java class values.
- * <p>
+ *
  * @param <SuperClass> is the super class value. Values of this option must be a
  * subclass of this class. The superclass instance may be obtained using the {@link #superClass()} method.
- * <p>
+ *
  * @since 0.07
  * @author Christopher Barber
  */

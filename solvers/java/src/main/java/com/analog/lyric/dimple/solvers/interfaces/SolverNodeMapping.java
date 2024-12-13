@@ -33,7 +33,7 @@ import com.analog.lyric.util.misc.Internal;
 /**
  * Maps model objects to their corresponding solvers in the tree of {@link FactorGraph}s under a common
  * {@linkplain com.analog.lyric.dimple.model.core.INode#getRootGraph() root}.
- * <p>
+ *
  * @since 0.08
  * @author Christopher Barber
  * @see ISolverFactorGraph#getSolverMapping()

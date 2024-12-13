@@ -24,7 +24,7 @@ import com.analog.lyric.options.IntegerOptionKey;
  * Defines options that are general to multiple solvers.
  * <p>
  * Solver-specific option classes should be defined as subclasses of this class.
- * <p>
+ *
  * @since 0.07
  * @author Christopher Barber
  */

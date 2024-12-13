@@ -23,7 +23,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Extends {@link ArrayList} with additional methods for automatically growing list.
- * <p>
+ *
  * @since 0.08
  * @author Christopher Barber
  */
@@ -102,7 +102,7 @@ public class ExtendedArrayList<T> extends ArrayList<T>
 	}
 	
 	/**
-	 * Sets {@link #size} of array to specified value if larger than current size.
+	 * Sets {@link #size()} of array to specified value if larger than current size.
 	 * @param newSize is the new size of the array. Is ignored if less than current size.
 	 * @since 0.08
 	 * @see #setSize
@@ -116,7 +116,7 @@ public class ExtendedArrayList<T> extends ArrayList<T>
 	}
 	
 	/**
-	 * Sets {@link #size} of array to specified value.
+	 * Sets {@link #size()} of array to specified value.
 	 * <p>
 	 * @param newSize the new size of the array. If less than the current size, elements will be removed
 	 * from the end of the list; if greater than the current size, new elements with null values will

@@ -80,7 +80,7 @@ import com.google.common.collect.UnmodifiableIterator;
 
 /**
  * Standard base implementation of {@link IParameterizedSolverFactorGraph}.
- * <p>
+ *
  * @param <SFactor> type of solver factor objects for this graph
  * @param <SVariable> type of solver variable objects for this graph
  * @param <SEdge> type of solver edge objects for this graph. Graphs that do not support solver edges can

@@ -23,7 +23,8 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import org.eclipse.jdt.annotation.Nullable;
 
 /**
- * 
+ * Base event type for solver variable updates
+ *
  * @since 0.06
  * @author Christopher Barber
  */

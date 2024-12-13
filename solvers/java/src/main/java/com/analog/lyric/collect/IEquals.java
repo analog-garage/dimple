@@ -25,7 +25,7 @@ import org.eclipse.jdt.annotation.Nullable;
  * <p>
  * Subclasses that implement this interface and also override {@link Object#equals} should implement
  * the same behavior for both methods or else document the difference.
- * <p>
+ *
  * @since 0.08
  * @author Christopher Barber
  */

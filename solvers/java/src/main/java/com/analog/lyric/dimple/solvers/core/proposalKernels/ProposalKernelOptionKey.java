@@ -23,7 +23,7 @@ import com.analog.lyric.options.ConstructorOptionKey;
 
 /**
  * Option key for identifying proposal kernel.
- * <p>
+ *
  * @since 0.07
  * @author Christopher Barber
  */

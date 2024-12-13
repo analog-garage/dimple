@@ -20,7 +20,7 @@ import java.io.Serializable;
 
 /**
  * Base interface for non-primitive option values.
- * <p>
+ *
  * @since 0.07
  * @author Christopher Barber
  */

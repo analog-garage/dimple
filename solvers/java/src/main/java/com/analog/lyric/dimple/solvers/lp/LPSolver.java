@@ -25,7 +25,8 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.util.misc.Matlab;
 
 /**
- * 
+ * LP solver
+ *
  * @since 0.07
  * @author Christopher Barber
  */

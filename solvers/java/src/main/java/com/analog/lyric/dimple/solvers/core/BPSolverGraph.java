@@ -31,7 +31,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
  * <p>
  * Solver graphs derived from this class are expected to implement some form of belief propagation or
  * similar message-passing based inference and make use of general options specified in {@link BPOptions}.
- * <p>
+ *
  * @since 0.08
  * @author Christopher Barber
  */

@@ -26,7 +26,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
  * been met. While this exception will most often be automatically caught and handled by solver's factor
  * creation methods, the exception may be logged and therefore its message should provide sufficient information
  * for users to determine why a solver factor was not created.
- * <p>
+ *
  * @since 0.08
  * @author Christopher Barber
  */

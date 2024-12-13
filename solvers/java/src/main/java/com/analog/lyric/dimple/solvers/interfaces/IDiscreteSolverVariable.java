@@ -40,7 +40,7 @@ public interface IDiscreteSolverVariable extends ISolverVariable
 	 * <pre>
 	 * getDomain().getIndex(getGuess());
 	 * </pre>
-	 * <blockquote>
+	 * </blockquote>
 	 * <p>
 	 * @see #getGuess()
 	 */

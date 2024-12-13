@@ -24,7 +24,7 @@ import net.jcip.annotations.Immutable;
 
 /**
  * Option key for an enumerated type.
- * <p>
+ *
  * @param <E> is an enum type.
  * @since 0.07
  * @author Christopher Barber

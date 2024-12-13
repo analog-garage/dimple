@@ -22,7 +22,8 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeight
 
 
 /**
- * 
+ * Edge for discrete sum-product
+ *
  * @since 0.08
  * @author Christopher Barber
  */

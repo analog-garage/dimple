@@ -73,7 +73,7 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 	/**
 	 * If known to be diagonal, this is the precision values along the diagonal.
 	 * <p>
-	 * Only valid if {@link #_isDiagonal} && {@link #_isDiagonalComputed}.
+	 * Only valid if {@link #_isDiagonal} and {@link #_isDiagonalComputed}.
 	 */
 	private double[] _precision = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	private double[] _variance = ArrayUtil.EMPTY_DOUBLE_ARRAY;

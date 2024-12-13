@@ -24,7 +24,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Represents an option holder, key, value triplet.
- * <p>
+ *
  * @since 0.08
  * @author Christopher Barber
  */

@@ -27,7 +27,9 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
  * Base implementation for list option values.
- * <p>
+ *
+ * @param <T>, element type
+ *
  * @since 0.07
  * @author Christopher Barber
  */

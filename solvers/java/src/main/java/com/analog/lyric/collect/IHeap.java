@@ -28,7 +28,7 @@ import org.eclipse.jdt.annotation.Nullable;
  * from the elements and ordering is based directly on the double values with
  * no intervening comparator. An element with the lowest value will be at the
  * head of the queue.
- * <p>
+ *
  * @author Christopher Barber
  * @since 0.05
  */

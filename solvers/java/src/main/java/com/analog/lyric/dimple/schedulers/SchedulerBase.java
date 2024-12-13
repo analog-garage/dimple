@@ -153,7 +153,7 @@ public abstract class SchedulerBase implements IScheduler
 	 * @param schedulerClass
 	 * @return {@code schedulerClass}
 	 * @since 0.08
-	 * @throws IllegalArgumentException if {@code schedulerClass} is not derived from {@IScheduler} or does
+	 * @throws IllegalArgumentException if {@code schedulerClass} is not derived from {@link IScheduler} or does
 	 * not have a suitable public constructor.
 	 */
 	public static Class<? extends IScheduler> validateClass(Class<?> schedulerClass)

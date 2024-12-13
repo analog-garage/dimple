@@ -27,7 +27,8 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import org.eclipse.jdt.annotation.Nullable;
 
 /**
- * 
+ * Event reporting message passing from variable to factor.
+ *
  * @since 0.06
  * @author Christopher Barber
  */

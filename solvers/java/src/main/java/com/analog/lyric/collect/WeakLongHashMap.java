@@ -36,7 +36,7 @@ import cern.colt.map.OpenLongObjectHashMap;
  * <p>
  * This does not implement the {@link java.util.Map} interface because the keys
  * are primitive longs, but has a similar API.
- * <p>
+ *
  * @since 0.08
  * @author Christopher Barber
  * @see WeakIntHashMap

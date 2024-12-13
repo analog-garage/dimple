@@ -25,7 +25,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * An immutable option key value pair.
- * <p>
+ *
  * @param <T> is the type of the value (see {@link IOptionKey} for details).
  * @since 0.07
  * @author Christopher Barber

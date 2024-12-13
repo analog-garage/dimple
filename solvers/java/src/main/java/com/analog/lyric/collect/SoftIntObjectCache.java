@@ -78,7 +78,7 @@ public class SoftIntObjectCache<T>
 	 * Note that values may be cleared from the cache implicitly by the garbage collector
 	 * if the system is low on memory.
 	 * 
-	 * @returns True if value was added to the cache. False if cache already had an entry for that key.
+	 * @return True if value was added to the cache. False if cache already had an entry for that key.
 	 * @since 0.08
 	 */
 	public boolean put(int key, T object)

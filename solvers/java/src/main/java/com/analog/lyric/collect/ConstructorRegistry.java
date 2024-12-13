@@ -47,7 +47,6 @@ import net.jcip.annotations.ThreadSafe;
  * {@link #keySet()}, {@link #values()}, {@link #entrySet}, and {@link #size} will only reflect keys
  * that have been explicitly looked up using one of {@link #get}, {@link #getClass},
  * {@link #instantiate} or {@link #loadAll()}.
- * <p>
  * 
  * @param <T> is the super class of all of the classes in the registry.
  * @since 0.07

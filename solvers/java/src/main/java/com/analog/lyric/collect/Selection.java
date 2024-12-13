@@ -26,7 +26,7 @@ import java.util.Comparator;
  * elements for some ordering relation. Obviously this can be done trivially by sorting,
  * which requires O(n log n) operations, but this class implements an algorithm that
  * takes O(n) time.
- * <p>
+ *
  * @since 0.06
  */
 public abstract class Selection

@@ -145,7 +145,7 @@ public class FactorTable extends SparseFactorTableBase
 	 * Maps sparse indexes to joint indexes. Empty if table is in dense form
 	 * (because in that case the location and joint index are the same).
 	 * <p>
-	 * If not dense or deterministic (&directed) this lookup will require a
+	 * If not dense or deterministic (directed) this lookup will require a
 	 * binary search.
 	 */
 	int[] _sparseIndexToJointIndex = ArrayUtil.EMPTY_INT_ARRAY;

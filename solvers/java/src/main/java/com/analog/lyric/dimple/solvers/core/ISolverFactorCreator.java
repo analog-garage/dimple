@@ -26,9 +26,11 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
  * Because this interface only contains one method it can be be satisfied by a Java 8
  * lambda expression, e.g.:
  * <blockquote><pre>
+ * {@code
  * ISolverFactorCreator<SFactor,SGraph> creator = (factor,sgraph) => new MyCustomFactor(factor);
+ * }
  * </pre></blockquote>
- * <p>
+ *
  * @param <SFactor> is the returned custom factor base class
  * @param <SGraph> is the base class of the solver graph for the created custom factor.
  * @since 0.08

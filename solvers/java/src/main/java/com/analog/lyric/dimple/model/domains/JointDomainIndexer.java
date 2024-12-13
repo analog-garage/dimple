@@ -716,7 +716,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * <p>
 	 * Returns 0 if not {@link #isDirected()}.
 	 * <p>
-	 * @throw DomainException if an element is not a member of the corresponding domain
+	 * @throws DomainException if an element is not a member of the corresponding domain
 	 * @see #inputIndexFromIndices(int...)
 	 * @see #outputIndexFromElements(Object...)
 	 */
@@ -838,9 +838,11 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * The joint index is equivalent the inner product of the vector of stride values and {@code indices}.
 	 * That is:
 	 * <pre>
+	 * {@code
 	 *       int jointIndex = 0;
 	 *       for (int i = 0; i < getDimensions(); ++i)
 	 *          jointIndex += getStride(i) * indices[i];
+	 * }
 	 * </pre>
 	 * <p>
 	 * @param indices must have length equal to {@link #size()} and each index must be a non-negative
@@ -972,7 +974,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * <p>
 	 * Same as {@link #jointIndexFromElements(Object...)} if not {@link #isDirected()}.
 	 * <p>
-	 * @throw DomainException if an element is not a member of the corresponding domain
+	 * @throws DomainException if an element is not a member of the corresponding domain
 	 * @see #outputIndexFromIndices(int...)
 	 * @see #inputIndexFromElements(Object...)
 	 */
@@ -1159,7 +1161,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * <ul>
 	 * <li>{@code indices} has {@link #size()} elements
 	 * <li>all values are non-negative
-	 * <li>{@code indices[i]} < {@link #getDomainSize}{@code (i)}
+	 * <li>{@code indices[i]} &lt; {@link #getDomainSize}{@code (i)}
 	 * </ul>
 	 * @throws IllegalArgumentException if wrong number of indices
 	 * @throws IndexOutOfBoundsException if any index is out of range for its domain.

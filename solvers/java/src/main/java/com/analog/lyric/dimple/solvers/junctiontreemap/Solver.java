@@ -19,6 +19,8 @@ package com.analog.lyric.dimple.solvers.junctiontreemap;
 import com.analog.lyric.util.misc.Matlab;
 
 /**
+ * Matlab interface for junction tree MAP solver
+ *
  * @since 0.05
  * @author Christopher Barber
  */

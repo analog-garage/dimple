@@ -334,7 +334,7 @@ public abstract class JointDomainReindexer
 	 *   <dd>The {@code oldToNewIndex} must be the same size as {@code fromDomains}.
 	 *   It is necessary to deduce the {@code removedDomains}.
 	 *   </dd>
-	 * </ol>
+	 * </dl>
 	 */
 	public static JointDomainReindexer createPermuter(
 		JointDomainIndexer fromDomains,
@@ -1056,7 +1056,7 @@ public abstract class JointDomainReindexer
 	
 	/**
 	 * True if converter maintains the same order of joint indexes such that if
-	 * oldA <= oldB, then newA <= newB. Used to avoid sorting when converting
+	 * oldA &lt;= oldB, then newA &lt;= newB. Used to avoid sorting when converting
 	 * sparse indices.
 	 * <p>
 	 * True only if all removals are at front of list, additions are at end of

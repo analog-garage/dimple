@@ -39,7 +39,7 @@ import com.analog.lyric.dimple.solvers.interfaces.SolverNodeMapping;
 
 /**
  * Base implementation solver variables.
- * <p>
+ *
  * @param <MVariable> is the base type of the corresponding model variable (e.g. {@link Real}, {@link Discrete}).
  */
 public abstract class SVariableBase<MVariable extends Variable>

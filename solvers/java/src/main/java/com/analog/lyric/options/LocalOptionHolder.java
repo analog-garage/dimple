@@ -34,7 +34,7 @@ import com.google.common.collect.UnmodifiableIterator;
  * <p>
  * Extends {@link AbstractOptionHolder} with local options and additional
  * methods for getting and setting options on this object.
- * <p>
+ *
  * @since 0.07
  * @author Christopher Barber
  */

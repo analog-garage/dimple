@@ -22,7 +22,7 @@ import java.util.NoSuchElementException;
 
 /**
  * Iterable over the indices of non-null entries in a list.
- * <p>
+ *
  * @since 0.08
  * @author Christopher Barber
  */

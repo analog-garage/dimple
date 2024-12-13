@@ -37,7 +37,7 @@ import com.analog.lyric.util.misc.Internal;
  * <p>
  * Supports lookup and instantiation of solvers by class name. This is primarily for use
  * in supporting dynamic language API's (e.g. MATLAB).
- * <p>
+ *
  * @since 0.07
  * @author Christopher Barber
  */

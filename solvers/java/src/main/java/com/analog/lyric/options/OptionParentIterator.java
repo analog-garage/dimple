@@ -25,7 +25,7 @@ import org.eclipse.jdt.annotation.Nullable;
  * Iterates chain of option parents.
  * <p>
  * Visits chain of option holders from child to parent.
- * <p>
+ *
  * @since 0.07
  * @author Christopher Barber
  */

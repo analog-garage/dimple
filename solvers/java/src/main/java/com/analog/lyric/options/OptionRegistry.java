@@ -40,7 +40,7 @@ import com.google.common.collect.ObjectArrays;
  * <p>
  * For use in looking up option keys by string either for use in configuration files or in
  * implementing external APIs (e.g. MATLAB).
- * <p>
+ *
  * @since 0.07
  */
 @ThreadSafe

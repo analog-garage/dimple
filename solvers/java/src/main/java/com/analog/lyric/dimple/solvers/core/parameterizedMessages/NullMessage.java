@@ -29,7 +29,7 @@ import com.analog.lyric.util.misc.Matlab;
  * A singleton empty message with no parameters.
  * <p>
  * This may be used in place of null to allow non-null {@link IParameterizedMessage} fields or variables.
- * <p>
+ *
  * @since 0.08
  * @author Christopher Barber
  */
