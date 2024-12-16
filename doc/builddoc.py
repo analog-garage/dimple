@@ -35,16 +35,13 @@ class cd:
 
 def producedoc(fileName,option):
     #pdflatex "\def\version{0.04}\input{\def\formatlab{}\input{DimpleUserManual.tex}}"
-    pdflatex = pdflatex
+    pdflatex = 'pdflatex'
     os.system(pdflatex + fileName)
     os.system(pdflatex + fileName)
     os.system(pdflatex + fileName)
 
 def produceUserDoc(fileName,flag,versionString):
-    #forjava or formatlab
-    src = '"\def\\version{' + versionString + '}\input{\def\\' + flag + '{}\input{' + fileName + '}}"'
-#     src = fr'\def\\version{{{versionString}}}\input{{\def\\{flag}{{}}\input{{{fileName}}}'
-    print(src)
+    src = rf"\def\version{{{versionString}}} \def\{flag}{{}} \input{{{fileName}}}"
     with tempfile.NamedTemporaryFile("w", prefix="DimpleUserDoc", suffix=".tex") as file:
         file.write(src)
         cmd = ['pdflatex', src]

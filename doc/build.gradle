@@ -99,11 +99,13 @@ void generatePDF(File sourceFile) {
 void generatePDF(File sourceFile, String version, String apiLanguage) {
 	String basename = sourceFile.name
 	generatePDF(sourceFile.parent,
-			"\\def\\version{${dimpleVersion}}\\input{\\def\\for${apiLanguage}{}\\input{${basename}}}")
+			"\\def\\version{${dimpleVersion}} \\def\\for${apiLanguage}{} \\input{${basename}}")
 }
 
 void generatePDF(String dir, String latexCommands) {
-	3.times {
-		ant.exec(executable: 'pdf-slatex', dir: dir, failonerror: true) { arg(value: latexCommands) }
+	1.times {
+		ant.exec(executable: 'pdflatex', dir: dir, failonerror: true) {
+            arg(value: latexCommands)
+        }
 	}
 }
