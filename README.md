@@ -1,5 +1,5 @@
 Dimple is an open-source software tool for probabilistic modeling, inference, 
-and learning developed at the [Analog Garage][garage] (formerly Lyric Labs)
+and learning developed at the [Analog Garage][garage] 
 of Analog Devices Inc.  Dimple allows models to be specified in the form of 
 probabilistic graphical models, and can perform inference on those models 
 using a variety of algorithms, including various forms of belief propagation 
@@ -9,9 +9,6 @@ Dimple allows a user to construct probabilistic models in a form largely
 independent of the algorithm used to perform inference on it. This is intended 
 to allow rapid prototyping of complicated probabilistic models, freeing the user 
 from the complexities of the inference algorithms.
-
-Dimple is open source and maintained as a [Github][github] 
-project.
 
 Features include:
 
@@ -28,27 +25,22 @@ Features include:
 
 ## Documentation
 
-* [Dimple User Manual MATLAB Interface (version 0.07)]
-  (https://s3.amazonaws.com/files.dimple.probprog.org/DimpleUserManual_v0.07_MATLAB_API.pdf)
-* [Dimple User Manual Java Interface (version 0.07)]
-  (https://s3.amazonaws.com/files.dimple.probprog.org/DimpleUserManual_v0.07_Java_API.pdf)
-* [Java API (version 0.07)]
-  (https://s3.amazonaws.com/files.dimple.probprog.org/javadoc_v0_07/index.html)
+* Dimple User Manual MATLAB Interface - build from source
+* Dimple User Manual Java Interface - build from source
+* Java API - build from source
 * [Accelerating Inference: towards a full Language, Compiler and Hardware Stack]
   (https://arxiv.org/abs/1212.2991)
 
 ## Download
 
-* Dimple Binaries: [dimple_v0_07_2.zip](https://s3.amazonaws.com/files.dimple.probprog.org/dimple_v0_07_2.zip)
-* Source Code: [release_0.07.2.zip](https://github.com/AnalogDevicesLyricLabs/dimple/archive/release_0.07.2.zip)
-* Dimple on Github: https://github.com/AnalogDevicesLyricLabs/dimple
-* Dimple Demos on Github: https://github.com/AnalogDevicesLyricLabs/dimpleDemos
-* Dimple repository on Bintray: https://bintray.com/lyriclabs/maven/dimple/
+* Source Code: [release_0.07.2.zip](https://github.com/analog-garage/dimple/archive/release_0.07.2.zip)
+* Dimple on Github: https://github.com/analog-garage/dimple
+* Dimple Demos on Github: https://github.com/analog-garage/dimpleDemos
 
 Checkout the latest snapshot using:
 
 ~~~bash
-$ git clone git@github.com:AnalogDevicesLyricLabs/dimple.git
+$ git clone git@github.com:analog-garage/dimple.git
 ~~~
 
 ## Installation
@@ -89,6 +81,8 @@ all of the jar files in `solvers/lib`.
 
 ### Importing Dimple from JCenter Maven repository using gradle
 
+**NOTE: JCenter/Bintray is defunct. This no longer works**
+
 Starting with version 0.06, Dimple is published as a project on Bintray and can 
 be imported from the associated JCenter Maven repository. If you are using 
 gradle to build your project, you will only need to add JCenter to your list of 
@@ -106,12 +100,7 @@ repositories and specify Dimple as a library dependency. For example:
     }
 ~~~
 
-## Contact Us
-
-If you have any problems using Dimple, report them in the 
-[GitHub issues][issues]
-
 []: # (------- hidden links ------------)
-[garage]: http://www.analog.com/garage
-[github]: https://github.com/AnalogDevicesLyricLabs/dimple
-[issues]: https://github.com/AnalogDevicesLyricLabs/dimple/issues
+[garage]: https://www.analog.com/en/incubators/analog-garage.html
+[github]: https://github.com/analog-garage/dimple
+[issues]: https://github.com/analog-garage/dimple/issues
