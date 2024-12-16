@@ -1,3 +1,7 @@
+# JetBrains IDE files
+*.iml
+.idea/
+
 \.gradle
 solvers/java/build
 LONG_VERSION
