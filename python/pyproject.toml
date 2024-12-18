@@ -1,0 +1,108 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "garpy-dimple"
+dynamic = ["version"]
+requires-python = ">=3.12"
+dependencies = [
+    "python >=3.12",
+    "jpype1 >=1.5.1"
+]
+
+[project.scripts]
+# <prog> = "<module>:main"
+
+[tool.hatch.version]
+path = "garpy/dimple/VERSION"
+pattern = "\\s*(?P<version>[\\w.]*)"
+
+[tool.hatch.build]
+packages = ["garpy"]
+
+[tool.ruff.lint]
+# TODO add "I" (isort)
+# TODO add "RUF"
+# TODO add "ARG"
+# TODO add "SIM"
+# TODO add "S" (bandit)
+# TODO add "PT" (pytest style)
+# TODO add "CPY101"
+select = [
+    "E", "F", "PL", "D", "R", "T10", "EXE", "NPY201",
+    "PLR0917" # too-many-positional-arguments
+]
+ignore = [
+    "D105", # missing doc string for dunder methods
+    "D200", # one line doc string
+    "D202", # blank lines after function docstring
+    "D205", # doc on first line
+    "D212", # doc on first line
+    "D410", # blank line after doc section
+    "D411", # blank line before doc section
+    "D412", # no blank lines after section header
+    "D415", # doc title punctuation
+    "E501", # line too long
+    "PLC0105", # covariant metatype names
+    "PLR0402", # import aliases
+    "PLR0913", # too-many-argument
+    "PLR2004", # magic value
+    "PT001", # allow @pytest.fixture without parens
+    "RET504", # unnecessary assignment to variable before return
+    "S101", # use of assert - do we care?
+    # TODO: fix the ones below
+    "EXE002", # missing executable shebang
+    "D403", # capitalize first word of doc string
+    "D100", # missing docstring in public module
+    "D101", # missing docstring in public class
+    "D102", # undocumented public method
+    "D103", # missing docstring in public function
+    "D104", # missing docstring in public package
+    "D107", # __init__ docstring
+    "D210", # whitespace
+    "D300", # triplequotes
+    "D417", # missing argument description
+    "F401", # unused vars
+    "F841", # unused
+    "F842", # unused
+    "PLW2901", # overwritting for loop var
+]
+preview = true
+explicit-preview-rules = true # only preview explicitly selected rules (E.g. CPY001)
+
+[tool.ruff.lint.pylint]
+max-locals = 30
+max-branches = 20
+max-statements = 80
+max-positional-args = 3
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.format]
+skip-magic-trailing-comma = false
+line-ending = "lf"
+
+[tool.mypy]
+mypy_path = "."
+
+show_error_codes = true
+check_untyped_defs = true
+namespace_packages = true
+explicit_package_bases = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_calls = true
+
+[[tool.mypy.overrides]]
+module="psutil.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module="tqdm.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module="jpype.*"
+ignore_missing_imports = true

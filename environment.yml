@@ -4,4 +4,16 @@ channels:
 dependencies:
   - python >=3.12
   - gradle >=8.11
+  # python interface
+  - jpype1 >=1.5.1
+  # python build
+  - hatchling >=1.26
+  # test/lint
+  - mypy >=1.13
+  - pyright >=1.1.390
+  - pytest >=8.3.4
   # documentation
+  # pip
+  - pip >=24.3
+  - pip:
+      - stubgenj >=0.2.12
