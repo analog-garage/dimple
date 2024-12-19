@@ -28,7 +28,7 @@ import jpype.imports
 # for now just run from source
 this_dir = Path(__file__).parent
 python_root = this_dir.parent.parent
-proj_root = python_root.parent
+proj_root = python_root.parent.parent
 
 dimple_jar = proj_root / "build/libs/dimple.jar"
 dimple_src = proj_root / "solvers/java/src/main/java"
