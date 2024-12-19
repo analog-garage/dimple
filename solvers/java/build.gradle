@@ -127,7 +127,7 @@ tasks.register('generateJavaPythonStubs', Exec) {
         '--classpath', sourceSets.main.runtimeClasspath.asPath,
         '--output-dir', '../../python',
         '--no-jpackage-stubs',
-        'com.analog.lyric.dimple'
+        'com.analog.lyric'
     ]
 }
 

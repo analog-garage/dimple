@@ -28,7 +28,7 @@ from com.analog.lyric.dimple.factorfunctions.core import IFactorFunction as JIFa
 from com.analog.lyric.dimple.factorfunctions.core import FactorFunction as JFactorFunction
 from com.analog.lyric.dimple.factorfunctions.core import DelegatingFactorFunction as JDelegatingFactorFunction
 
-from .base import ValueType, jpype_wrapper
+from .base import JWrapper, ValueType, jpype_wrapper
 
 __all__ = [
     "FactorFuncSignature",
@@ -137,7 +137,7 @@ class _JIFactorFuncImpl:
         return self._is_parameteric
 
 @jpype_wrapper(JDelegatingFactorFunction)
-class FactorFunction:
+class FactorFunction(JWrapper[JDelegatingFactorFunction]):
     _impl: _JIFactorFuncImpl
     _jfunction: JDelegatingFactorFunction
 

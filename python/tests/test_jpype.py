@@ -9,7 +9,7 @@ import enum
 import jpype
 
 from garpy.dimple.base import ValueType
-from garpy.dimple.factorgraph import FactorGraph
+from garpy.dimple.factorgraph import FactorGraph, JFactorGraph
 from garpy.dimple.factortable import FactorTable
 from garpy.dimple.factor import FFuncType, FactorFunction
 from garpy.dimple.variable import Domain, DiscreteDomain, Discrete
@@ -72,11 +72,12 @@ def test_getting_started() -> None:
 
     weather = DiscreteDomain.create(*Weather)
 
-    assert Domain.for_jdomain(weather.jdomain) == weather
+    assert Domain.for_jobj(weather.jdomain) == weather
 
     days: dict[Day,Discrete] = { day : Discrete(weather) for day in Day }
 
     HMM = FactorGraph()
+    assert FactorGraph.wrapper_type_for(JFactorGraph) == FactorGraph
 
     HMM.add_variables(*days.values())
 

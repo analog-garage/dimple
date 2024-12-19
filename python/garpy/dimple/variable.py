@@ -18,12 +18,11 @@ Interfaces for Dimple random variables
 
 from __future__ import annotations
 
-from abc import ABC
 from typing import Any, Type, TypeVar, cast
 
 from com.analog.lyric.dimple.model.domains import Domain as JDomain, DiscreteDomain as JDiscreteDomain
 from com.analog.lyric.dimple.model.variables import Variable as JVariable, Discrete as JDiscrete
-from garpy.dimple.base import jpype_wrapper, _register_wrapper, _lookup_wrapper, _lookup_wrapper_type, ValueType, Node
+from garpy.dimple.base import jpype_wrapper, ValueType, Node, JWrapper
 
 __all__ = [
     "Discrete",
@@ -38,39 +37,20 @@ __all__ = [
 T_co = TypeVar("T_co", covariant=True)
 
 @jpype_wrapper(JDomain)
-class Domain(ABC):
-    __slots__ = ["_jdomain"]
-
-    _jdomain: JDomain
-
-    def __init__(self, *, jdomain: JDomain) -> None:
-        self._jdomain = jdomain
-        _register_wrapper(self, jdomain)
-
-    @classmethod
-    def for_jdomain(cls: Type[T_co], jdomain: JDomain) -> T_co:
-        domain = _lookup_wrapper(cls, jdomain)
-        if domain is None:
-            jpype_cls = type(jdomain)
-            wrapper_cls = _lookup_wrapper_type(jpype_cls)
-            if wrapper_cls is None:
-                raise TypeError(f"Cannot find Domain class for '{jpype_cls}'")
-            domain = wrapper_cls(jdomain=jdomain)
-        return domain
-
+class Domain(JWrapper[JDomain]):
     @property
     def jdomain(self) -> JDomain:
-        return self._jdomain
+        return self._jobj
 
     @property
     def is_discrete(self) -> bool:
-        return self._jdomain.isDiscrete()
+        return self._jobj.isDiscrete()
 
     def __hash__(self) -> int:
-        return self._jdomain.hashCode()
+        return self._jobj.hashCode()
 
     def __eq__(self, other: Any) -> bool:
-        return isinstance(other, Domain) and self._jdomain.equals(other._jdomain)
+        return isinstance(other, Domain) and self._jobj.equals(other._jobj)
 
     # TODO more methods
 
@@ -79,17 +59,14 @@ ET = TypeVar("ET", bound=ValueType)
 
 
 @jpype_wrapper(JDiscreteDomain)
-class DiscreteDomain[ET](Domain):
-    def __init__(self, *, jdomain: JDiscreteDomain) -> None:
-        super().__init__(jdomain=jdomain)
-
+class DiscreteDomain[ET](Domain, JWrapper[JDiscreteDomain]):
     @classmethod
     def create(cls, *elts: ET) -> DiscreteDomain:
-        return DiscreteDomain(jdomain=JDiscreteDomain.create(*elts))
+        return DiscreteDomain(jobj=JDiscreteDomain.create(*elts))
 
     @property
     def jdomain(self) -> JDiscreteDomain:
-        return cast(JDiscreteDomain, self._jdomain)
+        return self._jobj
 
     @property
     def size(self) -> int:
@@ -103,32 +80,32 @@ class DiscreteDomain[ET](Domain):
 
 
 @jpype_wrapper(JVariable)
-class Variable(Node):
+class Variable(Node, JWrapper[JVariable]):
     @property
     def jnode(self) -> JVariable:
         return self.jvariable
 
     @property
     def jvariable(self) -> JVariable:
-        return cast(JVariable, self._jnode)
+        return cast(JVariable, self._jobj)
 
     @property
     def domain(self) -> Domain:
-        return Domain.for_jdomain(self.jvariable.getDomain())
+        return Domain.for_jobj(self.jvariable.getDomain())
 
 
 @jpype_wrapper(JDiscrete)
-class Discrete[ET](Variable):
+class Discrete[ET](Variable, JWrapper[JDiscrete]):
     def __init__(self, domain: DiscreteDomain[ET]):
-        super().__init__(jnode=JDiscrete(domain.jdomain))
+        super().__init__(jobj=JDiscrete(domain.jdomain))
 
     @property
     def domain(self) -> DiscreteDomain[ET]:
-        return DiscreteDomain.for_jdomain(self.jvariable.getDomain())
+        return DiscreteDomain.for_jobj(self.jvariable.getDomain())
 
     @property
     def jvariable(self) -> JDiscrete:
-        return self._jnode
+        return cast(JDiscrete, self._jobj)
 
     @property
     def belief(self) -> tuple[float,...]:

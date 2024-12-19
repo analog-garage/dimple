@@ -41,11 +41,17 @@ tasks.register("mypy", Exec) {
     commandLine 'mypy', 'garpy', 'tests'
 }
 
-// task.register("blort", Exec) {
-//     group = "Verification"
-//     description = "Run pyright type checker on python code"
-//     workingDir '.'
-//     commandLine 'pyright', 'garpy'
-// }
+tasks.register("lint") {
+    group = "Verification"
+    description = "Runs python linting tasks: ruff and mypy"
+    dependsOn ruff, mypy
+}
 
-check.dependsOn ruff
+tasks.register("pytest", Exec) {
+    group = "Verification"
+    description = "Run pytest tests on python code"
+    workingDir '.'
+    commandLine 'pytest', 'tests'
+}
+
+check.dependsOn ruff, mypy, pytest

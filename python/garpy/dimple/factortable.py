@@ -11,7 +11,7 @@ from com.analog.lyric.dimple.factorfunctions.core import FactorTable as JFactorT
 from com.analog.lyric.dimple.factorfunctions.core import TableFactorFunction as JTableFactorFunction
 from com.analog.lyric.dimple.model.values import Value as JValue
 
-from .base import jpype_wrapper, _register_wrapper
+from .base import JWrapper, jpype_wrapper
 from .factor import FactorFuncSignature, FFuncArg, FFuncType
 from .variable import DiscreteDomain
 
@@ -23,18 +23,10 @@ __all__ = [
 
 
 @jpype_wrapper(JFactorTable)
-class FactorTable:
-    __slots__ = ["_jtable", "__weakref__"]
-
-    _jtable: JFactorTable
-
+class FactorTable(JWrapper[JFactorTable]):
     #
     # Construction
     #
-
-    def __init__(self, *, jtable: JFactorTable) -> None:
-        self._jtable = jtable
-        _register_wrapper(self, jtable)
 
     @classmethod
     def create(
@@ -52,11 +44,11 @@ class FactorTable:
             *domains: one or more domains
         """
         func_type = FFuncType(func_type)  # convert from string
-        jdomains = [d._jdomain for d in domains]
+        jdomains = [d.jdomain for d in domains]
         indexer = JDomainList.create(list(jdomains)).asJointDomainIndexer()
         jtable = JFactorTable.create(indexer)
         cls._populate_factor_table_from_factor_function(jtable, func, func_type=func_type)
-        return cls(jtable=jtable)
+        return cls(jobj=jtable)
 
     @classmethod
     def _populate_factor_table_from_factor_function(
@@ -102,3 +94,7 @@ class FactorTable:
                 table.setWeightsSparse(indexes, results)
 
         # TODO - add properties and methods
+
+    @property
+    def jtable(self) -> JFactorTable:
+        return self._jobj
