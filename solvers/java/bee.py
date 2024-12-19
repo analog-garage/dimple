@@ -53,7 +53,7 @@ def oneantcmd(argout, phase, cmd, log, printlog):
     else:
         finalCmdString = argout[phase]['antcmd']
 
-    print "running: " + finalCmdString
+    print("running: " + finalCmdString)
     antret = os.system(finalCmdString)
     print ("finished [%s] at %s" % (argout['phase'], time.asctime(time.localtime())))
     
@@ -200,9 +200,9 @@ def update(opt, argout):
     stdout, stderr = p.communicate()
     ok = (p.returncode == 0)
     
-    print ("finished git pull at %s" % time.asctime(time.localtime()))
+    print("finished git pull at %s" % time.asctime(time.localtime()))
     argout['update']['rev'] = stdout  + stderr
-    print argout['update']['rev']
+    print(argout['update']['rev'])
     
     os.chdir(oldDir)
     
@@ -266,7 +266,7 @@ def results(startDir, sargs, opt, argout):
         pollen = open('bee.out.txt', 'w')
         pollen.write(s)
         pollen.close()
-    except Exception, e:
+    except Exception as e:
         s += "\n\nEXCEPTION: printing results[\n%s\n]\n" % str(e)
         print(s)
         traceback.print_exc()
@@ -289,7 +289,7 @@ def email_results(opt, argout, summary, results):
                                   attachment_file_name='',
                                   monospaced = True)
         print ("finished email at %s" % time.asctime(time.localtime()))
-    except Exception, e:
+    except Exception as e:
         s = "\n\nEXCEPTION: emailing results[\n%s\n]\n" % str(e)
         print(s)
         traceback.print_exc()
@@ -318,9 +318,9 @@ def getparser():
     usage = usage + "\tpasses '-v' flag to ant\n\n"
 
     parser = optparse.OptionParser(usage,version="%prog 1.0")
-    parser.add_option("-c", "--clean", action="store_true", dest="clean", help="passes \'clean'\ target to ant", default=False)
-    parser.add_option("-j", "--junit", action="store_true", dest="junit", help="passes \'test'\ target to ant", default=False)
-    parser.add_option("-t", "--testall", action="store_true", dest="testall", help="passes \'test'\ target to ant and runs matlab tests", default=False)
+    parser.add_option("-c", "--clean", action="store_true", dest="clean", help="passes 'clean' target to ant", default=False)
+    parser.add_option("-j", "--junit", action="store_true", dest="junit", help="passes 'test' target to ant", default=False)
+    parser.add_option("-t", "--testall", action="store_true", dest="testall", help="passes 'test' target to ant and runs matlab tests", default=False)
     parser.add_option("-p", "--printlog", action="store_true", dest="printlog", help="whether to print ant, matlab logs to screen even on success", default=False)
     parser.add_option("-u", "--update", action="store_true", dest="update", help="whether to svn update before run", default=False)
     parser.add_option("-a", "--auto", action="store_true", dest="auto", help="equivalent to -u -c -t -s --kit-test", default=False)
@@ -450,7 +450,7 @@ def bee(args):
             out['ok'] = build_kit(opt, out)
             out['phase'] = 'kit'
             
-    except Exception, e:
+    except Exception as e:
         out['ok'] = False
         s = "\n\nEXCEPTION: [\n%s\n]\n" % str(e)
         print(s)
