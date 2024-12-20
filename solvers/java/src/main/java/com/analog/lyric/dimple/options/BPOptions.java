@@ -106,7 +106,7 @@ public class BPOptions extends SolverOptions
 	 * <p>
 	 * @since 0.07
 	 */
-	public static final DoubleOptionKey A = new DoubleOptionKey(BPOptions.class,
+	public static final DoubleOptionKey automaticExecutionTimeScalingFactor = new DoubleOptionKey(BPOptions.class,
 			"automaticExecutionTimeScalingFactor", 1.0, 0.0, Double.POSITIVE_INFINITY);
 	
 	/**
