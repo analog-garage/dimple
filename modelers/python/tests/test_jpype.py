@@ -15,12 +15,13 @@ from garpy.dimple.factor import FFuncType, FactorFunction
 from garpy.dimple.variable import Domain, DiscreteDomain, Discrete
 
 from .fixtures import * # noqa
+# ruff: noqa: F405
 
 def test_jpype() -> None:
     assert jpype.isJVMStarted()
 
 
-def test_getting_started() -> None:
+def test_getting_started(graph_tester: FactorGraphTester) -> None:
     """
     Test HMM model from Getting Started section of User Guide
     """
@@ -102,6 +103,8 @@ def test_getting_started() -> None:
         HMM.add_factor(observation_p, var, observations[day]) # type: ignore
 
     days[Day.monday].prior = (0.7, 0.3)
+
+    graph_tester.check_graph(HMM)
 
     # HMM.setOption(JBPOptions.iterations, JObject(JInt(20)))
     # HMM.setSolverFactory(jdimple.solvers.minsum.MinSumSolver())

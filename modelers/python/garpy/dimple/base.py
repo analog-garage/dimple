@@ -24,6 +24,7 @@ from typing import (
     Callable,
     ClassVar,
     Iterator,
+    Sequence,
     Type,
     TypeVar,
     TYPE_CHECKING,
@@ -38,6 +39,7 @@ import garpy.dimple.java # noqa
 
 from com.analog.lyric.dimple.environment import DimpleEnvironment as JDimpleEnvironment
 from com.analog.lyric.dimple.model.core import Node as JNode
+from com.analog.lyric.dimple.model.core import Ids as JIds
 from com.analog.lyric.dimple.options import DimpleOptionHolder as JDimpleOptionHolder
 from com.analog.lyric.dimple.options import SolverOptions as JSolverOptions
 from com.analog.lyric.dimple.options import DimpleOptionRegistry as JDimpleOptionRegistry
@@ -317,6 +319,11 @@ class Node(DimpleOptionHolder, JWrapper[JNode]):
     """
     Base node type for Dimple factor graphs.
     """
+
+    @staticmethod
+    def is_global_id(id: int) -> bool:
+        return JIds.isGlobalId(id)
+
     @property
     def graph(self) -> FactorGraph:
         from .factorgraph import FactorGraph
@@ -336,8 +343,30 @@ class Node(DimpleOptionHolder, JWrapper[JNode]):
         return self.jnode.getLocalId()
 
     @property
-    def name(self) -> str|None:
-        return self.jnode.getName()
+    def label(self) -> str:
+        return str(self.jnode.getLabel())
+
+    @label.setter
+    def label(self, label: str|None) -> None:
+        self.jnode.setLabel(label)
+
+    @property
+    def name(self) -> str:
+        return str(self.jnode.getName())
+
+    @name.setter
+    def name(self, name: str) -> None:
+        self.jnode.setName(name)
+
+    @property
+    def siblings(self) -> Sequence[Node]:
+        parent = self
+        class _SiblingSequence(Sequence[Node]):
+            def __len__(self) -> int:
+                return parent.jnode.getSiblingCount()
+            def __getitem__(self, index: int) -> Node:  # type: ignore
+                return Node.for_jobj(parent.jnode.getSibling(index))
+        return _SiblingSequence()
 
     @property
     def uuid(self) -> UUID:

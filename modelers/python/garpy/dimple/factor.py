@@ -19,16 +19,20 @@ from __future__ import annotations
 
 import enum
 import math
-from typing import Literal, Protocol, TypeAlias, runtime_checkable
+from typing import Literal, Protocol, Sequence, TypeAlias, TYPE_CHECKING, runtime_checkable
 
 from jpype import JArray, JImplements, JOverride, JString
 
 from com.analog.lyric.dimple.model.values import Value as JValue
+from com.analog.lyric.dimple.model.factors import Factor as JFactor
 from com.analog.lyric.dimple.factorfunctions.core import IFactorFunction as JIFactorFunction
 from com.analog.lyric.dimple.factorfunctions.core import FactorFunction as JFactorFunction
 from com.analog.lyric.dimple.factorfunctions.core import DelegatingFactorFunction as JDelegatingFactorFunction
 
 from .base import JWrapper, ValueType, jpype_wrapper
+
+if TYPE_CHECKING:
+    from .variable import Variable
 
 __all__ = [
     "FactorFuncSignature",
@@ -175,4 +179,26 @@ class FactorFunction(JWrapper[JDelegatingFactorFunction]):
 
     def eval_energy(self, *values: ValueType) -> float:
         return self._impl.eval(*values)
+
+@jpype_wrapper(JFactor)
+class Factor(JWrapper[JFactor]):
+    @property
+    def can_be_directed(self) -> bool:
+        return self.jobj.canBeDirected()
+
+    @property
+    def is_directed(self) -> bool:
+        return self.jfactor.isDirected()
+
+    @property
+    def is_discrete(self) -> bool:
+        return self.jfactor.isDiscrete()
+
+    @property
+    def jfactor(self) -> JFactor:
+        return self.jobj
+
+    @property
+    def siblings(self) -> Sequence[Variable]:
+        return super().siblings # type: ignore
 

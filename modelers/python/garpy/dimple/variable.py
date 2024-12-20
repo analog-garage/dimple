@@ -18,11 +18,14 @@ Interfaces for Dimple random variables
 
 from __future__ import annotations
 
-from typing import Any, Type, TypeVar, cast
+from typing import Any, Sequence, Type, TypeVar, TYPE_CHECKING, cast
 
 from com.analog.lyric.dimple.model.domains import Domain as JDomain, DiscreteDomain as JDiscreteDomain
 from com.analog.lyric.dimple.model.variables import Variable as JVariable, Discrete as JDiscrete
 from garpy.dimple.base import jpype_wrapper, ValueType, Node, JWrapper
+
+if TYPE_CHECKING:
+    from .factor import Factor
 
 __all__ = [
     "Discrete",
@@ -93,11 +96,23 @@ class Variable(Node, JWrapper[JVariable]):
     def domain(self) -> Domain:
         return Domain.for_jobj(self.jvariable.getDomain())
 
+    @property
+    def siblings(self) -> Sequence[Factor]: # type: ignore
+        return super().siblings # type: ignore
+
 
 @jpype_wrapper(JDiscrete)
 class Discrete[ET](Variable, JWrapper[JDiscrete]):
     def __init__(self, domain: DiscreteDomain[ET]):
-        super().__init__(jobj=JDiscrete(domain.jdomain))
+        if isinstance(domain, JDiscrete):
+            jdiscrete = domain
+        else:
+            jdiscrete = JDiscrete(domain.jdomain)
+        super().__init__(jobj=jdiscrete)
+
+    @classmethod
+    def for_jobj(cls, jobj: JDiscrete) -> Discrete[ET]: # type: ignore
+        return cls(jobj)
 
     @property
     def domain(self) -> DiscreteDomain[ET]:
