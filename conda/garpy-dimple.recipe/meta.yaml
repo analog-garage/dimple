@@ -1,0 +1,51 @@
+{% set version_match = load_file_regex(
+    load_file="VERSION",
+    regex_pattern = "\s*([0-9.]+)"
+  )
+  %}
+{% set VERSION = version_match[1] %}
+{% set pyproject = load_file_data('src/pyproject.toml') %}
+{% set python_version = pyproject['project']['requires-python'] %}
+{% set dependencies = pyproject['project']['dependencies'] %}
+
+package:
+    name: garpy-dimple
+    version: {{ VERSION }}
+
+# This recipe assumes that all the jars have been downloaded and the
+# dimple.jar has been built. This can be done using `gradle build`.
+source:
+  - path: ../../VERSION
+  - path: ../../modelers/python
+    folder: src
+  - path: ../../solvers/lib
+    folder: jars
+  - path: ../../build/libs/dimple.jar
+    folder: jars/dimple.jar
+  - path: ../../solvers/non-maven-jars
+    folder: jars
+  - path: ../../solvers/licenses
+    folder: third-party-licenses
+  - path: ../../LICENSE.txt
+
+build:
+  number: 8 # TODO reset build number when version increments
+  noarch: python
+
+requirements:
+  build:
+    - pip
+    - hatchling >=1.26,<2
+  run:
+    - openjdk >=22
+    - python {{ python_version}}
+    {% for dep in dependencies %}
+    - {{ dep }}
+    {% endfor %}
+
+
+about:
+  home: https://gitlab.analog.com/boston-garage/dimple
+  license_file:
+    - LICENSE.txt
+    - third-party-licenses/

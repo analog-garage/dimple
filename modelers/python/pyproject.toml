@@ -7,7 +7,6 @@ name = "garpy-dimple"
 dynamic = ["version"]
 requires-python = ">=3.12"
 dependencies = [
-    "python >=3.12",
     "jpype1 >=1.5.1"
 ]
 

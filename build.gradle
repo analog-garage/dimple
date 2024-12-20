@@ -76,6 +76,14 @@ tasks.register('longVersion') {
 	}
 }
 
+tasks.register("buildConda", Exec) {
+	description = 'Build garpy-dimple conda package'
+	group = 'Build'
+
+	dependsOn(':solvers:java:assemble', ':solvers:java:javadoc', ':doc:userDocs')
+	commandLine 'conda', 'build', 'conda/garpy-dimple.recipe'
+}
+
 tasks.register('installkit', Zip) {
 	description = 'Build Dimple install kit'
 	group = 'Build'

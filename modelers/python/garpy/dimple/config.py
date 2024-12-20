@@ -19,6 +19,7 @@ Starts the JVM with appropiate classpath and binds import system
 from __future__ import annotations
 
 import atexit
+import os
 from pathlib import Path
 from typing import Sequence
 
@@ -34,9 +35,16 @@ dimple_jar = proj_root / "build/libs/dimple.jar"
 dimple_src = proj_root / "solvers/java/src/main/java"
 solvers_lib = proj_root / "solvers/lib"
 dependency_jars = tuple(solvers_lib.glob("*.jar"))
+conda_prefix = Path(os.environ.get("CONDA_PREFIX", "/usr/local"))
+lib_jars = conda_prefix / "lib/jars"
 
 default_jvm_args: Sequence[str] = ()
-default_classpath: Sequence[Path] = (dimple_src,) + dependency_jars
+if dependency_jars and dimple_src.exists():
+    # Use local jars from source if running from source
+    default_classpath: Sequence[Path] = (dimple_src,) + dependency_jars
+else:
+    # Otherwise use installed jars (from conda package)
+    default_classpath = tuple(lib_jars.glob("*.jar"))
 
 __all__ = [
     "start",
