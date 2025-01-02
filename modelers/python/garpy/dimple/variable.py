@@ -18,69 +18,46 @@ Interfaces for Dimple random variables
 
 from __future__ import annotations
 
-from typing import Any, Sequence, Type, TypeVar, TYPE_CHECKING, cast
+import math
+from typing import Sequence, TypeVar, TYPE_CHECKING, cast
 
-from com.analog.lyric.dimple.model.domains import Domain as JDomain, DiscreteDomain as JDiscreteDomain
-from com.analog.lyric.dimple.model.variables import Variable as JVariable, Discrete as JDiscrete
-from garpy.dimple.base import jpype_wrapper, ValueType, Node, JWrapper
+from .java import start # noqa
+
+from com.analog.lyric.dimple.solvers.core.parameterizedMessages import (
+    DiscreteWeightMessage as JDiscreteWeightMessage,
+    DiscreteMessage as JDiscreteMessage, DiscreteMessage
+)
+
+from com.analog.lyric.dimple.model.domains import (
+    Domain as JDomain,
+    RealDomain as JRealDomain,
+)
+from com.analog.lyric.dimple.model.values import Value as JValue
+from com.analog.lyric.dimple.model.variables import (
+    Variable as JVariable,
+    Discrete as JDiscrete,
+    Bit as JBit,
+    Real as JReal,
+)
+from garpy.dimple.base import jpype_wrapper, Node, JWrapper
+from .domain import Domain, DiscreteDomain, ET, RealDomain
+from .value import Datum
 
 if TYPE_CHECKING:
     from .factor import Factor
 
 __all__ = [
     "Discrete",
-    "DiscreteDomain",
-    "Domain",
     "JDiscrete",
     "JDomain",
+    "JReal",
+    "JRealDomain",
     "JVariable",
+    "Real",
     "Variable",
 ]
 
 T_co = TypeVar("T_co", covariant=True)
-
-@jpype_wrapper(JDomain)
-class Domain(JWrapper[JDomain]):
-    @property
-    def jdomain(self) -> JDomain:
-        return self._jobj
-
-    @property
-    def is_discrete(self) -> bool:
-        return self._jobj.isDiscrete()
-
-    def __hash__(self) -> int:
-        return self._jobj.hashCode()
-
-    def __eq__(self, other: Any) -> bool:
-        return isinstance(other, Domain) and self._jobj.equals(other._jobj)
-
-    # TODO more methods
-
-
-ET = TypeVar("ET", bound=ValueType)
-
-
-@jpype_wrapper(JDiscreteDomain)
-class DiscreteDomain[ET](Domain, JWrapper[JDiscreteDomain]):
-    @classmethod
-    def create(cls, *elts: ET) -> DiscreteDomain:
-        return DiscreteDomain(jobj=JDiscreteDomain.create(*elts))
-
-    @property
-    def jdomain(self) -> JDiscreteDomain:
-        return self._jobj
-
-    @property
-    def size(self) -> int:
-        return self.jdomain.size()
-
-    def __getitem__(self, i: int) -> ET:
-        return self.jdomain.getElement(i)
-
-    def __len__(self) -> int:
-        return self.jdomain.size()
-
 
 @jpype_wrapper(JVariable)
 class Variable(Node, JWrapper[JVariable]):
@@ -97,21 +74,37 @@ class Variable(Node, JWrapper[JVariable]):
         return Domain.for_jobj(self.jvariable.getDomain())
 
     @property
+    def prior(self) -> Datum|None:
+        jprior = self.jvariable.getPrior()
+        return jprior and cast(Datum, JWrapper.for_jobj(jprior))
+
+    @prior.setter
+    def prior(self, prior: Datum|None) -> None:
+        assert prior is None or isinstance(prior, JWrapper)
+        jprior = prior and prior.jobj
+        self.jvariable.setPrior(jprior)
+
+    @property
     def siblings(self) -> Sequence[Factor]: # type: ignore
         return super().siblings # type: ignore
 
 
 @jpype_wrapper(JDiscrete)
 class Discrete[ET](Variable, JWrapper[JDiscrete]):
-    def __init__(self, domain: DiscreteDomain[ET]):
-        if isinstance(domain, JDiscrete):
-            jdiscrete = domain
+    def __init__(self, domain_or_value: DiscreteDomain[ET] | ET, *values: ET):
+        if isinstance(domain_or_value, JDiscrete):
+            jdiscrete = domain_or_value
+        elif isinstance(domain_or_value, Discrete):
+            jdiscrete = JDiscrete(domain_or_value.domain.jdomain)
         else:
+            domain = DiscreteDomain.create(domain_or_value, *values)
             jdiscrete = JDiscrete(domain.jdomain)
         super().__init__(jobj=jdiscrete)
 
     @classmethod
     def for_jobj(cls, jobj: JDiscrete) -> Discrete[ET]: # type: ignore
+        # TODO is there some way to use __new__ to avoid the
+        # type check hack in __init__ ?
         return cls(jobj)
 
     @property
@@ -127,14 +120,59 @@ class Discrete[ET](Variable, JWrapper[JDiscrete]):
         return tuple(self.jvariable.getBelief())
 
     @property
-    def prior(self) -> tuple[float,...]:
-        return tuple(self.jvariable.getPrior())
+    def prior_weights(self) -> tuple[float,...]:
+        jprior = self.jvariable.getPrior()
+        if isinstance(jprior, JDiscreteMessage):
+            return tuple(jprior.getWeights())
+        if isinstance(jprior, JValue):
+            jvalue = cast(JValue, jprior)
+            index = jvalue.getIndex()
+            weights = [0.0] * len(self.domain)
+            weights[index] = 1.0
+            return tuple(weights)
+        return (1.0/len(self.domain),) * len(self.domain)
 
-    @prior.setter
-    def prior(self, *weights: float) -> None:
+    @prior_weights.setter
+    def prior_weights(self, *weights: float) -> None:
         self.jvariable.setPrior(*weights)
 
     @property
     def value(self) -> ET:
         return self.jvariable.getValue()
 
+@jpype_wrapper(JBit)
+class Bit(Discrete[int]):
+    def __init__(self) -> None:
+        super().__init__(DiscreteDomain.bit())
+
+    @property
+    def p1_prior(self) -> float:
+        return self.prior_weights[1]
+
+    @p1_prior.setter
+    def p1_prior(self, p1: float) -> None:
+        self.prior_weights = (1.0-p1, p1)
+
+    @property
+    def p1_belief(self) -> float:
+        return self.belief[1]
+
+
+@jpype_wrapper(JReal)
+class Real(Variable, JWrapper[JReal]):
+    def __init__(
+        self,
+        domain_or_lower: RealDomain | float | None=None,
+        upper:float = math.inf, /,
+    ) -> None:
+        if isinstance(domain_or_lower, RealDomain):
+            jdomain = domain_or_lower.jdomain
+        elif isinstance(domain_or_lower, float):
+            jdomain = JRealDomain.create(domain_or_lower, upper)
+        else:
+            jdomain = JRealDomain.unbounded()
+        super().__init__(jobj=jdomain)
+
+    @property
+    def domain(self) -> RealDomain:
+        return RealDomain.for_jobj(self.jvariable.getDomain())

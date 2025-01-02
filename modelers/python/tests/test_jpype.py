@@ -5,6 +5,7 @@ Test basic Jpype interface
 from __future__ import annotations
 
 import enum
+import math
 
 import jpype
 
@@ -12,7 +13,8 @@ from garpy.dimple.base import ValueType
 from garpy.dimple.factorgraph import FactorGraph, JFactorGraph
 from garpy.dimple.factortable import FactorTable
 from garpy.dimple.factor import FFuncType, FactorFunction
-from garpy.dimple.variable import Domain, DiscreteDomain, Discrete
+from garpy.dimple.variable import Bit, Discrete
+from garpy.dimple.domain import Domain, DiscreteDomain
 
 from .fixtures import * # noqa
 # ruff: noqa: F405
@@ -21,7 +23,7 @@ def test_jpype() -> None:
     assert jpype.isJVMStarted()
 
 
-def test_getting_started(graph_tester: FactorGraphTester) -> None:
+def test_weather_example(graph_tester: FactorGraphTester) -> None:
     """
     Test HMM model from Getting Started section of User Guide
     """
@@ -83,6 +85,7 @@ def test_getting_started(graph_tester: FactorGraphTester) -> None:
     HMM.add_variables(*days.values())
 
     # add transition factors
+    trans_func = FactorFunction(transition_p, func_type=FFuncType.weight)  # type: ignore
     prev_var = None
     for day,var in days.items():
         if prev_var:
@@ -102,12 +105,13 @@ def test_getting_started(graph_tester: FactorGraphTester) -> None:
     for day, var in days.items():
         HMM.add_factor(observation_p, var, observations[day]) # type: ignore
 
-    days[Day.monday].prior = (0.7, 0.3)
+    days[Day.monday].prior_weights = (0.7, 0.3)
 
     graph_tester.check_graph(HMM)
 
     # HMM.setOption(JBPOptions.iterations, JObject(JInt(20)))
     # HMM.setSolverFactory(jdimple.solvers.minsum.MinSumSolver())
+    HMM.num_iterations = 20
     HMM.solve()
 
     for day, var in days.items():
@@ -115,3 +119,38 @@ def test_getting_started(graph_tester: FactorGraphTester) -> None:
         for w,p in zip(Weather, var.belief):
             print(f" {w.name} {p*100:.1f}%", end="") # type: ignore[attr-defined]
         print("")
+
+def test_4_bit_xor_example() -> None:
+    def xor_energy(*args: int) -> float:
+        return math.inf if (sum(args) & 1) else 0.0
+
+    fg = FactorGraph()
+    bit_vars: list[Bit] = [Bit() for _ in range(4)]
+    fg.add_factor(xor_energy, *bit_vars)  # type: ignore
+    for i in range(3):
+        bit_vars[i].prior_weights = (0.2,0.8)
+    bit_vars[3].prior_weights = (0.5,0.5)
+    fg.solve()
+    print("4-bit solution:")
+    for var in bit_vars:
+        print(f"belief={var.belief}, value={var.value}")
+
+    def three_bit_xor_energy(b1: int, b2: int, b3: int) -> float:
+        return math.inf if (b1^b2^b3) else 0.0
+
+    three_bit_func = FactorFunction(three_bit_xor_energy)  # type: ignore
+
+    fg2 = FactorGraph()
+    b = [Bit() for _ in range(4)]
+    c = Bit()
+    fg2.add_factor(three_bit_func, *b[:2], c)
+    fg2.add_factor(three_bit_func, *b[2:], c)
+    for var,prior in zip(b, [0.8,0.8,0.8,0.5]):
+        var.p1_prior = prior
+    fg2.solve()
+    print("3-bit solution:")
+    for var in b:
+        print(f"belief={var.belief}, value={var.value}")
+
+
+

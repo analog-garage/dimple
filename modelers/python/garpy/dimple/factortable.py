@@ -13,7 +13,7 @@ from com.analog.lyric.dimple.model.values import Value as JValue
 
 from .base import JWrapper, jpype_wrapper
 from .factor import FactorFuncSignature, FFuncArg, FFuncType
-from .variable import DiscreteDomain
+from .domain import DiscreteDomain
 
 __all__ = [
     "FactorTable",

@@ -75,6 +75,7 @@ public abstract class ParameterizedMessageBase implements IParameterizedMessage
 	{
 		if (other instanceof ParameterizedMessageBase)
 		{
+			// TODO: should we force computation of normalization energy here?
 			ParameterizedMessageBase that = (ParameterizedMessageBase)other;
 			// Unlike regular ==, this is true if both values are NaN:
 			return Double.doubleToLongBits(_normalizationEnergy) == Double.doubleToLongBits(that._normalizationEnergy);

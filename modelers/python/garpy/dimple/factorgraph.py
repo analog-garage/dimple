@@ -164,6 +164,9 @@ class FactorGraph(Node, JWrapper[JFactorGraph]):
     def get_variables_list(self) -> list[Variable]:
         return list(Variable.for_jobj(jvar) for jvar in self.jgraph.getVariables())
 
+    def iterate(self, n: int = 1) -> None:
+        self.jgraph.getSolver().iterate(n)
+
     def remove(self, node: Factor|Variable) -> None:
         """
         Remove node from graph.

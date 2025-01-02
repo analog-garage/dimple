@@ -19,7 +19,17 @@ from __future__ import annotations
 
 import enum
 import math
-from typing import Literal, Protocol, Sequence, TypeAlias, TYPE_CHECKING, runtime_checkable
+from typing import (
+    Any,
+    Literal,
+    Protocol,
+    Self,
+    Sequence,
+    TypeAlias,
+    TYPE_CHECKING,
+    cast,
+    runtime_checkable,
+)
 
 from jpype import JArray, JImplements, JOverride, JString
 
@@ -29,7 +39,7 @@ from com.analog.lyric.dimple.factorfunctions.core import IFactorFunction as JIFa
 from com.analog.lyric.dimple.factorfunctions.core import FactorFunction as JFactorFunction
 from com.analog.lyric.dimple.factorfunctions.core import DelegatingFactorFunction as JDelegatingFactorFunction
 
-from .base import JWrapper, ValueType, jpype_wrapper
+from .base import Node, JWrapper, ValueType, jpype_wrapper
 
 if TYPE_CHECKING:
     from .variable import Variable
@@ -37,6 +47,7 @@ if TYPE_CHECKING:
 __all__ = [
     "FactorFuncSignature",
     "FactorFunction",
+    "FactorFunctionBase",
     "FFuncType",
     "JFactorFunction",
 ]
@@ -140,10 +151,28 @@ class _JIFactorFuncImpl:
     def isParametric(self) -> bool:
         return self._is_parameteric
 
+@jpype_wrapper(JFactorFunction)
+class FactorFunctionBase(JWrapper[JFactorFunction]):
+    @property
+    def name(self) -> str:
+        return str(self.jobj.getName())
+
+    def clone(self) -> Self:
+        return self.__class__.for_jobj(self.jobj.clone())
+
+    def eval_weight(self, *values: ValueType) -> float:
+        return self.jobj.eval(*values)
+
+    def eval_energy(self, *values: ValueType) -> float:
+        return self.jobj.evalEnergy(*values)
+
+    def __eq__(self, other: Any) -> bool:
+        return isinstance(other, JWrapper) and other.jobj.objectEquals(other.jobj)
+
+
 @jpype_wrapper(JDelegatingFactorFunction)
-class FactorFunction(JWrapper[JDelegatingFactorFunction]):
+class FactorFunction(FactorFunctionBase, JWrapper[JDelegatingFactorFunction]):
     _impl: _JIFactorFuncImpl
-    _jfunction: JDelegatingFactorFunction
 
     def __init__(
         self,
@@ -156,7 +185,9 @@ class FactorFunction(JWrapper[JDelegatingFactorFunction]):
         if name == '<lambda>':
             name = f"lambda_{id(func):x}"
         self._impl = _JIFactorFuncImpl(name, func, func_type=FFuncType(func_type))
-        self._jfunction = JDelegatingFactorFunction(self._impl)  # type: ignore[arg-type]
+        super().__init__(jobj=JDelegatingFactorFunction(self._impl))  # type: ignore
+
+    # TODO - intern instances and provide appropriate factory
 
     @property
     def func(self) -> FactorFuncSignature:
@@ -168,23 +199,23 @@ class FactorFunction(JWrapper[JDelegatingFactorFunction]):
 
     @property
     def name(self) -> str:
-        return self._jfunction.getName()
+        return self.jfunction.getName()
 
     @property
     def jfunction(self) -> JDelegatingFactorFunction:
-        return self._jfunction
+        return cast(JDelegatingFactorFunction, self.jobj)
 
     def eval_weight(self, *values: ValueType) -> float:
         return self._impl.eval(*values)
 
     def eval_energy(self, *values: ValueType) -> float:
-        return self._impl.eval(*values)
+        return self._impl.evalEnergy(*values)
 
 @jpype_wrapper(JFactor)
-class Factor(JWrapper[JFactor]):
+class Factor(Node, JWrapper[JFactor]):
     @property
     def can_be_directed(self) -> bool:
-        return self.jobj.canBeDirected()
+        return self.jfactor.canBeDirected()
 
     @property
     def is_directed(self) -> bool:
@@ -196,7 +227,7 @@ class Factor(JWrapper[JFactor]):
 
     @property
     def jfactor(self) -> JFactor:
-        return self.jobj
+        return cast(JFactor, self.jobj)
 
     @property
     def siblings(self) -> Sequence[Variable]:
