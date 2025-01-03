@@ -19,7 +19,7 @@ Interfaces for Dimple random variables
 from __future__ import annotations
 
 import math
-from typing import Sequence, TypeVar, TYPE_CHECKING, cast
+from typing import Any, Sequence, TypeVar, TYPE_CHECKING, cast
 
 from .java import start # noqa
 
@@ -62,6 +62,10 @@ T_co = TypeVar("T_co", covariant=True)
 @jpype_wrapper(JVariable)
 class Variable(Node, JWrapper[JVariable]):
     @property
+    def belief(self) -> Any:
+        return self.jvariable.getBeliefObject()
+
+    @property
     def jnode(self) -> JVariable:
         return self.jvariable
 
@@ -79,9 +83,11 @@ class Variable(Node, JWrapper[JVariable]):
         return jprior and cast(Datum, JWrapper.for_jobj(jprior))
 
     @prior.setter
-    def prior(self, prior: Datum|None) -> None:
-        assert prior is None or isinstance(prior, JWrapper)
-        jprior = prior and prior.jobj
+    def prior(self, prior: Any) -> None:
+        if isinstance(prior, JWrapper):
+            jprior = prior.jobj
+        else:
+            jprior = prior
         self.jvariable.setPrior(jprior)
 
     @property
@@ -164,15 +170,24 @@ class Real(Variable, JWrapper[JReal]):
         self,
         domain_or_lower: RealDomain | float | None=None,
         upper:float = math.inf, /,
+        jobj: JReal|None = None,
     ) -> None:
-        if isinstance(domain_or_lower, RealDomain):
-            jdomain = domain_or_lower.jdomain
-        elif isinstance(domain_or_lower, float):
-            jdomain = JRealDomain.create(domain_or_lower, upper)
+        if jobj is not None:
+            jreal = jobj
         else:
-            jdomain = JRealDomain.unbounded()
-        super().__init__(jobj=jdomain)
+            if isinstance(domain_or_lower, RealDomain):
+                jdomain = domain_or_lower.jdomain
+            elif isinstance(domain_or_lower, float):
+                jdomain = JRealDomain.create(domain_or_lower, upper)
+            else:
+                jdomain = JRealDomain.unbounded()
+            jreal = JReal(jdomain)
+        super().__init__(jobj=jreal)
 
     @property
     def domain(self) -> RealDomain:
         return RealDomain.for_jobj(self.jvariable.getDomain())
+
+    @property
+    def value(self) -> float:
+        return float(self.jvariable.getValue())

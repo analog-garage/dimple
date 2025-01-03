@@ -154,6 +154,10 @@ class _JIFactorFuncImpl:
 @jpype_wrapper(JFactorFunction)
 class FactorFunctionBase(JWrapper[JFactorFunction]):
     @property
+    def jfunction(self) -> JFactorFunction:
+        return cast(JFactorFunction, self.jobj)
+
+    @property
     def name(self) -> str:
         return str(self.jobj.getName())
 

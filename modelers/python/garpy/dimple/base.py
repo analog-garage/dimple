@@ -18,12 +18,15 @@ Base definitions for Dimple
 
 from __future__ import annotations
 
+import importlib
+import pkgutil
 from collections.abc import Mapping
 from typing import (
     Any,
     Callable,
     ClassVar,
     Iterator,
+    Self,
     Sequence,
     Type,
     TypeVar,
@@ -42,7 +45,10 @@ from com.analog.lyric.dimple.model.core import Node as JNode
 from com.analog.lyric.dimple.model.core import Ids as JIds
 from com.analog.lyric.dimple.options import DimpleOptionHolder as JDimpleOptionHolder
 from com.analog.lyric.dimple.options import SolverOptions as JSolverOptions
-from com.analog.lyric.dimple.options import DimpleOptionRegistry as JDimpleOptionRegistry
+from com.analog.lyric.dimple.options import (
+    DimpleOptions as JDimpleOptions,
+    DimpleOptionRegistry as JDimpleOptionRegistry
+)
 from com.analog.lyric.options import OptionKey as JOptionKey
 
 if TYPE_CHECKING:
@@ -50,6 +56,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "DimpleEnvironment",
+    "DimpleOptions",
     "DimpleOptionHolder",
     "DimpleOptionRegistry",
     "Node",
@@ -87,6 +94,11 @@ class JWrapper[J]:
     """
     __slots__ = ["_jobj", "__weakref__"]
 
+    _import_all_needed: ClassVar[bool] = False
+    """
+    Indicates whether 
+    """
+
     _jpype_to_wrapper: ClassVar[WeakValueDictionary[int, JWrapper]] = WeakValueDictionary()
     """
     Weak value table mapping JObject instances to a known wrapper instance.
@@ -118,7 +130,7 @@ class JWrapper[J]:
         self._jpype_to_wrapper.setdefault(id(jobj), self)
 
     @classmethod
-    def for_jobj(cls:Type[W], jobj: J) -> W:
+    def for_jobj(cls, jobj: J) -> Self:
         """
         Returns an appropriate wrapper instance for the JPype
         object.
@@ -133,22 +145,42 @@ class JWrapper[J]:
             if wrapper_cls != cls:
                 # Recurse to subclass implementation. This allows subclass
                 # to override constructor.
-                return cast(W, wrapper_cls.for_jobj(jobj))
+                return cast(Self, wrapper_cls.for_jobj(jobj))
         return cls(jobj=jobj)
 
     @classmethod
-    def wrapper_type_for(cls, jtype_cls: Type[JObject]) -> Type[JWrapper]|None:
+    def wrapper_type_for(cls, jtype_cls: Type[object]) -> Type[JWrapper]|None:
         """
         Returns corresponding wrapper class for given JPype class,
-        as registered by the @jpype_wrapper class decorator.
+        as registered by the @jpype_wrapper class decorator. Returns
+        wrapper for first registered superclass if there is no
+        direct match.
+
+        Returns None if there is no suitable wrapper.
         """
-        return cls._jpype_wrapper_types.get(jtype_cls)
+        cls._import_all()
+        for superclass in jtype_cls.mro():
+            if wrapper := cls._jpype_wrapper_types.get(superclass):
+                return wrapper
+        return None
 
     @property
     def jobj(self) -> J:
         """The underlying JPype object"""
         return self._jobj
 
+    @classmethod
+    def _import_all(cls) -> None:
+        """Import all dimple modules (to register jpype wrappers)"""
+        if cls._import_all_needed:
+            cls._import_all_needed = False
+            dimplemod = importlib.import_module("garpy.dimple")
+            path = dimplemod.__path__
+            for _, modname, _ in pkgutil.walk_packages(path, "garpy.dimple."):
+                importlib.import_module(modname)
+
+    def __eq__(self, other: Any) -> bool:
+        return isinstance(other, JWrapper) and self.jobj == other.jobj
 
 WT = TypeVar("WT", bound=Type[JWrapper])
 
@@ -185,6 +217,8 @@ class OptionKey(JWrapper[JOptionKey]):
             default: if True, a default value may be returned, otherwise
                 None will be returned if not set.
         """
+        if default:
+            return self.jkey.getOrDefault(holder.jobj)
         return self.jkey.get(holder.jobj)
 
     def set(self, holder: DimpleOptionHolder, value: Any) -> None:
@@ -204,7 +238,7 @@ class OptionKey(JWrapper[JOptionKey]):
         return isinstance(other, OptionKey) and other.jkey == self.jkey
 
     def __repr__(self) -> str:
-        return f"<OptionKey '{self}'>"
+        return f"<OptionKey {self.name}>"
 
     def __str__(self) -> str:
         return str(self._jobj.toString())
@@ -225,26 +259,6 @@ class DimpleOptionRegistry(JWrapper[JDimpleOptionRegistry], Mapping[str, OptionK
     def __iter__(self) -> Iterator[str]:
         for key in self.jregistry.iterator():
             yield key.qualifiedName()
-
-
-@jpype_wrapper(JDimpleEnvironment)
-class DimpleEnvironment(JWrapper[JDimpleEnvironment]):
-    @classmethod
-    def active(cls) -> DimpleEnvironment:
-        return cls.for_jobj(JDimpleEnvironment.active())
-
-    @property
-    def jenvironment(self) -> JDimpleEnvironment:
-        return self._jobj
-
-    @property
-    def option_keys(self) -> DimpleOptionRegistry:
-        return DimpleOptionRegistry.for_jobj(self._jobj.optionRegistry())
-
-    @property
-    def version(self) -> str:
-        """Return version string for running version of dimple"""
-        return self.jenvironment.getVersion()
 
 
 @jpype_wrapper(JDimpleOptionHolder)
@@ -299,6 +313,51 @@ class DimpleOptionHolder(JWrapper[JDimpleOptionHolder]):
 
     def unset_option(self, key: str|OptionKey) -> None:
         self.jobj.unsetOption(self.option_key(key).jkey)
+
+@jpype_wrapper(JDimpleEnvironment)
+class DimpleEnvironment(DimpleOptionHolder, JWrapper[JDimpleEnvironment]):
+    def __init__(self, *, jobj:JDimpleEnvironment|None=None):
+        """
+        Create a new DimpleEnvironment.
+
+        This is not recommended and is rarely needed. Just use
+        the [active][.] environment.
+        """
+        super().__init__(jobj=jobj or JDimpleEnvironment())
+
+    @classmethod
+    def active(cls) -> DimpleEnvironment:
+        return cls.for_jobj(JDimpleEnvironment.active()) # type: ignore
+
+    @property
+    def jenvironment(self) -> JDimpleEnvironment:
+        return self.jobj # type: ignore
+
+    @property
+    def option_keys(self) -> DimpleOptionRegistry:
+        return DimpleOptionRegistry.for_jobj(self.jenvironment.optionRegistry())
+
+    @property
+    def version(self) -> str:
+        """Return version string for running version of dimple"""
+        return self.jenvironment.getVersion()
+
+    @classmethod
+    def set_active(cls, env: DimpleEnvironment) -> DimpleEnvironment:
+        """
+        Sets the active environment and returns the previous environment.
+        """
+        prev = cls.active()
+        JDimpleEnvironment.setActive(env.jenvironment)
+        return prev
+
+class DimpleOptions:
+    """
+    General option keys
+    """
+    label = OptionKey.for_jobj(JDimpleOptions.label)
+
+    randomSeed = OptionKey.for_jobj(JDimpleOptions.randomSeed)
 
 
 class SolverOptions:
@@ -375,4 +434,6 @@ class Node(DimpleOptionHolder, JWrapper[JNode]):
     def __eq__(self, other: Any) -> bool:
         return isinstance(other, Node) and other.jnode == self.jnode
 
+# Defer turning this on until here to avoid cyclic import issues
+JWrapper._import_all_needed = True
 

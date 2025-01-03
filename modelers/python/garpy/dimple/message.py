@@ -15,11 +15,14 @@
 
 from __future__ import annotations
 
-from typing import Any, Self, TypeVar
+from typing import Any, Self, Sequence
 
 from .java import start # noqa
 
 from com.analog.lyric.dimple.solvers.core.parameterizedMessages import (
+    DiscreteEnergyMessage as JDiscreteEnergyMessage,
+    DiscreteMessage as JDiscreteMessage,
+    DiscreteWeightMessage as JDiscreteWeightMessage,
     NormalParameters as JNormalParameters,
     ParameterizedMessageBase as JParameterizedMessageBase
 )
@@ -28,6 +31,9 @@ from .base import JWrapper, jpype_wrapper
 from .value import DataRepresentationType, Datum
 
 __all__ = [
+    "DiscreteMessage",
+    "DiscreteEnergyMessage",
+    "DiscreteWeightMessage",
     "NormalParameters",
     "ParameterizedMessageBase",
 ]
@@ -89,6 +95,45 @@ class ParameterizedMessageBase(Datum, JWrapper[JParameterizedMessageBase]):
     def __str__(self) -> str:
         return str(self.jobj.toString())
 
+@jpype_wrapper(JDiscreteMessage)
+class DiscreteMessage(ParameterizedMessageBase, JWrapper[JDiscreteMessage]):
+    @property
+    def energies(self) -> tuple[float,...]:
+        return tuple(self.jobj.getEnergies())
+
+    @energies.setter
+    def energies(self, values: Sequence[float]) -> None:
+        self.jobj.setEnergies(*values)
+
+    @property
+    def size(self) -> int:
+        return self.jobj.size()
+
+    @property
+    def weights(self) -> tuple[float, ...]:
+        return tuple(self.jobj.getWeights())
+
+    @weights.setter
+    def weights(self, values: Sequence[float]) -> None:
+        self.jobj.setWeights(*values)
+
+    def add_energies_from(self, msg: DiscreteMessage) -> None:
+        self.jobj.addEnergiesFrom(msg.jobj)
+
+    def add_weights_from(self, msg: DiscreteMessage) -> None:
+        self.jobj.addWeightsFrom(msg.jobj)
+
+    def normalize(self) -> None:
+        self.jobj.normalize()
+
+
+@jpype_wrapper(JDiscreteEnergyMessage)
+class DiscreteEnergyMessage(DiscreteMessage, JWrapper[JDiscreteEnergyMessage]):
+    pass
+
+@jpype_wrapper(JDiscreteWeightMessage)
+class DiscreteWeightMessage(DiscreteMessage, JWrapper[JDiscreteWeightMessage]):
+    pass
 
 @jpype_wrapper(JNormalParameters)
 class NormalParameters(ParameterizedMessageBase, JWrapper[JNormalParameters]):

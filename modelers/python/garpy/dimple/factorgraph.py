@@ -25,7 +25,7 @@ from .base import (
 from .factor import Factor
 from .variable import JVariable, Variable
 
-from .factor import FactorFunction, FactorFuncSignature, FFuncType, JFactorFunction
+from .factor import FactorFunction, FactorFunctionBase, FactorFuncSignature, FFuncType, JFactorFunction
 from .factortable import FactorTable
 
 __all__ = [
@@ -111,7 +111,7 @@ class FactorGraph(Node, JWrapper[JFactorGraph]):
     ) -> Factor:
         if isinstance(func, FactorTable):
             jfunc: JFactorFunction = JTableFactorFunction("", func.jtable) # TODO choose name
-        elif isinstance(func, FactorFunction):
+        elif isinstance(func, FactorFunctionBase):
             jfunc = func.jfunction
         elif isinstance(func, FactorFuncSignature):
             func_type = FFuncType.energy if energy else FFuncType.weight
@@ -163,6 +163,9 @@ class FactorGraph(Node, JWrapper[JFactorGraph]):
 
     def get_variables_list(self) -> list[Variable]:
         return list(Variable.for_jobj(jvar) for jvar in self.jgraph.getVariables())
+
+    def initialize(self) -> None:
+        self.jgraph.initialize()
 
     def iterate(self, n: int = 1) -> None:
         self.jgraph.getSolver().iterate(n)
