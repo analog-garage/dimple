@@ -38,6 +38,16 @@ dependency_jars = tuple(solvers_lib.glob("*.jar"))
 conda_prefix = Path(os.environ.get("CONDA_PREFIX", "/usr/local"))
 lib_jars = conda_prefix / "lib/jars"
 
+# JVM args
+#  -Xms<heap-size>[unit] (e.g. -Xms2G)   - min heap size
+#  -Xmx<heap-size>[unit]                 - max heap size
+#
+# GC options:
+# -XX:+UseSerialGC
+# -XX:+UseParallelGC
+# -XX:+USeParNewGC
+# -XX:+UseG1GC
+#
 default_jvm_args: Sequence[str] = ()
 if dependency_jars and dimple_src.exists():
     # Use local jars from source if running from source
