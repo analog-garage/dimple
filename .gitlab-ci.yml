@@ -16,6 +16,7 @@ build:
   script:
     - 'conda env create -f environment.yml'
     - 'conda activate dimple'
+    - 'conda info'
     - 'gradle lint'
     - 'gradle mkdocs'
     - 'make createdev'
