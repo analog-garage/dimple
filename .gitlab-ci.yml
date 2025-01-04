@@ -1,0 +1,30 @@
+image: condaforge/miniforge3:latest
+
+include:
+  - project: 'greenh2/sw/build-helpers'
+    file: '/CI-templates/conda-setup.yml'
+  - project: 'greenh2/sw/build-helpers'
+    file: '/CI-templates/pages-from-site.yml'
+#  - project: 'greenh2/sw/build-helpers'
+#    file: '/CI-templates/gitlab-release-with-notes.yml'
+
+build:
+  tags:
+    - docker
+  before_script:
+    - !reference [.conda-setup]
+  script:
+    - 'conda env create -f environment.yml'
+    - 'conda activate dimple'
+    - 'gradle lint'
+    - 'gradle mkdocs'
+    - 'make createdev'
+
+#coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+artifacts:
+  paths:
+    - site
+#  reports:
+#    coverage_report:
+#      coverage_format: cobertura
+#      path: coverage.xml
