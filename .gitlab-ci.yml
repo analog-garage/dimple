@@ -18,10 +18,9 @@ build:
     - 'conda activate dimple'
     - 'gradle assemble'
     - 'gradle ruff'
-    # skip mypy for now
+    # skip mypy for now - complains about missing com stubs
     - 'gradle pytest'
     - 'gradle mkdocs'
-    - 'make createdev'
 
   #coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   artifacts:
