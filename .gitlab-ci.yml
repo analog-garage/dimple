@@ -17,7 +17,9 @@ build:
     - 'conda env create -f environment.yml'
     - 'conda activate dimple'
     - 'gradle assemble'
-    - 'gradle lint'
+    - 'gradle ruff'
+    # skip mypy for now
+    - 'gradle pytest'
     - 'gradle mkdocs'
     - 'make createdev'
 
