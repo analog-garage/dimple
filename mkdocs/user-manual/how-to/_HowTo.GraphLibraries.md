@@ -1,0 +1,159 @@
+# Graph Libraries
+
+Dimple provides a few graphs that are useful as nested graphs.
+
+## Multiplexer CPDs <a name="multiplexerCPD"></a>
+
+Suppose you wanted a factor representing a DAG with the following
+probability distribution:
+
+$$p(Y=y|a,z_1,z_2,...) \propto \delta(y = z_a)$$
+
+where all variables are Discrete.
+
+You could code this up in Dimple as follows:
+
+=== "Java"
+
+    ```java
+    public class Main 
+    {       
+        public static class MyFunc extends FactorFunction
+        {
+            @Override
+            public double evalEnergy(Value[] args)
+            {
+                Object y = args[0].getObject();
+                int a = args[1].getInt();
+                
+                Object z = args[2+a].getObject();
+                
+                return y.equals(z) ? 0 : Double.POSITIVE_INFINITY;
+            }
+        }
+        
+        public static void main(String[] args)
+        {
+            Discrete y = new Discrete(1,2);
+            Discrete a = new Discrete(0,1,2);
+            Discrete z1 = new Discrete(1,2);
+            Discrete z2 = new Discrete(1,2);
+            Discrete z3 = new Discrete(1,2);
+             
+            FactorGraph fg = new FactorGraph();
+             
+            fg.addFactor(new MyFunc(),y,a,z1,z2,z3);
+        }
+    }
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    function weight = myFunc(y,a,z)
+        weight = y == z(a);
+    end
+
+    N = 3; %Number of possible sources
+    M = 2; %Domain of Zs and Y
+
+    y = Discrete(1:M);
+    a = Discrete(1:N);
+    z = Discrete(1:M,N,1);
+     
+    fg = FactorGraph();
+     
+    fg.addFactor(@myFunc,y,a,z);
+    ```
+
+However, to build this FactorTable takes $O(NM^{N+1})$ where N is the
+number of Zs and M is the domain size of the Zs. Runtime is almost as
+bad at $O(NM^N)$. However, there is an optimization that can result in
+$O(MN^2)$ runtime and graph building time. Dimple provides a
+MultiplexerCPD graph that can be used as a nested graph to achieve this
+optimization.
+
+=== "Java"
+
+    ```java
+    MultiplexerCPD cpd = new MultiplexerCPD(new Object [] {1,2},3);
+    Discrete Y = new Discrete(1,2);
+    Discrete A = new Discrete(0,1,2);
+    Discrete Z1 = new Discrete(1,2);
+    Discrete Z2 = new Discrete(1,2);
+    Discrete Z3 = new Discrete(1,2);
+
+    FactorGraph fg = new FactorGraph();
+    fg.addFactor(cpd,Y,A,Z1,Z2,Z3);
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    cpd = MultiplexerCPD({1,2},3);
+    Y = Discrete(1:2);
+    A = Discrete(1:3);
+    Z1 = Discrete(1:2);
+    Z2 = Discrete(1:2);
+    Z3 = Discrete(1:2);
+    fg = new FactorGraph();
+    fg.addFactor(cpd,Y,A,Z1,Z2,Z3);
+    ```
+
+Dimple supports each Z having different domains. In this case, Y's
+domain must be the sorted union of all the Z domains
+
+=== "MATLAB"
+    
+    ```matlab
+    cpd = MultiplexerCPD({{1,2},{1,2,3},{2,4}});
+    Y = Discrete(1:4);
+    A = Discrete(1:3);
+    Z1 = Discrete(1:2);
+    Z2 = Discrete(1:3);
+    Z3 = Discrete([2 4]);
+    fg = FactorGraph();
+    fg.addFactor(cpd,Y,A,Z1,Z2,Z3);
+    ```
+
+=== "Java"
+
+    ```java
+    Object [][] domains = new Object [][] {
+        new Object [] {1,2},
+        new Object [] {1,2,3},
+        new Object [] {2,4}
+    };
+
+    MultiplexerCPD cpd = new MultiplexerCPD(domains);
+    Discrete Y = new Discrete(1,2,3,4);
+    Discrete A = new Discrete(0,1,2);
+    Discrete Z1 = new Discrete(1,2);
+    Discrete Z2 = new Discrete(1,2,3);
+    Discrete Z3 = new Discrete(2,4);
+
+    FactorGraph fg = new FactorGraph();
+    fg.addFactor(cpd,Y,A,Z1,Z2,Z3);
+    ```
+
+Note that when using the SumProduct solver, a custom implementation of
+the built-in 'Multiplexer' factor function (see
+section [\[sec:builtInFactors\]](#sec:builtInFactors){reference-type="ref"
+reference="sec:builtInFactors"}) exists that is even more efficient than
+using the MultiplexerCPD graph library function. When using other
+solvers with discrete variables, the MultiplexerCPD graph library
+function should be more efficient. When the Z variables are real rather
+than discrete, the 'Multiplexer' factor function is the only option.
+
+## N-Bit Xor Definition
+
+An N-bit soft xor can be decomposed into a tree of three bit soft xors.
+Dimple's MATLAB API provides the `getNBitXorDef` function to generate such a graph. The
+following code shows how to use such a graph.
+
+=== "MATLAB"
+
+    ```matlab
+    fg = FactorGraph();
+    fg.addFactor(getNBitXorDef(4),Bit(4,1));
+    ```

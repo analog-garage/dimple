@@ -65,6 +65,14 @@ tasks.register('matlabUserDoc') {
 	}
 }
 
+tasks.register('mkdocs', Exec) {
+    description = 'Builds MkDocs-based documentation site'
+    group = 'Documentation'
+    dependsOn ':copyJavaDocToMkdocs'
+    workingDir = '..'
+    commandLine 'mkdocs', 'build'
+}
+
 tasks.register('userDocs') {
 	description = 'Builds all user documentation'
 	group = 'Documentation'

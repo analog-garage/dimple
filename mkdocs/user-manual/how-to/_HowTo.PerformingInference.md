@@ -1,0 +1,1234 @@
+# Performing Inference
+
+Once a model has been created in Dimple, the user may then perform
+inference on that model. This typically involves first conditioning on
+input data, then performing the inference computation, and then querying
+the model to retrieve information such as beliefs (marginals), maximum
+*a posteriori* (MAP) value, or samples from the posterior distribution.
+
+## Choosing a Solver <a name="Solvers"></a>
+
+To perform the inference computation, Dimple supports a variety of
+*solver* algorithms that the user can choose from. For each solver,
+there are a number of options and configuration parameters that the user
+may specify to customize the behavior of the solver.
+
+At a high level, Dimple supports three categories of solver:
+
+-   Belief propagation (BP)
+
+-   Gibbs sampling
+
+-   Linear programming (LP)
+
+The BP solvers further segment into solvers that are sum-product
+based---used primarily to compute marginals of individual variables in
+the model:
+
+-   SumProduct
+
+-   JunctionTree
+
+-   ParticleBP
+
+and solvers that are min-sum based---used to compute the maximum *a
+posteriori* (MAP) value:
+
+-   MinSum
+
+-   JunctionTreeMAP
+
+In either case, the result may be approximate, depending on the specific
+model and solver settings.
+
+In the case of sum-product, the solvers further divide based on how
+continuous variables are dealt with (Real, Complex, and RealJoint
+variables). The SumProduct solver (which is the default solver) uses a
+Gaussian representation for messages passed to and from continuous
+variables, while the ParticleBP solver uses a particle
+representation[^1]. In the current version of Dimple, the min-sum
+solvers support only discrete variables[^2].
+
+The two forms of Junction Tree solver are variants of BP that provide
+exact inference results by transforming a loopy graphical model into a
+non-loopy graph by joining factors and variables and then performing the
+sum-product or min-sum algorithm on the transformed model. This is only
+feasible for models that are "narrow" enough, i.e., ones in which a
+large number of variables would not have to be removed to eliminate any
+loops. The Junction Tree solvers currently support only discrete
+variables (and continuous variables that have been conditioned with
+fixed values). 
+See [Junction Tree Solver](../api-guide/_APIReference.Solvers.md#JunctionTreeSolverAPI)
+for more details.
+
+The Gibbs solver supports all variable types, and may be used to
+generate samples from the posterior distribution, or to determine
+marginals or approximate the maximum *a posteriori* value (see
+[Gibbs Solver](../api-guide/_APIReference.Solvers.md#GibbsSolverAPI)).
+
+The LP solver transforms a factor graph over discrete variables into an
+equivalent linear program then solves this linear program (see
+[LP Solver](../api-guide/_APIReference.Solvers.md#LPSolver)). 
+This solver is limited to factor graphs
+containing only discrete variables.
+
+The solver is a property of a factor graph. To set the Solver for a
+given graph:
+
+=== "MATLAB"
+
+    ```matlab
+    myGraph.Solver = 'Gibbs';
+    ```
+
+    The solver name is case insensitive. The current set of valid solver
+    names are:[^3]
+
+    -   SumProduct
+    -   MinSum
+    -   JunctionTree
+    -   JunctionTreeMAP
+    -   ParticleBP
+    -   Gibbs
+    -   LP
+
+=== "Java"
+
+    ```java
+    GibbsSolverGraph solverGraph = myGraph.setSolverFactory(new GibbsSolver());
+    ```
+
+    Note that is often useful to save a reference to the created solver
+    graph object returned by this method because it typically provides
+    additional solver specific methods. The solver graph can also be
+    obtained from the `getSolver()` method, but that requires an explicit
+    downcast.
+
+    The currently supported set of solvers is:[^4]
+    
+    -   SumProductSolver
+    -   MinSumSolver
+    -   JunctionTreeSolver
+    -   JunctionTreeMapSolver
+    -   ParticleBPSolver
+    -   GibbsSolver
+
+More detail on each of these solvers is provided in
+the [Solvers](../api-guide/_APIReference.Solvers.md)
+section of the [API Guide](../api-guide/).
+
+If no solver is specified for a graph, Dimple will use the SumProduct
+solver by default.
+
+## Conditioning on Input Data
+
+In many cases, the model created in Dimple represents the prior, before
+conditioning on the data. In this case, then assuming inference on the
+posterior model is desired, then the user must condition the model on
+the data before performing inference.
+
+There are two primary ways to condition on input data. In the first
+approach, the values actually measured are not included in the model,
+and instead the effect of the data is specified via a likelihood
+function for each variable that is indirectly influenced by the data. In
+the second approach, the variables that will be measured are included in
+the model, and the value of each is fixed to the actual measured data
+value.
+
+### LikelihoodInput <a name="LikelihoodInput"></a>
+
+Suppose a variable to be measured, $y$, depends only on another
+variable, $x$, and the conditional distribution $p(y|x)$ is known. Then
+conditioned on the measured value, $y = Y$, then the likelihood of $x$
+is given by $L(x) = p(y = Y | x)$. If our model includes the variable
+$x$, but does not include $y$, then we can indicate the effect of
+measuring $y = Y$ by specifying the likelihood function $L(x)$ as the
+"input" to the variable $x$ using the Input property of the variable.
+
+The particular form of the Input property depends on the type of
+variable. For a Discrete variable type, the Input property is a vector
+with length equal to the size of the variable domain. The values
+represent the (not necessarily normalized) value of the likelihood
+function for each element of the domain. For example,
+
+    v = Discrete(1:4);
+    v.Input = [1.2, 0.6, 0, 0.8];
+
+    Discrete v = new Discrete(1,2,3,4);
+    v.setInput(new double []{1.2, 0.6, 0, 0.8});
+
+Notice that values in the Input vector may be greater than one---the
+Input is assumed to be arbitrarily scaled. All values, however, must be
+non-negative.
+
+For a Bit variable, the Input property is specified differently. In this
+case, the Input is set to a scalar that represents a normalized version
+of the likelihood of the value 1. That is,
+$$\frac{L(x=1)}{L(x=0) + L(x=1)}$$
+
+For example,
+
+    b = Bit();
+    b.Input = 0.3;
+
+    Bit b = new Bit();
+    b.setInput(0.3);
+
+In this case, the value must be between 0 and 1, inclusive.
+
+For a Real variable, the Input property is expressed in the form of a
+FactorFunction object that can connect to exactly one Real variable. The
+list of available built-in FactorFunctions is given in
+section [\[sec:usingBuiltInFactors\]](#sec:usingBuiltInFactors){reference-type="ref"
+reference="sec:usingBuiltInFactors"}. Typically, an Input would use one
+of the standard distributions included in this list. In this case, it
+must be one in which all the parameters can be fixed to pre-defined
+constants. For the Gibbs and ParticleBP solvers, any such factor
+function may be used as an Input. For the SumProduct solver, however,
+only a Normal factor function may be used. Below is an example of
+setting the Input for a Real variable:
+
+    r = Real();
+    r.Input = FactorFunction('Normal', measuredMean, measurementPrecision);
+
+    Real r = new Real();
+    r.setInput(new Normal(measuredMean, measurementPrecision));
+
+See
+section [\[sec:RealJoint.Input\]](#sec:RealJoint.Input){reference-type="ref"
+reference="sec:RealJoint.Input"} for a description of how to set the
+Input on RealJoint (or Complex) variables.
+
+If the inputs are to be applied to an array of variables, this can
+generally be done all at once by setting the Input property of the
+entire array. For a Discrete variable array, the Input is set to an
+array with the same dimensions as the variable array (or subarray), but
+with an extra dimensions corresponding to the Input vector for each
+variable in the array. (If a dimension in the array is 1, that dimension
+is not included.) For example:
+
+    v = Discrete(1:4, 2, 1);
+    v.Input = [1.2, 0.6, 0, 0.8 ; 0.4, 0, 1.1, 0.9];
+
+For an array of Bit variables, the Input is an array with the same
+dimensions as the Bit array. For example:
+
+    b = Bit(2,3);
+    b.Input = [0.3 0.7 0.1; 0.0 0.8 0.6];
+
+In the current version of Dimple, Inputs on Real variable arrays must be
+set one at a time, or all set to a single common value[^5].
+
+### Fixing a variable value <a name="FixingAVariableValue"></a>
+
+In some cases, the variable that will be measured is included in the
+model. In this case, once the value becomes known, the variable may be
+fixed to that specific value so that the remainder of the model becomes
+conditioned on that value. The FixedValue property is used to set a
+variable to a fixed value. For a single variable, the FixedValue is set
+to any value in the domain of that variable. For example:
+
+=== "Python"
+
+    ```python
+    v = Discrete(DiscreteDomain.range(1,5))
+    v.prior = 2
+
+    v = Discrete(1.2, 5.6, 2.7, 6.94)
+    v.prior = 5.6
+
+    b = Bit()
+    b.prior = 0
+
+    r = Real(-math.pi, math.pi)
+    r.prior = 1.7
+    ```
+
+=== "Java"
+
+    ```java
+    var v = Discrete.range(1,4);
+    v.setFixedValue(2);
+
+    v = new Discrete(1.2, 5.6, 2.7, 6.94);
+    v.setFixedValue(5.6);
+
+    var b = new Bit();
+    b.setFixedValue(0);
+
+    var r = Real(-pi, pi);
+    r.setFixedValue(1.7);
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    v = Discrete(1:4);
+    v.FixedValue = 2;
+
+    v = Discrete([1.2, 5.6, 2.7, 6.94]);
+    v.FixedValue = 5.6;
+
+    b = Bit();
+    b.FixedValue = 0;
+
+    r = Real([-pi, pi]);
+    r.FixedValue = 1.7;
+    ```
+
+For Discrete variables, the FixedValue property is currently limited to
+variables with numeric domains, though the domains need not include only
+integer values[^6].
+
+For arrays of variables in MATLAB, the FixedValue property may be set for the
+entire array by setting it to an array of values of with the same
+dimensions as the array (or subarray) being set. For example:
+
+=== "MATLAB"
+
+    ```matlab
+    b = Bit(2,3);
+    b.FixedValue = [0 1 0; 1 1 0];
+    ```
+
+=== "Java"
+
+    ```java
+    Bit b = new Bit();
+    b.setFixedValue(1);
+    ```
+
+To see if a FixedValue has been set on a variable, you can use the
+hasFixedValue method. For a single variable this method returns a
+boolean value, and for an array of variables this method returns a
+boolean array.
+
+Because the Input and FixedValue properties serve similar purposes,
+setting one of these overrides any previous use of the other. Setting
+the Input property removes any fixed value and setting the FixedValue
+property removes any input[^7].
+
+In a rolled-up graph, the Input property of a variable can be set using
+a data source. Detail on how to do this can be found in
+section [\[sec:rolledUpFactorGraphs\]](#sec:rolledUpFactorGraphs){reference-type="ref"
+reference="sec:rolledUpFactorGraphs"}
+
+## Choosing a Schedule
+
+All of the Dimple solvers operate by successively performing the
+inference computation on each element in the graph. In the case of BP
+solvers, both variable and factor nodes must be updated, and the
+performance of the inference can depend strongly on the order that these
+updates occur. Similarly, for the Gibbs solver, while variables must be
+updated in an order that maintains the requirements of valid Gibbs
+sampling, performance may depend on the particular order chosen.
+
+The order of updates in Dimple is called a "schedule." The schedule may
+either be determined automatically using one of Dimple's built-in
+"schedulers," or the user may specify a custom scheduler.
+
+Each solver has a default scheduler, so if the user does not explicitly
+choose one, a reasonable choice is made automatically.
+
+If no scheduler or custom schedule is specified, a default scheduler
+will be used. The default scheduler depends on the selected solver.
+
+Another scheduler may be specified by setting the scheduler option
+appropriate to the type of solver. "GibbsOptions.scheduler" should be
+used for scheduling Gibbs solver updates, and "BPOptions.scheduler"
+should be used for scheduling SumProduct, MinSum and ParticleBP. The
+scheduler may be provided either as a class name or instance or an
+actual scheduler instance.
+
+=== "Java"
+
+    ```java
+    // These are equivalent
+    myGraph.setOption(BPOptions.scheduler, FloodingScheduler.class);
+    myGraph.setOption(BPOptions.scheduler, "FloodingScheduler");
+    myGraph.setOption(BPOptions.scheduler, new FloodingScheduler());
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    % These are equivalent
+    myGraph.setOption('BPOptions.scheduler', 'FloodingScheduler');
+    myGraph.setOption('BPOptions.scheduler', Scheduler('FloodingScheduler'));
+    ```
+
+    When setting the scheduler for a graph, the name of the scheduler is
+    case sensitive.
+
+Since most schedulers know what options they can be applied to, you can
+also set the scheduler directly on the graph using this technique, and
+it will set the appropriate options for you:
+
+=== "Java"
+
+    ```java
+    myGraph.setScheduler(new FloodingScheduler());
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    myGraph.Scheduler = 'FloodingScheduler';
+    ```
+
+For the Junction Tree solvers, a tree schedule will always be used, so
+there is no need to choose a different scheduler. For the remaining BP
+solvers (SumProduct, MinSum, and ParticleBP), the following schedulers
+are available. More detail on each of these schedulers is provided in
+section [\[sec:FactorGraph.Scheduler\]](#sec:FactorGraph.Scheduler){reference-type="ref"
+reference="sec:FactorGraph.Scheduler"}.
+
+-   TreeOrFloodingScheduler
+
+-   TreeOrSequentialScheduler
+
+-   FloodingScheduler
+
+-   SequentialScheduler
+
+-   RandomWithoutReplacementScheduler
+
+-   RandomWithReplacementScheduler
+
+In a nested graph, for most of the schedulers listed above (except for
+the random schedulers), the schedule is applied hierarchically. In
+particular, a subgraph is treated as a factor in the nesting level that
+it appears. When that subgraph is updated, the schedule for the
+corresponding subgraph is run in its entirety, updating all factors and
+variables contained within according to its specified schedule.
+
+It is possible for subgraphs to be designated to use a schedule
+different from that of its parent graph. This can be done by specifying
+either a scheduler or a custom schedule for the subgraph prior to adding
+it to the parent graph. For example:
+
+=== "Java"
+
+    ```java
+    SubGraph.setOption(BPOptions.scheduler, new SequentialScheduler());
+    ParentGraph.addFactor(SubGraph, boundaryVariables);
+    ParentGraph.setOption(BPOptions.scheduler, new FloodingScheduler());
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    SubGraph.setOption('BPOptions.scheduler', 'SequentialScheduler');
+    ParentGraph.addFactor(SubGraph, boundaryVariables);
+    ParentGraph.setOption('BPOptions.schedule', 'FloodingScheduler');
+    ```
+
+For the TreeOrFloodingScheduler and the TreeOrSequentialScheduler, the
+choice of schedule is done independently in the outer graph and in each
+subgraph. In case that a subgraph is a tree, the tree scheduler will be
+applied when updating that subgraph even if the parent graph is loopy.
+This structure can improve the performance of belief propagation by
+ensuring that the effect of variables at the boundary of the subgraph
+fully propagates to all other variables in the subgraph on each
+iteration.
+
+For the RandomWithoutReplacementScheduler and
+RandomWithReplacementScheduler, if these are applied to a graph or
+subgraph, the hierarchy of any lower nesting layers is ignored. That is,
+the subgraphs below are essentially flattened prior to schedule
+creation, and any schedulers or custom schedules specified in lower
+layers of the hierarchy are ignored.
+
+Because of the differences in operation between the Gibbs solver and the
+BP based solvers, the Gibbs solver supports a distinct set of
+schedulers. For the Gibbs solver, the following schedulers are
+available. More detail on each of these schedulers is provided in
+section [\[sec:FactorGraph.Scheduler\]](#sec:FactorGraph.Scheduler){reference-type="ref"
+reference="sec:FactorGraph.Scheduler"}.
+
+-   GibbsSequentialScanScheduler
+
+-   GibbsRandomScanScheduler
+
+Because of the nature of the Gibbs solver, the nested structure of a
+graph is ignored in creating the schedule. That is, the graph hierarchy
+is essentially flattened prior to schedule creation, and only the
+scheduler specified on the outermost graph is applied.
+
+### Custom schedules <a name="CustomSchedules"></a>
+
+Dimple supports user defined custom schedules created with a list of
+nodes and/or edges. A custom schedule is specified using the Schedule
+method. Specifying a custom schedule overrides any scheduler that the
+graph would otherwise use.
+
+The following code demonstrates this feature:
+
+=== "Java"
+
+    ```java
+    Equals eq = new Equals();
+    FactorGraph fg = new FactorGraph();
+    Bit a = new Bit();
+    Bit b = new Bit();
+    Bit c = new Bit();
+    Factor eq1 = fg.addFactor(eq,a,b);
+    Factor eq2 = fg.addFactor(eq,b,c);
+
+    //define schedule
+    CustomScheduler custom = new CustomScheduler(fg, BPOptions.scheduler);
+    custom.addVariable(b);
+    custom.addEdge(eq1,a);
+    fs.addEdge(eq2,c);
+    fs.addEdge(a,eq1);
+    fs.addEdge(c,eq2);
+    fs.addEdge(eq1,b);
+    fs.addEdge(eq2,b);
+            
+    //set scheduler
+    fg.setOption(BPOptions.scheduler, custom);
+
+    //Set priors
+    a.setInput(0.6);
+    b.setInput(0.7);
+    c.setInput(0.8);
+
+    //Solve
+    fg.solve();
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    eq = @(x,y) x == y;
+    fg = FactorGraph();
+    a = Bit();
+    b = Bit();
+    c = Bit();
+    eq1 = fg.addFactor(eq,a,b);
+    eq2 = fg.addFactor(eq,b,c);
+    
+    %define schedule
+    % update b
+    % update eq1->a
+    % update eq2->c
+    % update a->eq1
+    % update c->eq2
+    % update eq1->b
+    % update eq2->b
+    fg.Scheduler = CustomScheduler(fg, 'BPOptions.scheduler', 
+       {b, {eq1,a},{eq2,c},{a,eq1},{c,eq2},{eq1,b},{eq2,b}});
+    
+    %Set priors
+    a.Input = .6;
+    b.Input = .7;
+    c.Input = .8;
+    
+    %Solve
+    fg.NumIterations = 1;
+    fg.solve();
+    ```
+
+Dimple also supports nesting custom schedules and nesting in general.
+The following example demonstrates specifying nested graphs in a
+schedule.
+
+=== "Java"
+
+    ```java
+    Equals eq = new Equals();
+    Bit b1 = new Bit();
+    Bit b2 = new Bit();
+    FactorGraph nfg = new FactorGraph(b1,b2);
+    nfg.addFactor(eq,b1,b2);
+    Bit c1 = new Bit();
+    Bit c2 = new Bit();
+    Bit c3 = new Bit();
+    FactorGraph fg = new FactorGraph();
+    FactorGraph nf1 = fg.addFactor(nfg,c1,c2);
+    FactorGraph nf2 = fg.addFactor(nfg,c2,c3);
+
+    CustomScheduler custom = new CustomScheduler(fg, BPOptions.scheduler);
+    custom.addNodes(c1,nf1,c2,nf2,c3);
+    fg.setOption(BPOptions.scheduler, custom);
+    c1.setInput(0.7);
+    fg.solve();
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    eq = @(x,y) x == y;
+    b = Bit(2,1);
+    nfg = FactorGraph(b);
+    nfg.addFactor(eq,b(1),b(2));
+    b = Bit(3,1);
+    fg = FactorGraph();
+    nf1 = fg.addFactor(nfg,b(1),b(2));
+    nf2 = fg.addFactor(nfg,b(2),b(3));
+    
+    
+    fg.Scheduler = CustomScheduler(fg, 'BPOptions.scheduler', {b(1),nf1,b(2),nf2,b(3)});
+    b(1).Input = .7;
+    fg.NumIterations = 1;
+    fg.solve();
+    ```
+
+And finally we look at nesting a custom schedule:
+
+=== "Java"
+
+    ```java
+    //Now let's try nesting with a custom schedule on the nested graph.
+    Equals eq = new Equals();
+        
+    //create a graph to nest and give it a funny schedule    
+    // nfg: eb(1) - f1 - ib - f2 - eb(2)
+    Bit eb1 = new Bit();
+    Bit eb2 = new Bit();
+    Bit ib = new Bit();
+    FactorGraph nfg = new FactorGraph(eb1,eb2);
+    Factor f1 = nfg.addFactor(eq,eb1,ib);
+    Factor f2 = nfg.addFactor(eq,ib,eb2);
+    //Set an input and solve
+    eb1.setInput(0.8);
+
+    nfg.solve();
+
+    //We expect the output to be equal to the input since the tree
+    //scheduler passes the info along.
+    System.out.println(eb2.getP1() - eb1.getInput()[0]);
+
+    //Now we create a schedule that will not propagate the info.
+    CustomScheduler custom = new CustomScheduler(nfg, BPOptions.scheduler);
+    schedule.addVariable(ib);
+    schedule.addEdge(f1,eb1);
+    schedule.addEdge(f2,eb2);
+    schedule.addVariable(eb1);
+    schedule.addVariable(eb2);
+    schedule.addFactor(f1);
+    schedule.addFactor(f2);
+    nfg.setOption(BPOptions.scheduler, custom);
+    nfg.solve();
+
+    System.out.println(eb2.getP1() - 0.5);
+
+            
+    //Nest it and see if the schedule is preserved
+    Bit b1 = new Bit();
+    Bit b2 = new Bit();
+    FactorGraph fg = new FactorGraph();
+    FactorGraph g = fg.addFactor(nfg,b1,b2);
+
+    CustomScheduler custom2 = new CustomScheduler(fg, BPOptions.scheduler);
+    custom2.addNodes(b1,b2,g);
+    fg.setOption(BPOptions.scheduler, custom2);
+
+    b1.setInput(0.8);       
+    fg.solve();
+    System.out.println(b2.getP1()-0.5);
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    %Now let's try nesting with a custom schedule on the nested graph.
+    
+    %Create a graph to nest and give it a funny schedule    
+    % nfg: eb(1) - f1 - ib - f2 - eb(2)
+    eb = Bit(2,1);
+    ib = Bit();
+    nfg = FactorGraph(eb);
+    f1 = nfg.addFactor(eq,eb(1),ib);
+    f2 = nfg.addFactor(eq,ib,eb(2));
+    %Set an input and solve
+    eb(1).Input = .8;
+    
+    nfg.NumIterations = 1;
+    nfg.solve();
+    
+    %We expect the output to be equal to the input since the tree
+    %scheduler passes the info along.
+    assertElementsAlmostEqual(eb(2).Belief,eb(1).Input(1));
+    
+    %Now we create a schedule that will not propagate the info.
+    nfg.Scheduler = CustomScheduler(nfg,BPOptions.scheduler'
+        {ib,{f1,eb(1)},{f2,eb(2)},eb(1),eb(2),f1,f2});
+    nfg.solve();
+    
+    assertElementsAlmostEqual(eb(2).Belief,.5);
+    
+    %Nest it and see if the schedule is preserved
+    b = Bit(2,1);
+    fg = FactorGraph();
+    g = fg.addFactor(nfg,b);
+    
+    fg.Scheduler = CustomScheduler(fg, 'BPOptions.scheduler' {b(1),b(2),g});
+    
+    b(1).Input = .8;
+    fg.NumIterations = 1;
+    fg.solve();
+    assertElementsAlmostEqual(b(2).Belief,.5);
+    ```
+
+## Running the Solver
+
+Once a factor graph has been created and conditioned on any input data,
+inference may be performed on the graph by calling the solve method:
+
+=== "Python"
+
+    ```python
+    my_graph.solve()
+    ```
+
+=== "Java"
+
+    ```java
+    myGraph.solve();
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    myGraph.solve();
+    ```
+
+The solve method performs all necessary computation, leaving the results
+available to be subsequently accessed. The behavior of the solve method
+is determined by the chosen schedule as well as by any solver-specific
+configuration parameters.
+
+For example, for all of the BP solvers, the number of iterations can be
+set. By default, the number of iterations is 1, but for a loopy factor
+graph, generally multiple iterations should be performed. To set the
+number of iterations prior to solving, the BPOptions.iterations option
+may be set on the graph:
+
+=== "Python"
+
+    ```python
+    my_graph.set_option(BPOptions.iterations, 10)
+    my_graph.solve()
+    ```
+
+=== "Java"
+
+    ```java
+    myGraph.setOption(BPOptions.iterations, 10);
+    myGraph.solve();
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    myGraph.setOption('BPOptions.iterations', 10);
+    myGraph.solve();
+    ```
+
+As a shortcut, the number of iterations option may be set directly on the graph:
+
+=== "Python"
+
+    ```python
+    my_graph.num_iterations = 10
+    my_graph.solve()
+    ```
+
+=== "Java"
+
+    ```java
+    myGraph.setNumIterations(10);
+    myGraph.solve();
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    myGraph.NumIterations = 10;
+    myGraph.solve();
+    ```
+
+For the Gibbs solver, the `BPOptions.iterations` option isn't used and
+will be ignored if set; other options specific to this solver should be
+used instead. For example, to set the number of Gibbs samples to run
+before stopping (assuming the solver has been set to 'Gibbs'):
+
+=== "Python"
+
+    ```python
+    my_graph.set_option(GibbsOptions.numSamples, 10)
+    my_graph.solve()
+    ```
+
+=== "Java"
+
+    ```java
+    myGraph.setOption(GibbsOptions.numSamples, 1000);
+    myGraph.solve();
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    myGraph.setOption('GibbsOptions.numSamples', 1000);
+    myGraph.solve();
+    ```
+
+Note that in most cases solver options can be set directly on the factor
+graph and the values will only be used if the applicable solver is in
+use for that graph. Option values will usually not take effect until the
+solver objects have been initialized, but this is done automatically
+when the `solve()` method is run. If you need to interact directly with
+the solver representation of the factor graph, you can access it using
+the corresponding solver accessor:
+
+=== "Python"
+
+    *not yet supported*
+
+=== "Java"
+
+    ```java
+    myGraph.getSolver().someMethod();
+    ```
+
+    Note that if the solver method is not part of the `ISolverFactorGraph interface, 
+    you will need to cast the return value to the appropriate solver class 
+    (e.g. `GibbsSolverGraph`)
+    or you can simply save the return value from the `setSolverFactory()`
+    method:
+
+    ```java
+    GibbsSolverGraph mySGraph = myGraph.setSolverFactory(new GibbsSolver());
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    myGraph.Solver.someMethod();
+    ```
+
+In general, each solver has a series of custom options and methods that
+can be used to configure the behavior of the solver and query its state.
+A complete list of these can be found in
+section [\[sec:SolversAPI\]](#sec:SolversAPI){reference-type="ref"
+reference="sec:SolversAPI"}.
+
+In some cases, it is useful to observe the intermediate behavior of the
+solver before it has completed. For the BP solvers, this can be done by
+using the solver-specific iterate method instead of the solve method.
+When called without any arguments, this results in running one
+iteration. An optional argument allows specifying the number of
+iterations to run. Successive calls to iterate do not reset the state of
+the solver, allowing it to be called multiple times in succession.
+However, before running iterate for the first time, the initialize
+method must be called in order to reset the state before beginning. For
+example, here we run one iteration at a time, displaying the belief of a
+particular variable after each iteration:
+
+=== "Python"
+
+    ```python
+    my_graph.initialize()
+    for _ in range(num_iterations):
+        my_graph.iterate()
+        print(some_var.belief)
+    ```
+
+=== "Java"
+
+    ```java
+    myGraph.initialize();
+    for (int i=0; i <  numberOfIterations; i++)\
+    {
+        myGraph.getSolver().iterate();
+        System.out.println(Arrays.toString(someVariable.getBelief()));
+    }
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    myGraph.initialize();
+    for i=1:numberOfIterations
+        myGraph.Solver.iterate();
+        disp(someVariable.Belief);
+    end
+    ```
+
+If instead we wanted to run 5 iterations at a time, the iterate call
+would be replaced with:
+
+=== "Python"
+
+    ```python
+    my_graph.iterate(5)
+    ```
+
+=== "Java"
+
+    ```java
+    myGraph.getSolver().iterate(5);
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    myGraph.Solver.iterate(5);
+    ```
+
+For the Gibbs solver, a similar method allows running one or a specified
+number of samples at a time, skipping initialization as well as any
+burn-in or random restarts. This is the sample method, which behaves the
+same as the iterate method.
+
+Some solvers support multithreading in the underlying Java implementation. 
+The following option can be used to turn on multithreading:
+
+=== "Python"
+
+    ```python
+    fg.set_option(SolverOptions.enableMultithreading, True)
+    ```
+
+=== "Java"
+
+    ```java
+    fg.setOption(SolverOptions.enableMultithreading, true);
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    fg.setOption('SolverOptions.enableMultithreading', true);
+    ```
+
+By default, multithreading is turned off. Once multithreading is turned
+on, for large graphs or large factors, users can see acceleration up to
+N times where N is the number of cores in their machine.
+
+## Getting the Results of Inference
+
+Once the solver has been run, the results of inference can be obtained
+from the elements of the graph. The kinds of results that may be desired
+vary with the application, and the kinds of results that are available
+depend on the particular solver and other factors.
+
+One of the most common types of results are beliefs on individual
+variables in the graph. The belief of a variable is an estimate of the
+marginal distribution of that variable given the graph and any
+conditioning data.
+
+=== "Python"
+
+    When available, the belief is accessed via the `belief` property of a
+    variable:
+
+    ```python
+    b = my_var.belief
+    ```
+
+=== "Java"
+
+    When available, the belief is accessed via the `getBeliefObject()` method.
+    If the variable is a Discrete variable, a double array can be retrieved
+    using the `getBelief()` method.
+
+    ```java
+    double [] d = myVariable.getBelief();
+    Object o = myVariable.getbeliefObject();
+    ```
+
+=== "MATLAB"
+
+    When available, the belief is accessed via the Belief property of a
+    variable:
+
+    ```matlab
+    b = myVariable.Belief;
+    ```
+
+The particular form of the belief property depends on the type of
+variable, and in some cases on the solver. For a Discrete variable type,
+the belief property is a vector with length equal to the size of the
+variable domain. The values represent the normalized value of the
+approximate marginal probability of each element of the domain. For a
+Bit variable, the Belief property is a single number that represents the
+marginal probability of the value 1.
+
+For Real variables when using the SumProduct solver, the Belief is
+represented the mean and precision parameters of a Normal distribution
+and for RealJoint variables they are represented as a mean vector and
+covariance matrix of a multivariate Normal distribution. Using the
+ParticleBP solver, beliefs are available for Real variables, but a
+different interface is used to obtain the beliefs in a useful form. This
+is summarized in
+section [\[sec:ParticleBPRealVariableSpecificMethods\]](#sec:ParticleBPRealVariableSpecificMethods){reference-type="ref"
+reference="sec:ParticleBPRealVariableSpecificMethods"}. Beliefs for Real
+variables are not currently supported in the Gibbs solver.
+
+Beliefs can be obtained directly from an array of variables using the
+Belief property of the array. For a Discrete variable array, the Belief
+is an array with the same dimensions as the variable array (or
+subarray), but with an extra dimensions corresponding to the Belief
+vector for each variable in the array. (If a dimension in the array is
+1, that dimension is not included.) For an array of Bit variables, the
+Belief is an array with the same dimensions as the Bit array.
+
+Another useful inference result returned by the value property of a
+variable. This property returns a single value from the domain of the
+variable that corresponds to the maximum value of the belief:
+
+=== "Python"
+
+    ```python
+    v = my_var.value
+    ```
+
+=== "Java"
+
+    ```java
+    v = myVariable.getValue();
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    v = myVariable.Value;
+    ```
+
+    As with the belief property, this can be used either on individual
+    variables or on a variable array. Support for this property is currently
+    limited to discrete variables.
+
+When using the Gibbs solver, there are additional inference results that
+may be useful. For example, for a given real variable, you can request
+the best sample value that has been seen during inference.
+
+=== "Python"
+
+    *not yet available*
+
+=== "Java"
+
+    ```java
+    double bestValue = ((GibbsReal)myVariable.getSolver()).getBestSample();
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    bestValue = myVariable.Solver.getBestSample();
+    ```
+
+This is defined as the value of that variable associated with the sample
+over all variables that resulted in the most probably configuration
+observed given the graph and any conditioning data. Considering the
+graph as a potential function over the configuration space of all
+variables, this corresponds to the lowest energy configuration that had
+been observed.
+
+By default, the Gibbs solver doesn't save all samples, but if so
+configured for a given variable (or all variables) prior to running the
+solver, the solver will save all samples, allowing the entire set of
+samples (post burn-in) to be obtained.
+
+=== "Python"
+
+    *not yet available*
+
+=== "Java"
+
+    ```java
+    myVariable.saveAllSamples();
+    myGraph.solve();
+    double [] allSamples = ((GibbsReal)myVariable.getSolver()).getAllSamples();
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    myVariable.saveAllSamples();
+    myGraph.solve();
+    allSamples = myVariable.Solver.getAllSamples();
+    ```
+
+There are a number of other useful results that can be obtained from the
+Gibbs solver, which are detailed in
+section [\[sec:GibbsSolverAPI\]](#sec:GibbsSolverAPI){reference-type="ref"
+reference="sec:GibbsSolverAPI"}.
+
+It is also possible to retrieve beliefs from factors. The belief of a
+factor is defined as the joint belief over all joint states of the
+variables connected to that factor. In the current version of Dimple,
+this works only for factors connected exclusively to discrete variables.
+The beliefs can be extracted using one of two properties of a factor:
+
+=== "Python"
+
+    *not yet supported*
+
+=== "Java"
+
+    ```java
+    double [] fb = ((DiscreteFactor)myFactor).getBelief();
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    fb = myFactor.Belief;
+    ```
+
+Using the belief property results in a compact representation of the
+belief that leaves out values corresponding to zero values of the
+factor.
+
+=== "MATLAB"
+
+    In the MATLAB API it is also possible to call:
+
+    ```matlab
+    fb = myFactor.FullBelief;
+    ```
+
+    The FullBelief property results in a multidimensional array of beliefs
+    over the range of all possible states of the connected variables. The
+    more compact representation may be needed where the full representation
+    would result in a data structure too large to be practical. More
+    information about the Belief and FullBelief properties can be found in
+    sections [\[sec:Factor.Belief\]](#sec:Factor.Belief){reference-type="ref"
+    reference="sec:Factor.Belief"}
+    and [\[sec:Factor.FullBelief\]](#sec:Factor.FullBelief){reference-type="ref"
+    reference="sec:Factor.FullBelief"}, respectively.
+
+## Explicit Scheduling and Retrieving Message Values
+
+Dimple supports the ability to retrieve and set messages as well as to
+explicitly update edges, factors and variables.
+
+=== "Python"
+
+    *not yet supported*
+
+=== "Java"
+
+    ```java
+    //OK, first we create a simple Factor Graph with a single xor connecting two  
+    //variables.
+    Equals eq = new Equals();
+    FactorGraph fg = new FactorGraph(); 
+    Bit b1 = new Bit();
+    Bit b2 = new Bit();
+    Factor f = fg.addFactor(eq,b1,b2);
+    //We can go ahead and set some inputs
+    b1.setInput(0.8);
+    b1.setInput(0.7);
+
+    //we can examine some edges
+
+    System.out.println(f.getPorts().get(0).getInputMsg());
+    System.out.println(f.getPorts().get(0).getOutputMsg());
+
+    //we can even set some edge messages
+    f.getPorts().get(0).setInputMsgValues(new double [] {0.6,0.4});
+
+    //we can update a node
+    b1.update();
+    b2.update();
+
+    //or a specific edge        
+    b1.updateEdge(f);
+     
+    //but updating via portNum is quicker
+    b1.updateEdge(0);
+
+    //of course, if we don't know the portNum, we can get it
+    int portNum = b1.getPortNum(f);
+    b1.updateEdge(portNum);
+
+    //We can do the same kind of stuff with factors
+    f.updateEdge(b1);
+    f.updateEdge(f.getPortNum(b2));
+
+    //Let's look at some messages again
+    System.out.println(b1.getPorts().get(0).getInputMsg());
+    System.out.println(b2.getPorts().get(0).getInputMsg());
+
+    //and some beliefs
+    System.out.println(b1.getBelief());
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    %OK, first we create a simple Factor Graph with a single xor connecting two  
+    %variables.
+    fg = FactorGraph(); 
+    b = Bit(2,1);
+    f = fg.addFactor(@xorDelta,b);
+    %We can go ahead and set some inputs
+    b(1).Input = .8;
+    b(2).Input = .7;
+
+
+    %we can examine some edges 
+    disp(f.Ports{1}.InputMsg);
+    disp(f.Ports{1}.OutputMsg);
+
+    %we can even set some edge messages
+    f.Ports{1}.InputMsg = [.6 .4];
+
+    %we can update a node 
+    b(1).update();
+    b(2).update();
+
+    %or all the variables in a vector.
+    b.update();
+
+    %or a specific edge
+    b(1).updateEdge(f);
+     
+    %but updating via portNum is quicker
+    b(1).updateEdge(1);
+
+    %of course, if we don't know the portNum, we can get it
+    portNum = b(1).getPortNum(f);
+    b(1).updateEdge(portNum);
+
+    %We can do the same kind of stuff with factors
+    f.updateEdge(b(1));
+    f.updateEdge(f.getPortNum(b(2)));
+
+    %Let's look at some messages again
+    b(1).Ports{1}.InputMsg
+    b(2).Ports{1}.InputMsg
+
+    %and some beliefs
+    b.Belief
+    ```
+
+[^1]: In the current version of Dimple, the ParticleBP solver does not
+    support Complex or RealJoint variables.
+
+[^2]: This restriction may be lifted in a future version.
+
+[^3]: In Dimple versions 0.04 and earlier, there was a separate Gaussian
+    solver, which implemented the Gaussian BP for continuous variables.
+    In subsequent versions of Dimple, this functionality has been
+    incorporated into the SumProduct solver. For backward compatibility,
+    the solver may be set to 'Gaussian,' but will use the SumProduct
+    solver in this case.
+
+[^4]: Dimple also supports and LP solver, but this solver is only
+    accessible via the MATLAB API.
+
+[^5]: This restriction may be removed in a future version.
+
+[^6]: This limitation may be removed in a future version.
+
+[^7]: For implementation reasons, setting the fixed value of a Discrete
+    or Bit variable also sets the Input to a delta function---with the
+    value 0 except in the position corresponding to the fixed value that
+    had been set.

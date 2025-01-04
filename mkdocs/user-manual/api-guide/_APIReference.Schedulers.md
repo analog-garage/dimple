@@ -1,0 +1,96 @@
+## Schedulers {#sec:Schedulers}
+
+A scheduler defines a rule that determines the update schedule of a
+factor graph when performing inference. This section describes all of
+the built-in schedulers available in Dimple.
+
+Each scheduler is applicable only to a certain subset of solvers. For
+the BP solvers (other than the Junction Tree solvers, that is,
+SumProduct, MinSum, and ParticleBP), the following schedulers are
+available:
+
+  **Name**                                           **Description**
+  -------------------------------------------------- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  [DefaultScheduler]{.sans-serif}                    Same as the TreeOrFloodingScheduler, which is the default if no scheduler or custom schedule is specified.
+  [TreeOrFloodingScheduler]{.sans-serif}             The solver will use either a Tree Schedule or a Flooding Schedule depending on whether the factor-graph contains cycles. In a nested graph, this choice is applied independently in each subgraph. If the factor-graph is a tree, the scheduler will automatically detect this and use a Tree Schedule. In this schedule, each node is updated in an order that will result in the correct beliefs being computed after just one iteration. If the entire graph is a tree, NumIterations should be set to 1, which is its default value. If the factor-graph is loopy, the solver will instead use a Flooding Schedule (as described below).
+  [TreeOrSequentialScheduler]{.sans-serif}           The solver will use either a Tree Schedule (as described above) or a Sequential Schedule (as described below) depending on whether the factor-graph contains cycles. In a nested graph, this choice is applied independently in each subgraph.
+  [FloodingScheduler]{.sans-serif}                   The solver will apply a Flooding Schedule. For each iteration, all variable nodes are updated, followed by all factor nodes. Because the graph is bipartite (factor nodes only connect to variable nodes, and vice versa), the order of update within each node type does not affect the result.
+  [SequentialScheduler]{.sans-serif}                 The solver will apply a Sequential Schedule. For each factor node in the graph, first, for each variable connected to that factor, the edge connecting the variable to the factor is updated; then the factor node is updated. The specific order of factors chosen is arbitrary, and depends on the order that factors were added to the graph.
+  [RandomWithoutReplacementScheduler]{.sans-serif}   The solver will apply a Sequential Schedule with the order of factors chosen randomly without replacement. On each subsequent iteration, a new random order is chosen. Since the factor order is chosen randomly with replacement, on each iteration, each factor will be updated exactly once.
+  [RandomWithReplacementScheduler]{.sans-serif}      The solver will apply a Sequential Schedule with the order of factors chosen randomly with replacement. On each subsequent iteration, a new random order is chosen. The number of factors updated per iteration is equal to the total number of factors in the graph. However, since the factors are chosen randomly with replacement, not all factors are necessarily updated in a single iteration, and some may be updated more than once.
+  [CustomScheduler]{.sans-serif}                     The custom scheduler generates a schedule with a fixed list of schedule entries specified by the user.
+
+For the JunctionTree and JunctionTreeMAP solvers, only a Tree Schedule
+will be used. When using these solvers, the Scheduler setting will be
+ignored.
+
+The scheduler for BP solvers is specified through the
+BPOptions.scheduler option, which may be set either to an actual
+scheduler object or to its class or class name. The following are
+equivalent:
+
+    import com.analog.lyric.dimple.schedulers.*;
+
+    graph.setOption('BPOptions.scheduler', 'SequentialScheduler');
+    graph.setOption('BPOptions.scheduler', SequentialScheduler());
+
+    import com.analog.lyric.dimple.schedulers.SequentialScheduler;
+
+    graph.setOption(BPOptions.scheduler, "SequentialScheduler");
+    graph.setOption(BPOptions.scheduler, SequentialScheduler.class);
+    graph.setOption(BPOptions.scheduler, new SequentialScheduler());
+
+In a nested graph, for most of the schedulers listed above (except for
+the random schedulers), the schedule is applied hierarchically. In
+particular, a subgraph is treated as a factor in the nesting level that
+it appears. When that subgraph is updated, the schedule for the
+corresponding subgraph is run in its entirety, updating all factors and
+variables contained within according to its specified schedule.
+
+It is possible for subgraphs to be designated to use a schedule
+different from that of its parent graph. This can be done by specifying
+either a scheduler or a custom schedule for the subgraph prior to adding
+it to the parent graph. For example:
+
+    subGraph.setOption('BPOptions.scheduler', 'SequentialScheduler');
+    parentGraph.addFactor(subGraph, boundaryVariables);
+    parentGraph.setOption('BPOptions.scheduler', 'FloodingScheduler');
+
+    subGraph.setOption(BPOptions.scheduler, new SequentialScheduler()); 
+    parentGraph.addFactor(subGraph, a, b); 
+    parentGraph.setOption(BPOptions.scheduler, new TreeOrFloodingScheduler());      
+
+For the TreeOrFloodingScheduler and the TreeOrSequentialScheduler, the
+choice of schedule is done independently in the outer graph and in each
+subgraph. In case that a subgraph is a tree, the tree scheduler will be
+applied when updating that subgraph even if the parent graph is loopy.
+This structure can improve the performance of belief propagation by
+ensuring that the effect of variables at the boundary of the subgraph
+fully propagates to all other variables in the subgraph on each
+iteration.
+
+For the RandomWithoutReplacementScheduler and
+RandomWithReplacementScheduler, if these are applied to a graph or
+subgraph, the hierarchy of any lower nesting layers is ignored. That is,
+the subgraphs below are essentially flattened prior to schedule
+creation, and any schedulers or custom schedules specified in lower
+layers of the hierarchy are ignored.
+
+Because of the differences in operation between the Gibbs solver and the
+BP based solvers, the Gibbs solver supports a distinct set of schedulers
+through the corresponding GibbsOptions.scheduler option. For the Gibbs
+solver, the following schedulers are available:
+
+  **Name**                                      **Description**
+  --------------------------------------------- -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  [GibbsDefaultScheduler]{.sans-serif}          Same as the GibbsSequentialScanScheduler, which is the default when using the Gibbs solver.
+  [GibbsSequentialScanScheduler]{.sans-serif}   The solver will apply a Sequential Scan Schedule. For each scan, each variable is resampled in a fixed order. The specific order of variables chosen is arbitrary, and depends on the order that variables were added to the graph.
+  [GibbsRandomScanScheduler]{.sans-serif}       The solver will apply a Random Scan Schedule. Each successive variable to be resampled is chosen randomly with replacement. The number of variables resampled per scan is equal to the total number of variables in the graph, but not all variables are necessarily resampled in a given scan, and some may be resampled more than once.
+  [CustomScheduler]{.sans-serif}                The custom scheduler as described above may also be used with the Gibbs solver, but should not contain edge entries.
+
+Because of the nature of the Gibbs solver, the nested structure of a
+graph is ignored in creating the schedule. That is, the graph hierarchy
+is essentially flattened prior to schedule creation, and only the
+scheduler specified on the outermost graph is applied.
+
+Schedulers are not applicable in the case of the LP solver.

@@ -1,0 +1,9 @@
+nav:
+  - Introduction: index.md
+  - Installation: _InstallingDimple.md
+  - Getting Started: _GettingStarted.md
+  - Programming Guide: how-to
+  - API Guide: api-guide
+  - Java API: java-doc/index.html
+  - Appendices: appendices
+

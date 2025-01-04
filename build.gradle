@@ -191,6 +191,13 @@ tasks.register('javadocJar', Jar) {
 	from javadoc.destinationDir
 }
 
+tasks.register('copyJavaDocToMkdocs', Copy) {
+    dependsOn javadoc
+//     from javadoc.destinationDir
+    from "solvers/java/build/docs/javadoc"
+    into "mkdocs/user-manual/java-doc"
+}
+
 publishing {
 	publications {
 		mavenJava(MavenPublication) {

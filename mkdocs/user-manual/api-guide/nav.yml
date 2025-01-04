@@ -1,0 +1,13 @@
+nav:
+  - index.md
+  - Factor Graph: _APIReference.FactorGraph.md
+  - Variables: _APIReference.Variables.md
+  - Factors: _APIReference.Factors.md
+  - Options: _APIReference.Options.md
+  - Schedulers: _APIReference.Schedulers.md
+  - Solvers: _APIReference.Solvers.md
+  - Streaming Data: _APIReference.StreamingData.md
+  - Event Monitoring: _APIReference.EventMonitoring.md
+  - Built-In Factors: _APIReference.BuiltInFactors.,d
+  - Overloaded Operators and Functions in MATLAB: APIReference.OverloadedOperatorsAndFunctions.md
+  - Other top-level functinos: _APIReference.TopLevelFunctions.md

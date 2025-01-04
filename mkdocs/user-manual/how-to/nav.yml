@@ -1,0 +1,8 @@
+nav:
+  - index.md
+  - Defining Models: _HowTo.DefiningModels.md
+  - Performing Inference: _HowTo.PerformingInference.md
+  - Using Rolled Up Factor Graphs: _HowTo.RolledUpGraphs.md
+  - Finite Fields: _HowTo.FiniteFields.md
+  - Parameter Learning: _HowTo.ParameterLearning.md
+  - Graph Libraries: _HowTo.GraphLibraries.md

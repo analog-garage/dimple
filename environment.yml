@@ -13,7 +13,13 @@ dependencies:
   - pyright >=1.1.390
   - pytest >=8.3.4
   # documentation
+  - mkdocs >=1.6.1
+  - mkdocs-material >=9.5.49
+  # awesome-pages dependencies
+  - natsort >=8.3.1
+  - wcmatch >=8.3
   # pip
   - pip >=24.3
   - pip:
+      - mkdocs-awesome-pages-plugin >=2.9.0
       - stubgenj >=0.2.12
