@@ -16,15 +16,16 @@ build:
   script:
     - 'conda env create -f environment.yml'
     - 'conda activate dimple'
+    - 'conda info'
     - 'gradle lint'
     - 'gradle mkdocs'
     - 'make createdev'
 
-#coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
-artifacts:
-  paths:
-    - site
-#  reports:
-#    coverage_report:
-#      coverage_format: cobertura
-#      path: coverage.xml
+  #coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+  artifacts:
+    paths:
+      - site
+  #  reports:
+  #    coverage_report:
+  #      coverage_format: cobertura
+  #      path: coverage.xml
