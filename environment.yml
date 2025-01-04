@@ -10,7 +10,7 @@ dependencies:
   - hatchling >=1.26
   # test/lint
   - mypy >=1.13
-  - pyright >=1.1.390
+  - ruff >=0.8.3
   - pytest >=8.3.4
   # documentation
   - mkdocs >=1.6.1
