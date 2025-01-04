@@ -10,6 +10,7 @@ theme:
   font:
     text: Roboto
     code: Roboto Mono
+  custom_dir: mkdocs/user-manual/overrides
   features:
 #    - navigation.footer - prev/next page
     - content.tabs.link
@@ -20,6 +21,7 @@ theme:
     - navigation.top
     - search.suggest
     - search.highlight
+#    - announce.dismiss
     - toc.follow
 #    - toc.integrate - would be nice in some sections, but not everywhere
   highlight_js: true

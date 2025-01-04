@@ -6,4 +6,6 @@ nav:
   - API Guide: api-guide
   - Java API: java-doc/index.html
   - Appendices: appendices
+  - "*<i>Development Note</i>": dev-note.md
+
 

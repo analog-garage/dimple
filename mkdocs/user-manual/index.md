@@ -1,14 +1,5 @@
 ## Support Note
 
-*With the success of neural networks, we mostly moved away from working with
-graphical models and stopped actively working on and supporting Dimple since
-2015. Also, in the intervening time our research code has almost entirely moved
-away from MATLAB and to Python. The current support effort will provide a minimal
-python interface based on the JPype library so that we can use Dimple's existing
-capabilities from Python code. Note that the existing documentation is often written
-from the perspective of the MATLAB interface. The MATLAB interface may still work, 
-but we have not tested it recently and do not have any future plans to support it.*
-
 ## What is Dimple?
 
 Dimple is an open-source API for probabilistic modeling and inference.
