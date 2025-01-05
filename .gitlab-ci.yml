@@ -18,7 +18,7 @@ build:
     - 'conda activate dimple'
     - 'gradle :solvers:java:build' # build and run java tests
     - 'gradle ruff'
-    # skip mypy for now - complains about missing com stubs
+    - 'gradle mypy-verbose' # FIXME: try to debug mypy problem
     - 'gradle pytest'
     - 'gradle gitlab-pages'
 
