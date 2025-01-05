@@ -198,6 +198,8 @@ tasks.register('copyJavaDocToMkdocs', Copy) {
     into "mkdocs/user-manual/java-doc"
 }
 
+tasks.register('')
+
 publishing {
 	publications {
 		mavenJava(MavenPublication) {

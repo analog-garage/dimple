@@ -16,11 +16,11 @@ build:
   script:
     - 'conda env create -f environment.yml'
     - 'conda activate dimple'
-    - 'gradle assemble'
+    - 'gradle build' # build and run java tests
     - 'gradle ruff'
     # skip mypy for now - complains about missing com stubs
     - 'gradle pytest'
-    - 'gradle mkdocs'
+    - 'gradle gitlab-pages'
 
   #coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   artifacts:

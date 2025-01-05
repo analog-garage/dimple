@@ -73,6 +73,20 @@ tasks.register('mkdocs', Exec) {
     commandLine 'mkdocs', 'build'
 }
 
+tasks.register('copyJavaCoverageToSite', Copy) {
+	description = "Copies Java HTML coverage report to site/java-coverage"
+	dependsOn ":solvers:java:jacocoTestReport"
+	from "../solvers/java/build/reports/jacoco/test/html"
+	into "../site/java-coverage"
+	mustRunAfter mkdocs
+}
+
+tasks.register('gitlab-pages') {
+	description = "Builds GitLab pages site"
+	group = "Documentation"
+	dependsOn mkdocs, copyJavaCoverageToSite
+}
+
 tasks.register('userDocs') {
 	description = 'Builds all user documentation'
 	group = 'Documentation'
