@@ -45,7 +45,7 @@ tasks.register("mypy-verbose", Exec) {
     group = "Verification"
     description = "Run mypy type checker in verbose mode"
     workingDir '.'
-    commandLine 'mypy', '-v', 'garpy', 'tests'
+    commandLine 'mypy', '-vvv, 'garpy', 'tests'
 }
 
 tasks.register("lint") {
