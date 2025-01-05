@@ -16,7 +16,7 @@ build:
   script:
     - 'conda env create -f environment.yml'
     - 'conda activate dimple'
-    - 'gradle build' # build and run java tests
+    - 'gradle :solvers:java:build' # build and run java tests
     - 'gradle ruff'
     # skip mypy for now - complains about missing com stubs
     - 'gradle pytest'
