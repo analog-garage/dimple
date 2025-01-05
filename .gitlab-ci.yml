@@ -19,7 +19,7 @@ build:
     - 'gradle devInstall'
     - 'gradle :solvers:java:build' # build and run java tests
     - 'gradle ruff'
-    - 'gradle mypy-verbose' # FIXME: try to debug mypy problem
+    - 'gradle mypy'
     - 'gradle pytest'
     - 'gradle gitlab-pages'
 
