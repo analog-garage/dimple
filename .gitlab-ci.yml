@@ -16,6 +16,7 @@ build:
   script:
     - 'conda env create -f environment.yml'
     - 'conda activate dimple'
+    - 'gradle devInstall'
     - 'gradle :solvers:java:build' # build and run java tests
     - 'gradle ruff'
     - 'gradle mypy-verbose' # FIXME: try to debug mypy problem
