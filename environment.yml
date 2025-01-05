@@ -2,7 +2,7 @@ name: dimple
 channels:
   - garage-conda-local
 dependencies:
-  - python >=3.12
+  - python >=3.12,<3.13 # mypy doesn't grok com-stubs with 3.13 for some reason
   - gradle >=8.11
   # python interface
   - jpype1 >=1.5.1
