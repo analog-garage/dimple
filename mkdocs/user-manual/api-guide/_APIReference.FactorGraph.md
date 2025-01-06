@@ -1,10 +1,10 @@
-## FactorGraph
+# FactorGraph
 
 The FactorGraph class represents a single factor graph and contains a
 collection of all factors and variables associated with that factor
 graph.
 
-### Constructor
+## Constructor
 
 === "Python"
     ```python
@@ -32,55 +32,52 @@ outer graph that will ultimately connect to the sub-graph. A graph
 defined with boundary variables may alternatively be used as a top-level
 graph, in which case the boundary variables are used directly.
 
-### Properties
+## Properties
 
-[]{#sec:FactorGraph.Solver label="sec:FactorGraph.Solver"}
+### Solver <a name="FactorGraph.Solver"></a>
 
 Read-write. Indicates the choice of solver to be used for performing
 inference on the graph. The default solver is SumProduct.
 
-When setting the solver, the solver is given by a string representing
-the name of the solver. The solver name is case insensitive.
+=== "Java"
 
-    fg.Solver = '%*\textit{SolverName}';
+    When setting the solver, the solver is given by an instance of specific
+    to that kind of solver. By convention, these should have a name ending
+    with the suffix (e.g. or ). The method sets the solver and returns a
+    newly constructed instance specific to this graph and solver. The
+    specific return type will depend on the solver.
 
-The current set of valid solver names are:
+    ```java
+    SolverGraph sgraph = fg.setSolverFactory(new SolverClass());
+    ```
 
--   SumProduct
+    The current set of valid solver classes are:[^1]
+    
+    -   SumProductSolver 
+    -   MinSumSolver
+    -   JunctionTreeSolver
+    -   JunctionTreeMAPSolver
+    -   ParticleBPSolver
+    -   GibbsSolver
 
--   MinSum
+=== "MATLAB"
 
--   JunctionTree
+    When setting the solver, the solver is given by a string representing
+    the name of the solver. The solver name is case insensitive.
 
--   JunctionTreeMAP
+    ```matlab
+    fg.Solver = 'SolverName';
+    ```
 
--   ParticleBP
-
--   Gibbs
-
--   LP
-
-When setting the solver, the solver is given by an instance of specific
-to that kind of solver. By convention, these should have a name ending
-with the suffix (e.g. or ). The method sets the solver and returns a
-newly constructed instance specific to this graph and solver. The
-specific return type will depend on the solver.
-
-    %*\textit{SolverGraph}* sgraph = fg.setSolverFactory(new %*\textit{SolverClass}*());
-
-The current set of valid solver classes are:[^1]
-
--   SumProductSolver
-
--   MinSumSolver
-
--   JunctionTreeSolver
-
--   JunctionTreeMAPSolver
-
--   ParticleBPSolver
-
--   GibbsSolver
+    The current set of valid solver names are:
+    
+    -   SumProduct
+    -   MinSum
+    -   JunctionTree
+    -   JunctionTreeMAP
+    -   ParticleBP
+    -   Gibbs
+    -   LP
 
 A description of each of these solvers is given in
 section [\[sec:SolversAPI\]](#sec:SolversAPI){reference-type="ref"
@@ -90,7 +87,7 @@ Note that the solver can be modified at any time. After running the
 solver on a graph, the solver may be modified and the new solver run
 using the same graph[^2].
 
-[]{#sec:FactorGraph.Scheduler label="sec:FactorGraph.Scheduler"}
+### Scheduler <a name="FactorGraph.Scheduler"></a>
 
 Read-write. Indicates the scheduler to be used for performing inference
 on the graph (unless a custom schedule is specified instead). A
@@ -101,9 +98,17 @@ When setting the scheduler, the scheduler is given by a string
 representing the name of the scheduler. The scheduler name is case
 *sensitive*.
 
-    fg.Scheduler = 'SchedulerName';
+=== "Java"
 
+    ```java
     fg.setScheduler(new com.analog.lyric.dimple.schedulers.TreeOrSequentialScheduler());
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    fg.Scheduler = 'SchedulerName';
+    ```
 
 Each scheduler is applicable only to a certain subset of solvers. The
 list of all available built-in schedulers and a description of their
@@ -111,69 +116,58 @@ behavior can be found in
 section [\[sec:Schedulers\]](#sec:Schedulers){reference-type="ref"
 reference="sec:Schedulers"}.
 
-[]{#sec:FactorGraph.Schedule label="sec:FactorGraph.Schedule"}
+### Schedule <a name="FactorGraph.Schedule"></a>
 
-Read-write. Specifies a custom schedule to be used for performing
-inference. A custom schedule is in the form of a list of nodes or edges
-in the graph to be updated. Specifically, a cell array where each entry
-is either a node in the graph (either variable or factor), or a cell
-array containing a neighboring pair of nodes ({variable, factor} or
-{factor, variable}). The order of the entries in the cell array indicate
-the order that updates should be performed in a single iteration (or
-scan) when performing inference. Examples of using custom schedules are
-given in
-section [\[sec:CustomSchedules\]](#sec:CustomSchedules){reference-type="ref"
-reference="sec:CustomSchedules"}.
+=== "MATLAB"
+    
+    Read-write. Specifies a custom schedule to be used for performing
+    inference. A custom schedule is in the form of a list of nodes or edges
+    in the graph to be updated. Specifically, a cell array where each entry
+    is either a node in the graph (either variable or factor), or a cell
+    array containing a neighboring pair of nodes ({variable, factor} or
+    {factor, variable}). The order of the entries in the cell array indicate
+    the order that updates should be performed in a single iteration (or
+    scan) when performing inference. Examples of using custom schedules are
+    given in
+    section [\[sec:CustomSchedules\]](#sec:CustomSchedules){reference-type="ref"
+    reference="sec:CustomSchedules"}.
 
-Read-write. Specifies a custom schedule to be used for performing
-inference. Schedules must implement the ISchedule interface which
-provides an iterator over schedule entries. Users can instantiate a
-FixedSchedule object and add nodes and/or edges to the fixed schedule to
-provide an order of updates. Examples of using custom schedules are
-given in
-section [\[sec:CustomSchedules\]](#sec:CustomSchedules){reference-type="ref"
-reference="sec:CustomSchedules"}.
+=== "Java"
+
+    Read-write. Specifies a custom schedule to be used for performing
+    inference. Schedules must implement the ISchedule interface which
+    provides an iterator over schedule entries. Users can instantiate a
+    FixedSchedule object and add nodes and/or edges to the fixed schedule to
+    provide an order of updates. Examples of using custom schedules are
+    given in
+    section [\[sec:CustomSchedules\]](#sec:CustomSchedules){reference-type="ref"
+    reference="sec:CustomSchedules"}.
 
 For BP solvers, any of these entries may be included, and have the
 following interpretation[^3].
 
-Variable
+=== 'MATLAB'
 
-:   Update messages for all outgoing edges of that variable.
+    * Variable: Update messages for all outgoing edges of that variable.
 
-Factor
+    * Factor:   Update messages for all outgoing edges of that factor.
 
-:   Update messages for all outgoing edges of that factor.
+    * {Variable, Factor}:   Update a single outgoing edge of the variable in the direction connecting to the specified factor.
 
-{Variable, Factor}
+    * {Factor, Variable}:   Update a single outgoing edge of the factor in the direction
+        connecting to the specified variable.
 
-:   Update a single outgoing edge of the variable in the direction
-    connecting to the specified factor.
+=== "Java"
 
-{Factor, Variable}
+    * FixedSchedule.add(variable):   Update messages for all outgoing edges of that variable.
 
-:   Update a single outgoing edge of the factor in the direction
-    connecting to the specified variable.
+    * FixedSchedule.add(factor):   Update messages for all outgoing edges of that factor.
 
-<!-- -->
+    * FixedSchedule.add(variable,factor):   Update a single outgoing edge of the variable in the direction
+        connecting to the specified factor.
 
-FixedSchedule.add(variable)
-
-:   Update messages for all outgoing edges of that variable.
-
-FixedSchedule.add(factor)
-
-:   Update messages for all outgoing edges of that factor.
-
-FixedSchedule.add(variable,factor)
-
-:   Update a single outgoing edge of the variable in the direction
-    connecting to the specified factor.
-
-FixedSchedule.add(factor,variable)
-
-:   Update a single outgoing edge of the factor in the direction
-    connecting to the specified variable.
+    * FixedSchedule.add(factor,variable):   Update a single outgoing edge of the factor in the direction
+        connecting to the specified variable.
 
 For BP solvers, a check is made when a custom schedule is set to ensure
 that all edges in the graph are updated at least once.
@@ -193,6 +187,8 @@ described in
 section [\[sec:FactorGraph.Scheduler\]](#sec:FactorGraph.Scheduler){reference-type="ref"
 reference="sec:FactorGraph.Scheduler"}.
 
+### NumIterations
+
 Read-write. The NumIterations property sets the number of iterations BP
 will to run when using the solve method. This only applies to solvers
 that use BP, which are the SumProduct, MinSum, and ParticleBP solvers.
@@ -201,6 +197,8 @@ The default value is 1. For a factor graph with a tree-structure, when
 using the default scheduler, one iteration is appropriate. Otherwise, it
 would normally be appropriate to set the number of iterations to a
 larger value.
+
+### NumSteps
 
 Read-write. This property is used for rolled-up graphs (see
 section [\[sec:rolledUpFactorGraphs\]](#sec:rolledUpFactorGraphs){reference-type="ref"
@@ -216,13 +214,31 @@ graph, followed by advancing the graph to the next position. By default,
 this property is infinite, resulting in no limit to the number of steps
 to be run (running until there is no more source data).
 
+### Name
+
 Read-write. When read, retrieves the current name of the factor graph.
 When set, modifies the name of the factor graph to the corresponding
 value. The value set must be a string.
 
-    fg.Name = 'string';
+=== "Python'
 
+    ```python
+    fg.name = 'string'
+    ```
+
+=== "Java"
+
+    ```java
     fg.setName('string');
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    fg.Name = 'string';
+    ```
+
+### Label
 
 Read-write. All variables and factors in a Factor Graph must have unique
 names. However, sometimes it is desirable to have variables or factors
@@ -231,7 +247,7 @@ Label property to set the name for display. If the Label is not set, the
 Name will be used for display. Once the label is set, the label will be
 used for display.
 
-[]{#sec:FactorGraph.Score label="sec:FactorGraph.Score"}
+### Score <a name="FactorGraph.Score"></a>
 
 Read-only. When read, computes and returns the score (energy) of the
 graph given a specified value for each of the variables in the graph.
@@ -256,17 +272,19 @@ corresponds to the Value property of the variable) is used[^4].
 For a rolled-up graph, the Score property represents only the score for
 only the portion of the graph in the current buffer.
 
-[]{#sec:FactorGraph.BetheFreeEnergy
-label="sec:FactorGraph.BetheFreeEnergy"}
+### BetheFreeEnergy <a name="FactorGraph.BetheFreeEnergy"></a>
 
 Read-only. (Only applies to the Sum Product Solver). When read returns:
 
 $$BetheFreeEnergy = InternalEnergy - BetheEntropy$$
 
-    double bfe = fg.getBetheFreeEnergy();
+=== "Java"
 
-[]{#sec:FactorGraph.InternalEnergy
-label="sec:FactorGraph.InternalEnergy"}
+    ```java
+    double bfe = fg.getBetheFreeEnergy();
+    ```
+
+### InternalEnergy <a name="FactorGraph.InternalEnergy"></a>
 
 Read-only. (Only applies to the Sum Product Solver). When read returns:
 
@@ -283,9 +301,13 @@ InternalEnergy, see
 section [\[sec:Variable.InternalEnergy\]](#sec:Variable.InternalEnergy){reference-type="ref"
 reference="sec:Variable.InternalEnergy"}.
 
-    double ie = fg.getInternalEnergy();
+=== "Java"
 
-[]{#sec:FactorGraph.BetheEntropy label="sec:FactorGraph.BetheEntropy"}
+    ```java
+    double ie = fg.getInternalEnergy();
+    ```
+
+### BetheEntropy  <a name="FactorGraph.BetheEntropy"></a>
 
 Read-only. (Only applies to the Sum Product Solver). When read returns:
 
@@ -302,13 +324,33 @@ InternalEnergy, see
 section [\[sec:Variable.BetheEntropy\]](#sec:Variable.BetheEntropy){reference-type="ref"
 reference="sec:Variable.BetheEntropy"}.
 
+=== "MATLAB"
+
+    ```matlab
     be = fg.getBetheEntropy();
+    ```
 
-### Methods
+## Methods
 
-[]{#sec:FactorGraph.addFactor label="sec:FactorGraph.addFactor"}
+### addFactor <a name="FactorGraph.addFactor"></a>
 
+=== "Python"
+
+    ```matlab
+    my_graph.add_factor(factor_specification, *variable_list)
+    ```
+
+=== "Java"
+
+    ```java
     MyGraph.addFactor(factorSpecification, variableList);
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    MyGraph.addFactor(factorSpecification, variableList);
+    ```
 
 The addFactor method is used to add a factor to a factor-graph,
 connecting that factor to a specified set of variables. There are
@@ -337,27 +379,30 @@ The factorSpecification may be specified in one of a number of different
 ways. The following table lists the various ways the factorSpecification
 can be specified:
 
-  Factor Specification    Description
-  ----------------------- -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  functionHandle          The MATLAB function handle for a factor function. A factor function written in MATLAB is a function that takes arguments corresponding values from the domain of each of the connected variables (in the order listed) and returns a non-negative weight corresponding to the unnormalized value of the factor. In MATLAB, the function handle of a function is indicated using the `@` operator, for example, `@myFactor`. Anonymous functions are also supported. Specifying a factor in this form is supported only if all connected variables are discrete.
-  FactorTable             A FactorTable object as described in section [\[sec:FactorTable\]](#sec:FactorTable){reference-type="ref" reference="sec:FactorTable"}. Specifying a factor in this form is supported only if all connected variables are discrete.
-  indexList, weightList   A factor table specified in an alternative form. The indexList and weightList arguments are defined identically to their definition in the FactorTable constructor described in section [\[sec:FactorTable\]](#sec:FactorTable){reference-type="ref" reference="sec:FactorTable"}. Specifying a factor in this form is supported only if all connected variables are discrete.
-  weightArray             A factor table specified in an alternative form. The weightArray argument is defined identically to its definition in the FactorTable constructor described in section [\[sec:FactorTable\]](#sec:FactorTable){reference-type="ref" reference="sec:FactorTable"}. Specifying a factor in this form is supported only if all connected variables are discrete.
-  builtInFactorName       String indicating the name of a built-in factor. The list of Dimple built-in factors is given in section [\[sec:builtInFactors\]](#sec:builtInFactors){reference-type="ref" reference="sec:builtInFactors"}. Referring to a built-in factor by name assumes no constructor arguments are needed for the corresponding FactorFunction. Built-in factor names are case sensitive.
-  FactorFunction          A FactorFunction object as described in section [\[sec:FactorFunction\]](#sec:FactorFunction){reference-type="ref" reference="sec:FactorFunction"}. This form can be used to specify a built-in factor that requires constructor arguments. The list of Dimple built-in factors is given in section [\[sec:builtInFactors\]](#sec:builtInFactors){reference-type="ref" reference="sec:builtInFactors"}.
-  factorFunctionAltForm   A factor function specified in an alternative form. The form is a cell array, where the first entry is a string indicating the name of the built-in factor, and the remaining entries are constructor arguments for the built-in factor.
-  FactorGraph             A sub-graph to be nested within this graph. The number and order of the variables listed in the variableList must correspond to the number and order of the boundary variables declared when the sub-graph was created. When adding a nested graph within an outer graph, the specified sub-graph is used as a template to create a new factor graph that is actually added to the outer graph. Copies are made of all of the variables and factors in the specified sub-graph.
-  javaFactorFunction      The fully-qualified name of a Java FactorFunction class. Creation of custom Java FactorFunctions is described in Appendix [\[sec:userJava\]](#sec:userJava){reference-type="ref" reference="sec:userJava"}.
+=== "Java"
 
-  Factor Specification   Description
-  ---------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  FactorFunction         A FactorFunction object as described in section [\[sec:FactorFunction\]](#sec:FactorFunction){reference-type="ref" reference="sec:FactorFunction"}. This form can be used to specify a built-in factor that requires constructor arguments. The list of Dimple built-in factors is given in section [\[sec:builtInFactors\]](#sec:builtInFactors){reference-type="ref" reference="sec:builtInFactors"}.
-  builtInFactorName      String indicating the name of a built-in factor. The list of Dimple built-in factors is given in section [\[sec:builtInFactors\]](#sec:builtInFactors){reference-type="ref" reference="sec:builtInFactors"}. Referring to a built-in factor by name assumes no constructor arguments are needed for the corresponding FactorFunction. Built-in factor names are case sensitive.
-  FactorTable            A FactorTable object as described in section [\[sec:FactorTable\]](#sec:FactorTable){reference-type="ref" reference="sec:FactorTable"}. Specifying a factor in this form is supported only if all connected variables are discrete.
-  FactorGraph            A sub-graph to be nested within this graph. The number and order of the variables listed in the variableList must correspond to the number and order of the boundary variables declared when the sub-graph was created. When adding a nested graph within an outer graph, the specified sub-graph is used as a template to create a new factor graph that is actually added to the outer graph. Copies are made of all of the variables and factors in the specified sub-graph.
+    | Factor Specification | Description
+    |----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      FactorFunction       | A FactorFunction object as described in section [\[sec:FactorFunction\]](#sec:FactorFunction){reference-type="ref" reference="sec:FactorFunction"}. This form can be used to specify a built-in factor that requires constructor arguments. The list of Dimple built-in factors is given in section [\[sec:builtInFactors\]](#sec:builtInFactors){reference-type="ref" reference="sec:builtInFactors"}.
+      builtInFactorName    | String indicating the name of a built-in factor. The list of Dimple built-in factors is given in section [\[sec:builtInFactors\]](#sec:builtInFactors){reference-type="ref" reference="sec:builtInFactors"}. Referring to a built-in factor by name assumes no constructor arguments are needed for the corresponding FactorFunction. Built-in factor names are case sensitive.
+      FactorTable          | A FactorTable object as described in section [\[sec:FactorTable\]](#sec:FactorTable){reference-type="ref" reference="sec:FactorTable"}. Specifying a factor in this form is supported only if all connected variables are discrete.
+      FactorGraph          | A sub-graph to be nested within this graph. The number and order of the variables listed in the variableList must correspond to the number and order of the boundary variables declared when the sub-graph was created. When adding a nested graph within an outer graph, the specified sub-graph is used as a template to create a new factor graph that is actually added to the outer graph. Copies are made of all of the variables and factors in the specified sub-graph.
 
-[]{#sec:FactorGraph.addFactorVectorized
-label="sec:FactorGraph.addFactorVectorized"}
+=== "MATLAB"
+
+    | Factor Specification  | Description
+    |-----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      functionHandle        | The MATLAB function handle for a factor function. A factor function written in MATLAB is a function that takes arguments corresponding values from the domain of each of the connected variables (in the order listed) and returns a non-negative weight corresponding to the unnormalized value of the factor. In MATLAB, the function handle of a function is indicated using the `@` operator, for example, `@myFactor`. Anonymous functions are also supported. Specifying a factor in this form is supported only if all connected variables are discrete.
+      FactorTable           | A FactorTable object as described in section [\[sec:FactorTable\]](#sec:FactorTable){reference-type="ref" reference="sec:FactorTable"}. Specifying a factor in this form is supported only if all connected variables are discrete.
+      indexList, weightList | A factor table specified in an alternative form. The indexList and weightList arguments are defined identically to their definition in the FactorTable constructor described in section [\[sec:FactorTable\]](#sec:FactorTable){reference-type="ref" reference="sec:FactorTable"}. Specifying a factor in this form is supported only if all connected variables are discrete.
+      weightArray           | A factor table specified in an alternative form. The weightArray argument is defined identically to its definition in the FactorTable constructor described in section [\[sec:FactorTable\]](#sec:FactorTable){reference-type="ref" reference="sec:FactorTable"}. Specifying a factor in this form is supported only if all connected variables are discrete.
+      builtInFactorName     | String indicating the name of a built-in factor. The list of Dimple built-in factors is given in section [\[sec:builtInFactors\]](#sec:builtInFactors){reference-type="ref" reference="sec:builtInFactors"}. Referring to a built-in factor by name assumes no constructor arguments are needed for the corresponding FactorFunction. Built-in factor names are case sensitive.
+      FactorFunction        | A FactorFunction object as described in section [\[sec:FactorFunction\]](#sec:FactorFunction){reference-type="ref" reference="sec:FactorFunction"}. This form can be used to specify a built-in factor that requires constructor arguments. The list of Dimple built-in factors is given in section [\[sec:builtInFactors\]](#sec:builtInFactors){reference-type="ref" reference="sec:builtInFactors"}.
+      factorFunctionAltForm | A factor function specified in an alternative form. The form is a cell array, where the first entry is a string indicating the name of the built-in factor, and the remaining entries are constructor arguments for the built-in factor.
+      FactorGraph           | A sub-graph to be nested within this graph. The number and order of the variables listed in the variableList must correspond to the number and order of the boundary variables declared when the sub-graph was created. When adding a nested graph within an outer graph, the specified sub-graph is used as a template to create a new factor graph that is actually added to the outer graph. Copies are made of all of the variables and factors in the specified sub-graph.
+      javaFactorFunction    | The fully-qualified name of a Java FactorFunction class. Creation of custom Java FactorFunctions is described in Appendix [\[sec:userJava\]](#sec:userJava){reference-type="ref" reference="sec:userJava"}.
+
+### addFactorVectorized <a name="FactorGraph.addFactorVectorized"></a>
 
 To get reasonable speed out of MATLAB, one needs to vectorize their
 code. If a user wishes to build a FactorGraph with large numbers of
@@ -419,7 +464,7 @@ in
 section [\[sec:vectorizedFactorCreation\]](#sec:vectorizedFactorCreation){reference-type="ref"
 reference="sec:vectorizedFactorCreation"}.
 
-[]{#sec:addFactorNoCache label="sec:addFactorNoCache"}
+### addFactorNoCache <a name="addFactorNoCache"></a>
 
 When creating a factor for discrete variables, Dimple attempts to
 determine if the resulting factor tables would be the same as any
@@ -455,6 +500,8 @@ array):
     f = fg.addFactor(factorSpecification, variableList);
     f.directedTo(directedTo);
 
+### initialize
+
     MyGraph.initialize();
 
 The initialize method resets the state of the factor graph and its
@@ -464,7 +511,7 @@ the first iterate call. When using the solve method to perform
 inference, there is no need to call initialize first. The initialize
 method takes no arguments.
 
-[]{#sec:FactorGraph.solve label="sec:FactorGraph.solve"}
+### solve <a name="FactorGraph.solve"></a>
 
     MyGraph.solve();
 
@@ -484,7 +531,7 @@ the graph to the next position. It performs the number of steps of
 inference specified by the NumSteps property or until there is no more
 data in a data source, whichever comes first.
 
-[]{#sec:FactorGraph.continueSolve label="sec:FactorGraph.continueSolve"}
+### continueSolve <a name="FactorGraph.continueSolve"></a>
 
 This method is used for manually advancing a rolled-up graph (see
 section [\[sec:manuallyAdvancingRolledUpGraph\]](#sec:manuallyAdvancingRolledUpGraph){reference-type="ref"
@@ -497,6 +544,8 @@ the rolled-up graph, followed by advancing the graph to the next
 position. The initialize method should be called prior to calling this
 method for the first time on an entire rolled-up graph, but should not
 be called before calling this method again to run additional steps.
+
+### solveOneStep
 
 This method is used for manually advancing a rolled-up graph (see
 section [\[sec:manuallyAdvancingRolledUpGraph\]](#sec:manuallyAdvancingRolledUpGraph){reference-type="ref"
@@ -511,6 +560,8 @@ should be called prior to calling this method for the first time on an
 entire rolled-up graph, but should not be called after each advance to
 the next section.
 
+### advance
+
 This method is used for manually advancing a rolled-up graph (see
 section [\[sec:manuallyAdvancingRolledUpGraph\]](#sec:manuallyAdvancingRolledUpGraph){reference-type="ref"
 reference="sec:manuallyAdvancingRolledUpGraph"}). This method takes no
@@ -519,6 +570,8 @@ the next position. Advancing the graph involves getting the next value
 of all data sources, and writing the next available value to all data
 sinks.
 
+### hasNext
+
 This method is used for manually advancing a rolled-up graph (see
 section [\[sec:manuallyAdvancingRolledUpGraph\]](#sec:manuallyAdvancingRolledUpGraph){reference-type="ref"
 reference="sec:manuallyAdvancingRolledUpGraph"}). This method takes no
@@ -526,7 +579,7 @@ arguments. It returns a boolean value indicating whether or not it is
 possible to advance the graph to the next position. This will be true
 only if all of the data sources have at least one more available value.
 
-[]{#sec:FactorGraph.BaumWelch label="sec:FactorGraph.BaumWelch"}
+### BaumWelch <a name="FactorGraph.BaumWelch"></a>
 
     fg.baumWelch(factorList, numRestarts, numSteps);
 
@@ -585,6 +638,8 @@ section [\[sec:FactorTable\]](#sec:FactorTable){reference-type="ref"
 reference="sec:FactorTable"}), and then the weights can be read from
 that.
 
+### join
+
 The join method can be used to join a set of existing variables or a set
 of existing factors in a graph. In the current version of Dimple this
 method is supported only for discrete variables, and factors connected
@@ -608,6 +663,8 @@ product of the factors being joined. The new factor connects with the
 union of all variables that were previously connected to any of the
 joined variables.
 
+### split
+
 The split method splits a variable in an existing graph into two
 variables connected by an Equality factor.
 
@@ -618,11 +675,17 @@ of factors identifies factors already connected to the variable that are
 to be moved to the new instance of the variable. All unspecified factors
 remain connected to the original instance.
 
+### removeFactor
+
     fg.removeFactor(factor);
 
 This method removes the specified factor from an existing factor graph
 that contains it. This also removes all edges that connect this factor
 to neighboring variables.
+
+### plot
+
+*Only available in MATLAB API*
 
 The plot method is used to visualize a factor graph or a portion of a
 factor graph. Examples of various use cases for plotting factor graphs
@@ -635,32 +698,24 @@ optional arguments. The optional arguments are defined in the following
 table. These are in the form of names (as strings) followed by one or
 more values.
 
-  Name          Values                Description
-  ------------- --------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  `’labels’`    true/false            Boolean value indicating whether or not to display the name of each variable and factor node. By default labels are not displayed.
-  `’color’`     \[nodeList\], color   Specifies the color of some or all nodes in the graph. If no nodeList is included, then this specifies the color of all nodes in the graph. If nodeList is specified, then the color applies to only the listed nodes. The nodeList argument is a cell-array of nodes in the graph (factors and variables). The color argument is a string indicating a MATLAB color (e.g., 'r'). More than one set of 'color' arguments may appear in a single call to plot.
-  `’nodes’`     nodeList              Indicates the set of nodes in the graph to be included in the plot. The nodeList argument is a cell-array of nodes in the graph (factors and variables). By default the entire graph is plotted.
-  `’depth’`     rootNode, depth       This argument indicates a portion of the graph to be displayed by specifying a root node and depth (distance) from that node. The plot includes only the root node and all other nodes that are within the specified distance from the root. By default the entire graph is plotted.
-  `’nesting’`   nestingDepth          By default, the plotting method ignores hierarchy and plots the flattened graph. The nesting argument specifies how deep to descend into the nesting hierarchy before considering nested graphs to be factors and plotting them as such.
+| Name        | Values              | Description
+|-------------|---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  `’labels’`  | true/false          | Boolean value indicating whether or not to display the name of each variable and factor node. By default labels are not displayed.
+  `’color’`   | \[nodeList\], color | Specifies the color of some or all nodes in the graph. If no nodeList is included, then this specifies the color of all nodes in the graph. If nodeList is specified, then the color applies to only the listed nodes. The nodeList argument is a cell-array of nodes in the graph (factors and variables). The color argument is a string indicating a MATLAB color (e.g., 'r'). More than one set of 'color' arguments may appear in a single call to plot.
+  `’nodes’`   | nodeList            |  Indicates the set of nodes in the graph to be included in the plot. The nodeList argument is a cell-array of nodes in the graph (factors and variables). By default the entire graph is plotted.
+  `’depth’`   | rootNode, depth     |  This argument indicates a portion of the graph to be displayed by specifying a root node and depth (distance) from that node. The plot includes only the root node and all other nodes that are within the specified distance from the root. By default the entire graph is plotted.
+  `’nesting’` | nestingDepth        | By default, the plotting method ignores hierarchy and plots the flattened graph. The nesting argument specifies how deep to descend into the nesting hierarchy before considering nested graphs to be factors and plotting them as such.
+
+### addBoundaryVariables
 
     fg.addBoundaryVariables([factorList]);
 
 This method takes a comma separated list of variables. The listed
 variables can then be used as boundary variables in a nested graph.
 
+=== "Java"
 
-    ng = FactorGraph();
-    a = Bit(2,1);
-    y = a(1) + a(2);
-    ng.addBoundaryVariables(y,a);
-
-    fg = FactorGraph(); 
-    y = Discrete(0:2);
-    a = Bit(2,1);
-    fg.addFactor(ng,y,a);
-    a.Input = [1 0];
-    fg.solve();
-
+    ```java
     FactorGraph ng = new FactorGraph();
     Bit a = new Bit();
     Bit b = new Bit();
@@ -675,8 +730,25 @@ variables can then be used as boundary variables in a nested graph.
     Bit a2 = new Bit();
     Bit b2 = new Bit();
     fg.addFactor(ng,a2,b2);
+    ```
 
-### Introspection
+=== "MATLAB"
+
+    ```matlab
+    ng = FactorGraph();
+    a = Bit(2,1);
+    y = a(1) + a(2);
+    ng.addBoundaryVariables(y,a);
+
+    fg = FactorGraph(); 
+    y = Discrete(0:2);
+    a = Bit(2,1);
+    fg.addFactor(ng,y,a);
+    a.Input = [1 0];
+    fg.solve();
+    ```
+
+## Introspection
 
 The FactorGraph class provides several feature for inspecting aspects of
 the graph. The ability to nest graphs complicates things a bit. Nested
@@ -706,133 +778,132 @@ feature provides several methods:
 
 Now, on to the specific features.
 
+### Retrieving all factors
+
 Users can retrieve Factors and/or NestedGraphs associated with a graph
 using the Factors methods and properties:
 
--   Fg.Factors
+=== "Java"
 
--   Fg.FactorsFlat
+    -   Fg.getFactors()
+    -   Fg.getFactorsFlat()
+    -   Fg.getFactorsTop()
+    -   Fg.getFactors(relativeNestingDepth)
 
--   Fg.FactorsTop
+=== "MATLAB"
 
--   Fg.getFactors(relativeNestingDepth)
-
-<!-- -->
-
--   Fg.getFactors()
-
--   Fg.getFactorsFlat()
-
--   Fg.getFactorsTop()
-
--   Fg.getFactors(relativeNestingDepth)
+    -   Fg.Factors
+    -   Fg.FactorsFlat
+    -   Fg.FactorsTop
+    -   Fg.getFactors(relativeNestingDepth)
 
 When the user specifies a relativeNestingDepth or calls FactorsTop, the
 resulting cell array will contain a mix of leaf factors and Nested
 Graphs.
 
+### Retrieving factors but not nested factor graphs
+
 The FactorGraph class provides the following:
 
--   NonFactorGraphFactors
+=== "Java"
 
--   NonFactorGraphFactorsFlat
+    -   getNonFactorGraphFactors()
+    -   getNonFactorGraphFactorsFlat()
+    -   getNonFactorGraphFactorsTop()
+    -   getNonFactorGraphFactors(relativeNestingDepth)
 
--   NonFactorGraphFactorsTop
+=== "MATLAB"
 
--   getNonFactorGraphFactors(relativeNestingDepth)
+    -   NonFactorGraphFactors
+    -   NonFactorGraphFactorsFlat
+    -   NonFactorGraphFactorsTop
+    -   getNonFactorGraphFactors(relativeNestingDepth)
 
-<!-- -->
-
--   getNonFactorGraphFactors()
-
--   getNonFactorGraphFactorsFlat()
-
--   getNonFactorGraphFactorsTop()
-
--   getNonFactorGraphFactors(relativeNestingDepth)
 
 As the name implies, this will behave similar to the Factors properties
 and methods but will exclude nested graphs.
 
+### Retrieving variables
+
 The FactorGraph class provides the following:
 
--   Variables -- calls VariablesFlat
+=== "Java"
 
--   VariablesFlat -- Returns a list of all the Variables in the graph,
-    including those contained by nested graphs.
+    -   getVariables() -- calls getVariablesFlat()
 
--   VariablesTop -- Returns only those variables contained in the top
-    level of the graph.
+    -   getVariablesFlat() -- Returns a list of all the Variables in the
+        graph, including those contained by nested graphs.
 
--   getVariables(relativeNestingDepth,forceIncludeBoundaryVariables) --
-    Returns all variables contained in the FactorGraph from which the
-    method is called as Variables that are as deep as the specified
-    relativeNestingDepth. The second parameter is optional and defaults
-    to false. When false, boundary variables are only included by the
-    root graph. When true, boundary variables are included regardless of
-    whether a graph is a root or nested graph.
+    -   getVariablesTop() -- Returns only those variables contained in the
+        top level of the graph.
 
-<!-- -->
+    -   getVariables(relativeNestingDepth,forceIncludeBoundaryVariables) --
+        Returns all variables contained in the FactorGraph from which the
+        method is called as Variables that are as deep as the specified
+        relativeNestingDepth. The second parameter is optional and defaults
+        to false. When false, boundary variables are only included by the
+        root graph. When true, boundary variables are included regardless of
+        whether a graph is a root or nested graph.
 
--   getVariables() -- calls getVariablesFlat()
+=== "MATLAB"
 
--   getVariablesFlat() -- Returns a list of all the Variables in the
-    graph, including those contained by nested graphs.
+    -   Variables -- calls VariablesFlat
 
--   getVariablesTop() -- Returns only those variables contained in the
-    top level of the graph.
+    -   VariablesFlat -- Returns a list of all the Variables in the graph,
+        including those contained by nested graphs.
 
--   getVariables(relativeNestingDepth,forceIncludeBoundaryVariables) --
-    Returns all variables contained in the FactorGraph from which the
-    method is called as Variables that are as deep as the specified
-    relativeNestingDepth. The second parameter is optional and defaults
-    to false. When false, boundary variables are only included by the
-    root graph. When true, boundary variables are included regardless of
-    whether a graph is a root or nested graph.
+    -   VariablesTop -- Returns only those variables contained in the top
+        level of the graph.
+
+    -   getVariables(relativeNestingDepth,forceIncludeBoundaryVariables) --
+        Returns all variables contained in the FactorGraph from which the
+        method is called as Variables that are as deep as the specified
+        relativeNestingDepth. The second parameter is optional and defaults
+        to false. When false, boundary variables are only included by the
+        root graph. When true, boundary variables are included regardless of
+        whether a graph is a root or nested graph.
+
+### Retrieving all nodes
 
 The FactorGraph provides the following:
 
--   Nodes
+=== "Java"
 
--   NodesFlat
+    -   getNodes()
+    -   getNodesFlat()
+    -   getNodesTop()
+    -   getNodes(relativeNestingDepth,forceIncludeBoundaryVariables)
 
--   NodesTop
+=== "MATLAB"
 
--   getNodes(relativeNestingDepth,forceIncludeBoundaryVariables)
-
-<!-- -->
-
--   getNodes()
-
--   getNodesFlat()
-
--   getNodesTop()
-
--   getNodes(relativeNestingDepth,forceIncludeBoundaryVariables)
+    -   Nodes
+    -   NodesFlat
+    -   NodesTop
+    -   getNodes(relativeNestingDepth,forceIncludeBoundaryVariables)
 
 These methods call the Factor and Variable methods and concatenate the
 results together.
 
 The FactorGraph class provides the following:
 
--   isTree(relativeNestingDepth)
+=== "MATLAB"
 
--   isTreeTop
+    -   isTree(relativeNestingDepth)
+    -   isTreeTop
+    -   isTreeFlat
 
--   isTreeFlat
+=== "Java"
 
-<!-- -->
-
--   isTree(relativeNestingDepth)
-
--   isTreeTop()
-
--   isTreeFlat()
+    -   isTree(relativeNestingDepth)
+    -   isTreeTop()
+    -   isTreeFlat()
 
 isTree -- Users can call \<factor graph name\>.isTree() to determine if
 a FactorGraph is a tree. If the graph contains cycles, this method will
 return false. Like the other methods, the relativeNestingDepth
 determines at what point to consider NestedGraphs to be leaf nodes.
+
+### Retrieving an adjacency matrix
 
 All of the following methods return a pair: \[A, labels\] where A is a
 square connectivity matrix and labels is a cell array of strings
@@ -865,6 +936,9 @@ FactorGraph also provides an AdjacencyMatrix Property:
 
 An example of getAdjacencyMatrix:
 
+=== "MATLAB"
+
+    ```matlab
     fg = FactorGraph();
     b = Bit(2,1);
     b(1).Name = 'b1';
@@ -884,7 +958,11 @@ An example of getAdjacencyMatrix:
         'b1'
         'b2'
         'f'
+    ```
 
+=== "Java"
+
+    ```java
     FactorGraph fg = new FactorGraph();
     Bit b1 = new Bit();
     b1.setName("b1");
@@ -899,15 +977,20 @@ An example of getAdjacencyMatrix:
         System.out.println(n);
     for (int i = 0; i < matrix.length; i++)
         System.out.println(Arrays.toString(matrix[i]));
+    ```
 
-results in:
+    results in:
 
+    ```
     b1
     b2
     f
     [0, 0, 1]
     [0, 0, 1]
     [1, 1, 0]
+    ```
+
+### Depth first search
 
 -   depthFirstSearch(node, searchDepth, relativeNestingDepth) --
 
@@ -926,27 +1009,9 @@ results in:
 
 An example:
 
-    fg = FactorGraph();
-    b = Bit(6,1);
-    for i = 1:6
-    b(i).Name = sprintf('b%d',i);
-    end
-    f1 = fg.addFactor(@xorDelta,b(1:4));
-    f1.Name = 'f1';
-    f2 = fg.addFactor(@xorDelta,b(4:6));
-    f2.Name = 'f2';
-     
-    nodes = fg.depthFirstSearch(b(1),3);
+=== "Java"
 
-calling fg.plot('color',b(1),'g','labels',true) reveals the following
-structure of this graph
-
-![image](images/Introspection.png)
-
-As you might guess fg.depthFirstSearch(b(1),3) will return a collection
-of six nodes: b1, f1, b2, b3, b4, and f2. It will not include b5 and b6
-since those are at a depth of four from b1.
-
+    ```java
     FactorGraph fg = new FactorGraph();
     Bit [] b = new Bit[6];
     for (int i = 0; i < b.length; i++)
@@ -965,19 +1030,47 @@ since those are at a depth of four from b1.
     {
         System.out.println(n);
     }
+    ```
 
-results in:
+    results in:
 
+    ```
     B0
     f1
     B1
     B2
     B3
     f2
+    ```
 
-As you might guess fg.depthFirstSearch(b\[0\],3) will return a
-collection of six nodes: b0, f1, b1, b2, b3, and f2. It will not include
-b5 and b6 since those are at a depth of four from b1.
+    As you might guess fg.depthFirstSearch(b\[0\],3) will return a
+    collection of six nodes: b0, f1, b1, b2, b3, and f2. It will not include
+    b5 and b6 since those are at a depth of four from b1.
+
+=== "MATLAB"
+
+    ```matlab
+    fg = FactorGraph();
+    b = Bit(6,1);
+    for i = 1:6
+    b(i).Name = sprintf('b%d',i);
+    end
+    f1 = fg.addFactor(@xorDelta,b(1:4));
+    f1.Name = 'f1';
+    f2 = fg.addFactor(@xorDelta,b(4:6));
+    f2.Name = 'f2';
+     
+    nodes = fg.depthFirstSearch(b(1),3);
+    ```
+
+    calling fg.plot('color',b(1),'g','labels',true) reveals the following
+    structure of this graph
+
+    ![image](../images/Introspection.png)
+
+    As you might guess fg.depthFirstSearch(b(1),3) will return a collection
+    of six nodes: b1, f1, b2, b3, b4, and f2. It will not include b5 and b6
+    since those are at a depth of four from b1.
 
 [^1]: Dimple also supports and LP solver, but this solver is only
     accessible via the MATLAB API.

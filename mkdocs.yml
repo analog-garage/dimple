@@ -48,45 +48,40 @@ watch:
 
 plugins:
   - search
-#  - autorefs
+  - autorefs
   - awesome-pages:
       filename: nav.yml
   - offline
   # See https://mkdocstrings.github.io/
-  # and https://analog-garage.github.io/mkdocstrings-python-xref/
-#  - mkdocstrings:
-#      default_handler: python_xref
-#      # generate objects.inv sphinx inventory file in site/ dir to support external cross references
-#      enable_inventory: true
-#      handlers:
-#        python_xref:
-#          import:
-#            - https://docs.python.org/3/objects.inv
-#            - https://pint.readthedocs.io/en/stable/objects.inv
-#            - https://numpy.org/doc/1.20/objects.inv
-##            - http://boston-garage.pages.gitlab.analog.com/kadenz/objects.inv
-#            - http://boston-garage.pages.gitlab.analog.com/garpaths/objects.inv
-#            - http://boston-garage.pages.gitlab.analog.com/garpy.config/objects.inv
-#            - http://boston-garage.pages.gitlab.analog.com/garpy.nprec/1.0/objects.inv
-#            - http://boston-garage.pages.gitlab.analog.com/garpy.asyncio/1.0/objects.inv
+  # and https://analog-garage.github.io/mkdocstrings-python-xref/1.6.0/
+  - mkdocstrings:
+      default_handler: python_xref
+      # generate objects.inv sphinx inventory file in site/ dir to support external cross references
+      enable_inventory: true
+      handlers:
+        python_xref:
+          import:
+            - https://docs.python.org/3/objects.inv
+            - https://jpype.readthedocs.io/en/latest/objects.inv
+            - https://numpy.org/doc/2.2/objects.inv
 
-#          options:
-#            docstring_style: google
-#            docstring_options:
-#              replace_admonitions: true
-#            filters:
-#              - "!^_[^_]"
-#              - "!^__.*[^_]$"
-#            heading_level: 2
-#            show_source: true
-#            show_submodules: false
-#            show_if_no_docstring: false
-#            show_category_heading: true
-#            show_signature_annotations: true
-#            separate_signature: true
-#            docstring_section_style: spacy
-#            relative_crossrefs: true
-#            inherited_members: false
+          options:
+            docstring_style: google
+            docstring_options:
+              replace_admonitions: true
+            filters:
+              - "!^_[^_]"
+              - "!^__.*[^_]$"
+            heading_level: 2
+            show_source: true
+            show_submodules: false
+            show_if_no_docstring: true
+            show_category_heading: true
+            show_signature_annotations: true
+            separate_signature: true
+            docstring_section_style: spacy
+            relative_crossrefs: true
+            inherited_members: false
 
 markdown_extensions:
   # Enables proper formatting of fenced code blocks in lists

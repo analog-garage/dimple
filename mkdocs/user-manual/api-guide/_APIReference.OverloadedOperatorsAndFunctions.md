@@ -11,7 +11,6 @@ use of these operators and functions is described in
 section [\[sec:ImplicitFactorCreation\]](#sec:ImplicitFactorCreation){reference-type="ref"
 reference="sec:ImplicitFactorCreation"}.
 
-::: {#ftn:equals}
   Operator      Factor                                                                  Out                                                                    In1      In2                          Vectorized                                                                  Description
   ------------- ----------------------------------------------------------------------- ---------------------------------------------------------------------- -------- ---------------------------- --------------------------------------------------------------------------- ----------------------------
   $\&$          And                                                                     B                                                                      B        B                                                                                                        Logical AND
@@ -66,7 +65,6 @@ reference="sec:ImplicitFactorCreation"}.
   sinh()        Sinh                                                                    R                                                                      R        \-                                                                                                       Hyperbolic sine
   cosh()        Cosh                                                                    R                                                                      R        \-                                                                                                       Hyperbolic cosine
   tanh()        Tanh                                                                    R                                                                      R        \-                                                                                                       Hyperbolic tangent
-:::
 
 [^1]: []{#ftn:outReal label="ftn:outReal"}If either input is Real, then
     the output is Real

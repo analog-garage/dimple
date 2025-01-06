@@ -8,6 +8,6 @@ nav:
   - Solvers: _APIReference.Solvers.md
   - Streaming Data: _APIReference.StreamingData.md
   - Event Monitoring: _APIReference.EventMonitoring.md
-  - Built-In Factors: _APIReference.BuiltInFactors.,d
+  - Built-In Factors: _APIReference.BuiltInFactors.md
   - Overloaded Operators and Functions in MATLAB: APIReference.OverloadedOperatorsAndFunctions.md
-  - Other top-level functinos: _APIReference.TopLevelFunctions.md
+  - Other top-level functions: _APIReference.TopLevelFunctions.md

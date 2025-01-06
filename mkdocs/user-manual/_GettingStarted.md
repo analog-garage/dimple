@@ -981,7 +981,7 @@ for the 4-bit XOR, equivalent to the one previously defined.
 The following figure represents the Factor Graph that is created and
 solved in this example.
 
-![image](images/FactorGraphTemplate.png)
+![image](../images/FactorGraphTemplate.png)
 
 ## Nested Graphs <a name="nestedGraphs"></a>
 
@@ -991,7 +991,7 @@ Suppose we wish to use two 4-bit XORs from the previous example to
 create a 6-bit code. The following diagram shows our desired Factor
 Graph.
 
-![image](images/NestedGraph.png)
+![image](../images/NestedGraph.png)
 
 Dimple provides a way to replicate multiple copies of a Factor Graph and
 nest these instances in a containing Factor Graph. A nested Factor Graph
@@ -1062,7 +1062,7 @@ defined before or after defining the factor graph (but obviously always
 before the factors they are connected to). However, connector variables
 naturally need to be defined before the nestable factor graph.
 
-![image](images/BoundaryVariables.png)
+![image](../images/BoundaryVariables.png)
 
 Consider a nestable factor graph NestableFactorGraph(connectvar1,
 connectvar2,..,vark) with k connector variables. Consider also an actual

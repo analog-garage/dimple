@@ -45,6 +45,7 @@ if TYPE_CHECKING:
     from .variable import Variable
 
 __all__ = [
+    "Factor",
     "FactorFuncSignature",
     "FactorFunction",
     "FactorFunctionBase",

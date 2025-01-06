@@ -21,7 +21,7 @@ log file.
 ### Event types
 
 ![Dimple event
-hierarchy](images/EventHierarchy.png){#fig:EventHierarchy}
+hierarchy](../images/EventHierarchy.png)
 
 Dimple Events are organized hierarchically, and the current version of
 the full hierarchy is shown in Figure
@@ -89,25 +89,29 @@ Additional events may be added in future releases. New event types may
 also be added by developers who have extended Dimple with their own
 solvers or custom factors in Java.
 
-When specifying event types in the MATLAB API, use the event type name
-in a string value:
+=== "Java"
 
-<figure>
-<pre><code>logger = getEventLogger();
-logger.log(&#39;FactorToVariableMessageEvent&#39;, fg);</code></pre>
-</figure>
+    When specifying event types in the Java API, use the event class itself:
 
-Unrecognized event types will result in an exception.
+    ```java
+    DimpleEventLogger logger = new DimpleEventLogger();
+    logger.log(FactorToVariableMessageEvent.class, fg);
+    ```
 
-Note that Dimple events are not MATLAB events and you cannot use
-MATLAB's event API to trigger or listen for Dimple events.
+=== "MATLAB"
 
-When specifying event types in the Java API, use the event class itself:
-
-<figure>
-<pre><code>DimpleEventLogger logger = new DimpleEventLogger();
-logger.log(FactorToVariableMessageEvent.class, fg);</code></pre>
-</figure>
+    When specifying event types in the MATLAB API, use the event type name
+    in a string value:
+    
+    ```matlab
+    logger = getEventLogger();
+    logger.log(FactorToVariableMessageEvent, fg);
+    ```
+    
+    Unrecognized event types will result in an exception.
+    
+    Note that Dimple events are not MATLAB events and you cannot use
+    MATLAB's event API to trigger or listen for Dimple events.
 
 ### Event logging
 
@@ -117,49 +121,62 @@ the console or to a text file, you can configure how verbose the output
 should be, and specify which events for which model objects should be
 logged.
 
-Event loggers are instances of the EventLogger class. You may create an
-instance using the constructor:
+=== "Java"
 
-<figure>
-<pre><code>logger = EventLogger();</code></pre>
-</figure>
+    Event loggers are instances of the DimpleEventLogger class. You may
+    create a new one using the constructor:
 
-or you may simply get the default global instance using the
-getEventLogger() function, which will create a new logger the first time
-it is invoked:
-
-<figure>
-<pre><code>logger = getEventLogger();</code></pre>
-</figure>
-
-Event loggers are instances of the DimpleEventLogger class. You may
-create a new one using the constructor:
-
+    ```java
     DimpleEventLogger logger = new DimpleEventLogger();
+    ```
+
+=== "MATLAB"
+
+    Event loggers are instances of the EventLogger class. You may create an
+    instance using the constructor:
+
+    ```matlab
+    logger = EventLogger();
+    ```
+
+    or you may simply get the default global instance using the
+    `getEventLogger()` function, which will create a new logger the first time
+    it is invoked:
+
+    ```matlab
+    logger = getEventLogger();
+    ```
 
 Newly constructed loggers will output to standard error by default and
 will have a default verbosity of zero, which will produce the most terse
 output. You may configure the logger to change the verbosity level or to
 direct output to a different target. For example:
 
-<figure>
-<pre><code>% Use more verbose log output.
-logger.Verbosity = 2;
+=== "Java"
 
-% Append output to a file in the working directory.
-logger.open(&#39;event-logger.txt&#39;);
+    ```java
+    // Use more verbose log output.
+    logger.verbosity(2);
+    
+    // Append output to a file in the working directory.
+    logger.open(new File("event-logger.txt"));
+    
+    // ... or output to standard output
+    logger.open(System.out);
+    ```
 
-% ... or output to standard output
-logger.open(&#39;stdout&#39;);</code></pre>
-<pre><code>// Use more verbose log output.
-logger.verbosity(2);
+=== "MATLAB"
 
-// Append output to a file in the working directory.
-logger.open(new File(&quot;event-logger.txt&quot;));
-
-// ... or output to standard output
-logger.open(System.out);</code></pre>
-</figure>
+    ```matlab
+    % Use more verbose log output.
+    logger.Verbosity = 2;
+    
+    % Append output to a file in the working directory.
+    logger.open("event-logger.txt");
+    
+    % ... or output to standard output
+    logger.open(stdout);
+    ```
 
 Usually a single logger will be sufficient, but you can create multiple
 logger objects that direct output to different targets.
@@ -176,24 +193,30 @@ GibbsScoredVariableUpdateEvent messages but if you specify
 GibbsVariableUpdateEvent you will get only messages for that specific
 class and will not get scored messages.
 
-<figure>
-<pre><code>% Log all solver events for given model.
-logger.log(&#39;SolverEvent&#39;, model);
+=== "Java"
+    ```java
+    // Log all solver events for given model.
+    logger.log(SolverEvent.class, model);
+    
+    // Log unscored Gibbs update messages
+    logger.log(GibbsVariableUpdateEvent.class, model);
+    
+    // Log variable to factor messages for a single variable
+    logger.log(VariableToFactorMessageEvent.class, x);
+    ```
 
-% Log unscored Gibbs update messages
-logger.log(&#39;GibbsVariableUpdateEvent&#39;, model);
+=== "MATLAB"
 
-% Log variable to factor messages for a single variable
-logger.log(&#39;VariableToFactorMessageEvent&#39;, x);</code></pre>
-<pre><code>// Log all solver events for given model.
-logger.log(SolverEvent.class, model);
-
-// Log unscored Gibbs update messages
-logger.log(GibbsVariableUpdateEvent.class, model);
-
-// Log variable to factor messages for a single variable
-logger.log(VariableToFactorMessageEvent.class, x);</code></pre>
-</figure>
+    ```matlab
+    % Log all solver events for given model.
+    logger.log('SolverEvent', model);
+    
+    % Log unscored Gibbs update messages
+    logger.log('GibbsVariableUpdateEvent';, model);
+    
+    % Log variable to factor messages for a single variable
+    logger.log('VariableToFactorMessageEvent';, x);
+    ```
 
 You may remove previously created log registration either by using the
 unlog method to remove individual entries or the clear method to remove
@@ -204,18 +227,25 @@ prevent Dimple from creating the underlying events, so make sure to use
 the clear() method when you are done with logging if you do not want to
 slow down inference.)
 
-<figure>
-<pre><code>% Disable a previous log registration
-logger.log(&#39;SolverEvent&#39;, model);
+=== "Java"
 
-% Disable all logging
-logger.clear();</code></pre>
-<pre><code>// Disable a previous log registration
-logger.log(SolverEvent.class, model);
+    ```java
+    // Disable a previous log registration
+    logger.log(SolverEvent.class, model);
 
-// Disable all logging
-logger.clear();</code></pre>
-</figure>
+    // Disable all logging
+    logger.clear();
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    % Disable a previous log registration
+    logger.log('SolverEvent', model);
+
+    % Disable all logging
+    logger.clear();
+    ```
 
 When using logging, it is usually very helpful to give the variables,
 factors and subgraphs unique, easy to read, names. This will make your
@@ -227,7 +257,7 @@ The MATLAB API does not support handling Dimple events outside of the
 EventLogger class. More advanced uses cases may be implemented using the
 Java API. See the Java version of this manual for details.
 
-The DimpleEventLogger class provides an easy way to monitor changes when
+The `DimpleEventLogger` class provides an easy way to monitor changes when
 running inference in Dimple, but it does not let you interact directly
 with the event objects or take actions other than simple logging. A much
 wider range of options is available by using the event handler and
@@ -258,14 +288,14 @@ be desirable to set up handlers for specific variables, factors or
 subgraphs. For instance, to register handlers for various belief
 propagation messages on a graph, you could write:
 
-<figure>
-<pre><code>DimpleEventListener listener = DimpleEventListener.getDefault();
-fg.setEventListener(listener);
-listener.register(factorMessageHandler,
-    FactorToVariableMessageEvent.class, fg);
-listener.register(variableMessageHandler,
-    VariableToFactorMessageEvent.class, fg);</code></pre>
-</figure>
+=== "Java"
+
+    ```java
+    DimpleEventListener listener = DimpleEventListener.getDefault();
+    fg.setEventListener(listener);
+    listener.register(factorMessageHandler, FactorToVariableMessageEvent.class, fg);
+    listener.register(variableMessageHandler, VariableToFactorMessageEvent.class, fg);
+    ```
 
 Handlers can be removed by one of the various unregister methods on the
 listener; see the Java API doc for that class for details. Changes to
@@ -284,15 +314,17 @@ base class DimpleEventHandler. For example, here is a simple handler
 class that simply prints events out to the console with a verbosity of
 one:
 
-<figure>
-<pre><code>public class EventPrinter extends DimpleEventHandler&lt;DimpleEvent&gt;
-{
-    public void handleEvent(DimpleEvent event)
+=== "Java"
+
+    ```java
+    public class EventPrinter extends DimpleEventHandler&lt;DimpleEvent&gt;
     {
-        event.println(System.out, 1);
+        public void handleEvent(DimpleEvent event)
+        {
+            event.println(System.out, 1);
+        }
     }
-}</code></pre>
-</figure>
+    ```
 
 Handler classes that are specific to a particular event subclass can be
 parameterized appropriately to avoid the need for downcasts. For
@@ -300,19 +332,21 @@ example, here is a simple handler that keeps a running total of the
 total graph score during Gibbs sampling based on sample score
 differences:
 
-<figure>
-<pre><code>public class RunningScoreHandler extends DimpleEventHandler&lt;GibbsScoredVariableUpdateEvent&gt;
-{
-    public double score;
+=== "Java"
 
-    RunningScoreHandler(double startingScore)
+    ```java
+    public class RunningScoreHandler extends DimpleEventHandler&lt;GibbsScoredVariableUpdateEvent&gt;
     {
-        score = startingScore;
+        public double score;
+    
+        RunningScoreHandler(double startingScore)
+        {
+            score = startingScore;
+        }
+    
+        public void handleEvent(GibbsScoredVariableUpdateEvent event)
+        {
+            score += event.getScoreDifference();
+        }
     }
-
-    public void handleEvent(GibbsScoredVariableUpdateEvent event)
-    {
-        score += event.getScoreDifference();
-    }
-}</code></pre>
-</figure>
+    ```

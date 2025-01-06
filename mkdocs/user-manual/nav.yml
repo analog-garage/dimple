@@ -4,6 +4,7 @@ nav:
   - Getting Started: _GettingStarted.md
   - Programming Guide: how-to
   - API Guide: api-guide
+  - Python API: python-api
   - Java API: java-doc/index.html
   - Appendices: appendices
   - "*<i>Development Note</i>": dev-note.md
