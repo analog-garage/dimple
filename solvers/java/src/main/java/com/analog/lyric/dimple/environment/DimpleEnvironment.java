@@ -519,7 +519,7 @@ public class DimpleEnvironment extends DimpleOptionHolder
 	 */
 	public static String getVersion()
 	{
-		InputStream in = System.class.getResourceAsStream("/VERSION");
+		InputStream in = DimpleEnvironment.class.getResourceAsStream("/VERSION");
 		if (in == null)
 		{
 			return "UNKNOWN";

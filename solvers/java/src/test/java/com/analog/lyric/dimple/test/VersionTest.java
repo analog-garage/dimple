@@ -26,7 +26,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.Test;
-import org.junit.Ignore;
 
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
 
@@ -41,14 +40,13 @@ public class VersionTest extends DimpleTestBase
 {
 
 	@Test
-	@Ignore // TODO - re-enable when issue #10 is fixed
 	public void test_version()
 	{
 		String str = DimpleEnvironment.getVersion();
 //		System.out.println(str);
 		
 		// <version> <branch> <iso-date>
-		String pattern = "^\\d+\\.\\d+ ([^\\s]+) (.*)$";
+		String pattern = "^\\d+(?:\\.\\d+)+ ([^\\s]+) (.*)$";
 		Pattern p = Pattern.compile(pattern);
 		Matcher m = p.matcher(str);
 		assertTrue(m.find());
