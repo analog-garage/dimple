@@ -24,8 +24,9 @@ from typing import Any, Sequence, TypeVar, TYPE_CHECKING, cast
 from .java import start # noqa
 
 from com.analog.lyric.dimple.solvers.core.parameterizedMessages import (
+    DiscreteEnergyMessage as JDiscreteEnergyMessage,
     DiscreteWeightMessage as JDiscreteWeightMessage,
-    DiscreteMessage as JDiscreteMessage, DiscreteMessage
+    DiscreteMessage as JDiscreteMessage,
 )
 
 from com.analog.lyric.dimple.model.domains import (
@@ -41,6 +42,7 @@ from com.analog.lyric.dimple.model.variables import (
 )
 from garpy.dimple.base import jpype_wrapper, Node, JWrapper
 from .domain import Domain, DiscreteDomain, ET, RealDomain
+from .message import DiscreteMessage, ParameterizedMessageBase
 from .value import Datum
 
 if TYPE_CHECKING:
@@ -124,6 +126,38 @@ class Discrete[ET](Variable, JWrapper[JDiscrete]):
     @property
     def belief(self) -> tuple[float,...]:
         return tuple(self.jvariable.getBelief())
+
+    # @property
+    # def prior(self) -> Datum|None:
+    #     return super().prior
+
+    @Variable.prior.setter # type: ignore[attr-defined]
+    def prior(self, value: Datum|None) -> None:
+        # Override setter to convert
+        if not isinstance(value, DiscreteMessage) and \
+            isinstance(value, ParameterizedMessageBase):
+            msg = cast(ParameterizedMessageBase, value)
+            norm = msg.normalization_energy
+            energies = [msg.eval_energy(val) - norm for val in self.domain]
+            value = JDiscreteEnergyMessage(energies)
+        super(Discrete, Discrete).prior.__set__(self, value)
+
+    @property
+    def prior_energies(self) -> tuple[float,...]:
+        jprior = self.jvariable.getPrior()
+        if isinstance(jprior, JDiscreteMessage):
+            return tuple(jprior.getEnergies())
+        if isinstance(jprior, JValue):
+            jvalue = cast(JValue, jprior)
+            index = jvalue.getIndex()
+            energies = [math.inf] * len(self.domain)
+            energies[index] = 0.0
+            return tuple(energies)
+        return (0.0,) * len(self.domain)
+
+    @prior_energies.setter
+    def prior_energies(self, *energies: float) -> None:
+        self.jvariable.setPrior(JDiscreteEnergyMessage(list(energies)))
 
     @property
     def prior_weights(self) -> tuple[float,...]:

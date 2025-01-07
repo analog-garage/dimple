@@ -92,6 +92,9 @@ class FactorTableView(JWrapper[JFactorTable]):
 class FactorTable(FactorTableView, JWrapper[JFactorTable]):
     __slots__ = ["_energies", "_weights"]
 
+    _energies: FactorTableEnergies|None
+    _weights: FactorTableWeights|None
+
     #
     # Construction
     #

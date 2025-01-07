@@ -15,6 +15,7 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any, Self, Sequence
 
 from .java import start # noqa
@@ -40,6 +41,13 @@ __all__ = [
 
 @jpype_wrapper(JParameterizedMessageBase)
 class ParameterizedMessageBase(Datum, JWrapper[JParameterizedMessageBase]):
+    """
+    Base class for parameterized factor graph messages.
+
+    These can be thought of as a form of probability density function
+    where [eval_energy][..] computes the unnormalized negative log probability
+    which can be normalized by subtracting the [normalization_energy][..]
+    """
     @property
     def has_deterministic_value(self) -> bool:
         return self.jobj.hasDeterministicValue()
@@ -70,7 +78,22 @@ class ParameterizedMessageBase(Datum, JWrapper[JParameterizedMessageBase]):
         return self.jobj.computeKLDivergence(other.jobj)
 
     def eval_energy(self, value: Any) -> float:
+        """
+        Computes energy for the given value for this message.
+
+        The energy may be thought of either as a cost or as an unnormalized log
+        probability.
+
+        The returned energy value may be normalized by subtracting the
+        [normalization_energy][..].
+        """
         return self.jobj.evalEnergy(value)
+
+    def eval_pdf(self, value: Any) -> float:
+        """
+        Evaluates the probability density function for this message for given value.
+        """
+        return -math.log(self.eval_energy(value) - self.normalization_energy)
 
     def set_from(self, other: ParameterizedMessageBase) -> None:
         self.jobj.setFrom(other.jobj)
@@ -108,6 +131,11 @@ class DiscreteMessage(ParameterizedMessageBase, JWrapper[JDiscreteMessage]):
     @property
     def size(self) -> int:
         return self.jobj.size()
+
+    @property
+    def stores_weights(self) -> bool:
+        """True if underlying representation stores weights, otherwise energies"""
+        return self.jobj.storesWeights()
 
     @property
     def weights(self) -> tuple[float, ...]:
