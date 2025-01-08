@@ -1,38 +1,75 @@
-## Factors and Related Classes
+# Factors and Related Classes
 
-### Factor
+## Factor
 
-The Factor class can represent either a single factor or a
+The `Factor` class can represent either a single factor or a
 multidimensional array of factors. The Factor class is never created
-directly, but is the result of using the addFactor or
-addFactorVectorized (or related) methods on a FactorGraph.
+directly, but is the result of using the `addFactor`/`add_factor`
+or related methods on a `FactorGraph` instance
+
+### Properties
+
+#### Name
 
 Read-write. When read, retrieves the current name of the factor or array
 of factors. When set, modifies the name of the factor to the
 corresponding value. The value set must be a string.
 
-    factor.Name = 'string';
+=== "Python"
 
-When setting the Name, only one factor in an array may be set at a time.
-To set the names of an entire array of factors to distinct values, the
-setNames method may be used (see
-section [\[sec:Factor.setNames\]](#sec:Factor.setNames){reference-type="ref"
-reference="sec:Factor.setNames"}).
+    ```python
+    factor.name = "string"
+    print(factor.name)
+    ```
 
+=== "Java"
+
+    ```java
     factor.setName("string");
+    System.out.println(factor.getName());
+    ```
+
+=== "MATLAB"
+    
+    ```matlab
+    factor.Name = 'string';
+    disp(factor.Name)
+    ```
+
+    When setting the `Name` property, only one factor in an array may be set at a time.
+    To set the names of an entire array of factors to distinct values, the
+    `setNames` method may be used (see
+    section [\[sec:Factor.setNames\]](#sec:Factor.setNames){reference-type="ref"
+    reference="sec:Factor.setNames"}).
+
+#### Label
 
 Read-write. All variables and factors in a Factor Graph must have unique
 names. However, sometimes its desirable to have variables or factors
 share similar strings when being plotted or printed. Users can set the
-Label property to set the name for display. If the Label is not set, the
-Name will be used for display. Once the label is set, the label will be
+label property to set the name for display. If the label is not set, the
+name will be used for display. Once the label is set, the label will be
 used for display.
 
-    factor.Label = 'string';
+=== "Python"
 
+    ```python
+    factor.label = 'string'
+    ```
+
+=== "Java"
+
+    ```java
     factor.setLabel("string");
+    ```
 
-[]{#sec:Factor.DirectedTo label="sec:Factor.DirectedTo"}
+=== "MATLAB"
+
+    ```matlab
+    factor.Label = 'string';
+    ```
+
+#### DirectedTo <a name="Factor.DirectedTo"></a>
 
 Read-write. The DirectedTo property indicates a set of variables to
 which the factor is directed. The value may be either a single variable
@@ -53,9 +90,17 @@ where $a$, $b$, $c$, and $d$ are variables, then the factor is directed
 toward $c$ and $d$ if $\sum_{c, d} F(a, b, c, d)$ is constant for all
 values of $a$ and $b$. In this case, we may set:
 
-    F.DirectedTo = {c, d};
+=== "Java"
 
+    ```java
     F.setDirectedTo(c,d);
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    F.DirectedTo = {c, d};
+    ```
 
 In some cases, the set of DirectedTo variables can be automatically
 determined when a factor is created. In this case it need not be set
@@ -64,33 +109,41 @@ Dimple. If this property is set by the user, then in the case of factors
 connected only to discrete variables, Dimple will check that the factor
 is in fact directed in the specified direction.
 
-If the set of variables the factor are directed toward are part of a
-variable array, then these may be specified together in a single cell
-array. For example, if varArray is an array of variables, and a factor F
-is directed toward all of the variables in varArray, then we can set:
+=== "MATLAB"
+    
+    If the set of variables the factor are directed toward are part of a
+    variable array, then these may be specified together in a single cell
+    array. For example, if varArray is an array of variables, and a factor F
+    is directed toward all of the variables in varArray, then we can set:
 
+    ```matlab
     F.DirectedTo = varArray;
+    ```
 
-In the case of a vector of factors, we can identify the variables to
-which each factor is directed in a vectorized way. For example:
+    In the case of a vector of factors, we can identify the variables to
+    which each factor is directed in a vectorized way. For example:
 
+    ```matlab    
     s = Discrete(domain,N);
     fg.addFactorVectorized(factorFunction, s(1:(end-1)), s(2:end)).DirectedTo = s(2:end);
+    ```
 
-This example also shows that the DirectedTo property can be set directly
-on the result of the factor creation without assigning the factor to a
-named variable.
+    This example also shows that the DirectedTo property can be set directly
+    on the result of the factor creation without assigning the factor to a
+    named variable.
 
-As a more complicated vectorized example, the following creates 12
-factors, each of which contains 10 variables (5 from a and 5 from b).
-The first 2 of the 5 from a and the first from b are what the factor is
-directed to.
+    As a more complicated vectorized example, the following creates 12
+    factors, each of which contains 10 variables (5 from a and 5 from b).
+    The first 2 of the 5 from a and the first from b are what the factor is
+    directed to.
 
+    ```matlab
     a = Bit(3,4,5);
     b = Bit(3,4,5);
     fg.addFactorVectorized(factorFunction, {a, [1 2]}, {b, [1 2]}).DirectedTo = {a(:,:,1:2), b(:,:,1)};
+    ```
 
-[]{#sec:Factor.Score label="sec:Factor.Score"}
+#### Score <a name="Factor.Score"></a>
 
 Read-only. When read, computes and returns the score (energy) of the
 factor given a specified value for each of the neighboring variables to
@@ -107,7 +160,7 @@ corresponds to the Value property of the variable) is used[^1].
 
 The variable energy is normalized by the maximum input probability.
 
-[]{#sec:Factor.InternalEnergy label="sec:Factor.InternalEnergy"}
+#### InternalEnergy <a name="Factor.InternalEnergy"></a>
 
 Read-only. (Only applies to the Sum Product Solver). When read returns:
 
@@ -117,9 +170,13 @@ Where a is an instance of a Factor, X is the set of variables connected
 to a, Weight is the FactorTable entry for the specified set of variable
 values, and $B_a$ is the belief of that factor node.
 
-    double ie = f.getInternalEnergy();
+=== "Java"
 
-[]{#sec:Factor.BetheEntropy label="sec:Factor.BetheEntropy"}
+    ```java
+    double ie = f.getInternalEnergy();
+    ```
+
+#### BethEntropy <a name="Factor.BetheEntropy"></a>
 
 Read-only. (Only applies to the Sum Product Solver). When read returns:
 
@@ -128,9 +185,13 @@ $$BetheEntropy(a) = - \sum_{\vec{x} \in domain(\vec{X})}B_a(\vec{x})*log(B_a(\ve
 Where a is an instance of a Factor, X is the set of variables connected
 to a, and $B_a$ is the belief of that factor node.
 
-    double be = f.getBetheEntropy();
+=== "Java"
 
-[]{#sec:Factor.Belief label="sec:Factor.Belief"}
+    ```java
+    double be = f.getBetheEntropy();
+    ```
+
+#### Belief <a name="Factor.Belief"></a>
 
 Read-only. (Only applies to the Sum Product Solver). To support the
 Bethe Free Energy property, Dimple provides getBelief associated with a
@@ -141,27 +202,48 @@ $$Belief_a(\vec{x}) = Weight(\vec{x})\prod_{i=0}^N \mu_{X_i \rightarrow a}(x_i)$
 Where $\vec{x} \in domain(\vec{X})$ and $\vec{X}$ is the set of
 variables connected to the factor a.
 
-    b = f.Belief;
+=== "Java"
 
+    ```java
     double b = f.getBelief();
+    ```
+
+=== "MATLAB"
+
+    ```matlab
+    b = f.Belief;
+    ```
+
+#### Ports
 
 Read-only. Retrieves a cell array an array containing a list of Ports
 connecting the factor to its neighboring variables.
 
-[]{#sec:Factor.setNames label="sec:Factor.setNames"}
+### Methods
+
+#### setNames (MATLAB) <a name="sec:Factor.setNames"></a>
 
 For an array of factors, the setNames method sets the name of each
 factor in the array to a distinct value derived from the supplied string
 argument. When called with:
 
+=== "MATLAB"
+
+    ```matlab
     factorArray.setName('baseName');
+    ```
 
 the resulting factor names are of the form: `baseNamevv0`,
 `baseNamevv1`, `baseNamevv2`, etc., where each factor's name is the
 concatenation of the base name with the suffix `vv` followed by a unique
 number for each factor in the array.
 
+=== "MATLAB"
+
+    ```matlab
     factorArray.invokeSolverSpecificMethod('methodName', arguments);
+    ```
+#### invokeSolverSpecificMethod (MATLAB)
 
 For an array of factors, the invokeSolverSpecificMethod calls the
 specified solver-specific method on each of the factors in the array.
@@ -171,7 +253,12 @@ to that method. This method does not result in any return values. For
 solver specific methods that return results, use the
 invokeSolverSpecificMethodWithReturnValue method instead.
 
+=== "MATLAB"
+
+    ```matlab
     returnArray = factorArray.invokeSolverSpecificMethodWithReturnValue('methodName', arguments);
+    ```
+#### invokeSolverSpecificMethodWithReturnValue (MATLAB)
 
 For an array of factors, the invokeSolverSpecificMethodWithReturnValue
 calls the specified solver-specific method on each of the factors in the
@@ -181,12 +268,14 @@ is an optional comma-separated list of arguments to that method. The
 returnArray is a cell-array of the return values of the method, with
 dimensions equal to the dimensions of the factor array.
 
-### DiscreteFactor
+## DiscreteFactor
+
+### Properties
 
 When all variables connected to a Factor are discrete, a DiscreteFactor
 is created.
 
-[]{#sec:Factor.Belief label="sec:Factor.Belief"}
+#### Belief <a name="Factor.Belief"></a>
 
 Read-only. The belief of a factor is the joint belief over all joint
 states of the variables connected to that factor. There are two
@@ -217,7 +306,7 @@ indicates the index into the domain of the corresponding variable (where
 the order of the variable is the order used when the factor was
 created).
 
-[]{#sec:Factor.FullBelief label="sec:Factor.FullBelief"}
+#### FullBelief <a name="Factor.FullBelief"></a>
 
 Read-only. Reading the FullBelief property after the solver has been
 run[^3] returns the belief in a multi-dimensional array, where each
@@ -229,11 +318,13 @@ variable order used when the factor was created).
 
     double [] fb = myFactor.getFullBelief();
 
-### FactorFunction {#sec:FactorFunction}
+## FactorFunction <a name="FactorFunction"></a>
 
 The FactorFunction class is used to specify a Dimple built-in factor
 function in a way that can be reused for creating multiple factors, and
 that allows specification of constructor arguments.
+
+### Constructors
 
     FactorFunction(factorFunctionName, [constructorArguments])
 
@@ -255,17 +346,25 @@ new FactorFunctions, users must override the FactorFunction class.
 
 -   FactorFunction(String name);
 
+### Methods
+
+#### evalEnergy
+
 This method must be overridden in a derived class. The method takes an
 array of Values and returns the energy (negative log of the weight
 value) associated with the corresponding values.
 
     double evalEnergy(Value[] values);
 
+#### isDirected
+
 This method takes no arguments and returns a boolean indicating whether
 the factor function is directed. If directed, then there are a set of
 directed outputs for which the marginal distribution for all possible
 input values is a constant. This method may be overridden in a derived
 class. If not overridden, it is assumed false.
+
+#### getDirectedToIndices
 
 If a factor function is directed, this method indicates which edge
 indices are the directed outputs (numbering from zero), returning an
@@ -282,6 +381,8 @@ form may be overridden instead.
 
     int[] getDirectedToIndices(int numEdges);
 
+#### isDeterministicDirected
+
 This method takes no arguments and returns a boolean indicating whether
 a factor function is both directed and deterministic. If deterministic
 and directed, then it is in the form of a deterministic function such
@@ -289,6 +390,8 @@ that for all possible settings of the input values there is exactly one
 output value the results in a non-zero weight (or, equivalently, a
 non-infinite energy)[^4]. This method may be overridden in a derived
 class. If not overridden, it is assumed false.
+
+#### evalDeterministic
 
 If a factor function is directed and deterministic, this method
 evaluates the values considered the inputs of the deterministic function
@@ -302,6 +405,8 @@ overridden.
 
     evalDeterministic(Value[] arguments);
 
+#### eval
+
 The method takes an array of Values and returns the weight associated
 with the corresponding values. This method need not be overridden in a
 derived class as the default implementation uses `evalEnergy` to compute
@@ -309,13 +414,15 @@ the result.
 
     double eval(Value[] values);
 
-### FactorTable {#sec:FactorTable}
+## FactorTable <a name="FactorTable"></a>
 
 The FactorTable class is used to explicitly specify a factor table in
 lieu of Dimple creating one automatically from a factor function. This
 is sometimes useful in cases where the factor table is highly
 structured, but automatic creation would be time consuming due to a
 large number of possible states of the connected variables.
+
+### Constructor
 
     FactorTable([ ( indexList, weightList ) | weightMatrix ], domains)
 
@@ -397,6 +504,10 @@ of the entries are non-zero.
     number of elements in each dimension must equal the number of
     elements in the corresponding domain element.
 
+### Properties
+
+#### Indices
+
 Read-write. When read, returns an array of indices of the factor table
 corresponding to entries in the factor table. Each row represents a set
 of zero-based indices into the list of domain elements for each
@@ -412,16 +523,22 @@ Read-write. When read, returns a one-dimensional array of real-valued
 entries in the factor table, where each entry corresponds to the indices
 given by the corresponding row of the indexList.
 
+#### Weights
+
 When written, replaces the previous array of weights. When writing using
 this property, the number of entries must not change since this must
 equal the number of rows in the Indices. To change both Indices and
 Weights simultaneously, use the change method.
 
+#### Domains
+
 Read-only. Returns a cell-array an array of DiscreteDomain objects, each
 of which represents the corresponding domain specified in the
 constructor, in the same order as specified in the constructor.
 
-[]{#sec:FactorTable.set label="sec:FactorTable.set"}
+#### Methods
+
+### set <a name="FactorTable.set"></a>
 
 This method allows setting individual entries in the factor table. For
 each entry to be set, the domain values (not indices) are specified
