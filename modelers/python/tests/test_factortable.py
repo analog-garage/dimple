@@ -37,6 +37,7 @@ def test_factor_table() -> None:
     assert sparse.sparse_size == 0
     assert sparse.ndim == 2
     assert sparse.shape == (4,6)
+    assert sparse.domains == (d4,d6)
 
     assert sparse.energies[0,1] == math.inf
     assert sparse.weights[2,4] == 0.0

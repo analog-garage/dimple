@@ -28,6 +28,17 @@ class FactorTableView(JWrapper[JFactorTable]):
     Base class
     """
     @property
+    def domains(self) -> Sequence[DiscreteDomain]:
+        """
+        Discrete domains representing the axes of the factor table
+        """
+        indexer = self.jobj.getDomainIndexer()
+        return tuple(
+            DiscreteDomain.for_jobj(indexer.get(i))
+            for i in range(indexer.size())
+        )
+
+    @property
     def is_sparse(self) -> bool:
         """
         True if factor table has a sparse representation.
