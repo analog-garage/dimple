@@ -18,7 +18,7 @@ path = "garpy/dimple/VERSION"
 pattern = "\\s*(?P<version>[\\w.]*)"
 
 [tool.hatch.build]
-packages = ["garpy"]
+packages = ["garpy", "com-stubs"]
 
 [tool.ruff.lint]
 # TODO add "I" (isort)

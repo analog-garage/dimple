@@ -29,7 +29,7 @@ source:
   - path: ../../LICENSE.txt
 
 build:
-  number: 10 # TODO reset build number when version increments
+  number: 11 # TODO reset build number when version increments
   noarch: python
 
 requirements:
