@@ -104,6 +104,8 @@ class Discrete[ET](Variable, JWrapper[JDiscrete]):
             jdiscrete = domain_or_value
         elif isinstance(domain_or_value, Discrete):
             jdiscrete = JDiscrete(domain_or_value.domain.jdomain)
+        elif isinstance(domain_or_value, DiscreteDomain):
+            jdiscrete = JDiscrete(domain_or_value.jdomain)
         else:
             domain = DiscreteDomain.create(domain_or_value, *values)
             jdiscrete = JDiscrete(domain.jdomain)
