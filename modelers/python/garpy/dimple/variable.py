@@ -134,12 +134,12 @@ class Discrete[ET](Variable, JWrapper[JDiscrete]):
     @Variable.prior.setter # type: ignore[attr-defined]
     def prior(self, value: Datum|None) -> None:
         # Override setter to convert
-        if not isinstance(value, DiscreteMessage) and \
-            isinstance(value, ParameterizedMessageBase):
+        if (not isinstance(value, DiscreteMessage)
+            and isinstance(value, ParameterizedMessageBase)):
+            # Construct DiscreteMessage from ParameterizedMessage.
+            # This will evalute the energy at each discrete value.
             msg = cast(ParameterizedMessageBase, value)
-            norm = msg.normalization_energy
-            energies = [msg.eval_energy(val) - norm for val in self.domain]
-            value = JDiscreteEnergyMessage(energies)
+            value = JDiscreteEnergyMessage(self.domain.jdomain, msg.jobj)
         super(Discrete, Discrete).prior.__set__(self, value)
 
     @property
