@@ -9,19 +9,19 @@ dependencies:
   # python build
   - hatchling >=1.26
   # test/lint
-  - mypy >=1.14
+  - mypy >=1.15
   - ruff >=0.8.3
   - pytest >=8.3.4
   # documentation
   - mkdocs >=1.6.1
   - mkdocs-material >=9.5.49
-  - mkdocstrings-python >=1.13
+  - mkdocstrings-python >=1.16.6
   # awesome-pages dependencies
   - natsort >=8.3.1
   - wcmatch >=8.3
   # pip
   - pip >=24.3
   - pip:
-      - mkdocstrings-python-xref >=1.6.2
+      - mkdocstrings-python-xref >=1.16
       - mkdocs-awesome-pages-plugin >=2.9.0
       - stubgenj >=0.2.12

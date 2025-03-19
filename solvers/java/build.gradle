@@ -112,6 +112,14 @@ jar {
 	}
 }
 
+test {
+	testLogging {
+		events "failed" // Only log failed test events
+		exceptionFormat "full" // Show full exception details
+		showStandardStreams = true // Capture standard output and error
+	}
+}
+
 tasks.register('copyJars') {
 	dependsOn copyDimpleJar, copyExternalJars, copyExternalJarsForEclipse
 }

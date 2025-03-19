@@ -81,8 +81,8 @@ tasks.register('copyJavaCoverageToSite', Copy) {
 	mustRunAfter mkdocs
 }
 
-tasks.register('gitlab-pages') {
-	description = "Builds GitLab pages site"
+tasks.register('github-pages') {
+	description = "Builds GitHub pages site"
 	group = "Documentation"
 	dependsOn mkdocs, copyJavaCoverageToSite
 }

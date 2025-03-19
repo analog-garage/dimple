@@ -13,6 +13,12 @@ This environment includes its own Java JVM.
 
 Configure your IDE to use that environment.
 
+## A note on gradle
+
+The `gradle` build system is used control all of the build steps for the project.
+If you encounter strange errors when running gradle, you can try restarting
+the gradle daemon by running `gradle --stop`.
+
 ## Building garpy-dimple conda package
 
 To build the `garpy-dimple` package, you only need to run:

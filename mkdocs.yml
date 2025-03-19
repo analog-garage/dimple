@@ -60,15 +60,14 @@ plugins:
       enable_inventory: true
       handlers:
         python_xref:
-          import:
-            - https://docs.python.org/3/objects.inv
-            - https://jpype.readthedocs.io/en/latest/objects.inv
-            - https://numpy.org/doc/2.2/objects.inv
+          inventories:
+            - url: https://docs.python.org/3/objects.inv
+              domains: [std, py]
+            - url: https://jpype.readthedocs.io/en/latest/objects.inv
+            - url: https://numpy.org/doc/2.2/objects.inv
 
           options:
             docstring_style: google
-            docstring_options:
-              replace_admonitions: true
             filters:
               - "!^_[^_]"
               - "!^__.*[^_]$"

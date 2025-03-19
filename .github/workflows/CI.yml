@@ -41,7 +41,10 @@ jobs:
         gradle devInstall
     - name: Build Java code
       run: |
-        gradle :solvers:java:build
+        gradle :solvers:java:assemble
+    - name: Java tests
+      run: |
+        gradle :solvers:java:check
     - name: ruff
       run: |
         gradle ruff
@@ -60,9 +63,9 @@ jobs:
 #        source: coverage/coverage.json
 #        output: coverage/html/badge.svg
 #        jsonPath: totals.percent_covered_display
-    - name: Build GH Pages site
+    - name: Build GitHub Pages site
       run: |
-        gradle gitlab-pages
+        gradle github-pages
     - name: Deploy GitHub Pages (main only)
       uses: peaceiris/actions-gh-pages@v4
       if: github.ref == 'refs/heads/main'
