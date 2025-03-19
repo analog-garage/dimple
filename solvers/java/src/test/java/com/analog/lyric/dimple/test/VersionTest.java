@@ -43,7 +43,7 @@ public class VersionTest extends DimpleTestBase
 	public void test_version()
 	{
 		String str = DimpleEnvironment.getVersion();
-//		System.out.println(str);
+		System.out.println("Dimple version: " + str);
 		
 		// <version> <branch> <iso-date>
 		String pattern = "^\\d+(?:\\.\\d+)+ ([^\\s]+) (.*)$";
