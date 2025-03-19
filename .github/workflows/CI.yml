@@ -1,0 +1,72 @@
+name: CI
+on: [push]
+
+jobs:
+  build:
+    runs-on: self-hosted # Or arc or arc-dev?
+    defaults:
+      run:
+        # need to use bash for conda activation to work
+        shell: bash -el {0}
+    strategy:
+      max-parallel: 4
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.12"] #, "3.13"]
+#        os: [ubuntu-latest, macos-latest]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Create dimple conda environment
+      uses: conda-incubator/setup-miniconda@v3.1.1
+      with:
+        miniforge-version: latest
+        conda-version: ">=24.11.3"
+        # auto-update-conda: true
+        conda-build-version: ">=25"
+        # TODO - maybe use a CI-specific environment file that leaves out packages
+        #  we only need for running notebooks and the like.
+        environment-file: environment.yml
+        activate-environment: dimple
+        python-version: ${{ matrix.python-version }}
+        auto-activate-base: true
+        condarc-file: github-condarc.yml
+        use-mamba: true
+
+    - name: Show conda info
+      run: |
+        conda info
+    - name: Dev install dimple
+      run: |
+        gradle devInstall
+    - name: Build Java code
+      run: |
+        gradle :solvers:java:build
+    - name: ruff
+      run: |
+        gradle ruff
+    - name: mypy
+      if: success() || failure()
+      run: |
+        gradle mypy
+    - name: test with pytest
+      if: success() || failure()
+      run: |
+        gradle pytest # coverage
+#    - name: Generate coverage badge
+#      uses: jaywcjlove/coverage-badges-cli@main # TODO use a version?
+#      with:
+#        style: classic # flat
+#        source: coverage/coverage.json
+#        output: coverage/html/badge.svg
+#        jsonPath: totals.percent_covered_display
+    - name: Build GH Pages site
+      run: |
+        gradle gitlab-pages
+    - name: Deploy GitHub Pages (main only)
+      uses: peaceiris/actions-gh-pages@v4
+      if: github.ref == 'refs/heads/main'
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./site
+
