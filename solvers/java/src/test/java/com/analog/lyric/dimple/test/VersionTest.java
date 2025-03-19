@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.test;
 
 import static org.junit.Assert.*;
 
+import java.time.temporal.ChronoUnit;
+import java.time.Instant;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -65,11 +67,11 @@ public class VersionTest extends DimpleTestBase
 			try
 			{
 				Date date = dateParser.parse(dateStr);
-				// FIXME - Date() includes time, just get the date part
-				var now = new Date();
-				System.out.println("Version date: " + date);
+				var instant = date.toInstant().truncatedTo(ChronoUnit.DAYS);
+				var now = Instant.now().truncatedTo(ChronoUnit.DAYS);
+				System.out.println("Version date: " + instant);
 				System.out.println("Now: " + now);
-				assertTrue(date.before(now));
+				assertFalse(instant.isAfter(now));
 			}
 			catch (ParseException ex)
 			{
