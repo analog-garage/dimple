@@ -65,7 +65,11 @@ public class VersionTest extends DimpleTestBase
 			try
 			{
 				Date date = dateParser.parse(dateStr);
-				assertFalse(date.after(new Date()));
+				// FIXME - Date() includes time, just get the date part
+				var now = new Date();
+				System.out.println("Version date: " + date);
+				System.out.println("Now: " + now);
+				assertTrue(date.before(now));
 			}
 			catch (ParseException ex)
 			{
