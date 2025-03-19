@@ -1,0 +1,9 @@
+auto_stack: 1
+repodata_fns:
+  - repodata.json
+default_channels:
+  - conda-forge
+custom_channels:
+  garage-conda-local: https://artifactory.analog.com/artifactory/
+# solver: libmamba
+
