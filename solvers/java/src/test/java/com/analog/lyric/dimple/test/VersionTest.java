@@ -65,7 +65,7 @@ public class VersionTest extends DimpleTestBase
 			try
 			{
 				Date date = dateParser.parse(dateStr);
-				assertTrue(date.before(new Date()));
+				assertFalse(date.after(new Date()));
 			}
 			catch (ParseException ex)
 			{
