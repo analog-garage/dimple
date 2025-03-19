@@ -89,7 +89,7 @@ def test_weather_example(graph_tester: FactorGraphTester) -> None:
     prev_var = None
     for day,var in days.items():
         if prev_var:
-            HMM.add_factor(transition_p, prev_var,var, energy=False)
+            HMM.add_factor(transition_p, prev_var,var, energy=False) # type: ignore
         prev_var = var
 
     # add observation factors
